@@ -1,5 +1,6 @@
 /.cproject
 /.project
+/CMakeLists.txt.user
 /Prototype
 /Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.niftyreg/src/internal/RunQTtoC++.sh
 /Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.niftyreg/src/internal/QmitkNiftyRegView_Template.cpp

@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-10-19 18:14:03 +0100 (Wed, 19 Oct 2011) $
- Revision          : $Revision: 7561 $
- Last modified by  : $Author: kkl $
- 
- Original author   : leung@drc.ion.ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+=============================================================================*/
 
- ============================================================================*/
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #pragma warning ( disable : 4996 )
@@ -35,6 +26,7 @@
 #include <stdio.h>
 #include "itkCastImageFilter.h"
 #include "itkSubtractImageFilter.h"
+#include "ConversionUtils.h"
 
 /*!
  * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx
@@ -314,7 +306,7 @@ void saveNormalisedImage(char* repeatImageName, char* outputImageName, double sl
   {
     short repeatValue = repeatImageIterator.Get(); 
         
-    repeatImageIterator.Set(static_cast<short>(itk::Math::Round(fabs(slope*repeatValue+intercept))));
+    repeatImageIterator.Set(static_cast<short>(niftk::Round(fabs(slope*repeatValue+intercept))));
   }
   
   WriterType::Pointer writer = WriterType::New(); 

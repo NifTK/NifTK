@@ -1,27 +1,16 @@
-
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
- Dementia Research Centre, and the Centre For Medical Image Computing
- at University College London.
- 
- See:
- http://dementia.ion.ucl.ac.uk/
- http://cmic.cs.ucl.ac.uk/
- http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- $Author:: jhh                 $
- $Date:: 2011-12-16 15:11:16 +#$
- $Rev:: 8052                   $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Copyright (c) UCL : See the file LICENSE.txt in the top level
- directory for futher details.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  See LICENSE.txt in the top level directory for details.
 
- ============================================================================*/
+=============================================================================*/
 
 #include <math.h>
 #include <float.h>
@@ -532,7 +521,7 @@ int main( int argc, char *argv[] )
       pMaskImage->SetOrigin( pInputImage->GetOrigin() );
 
       pMaskImage->Allocate( );
-      pMaskImage->FillBuffer( 1. );
+      pMaskImage->FillBuffer( 1 );
     }
 
     typedef itk::ImageRegionConstIterator< InputImageType > InputIteratorType;
@@ -549,7 +538,7 @@ int main( int argc, char *argv[] )
 
       if ( itInput.Get() < threshold )
 
-	pMaskImage->SetPixel( index, 0.);
+	pMaskImage->SetPixel( index, 0);
 
       ++itInput;
     }
@@ -1063,8 +1052,8 @@ int main( int argc, char *argv[] )
 
       for ( iDim=0; iDim<ImageDimension; iDim++) {
 	
-	nPixelsResampled[iDim] = ceil( ((float) nPixelsInput[iDim])
-				       / scaleFactorRelativeToInput );
+	nPixelsResampled[iDim] = static_cast<InputImageType::SizeValueType>( ceil( ((float) nPixelsInput[iDim])
+									      / scaleFactorRelativeToInput ) );
 
 	actualSamplingFactor = ((float) nPixelsInput[iDim]) / ((float) nPixelsResampled[iDim] );
 

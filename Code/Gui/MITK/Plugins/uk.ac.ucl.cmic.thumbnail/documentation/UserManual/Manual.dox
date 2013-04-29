@@ -22,7 +22,7 @@ say that that window is "selected" or "has focus". Figure 1 shows a typical view
 orthogonal planes and a 3D plane, which is the standard MITK and CMIC layout. The user clicks on the
 axial slice, and the thumbnail viewer shows a copy of that slice.
 
-\image html ThumbnailFocussed.png "Figure 1. The thumbnail shows a copy of the selected viewer. Select by left-clicking."
+\image html ThumbnailFocused.png "Figure 1. The thumbnail shows a copy of the selected viewer. Select by left-clicking."
  
 If the user zooms in, to view a small piece of anatomy, the Thumbnail viewer shows as a coloured box (by default red)
 the size of the selected window. (Figure 2.)

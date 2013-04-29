@@ -1,26 +1,17 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-17 14:35:07 +0000 (Sat, 17 Dec 2011) $ 
-#  Revision          : $Revision: 8065 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 
 #-----------------------------------------------------------------------------
 # NiftyLink
@@ -38,7 +29,7 @@ IF(BUILD_IGI)
   SET(NIFTYLINK_DEPENDS ${proj})
 
   IF(NOT DEFINED NiftyLink_DIR)
-  
+
     SET(revision_tag development)
 
     IF (NIFTK_NIFTYLINK_DEV)
@@ -53,7 +44,7 @@ IF(BUILD_IGI)
         URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
       )
     ENDIF ()
-        
+
     IF(DEFINED NIFTYLINK_OIGTLINK_DEV)
       SET(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTYLINK_OIGTLINK_DEV}
@@ -61,9 +52,9 @@ IF(BUILD_IGI)
     ELSE()
       SET(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTK_NIFTYLINK_DEV}
-      )    
+      )
     ENDIF()
-        
+
     IF(NIFTYLINK_OPENIGTLINK_VERSION)
       LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_VERSION=${NIFTYLINK_OPENIGTLINK_VERSION} )
     ENDIF()
@@ -76,15 +67,16 @@ IF(BUILD_IGI)
     IF(NIFTYLINK_OPENIGTLINK_LOCATION_DEV)
       LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION_DEV=${NIFTYLINK_OPENIGTLINK_LOCATION_DEV} )
     ENDIF()
-         
+
     ExternalProject_Add(${proj}
       ${NiftyLink_location_options}
       BINARY_DIR ${proj}-build
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYLINK}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
-        ${NiftyLink_options}       
+        ${NiftyLink_options}
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}

@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-11-18 09:05:48 +0000 (Fri, 18 Nov 2011) $
- Revision          : $Revision: 7804 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
 #define _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
@@ -195,7 +185,7 @@ public:
   virtual ~MIDASGeneralSegmentorView();
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
-  /// "uk.ac.ucl.cmic.midasgeneralsegmentor" and the .cpp file and plugin.xml should match.
+  /// "uk.ac.ucl.cmic.midasgeneralsegmentor" and the .cxx file and plugin.xml should match.
   static const std::string VIEW_ID;
 
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor".
@@ -231,7 +221,7 @@ protected slots:
   /// \brief Qt slot called when the user hits the button "New segmentation",
   /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
   /// \brief Qt slot called from the ToolManager when a segmentation tool is activated.
   virtual void OnToolSelected(int id);
@@ -426,9 +416,9 @@ private:
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours(bool updateRendering=true);
 
-  /// \brief Takes the currently focussed window, and makes sure the segmented volume
-  /// is not visible in the currently focussed window and takes the global visibility value in the previously
-  /// focussed window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
+  /// \brief Takes the currently focused window, and makes sure the segmented volume
+  /// is not visible in the currently focused window and takes the global visibility value in the previously
+  /// focused window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
   void UpdateSegmentationImageVisibility(bool overrideToGlobal);
 
   /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.

@@ -1,26 +1,16 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
+#  NifTK: A software platform for medical image computing.
 #
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
-#
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-17 14:35:07 +0000 (Sat, 17 Dec 2011) $ 
-#  Revision          : $Revision: 8065 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
 
 ###########################################################################
 # Our version number. Edit this to generate a new version.
@@ -28,7 +18,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 SET(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 02 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -138,10 +128,6 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
       
 ENDFOREACH()
 
-# Print some status stuff to help the user.
-MESSAGE("BUILD_GUI=${BUILD_GUI}")
-MESSAGE("BUILD_IGI=${BUILD_IGI}")
-
 ######################################################################
 # Options. These are set up front, so are available when configuring
 # the SuperBuild, and hence they must also be passed to the normal
@@ -156,7 +142,8 @@ OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
 OPTION(BUILD_NIFTYSEG "Build NiftySeg." ON)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
-OPTION(BUILD_TESTING "Build Unit tests in NifTK/Testing/Code." OFF)
+OPTION(BUILD_TESTING "Build Unit tests." OFF)
+OPTION(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 IF(CMAKE_BUILD_TYPE MATCHES "Debug")
   SET(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -209,9 +196,9 @@ SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 SET(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-SET(NIFTK_VERSION_DATA_GIT "d9fe07385c" CACHE STRING "Version of NifTKData in git" FORCE)
+SET(NIFTK_VERSION_DATA_GIT "5517584a57" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-SET(NIFTK_VERSION_DATA_TAR "d9fe07385c" CACHE STRING "Version of NifTKData in tarball" FORCE)
+SET(NIFTK_VERSION_DATA_TAR "5517584a57" CACHE STRING "Version of NifTKData in tarball" FORCE)
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -219,15 +206,16 @@ SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-SET(NIFTK_VERSION_CTK "dd4386a4b0" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "e4e8dbec92" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_CTK "fef76cef38" CACHE STRING "Version of CTK" FORCE)
+SET(NIFTK_VERSION_MITK "c46b74d625" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "f87aa369bc" CACHE STRING "Version of NiftyLink" FORCE)
-SET(NIFTK_VERSION_NIFTYREG "329" CACHE STRING "Version of NiftyReg" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "670cde1afd" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim" FORCE)
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
+SET(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 SET(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
@@ -249,6 +237,7 @@ SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec" FORCE)
 SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
 SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
+SET(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -296,6 +285,7 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
 MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
+MARK_AS_ADVANCED(NIFTK_VERSION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_GIT)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_SVN)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_TAR)
@@ -316,8 +306,12 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
+MARK_AS_ADVANCED(NIFTK_LOCATION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
+MARK_AS_ADVANCED(BUILD_SLS_TESTING)
+MARK_AS_ADVANCED(NIFTK_NIFTYLINK_DEV)
+MARK_AS_ADVANCED(BUILD_SHARED_LIBS)
 
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
@@ -337,6 +331,7 @@ include(mitkMacroEmptyExternalProject)
 include(niftkMacroCreateApplication)
 include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLI)
+include(niftkMacroConfigureAndBuildCLI)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -465,6 +460,18 @@ IF(NIFTK_USE_CUDA)
 ENDIF(NIFTK_USE_CUDA)
 
 ######################################################################
+# Find NVidia API: Required for NVidia SDI pipeline in IGI GUI
+######################################################################
+FIND_PACKAGE(NVidiaAPI)
+IF(NVAPI_FOUND)
+  MESSAGE("Found NVidia API")
+  INCLUDE_DIRECTORIES(${NVAPI_INCLUDE_DIR})
+  ADD_DEFINITIONS(-D_USE_NVAPI)
+ELSE()
+  MESSAGE("Did not find NVidia API")
+ENDIF()
+
+######################################################################
 # Now, if required, do the SuperBuild
 # If we are doing SuperBuild 
 #   We configure up to this point (see the return() statement)
@@ -492,6 +499,15 @@ ENDIF(BUILD_SUPERBUILD)
 
 MESSAGE("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
+
+######################################################################
+# Add additional entries to the CMAKE_MODULE_PATH, now all externals
+# are already built.
+######################################################################
+SET(CMAKE_MODULE_PATH
+    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/aruco/lib/cmake
+    ${CMAKE_MODULE_PATH}
+   )
 
 ######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
@@ -637,16 +653,22 @@ IF (BUILD_IGI)
     MESSAGE("Found NiftyLink")
     INCLUDE(${NiftyLink_USE_FILE})
     ADD_DEFINITIONS(-DBUILD_IGI)
-    MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
-    SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
-  ELSE (NOT NiftyLink_FOUND)
-    MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
-    SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
-  ENDIF(NiftyLink_FOUND)
-ELSE (BUILD_IGI)
-  MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
+  ENDIF()
+
+  FIND_PACKAGE(aruco)
+  IF(aruco_FOUND)
+    MESSAGE("Found aruco in ${aruco_DIR}")
+    LINK_DIRECTORIES(${aruco_DIR}/lib)
+    INCLUDE_DIRECTORIES(${aruco_DIR}/include)
+  ENDIF()
+ENDIF()
+
+IF(BUILD_IGI AND NiftyLink_FOUND AND aruco_FOUND)
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+ELSE()
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
-ENDIF (BUILD_IGI)
+  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
+ENDIF()
 
 ######################################################################
 # Find FFTW.
@@ -803,6 +825,7 @@ IF (BUILD_MESHING)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
 ENDIF (BUILD_MESHING) 
 
+
 ######################################################################
 # Output directories, for when compiling, not installing.
 ######################################################################
@@ -909,7 +932,7 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_
 #############################################################################################
 
 SET(NIFTK_ITK_LIB ITKCommon ITKIO ITKBasicFilters ITKAlgorithms itkzlib)
-SET(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering )
+SET(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering vtkHybrid )
 SET(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 
 ######################################################################
@@ -928,7 +951,10 @@ INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyRec.txt DESTINATION ${NIF
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Aruco.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/INSTALLATION.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
@@ -1056,6 +1082,36 @@ INCLUDE(CPackSetup)
 #    and generates all the cmake_install.cmake.  So this command will use cmake to generate
 #    and additional file, that we can politely ask cpack to include, in addition to all the
 #    cmake_install.cmake files.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Configuring the Start Menu and Desktop icon strings for NSIS
+
+if (WIN32)
+  SET(ICONS_SETUP_STRING "")
+  SET(ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_SETUP_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+  SET(DESKTOP_ICONS_REMOVE_STRING "")
+ 
+  FOREACH(NIFTK_APP ${NIFTK_APPS})  
+    # extract option_name
+    STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    SET(target_info_list ${target_info})
+    LIST(GET target_info_list 1 option_name)
+    LIST(GET target_info_list 0 app_name)
+
+	message("Current App Name: ${app_name}")
+	
+	if(EXISTS "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/${app_name}.exe")
+	  SET(ICONS_SETUP_STRING "${ICONS_SETUP_STRING}CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
+      SET(ICONS_REMOVE_STRING "${ICONS_REMOVE_STRING}Delete '$SMPROGRAMS\\\\$MUI_TEMP\\\\${app_name}.lnk'\n")
+	
+      SET(DESKTOP_ICONS_SETUP_STRING "${DESKTOP_ICONS_SETUP_STRING}CreateShortCut '$DESKTOP\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n") 
+      SET(DESKTOP_ICONS_REMOVE_STRING "${DESKTOP_ICONS_REMOVE_STRING}Delete '$DESKTOP\\\\${app_name}.lnk'\n")
+	endif()
+  ENDFOREACH()
+endif()
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
                ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)

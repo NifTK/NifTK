@@ -231,7 +231,7 @@ NifTKItkImageFileIOFactory::NifTKItkImageFileIOFactory()
 \endcode
 i.e. we are implementing the mitkIOAdaptor interface, by providing class mitk::NifTKItkImageFileReader
 (a subclass of the original mitkItkImageFileReader) and creating the NifTKItkImageFileReader class by 
-passing it to the templated IOAdaptor class. Then in mitk::NifTKItkImageFileReader.cpp we can write our 
+passing it to the templated IOAdaptor class. Then in mitk::NifTKItkImageFileReader.cxx we can write our 
 code to read images using our modified itk::DRCAnalyzeImageIO3160 and itk::NiftiImageIO3201.
 
 The remaining hurdle is to make sure our class gets created as a replacement for the standard MITK factory.
@@ -287,7 +287,7 @@ which can be seen to remove the mitk::ItkImageFileIOFactory and insert mitk::Nif
 This mitk::NifTKCoreObjectFactory is simply created when NiftyView starts be calling 
 RegisterNifTKCoreObjectFactory found in mitkNifTKCoreObjectFactory.h, as can be seen in the main NiftyView application
 \verbatim
-NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cpp
+NifTK/Code/Gui/MITK/Apps/NiftyView/NiftyView.cxx
 \endverbatim
 To summarise, we create a factory called mitk::NifTKItkImageFileIOFactory to load all ITK image types, using the standard ITK mechanism,
 except for Analyze and Nifti files where we provide modified readers. This factory is registered with the ITK ObjectFactory
@@ -323,9 +323,9 @@ Code/IO/itkGDCMSeriesFileNames.h
 
 Within MITK, all file based DICOM import is also performed using GDCM, and the files of interest are:
 \verbatim
-Core/Code/Algorithms/mitkCoreObjectFactory.cpp
-Core/Code/Algorithms/mitkCoreObjectFactoryBase.cpp
-Core/Code/IO/mitkDicomSeriesReader.cpp
+Core/Code/Algorithms/mitkCoreObjectFactory.cxx
+Core/Code/Algorithms/mitkCoreObjectFactoryBase.cxx
+Core/Code/IO/mitkDicomSeriesReader.cxx
 Core/Code/IO/mitkDicomSeriesReader.h
 Core/Code/IO/mitkDicomSeriesReader.txx
 \endverbatim

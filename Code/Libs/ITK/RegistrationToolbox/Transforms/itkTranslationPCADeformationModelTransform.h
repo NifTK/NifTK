@@ -1,27 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
- Dementia Research Centre, and the Centre For Medical Image Computing
- at University College London.
- 
- See:
- http://dementia.ion.ucl.ac.uk/
- http://cmic.cs.ucl.ac.uk/
- http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- $Author:: mjc                 $
- $Date:: 2011-05-25 07:34:26 +#$
- $Rev:: 6255                   $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Copyright (c) UCL : See the file LICENSE.txt in the top level
- directory for futher details.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  See LICENSE.txt in the top level directory for details.
 
- ============================================================================*/
-
+=============================================================================*/
 
 #ifndef __itkTranslationPCADeformationModelTransform_h
 #define __itkTranslationPCADeformationModelTransform_h

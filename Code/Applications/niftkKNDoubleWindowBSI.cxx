@@ -1,7 +1,23 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
+#ifndef OPEN_SOURCE_BSI
 #include "itkLogHelper.h"
+#endif
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkIntensityNormalisationCalculator.h"
@@ -371,7 +387,9 @@ int main(int argc, char* argv[])
 {
   if (argc < 21)
   {
+#ifndef OPEN_SOURCE_BSI
     niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
+#endif
     std::cerr << std::endl;
     std::cerr << "Program to calculate the k-means normalised double window boundary shift integral, based on the paper" << std::endl; 
     std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 

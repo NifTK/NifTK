@@ -1,19 +1,16 @@
-/*=========================================================================
+/*=============================================================================
 
-  Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkAffineTransform.h,v $
-  Language:  C++
-  Date:      $Date: 2011-06-01 09:38:00 +0100 (Wed, 01 Jun 2011) $
-  Version:   $Revision: 6322 $
+  NifTK: A software platform for medical image computing.
 
-  Copyright (c) Insight Software Consortium. All rights reserved.
-  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-     PURPOSE.  See the above copyright notices for more information.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-=========================================================================*/
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
 
 #ifndef __itkAffineTransform2D3D_h
 #define __itkAffineTransform2D3D_h

@@ -1,30 +1,44 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 set(CPP_FILES
-  XnatCategoryNode.cpp
-  XnatConnection.cpp
-  XnatConnectionFactory.cpp
-  XnatDownloadDialog.cpp
-  XnatDownloadManager.cpp
-  XnatEmptyNode.cpp
-  XnatException.cpp
-  XnatExperimentNode.cpp
-  XnatLoginDialog.cpp
-  XnatLoginProfile.cpp
-  XnatModel.cpp
-  XnatNameDialog.cpp
-  XnatNode.cpp
-  XnatProjectNode.cpp
-  XnatReconstructionNode.cpp
-  XnatReconstructionResourceFileNode.cpp
-  XnatReconstructionResourceNode.cpp
-  XnatRootNode.cpp
-  XnatScanNode.cpp
-  XnatScanResourceFileNode.cpp
-  XnatScanResourceNode.cpp
-  XnatSettings.cpp
-  XnatSubjectNode.cpp
-  XnatTreeView.cpp
-  XnatUploadDialog.cpp
-  XnatUploadManager.cpp
+  XnatCategoryNode.cxx
+  XnatConnection.cxx
+  XnatConnectionFactory.cxx
+  XnatDownloadDialog.cxx
+  XnatDownloadManager.cxx
+  XnatEmptyNode.cxx
+  XnatException.cxx
+  XnatExperimentNode.cxx
+  XnatLoginDialog.cxx
+  XnatLoginProfile.cxx
+  XnatModel.cxx
+  XnatNameDialog.cxx
+  XnatNode.cxx
+  XnatProjectNode.cxx
+  XnatReconstructionNode.cxx
+  XnatReconstructionResourceFileNode.cxx
+  XnatReconstructionResourceNode.cxx
+  XnatRootNode.cxx
+  XnatScanNode.cxx
+  XnatScanResourceFileNode.cxx
+  XnatScanResourceNode.cxx
+  XnatSettings.cxx
+  XnatSubjectNode.cxx
+  XnatTreeView.cxx
+  XnatUploadDialog.cxx
+  XnatUploadManager.cxx
 )
 
 set(UI_FILES

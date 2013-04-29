@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-11-18 09:05:48 +0000 (Fri, 18 Nov 2011) $
- Revision          : $Revision: 7804 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
 #define QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
@@ -88,7 +78,7 @@ public:
    * \param defaultColor The default colour to pass to the new segmentation dialog box.
    * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
    */
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
+  virtual mitk::DataNode* CreateNewSegmentation(QColor &defaultColor);
 
 signals:
 
@@ -105,6 +95,11 @@ protected slots:
   virtual void OnToolSelected(int);
 
 protected:
+
+  /**
+   * \see mitk::ILifecycleAwarePart::PartActivated
+   */
+  virtual void Activated();
 
   /**
    * \see mitk::ILifecycleAwarePart::PartVisible

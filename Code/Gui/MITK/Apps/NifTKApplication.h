@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-12-16 09:02:17 +0000 (Fri, 16 Dec 2011) $
- Revision          : $Revision: 8038 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+=============================================================================*/
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
 #include <application/berryStarter.h>
 #include <Poco/Util/MapConfiguration.h>
 
@@ -121,13 +112,11 @@ public:
  * \param appName the application name - for example "NiftyView", "MIDAS" etc.
  * \param orgName the organisation name - should be "CMIC"
  * \param applicationPlugin the application plugin - for example "uk.ac.ucl.cmic.gui.qt.niftyview"
- * \param libraryPreLoadString a library to pre-load to speed up cache starts - for example "libuk_ac_ucl_cmic_gui_qt_niftyview"
  */
 int ApplicationMain(int argc, char** argv,
     QString appName,
     QString orgName,
-    QString applicationPlugin,
-    QString libraryPreLoadString)
+    QString applicationPlugin)
 {
   // Create a QApplication instance first
   QtSafeApplication myApp(argc, argv);
@@ -159,12 +148,18 @@ int ApplicationMain(int argc, char** argv,
   sbConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
   sbConfig->setString(berry::Platform::ARG_APPLICATION, applicationPlugin.toStdString());
 
-  // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) to speed
+#ifndef Q_OS_WIN
+  // Preload the org.mitk.gui.qt.ext plug-in (and hence also QmitkExt) and DICOM libs to speed
   // up a clean-cache start. This also works around bugs in older gcc and glibc implementations,
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPreLoadString.toStdString());
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext,libCTKDICOMCore:0.1");
+#else
+  // On Windows, preload the PlanarFigure.dll, otherwise there's some weird unload cycle
+  // that crashes our process.
+  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "PlanarFigure");
+#endif
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.
   // We get VTK errors from the Thumbnail widget, as it switches orientation (axial, coronal, sagittal).

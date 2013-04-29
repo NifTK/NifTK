@@ -1,13 +1,27 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 SET(SRC_CPP_FILES   
 )
 
 SET(INTERNAL_CPP_FILES
-  MIDASGeneralSegmentorViewActivator.cpp
-  MIDASGeneralSegmentorViewPreferencePage.cpp
-  MIDASGeneralSegmentorViewHelper.cpp
-  MIDASGeneralSegmentorViewControlsWidget.cpp
-  MIDASGeneralSegmentorViewEventInterface.cpp
-  MIDASGeneralSegmentorView.cpp
+  MIDASGeneralSegmentorViewActivator.cxx
+  MIDASGeneralSegmentorViewPreferencePage.cxx
+  MIDASGeneralSegmentorViewHelper.cxx
+  MIDASGeneralSegmentorViewControlsWidget.cxx
+  MIDASGeneralSegmentorViewEventInterface.cxx
+  MIDASGeneralSegmentorView.cxx
 )
 
 SET(UI_FILES

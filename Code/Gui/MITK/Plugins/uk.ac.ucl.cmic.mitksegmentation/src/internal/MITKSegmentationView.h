@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $LastChangedDate$
- Revision          : $Revision$
- Last modified by  : $Author$
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : $Author$
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef MITKSegmentationView_h
 #define MITKSegmentationView_h
@@ -55,7 +45,7 @@ public:
   virtual ~MITKSegmentationView();
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
-  /// "uk.ac.ucl.cmic.mitksegmentation" and the .cpp file and plugin.xml should match.
+  /// "uk.ac.ucl.cmic.mitksegmentation" and the .cxx file and plugin.xml should match.
   static const std::string VIEW_ID;
 
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.mitksegmentation".
@@ -64,7 +54,7 @@ public:
 protected slots:
 
   /// \brief Qt slot called when the user hits the button "New segmentation", which creates the new image.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
 protected:
 

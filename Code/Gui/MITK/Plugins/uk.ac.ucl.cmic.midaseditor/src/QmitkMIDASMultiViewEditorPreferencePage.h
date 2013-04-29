@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-12-02 06:46:00 +0000 (Fri, 02 Dec 2011) $
- Revision          : $Revision: 7905 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H
 #define QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H
@@ -83,8 +73,8 @@ public:
   /// \brief Stores the preference name for a simple on/off preference for whether we show the single, multiple, all checkbox.
   static const std::string MIDAS_SHOW_DROP_TYPE_WIDGETS;
 
-  /// \brief Stores the preference name for whether we show the 3D view in orthoview, as screen can get a bit cluttered.
-  static const std::string MIDAS_SHOW_3D_VIEW_IN_ORTHOVIEW;
+  /// \brief Stores the preference name for whether we show the 3D window in orthogonal (2x2) view, as screen can get a bit cluttered.
+  static const std::string MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW;
 
   /// \brief Stores the preference name for whether we show the 2D cursors as people may prefer them to always be off.
   static const std::string MIDAS_SHOW_2D_CURSORS;
@@ -134,7 +124,7 @@ private:
   QCheckBox   *m_ShowDropTypeWidgetsCheckBox;
   QCheckBox   *m_ShowLayoutButtonsCheckBox;
   QCheckBox   *m_ShowMagnificationSliderCheckBox;
-  QCheckBox   *m_Show3DInOrthoCheckBox;
+  QCheckBox   *m_Show3DWindowInOrthoViewCheckBox;
   QCheckBox   *m_Show2DCursorsCheckBox;
   QCheckBox   *m_RememberEachOrientationsViewSettings;
   QPushButton *m_BackgroundColourButton;

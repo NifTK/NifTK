@@ -1,11 +1,25 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 SET(SRC_CPP_FILES
-  QmitkBaseView.cpp
+  QmitkBaseView.cxx
 )
 
 SET(INTERNAL_CPP_FILES
-  CommonActivator.cpp
-  VisibilityChangedCommand.cpp
-  VisibilityChangeObserver.cpp
+  CommonActivator.cxx
+  VisibilityChangedCommand.cxx
+  VisibilityChangeObserver.cxx
 )
 
 SET(UI_FILES

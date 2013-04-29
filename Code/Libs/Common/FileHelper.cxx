@@ -1,30 +1,24 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2011-10-11 14:44:27 +0100 (Tue, 11 Oct 2011) $
- Revision          : $Revision: 7486 $
- Last modified by  : $Author: sj $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : m.clarkson@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+=============================================================================*/
 
- ============================================================================*/
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <ostream>
+#include <deque>
 #include "FileHelper.h"
 #include "EnvironmentHelper.h"
 
@@ -33,16 +27,32 @@ namespace fs = boost::filesystem;
 namespace niftk
 {
 
+//-----------------------------------------------------------------------------
 std::string GetFileSeparator()
 {	
   return FILE_SEPARATOR;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConcatenatePath(const std::string& path, const std::string& name)
 {
-  return path + GetFileSeparator() + name;
+  if ( ( path.length() > 0 ) && 
+       ( path.substr( path.length() - 1 ) != GetFileSeparator() ) &&
+       ( name.length() > 0 ) && 
+       ( name.substr( 0, 1 ) != GetFileSeparator() ) )
+    
+  {
+    return path + GetFileSeparator() + name;
+  }
+  else
+  {
+    return path + name;
+  }
 }
 
+
+//-----------------------------------------------------------------------------
 fs::path ConvertToFullPath(const std::string& pathName)
 {
   if (pathName.length() == 0)
@@ -55,12 +65,16 @@ fs::path ConvertToFullPath(const std::string& pathName)
   return full_path;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string ConvertToFullNativePath(const std::string& pathName)
 {
   fs::path full_path = ConvertToFullPath(pathName);  
   return full_path.native_file_string();
 }
 
+
+//-----------------------------------------------------------------------------
 fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix) throw (niftk::IOException) {
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
@@ -140,30 +154,73 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
 #endif
 }
 
+
+//-----------------------------------------------------------------------------
 bool DirectoryExists(const std::string& directoryPath)
 {
-
   fs::path full_path = ConvertToFullPath(directoryPath);
   return fs::is_directory(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
+bool CreateDirectoryAndParents(const std::string& directoryPath)
+{
+  std::deque< fs::path > directoryTree;
+  std::deque< fs::path >::iterator iterDirectoryTree;       
+
+  fs::path full_path = ConvertToFullPath(directoryPath);
+  fs::path branch = full_path;
+
+  while ( ! branch.empty() )
+  {
+    directoryTree.push_front( branch );
+    branch = branch.branch_path();
+  }
+
+  for ( iterDirectoryTree = directoryTree.begin(); 
+	iterDirectoryTree < directoryTree.end(); 
+	++iterDirectoryTree )
+  {
+    std::cout << (*iterDirectoryTree).string() << std::endl;
+
+    if ( ! fs::exists( *iterDirectoryTree ) )
+    {
+      if ( ! fs::create_directory( *iterDirectoryTree ) )
+      {
+	return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 bool FileExists(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
   return fs::is_regular(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
 int FileSize(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
   return (int)fs::file_size(full_path);
 }
 
+
+//-----------------------------------------------------------------------------
 bool FileIsEmpty(const std::string& fileName)
 {
   return FileSize(fileName) == 0;
 }
 
+
+//-----------------------------------------------------------------------------
 bool FilenameHasPrefixAndExtension(
     const std::string& filename,
     const std::string& prefix,
@@ -188,6 +245,8 @@ bool FilenameHasPrefixAndExtension(
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool FilenameMatches(
     const std::string& filename,
     const std::string& prefix,
@@ -216,9 +275,81 @@ bool FilenameMatches(
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 std::string GetImagesDirectory()
 {
   return ConcatenatePath(GetNIFTKHome(), "images"); 
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryName)
+{
+  if (!DirectoryExists(fullDirectoryName))
+  {
+    throw std::logic_error("Directory does not exist!");
+  }
+
+  std::vector<std::string> fileNames;
+  fs::path fullDirectoryPath = ConvertToFullPath(fullDirectoryName);
+
+  fs::directory_iterator end_itr; // default construction yields past-the-end
+  for ( fs::directory_iterator itr( fullDirectoryPath );
+        itr != end_itr;
+        ++itr )
+  {
+    if (!fs::is_directory(*itr))
+    {
+      fs::path fullFilePath(fs::initial_path<fs::path>() );
+      fullFilePath = fs::system_complete(itr->path());
+      fileNames.push_back(fullFilePath.native_file_string());
+    }
+  }
+  return fileNames;
+}
+
+//  -------------------------------------------------------------------------
+void GetRecursiveFilesInDirectory( const std::string &directoryName, 
+				   std::vector<std::string> &fileNames )
+{
+  fs::path full_path( directoryName );
+
+  if (!DirectoryExists(directoryName))
+  {
+    throw std::logic_error("Directory does not exist!");
+    return;
+  }
+
+  if ( fs::is_directory( full_path ) )
+  {
+    fs::directory_iterator end_iter;
+
+    for ( fs::directory_iterator dir_itr( full_path );
+          dir_itr != end_iter;
+          ++dir_itr )
+    {
+      try
+      {
+        if ( fs::is_directory( dir_itr->status() ) )
+        {
+	  GetRecursiveFilesInDirectory( dir_itr->path().string(), fileNames );
+        }
+        else if ( fs::is_regular_file( dir_itr->status() ) )
+        {
+	  fileNames.push_back( dir_itr->path().string() );
+	}
+      }
+      catch ( const std::exception & ex )
+      {
+        std::cout << dir_itr->path() << " " << ex.what() << std::endl;
+      }
+    }
+  }
+  else // must be a file
+  {
+    fileNames.push_back( full_path.string() );    
+  }
 }
 
 }

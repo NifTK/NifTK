@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
- Dementia Research Centre, and the Centre For Medical Image Computing
- at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
- http://cmic.cs.ucl.ac.uk/
- http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $LastChangedDate: 2011-10-12 01:09:15 +0100 (Wed, 12 Oct 2011) $
- Revision          : $LastChangedRevision: 7494 $
- Last modified by  : $LastChangedBy: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : stian.johnsen.09@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 //-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
@@ -81,6 +71,7 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 template<class TInputImage, class TOutputImage, class TPointSet>
 bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::IsCrossingLine(
+  const ParametricPathVectorType* contours,
   const typename OutputImageType::IndexType &index1,
   const typename OutputImageType::IndexType &index2
 )
@@ -88,11 +79,11 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 
   bool result = false;
   
-  if (m_ManualContours != NULL && m_ManualContours->size() > 0)
+  if (contours != NULL && contours->size() > 0)
   {
-    for (unsigned long int contourCounter = 0; contourCounter < m_ManualContours->size(); contourCounter++)
+    for (unsigned long int contourCounter = 0; contourCounter < contours->size(); contourCounter++)
     {
-      ParametricPathPointer path = (*m_ManualContours)[contourCounter];
+      ParametricPathPointer path = (*contours)[contourCounter];
       const ParametricPathVertexListType* list = path->GetVertexList();
       
       if (list != NULL && list->Size() > 1)
@@ -178,7 +169,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
              ) 
           || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageBorderValue
               && isFullyConnected
-              && !this->IsCrossingLine(currentImgIdx, nextImgIdx)
+              && !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)
              )
          )
      ) 

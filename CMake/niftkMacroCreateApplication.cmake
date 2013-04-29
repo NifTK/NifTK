@@ -1,26 +1,17 @@
-#/*================================================================================
+#/*============================================================================
 #
-#  NifTK: An image processing toolkit jointly developed by the
-#              Dementia Research Centre, and the Centre For Medical Image Computing
-#              at University College London.
-#  
-#  See:        http://dementia.ion.ucl.ac.uk/
-#              http://cmic.cs.ucl.ac.uk/
-#              http://www.ucl.ac.uk/
+#  NifTK: A software platform for medical image computing.
 #
-#  Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
-#
-#  Last Changed      : $LastChangedDate: 2011-12-16 09:02:17 +0000 (Fri, 16 Dec 2011) $ 
-#  Revision          : $Revision: 8038 $
-#  Last modified by  : $Author: mjc $
-#
-#  Original author   : m.clarkson@ucl.ac.uk
+#  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
 #  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notices for more information.
+#  PURPOSE.
 #
-#=================================================================================*/
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
 MACRO(NIFTK_CREATE_APPLICATION)
   MACRO_PARSE_ARGUMENTS(_APP
                         "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
@@ -35,13 +26,13 @@ MACRO(NIFTK_CREATE_APPLICATION)
   SET(MY_APP_NAME ${_APP_NAME})
 
   # The MITK_USE_MODULE sets up the include path for compile time...
-  MITK_USE_MODULE(niftkMitkExt)
+  MITK_USE_MODULE(niftkCore)
   MITK_USE_MODULE(qtsingleapplication)
   INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
   
   # ... and here we are specifying additional link time dependencies.
   SET(_link_libraries
-    niftkMitkExt
+    niftkCore
     qtsingleapplication
   )
 
@@ -63,6 +54,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
     ${curl_LIBRARY_DIR}
     ${Boost_LIBRARY_DIRS}
     ${zlib_LIBRARY_DIR}
+    ${aruco_DIR}/lib
   )
   
   #############################################################################
@@ -88,6 +80,7 @@ MACRO(NIFTK_CREATE_APPLICATION)
   
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
+    SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_include_plugins}
     EXCLUDE_PLUGINS ${_exclude_plugins}
     LINK_LIBRARIES ${_link_libraries}

@@ -1,0 +1,38 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+FIND_PACKAGE(CUDA REQUIRED)
+
+MITK_CREATE_MODULE(niftkNVidiaGui
+  EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
+  INCLUDE_DIRS DataSources
+  DEPENDS niftkIGIGui niftkNVidia
+  PACKAGE_DEPENDS QT
+  QT_MODULE 
+)
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
+
+# stuffing this into DEPENDS above doesnt work for some reason
+TARGET_LINK_LIBRARIES(niftkNVidiaGui
+  niftknvapi
+  mitkOpenCVVideoSupport
+  Winmm.lib
+  )
+  
+IF(BUILD_TESTING)  
+  ADD_SUBDIRECTORY(Testing)
+ENDIF()

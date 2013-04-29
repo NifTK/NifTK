@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2010-05-25 17:02:50 +0100 (Tue, 25 May 2010) $
- Revision          : $Revision: 3300 $
- Last modified by  : $Author: mjc $
- 
- Original author   : m.clarkson@ucl.ac.uk
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  See LICENSE.txt in the top level directory for details.
 
- ============================================================================*/
+=============================================================================*/
 
 /* 
  * here is where system computed values get stored these values should only
@@ -114,7 +104,8 @@
 #define NIFTK_VTK_VERSION "@NIFTK_VERSION_VTK@"
 #define NIFTK_CTK_VERSION "@NIFTK_VERSION_CTK@"
 #define NIFTK_MITK_VERSION "@NIFTK_VERSION_MITK@"
-#define NIFTK_VERSION "@NIFTK_REVISION_ID@"
+#define NIFTK_VERSION "@NIFTK_REVISION_SHORTID@"
+#define NIFTK_DATE_TIME "@NIFTK_DATE_TIME@"
 #define NIFTK_NIFTYREG_VERSION "@NIFTK_VERSION_NIFTYREG@"
 #define NIFTK_NIFTYSEG_VERSION "@NIFTK_VERSION_NIFTYSEG@"
 #define NIFTK_NIFTYREC_VERSION "@NIFTK_VERSION_NIFTYREC@"

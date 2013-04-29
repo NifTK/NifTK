@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: $
- Revision          : $Revision: $
- Last modified by  : $Author: $
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Original author   : j.hipwell@ucl.ac.uk
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
+  See LICENSE.txt in the top level directory for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #include "itkBreastMaskSegmForBreastDensity.h"
 
@@ -200,25 +190,25 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
  typename  InternalImageType::Pointer imFittedPectoralis;
 
   imFittedPectoralis = 
-    MaskImageFromBSplineFittedSurface( pecPointSet, 
-				       this->imStructural->GetLargestPossibleRegion(), 
-				       this->imStructural->GetOrigin(), 
-				       this->imStructural->GetSpacing(), 
-				       this->imStructural->GetDirection(), 
-				       rYHeightOffset,
-				       3, 5, 3 );
+    this->MaskImageFromBSplineFittedSurface( pecPointSet, 
+					     this->imStructural->GetLargestPossibleRegion(), 
+					     this->imStructural->GetOrigin(), 
+					     this->imStructural->GetSpacing(), 
+					     this->imStructural->GetDirection(), 
+					     rYHeightOffset,
+					     3, 5, 3, false );
 
   // Write the fitted surface to file
 
-  WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
-                    "fitted pectoral surface with offset", 
-                    imFittedPectoralis, this->flgLeft, this->flgRight );
-
+  this->WriteImageToFile( this->fileOutputPectoralSurfaceMask, 
+			  "fitted pectoral surface with offset", 
+			  imFittedPectoralis, this->flgLeft, this->flgRight );
+  
   // Write the chest surface points to a file?
 
-  WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
-                               "chest surface points", 
-                               this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
+  this->WriteBinaryImageToUCharFile( this->fileOutputChestPoints, 
+				     "chest surface points", 
+				     this->imChestSurfaceVoxels, this->flgLeft, this->flgRight );
 
 
  // Discard anything within the pectoral mask (i.e. below the surface fit)

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrackedPointerView</class>
+ <widget class="QWidget" name="TrackedPointerView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_TipOriginLabel">
+         <property name="text">
+          <string>tip origin</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="ctkCoordinatesWidget" name="m_TipOriginSpinBoxes" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_TipToProbeLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>tip to probe</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="ctkPathLineEdit" name="m_TipToProbeCalibrationFile" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_ProbeSurfaceLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>probe</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode" native="true"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="m_ProbeToWorldLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>probe to world</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode" native="true"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkDataStorageComboBox</class>
+   <extends>QWidget</extends>
+   <header>QmitkDataStorageComboBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCoordinatesWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">ctkCoordinatesWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,26 +1,16 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
+  NifTK: A software platform for medical image computing.
 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Last Changed      : $Date: 2011-07-19 12:16:16 +0100 (Tue, 19 Jul 2011) $
- Revision          : $Revision: 6802 $
- Last modified by  : $Author: mjc $
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- Original author   : m.clarkson@ucl.ac.uk
+  See LICENSE.txt in the top level directory for details.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details.
-
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
-
- ============================================================================*/
+=============================================================================*/
 
 #ifndef _SurfaceExtractorView_h
 #define _SurfaceExtractorView_h
@@ -29,10 +19,11 @@
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
-#include <QmitkAbstractView.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkImageToSurfaceFilter.h>
+
+#include <QmitkBaseView.h>
 
 class QWidget;
 class QEvent;
@@ -43,7 +34,7 @@ class SurfaceExtractorViewPrivate;
  * \brief Provides a simple GUI to extract the surface of 3D volumes.
  * \ingroup uk_ac_ucl_cmic_surfaceextractor_internal
  */
-class SurfaceExtractorView : public QmitkAbstractView
+class SurfaceExtractorView : public QmitkBaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -58,6 +49,11 @@ public:
   static const std::string VIEW_ID;
 
 protected:
+
+  /**
+   * \see mitk::ILifecycleAwarePart::PartActivated
+   */
+  virtual void Activated();
 
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);

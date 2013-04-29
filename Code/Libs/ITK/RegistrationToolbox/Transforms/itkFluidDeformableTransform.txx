@@ -1,26 +1,17 @@
 /*=============================================================================
 
- NifTK: An image processing toolkit jointly developed by the
-             Dementia Research Centre, and the Centre For Medical Image Computing
-             at University College London.
- 
- See:        http://dementia.ion.ucl.ac.uk/
-             http://cmic.cs.ucl.ac.uk/
-             http://www.ucl.ac.uk/
+  NifTK: A software platform for medical image computing.
 
- Last Changed      : $Date: 2011-10-12 11:01:24 +0100 (Wed, 12 Oct 2011) $
- Revision          : $Revision: 7496 $
- Last modified by  : $Author: kkl $
- 
- Original author   : m.clarkson@ucl.ac.uk
+  Copyright (c) University College London (UCL). All rights reserved.
 
- Copyright (c) UCL : See LICENSE.txt in the top level directory for details. 
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+  See LICENSE.txt in the top level directory for details.
 
- ============================================================================*/
+=============================================================================*/
+
 #ifndef ITKFLUIDDEFORMABLETRANSFORM_TXX_
 #define ITKFLUIDDEFORMABLETRANSFORM_TXX_
 
@@ -194,7 +185,6 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
   typedef Point< TDeformationScalar, NDimensions > DeformationOutputPointType; 
   typedef Point< double, NDimensions > DoubleDeformationOutputPointType; 
   typename DeformationFieldType::RegionType region = this->m_DeformationField->GetLargestPossibleRegion(); 
-  typename DeformationFieldType::SizeType size = this->m_DeformationField->GetLargestPossibleRegion().GetSize();
   typename DeformationFieldType::PointType origin = this->m_DeformationField->GetOrigin();
   
   // niftkitkDebugMacro(<< "FluidDeformableTransform::UpdateRegriddedDeformationParameters - Looping");
@@ -203,6 +193,8 @@ FluidDeformableTransform<TFixedImage, TScalarType, NDimensions, TDeformationScal
     typename DeformationFieldType::IndexType index = iterator.GetIndex(); 
     
 #if 0
+    typename DeformationFieldType::SizeType size = this->m_DeformationField->GetLargestPossibleRegion().GetSize();
+
     // Skip the boundary. 
     bool isBoundary = false; 
     for (unsigned int i = 0; i < NDimensions; i++)
