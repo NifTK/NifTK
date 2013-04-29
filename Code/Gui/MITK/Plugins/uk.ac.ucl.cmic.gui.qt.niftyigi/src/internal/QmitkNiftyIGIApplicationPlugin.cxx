@@ -15,6 +15,7 @@
 #include "QmitkNiftyIGIApplicationPlugin.h"
 #include "QmitkNiftyViewIGIPerspective.h"
 #include "../QmitkNiftyIGIApplication.h"
+#include "QmitkNiftyViewApplicationPreferencePage.h"
 
 //-----------------------------------------------------------------------------
 QmitkNiftyIGIApplicationPlugin::QmitkNiftyIGIApplicationPlugin()
@@ -43,14 +44,25 @@ void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewIGIPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
+  this->RegisterDataStorageListener();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::stop(ctkPluginContext* context)
 {
+  this->UnregisterDataStorageListener();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkNiftyIGIApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
+{
+  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
+  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.gui.qt.niftyigi", node);
 }
 
 
