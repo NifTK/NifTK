@@ -130,7 +130,6 @@ function remove_neck() {
 			-flo ${HEAD_IMAGE} \
 			-aff source-to-target-12dof.txt \
 			-res ${img}_neck_register.nii.gz \
-			-sym \
 			-lp 5" 
 		progressXML "0.15" "Atlas registered"
 			
@@ -534,7 +533,7 @@ if [ ${same} = true ] ; then
 else
 	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
 fi
-dir_output=${patient}-${dir_output}
+dir_output="/tmp/${patient}-${dir_output}"
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
