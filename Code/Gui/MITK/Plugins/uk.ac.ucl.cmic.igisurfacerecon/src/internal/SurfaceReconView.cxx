@@ -90,6 +90,7 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 
   connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
   connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
+  connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
 
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -264,6 +265,37 @@ void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer s
 
 
 //-----------------------------------------------------------------------------
+// FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
+void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image::Pointer img)
+{
+  assert(img.IsNotNull());
+
+  mitk::CameraIntrinsics::Pointer    cam = mitk::CameraIntrinsics::New();
+
+  if (false)//!filename.empty())
+  {
+    // FIXME: we need to try different formats: plain text, opencv's xml
+
+  }
+  else
+  {
+    // invent some stuff based on image dimensions
+    unsigned int w = img->GetDimension(0);
+    unsigned int h = img->GetDimension(1);
+    
+    mitk::Point3D::ValueType  focal[3] = {std::max(w, h), std::max(w, h), 1};
+    mitk::Point3D::ValueType  princ[3] = {w / 2, h / 2, 1};
+    mitk::Point4D::ValueType  disto[4] = {0, 0, 0, 0};
+
+    cam->SetIntrinsics(mitk::Point3D(focal), mitk::Point3D(princ), mitk::Point4D(disto));
+  }
+
+  mitk::CameraIntrinsicsProperty::Pointer   prop = mitk::CameraIntrinsicsProperty::New(cam);
+  img->SetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName, prop);
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -304,6 +336,10 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
             storage->Add(outputNode, nodeParents);
           }
+
+          // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
+          LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
+          LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
 
           CopyImagePropsIfNecessary(leftNode,  leftImage);
           CopyImagePropsIfNecessary(rightNode, rightImage);

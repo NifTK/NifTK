@@ -16,6 +16,7 @@
 #include "SequentialCpuQds.h"
 #include <opencv2/core/core_c.h>
 #include <mitkImageReadAccessor.h>
+#include <mitkCameraIntrinsicsProperty.h>
 #include "../Conversion/ImageConversion.h"
 
 
@@ -125,12 +126,35 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
         {
           case POINT_CLOUD:
           {
-            // FIXME: for testing only!
+            // it's an error to request point cloud and not have a calibration!
+            // FIXME: move this to the top of the method!
+            mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+            mitk::BaseProperty::Pointer       cam2bp = image2->GetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+            if (cam1bp.IsNull() || cam2bp.IsNull())
+            {
+              throw std::runtime_error("Image has to have a calibration for point cloud output");
+            }
+            mitk::CameraIntrinsicsProperty::Pointer   cam1 = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cam1bp.GetPointer());
+            mitk::CameraIntrinsicsProperty::Pointer   cam2 = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cam2bp.GetPointer());
+            if (cam1.IsNull() || cam2.IsNull())
+            {
+              throw std::runtime_error("Image does not have a valid calibration which is required for point cloud output");
+            }
 
             for (int y = 0; y < height; ++y)
             {
               for (int x = 0; x < width; ++x)
               {
+                CvPoint r = m_SequentialCpuQds->GetMatch(x, y);
+                if (r.x != 0)
+                {
+                  BOOST_STATIC_ASSERT((sizeof(mitk::Point4D) == sizeof(cv::Vec<float, 4>)));
+                  CvPoint3D32f p = niftk::triangulate(
+                                       x,   y, cam1->GetValue()->GetCameraMatrix(), *((cv::Vec<float, 4>*) &cam1->GetValue()->GetDistorsionCoeffsAsPoint4D()),
+                                     r.x, r.y, cam2->GetValue()->GetCameraMatrix(), *((cv::Vec<float, 4>*) &cam2->GetValue()->GetDistorsionCoeffsAsPoint4D()),
+                                     // FIXME
+                                     cv::Mat(4, 4, CV_32F), cv::Mat(4, 4, CV_32F));
+                }
               }
             }
             break;

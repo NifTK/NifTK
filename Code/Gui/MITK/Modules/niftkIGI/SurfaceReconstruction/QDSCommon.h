@@ -18,6 +18,7 @@
 #include "niftkIGIExports.h"
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/core/types_c.h>
+#include <opencv2/core/core.hpp>
 
 
 // the ancient version of boost that comes with mitk does not have
@@ -67,6 +68,15 @@ CvPoint3D32f triangulate(
     float p1x, float p1y, 
     const CvMat& intrinsic_right, const CvScalar& distortion_right,
     const CvMat& left2right_rotation, const CvMat& left2right_translation,
+    float* err = 0
+  );
+// overload for new opencv c++ types
+CvPoint3D32f triangulate(
+    float p0x, float p0y, 
+    const cv::Mat& intrinsic_left, const cv::Vec<float, 4>& distortion_left,
+    float p1x, float p1y, 
+    const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
+    const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
     float* err = 0
   );
 

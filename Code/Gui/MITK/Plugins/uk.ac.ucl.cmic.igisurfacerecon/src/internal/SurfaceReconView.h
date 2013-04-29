@@ -61,6 +61,9 @@ protected:
 
   static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
 
+  // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
+  void LoadCalibration(const std::string& filename, mitk::Image::Pointer node);
+
 protected slots:
 
   /**

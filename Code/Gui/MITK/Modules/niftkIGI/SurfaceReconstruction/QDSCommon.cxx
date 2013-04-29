@@ -270,4 +270,21 @@ CvPoint3D32f triangulate(
 }
 
 
+//-----------------------------------------------------------------------------
+CvPoint3D32f triangulate(
+    float p0x, float p0y, 
+    const cv::Mat& intrinsic_left, const cv::Vec<float, 4>& distortion_left,
+    float p1x, float p1y, 
+    const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
+    const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
+    float* err
+  )
+{
+  return triangulate(
+    p0x, p0y, (CvMat) intrinsic_left,  cvScalar(distortion_left[0],  distortion_left[1],  distortion_left[2],  distortion_left[3]),
+    p1x, p1y, (CvMat) intrinsic_right, cvScalar(distortion_right[0], distortion_right[1], distortion_right[2], distortion_right[3]), 
+    (CvMat) left2right_rotation, (CvMat) left2right_translation, err);
+}
+
+
 } // namespace
