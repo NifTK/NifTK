@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPOLYTOOLEVENTINTERFACE_H
-#define MITKMIDASPOLYTOOLEVENTINTERFACE_H
+#ifndef mitk_MIDASPolyToolEventInterface_h
+#define mitk_MIDASPolyToolEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>

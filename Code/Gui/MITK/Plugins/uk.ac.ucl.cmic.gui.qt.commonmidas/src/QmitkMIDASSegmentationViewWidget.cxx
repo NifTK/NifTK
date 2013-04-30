@@ -28,6 +28,7 @@
 #include <mitkBaseRenderer.h>
 #include <itkCommand.h>
 
+
 //-----------------------------------------------------------------------------
 QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *parent)
 : m_ContainingFunctionality(NULL)

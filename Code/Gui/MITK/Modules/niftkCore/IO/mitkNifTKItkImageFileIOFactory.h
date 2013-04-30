@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKNIFTKITKIMAGEUIFACTORY_H
-#define MITKNIFTKITKIMAGEUIFACTORY_H
+#ifndef NifTKItkImageFileIOFactory_h
+#define NifTKItkImageFileIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -74,4 +74,4 @@ private:
 
 } // end namespace mitk
 
-#endif // MITKNIFTKITKIMAGEUIFACTORY_H
+#endif

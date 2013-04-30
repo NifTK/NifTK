@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSTDMULTIWIDGET_H
-#define QMITKMIDASSTDMULTIWIDGET_H
+#ifndef QmitkMIDASStdMultiWidget_h
+#define QmitkMIDASStdMultiWidget_h
 
 #include <niftkMIDASGuiExports.h>
 

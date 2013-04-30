@@ -515,7 +515,7 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
           this->SetPolyLinePointSetVisible(false);
         }
         this->CopyContour(*contour, *(m_ReferencePoints.GetPointer()));
-        this->m_MostRecentPointInMillimetres = point;
+        m_MostRecentPointInMillimetres = point;
         this->DrawWholeContour(*(m_ReferencePoints.GetPointer()), *planeGeometry, *feedbackContour, *backgroundContour);
       }
     }

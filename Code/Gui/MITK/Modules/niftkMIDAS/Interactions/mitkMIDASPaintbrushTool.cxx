@@ -393,7 +393,7 @@ int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
 
   if (isLeftMouseButton)
   {
-    if (this->m_ErosionMode)
+    if (m_ErosionMode)
     {
       imageNumber = 0;
     }
@@ -404,7 +404,7 @@ int mitk::MIDASPaintbrushTool::GetImageNumber(bool isLeftMouseButton)
   }
   else
   {
-    if (this->m_ErosionMode)
+    if (m_ErosionMode)
     {
       imageNumber = 1;
     }

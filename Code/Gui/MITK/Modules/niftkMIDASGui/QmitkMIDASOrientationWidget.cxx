@@ -76,6 +76,7 @@ MIDASView QmitkMIDASOrientationWidget::GetView() const
   return m_View;
 }
 
+
 //-----------------------------------------------------------------------------
 void QmitkMIDASOrientationWidget::SetView(MIDASView view)
 {

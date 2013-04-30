@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASMORPHOLOGICALSEGMENTORPIPELINEMANAGER_H
-#define MITKMIDASMORPHOLOGICALSEGMENTORPIPELINEMANAGER_H
+#ifndef mitk_MIDASMorphologicalSegmentorPipelineManager_h
+#define mitk_MIDASMorphologicalSegmentorPipelineManager_h
 
 #include "niftkMIDASExports.h"
 #include <itkObject.h>

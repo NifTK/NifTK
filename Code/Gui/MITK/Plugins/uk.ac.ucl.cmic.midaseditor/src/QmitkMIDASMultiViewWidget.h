@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWWIDGET_H_
-#define QMITKMIDASMULTIVIEWWIDGET_H_
+#ifndef QmitkMIDASMultiViewWidget_h
+#define QmitkMIDASMultiViewWidget_h
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
@@ -439,4 +439,4 @@ private:
   MIDASView                                      m_MultiWindowLayout;
 };
 
-#endif /*QMITKMIDASMULTIWIDGET_H_*/
+#endif

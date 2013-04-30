@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKAFFINETRANSFORMDATANODEPROPERTY_H_
-#define MITKAFFINETRANSFORMDATANODEPROPERTY_H_
+#ifndef AffineTransformDataNodeProperty_h
+#define AffineTransformDataNodeProperty_h
 
 #include "niftkCoreExports.h"
 #include <mitkBaseProperty.h>
@@ -114,4 +114,4 @@ private:
 
 } // end namespace
 
-#endif /* MITKAFFINETRANSFORMDATANODEPROPERTY_H_ */
+#endif

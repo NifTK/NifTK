@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
-#define QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
+#ifndef QmitkMIDASBaseSegmentationFunctionality_h
+#define QmitkMIDASBaseSegmentationFunctionality_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -249,4 +249,4 @@ private:
   ctkEventAdmin* m_EventAdmin;
 
 };
-#endif // QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
+#endif

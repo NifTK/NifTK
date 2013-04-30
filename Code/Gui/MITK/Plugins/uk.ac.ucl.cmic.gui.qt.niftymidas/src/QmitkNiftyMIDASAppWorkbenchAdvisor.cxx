@@ -21,11 +21,13 @@ std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
   return "uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective";
 }
 
+
 //-----------------------------------------------------------------------------
 std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/QmitkNiftyMIDASApplication/icon_ion.xpm";
 }
+
 
 //-----------------------------------------------------------------------------
 QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyMIDASAppWorkbenchAdvisor::CreateQmitkBaseWorkbenchWindowAdvisor(

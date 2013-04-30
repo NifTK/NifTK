@@ -46,7 +46,7 @@ MIDASMorphologicalSegmentorPipelineManager::~MIDASMorphologicalSegmentorPipeline
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
-  this->m_DataStorage = dataStorage;
+  m_DataStorage = dataStorage;
   this->Modified();
 }
 
@@ -54,14 +54,14 @@ void MIDASMorphologicalSegmentorPipelineManager::SetDataStorage(mitk::DataStorag
 //-----------------------------------------------------------------------------
 mitk::DataStorage::Pointer MIDASMorphologicalSegmentorPipelineManager::GetDataStorage() const
 {
-  return this->m_DataStorage;
+  return m_DataStorage;
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetToolManager(mitk::ToolManager::Pointer toolManager)
 {
-  this->m_ToolManager = toolManager;
+  m_ToolManager = toolManager;
   this->Modified();
 }
 
@@ -69,7 +69,7 @@ void MIDASMorphologicalSegmentorPipelineManager::SetToolManager(mitk::ToolManage
 //-----------------------------------------------------------------------------
 mitk::ToolManager::Pointer MIDASMorphologicalSegmentorPipelineManager::GetToolManager() const
 {
-  return this->m_ToolManager;
+  return m_ToolManager;
 }
 
 

@@ -14,14 +14,17 @@
 
 #include "QmitkMIDASDrawToolGUI.h"
 
-#include <qlabel.h>
-#include <qslider.h>
-#include <qpushbutton.h>
-#include <qlayout.h>
-#include <qpainter.h>
+#include <QLabel>
+#include <QSlider>
+#include <QPushbutton>
+#include <QLayout>
+#include <QPainter>
+
 
 MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, QmitkMIDASDrawToolGUI, "")
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
@@ -49,6 +52,8 @@ QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
   connect( this, SIGNAL(NewToolAssociated(mitk::Tool*)), this, SLOT(OnNewToolAssociated(mitk::Tool*)) );
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASDrawToolGUI::~QmitkMIDASDrawToolGUI()
 {
   if (m_DrawTool.IsNotNull())
@@ -57,6 +62,8 @@ QmitkMIDASDrawToolGUI::~QmitkMIDASDrawToolGUI()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_DrawTool.IsNotNull())
@@ -72,6 +79,8 @@ void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASDrawToolGUI::OnSliderValueChanged(int value)
 {
   if (m_DrawTool.IsNotNull())
@@ -81,8 +90,9 @@ void QmitkMIDASDrawToolGUI::OnSliderValueChanged(int value)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASDrawToolGUI::OnCursorSizeChanged(int current)
 {
   m_Slider->setValue(current);
 }
-

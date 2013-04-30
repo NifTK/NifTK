@@ -31,7 +31,6 @@ MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::~MIDASGeneralSegmentorViewControlsWidget()
 {
-
 }
 
 
