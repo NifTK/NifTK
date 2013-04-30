@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDATANODENAMESTRINGPROPERTYFILTER_H
-#define MITKMIDASDATANODENAMESTRINGPROPERTYFILTER_H
+#ifndef mitk_MIDASDataNodeNameStringFilter_h
+#define mitk_MIDASDataNodeNameStringFilter_h
 
 #include "niftkMIDASExports.h"
 #include "mitkDataNodeStringPropertyFilter.h"
@@ -63,6 +63,7 @@ private:
 }; // end class
 
 } // end namespace
+
 #endif
 
 

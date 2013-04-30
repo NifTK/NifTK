@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef QMITKMIDASSINGLEVIEWWIDGET_H
-#define QMITKMIDASSINGLEVIEWWIDGET_H
+#ifndef QmitkMIDASSingleViewWidget_h
+#define QmitkMIDASSingleViewWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include "mitkMIDASEnums.h"
@@ -342,4 +342,4 @@ private:
   bool                                 m_RememberViewSettingsPerOrientation;
 };
 
-#endif // QMITKMIDASSINGLEVIEWWIDGET_H
+#endif

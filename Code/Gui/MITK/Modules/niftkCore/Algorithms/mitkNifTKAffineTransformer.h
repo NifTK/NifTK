@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKNIFTKAFFINETRANSFORMER_H
-#define MITKNIFTKAFFINETRANSFORMER_H
+#ifndef mitk_AffineTransformer_h
+#define mitk_AffineTransformer_h
 
 #include <itkObject.h>
 #include <mitkBaseData.h>

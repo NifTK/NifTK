@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWHELPER_H_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWHELPER_H_INCLUDED
+#ifndef GeneralSegmentorPipelineParams_h
+#define GeneralSegmentorPipelineParams_h
 
 #include "itkPointSet.h"
 #include "itkPolyLineParametricPath.h"

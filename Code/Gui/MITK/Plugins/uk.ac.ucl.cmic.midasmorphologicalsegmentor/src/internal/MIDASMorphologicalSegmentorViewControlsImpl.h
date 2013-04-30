@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASMORPHOLOGICALSEGMENTORCONTROLSIMPL_H
-#define MIDASMORPHOLOGICALSEGMENTORCONTROLSIMPL_H
+#ifndef MIDASMorphologicalSegmentorViewControlsImpl_h
+#define MIDASMorphologicalSegmentorViewControlsImpl_h
 
 #include "ui_MIDASMorphologicalSegmentorViewControls.h"
 #include "MorphologicalSegmentorPipelineParams.h"

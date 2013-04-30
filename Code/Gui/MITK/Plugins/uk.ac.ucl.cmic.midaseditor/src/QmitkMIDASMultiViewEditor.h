@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWEDITOR_H
-#define QMITKMIDASMULTIVIEWEDITOR_H
+#ifndef QmitkMIDASMultiViewEditor_h
+#define QmitkMIDASMultiViewEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -174,4 +174,4 @@ private:
   const QScopedPointer<QmitkMIDASMultiViewEditorPrivate> d;
 };
 
-#endif /*QMITKMIDASMULTIVIEWEDITOR_H*/
+#endif

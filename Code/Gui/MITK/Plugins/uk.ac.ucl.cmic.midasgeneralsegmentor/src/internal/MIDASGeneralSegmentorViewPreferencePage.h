@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED
+#ifndef MIDASGeneralSegmentorViewPreferencePage_h
+#define MIDASGeneralSegmentorViewPreferencePage_h
 
 #include "berryIQtPreferencePage.h"
 #include <berryIPreferences.h>
@@ -79,5 +79,4 @@ protected:
   berry::IPreferences::Pointer m_MIDASGeneralSegmentorViewPreferencesNode;
 };
 
-#endif /* _MIDASGENERALSEGMENTORVIEWPREFERENCEPAGE_H_INCLUDED */
-
+#endif

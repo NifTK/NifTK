@@ -45,4 +45,4 @@ private:
 
 }
 
-#endif // uk_ac_ucl_cmic_midaseditor_Activator_h
+#endif
