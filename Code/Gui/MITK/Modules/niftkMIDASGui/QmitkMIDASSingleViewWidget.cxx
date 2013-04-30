@@ -668,8 +668,11 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       m_MultiWidget->Fit();                             // Fits the MITK DisplayGeometry to the current widget size.
     }
 
-    // Restore the cross position.
-    m_MultiWidget->SetCrossPosition(crossPosition);
+    // Restore the cross position if it was set before.
+    if (crossPosition[0] != 0 || crossPosition[1] != 0 || crossPosition[2] != 0)
+    {
+      m_MultiWidget->SetCrossPosition(crossPosition);
+    }
 
     // Now store the current view/orientation.
     MIDASOrientation orientation = this->GetOrientation();
