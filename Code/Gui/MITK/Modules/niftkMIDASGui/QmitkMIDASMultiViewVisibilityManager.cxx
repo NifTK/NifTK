@@ -380,7 +380,7 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back(node);
 
-  if (this->m_AutomaticallyAddChildren)
+  if (m_AutomaticallyAddChildren)
   {
     assert(m_DataStorage);
 
@@ -465,7 +465,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
   {
     if (!mitk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
     {
-      mitk::DataNode::Pointer node = FindParentGreyScaleImage(this->m_DataStorage, nodes[indexThatWeActuallyUsed]);
+      mitk::DataNode::Pointer node = FindParentGreyScaleImage(m_DataStorage, nodes[indexThatWeActuallyUsed]);
       if (node.IsNotNull())
       {
         mitk::BaseData::Pointer data = nodes[0]->GetData();
@@ -621,9 +621,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       // Then set up geometry of that single window.
       if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
-        this->m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-        this->m_Widgets[windowIndex]->SetView(view, true);
-        this->m_Widgets[windowIndex]->SetEnabled(true);
+        m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
+        m_Widgets[windowIndex]->SetView(view, true);
+        m_Widgets[windowIndex]->SetEnabled(true);
       }
 
       // Then add all nodes into the same window denoted by windowIndex (the one that was dropped into).
@@ -671,9 +671,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         // Initialise geometry according to first image
         if (this->GetNodesInWindow(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
         {
-          this->m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-          this->m_Widgets[dropIndex]->SetView(view, true);
-          this->m_Widgets[dropIndex]->SetEnabled(true);
+          m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
+          m_Widgets[dropIndex]->SetView(view, true);
+          m_Widgets[dropIndex]->SetEnabled(true);
         }
 
         // ...and then adding a single image to that window, denoted by dropIndex.
@@ -746,12 +746,12 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         {
           if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
-            this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
-            this->m_Widgets[i]->SetView(view, true);
-            this->m_Widgets[i]->SetEnabled(true);
+            m_Widgets[i]->SetGeometry(geometry.GetPointer());
+            m_Widgets[i]->SetView(view, true);
+            m_Widgets[i]->SetEnabled(true);
           }
-          this->m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
-          this->m_Widgets[i]->FitToDisplay();
+          m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
+          m_Widgets[i]->FitToDisplay();
           MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
         }
       }
@@ -762,9 +762,9 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         {
           if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
-            this->m_Widgets[i]->SetGeometry(geometry.GetPointer());
-            this->m_Widgets[i]->SetView(view, true);
-            this->m_Widgets[i]->SetEnabled(true);
+            m_Widgets[i]->SetGeometry(geometry.GetPointer());
+            m_Widgets[i]->SetView(view, true);
+            m_Widgets[i]->SetEnabled(true);
           }
           unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
           unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);

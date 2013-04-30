@@ -20,16 +20,16 @@
 
 LookupTableContainer::LookupTableContainer(const vtkLookupTable* lut)
 {
-	this->m_LookupTable = lut;
-	this->m_DisplayName = QString("");
-	this->m_Order = 0;
+	m_LookupTable = lut;
+	m_DisplayName = QString("");
+	m_Order = 0;
 }
 
 LookupTableContainer::~LookupTableContainer()
 {
-	if (this->m_LookupTable != NULL)
+	if (m_LookupTable != NULL)
 	{
-		vtkLookupTable *nonConst = const_cast<vtkLookupTable*>(this->m_LookupTable);
+		vtkLookupTable *nonConst = const_cast<vtkLookupTable*>(m_LookupTable);
 		nonConst->Delete();
 		nonConst = NULL;
 	}

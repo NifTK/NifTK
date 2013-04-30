@@ -143,9 +143,9 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->mitkWidget4->setAcceptDrops(true);
 
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
-  this->m_CornerAnnotaions[0].cornerText->SetText(0, "");
-  this->m_CornerAnnotaions[1].cornerText->SetText(0, "");
-  this->m_CornerAnnotaions[2].cornerText->SetText(0, "");
+  m_CornerAnnotaions[0].cornerText->SetText(0, "");
+  m_CornerAnnotaions[1].cornerText->SetText(0, "");
+  m_CornerAnnotaions[2].cornerText->SetText(0, "");
 
   // Set default layout. This must be ORTHO.
   this->SetMIDASView(MIDAS_VIEW_ORTHO, true);
@@ -403,7 +403,7 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
 
   if (this->isVisible())
   {
-    switch(this->m_View)
+    switch(m_View)
     {
     case MIDAS_VIEW_AXIAL:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
@@ -521,7 +521,7 @@ bool QmitkMIDASStdMultiWidget::GetShow3DWindowInOrthoView() const
 
 void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
 {
-  if (this->m_DataStorage.IsNotNull())
+  if (m_DataStorage.IsNotNull())
   {
     mitk::BaseRenderer* axialRenderer = this->mitkWidget1->GetRenderer();
 
@@ -536,8 +536,8 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((this->m_View == MIDAS_VIEW_ORTHO && this->m_Show3DWindowInOrthoView)
-          || this->m_View == MIDAS_VIEW_3D)
+      if ((m_View == MIDAS_VIEW_ORTHO && m_Show3DWindowInOrthoView)
+          || m_View == MIDAS_VIEW_3D)
       {
         visibleIn3DWindow = true;
       }
@@ -697,9 +697,9 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
     m_Geometry = geometry;
 
     // Add these annotations the first time we have a real geometry.
-    this->m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
-    this->m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
-    this->m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
+    m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
+    m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
+    m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
 
     // If m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
@@ -1178,7 +1178,7 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
   }
   m_View = view;
   this->Update3DWindowVisibility();
-  this->m_GridLayout->activate();
+  m_GridLayout->activate();
   m_BlockDisplayGeometryEvents = false;
 }
 
@@ -1874,7 +1874,7 @@ QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientat
 int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) const
 {
   int result = 0;
-  if (this->m_Geometry != NULL)
+  if (m_Geometry != NULL)
   {
     result = mitk::GetUpDirection(m_Geometry, orientation);
   }

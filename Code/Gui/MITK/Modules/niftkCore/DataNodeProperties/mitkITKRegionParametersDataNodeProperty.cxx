@@ -151,8 +151,8 @@ bool ITKRegionParametersDataNodeProperty::Assign(const BaseProperty& property)
   if(other==NULL) return false;
 
   ParametersType otherParameters = other->GetITKRegionParameters();
-  this->m_Parameters = otherParameters;
-  this->m_IsValid = other->IsValid();
+  m_Parameters = otherParameters;
+  m_IsValid = other->IsValid();
 
   return true;
 }
