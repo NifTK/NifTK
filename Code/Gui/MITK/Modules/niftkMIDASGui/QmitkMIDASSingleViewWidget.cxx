@@ -557,8 +557,8 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
         this->SetSliceNumber(orientation, m_SliceNumbers[Index(orientation)]);
         this->SetTime(m_TimeSliceNumbers[Index(orientation)]);
       }
-      this->SetCentre(m_Centres[Index(view)]);
       this->SetMagnificationFactor(m_MagnificationFactors[Index(view)]);
+      this->SetCentre(m_Centres[Index(view)]);
     }
     else
     {
