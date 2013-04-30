@@ -231,30 +231,30 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     {
       if (m_MainWindowView == MIDAS_VIEW_AXIAL)
       {
-        nextView = MIDAS_VIEW_SAG_COR_V;
+        nextView = MIDAS_VIEW_COR_SAG_V;
       }
       else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_AX_COR_V;
+        nextView = MIDAS_VIEW_COR_AX_V;
       }
       else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
       {
-        nextView = MIDAS_VIEW_AX_SAG_V;
+        nextView = MIDAS_VIEW_SAG_AX_V;
       }
     }
     else
     {
       if (m_MainWindowView == MIDAS_VIEW_AXIAL)
       {
-        nextView = MIDAS_VIEW_SAG_COR_H;
+        nextView = MIDAS_VIEW_COR_SAG_H;
       }
       else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_AX_COR_H;
+        nextView = MIDAS_VIEW_COR_AX_H;
       }
       else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
       {
-        nextView = MIDAS_VIEW_AX_SAG_H;
+        nextView = MIDAS_VIEW_SAG_AX_H;
       }
     }
   }

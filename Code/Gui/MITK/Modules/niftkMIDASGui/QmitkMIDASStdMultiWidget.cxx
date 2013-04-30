@@ -429,18 +429,18 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
     case MIDAS_VIEW_3D:
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
-    case MIDAS_VIEW_SAG_COR_H:
-    case MIDAS_VIEW_SAG_COR_V:
+    case MIDAS_VIEW_COR_SAG_H:
+    case MIDAS_VIEW_COR_SAG_V:
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
     break;
-    case MIDAS_VIEW_AX_COR_H:
-    case MIDAS_VIEW_AX_COR_V:
+    case MIDAS_VIEW_COR_AX_H:
+    case MIDAS_VIEW_COR_AX_V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
     break;
-    case MIDAS_VIEW_AX_SAG_H:
-    case MIDAS_VIEW_AX_SAG_V:
+    case MIDAS_VIEW_SAG_AX_H:
+    case MIDAS_VIEW_SAG_AX_V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
     break;
@@ -651,12 +651,12 @@ MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
   else if (m_View == MIDAS_VIEW_ORTHO
            || m_View == MIDAS_VIEW_3H
            || m_View == MIDAS_VIEW_3V
-           || m_View == MIDAS_VIEW_SAG_COR_H
-           || m_View == MIDAS_VIEW_SAG_COR_V
-           || m_View == MIDAS_VIEW_AX_COR_H
-           || m_View == MIDAS_VIEW_AX_COR_V
-           || m_View == MIDAS_VIEW_AX_SAG_H
-           || m_View == MIDAS_VIEW_AX_SAG_V
+           || m_View == MIDAS_VIEW_COR_SAG_H
+           || m_View == MIDAS_VIEW_COR_SAG_V
+           || m_View == MIDAS_VIEW_COR_AX_H
+           || m_View == MIDAS_VIEW_COR_AX_V
+           || m_View == MIDAS_VIEW_SAG_AX_H
+           || m_View == MIDAS_VIEW_SAG_AX_V
            )
   {
     if (m_RectangleRendering1->IsEnabled())
@@ -1037,52 +1037,66 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
 
     if (view == MIDAS_VIEW_3H)
     {
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 2);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 2);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);  // 3D:       off
     }
     else if (view == MIDAS_VIEW_3V)
     {
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 2, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 2, 0);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);  // 3D:       off
     }
-    else if (view == MIDAS_VIEW_SAG_COR_H)
+    else if (view == MIDAS_VIEW_COR_SAG_H)
     {
-      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    off
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
     }
-    else if (view == MIDAS_VIEW_SAG_COR_V)
+    else if (view == MIDAS_VIEW_COR_SAG_V)
     {
-      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    off
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
     }
-    else if (view == MIDAS_VIEW_AX_COR_H)
+    else if (view == MIDAS_VIEW_COR_AX_H)
     {
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: off
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
     }
-    else if (view == MIDAS_VIEW_AX_SAG_V)
+    else if (view == MIDAS_VIEW_COR_AX_V)
     {
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: off
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    }
+    else if (view == MIDAS_VIEW_SAG_AX_H)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);  // coronal:  off
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    }
+    else if (view == MIDAS_VIEW_SAG_AX_V)
+    {
+      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);  // coronal:  off
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
     }
     else
     {
-      m_GridLayout->addWidget(this->mitkWidget1Container, 0, 0);
-      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);
-      m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);
-      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);
+      m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
+      m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
+      m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+      m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       on
     }
 
     QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
@@ -1133,24 +1147,24 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, bool rebuildLayout)
     this->mitkWidget4Container->show();
     this->mitkWidget4->setFocus();
     break;
-  case MIDAS_VIEW_SAG_COR_H:
-  case MIDAS_VIEW_SAG_COR_V:
+  case MIDAS_VIEW_COR_SAG_H:
+  case MIDAS_VIEW_COR_SAG_V:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget2->setFocus();
     break;
-  case MIDAS_VIEW_AX_COR_H:
-  case MIDAS_VIEW_AX_COR_V:
+  case MIDAS_VIEW_COR_AX_H:
+  case MIDAS_VIEW_COR_AX_V:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
-  case MIDAS_VIEW_AX_SAG_H:
-  case MIDAS_VIEW_AX_SAG_V:
+  case MIDAS_VIEW_SAG_AX_H:
+  case MIDAS_VIEW_SAG_AX_V:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
