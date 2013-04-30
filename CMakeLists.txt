@@ -124,6 +124,10 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
       SET(BUILD_IGI ON)
     ENDIF()
   
+    IF (${app_name} STREQUAL "NiftyView")
+      SET(BUILD_IGI ON)
+    ENDIF()
+  
   ENDIF()
       
 ENDFOREACH()
