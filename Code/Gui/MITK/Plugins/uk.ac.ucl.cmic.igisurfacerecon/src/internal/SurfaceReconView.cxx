@@ -411,11 +411,23 @@ void SurfaceReconView::DoSurfaceReconstruction()
           CopyImagePropsIfNecessary(leftNode,  leftImage);
           CopyImagePropsIfNecessary(rightNode, rightImage);
 
+          niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+          if (GenerateDisparityImageRadioBox->isChecked())
+          {
+            assert(!GeneratePointCloudRadioBox->isChecked());
+            outputtype = niftk::SurfaceReconstruction::DISPARITY_IMAGE;
+          }
+          if (GeneratePointCloudRadioBox->isChecked())
+          {
+            assert(!GenerateDisparityImageRadioBox->isChecked());
+            outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+          }
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
             m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, 
-                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, niftk::SurfaceReconstruction::POINT_CLOUD);
+                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, outputtype);
           }
           catch (const std::exception& e)
           {

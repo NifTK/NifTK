@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>832</width>
-    <height>1243</height>
+    <height>1390</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>  Left channel:</string>
+         <string>&amp;Left channel:</string>
         </property>
         <property name="buddy">
          <cstring>LeftChannelNodeNameComboBox</cstring>
@@ -48,7 +48,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>  Right channel:</string>
+         <string>&amp;Right channel:</string>
         </property>
         <property name="buddy">
          <cstring>RightChannelNodeNameComboBox</cstring>
@@ -83,7 +83,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QGroupBox" name="calibrationgroupbox">
         <property name="title">
-         <string>Show camera calibration options</string>
+         <string>Show &amp;camera calibration options</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -206,7 +206,7 @@
             <item row="6" column="0" colspan="2">
              <widget class="QLabel" name="label_11">
               <property name="text">
-               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up.</string>
+               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up. Intrinsic calibration is in the form of a 3x3 matrix (fx, 0, px, 0, fy, py, 0, 0, 1), followed by 4 distortion coefficients. Left-right transformation is a 3x3 rotation matrix, followed by translation vector.</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -234,7 +234,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>  Output node:</string>
+         <string>&amp;Output node:</string>
         </property>
         <property name="buddy">
          <cstring>OutputNodeNameLineEdit</cstring>
@@ -267,7 +267,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QGroupBox" name="outputoptionsgroupbox">
         <property name="title">
-         <string>Show options</string>
+         <string>Show o&amp;ptions</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -293,11 +293,14 @@
             </property>
             <item row="0" column="0">
              <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Generate point cloud</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -305,6 +308,9 @@
              <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
               <property name="text">
                <string>Generate disparity image</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -326,7 +332,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>  Method:</string>
+         <string>&amp;Method:</string>
         </property>
         <property name="buddy">
          <cstring>MethodComboBox</cstring>
