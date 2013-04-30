@@ -14,6 +14,7 @@
 
 #include "QmitkMIDASBindWidget.h"
 
+#include <mitkLogMacros.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASBindWidget::QmitkMIDASBindWidget(QWidget *parent)
@@ -26,7 +27,6 @@ QmitkMIDASBindWidget::QmitkMIDASBindWidget(QWidget *parent)
 //-----------------------------------------------------------------------------
 QmitkMIDASBindWidget::~QmitkMIDASBindWidget()
 {
-
 }
 
 
@@ -156,7 +156,7 @@ void QmitkMIDASBindWidget::SetToBindType(MIDASBindType bindType)
     m_BindGeometryCheckBox->setCheckState(Qt::Checked);
     break;
   default:
-    qWarning() << "QmitkMIDASBindWidget::SetToBindType, unrecognised type, can't set check box";
+    MITK_INFO << "QmitkMIDASBindWidget::SetToBindType, unrecognised type, can't set check box" << std::endl;
   }
 
   m_CurrentBindType = bindType;

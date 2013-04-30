@@ -28,6 +28,7 @@
 #include "QmitkWheelEventEater.h"
 #include "mitkDataStorageUtils.h"
 
+
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)

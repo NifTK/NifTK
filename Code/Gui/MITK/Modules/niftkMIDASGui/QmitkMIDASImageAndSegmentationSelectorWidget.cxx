@@ -17,14 +17,17 @@
 
 #include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASImageAndSegmentationSelectorWidget::QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
 {
   setupUi(parent);
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASImageAndSegmentationSelectorWidget::~QmitkMIDASImageAndSegmentationSelectorWidget()
 {
-
 }
 
 #endif

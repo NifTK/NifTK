@@ -19,12 +19,15 @@
 
 namespace mitk {
 
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(MIDASMorphologicalSegmentorView, context);
   BERRY_REGISTER_EXTENSION_CLASS(MIDASMorphologicalSegmentorViewPreferencePage, context);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)

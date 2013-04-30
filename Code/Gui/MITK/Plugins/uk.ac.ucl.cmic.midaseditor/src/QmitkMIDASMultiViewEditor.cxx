@@ -393,5 +393,3 @@ bool QmitkMIDASMultiViewEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MIDASMultiViewWidget->IsLinkedNavigationEnabled();
 }
-
-
