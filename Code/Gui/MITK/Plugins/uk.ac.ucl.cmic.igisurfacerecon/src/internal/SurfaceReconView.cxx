@@ -281,7 +281,7 @@ void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image:
       throw std::runtime_error("Cannot open calibration file " + filename);
     }
     float   values[9 + 4];
-    for (int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
     {
       if (!file.good())
       {
@@ -329,7 +329,7 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
       throw std::runtime_error("Cannot open stereo-rig file " + filename);
     }
     float   values[3 * 4];
-    for (int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
     {
       if (!file.good())
       {
