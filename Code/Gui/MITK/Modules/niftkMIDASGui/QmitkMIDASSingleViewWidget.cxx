@@ -130,7 +130,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
 
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(m_MultiWidget, SIGNAL(PositionChanged(QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkRenderWindow*,mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(m_MultiWidget, SIGNAL(CrossPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnCrossPositionChanged(QmitkRenderWindow*, int)));
   connect(m_MultiWidget, SIGNAL(CentreChanged(const mitk::Vector3D&)), this, SLOT(OnCentreChanged(const mitk::Vector3D&)));
   connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
@@ -151,9 +151,9 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnPositionChanged(QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
+void QmitkMIDASSingleViewWidget::OnCrossPositionChanged(QmitkRenderWindow *window, int sliceNumber)
 {
-  emit PositionChanged(this, window, voxelLocation, millimetreLocation, sliceNumber, orientation);
+  emit CrossPositionChanged(this, window, sliceNumber);
 }
 
 
@@ -755,20 +755,6 @@ double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
 {
   m_MultiWidget->SetMagnificationFactor(magnificationFactor);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Point3D QmitkMIDASSingleViewWidget::GetSelectedPosition() const
-{
-  return m_MultiWidget->GetCrossPosition();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D &pos)
-{
-  m_MultiWidget->MoveCrossToPosition(pos);
 }
 
 

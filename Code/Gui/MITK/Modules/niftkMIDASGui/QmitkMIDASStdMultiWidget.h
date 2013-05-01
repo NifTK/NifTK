@@ -236,7 +236,7 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
   void CentreChanged(const mitk::Vector3D& centre);
   void MagnificationFactorChanged(double magnificationFactor);
 
@@ -256,8 +256,8 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit PositionChanged
-  void OnPositionChanged(MIDASOrientation orientation);
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit CrossPositionChanged
+  void OnCrossPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();

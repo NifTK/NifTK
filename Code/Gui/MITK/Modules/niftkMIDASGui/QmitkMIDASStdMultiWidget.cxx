@@ -272,21 +272,21 @@ void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, s
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnAxialSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnPositionChanged(MIDAS_ORIENTATION_AXIAL);
+  this->OnCrossPositionChanged(MIDAS_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnSagittalSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
+  this->OnCrossPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnPositionChanged(MIDAS_ORIENTATION_CORONAL);
+  this->OnCrossPositionChanged(MIDAS_ORIENTATION_CORONAL);
 }
 
 
@@ -1463,7 +1463,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnPositionChanged(MIDASOrientation orientation)
+void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientation)
 {
   const mitk::Geometry3D *geometry = m_Geometry;
   if (geometry != NULL)
@@ -1489,7 +1489,7 @@ void QmitkMIDASStdMultiWidget::OnPositionChanged(MIDASOrientation orientation)
     {
       renderWindow = this->mitkWidget3;
     }
-    emit PositionChanged(renderWindow, voxelPoint, millimetrePoint, sliceNumber, orientation);
+    emit CrossPositionChanged(renderWindow, sliceNumber);
   }
 }
 
