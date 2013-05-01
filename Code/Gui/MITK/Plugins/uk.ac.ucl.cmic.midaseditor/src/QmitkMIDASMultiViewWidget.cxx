@@ -1243,26 +1243,29 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
     QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
 
     MIDASOrientation orientation = selectedView->GetOrientation();
-    unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
-    unsigned int minSlice = selectedView->GetMinSlice(orientation);
-    unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
-
-    int upDirection = selectedView->GetSliceUpDirection(orientation);
-    int nextSlice = currentSlice;
-
-    if (moveAnterior)
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      nextSlice = currentSlice + slices*upDirection;
-    }
-    else
-    {
-      nextSlice = currentSlice - slices*upDirection;
-    }
+      unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
+      unsigned int minSlice = selectedView->GetMinSlice(orientation);
+      unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
 
-    if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
-    {
-      this->SetSelectedWindowSliceNumber(nextSlice);
-      actuallyDidSomething = true;
+      int upDirection = selectedView->GetSliceUpDirection(orientation);
+      int nextSlice = currentSlice;
+
+      if (moveAnterior)
+      {
+        nextSlice = currentSlice + slices*upDirection;
+      }
+      else
+      {
+        nextSlice = currentSlice - slices*upDirection;
+      }
+
+      if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
+      {
+        this->SetSelectedWindowSliceNumber(nextSlice);
+        actuallyDidSomething = true;
+      }
     }
   }
   return actuallyDidSomething;
