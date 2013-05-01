@@ -39,7 +39,9 @@ void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gi
 
   // no point running more than 2 threads here, loop is very simple to start with.
   // with more threads we'll just end up with cache thrash, etc.
+#ifdef _OMP
   #pragma omp parallel for num_threads(2)
+#endif
   for (int y = 1; y < src.height() - 1; ++y)
   {
     for (int x = 1; x < src.width() - 1; ++x)
@@ -292,9 +294,15 @@ CvPoint3D32f triangulate(
   )
 {
   BOOST_STATIC_ASSERT((sizeof(mitk::Point4D) == sizeof(cv::Vec<float, 4>)));
+
+  mitk::Point4D leftDist = intrinsic_left->GetDistorsionCoeffsAsPoint4D();
+  mitk::Point4D rightDist = intrinsic_right->GetDistorsionCoeffsAsPoint4D();
+  cv::Vec<float, 4> leftDistCV(leftDist[0], leftDist[1], leftDist[2], leftDist[3]);
+  cv::Vec<float, 4> rightDistCV(rightDist[0], rightDist[1], rightDist[2], rightDist[3]);;
+
   return triangulate(
-    p0x, p0y, intrinsic_left->GetCameraMatrix(),  *((cv::Vec<float, 4>*) &intrinsic_left->GetDistorsionCoeffsAsPoint4D()),
-    p1x, p1y, intrinsic_right->GetCameraMatrix(), *((cv::Vec<float, 4>*) &intrinsic_right->GetDistorsionCoeffsAsPoint4D()),
+    p0x, p0y, intrinsic_left->GetCameraMatrix(),  leftDistCV,
+    p1x, p1y, intrinsic_right->GetCameraMatrix(), rightDistCV,
     cv::Mat(3, 3, CV_32F, (void*) &left2right.GetVnlMatrix()(0, 0), sizeof(float) * 4),
     cv::Mat(3, 1, CV_32F, (void*) &left2right.GetVnlMatrix()(0, 3), sizeof(float) * 4),
     err);
