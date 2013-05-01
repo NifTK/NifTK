@@ -1074,7 +1074,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         if ( id == 1 )
         {
           // Now geometry is established, set to middle slice.
-          int sliceNumber = (int)((double)(sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
+          int sliceNumber = (int)((sliceNavigationController->GetSlice()->GetSteps() - 1) / 2.0);
           sliceNavigationController->GetSlice()->SetPos(sliceNumber);
         }
 
@@ -1279,9 +1279,9 @@ bool QmitkMIDASStdMultiWidget::IsSingle2DView() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SliceNavigationController::Pointer QmitkMIDASStdMultiWidget::GetSliceNavigationController(MIDASOrientation orientation) const
+mitk::SliceNavigationController* QmitkMIDASStdMultiWidget::GetSliceNavigationController(MIDASOrientation orientation) const
 {
-  mitk::SliceNavigationController::Pointer result = NULL;
+  mitk::SliceNavigationController* result = NULL;
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
     result = mitkWidget1->GetSliceNavigationController();
@@ -1310,7 +1310,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxSlice(MIDASOrientation orientation)
 {
   unsigned int result = 0;
 
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(orientation);
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(orientation);
   assert(snc);
 
   if (snc->GetSlice() != NULL)
@@ -1336,7 +1336,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
 {
   unsigned int result = 0;
 
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   assert(snc);
 
   if (snc->GetTime() != NULL)
@@ -1550,7 +1550,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetTime(unsigned int timeSlice)
 {
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   snc->GetTime()->SetPos(timeSlice);
 
   snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
@@ -1564,7 +1564,7 @@ void QmitkMIDASStdMultiWidget::SetTime(unsigned int timeSlice)
 //-----------------------------------------------------------------------------
 unsigned int QmitkMIDASStdMultiWidget::GetTime() const
 {
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   assert(snc);
 
   return snc->GetTime()->GetPos();
@@ -1574,7 +1574,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
 {
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   snc->SelectSliceByPoint(crossPosition);
 
   snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);

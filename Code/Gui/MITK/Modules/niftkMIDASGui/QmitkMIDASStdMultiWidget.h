@@ -24,7 +24,6 @@
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
-#include <mitkSliceNavigationController.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -35,6 +34,11 @@
 class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
+
+namespace mitk
+{
+class SliceNavigationController;
+}
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -263,7 +267,7 @@ private:
   void Update3DWindowVisibility();
 
   /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
-  mitk::SliceNavigationController::Pointer GetSliceNavigationController(MIDASOrientation orientation) const;
+  mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
