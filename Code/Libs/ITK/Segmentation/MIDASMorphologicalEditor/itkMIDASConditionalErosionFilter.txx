@@ -112,7 +112,7 @@ namespace itk
         
         if (this->IsOnBoundaryOfObject(voxelIndex, inMask))
         {
-          if (    (!m_UserSetRegion || (!this->IsOnBoundaryOfRegion(voxelIndex, m_Region)))
+          if (    (!this->m_UserSetRegion || (!this->IsOnBoundaryOfRegion(voxelIndex, this->m_Region)))
                && (inGrey == NULL || (inGrey->GetPixel(voxelIndex) < m_UpperThreshold))           
              )
           {
