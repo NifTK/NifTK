@@ -89,7 +89,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsSliderChanged()));
   connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnDilationsSliderChanged()));
   connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), this, SLOT(OnRethresholdingSliderChanged()));
-  connect(m_CancelButton, SIGNAL(clicked()), this, SIGNAL(CancelButtonClicked()));
+//  connect(m_CancelButton, SIGNAL(clicked()), this, SIGNAL(CancelButtonClicked()));
   connect(m_RestartButton, SIGNAL(clicked()), this, SLOT(OnRestartButtonClicked()));
 
   this->EnableControls(false);
@@ -132,7 +132,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab4ReThresholding(bool 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableCancelButton(bool enable)
 {
-  m_CancelButton->setEnabled(enable);
+//  m_CancelButton->setEnabled(enable);
 }
 
 
