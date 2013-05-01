@@ -16,7 +16,6 @@
 
 #include <QLabel>
 #include <QSlider>
-#include <QPushbutton>
 #include <QLayout>
 #include <QPainter>
 
