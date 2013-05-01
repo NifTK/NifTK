@@ -115,7 +115,7 @@ void DRCAnalyzeImageIO::ReadImageInformation() {
       }
 
     // So this stuff is copied out of base class, and then modified.
-    // First problem is that member variables in base class like this->m_Hdr are private, so we read header again.
+    // First problem is that member variables in base class like m_Hdr are private, so we read header again.
     struct dsr header;
 
     const std::string headerFileName = GetHeaderFileName( this->GetFileName() );

@@ -46,25 +46,25 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingCheckbox(bool enabled)
 {
-  this->m_ThresholdCheckBox->setEnabled(enabled);
+  m_ThresholdCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool enabled)
 {
-  this->m_Prop3DButton->setEnabled(enabled);
-  this->m_PropDownButton->setEnabled(enabled);
-  this->m_PropUpButton->setEnabled(enabled);
-  this->m_ThresholdApplyButton->setEnabled(enabled);
-  this->m_ThresholdLowerLabel->setEnabled(enabled);
-  this->m_ThresholdLowerSliderWidget->setEnabled(enabled);
-  this->m_ThresholdUpperLabel->setEnabled(enabled);
-  this->m_ThresholdUpperSliderWidget->setEnabled(enabled);
-  this->m_ThresholdSeedMaxLabel->setEnabled(enabled);
-  this->m_ThresholdSeedMaxValue->setEnabled(enabled);
-  this->m_ThresholdSeedMinLabel->setEnabled(enabled);
-  this->m_ThresholdSeedMinValue->setEnabled(enabled);
+  m_Prop3DButton->setEnabled(enabled);
+  m_PropDownButton->setEnabled(enabled);
+  m_PropUpButton->setEnabled(enabled);
+  m_ThresholdApplyButton->setEnabled(enabled);
+  m_ThresholdLowerLabel->setEnabled(enabled);
+  m_ThresholdLowerSliderWidget->setEnabled(enabled);
+  m_ThresholdUpperLabel->setEnabled(enabled);
+  m_ThresholdUpperSliderWidget->setEnabled(enabled);
+  m_ThresholdSeedMaxLabel->setEnabled(enabled);
+  m_ThresholdSeedMaxValue->setEnabled(enabled);
+  m_ThresholdSeedMinLabel->setEnabled(enabled);
+  m_ThresholdSeedMinValue->setEnabled(enabled);
 }
 
 

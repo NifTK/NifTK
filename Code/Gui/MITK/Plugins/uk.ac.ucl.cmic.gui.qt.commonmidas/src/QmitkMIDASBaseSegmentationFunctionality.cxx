@@ -254,17 +254,17 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     }
 
     // If we have worked out the reference data, then set the combo box.
-    this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
 
-      this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
+      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
     }
     else
     {
-      this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
     }
-    this->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
 
     // Tell the tool manager the images for reference and working purposes.
     this->SetToolManagerSelection(referenceData, workingDataNodes);
@@ -472,8 +472,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bool enabled)
 {
-  this->m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
-  this->m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
+  m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
+  m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
 }
 
 
