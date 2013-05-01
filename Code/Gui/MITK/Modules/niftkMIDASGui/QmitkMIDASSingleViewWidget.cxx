@@ -726,7 +726,10 @@ mitk::Point3D QmitkMIDASSingleViewWidget::GetCrossPosition() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
 {
-  m_MultiWidget->SetCrossPosition(crossPosition);
+  if (m_ViewInitialised[Index(m_View)])
+  {
+    m_MultiWidget->SetCrossPosition(crossPosition);
+  }
 }
 
 
