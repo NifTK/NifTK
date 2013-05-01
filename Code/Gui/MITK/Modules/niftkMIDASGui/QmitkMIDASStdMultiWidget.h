@@ -24,7 +24,6 @@
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
-#include <mitkSliceNavigationController.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -35,6 +34,11 @@
 class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
+
+namespace mitk
+{
+class SliceNavigationController;
+}
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -236,7 +240,7 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
   void CentreChanged(const mitk::Vector3D& centre);
   void MagnificationFactorChanged(double magnificationFactor);
 
@@ -256,14 +260,14 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit PositionChanged
-  void OnPositionChanged(MIDASOrientation orientation);
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit CrossPositionChanged
+  void OnCrossPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
   /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
-  mitk::SliceNavigationController::Pointer GetSliceNavigationController(MIDASOrientation orientation) const;
+  mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
