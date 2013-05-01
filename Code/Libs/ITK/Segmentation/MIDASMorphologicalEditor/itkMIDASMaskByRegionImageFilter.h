@@ -70,8 +70,8 @@ namespace itk
       typedef typename TOutputImage::PixelType                      OutputPixelType;
 
       /** Set/Get methods to set the region to keep. */
-      void SetRegion(RegionType region) { this->m_Region = region; this->m_UserSetRegion = true; this->Modified(); }
-      RegionType GetRegion() const { return this->m_Region; }
+      void SetRegion(RegionType region) { m_Region = region; m_UserSetRegion = true; this->Modified(); }
+      RegionType GetRegion() const { return m_Region; }
 
       /** Set/Get methods to set the output background value. Default 0. */
       itkSetMacro(OutputBackgroundValue, OutputPixelType);

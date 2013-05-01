@@ -537,13 +537,13 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     }
 
     // Setup GUI.
-    this->m_GeneralControls->SetEnableAllWidgets(true);
-    this->m_GeneralControls->SetEnableThresholdingWidgets(false);
-    this->m_GeneralControls->SetEnableThresholdingCheckbox(true);
-    this->m_GeneralControls->m_ThresholdCheckBox->setChecked(false);
-    this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
-    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
-    this->m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
+    m_GeneralControls->SetEnableAllWidgets(true);
+    m_GeneralControls->SetEnableThresholdingWidgets(false);
+    m_GeneralControls->SetEnableThresholdingCheckbox(true);
+    m_GeneralControls->m_ThresholdCheckBox->setChecked(false);
+    m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
+    m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
+    m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
 
     this->FocusOnCurrentWindow();
     this->OnFocusChanged();
@@ -569,9 +569,9 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::EnableSegmentationWidgets(bool b)
 {
-  this->m_GeneralControls->SetEnableAllWidgets(b);
-  bool thresholdingIsOn = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
-  this->m_GeneralControls->SetEnableThresholdingWidgets(thresholdingIsOn);
+  m_GeneralControls->SetEnableAllWidgets(b);
+  bool thresholdingIsOn = m_GeneralControls->m_ThresholdCheckBox->isChecked();
+  m_GeneralControls->SetEnableThresholdingWidgets(thresholdingIsOn);
 }
 
 
@@ -583,7 +583,7 @@ void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
   {
     double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
     double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
-    this->m_GeneralControls->SetLowerAndUpperIntensityRanges(min, max);
+    m_GeneralControls->SetLowerAndUpperIntensityRanges(min, max);
   }
 }
 
@@ -607,7 +607,7 @@ void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
       try
       {
         AccessFixedDimensionByItk_n(referenceImage, ITKRecalculateMinAndMaxOfSeedValues, 3, (*(seeds.GetPointer()), axisNumber, sliceNumber, min, max));
-        this->m_GeneralControls->SetSeedMinAndMaxValues(min, max);
+        m_GeneralControls->SetSeedMinAndMaxValues(min, max);
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -916,7 +916,7 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
   workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
   workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
 
-  if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+  if (m_GeneralControls->m_ThresholdCheckBox->isChecked())
   {
     this->OnThresholdApplyButtonPressed();
   }
@@ -1065,11 +1065,11 @@ bool MIDASGeneralSegmentorView::SelectViewMode()
 {
   if (m_GeneralControls->m_SeeImageCheckBox->isChecked())
   {
-    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
+    m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
   }
   else if (!m_GeneralControls->m_SeeImageCheckBox->isChecked())
   {
-    this->m_GeneralControls->m_SeeImageCheckBox->setChecked(true);
+    m_GeneralControls->m_SeeImageCheckBox->setChecked(true);
   }
   return true;
 }
@@ -1163,7 +1163,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 
     this->UpdateSegmentationImageVisibility(false);
     this->UpdatePriorAndNext();
-    this->OnThresholdCheckBoxToggled(this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+    this->OnThresholdCheckBoxToggled(m_GeneralControls->m_ThresholdCheckBox->isChecked());
     this->RequestRenderWindowUpdate();
   }
 }
@@ -1247,8 +1247,8 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
   mitk::ContourSet* segmentationContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[2])->GetData());
   mitk::ContourSet* drawToolContours = static_cast<mitk::ContourSet*>((this->GetWorkingNodesFromToolManager()[3])->GetData());
 
-  double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-  double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+  double lowerThreshold = m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+  double upperThreshold = m_GeneralControls->m_ThresholdUpperSliderWidget->value();
 
   int axisNumber = this->GetViewAxis();
 
@@ -1342,9 +1342,9 @@ void MIDASGeneralSegmentorView::OnSeeImageCheckBoxPressed(bool justImage)
   workingNodes[1]->SetVisibility(!justImage); // seeds
   workingNodes[2]->SetVisibility(!justImage); // orange contours from current segmentation
   workingNodes[3]->SetVisibility(!justImage); // draw tool contours
-  workingNodes[4]->SetVisibility(!justImage && this->m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
-  workingNodes[5]->SetVisibility(!justImage && this->m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
-  workingNodes[6]->SetVisibility(!justImage && this->m_GeneralControls->m_ThresholdCheckBox->isChecked()); // region growing
+  workingNodes[4]->SetVisibility(!justImage && m_GeneralControls->m_SeePriorCheckBox->isChecked()); // see prior
+  workingNodes[5]->SetVisibility(!justImage && m_GeneralControls->m_SeeNextCheckBox->isChecked()); // see next
+  workingNodes[6]->SetVisibility(!justImage && m_GeneralControls->m_ThresholdCheckBox->isChecked()); // region growing
 
   // Also need to check if feedback contour from poly line is off/on.
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -1371,7 +1371,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
   mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
 
-  if (this->m_GeneralControls->m_SeePriorCheckBox->isChecked())
+  if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
   {
     mitk::ContourSet::Pointer contourSet = static_cast<mitk::ContourSet*>(workingNodes[4]->GetData());
     this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
@@ -1387,7 +1387,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
     }
   }
 
-  if (this->m_GeneralControls->m_SeeNextCheckBox->isChecked())
+  if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
   {
     mitk::ContourSet::Pointer contourSet = static_cast<mitk::ContourSet*>(workingNodes[5]->GetData());
     this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
@@ -1413,14 +1413,14 @@ void MIDASGeneralSegmentorView::OnThresholdCheckBoxToggled(bool b)
   if (!this->HaveInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
-    this->m_GeneralControls->SetEnableThresholdingWidgets(false);
+    m_GeneralControls->SetEnableThresholdingWidgets(false);
     return;
   }
 
   this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
-  this->m_GeneralControls->SetEnableThresholdingWidgets(b);
+  m_GeneralControls->SetEnableThresholdingWidgets(b);
 
   if (b)
   {
@@ -1446,10 +1446,10 @@ void MIDASGeneralSegmentorView::OnUpperThresholdValueChanged(double d)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 {
-  bool isVisible = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
+  bool isVisible = m_GeneralControls->m_ThresholdCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-  double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+  double lowerThreshold = m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+  double upperThreshold = m_GeneralControls->m_ThresholdUpperSliderWidget->value();
   bool skipUpdate = !isVisible;
 
   if (isVisible)
@@ -1634,7 +1634,7 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
               )
             );
 
-          bool currentCheckboxStatus = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
+          bool currentCheckboxStatus = m_GeneralControls->m_ThresholdCheckBox->isChecked();
 
           if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
           {
@@ -1789,11 +1789,11 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               )
             );
 
-          if (this->m_GeneralControls->m_RetainMarksCheckBox->isChecked())
+          if (m_GeneralControls->m_RetainMarksCheckBox->isChecked())
           {
             int returnValue(QMessageBox::NoButton);
 
-            if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+            if (!m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
               AccessFixedDimensionByItk_n(workingImage,
                   ITKSliceIsEmpty, 3,
@@ -1848,7 +1848,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+            if (m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
               QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(beforeSliceNumber).arg(afterSliceNumber);
               mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
@@ -1888,11 +1888,11 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            if (this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+            if (m_GeneralControls->m_ThresholdCheckBox->isChecked())
             {
               mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
-              mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
-              mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+              mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralControls->m_ThresholdCheckBox->isChecked());
+              mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdCheckBox->isChecked());
               mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
               ExecuteOperation(doApplyOp);
@@ -1995,7 +1995,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
     return;
   }
 
-  bool thresholdCheckBox = this->m_GeneralControls->m_ThresholdCheckBox->isChecked();
+  bool thresholdCheckBox = m_GeneralControls->m_ThresholdCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   if (!thresholdCheckBox)
@@ -2057,8 +2057,8 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
-      double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-      double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+      double lowerThreshold = m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+      double upperThreshold = m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int axisNumber = this->GetViewAxis();
 
       mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
@@ -2189,7 +2189,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
                sliceNumber,
                lowerThreshold,
                upperThreshold,
-               this->m_GeneralControls->m_ThresholdCheckBox->isChecked(),
+               m_GeneralControls->m_ThresholdCheckBox->isChecked(),
                *(copyOfInputContourSet.GetPointer()),
                *(outputContourSet.GetPointer())
               )
@@ -2208,12 +2208,12 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
 
-          if (!this->m_GeneralControls->m_ThresholdCheckBox->isChecked())
+          if (!m_GeneralControls->m_ThresholdCheckBox->isChecked())
           {
             // Then we "apply" this region growing.
             mitk::OpThresholdApply::ProcessorPointer processor = mitk::OpThresholdApply::ProcessorType::New();
-            mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
-            mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, this->m_GeneralControls->m_ThresholdCheckBox->isChecked());
+            mitk::OpThresholdApply *doApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralControls->m_ThresholdCheckBox->isChecked());
+            mitk::OpThresholdApply *undoApplyOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdCheckBox->isChecked());
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             ExecuteOperation(doApplyOp);
@@ -2594,8 +2594,8 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
       mitk::MIDASDrawTool *drawTool = static_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
       assert(drawTool);
 
-      double lowerThreshold = this->m_GeneralControls->m_ThresholdLowerSliderWidget->value();
-      double upperThreshold = this->m_GeneralControls->m_ThresholdUpperSliderWidget->value();
+      double lowerThreshold = m_GeneralControls->m_ThresholdLowerSliderWidget->value();
+      double upperThreshold = m_GeneralControls->m_ThresholdUpperSliderWidget->value();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
       int direction = this->GetUpDirection();
@@ -2924,10 +2924,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
               )
             );
 
-        this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(true);
-        this->m_GeneralControls->m_ThresholdCheckBox->setChecked(op->GetThresholdFlag());
-        this->m_GeneralControls->m_ThresholdCheckBox->blockSignals(false);
-        this->m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
+        m_GeneralControls->m_ThresholdCheckBox->blockSignals(true);
+        m_GeneralControls->m_ThresholdCheckBox->setChecked(op->GetThresholdFlag());
+        m_GeneralControls->m_ThresholdCheckBox->blockSignals(false);
+        m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
 
         segmentedImage->Modified();
         segmentedNode->Modified();

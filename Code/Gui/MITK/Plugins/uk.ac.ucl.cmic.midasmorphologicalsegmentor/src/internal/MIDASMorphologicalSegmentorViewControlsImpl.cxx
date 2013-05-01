@@ -152,9 +152,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->m_BackButton->setEnabled(false);
-    this->m_NextButton->setEnabled(true);
-    this->m_NextButton->setText("Next >");
+    m_BackButton->setEnabled(false);
+    m_NextButton->setEnabled(true);
+    m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
     this->EnableRestartButton(false);
   }
@@ -164,9 +164,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(true);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
-    this->m_BackButton->setEnabled(true);
-    this->m_NextButton->setEnabled(true);
-    this->m_NextButton->setText("Next >");
+    m_BackButton->setEnabled(true);
+    m_NextButton->setEnabled(true);
+    m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
   }
@@ -176,9 +176,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(true);
     this->EnableTab4ReThresholding(false);
-    this->m_BackButton->setEnabled(true);
-    this->m_NextButton->setEnabled(true);
-    this->m_NextButton->setText("Next >");
+    m_BackButton->setEnabled(true);
+    m_NextButton->setEnabled(true);
+    m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
   }
@@ -188,9 +188,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableTab2Erosions(false);
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(true);
-    this->m_BackButton->setEnabled(true);
-    this->m_NextButton->setEnabled(true);
-    this->m_NextButton->setText("Finish");
+    m_BackButton->setEnabled(true);
+    m_NextButton->setEnabled(true);
+    m_NextButton->setText("Finish");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
   }
@@ -211,9 +211,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool b)
     this->EnableTab3Dilations(false);
     this->EnableTab4ReThresholding(false);
     this->EnableCancelButton(false);
-    this->m_BackButton->setEnabled(false);
-    this->m_NextButton->setText("Next >");
-    this->m_NextButton->setEnabled(false);
+    m_BackButton->setEnabled(false);
+    m_NextButton->setText("Next >");
+    m_NextButton->setEnabled(false);
     this->EnableRestartButton(false);
   }
 }
@@ -293,9 +293,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetTabNumber(int i)
   }
   if (i == 1)
   {
-    this->m_ErosionsUpperThresholdSlider->setMinimum(this->m_ThresholdingLowerThresholdSlider->value());
-    this->m_ErosionsUpperThresholdSlider->setMaximum(this->m_ThresholdingUpperThresholdSlider->value());
-    this->m_ErosionsUpperThresholdSlider->setValue(this->m_ThresholdingUpperThresholdSlider->value());
+    m_ErosionsUpperThresholdSlider->setMinimum(m_ThresholdingLowerThresholdSlider->value());
+    m_ErosionsUpperThresholdSlider->setMaximum(m_ThresholdingUpperThresholdSlider->value());
+    m_ErosionsUpperThresholdSlider->setValue(m_ThresholdingUpperThresholdSlider->value());
   }
 
   this->EnableByTabNumber(i);
