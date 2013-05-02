@@ -23,7 +23,7 @@
 #include <mitkDataStorage.h>
 #include <mitkImageToSurfaceFilter.h>
 
-#include <QmitkBaseView.h>
+#include "QmitkBaseView.h"
 
 class QWidget;
 class QEvent;
