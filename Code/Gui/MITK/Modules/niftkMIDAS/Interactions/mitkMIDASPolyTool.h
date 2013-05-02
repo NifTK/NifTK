@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPOLYTOOL_H
-#define MITKMIDASPOLYTOOL_H
+#ifndef mitk_MIDASPolyTool_h
+#define mitk_MIDASPolyTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASContourTool.h"

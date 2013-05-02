@@ -18,12 +18,12 @@ MIDASView QmitkMIDASOrientationWidget::s_MultiWindowViews[] = {
   MIDAS_VIEW_ORTHO,
   MIDAS_VIEW_3H,
   MIDAS_VIEW_3V,
-  MIDAS_VIEW_SAG_COR_H,
-  MIDAS_VIEW_SAG_COR_V,
-  MIDAS_VIEW_AX_COR_H,
-  MIDAS_VIEW_AX_COR_V,
-  MIDAS_VIEW_AX_SAG_H,
-  MIDAS_VIEW_AX_SAG_V
+  MIDAS_VIEW_COR_SAG_H,
+  MIDAS_VIEW_COR_SAG_V,
+  MIDAS_VIEW_COR_AX_H,
+  MIDAS_VIEW_COR_AX_V,
+  MIDAS_VIEW_SAG_AX_H,
+  MIDAS_VIEW_SAG_AX_V
 };
 
 int const QmitkMIDASOrientationWidget::s_MultiWindowViewNumber = sizeof(s_MultiWindowViews) / sizeof(MIDASView);
@@ -52,12 +52,12 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
   m_MultiWindowComboBox->addItem("2x2");
   m_MultiWindowComboBox->addItem("3H");
   m_MultiWindowComboBox->addItem("3V");
-  m_MultiWindowComboBox->addItem("sag cor H");
-  m_MultiWindowComboBox->addItem("sag cor V");
-  m_MultiWindowComboBox->addItem("ax cor H");
-  m_MultiWindowComboBox->addItem("ax cor V");
-  m_MultiWindowComboBox->addItem("ax sag H");
-  m_MultiWindowComboBox->addItem("ax sag V");
+  m_MultiWindowComboBox->addItem("cor sag H");
+  m_MultiWindowComboBox->addItem("cor sag V");
+  m_MultiWindowComboBox->addItem("cor ax H");
+  m_MultiWindowComboBox->addItem("cor ax V");
+  m_MultiWindowComboBox->addItem("sag ax H");
+  m_MultiWindowComboBox->addItem("sag ax V");
 
   m_AxialWindowRadioButton->setChecked(true);
 
@@ -75,6 +75,7 @@ MIDASView QmitkMIDASOrientationWidget::GetView() const
 {
   return m_View;
 }
+
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASOrientationWidget::SetView(MIDASView view)

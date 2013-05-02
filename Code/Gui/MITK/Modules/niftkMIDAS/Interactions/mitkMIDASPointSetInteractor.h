@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPOINTSETINTERACTOR_H
-#define MITKMIDASPOINTSETINTERACTOR_H
+#ifndef mitk_MIDASPointSetInteractor_h
+#define mitk_MIDASPointSetInteractor_h
 
 #include "niftkMIDASExports.h"
 #include <mitkPointSetInteractor.h>

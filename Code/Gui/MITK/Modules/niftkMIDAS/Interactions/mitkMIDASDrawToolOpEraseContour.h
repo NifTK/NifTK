@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDRAWTOOLOPERASECONTOUR_H
-#define MITKMIDASDRAWTOOLOPERASECONTOUR_H
+#ifndef mitk_MIDASDrawToolOpEraseContour_h
+#define mitk_MIDASDrawToolOpEraseContour_h
 
 #include "niftkMIDASExports.h"
 #include <mitkOperation.h>

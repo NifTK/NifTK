@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASACTIVATOR_H
-#define MIDASACTIVATOR_H
+#ifndef mitk_MIDASActivator_h
+#define mitk_MIDASActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -40,4 +40,4 @@ private:
 
 } // end namespace
 
-#endif // MIDASACTIVATOR_H
+#endif

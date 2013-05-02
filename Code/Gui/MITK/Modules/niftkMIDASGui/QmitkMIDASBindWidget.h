@@ -12,11 +12,13 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASBINDWIDGET_H
-#define QMITKMIDASBINDWIDGET_H
+#ifndef QmitkMIDASBindWidget_h
+#define QmitkMIDASBindWidget_h
 
 #include <niftkMIDASGuiExports.h>
+
 #include "ui_QmitkMIDASBindWidget.h"
+
 #include "mitkMIDASEnums.h"
 
 /**
@@ -25,13 +27,15 @@
  */
 class NIFTKMIDASGUI_EXPORT QmitkMIDASBindWidget : public QWidget, public Ui_QmitkMIDASBindWidget
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
 
+  /// \brief Constructs a QmitkMIDASBindWidget object.
   QmitkMIDASBindWidget(QWidget *parent = 0);
-  ~QmitkMIDASBindWidget();
+
+  /// \brief Destructs the QmitkMIDASBindWidget object.
+  virtual ~QmitkMIDASBindWidget();
 
   /// \brief Creates the GUI.
   void setupUi(QWidget*);

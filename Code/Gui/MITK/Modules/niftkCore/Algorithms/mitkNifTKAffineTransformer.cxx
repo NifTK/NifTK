@@ -247,7 +247,7 @@ AffineTransformer::~AffineTransformer()
 //-----------------------------------------------------------------------------
 void AffineTransformer::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
-  this->m_DataStorage = dataStorage;
+  m_DataStorage = dataStorage;
   this->Modified();
 }
 
@@ -255,7 +255,7 @@ void AffineTransformer::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 //-----------------------------------------------------------------------------
 mitk::DataStorage::Pointer AffineTransformer::GetDataStorage() const
 {
-  return this->m_DataStorage;
+  return m_DataStorage;
 }
 
 //-----------------------------------------------------------------------------

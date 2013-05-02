@@ -51,17 +51,17 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 
   bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
 
-  if (useDRCAnalyze && drcAnalyzeIO->CanReadFile(this->m_FileName.c_str()))
+  if (useDRCAnalyze && drcAnalyzeIO->CanReadFile(m_FileName.c_str()))
   {
     mitk::Image::Pointer image = this->GetOutput();
     try
     {
-      itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(this->m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
+      itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
       bool result = false;
 
       if (imageIO.IsNotNull())
       {
-        imageIO->SetFileName(this->m_FileName.c_str());
+        imageIO->SetFileName(m_FileName.c_str());
         imageIO->ReadImageInformation();
 
         itk::ImageIOBase::IOComponentType componentType = imageIO->GetComponentType();
@@ -74,101 +74,101 @@ void mitk::NifTKItkImageFileReader::GenerateData()
         case itk::ImageIOBase::UCHAR:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned char>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned char>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, unsigned char>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned char>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::CHAR:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, char>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, char>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, char>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, char>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::USHORT:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned short>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned short>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, unsigned short>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned short>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::SHORT:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, short>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, short>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, short>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, short>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::UINT:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned int>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned int>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, unsigned int>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned int>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::INT:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, int>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, int>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, int>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, int>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::ULONG:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned long>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned long>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, unsigned long>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned long>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::LONG:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, long>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, long>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, long>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, long>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::FLOAT:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, float>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, float>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, float>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, float>(image, m_FileName);
             }
           break;
         case itk::ImageIOBase::DOUBLE:
           if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, double>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, double>(image, m_FileName);
             }
           else
             {
-              result = LoadImageUsingItk<3, double>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, double>(image, m_FileName);
             }
           break;
         default:
@@ -178,7 +178,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 
       if (!result)
       {
-        MITK_ERROR << "Reading file " << this->m_FileName << " failed, so trying default MITK behaviour." << std::endl;
+        MITK_ERROR << "Reading file " << m_FileName << " failed, so trying default MITK behaviour." << std::endl;
 
         // Default to normal to avoid crashing.
         ItkImageFileReader::GenerateData();
@@ -187,7 +187,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
     catch( itk::ExceptionObject& err )
     {
       std::string msg = std::string("Failed to Load image:") \
-        + this->m_FileName \
+        + m_FileName \
         + std::string("\nEXCEPTION:") \
         + std::string(err.GetDescription()) \
         + std::string("\n\tat location:") \
@@ -201,17 +201,17 @@ void mitk::NifTKItkImageFileReader::GenerateData()
       ItkImageFileReader::GenerateData();
     }
   }
-  else if (niftiIO->CanReadFile(this->m_FileName.c_str()))
+  else if (niftiIO->CanReadFile(m_FileName.c_str()))
   {
     mitk::Image::Pointer image = this->GetOutput();
     try
     {
-      itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(this->m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
+      itk::ImageIOBase::Pointer imageIO = itk::ImageIOFactory::CreateImageIO(m_FileName.c_str(), itk::ImageIOFactory::ReadMode);
       bool result = false;
 
       if (imageIO.IsNotNull())
       {
-        imageIO->SetFileName(this->m_FileName.c_str());
+        imageIO->SetFileName(m_FileName.c_str());
         imageIO->ReadImageInformation();
 
         itk::ImageIOBase::IOComponentType componentType = imageIO->GetComponentType();
@@ -230,141 +230,141 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 	  case itk::ImageIOBase::UCHAR:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned char>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned char>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, unsigned char>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned char>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, unsigned char>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, unsigned char>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::CHAR:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, char>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, char>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, char>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, char>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, char>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, char>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::USHORT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned short>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned short>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, unsigned short>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned short>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, unsigned short>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, unsigned short>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::SHORT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, short>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, short>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, short>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, short>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, short>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, short>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::UINT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned int>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned int>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, unsigned int>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned int>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, unsigned int>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, unsigned int>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::INT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, int>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, int>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, int>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, int>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, int>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, int>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::ULONG:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, unsigned long>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, unsigned long>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, unsigned long>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, unsigned long>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, unsigned long>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, unsigned long>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::LONG:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, long>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, long>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, long>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, long>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, long>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, long>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::FLOAT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, float>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, float>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, float>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, float>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, float>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, float>(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::DOUBLE:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2, double>(image, this->m_FileName);
+              result = LoadImageUsingItk<2, double>(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3, double>(image, this->m_FileName);
+              result = LoadImageUsingItk<3, double>(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4, double>(image, this->m_FileName);
+              result = LoadImageUsingItk<4, double>(image, m_FileName);
             }
 	    break;
 	  default:
@@ -381,141 +381,141 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 	  case itk::ImageIOBase::UCHAR:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned char> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned char> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned char> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::CHAR:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<char> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<char> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<char> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<char> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::USHORT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned short> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned short> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned short> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::SHORT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<short> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<short> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<short> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<short> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::UINT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned int> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned int> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned int> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::INT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<int> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<int> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<int> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<int> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::ULONG:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<unsigned long> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<unsigned long> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<unsigned long> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::LONG:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<long> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<long> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<long> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<long> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::FLOAT:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<float> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<float> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<float> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<float> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<float> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<float> >(image, m_FileName);
             }
 	    break;
 	  case itk::ImageIOBase::DOUBLE:
 	    if (numberOfDimensions == 2)
             {
-              result = LoadImageUsingItk<2,  itk::RGBPixel<double> >(image, this->m_FileName);
+              result = LoadImageUsingItk<2,  itk::RGBPixel<double> >(image, m_FileName);
             }
 	    else if (numberOfDimensions == 3)
             {
-              result = LoadImageUsingItk<3,  itk::RGBPixel<double> >(image, this->m_FileName);
+              result = LoadImageUsingItk<3,  itk::RGBPixel<double> >(image, m_FileName);
             }
 	    else
             {
-              result = LoadImageUsingItk<4,  itk::RGBPixel<double> >(image, this->m_FileName);
+              result = LoadImageUsingItk<4,  itk::RGBPixel<double> >(image, m_FileName);
             }
 	    break;
 	  default:
@@ -533,7 +533,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
 
       if (!result)
       {
-        MITK_ERROR << "Reading file " << this->m_FileName << " failed so trying default MITK Nifti functionality" << std::endl;
+        MITK_ERROR << "Reading file " << m_FileName << " failed so trying default MITK Nifti functionality" << std::endl;
         // Default to normal to avoid crashing.
         ItkImageFileReader::GenerateData();
       }
@@ -541,7 +541,7 @@ void mitk::NifTKItkImageFileReader::GenerateData()
     catch( itk::ExceptionObject& err )
     {
       std::string msg = std::string("Failed to Load image:") \
-        + this->m_FileName \
+        + m_FileName \
         + std::string("\nEXCEPTION:") \
         + std::string(err.GetDescription()) \
         + std::string("\n\tat location:") \
@@ -574,7 +574,7 @@ mitk::NifTKItkImageFileReader
   typename itk::DRCAnalyzeImageIO3160::Pointer drcAnalyzeIO = itk::DRCAnalyzeImageIO3160::New();
   typename itk::NiftiImageIO3201::Pointer niftiIO = itk::NiftiImageIO3201::New();
 
-  if (drcAnalyzeIO->CanReadFile(this->m_FileName.c_str())){
+  if (drcAnalyzeIO->CanReadFile(m_FileName.c_str())){
       try
       {
         typedef itk::Image<TPixel, VImageDimension> ImageType;
@@ -593,7 +593,7 @@ mitk::NifTKItkImageFileReader
       catch( itk::ExceptionObject& err )
       {
         std::string msg = std::string("Failed to Load image:") \
-          + this->m_FileName \
+          + m_FileName \
           + std::string("\nEXCEPTION:") \
           + std::string(err.GetDescription()) \
           + std::string("\n\tat location:") \
@@ -604,7 +604,7 @@ mitk::NifTKItkImageFileReader
         MITK_ERROR << msg;
       }
   }
-  else if(niftiIO->CanReadFile(this->m_FileName.c_str())){
+  else if(niftiIO->CanReadFile(m_FileName.c_str())){
       try
       {
         typedef itk::Image<TPixel, VImageDimension> ImageType;
@@ -623,7 +623,7 @@ mitk::NifTKItkImageFileReader
       catch( itk::ExceptionObject& err )
       {
         std::string msg = std::string("Failed to Load image:") \
-          + this->m_FileName \
+          + m_FileName \
           + std::string("\nEXCEPTION:") \
           + std::string(err.GetDescription()) \
           + std::string("\n\tat location:") \

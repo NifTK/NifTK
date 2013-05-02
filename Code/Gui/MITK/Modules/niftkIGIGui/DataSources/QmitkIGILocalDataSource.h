@@ -57,6 +57,7 @@ protected:
   QmitkIGILocalDataSource& operator=(const QmitkIGILocalDataSource&); // Purposefully not implemented.
 
 
+  // FIXME: use mitkImageConversion instead!
   mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
 
   /**

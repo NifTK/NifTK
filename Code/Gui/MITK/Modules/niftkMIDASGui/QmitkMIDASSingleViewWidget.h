@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef QMITKMIDASSINGLEVIEWWIDGET_H
-#define QMITKMIDASSINGLEVIEWWIDGET_H
+#ifndef QmitkMIDASSingleViewWidget_h
+#define QmitkMIDASSingleViewWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include "mitkMIDASEnums.h"
@@ -257,12 +257,6 @@ public:
   /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
   bool IsDisplayInteractionEnabled() const;
 
-  /// \brief Returns the current intersection point of the 3 orthogonal planes.
-  mitk::Point3D GetSelectedPosition() const;
-
-  /// \brief Sets the current intersection point of the 3 orthogonal planes.
-  void SetSelectedPosition(const mitk::Point3D &pos);
-
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
 
@@ -282,7 +276,7 @@ signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CrossPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, int sliceNumber);
   void CentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre);
   void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor);
 
@@ -290,7 +284,7 @@ protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnPositionChanged(QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  virtual void OnCrossPositionChanged(QmitkRenderWindow* window, int sliceNumber);
   virtual void OnCentreChanged(const mitk::Vector3D& centre);
   virtual void OnMagnificationFactorChanged(double magnificationFactor);
 
@@ -342,4 +336,4 @@ private:
   bool                                 m_RememberViewSettingsPerOrientation;
 };
 
-#endif // QMITKMIDASSINGLEVIEWWIDGET_H
+#endif

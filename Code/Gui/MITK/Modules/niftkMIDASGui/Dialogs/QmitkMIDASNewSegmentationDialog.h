@@ -12,12 +12,14 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASNEWSEGMENTATIONDIALOG_H_
-#define QMITKMIDASNEWSEGMENTATIONDIALOG_H_
+#ifndef QmitkMIDASNewSegmentationDialog_h
+#define QmitkMIDASNewSegmentationDialog_h
 
 #include <niftkMIDASGuiExports.h>
-#include "QmitkNewSegmentationDialog.h"
+
 #include <QColor>
+
+#include <QmitkNewSegmentationDialog.h>
 
 /**
  * \class QmitkMIDASNewSegmentationDialog
@@ -31,7 +33,10 @@ class NIFTKMIDASGUI_EXPORT QmitkMIDASNewSegmentationDialog : public QmitkNewSegm
 public:
 
   /// \brief Constructor, which sets the default button colour to that given by defaultColor.
-  QmitkMIDASNewSegmentationDialog(const QColor &defaultColor, QWidget* parent = 0);
-  ~QmitkMIDASNewSegmentationDialog() {}
+  QmitkMIDASNewSegmentationDialog(const QColor& defaultColor, QWidget* parent = 0);
+
+  /// \brief Destructs the QmitkMIDASNewSegmentationDialog object.
+  virtual ~QmitkMIDASNewSegmentationDialog();
+
 };
-#endif /*QMITKMIDASNEWSEGMENTATIONDIALOG_H_*/
+#endif

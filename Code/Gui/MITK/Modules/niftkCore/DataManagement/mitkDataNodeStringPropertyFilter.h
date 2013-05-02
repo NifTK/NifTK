@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKDATANODESTRINGPROPERTYFILTER_H
-#define MITKDATANODESTRINGPROPERTYFILTER_H
+#ifndef mitk_DataNodeStringPropertyFilter_h
+#define mitk_DataNodeStringPropertyFilter_h
 
 #include "niftkCoreExports.h"
 #include "mitkDataNodeFilter.h"

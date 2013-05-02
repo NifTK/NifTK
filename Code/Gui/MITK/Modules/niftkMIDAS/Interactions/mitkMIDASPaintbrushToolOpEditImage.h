@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPAINTBRUSHTOOLOPEDITIMAGE_H
-#define MITKMIDASPAINTBRUSHTOOLOPEDITIMAGE_H
+#ifndef mitk_MIDASPaintbrushToolOpEditImage_h
+#define mitk_MIDASPaintbrushToolOpEditImage_h
 
 #include "niftkMIDASExports.h"
 #include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"

@@ -408,6 +408,14 @@ IF(NOT DEFINED MITK_DIR)
     #       + bugs listed above.
     #     
     #     Giving c46b74d625 on NifTK/MITK/niftk branch.
+    #
+    # 29. Trac 2315: New MITK version to pick up latest 2013.03.02 patch, and bug 15051 about PlanarFigure crashes.
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 4a983348b6 (v2013.03.02) from Mon Apr 29 16:47:24 2013 +0200,
+    #       + bugs listed above.
+    #
+    #     Giving f70be82e03 on NifTK/MITK/niftk branch.
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})

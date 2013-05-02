@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>104</width>
+    <width>95</width>
     <height>66</height>
    </rect>
   </property>
@@ -35,7 +35,7 @@
       <string>switch the currently selected view to sagittal</string>
      </property>
      <property name="text">
-      <string>sag.</string>
+      <string>sag</string>
      </property>
      <property name="iconSize">
       <size>
@@ -54,7 +54,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to coronal</string>
+      <string>switch to multiple windows</string>
      </property>
      <property name="text">
       <string/>
@@ -68,7 +68,7 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QRadioButton" name="m_CoronalWindowRadioButton">
+    <widget class="QRadioButton" name="m_AxialWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -76,10 +76,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to coronal</string>
+      <string>switch the currently selected window to axial</string>
      </property>
      <property name="text">
-      <string>cor.</string>
+      <string>ax</string>
      </property>
      <property name="iconSize">
       <size>
@@ -90,7 +90,7 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QRadioButton" name="m_AxialWindowRadioButton">
+    <widget class="QRadioButton" name="m_CoronalWindowRadioButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -98,10 +98,10 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to axial</string>
+      <string>switch the currently selected window to coronal</string>
      </property>
      <property name="text">
-      <string>ax.</string>
+      <string>cor</string>
      </property>
      <property name="iconSize">
       <size>

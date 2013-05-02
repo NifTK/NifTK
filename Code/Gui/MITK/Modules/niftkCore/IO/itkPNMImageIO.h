@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkPNMImageIO_h
-#define __itkPNMImageIO_h
+#ifndef PNMImageIO_h
+#define PNMImageIO_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -101,4 +101,4 @@ private:
 
 } // end namespace itk
 
-#endif // __itkPNMImageIO_h
+#endif

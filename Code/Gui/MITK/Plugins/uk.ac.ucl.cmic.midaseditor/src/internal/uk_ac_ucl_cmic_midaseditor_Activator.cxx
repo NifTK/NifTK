@@ -43,7 +43,6 @@ ctkPluginContext* uk_ac_ucl_cmic_midaseditor_Activator::GetPluginContext()
   return s_PluginContext;
 }
 
-
 } // end namespace
 
 Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midaseditor, mitk::uk_ac_ucl_cmic_midaseditor_Activator)
