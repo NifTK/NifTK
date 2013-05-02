@@ -182,7 +182,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
 
   start    = region.GetIndex();
   start[0] = 0;
-  start[1] = this->idxMidSternum[1] + ( this->cropDistPosteriorToMidSternum / sp[1]);
+  start[1] = static_cast<typename InternalImageType::IndexValueType>(this->idxMidSternum[1] + ( this->cropDistPosteriorToMidSternum / sp[1]));
   start[2] = 0;
   
   size    = region.GetSize();

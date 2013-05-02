@@ -142,7 +142,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   size = region.GetSize();
   sizeChestSurfaceRegion = size;
 
-  sizeChestSurfaceRegion[1] = 60./sp[1];		// 60mm only
+  sizeChestSurfaceRegion[1] = static_cast<typename InternalImageType::SizeValueType>(60./sp[1]);		// 60mm only
 
   if ( start[1] + sizeChestSurfaceRegion[1] > size[1] )
     sizeChestSurfaceRegion[1] = size[1] - start[1] - 1;

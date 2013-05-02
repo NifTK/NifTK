@@ -53,7 +53,7 @@ bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
 double CalculateBoundingArray(const double &a, const double &b, const int& squares, const int& pixels, std::vector<int>& vec)
 {
   vec.clear();
-  vec.push_back(a);
+  vec.push_back(static_cast<int>(a));
 
   double total = a;
 
@@ -69,7 +69,7 @@ double CalculateBoundingArray(const double &a, const double &b, const int& squar
     }
     else
     {
-      vec.push_back(vec[vec.size()-1] + next);
+      vec.push_back(static_cast<int>(vec[vec.size()-1] + next));
     }
   }
   return total;
@@ -240,7 +240,7 @@ int main(int argc, char** argv)
   double pixSize = length / theoreticalPixelsY;
   int pixelsX = (int)(theoreticalPixelsX);
   int pixelsY = (int)(theoreticalPixelsY);
-  int actualWidth = pixelsX * pixSize;
+  int actualWidth = static_cast<int>(pixelsX * pixSize);
 
   std::vector<int> xboundaries;
   std::vector<int> yboundaries;
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
   double theta = 2.0*pi - phiInRadians;
   double maxPhi = pi+ (pi/2.0 - theta/2.0);
   double minPhi = - (pi/2.0 - theta/2.0);
-  int    dotRadiusInPixels = dotRadius / pixSize;
+  int    dotRadiusInPixels = static_cast<int>(dotRadius / pixSize);
 
   std::cout << "Distance around circ=" << width << " (mm)" << std::endl;
   std::cout << "Pixels x = " << pixelsX << std::endl;

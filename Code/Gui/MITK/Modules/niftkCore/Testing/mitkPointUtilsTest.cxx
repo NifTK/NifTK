@@ -114,7 +114,7 @@ public:
                          + (a[1]-b[1])*(a[1]-b[1])
                          + (a[2]-b[2])*(a[2]-b[2]);
         double result = mitk::GetSquaredDistanceBetweenPoints(a,b);
-        MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, distance),".. Testing GetSquaredDistanceBetweenPoints");
+        MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, distance, 0.001),".. Testing GetSquaredDistanceBetweenPoints");
       }
     }
     MITK_TEST_OUTPUT(<< "Finished TestGetSquaredDistanceBetweenPoints...");
