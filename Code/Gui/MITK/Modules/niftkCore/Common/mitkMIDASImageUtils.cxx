@@ -495,7 +495,7 @@ void ITKCopyIntensityData(itk::Image<TPixel1, VImageDimension1>* input,
 
   for (inputIter.GoToBegin(), outputIter.GoToBegin(); !inputIter.IsAtEnd() && !outputIter.IsAtEnd(); ++inputIter, ++outputIter)
   {
-    outputIter.Set(inputIter.Get());
+    outputIter.Set(static_cast<TPixel2>(inputIter.Get()));
   }
 }
 

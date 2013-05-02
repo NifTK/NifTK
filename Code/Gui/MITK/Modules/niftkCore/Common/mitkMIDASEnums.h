@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASENUMS_H
-#define MITKMIDASENUMS_H
+#ifndef MIDASEnums_h
+#define MIDASEnums_h
 
 /*!
  * \file mitkMIDASEnums.h
@@ -61,12 +61,12 @@ enum MIDASView
   MIDAS_VIEW_3V = 6,
   MIDAS_VIEW_AS_ACQUIRED = 7,
   MIDAS_VIEW_UNKNOWN = 8,
-  MIDAS_VIEW_SAG_COR_H = 9,
-  MIDAS_VIEW_SAG_COR_V = 10,
-  MIDAS_VIEW_AX_COR_H = 11,
-  MIDAS_VIEW_AX_COR_V = 12,
-  MIDAS_VIEW_AX_SAG_H = 13,
-  MIDAS_VIEW_AX_SAG_V = 14
+  MIDAS_VIEW_COR_SAG_H = 9,
+  MIDAS_VIEW_COR_SAG_V = 10,
+  MIDAS_VIEW_COR_AX_H = 11,
+  MIDAS_VIEW_COR_AX_V = 12,
+  MIDAS_VIEW_SAG_AX_H = 13,
+  MIDAS_VIEW_SAG_AX_V = 14
 };
 
 

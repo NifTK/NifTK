@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASMORPHOLOGICALSEGMENTORVIEWACTIVATOR_H
-#define MIDASMORPHOLOGICALSEGMENTORVIEWACTIVATOR_H
+#ifndef MIDASMorphologicalSegmentorViewActivator_h
+#define MIDASMorphologicalSegmentorViewActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -39,4 +39,4 @@ public:
 
 }
 
-#endif // MIDASMORPHOLOGICALSEGMENTORVIEWACTIVATOR_H
+#endif

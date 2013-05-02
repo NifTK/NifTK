@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASIMAGEUTILS_H
-#define MITKMIDASIMAGEUTILS_H
+#ifndef mitk_MIDASImageUtils_h
+#define mitk_MIDASImageUtils_h
 
 #include "niftkCoreExports.h"
 #include "itkConversionUtils.h"
@@ -221,4 +221,4 @@ namespace mitk
 
 }
 
-#endif // MITKMIDASIMAGEUTILS_H
+#endif

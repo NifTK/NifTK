@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKNIFTKITKIMAGEFILEREADER_H
-#define MITKNIFTKITKIMAGEFILEREADER_H
+#ifndef NifTKItkImageFileReader_h
+#define NifTKItkImageFileReader_h
 
 #include "niftkCoreExports.h"
 #include "mitkCommon.h"
@@ -58,4 +58,4 @@ private:
 
 } // namespace mitk
 
-#endif // MITKNIFTKITKIMAGEFILEREADER_H
+#endif

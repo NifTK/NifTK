@@ -14,17 +14,23 @@
 
 #include "QmitkMIDASToolSelectorWidget.h"
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 {
   setupUi(parent);
   connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), this, SLOT(OnToolSelected(int)));
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASToolSelectorWidget::~QmitkMIDASToolSelectorWidget()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 {
   this->setEnabled(enabled);
@@ -41,16 +47,22 @@ void QmitkMIDASToolSelectorWidget::SetEnabled(bool enabled)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASToolSelectorWidget::GetEnabled() const
 {
   return this->isEnabled();
 }
 
+
+//-----------------------------------------------------------------------------
 int QmitkMIDASToolSelectorWidget::GetActiveToolID()
 {
   return m_ManualToolSelectionBox->GetToolManager()->GetActiveToolID();
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASToolSelectorWidget::OnToolSelected(int toolId)
 {
   emit ToolSelected(toolId);

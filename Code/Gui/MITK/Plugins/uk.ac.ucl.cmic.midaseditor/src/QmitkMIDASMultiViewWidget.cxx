@@ -313,7 +313,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   // Default to dropping into single window.
   m_DropSingleRadioButton->setChecked(true);
-  this->m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
+  m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
 
   // We have the default rows and columns passed in via constructor args, in initialise list.
   m_RowsSpinBox->setValue(m_DefaultNumberOfRows);
@@ -383,7 +383,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
-  connect(widget, SIGNAL(PositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D, mitk::Point3D, int, MIDASOrientation)), this, SLOT(OnPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, mitk::Index3D,mitk::Point3D, int, MIDASOrientation)));
+  connect(widget, SIGNAL(CrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnCrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
   connect(widget, SIGNAL(CentreChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCentreChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
   connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
@@ -397,7 +397,7 @@ void QmitkMIDASMultiViewWidget::RequestUpdateAll()
   QList<int> listToUpdate = this->GetViewIndexesToUpdate(true);
   for (int i = 0; i < listToUpdate.size(); i++)
   {
-    if (listToUpdate[i] >= 0 && listToUpdate[i] < this->m_SingleViewWidgets.size())
+    if (listToUpdate[i] >= 0 && listToUpdate[i] < m_SingleViewWidgets.size())
     {
       m_SingleViewWidgets[listToUpdate[i]]->RequestUpdate();
     }
@@ -598,7 +598,7 @@ void QmitkMIDASMultiViewWidget::EnableWidgets(bool enabled)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
 {
-  this->m_IsThumbnailMode = enabled;
+  m_IsThumbnailMode = enabled;
 
   if (enabled)
   {
@@ -626,19 +626,19 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetThumbnailMode() const
 {
-  return this->m_IsThumbnailMode;
+  return m_IsThumbnailMode;
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
 {
-  this->m_IsMIDASSegmentationMode = enabled;
+  m_IsMIDASSegmentationMode = enabled;
 
   if (enabled)
   {
-    this->m_NumberOfRowsBeforeSegmentationMode = m_RowsSpinBox->value();
-    this->m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
+    m_NumberOfRowsBeforeSegmentationMode = m_RowsSpinBox->value();
+    m_NumberOfColumnsBeforeSegmentationMode = m_ColumnsSpinBox->value();
     this->EnableLayoutWidgets(false);
     this->EnableBindWidgets(false);
     m_Show2DCursorsCheckBox->setEnabled(false);
@@ -659,7 +659,7 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::GetMIDASSegmentationMode() const
 {
-  return this->m_IsMIDASSegmentationMode;
+  return m_IsMIDASSegmentationMode;
 }
 
 
@@ -725,15 +725,15 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
       QmitkMIDASSingleViewWidget *view = this->CreateSingleViewWidget();
       view->hide();
 
-      this->m_SingleViewWidgets.push_back(view);
-      this->m_VisibilityManager->RegisterWidget(view);
-      this->m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfViews + i, false);
+      m_SingleViewWidgets.push_back(view);
+      m_VisibilityManager->RegisterWidget(view);
+      m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfViews + i, false);
     }
   }
   else if (requiredNumberOfViews < currentNumberOfViews)
   {
     // destroy surplus widgets
-    this->m_VisibilityManager->DeRegisterWidgets(requiredNumberOfViews, m_SingleViewWidgets.size() - 1);
+    m_VisibilityManager->DeRegisterWidgets(requiredNumberOfViews, m_SingleViewWidgets.size() - 1);
 
     for (int i = requiredNumberOfViews; i < m_SingleViewWidgets.size(); i++)
     {
@@ -815,14 +815,14 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
 
   // Now the number of views has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
-  this->SetShow3DWindowInOrthoView(this->m_Show3DWindowInOrthoView);
+  this->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
 
   // Make sure that if we are bound, we re-synch the geometry, or magnification.
-  if (this->m_MIDASBindWidget->IsGeometryBound())
+  if (m_MIDASBindWidget->IsGeometryBound())
   {
     this->UpdateBoundGeometry(true);
   }
-  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     this->UpdateBoundMagnification();
   }
@@ -907,38 +907,32 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation)
+void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, int sliceNumber)
 {
-  bool found = false;
-  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  // If the view is not found, we do not do anything.
+  if (std::find(m_SingleViewWidgets.begin(), m_SingleViewWidgets.end(), view) == m_SingleViewWidgets.end())
   {
-    if (m_SingleViewWidgets[i] == view)
-    {
-      found = true;
-      break;
-    }
+    return;
   }
-  if (found)
+
+  std::vector<QmitkRenderWindow*> renderWindows = view->GetVisibleRenderWindows();
+  if (renderWindows.size() == 1 &&
+      renderWindow == renderWindows[0] &&
+      sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
   {
-    std::vector<QmitkRenderWindow*> renderWindows = view->GetVisibleRenderWindows();
-    if (renderWindows.size() == 1 && renderWindow == renderWindows[0] && sliceNumber != m_MIDASSlidersWidget->m_SliceSelectionWidget->value())
+    // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
+    bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
+    m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
+    m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
+  }
+  mitk::Point3D crossPosition = view->GetCrossPosition();
+  if (m_MIDASBindWidget->AreCursorsBound())
+  {
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      // This should only be used to update the sliceNumber on the GUI, so must not trigger a further update.
-      bool wasBlocked = m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(true);
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
-      m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
-    }
-    mitk::Point3D selectedPosition = view->GetSelectedPosition();
-    mitk::Point3D crossPosition = view->GetCrossPosition();
-    if (m_MIDASBindWidget->AreCursorsBound())
-    {
-      for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+      if (m_SingleViewWidgets[i] != view)
       {
-        if (m_SingleViewWidgets[i] != view)
-        {
-//          m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
-          m_SingleViewWidgets[i]->SetCrossPosition(selectedPosition);
-        }
+        m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
       }
     }
   }
@@ -948,7 +942,7 @@ void QmitkMIDASMultiViewWidget::OnPositionChanged(QmitkMIDASSingleViewWidget *vi
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnCentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre)
 {
-  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
@@ -968,7 +962,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(wasBlocked);
 
-  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
@@ -986,7 +980,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
 void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
-  if (!this->m_DropThumbnailRadioButton->isChecked())
+  if (!m_DropThumbnailRadioButton->isChecked())
   {
     this->EnableWidgets(true);
   }
@@ -1040,7 +1034,7 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
 {
   if (selectedViewIndex >= 0 && selectedViewIndex < m_SingleViewWidgets.size())
   {
-    QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
 
     // This, to turn off borders on all other windows.
     this->SetSelectedViewIndex(selectedViewIndex);
@@ -1246,29 +1240,32 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
 
   if (selectedViewIndex != -1)
   {
-    QmitkMIDASSingleViewWidget* selectedView = this->m_SingleViewWidgets[selectedViewIndex];
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
 
     MIDASOrientation orientation = selectedView->GetOrientation();
-    unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
-    unsigned int minSlice = selectedView->GetMinSlice(orientation);
-    unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
-
-    int upDirection = selectedView->GetSliceUpDirection(orientation);
-    int nextSlice = currentSlice;
-
-    if (moveAnterior)
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      nextSlice = currentSlice + slices*upDirection;
-    }
-    else
-    {
-      nextSlice = currentSlice - slices*upDirection;
-    }
+      unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
+      unsigned int minSlice = selectedView->GetMinSlice(orientation);
+      unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
 
-    if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
-    {
-      this->SetSelectedWindowSliceNumber(nextSlice);
-      actuallyDidSomething = true;
+      int upDirection = selectedView->GetSliceUpDirection(orientation);
+      int nextSlice = currentSlice;
+
+      if (moveAnterior)
+      {
+        nextSlice = currentSlice + slices*upDirection;
+      }
+      else
+      {
+        nextSlice = currentSlice - slices*upDirection;
+      }
+
+      if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
+      {
+        this->SetSelectedWindowSliceNumber(nextSlice);
+        actuallyDidSomething = true;
+      }
     }
   }
   return actuallyDidSomething;
@@ -1286,14 +1283,14 @@ void QmitkMIDASMultiViewWidget::OnSliceNumberChanged(double sliceNumber)
 void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceNumber(int sliceNumber)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  MIDASOrientation orientation = this->m_SingleViewWidgets[selectedViewIndex]->GetOrientation();
+  MIDASOrientation orientation = m_SingleViewWidgets[selectedViewIndex]->GetOrientation();
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+    QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(m_MIDASBindWidget->IsGeometryBound());
     for (int i = 0; i < viewsToUpdate.size(); i++)
     {
-      this->m_SingleViewWidgets[viewsToUpdate[i]]->SetSliceNumber(orientation, sliceNumber);
+      m_SingleViewWidgets[viewsToUpdate[i]]->SetSliceNumber(orientation, sliceNumber);
     }
   }
   else
@@ -1318,7 +1315,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificatio
       newMagnificationFactor += 1.0;
     }
 
-    this->m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(newMagnificationFactor);
+    m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(newMagnificationFactor);
   }
   else
   {
@@ -1331,10 +1328,10 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificatio
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
-  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsMagnificationBound());
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(m_MIDASBindWidget->IsMagnificationBound());
   for (int i = 0; i < viewsToUpdate.size(); i++)
   {
-    this->m_SingleViewWidgets[viewsToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
+    m_SingleViewWidgets[viewsToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
   }
 }
 
@@ -1349,10 +1346,10 @@ void QmitkMIDASMultiViewWidget::OnTimeChanged(double timeStep)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
-  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(this->m_DropThumbnailRadioButton->isChecked());
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(m_DropThumbnailRadioButton->isChecked());
   for (int i = 0; i < viewsToUpdate.size(); i++)
   {
-    this->m_SingleViewWidgets[viewsToUpdate[i]]->SetTime(timeStep);
+    m_SingleViewWidgets[viewsToUpdate[i]]->SetTime(timeStep);
   }
 }
 
@@ -1382,7 +1379,7 @@ void QmitkMIDASMultiViewWidget::OnShow2DCursorsCheckBoxToggled(bool checked)
 void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  std::vector<QmitkRenderWindow*> renderWindows = this->m_SingleViewWidgets[selectedViewIndex]->GetVisibleRenderWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = m_SingleViewWidgets[selectedViewIndex]->GetVisibleRenderWindows();
 
   if (renderWindows.size() > 0)
   {
@@ -1516,11 +1513,11 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASView midasView)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
 
-  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(this->m_MIDASBindWidget->IsGeometryBound());
+  QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(m_MIDASBindWidget->IsGeometryBound());
   for (int i = 0; i < viewIndexesToUpdate.size(); i++)
   {
     int viewIndexToUpdate = viewIndexesToUpdate[i];
-    QmitkMIDASSingleViewWidget* viewToUpdate = this->m_SingleViewWidgets[viewIndexToUpdate];
+    QmitkMIDASSingleViewWidget* viewToUpdate = m_SingleViewWidgets[viewIndexToUpdate];
     viewToUpdate->SetView(midasView, false);
 
     if (viewIndexToUpdate == selectedViewIndex)
@@ -1626,7 +1623,7 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 //-----------------------------------------------------------------------------
 int QmitkMIDASMultiViewWidget::GetSliceNumber() const
 {
-  return this->m_MIDASSlidersWidget->m_SliceSelectionWidget->value();
+  return m_MIDASSlidersWidget->m_SliceSelectionWidget->value();
 }
 
 
@@ -1635,19 +1632,19 @@ MIDASOrientation QmitkMIDASMultiViewWidget::GetOrientation() const
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  if (this->m_MIDASOrientationWidget->m_AxialWindowRadioButton->isChecked())
+  if (m_MIDASOrientationWidget->m_AxialWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (this->m_MIDASOrientationWidget->m_SagittalWindowRadioButton->isChecked())
+  else if (m_MIDASOrientationWidget->m_SagittalWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (this->m_MIDASOrientationWidget->m_CoronalWindowRadioButton->isChecked())
+  else if (m_MIDASOrientationWidget->m_CoronalWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_CORONAL;
   }
-  else if (this->m_MIDASOrientationWidget->m_3DWindowRadioButton->isChecked())
+  else if (m_MIDASOrientationWidget->m_3DWindowRadioButton->isChecked())
   {
     orientation = MIDAS_ORIENTATION_UNKNOWN;
   }
@@ -1742,19 +1739,55 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id)
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& /*id*/) const
+mitk::Point3D QmitkMIDASMultiViewWidget::GetCrossPosition(const QString& id) const
 {
-  int selectedViewIndex = this->GetSelectedViewIndex();
-  mitk::Point3D position = m_SingleViewWidgets[selectedViewIndex]->GetSelectedPosition();
-  return position;
+  if (id.isNull())
+  {
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    return m_SingleViewWidgets[selectedViewIndex]->GetCrossPosition();
+  }
+  else
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(id);
+    if (renderWindow)
+    {
+      for (int i = 0; i < m_SingleViewWidgets.size(); ++i)
+      {
+        if (m_SingleViewWidgets[i]->ContainsRenderWindow(renderWindow))
+        {
+          return m_SingleViewWidgets[i]->GetCrossPosition();
+        }
+      }
+    }
+  }
+  mitk::Point3D fallBackValue;
+  fallBackValue.Fill(0.0);
+  return fallBackValue;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& pos, const QString& /*id*/)
+void QmitkMIDASMultiViewWidget::SetCrossPosition(const mitk::Point3D& crossPosition, const QString& id)
 {
-  int selectedViewIndex = this->GetSelectedViewIndex();
-  m_SingleViewWidgets[selectedViewIndex]->SetSelectedPosition(pos);
+  if (id.isNull())
+  {
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    m_SingleViewWidgets[selectedViewIndex]->SetCrossPosition(crossPosition);
+  }
+  else
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(id);
+    if (renderWindow)
+    {
+      for (int i = 0; i < m_SingleViewWidgets.size(); ++i)
+      {
+        if (m_SingleViewWidgets[i]->ContainsRenderWindow(renderWindow))
+        {
+          m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
+        }
+      }
+    }
+  }
 }
 
 
@@ -1799,15 +1832,15 @@ bool QmitkMIDASMultiViewWidget::GetNavigationControllerEventListening() const
 void QmitkMIDASMultiViewWidget::SetNavigationControllerEventListening(bool enabled)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
-  if (enabled && !this->m_NavigationControllerEventListening)
+  if (enabled && !m_NavigationControllerEventListening)
   {
     m_SingleViewWidgets[selectedViewIndex]->SetNavigationControllerEventListening(true);
   }
-  else if (!enabled && this->m_NavigationControllerEventListening)
+  else if (!enabled && m_NavigationControllerEventListening)
   {
     m_SingleViewWidgets[selectedViewIndex]->SetNavigationControllerEventListening(false);
   }
-  this->m_NavigationControllerEventListening = enabled;
+  m_NavigationControllerEventListening = enabled;
 }
 
 
@@ -1854,18 +1887,18 @@ void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
 void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
-  bool requestedGeometryBound = this->m_MIDASBindWidget->IsGeometryBound();
+  bool requestedGeometryBound = m_MIDASBindWidget->IsGeometryBound();
 
   if (currentGeometryBound != requestedGeometryBound)
   {
-    this->UpdateBoundGeometry(this->m_MIDASBindWidget->IsGeometryBound());
+    this->UpdateBoundGeometry(m_MIDASBindWidget->IsGeometryBound());
   }
 
-  if (this->m_MIDASBindWidget->AreCursorsBound())
+  if (m_MIDASBindWidget->AreCursorsBound())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-    mitk::Point3D crossPosition = selectedView->GetSelectedPosition();
+    mitk::Point3D crossPosition = selectedView->GetCrossPosition();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
@@ -1875,7 +1908,7 @@ void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
     }
   }
 
-  if (this->m_MIDASBindWidget->IsMagnificationBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     //  this->UpdateBoundMagnification();
 
@@ -1950,9 +1983,9 @@ void QmitkMIDASMultiViewWidget::OnPinButtonToggled(bool checked)
 //---------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::eventFilter(QObject* object, QEvent* event)
 {
-  if (object == this->m_ControlWidget && event->type() == QEvent::Enter)
+  if (object == m_ControlWidget && event->type() == QEvent::Enter)
   {
-    this->m_PopupWidget->showPopup();
+    m_PopupWidget->showPopup();
   }
   return this->QObject::eventFilter(object, event);
 }

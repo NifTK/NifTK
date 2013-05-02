@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKITKREGIONPARAMETERSDATANODEPROPERTY_H
-#define MITKITKREGIONPARAMETERSDATANODEPROPERTY_H
+#ifndef ITKRegionParametersDataNodeProperty_h
+#define ITKRegionParametersDataNodeProperty_h
 
 #include "niftkCoreExports.h"
 #include "mitkBaseProperty.h"
@@ -108,4 +108,4 @@ private:
 
 } // namespace mitk
 
-#endif /* MITKITKREGIONPARAMETERSDATANODEPROPERTY_H */
+#endif

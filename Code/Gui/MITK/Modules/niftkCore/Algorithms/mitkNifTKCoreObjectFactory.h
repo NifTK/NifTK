@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKNIFTKCOREOBJECTFACTORY_H
-#define MITKNIFTKCOREOBJECTFACTORY_H
+#ifndef mitk_NifTKCoreObjectFactory_h
+#define mitk_NifTKCoreObjectFactory_h
 
 #include "mitkCoreObjectFactory.h"
 #include "niftkCoreExports.h"

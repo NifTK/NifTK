@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWEVENTINTERFACE_H_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWEVENTINTERFACE_H_INCLUDED
+#ifndef MIDASGeneralSegmentorViewEventInterface_h
+#define MIDASGeneralSegmentorViewEventInterface_h
 
 #include "itkObject.h"
 #include "itkSmartPointer.h"

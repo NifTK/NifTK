@@ -223,9 +223,9 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
   sp_output->FillBuffer(GetBackgroundValue());
 	 
 	__RegionType outputRegion = this->GetInput()->GetLargestPossibleRegion();
-	if (this->m_UseRegionOfInterest)
+	if (m_UseRegionOfInterest)
 	{
-	  outputRegion = this->m_RegionOfInterest;
+	  outputRegion = m_RegionOfInterest;
   }
 	
 	
@@ -240,7 +240,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	    {
 	      sp_output->TransformPhysicalPointToIndex(ic_seedPoint.Value(), imgIdx);
 	     
-	      if (this->m_ProjectSeedsIntoRegion && this->m_UseRegionOfInterest)
+	      if (m_ProjectSeedsIntoRegion && m_UseRegionOfInterest)
 	      {
 	        // Adjust seed so that it is within region.
 	        //

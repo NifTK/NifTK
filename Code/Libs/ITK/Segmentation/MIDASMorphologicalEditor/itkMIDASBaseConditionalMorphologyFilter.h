@@ -71,8 +71,8 @@ namespace itk
     typedef typename MaskImageDuplicatorType::Pointer MaskImageDuplicatorPointer;
 
     /** Set/Get methods to set the region to keep. */
-    void SetRegion(InputMaskImageRegionType region) { this->m_Region = region; this->m_UserSetRegion = true; this->Modified(); }
-    InputMaskImageRegionType GetRegion() const { return this->m_Region; }
+    void SetRegion(InputMaskImageRegionType region) { m_Region = region; m_UserSetRegion = true; this->Modified(); }
+    InputMaskImageRegionType GetRegion() const { return m_Region; }
 
     /** Set/Get methods to set the number of iterations, which in subclasses could be erosions or dilations. Default 0. */
     itkSetMacro(NumberOfIterations, unsigned int);

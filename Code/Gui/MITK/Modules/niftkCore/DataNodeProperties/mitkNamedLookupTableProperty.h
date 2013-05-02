@@ -55,4 +55,4 @@ private:
 
 } // namespace mitk
 
-#endif /* NamedLookupTableProperty_h */
+#endif

@@ -305,16 +305,16 @@ QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetQmitkRenderWindow(const QString
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D QmitkMIDASMultiViewEditor::GetSelectedPosition(const QString &id) const
+mitk::Point3D QmitkMIDASMultiViewEditor::GetSelectedPosition(const QString& id) const
 {
-  return d->m_MIDASMultiViewWidget->GetSelectedPosition(id);
+  return d->m_MIDASMultiViewWidget->GetCrossPosition(id);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
+void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString& id)
 {
-  return d->m_MIDASMultiViewWidget->SetSelectedPosition(pos, id);
+  return d->m_MIDASMultiViewWidget->SetCrossPosition(pos, id);
 }
 
 
@@ -393,5 +393,3 @@ bool QmitkMIDASMultiViewEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MIDASMultiViewWidget->IsLinkedNavigationEnabled();
 }
-
-

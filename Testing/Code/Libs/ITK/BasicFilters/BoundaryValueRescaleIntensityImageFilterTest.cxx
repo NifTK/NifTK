@@ -90,7 +90,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index); 
   if (pixel != 2)
     {
-      std::cerr << "Expected 2, got:" << pixel << std::endl;
+      std::cerr << "Filter1: Expected 2, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -99,7 +99,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index); 
   if (pixel != 2)
     {
-      std::cerr << "Expected 2, got:" << pixel << std::endl;
+      std::cerr << "Filter1: Expected 2, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -108,7 +108,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index);   
   if (pixel != 30)
     {
-      std::cerr << "Expected 30, got:" << pixel << std::endl;
+      std::cerr << "Filter1: Expected 30, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -117,7 +117,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index);   
   if (pixel != 50)
     {
-      std::cerr << "Expected 50, got:" << pixel << std::endl;
+      std::cerr << "Filter1: Expected 50, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -135,7 +135,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index);   
   if (pixel != 30)
     {
-      std::cerr << "Expected 30, got:" << pixel << std::endl;
+      std::cerr << "Filter2: Expected 30, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -144,7 +144,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index); 
   if (pixel != 50)
     {
-      std::cerr << "Expected 50, got:" << pixel << std::endl;
+      std::cerr << "Filter2: Expected 50, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -153,7 +153,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index); 
   if (pixel != 30)
     {
-      std::cerr << "Expected 30, got:" << pixel << std::endl;
+      std::cerr << "Filter2: Expected 30, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -162,7 +162,7 @@ int BoundaryValueRescaleIntensityImageFilterTest(int argc, char * argv[])
   pixel = output->GetPixel(index); 
   if (pixel != 30)
     {
-      std::cerr << "Expected 30, got:" << pixel << std::endl;
+      std::cerr << "Filter2: Expected 30, got:" << pixel << std::endl;
       return EXIT_FAILURE;
     }
 

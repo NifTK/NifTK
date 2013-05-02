@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKCOORDINATEAXESDATA_H
-#define MITKCOORDINATEAXESDATA_H
+#ifndef mitk_CoordinateAxesData_h
+#define mitk_CoordinateAxesData_h
 
 #include "niftkCoreExports.h"
 #include <itkImageRegion.h>

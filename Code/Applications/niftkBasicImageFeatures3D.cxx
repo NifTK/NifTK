@@ -915,8 +915,8 @@ int main( int argc, char *argv[] )
 
       for ( iDim=0; iDim<ImageDimension; iDim++) {
 	
-	nPixelsResampled[iDim] = ceil( ((float) nPixelsInput[iDim])
-				       / scaleFactorRelativeToInput );
+        nPixelsResampled[iDim] = static_cast<InputImageType::SizeType::SizeValueType>(ceil( ((float) nPixelsInput[iDim])
+               / scaleFactorRelativeToInput ));
 
 	actualSamplingFactor = ((float) nPixelsInput[iDim]) / ((float) nPixelsResampled[iDim] );
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWWIDGET_H_
-#define QMITKMIDASMULTIVIEWWIDGET_H_
+#ifndef QmitkMIDASMultiViewWidget_h
+#define QmitkMIDASMultiViewWidget_h
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
@@ -228,14 +228,16 @@ public:
   virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
 
   /**
-   * \see mitk::IRenderWindowPart::GetSelectionPosition(), where we report the position of the currently selected render window.
+   * \brief Gets the crosshair position in the render window with the given id or
+   * in the currently selected render window if no id is given.
    */
-  virtual mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
+  mitk::Point3D GetCrossPosition(const QString& id = QString()) const;
 
   /**
-   * \see mitk::IRenderWindowPart::SetSelectedPosition(), where we set the position of the currently selected render window, and if linked mode is on, make sure all the others update.
+   * \brief Sets the crosshair position in the render window with the given id or
+   * in the currently selected render window if no id is given.
    */
-  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetCrossPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
@@ -281,7 +283,7 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void OnCrossPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, int sliceNumber);
 
   /// \brief Called when the centre is changed by moving or zooming in a renderer window.
   void OnCentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre);
@@ -439,4 +441,4 @@ private:
   MIDASView                                      m_MultiWindowLayout;
 };
 
-#endif /*QMITKMIDASMULTIWIDGET_H_*/
+#endif

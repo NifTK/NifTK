@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H
-#define QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H
+#ifndef QmitkMIDASMultiViewEditorPreferencePage_h
+#define QmitkMIDASMultiViewEditorPreferencePage_h
 
 #include "berryIQtPreferencePage.h"
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
@@ -135,4 +135,4 @@ private:
   berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;
 };
 
-#endif /* QMITKMIDASMULTIVIEWEDITORPREFERENCEPAGE_H */
+#endif

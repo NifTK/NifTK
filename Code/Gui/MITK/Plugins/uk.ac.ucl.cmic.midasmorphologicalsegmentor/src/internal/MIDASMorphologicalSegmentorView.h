@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
-#define _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
+#ifndef MIDASMorphologicalSegmentorView_h
+#define MIDASMorphologicalSegmentorView_h
 
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 #include <mitkImage.h>
@@ -162,4 +162,4 @@ private:
   int m_TabCounter;
 };
 
-#endif // _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
+#endif

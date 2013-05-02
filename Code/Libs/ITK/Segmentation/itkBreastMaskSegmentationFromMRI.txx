@@ -334,7 +334,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   const HistogramType *histogramT2 = 0;
   const HistogramType *histogramFS = 0;
 
-  unsigned int nBins = (unsigned int) maxIntensity - minIntensity + 1;
+  unsigned int nBins = (unsigned int) (maxIntensity - minIntensity + 1);
 
   if ( flgVerbose ) 
     std::cout << "Number of histogram bins: " << nBins << std::endl;
@@ -2280,8 +2280,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   {    
     typename PointSetType::PointType p = pointIt.Value();   // access the point
     
-    bSplineCoord[0] = p[0];
-    bSplineCoord[1] = p[1];
+    bSplineCoord[0] = static_cast<typename VectorImageType::IndexValueType>(p[0]);
+    bSplineCoord[1] = static_cast<typename VectorImageType::IndexValueType>(p[1]);
 
     rBias += pointDataIt.Value()[0] - bSplineSurface->GetPixel( bSplineCoord )[0] ;
     

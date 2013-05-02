@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPAINTBRUSHTOOL_H
-#define MITKMIDASPAINTBRUSHTOOL_H
+#ifndef mitk_MIDASPaintbrushTool_h
+#define mitk_MIDASPaintbrushTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"

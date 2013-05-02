@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
+#ifndef MIDASGeneralSegmentorView_h
+#define MIDASGeneralSegmentorView_h
 
 #include "ui_MIDASGeneralSegmentorViewControls.h"
 
@@ -889,4 +889,4 @@ private:
   mitk::Point3D m_PreviousFocusPoint;
 
 };
-#endif // _MIDASGENERALSEGMENTORVIEW_H_INCLUDED
+#endif
