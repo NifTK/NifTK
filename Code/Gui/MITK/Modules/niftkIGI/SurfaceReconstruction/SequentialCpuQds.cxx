@@ -229,7 +229,7 @@ void SequentialCpuQds::InitSparseFeatures()
   //  and guess that on average we have 30 pixels.
   // so lets help the LKT, otherwise it sometimes finds lots of dodgy matches
   m_SparseFeaturesRight = m_SparseFeaturesLeft;
-  for (int i = 0; i < m_SparseFeaturesRight.size(); ++i)
+  for (unsigned int i = 0; i < m_SparseFeaturesRight.size(); ++i)
   {
     m_SparseFeaturesRight[i].x -= m_LeftIpl.width / 12;
   }
@@ -245,7 +245,7 @@ void SequentialCpuQds::InitSparseFeatures()
 #ifndef NDEBUG
   // help with debugging this
   // throw out all failed points, otherwise it's a mess trying to figure out which features were tracked and which were not
-  for (int i = m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
+  for (unsigned int i = m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
   {
     if (m_FeatureStatus[i] == 0)
     {

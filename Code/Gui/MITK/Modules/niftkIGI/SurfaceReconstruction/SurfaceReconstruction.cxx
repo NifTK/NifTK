@@ -59,8 +59,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
   assert(image1.IsNotNull());
   assert(image2.IsNotNull());
 
-  int width  = image1->GetDimension(0);
-  int height = image1->GetDimension(1);
+  unsigned int width  = image1->GetDimension(0);
+  unsigned int height = image1->GetDimension(1);
 
   // for current methods, both left and right have to have the same size
   if (image2->GetDimension(0) != width)

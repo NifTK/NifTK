@@ -123,7 +123,7 @@ int CreateMaskImage( arguments &args )
   maskImage = imageReader->GetOutput();
   maskImage->DisconnectPipeline();
 
-  maskImage->FillBuffer( 0. );
+  maskImage->FillBuffer( static_cast<PixelType>(0) );
 
 
   // Calculate the extent of the bounding specified (the whole image by default)
