@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASORIENTATIONWIDGET_H
-#define QMITKMIDASORIENTATIONWIDGET_H
+#ifndef QmitkMIDASOrientationWidget_h
+#define QmitkMIDASOrientationWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include "ui_QmitkMIDASOrientationWidget.h"
@@ -23,8 +23,9 @@ class QButtonGroup;
 
 /**
  * \class QmitkMIDASOrientationWidget
- * \brief Qt Widget class to contain radio buttons for axial, coronal, sagittal, and a combo box for any
- * other layouts of interest.
+ * \brief Qt Widget class to contain four radio buttons for single window layouts (axial,
+ * sagittal, coronal and 3D) and a fifth radio button and a combo box to switch to multiple
+ * window layout and select it.
  *
  * By default MIDAS only provides axial, coronal and sagittal, whereas here we can use the combo box
  * for any number of layouts, and still keep a reasonably compact screen layout.
@@ -32,25 +33,24 @@ class QButtonGroup;
  */
 class NIFTKMIDASGUI_EXPORT QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
 
+  /// \brief Constructs a QmitkMIDASOrientationWidget object.
   QmitkMIDASOrientationWidget(QWidget *parent = 0);
-  ~QmitkMIDASOrientationWidget();
+
+  /// \brief Destructs a QmitkMIDASOrientationWidget object.
+  virtual ~QmitkMIDASOrientationWidget();
 
   /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
-  /// \brief Calls blockSignals(block) on all contained widgets.
-  bool BlockSignals(bool block);
+  /// \brief Gets the current view.
+  MIDASView GetView() const;
 
-  /// \brief Calls setEnabled(enabled) on all contained widgets.
-  void SetEnabled(bool enabled);
-
-  /// \brief Method to set the widget check-boxes to match the supplied view.
-  void SetToView(MIDASView view);
+  /// \brief Sets the widget controls to match the supplied view.
+  void SetView(MIDASView view);
 
 signals:
 
@@ -59,18 +59,32 @@ signals:
 
 protected slots:
 
-  void OnAxialRadioButtonToggled(bool checked);
-  void OnCoronalRadioButtonToggled(bool checked);
-  void OnSagittalRadioButtonToggled(bool checked);
-  void OnOtherRadioButtonToggled(bool checked);
-  void OnComboBoxIndexChanged(int i);
+  /// \brief Called when the axial window radio button is toggled.
+  void OnAxialWindowRadioButtonToggled(bool checked);
 
-protected:
+  /// \brief Called when the sagittal window radio button is toggled.
+  void OnSagittalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the coronal window radio button is toggled.
+  void OnCoronalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the 3D window radio button is toggled.
+  void On3DWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the multiple window radio button is toggled.
+  void OnMultiWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when a window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged(int index);
 
 private:
 
-  MIDASView m_CurrentView;
-  QButtonGroup *m_ButtonGroup;
+  /// \brief Stores the currently selected window layout.
+  MIDASView m_View;
+
+  /// \brief Stores the multiple window layouts in the same order as the combo box.
+  static MIDASView s_MultiWindowViews[];
+  static int const s_MultiWindowViewNumber;
 };
 
 #endif

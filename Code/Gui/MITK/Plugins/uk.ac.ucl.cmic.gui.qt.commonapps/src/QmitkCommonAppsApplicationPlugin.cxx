@@ -113,8 +113,8 @@ const mitk::DataStorage* QmitkCommonAppsApplicationPlugin::GetDataStorage()
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterDataStorageListener()
 {
-  this->m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(m_Context);
-  this->m_DataStorageServiceTracker->open();
+  m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(m_Context);
+  m_DataStorageServiceTracker->open();
 
   this->GetDataStorage()->AddNodeEvent.AddListener
       ( mitk::MessageDelegate1<QmitkCommonAppsApplicationPlugin, const mitk::DataNode*>

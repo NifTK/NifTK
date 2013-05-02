@@ -122,7 +122,7 @@ bool AffineTransformParametersDataNodeProperty::Assign(const BaseProperty& prope
   if(other==NULL) return false;
 
   ParametersType otherParameters = other->GetAffineTransformParameters();
-  this->m_Parameters = otherParameters;
+  m_Parameters = otherParameters;
 
   return true;
 }

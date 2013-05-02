@@ -389,76 +389,76 @@ AnalyzeImageIO3160::AnalyzeImageIO3160()
 
   // Analyze stuff
   //  memset sets the first n bytes in memory area s to the value of c
-  //  (cothis->m_Hdr.dime.dim[4]erted to an unsigned char).  It returns s.
+  //  (com_Hdr.dime.dim[4]erted to an unsigned char).  It returns s.
   //  void *memset (void *s, int c, size_t n);
-  memset(&(this->m_Hdr),0, sizeof(struct dsr));
+  memset(&(m_Hdr),0, sizeof(struct dsr));
 
-  // strcpy(this->m_Hdr.hk.data_type,DataTypes[DT_INDEX_UNKNOWN]);
-  /* Acceptable this->m_Hdr.hk.data_type values are */
+  // strcpy(m_Hdr.hk.data_type,DataTypes[DT_INDEX_UNKNOWN]);
+  /* Acceptable m_Hdr.hk.data_type values are */
   /* "UNKNOWN","BINARY","CHAR","SHORT","INT","FLOAT","COMPLEX","DOUBLE","RGB" */
-  this->m_Hdr.hk.sizeof_hdr = static_cast< int >( sizeof(struct dsr) );
-  this->m_Hdr.hk.db_name[0]='\0';
-  this->m_Hdr.hk.extents=16384;
-  this->m_Hdr.hk.session_error=0;
-  this->m_Hdr.hk.regular='r';
-  this->m_Hdr.hk.hkey_un0='\0';
+  m_Hdr.hk.sizeof_hdr = static_cast< int >( sizeof(struct dsr) );
+  m_Hdr.hk.db_name[0]='\0';
+  m_Hdr.hk.extents=16384;
+  m_Hdr.hk.session_error=0;
+  m_Hdr.hk.regular='r';
+  m_Hdr.hk.hkey_un0='\0';
 
   /* HeaderObj_dimension information*/
-  this->m_Hdr.dime.dim[0]=4;     //Usually 4 x,y,z,time
-  this->m_Hdr.dime.dim[1]=1;     //size_x;//number of columns
-  this->m_Hdr.dime.dim[2]=1;     //size_y;//number of rows
-  this->m_Hdr.dime.dim[3]=1;     //size_z;//number of slices
-  this->m_Hdr.dime.dim[4]=1;     //size_t;//number of volumes
-  this->m_Hdr.dime.dim[5]=1;
-  this->m_Hdr.dime.dim[6]=1;
-  this->m_Hdr.dime.dim[7]=1;
+  m_Hdr.dime.dim[0]=4;     //Usually 4 x,y,z,time
+  m_Hdr.dime.dim[1]=1;     //size_x;//number of columns
+  m_Hdr.dime.dim[2]=1;     //size_y;//number of rows
+  m_Hdr.dime.dim[3]=1;     //size_z;//number of slices
+  m_Hdr.dime.dim[4]=1;     //size_t;//number of volumes
+  m_Hdr.dime.dim[5]=1;
+  m_Hdr.dime.dim[6]=1;
+  m_Hdr.dime.dim[7]=1;
 
   /* labels voxel spatial unit */
-  this->m_Hdr.dime.vox_units[0]='\0';
+  m_Hdr.dime.vox_units[0]='\0';
   /* labels voxel calibration unit */
-  this->m_Hdr.dime.cal_units[0]='\0';
+  m_Hdr.dime.cal_units[0]='\0';
 
-  this->m_Hdr.dime.unused1=0;
+  m_Hdr.dime.unused1=0;
   // Acceptable data values are DT_NONE, DT_UNKOWN, DT_BINARY,
   // DT_UNSIGNED_CHAR
   // DT_SIGNED_SHORT, DT_SIGNED_INT, DT_FLOAT, DT_COMPLEX, DT_DOUBLE,
   // DT_RGB, DT_ALL
-  //this->m_Hdr.dime.datatype=DataTypeKey[DT_INDEX_UNKNOWN];
+  //m_Hdr.dime.datatype=DataTypeKey[DT_INDEX_UNKNOWN];
 
-  // this->m_Hdr.dime.bitpix=DataTypeSizes[DT_INDEX_UNKNOWN];/*bits per pixel*/
-  this->m_Hdr.dime.dim_un0=0;
+  // m_Hdr.dime.bitpix=DataTypeSizes[DT_INDEX_UNKNOWN];/*bits per pixel*/
+  m_Hdr.dime.dim_un0=0;
 
   // Set the voxel dimension fields:
   // A value of 0.0 for these fields implies that the value is unknown.
   // Change these values to what is appropriate for your data
-  // or pass additional commathis->m_Hdr.dime.dim[0] line arguments
-  this->m_Hdr.dime.pixdim[0]=0.0f;//Unused field
-  this->m_Hdr.dime.pixdim[1]=1.0f;//x_dimension
-  this->m_Hdr.dime.pixdim[2]=1.0f;//y_dimension
-  this->m_Hdr.dime.pixdim[3]=1.0f;//z_dimension
-  this->m_Hdr.dime.pixdim[4]=1.0f;//t_dimension
-  this->m_Hdr.dime.pixdim[5]=1.0f;
-  this->m_Hdr.dime.pixdim[6]=1.0f;
-  this->m_Hdr.dime.pixdim[7]=1.0f;
+  // or pass additional commam_Hdr.dime.dim[0] line arguments
+  m_Hdr.dime.pixdim[0]=0.0f;//Unused field
+  m_Hdr.dime.pixdim[1]=1.0f;//x_dimension
+  m_Hdr.dime.pixdim[2]=1.0f;//y_dimension
+  m_Hdr.dime.pixdim[3]=1.0f;//z_dimension
+  m_Hdr.dime.pixdim[4]=1.0f;//t_dimension
+  m_Hdr.dime.pixdim[5]=1.0f;
+  m_Hdr.dime.pixdim[6]=1.0f;
+  m_Hdr.dime.pixdim[7]=1.0f;
   // Assume zero offset in .img file, byte at which pixel data starts in
   // the HeaderObj file
   // byte offset in the HeaderObj file which voxels start
-  this->m_Hdr.dime.vox_offset=0.0f;
+  m_Hdr.dime.vox_offset=0.0f;
 
-  this->m_Hdr.dime.roi_scale=0.0f;
-  this->m_Hdr.dime.funused1=0.0f;
-  this->m_Hdr.dime.funused2=0.0f;
-  this->m_Hdr.dime.cal_max=0.0f;  // specify range of calibration values
-  this->m_Hdr.dime.cal_min=0.0f;  // specify range of calibration values
-  this->m_Hdr.dime.compressed=0; // specify that the data file with extension
+  m_Hdr.dime.roi_scale=0.0f;
+  m_Hdr.dime.funused1=0.0f;
+  m_Hdr.dime.funused2=0.0f;
+  m_Hdr.dime.cal_max=0.0f;  // specify range of calibration values
+  m_Hdr.dime.cal_min=0.0f;  // specify range of calibration values
+  m_Hdr.dime.compressed=0; // specify that the data file with extension
   // .img is not compressed
-  this->m_Hdr.dime.verified=0;
-  this->m_Hdr.dime.glmax=0;      // max value for all of the data set
-  this->m_Hdr.dime.glmin=0;      // min value for all of the data set
+  m_Hdr.dime.verified=0;
+  m_Hdr.dime.glmax=0;      // max value for all of the data set
+  m_Hdr.dime.glmin=0;      // min value for all of the data set
 
   /*data_history*/
-  this->m_Hdr.hist.descrip[0]='\0';
-  this->m_Hdr.hist.aux_file[0]='\0';
+  m_Hdr.hist.descrip[0]='\0';
+  m_Hdr.hist.aux_file[0]='\0';
   /*Acceptable values are*/
   /*0-transverse unflipped*/
   /*1-coronal unflipped*/
@@ -467,24 +467,24 @@ AnalyzeImageIO3160::AnalyzeImageIO3160()
   /*4-coronal flipped*/
   /*5-sagittal flipped*/
   // Default orientation is ITK_ANALYZE_TRANSVERSE
-  this->m_Hdr.hist.orient =
+  m_Hdr.hist.orient =
     itk::AnalyzeImageIO3160::ITK_ANALYZE_ORIENTATION_RPI_TRANSVERSE;
 
-  this->m_Hdr.hist.originator[0]='\0';
-  this->m_Hdr.hist.generated[0]='\0';
-  this->m_Hdr.hist.scannum[0]='\0';
-  this->m_Hdr.hist.patient_id[0]='\0';
-  this->m_Hdr.hist.exp_date[0]='\0';
-  this->m_Hdr.hist.exp_time[0]='\0';
-  this->m_Hdr.hist.hist_un0[0]='\0';
-  this->m_Hdr.hist.views=0;
-  this->m_Hdr.hist.vols_added=0;
-  this->m_Hdr.hist.start_field=0;
-  this->m_Hdr.hist.field_skip=0;
-  this->m_Hdr.hist.omax=0;
-  this->m_Hdr.hist.omin=0;
-  this->m_Hdr.hist.smax=0;
-  this->m_Hdr.hist.smin=0;
+  m_Hdr.hist.originator[0]='\0';
+  m_Hdr.hist.generated[0]='\0';
+  m_Hdr.hist.scannum[0]='\0';
+  m_Hdr.hist.patient_id[0]='\0';
+  m_Hdr.hist.exp_date[0]='\0';
+  m_Hdr.hist.exp_time[0]='\0';
+  m_Hdr.hist.hist_un0[0]='\0';
+  m_Hdr.hist.views=0;
+  m_Hdr.hist.vols_added=0;
+  m_Hdr.hist.start_field=0;
+  m_Hdr.hist.field_skip=0;
+  m_Hdr.hist.omax=0;
+  m_Hdr.hist.omin=0;
+  m_Hdr.hist.smax=0;
+  m_Hdr.hist.smin=0;
   this->AddSupportedWriteExtension(".hdr");
   this->AddSupportedWriteExtension(".img");
   this->AddSupportedWriteExtension(".img.gz");
@@ -729,7 +729,7 @@ bool AnalyzeImageIO3160::CanReadFile( const char* FileNameToRead )
     return false;
     }
   if( ! this->ReadBufferAsBinary( local_InputStream,
-                                  (void *)&(this->m_Hdr),
+                                  (void *)&(m_Hdr),
                                   sizeof(struct dsr) ) )
     {
     local_InputStream.close();
@@ -739,12 +739,12 @@ bool AnalyzeImageIO3160::CanReadFile( const char* FileNameToRead )
 
   // if the machine and file endianess are different
   // perform the byte swapping on it
-  this->m_ByteOrder = this->CheckAnalyzeEndian(this->m_Hdr);
-  this->SwapHeaderBytesIfNecessary( &(this->m_Hdr) );
+  m_ByteOrder = this->CheckAnalyzeEndian(m_Hdr);
+  this->SwapHeaderBytesIfNecessary( &(m_Hdr) );
 #ifdef OMIT_THIS_CODE
   //It is OK for this flag to be set because the zlib will
   //support the Unix compress files
-  if(this->m_Hdr.dime.compressed==1)
+  if(m_Hdr.dime.compressed==1)
     {
     return false;
     //    ExceptionObject exception(__FILE__, __LINE__);
@@ -772,7 +772,7 @@ void AnalyzeImageIO3160::ReadImageInformation()
     itkExceptionMacro(<< "File cannot be read");
     }
   if( ! this->ReadBufferAsBinary( local_InputStream,
-                                  (void *)&(this->m_Hdr),
+                                  (void *)&(m_Hdr),
                                   sizeof(struct dsr) ) )
     {
     itkExceptionMacro(<< "Unexpected end of file");
@@ -781,10 +781,10 @@ void AnalyzeImageIO3160::ReadImageInformation()
 
   // if the machine and file endianess are different
   // perform the byte swapping on it
-  this->m_ByteOrder=this->CheckAnalyzeEndian(this->m_Hdr);
-  if( this->m_MachineByteOrder != this->m_ByteOrder  )
+  m_ByteOrder=this->CheckAnalyzeEndian(m_Hdr);
+  if( m_MachineByteOrder != m_ByteOrder  )
     {
-    this->SwapHeaderBytesIfNecessary( &(this->m_Hdr) );
+    this->SwapHeaderBytesIfNecessary( &(m_Hdr) );
     }
 
   // Check if any dimensions are 1. If they are, reduce dimensionality
@@ -795,7 +795,7 @@ void AnalyzeImageIO3160::ReadImageInformation()
   //   m_Hdr.dime.dim[2] = 27;
   //   m_Hdr.dime.dim[3] = 1;
   //   m_Hdr.dime.dim[4] = 1;
-  unsigned int numberOfDimensions = this->m_Hdr.dime.dim[0];
+  unsigned int numberOfDimensions = m_Hdr.dime.dim[0];
   if (numberOfDimensions == 0)
     {
     // If the dimension is 0, it may still contain valid dimension
@@ -804,10 +804,10 @@ void AnalyzeImageIO3160::ReadImageInformation()
     // to throw an exception already.
     const unsigned int maxNumberOfDimensions = 4;
     for (unsigned int idx = 1; 
-         (idx <= maxNumberOfDimensions) && (this->m_Hdr.dime.dim[idx]); 
+         (idx <= maxNumberOfDimensions) && (m_Hdr.dime.dim[idx]); 
          idx++)
       {
-      if (this->m_Hdr.dime.dim[idx] > 0)
+      if (m_Hdr.dime.dim[idx] > 0)
         {
         numberOfDimensions++;
         }
@@ -826,14 +826,14 @@ void AnalyzeImageIO3160::ReadImageInformation()
                       << "hdr.dime[4] = " << m_Hdr.dime.dim[4] << std::endl);
     return;
     }
-  while(this->m_Hdr.dime.dim[numberOfDimensions] <=1 )
+  while(m_Hdr.dime.dim[numberOfDimensions] <=1 )
     {
     --numberOfDimensions;
     }
 
   this->SetNumberOfDimensions(numberOfDimensions);
   this->SetNumberOfComponents(1); // default
-  switch( this->m_Hdr.dime.datatype )
+  switch( m_Hdr.dime.datatype )
     {
     case ANALYZE_DT_BINARY:
       m_ComponentType = CHAR;
@@ -881,8 +881,8 @@ void AnalyzeImageIO3160::ReadImageInformation()
   // set up the dimension stuff
   for(dim = 0; dim < this->GetNumberOfDimensions(); dim++)
     {
-    this->SetDimensions(dim,this->m_Hdr.dime.dim[dim+1]);
-    this->SetSpacing(dim,this->m_Hdr.dime.pixdim[dim+1]);
+    this->SetDimensions(dim,m_Hdr.dime.dim[dim+1]);
+    this->SetSpacing(dim,m_Hdr.dime.pixdim[dim+1]);
     }
   //
   // figure out re-orientation required if not in Coronal
@@ -897,24 +897,24 @@ void AnalyzeImageIO3160::ReadImageInformation()
   itk::EncapsulateMetaData<std::string>(thisDic,ITK_InputFilterName, classname);
 
   itk::EncapsulateMetaData<std::string>
-    (thisDic,ITK_ImageFileBaseName,std::string(this->m_Hdr.hk.db_name,18));
+    (thisDic,ITK_ImageFileBaseName,std::string(m_Hdr.hk.db_name,18));
 
   //Important dime fields
   itk::EncapsulateMetaData<std::string>
-    (thisDic,ITK_VoxelUnits,std::string(this->m_Hdr.dime.vox_units,4));
+    (thisDic,ITK_VoxelUnits,std::string(m_Hdr.dime.vox_units,4));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ANALYZE_CALIBRATIONUNITS,
-     std::string(this->m_Hdr.dime.cal_units,8));
+     std::string(m_Hdr.dime.cal_units,8));
   itk::EncapsulateMetaData<short int>
-    (thisDic,ITK_OnDiskBitPerPixel,this->m_Hdr.dime.bitpix);
+    (thisDic,ITK_OnDiskBitPerPixel,m_Hdr.dime.bitpix);
   itk::EncapsulateMetaData<float>
-    (thisDic,SPM_ROI_SCALE,this->m_Hdr.dime.roi_scale);
+    (thisDic,SPM_ROI_SCALE,m_Hdr.dime.roi_scale);
   itk::EncapsulateMetaData<float>(thisDic,ANALYZE_CAL_MAX,
-                                  this->m_Hdr.dime.cal_max);
+                                  m_Hdr.dime.cal_max);
   itk::EncapsulateMetaData<float>(thisDic,ANALYZE_CAL_MIN,
-                                  this->m_Hdr.dime.cal_min);
-  itk::EncapsulateMetaData<int>(thisDic,ANALYZE_GLMAX,this->m_Hdr.dime.glmax);
-  itk::EncapsulateMetaData<int>(thisDic,ANALYZE_GLMIN,this->m_Hdr.dime.glmin);
+                                  m_Hdr.dime.cal_min);
+  itk::EncapsulateMetaData<int>(thisDic,ANALYZE_GLMAX,m_Hdr.dime.glmax);
+  itk::EncapsulateMetaData<int>(thisDic,ANALYZE_GLMIN,m_Hdr.dime.glmin);
 
   for (dim=this->GetNumberOfDimensions(); dim>0; dim--)
     {
@@ -925,7 +925,7 @@ void AnalyzeImageIO3160::ReadImageInformation()
     }
   itk::EncapsulateMetaData<int>(thisDic,ITK_NumberOfDimensions,dim);
 
-  switch(this->m_Hdr.dime.datatype) 
+  switch(m_Hdr.dime.datatype) 
     {
     case ANALYZE_DT_BINARY:
       itk::EncapsulateMetaData<std::string>
@@ -980,14 +980,14 @@ void AnalyzeImageIO3160::ReadImageInformation()
   //Important hist fields
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_FileNotes,
-     std::string(this->m_Hdr.hist.descrip,80));
+     std::string(m_Hdr.hist.descrip,80));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ANALYZE_AUX_FILE_NAME,
-     std::string(this->m_Hdr.hist.aux_file,24));
+     std::string(m_Hdr.hist.aux_file,24));
 
   itk::AnalyzeImageIO3160::ValidAnalyzeOrientationFlags temporient
     = static_cast<itk::AnalyzeImageIO3160::ValidAnalyzeOrientationFlags>
-    (this->m_Hdr.hist.orient);
+    (m_Hdr.hist.orient);
   itk::SpatialOrientation::ValidCoordinateOrientationFlags coord_orient;
   switch (temporient)
     {
@@ -1078,35 +1078,35 @@ void AnalyzeImageIO3160::ReadImageInformation()
 
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_FileOriginator,
-     std::string(this->m_Hdr.hist.originator,10));
+     std::string(m_Hdr.hist.originator,10));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_OriginationDate,
-     std::string(this->m_Hdr.hist.generated,10));
+     std::string(m_Hdr.hist.generated,10));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ANALYZE_ScanNumber,
-     std::string(this->m_Hdr.hist.scannum,10));
+     std::string(m_Hdr.hist.scannum,10));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_PatientID,
-     std::string(this->m_Hdr.hist.patient_id,10));
+     std::string(m_Hdr.hist.patient_id,10));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_ExperimentDate,
-     std::string(this->m_Hdr.hist.exp_date,10));
+     std::string(m_Hdr.hist.exp_date,10));
   itk::EncapsulateMetaData<std::string>
     (thisDic,ITK_ExperimentTime,
-     std::string(this->m_Hdr.hist.exp_date,10));
+     std::string(m_Hdr.hist.exp_date,10));
 
   itk::EncapsulateMetaData<int>
     (thisDic,ANALYZE_O_MAX,
-     this->m_Hdr.hist.omax);
+     m_Hdr.hist.omax);
   itk::EncapsulateMetaData<int>
     (thisDic,ANALYZE_O_MIN,
-     this->m_Hdr.hist.omin);
+     m_Hdr.hist.omin);
   itk::EncapsulateMetaData<int>
     (thisDic,ANALYZE_S_MAX,
-     this->m_Hdr.hist.smax);
+     m_Hdr.hist.smax);
   itk::EncapsulateMetaData<int>
     (thisDic,ANALYZE_S_MIN,
-     this->m_Hdr.hist.smin);
+     m_Hdr.hist.smin);
   return;
 }
 
@@ -1151,46 +1151,46 @@ AnalyzeImageIO3160
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_ImageFileBaseName,temp))
     {
-    strncpy(this->m_Hdr.hk.db_name,temp.c_str(),18);
+    strncpy(m_Hdr.hk.db_name,temp.c_str(),18);
     }
   //Important dime fields
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_VoxelUnits,temp))
     {
-    strncpy(this->m_Hdr.dime.vox_units,temp.c_str(),4);
+    strncpy(m_Hdr.dime.vox_units,temp.c_str(),4);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ANALYZE_CALIBRATIONUNITS,temp))
     {
-    strncpy(this->m_Hdr.dime.cal_units,temp.c_str(),8);
+    strncpy(m_Hdr.dime.cal_units,temp.c_str(),8);
     }
 
   itk::ExposeMetaData<short int>
     (thisDic,ITK_OnDiskBitPerPixel,
-     this->m_Hdr.dime.bitpix);
+     m_Hdr.dime.bitpix);
   itk::ExposeMetaData<float>
     (thisDic,SPM_ROI_SCALE,
-     this->m_Hdr.dime.roi_scale);
+     m_Hdr.dime.roi_scale);
   itk::ExposeMetaData<float>
     (thisDic,ANALYZE_CAL_MAX,
-     this->m_Hdr.dime.cal_max);
+     m_Hdr.dime.cal_max);
   itk::ExposeMetaData<float>
     (thisDic,ANALYZE_CAL_MIN,
-     this->m_Hdr.dime.cal_min);
+     m_Hdr.dime.cal_min);
   itk::ExposeMetaData<int>
     (thisDic,ANALYZE_GLMAX,
-     this->m_Hdr.dime.glmax);
+     m_Hdr.dime.glmax);
   itk::ExposeMetaData<int>
     (thisDic,ANALYZE_GLMIN,
-     this->m_Hdr.dime.glmin);
+     m_Hdr.dime.glmin);
   //Important hist fields
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_FileNotes,temp))
     {
-    strncpy(this->m_Hdr.hist.descrip,temp.c_str(),80);
+    strncpy(m_Hdr.hist.descrip,temp.c_str(),80);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ANALYZE_AUX_FILE_NAME,temp))
     {
-    strncpy(this->m_Hdr.hist.aux_file,temp.c_str(),24);
+    strncpy(m_Hdr.hist.aux_file,temp.c_str(),24);
     }
 
   itk::SpatialOrientation::ValidCoordinateOrientationFlags coord_orient =
@@ -1239,19 +1239,19 @@ AnalyzeImageIO3160
   switch (coord_orient)
     {
     case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI:
-      this->m_Hdr.hist.orient =
+      m_Hdr.hist.orient =
         itk::AnalyzeImageIO3160::ITK_ANALYZE_ORIENTATION_RPI_TRANSVERSE;
       break;
     case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_PIR:
-      this->m_Hdr.hist.orient =
+      m_Hdr.hist.orient =
         itk::AnalyzeImageIO3160::ITK_ANALYZE_ORIENTATION_PIR_SAGITTAL;
       break;
     case itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RIP:
-      this->m_Hdr.hist.orient =
+      m_Hdr.hist.orient =
         itk::AnalyzeImageIO3160::ITK_ANALYZE_ORIENTATION_RIP_CORONAL;
       break;
     default:
-      this->m_Hdr.hist.orient =
+      m_Hdr.hist.orient =
         itk::AnalyzeImageIO3160::ITK_ANALYZE_ORIENTATION_RIP_CORONAL;
       itkWarningMacro( "ERROR: Analyze 7.5 File Format"
                        " Only Allows RPI, PIR, and RIP Orientation " );
@@ -1259,38 +1259,38 @@ AnalyzeImageIO3160
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_FileOriginator,temp))
     {
-    strncpy(this->m_Hdr.hist.originator,temp.c_str(),10);
+    strncpy(m_Hdr.hist.originator,temp.c_str(),10);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_OriginationDate,temp))
     {
-    strncpy(this->m_Hdr.hist.generated,temp.c_str(),10);
+    strncpy(m_Hdr.hist.generated,temp.c_str(),10);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ANALYZE_ScanNumber,temp))
     {
-    strncpy(this->m_Hdr.hist.scannum,temp.c_str(),10);
+    strncpy(m_Hdr.hist.scannum,temp.c_str(),10);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_PatientID,temp))
     {
-    strncpy(this->m_Hdr.hist.patient_id,temp.c_str(),10);
+    strncpy(m_Hdr.hist.patient_id,temp.c_str(),10);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_ExperimentDate,temp))
     {
-    strncpy(this->m_Hdr.hist.exp_date,temp.c_str(),10);
+    strncpy(m_Hdr.hist.exp_date,temp.c_str(),10);
     }
 
   if(itk::ExposeMetaData<std::string>(thisDic,ITK_ExperimentTime,temp))
     {
-    strncpy(this->m_Hdr.hist.exp_date,temp.c_str(),10);
+    strncpy(m_Hdr.hist.exp_date,temp.c_str(),10);
     }
 
-  itk::ExposeMetaData<int>(thisDic,ANALYZE_O_MAX,this->m_Hdr.hist.omax);
-  itk::ExposeMetaData<int>(thisDic,ANALYZE_O_MIN,this->m_Hdr.hist.omin);
-  itk::ExposeMetaData<int>(thisDic,ANALYZE_S_MAX,this->m_Hdr.hist.smax);
-  itk::ExposeMetaData<int>(thisDic,ANALYZE_S_MIN,this->m_Hdr.hist.smin);
+  itk::ExposeMetaData<int>(thisDic,ANALYZE_O_MAX,m_Hdr.hist.omax);
+  itk::ExposeMetaData<int>(thisDic,ANALYZE_O_MIN,m_Hdr.hist.omin);
+  itk::ExposeMetaData<int>(thisDic,ANALYZE_S_MAX,m_Hdr.hist.smax);
+  itk::ExposeMetaData<int>(thisDic,ANALYZE_S_MIN,m_Hdr.hist.smin);
 
   // Check for image dimensions to be smaller enough to fit in
   // a short int. First generate the number that is the maximum allowable.
@@ -1312,29 +1312,29 @@ AnalyzeImageIO3160
 
     //NOTE: Analyze dim[0] are the number of dims, and dim[1..7] are
     // the actual dims.
-    this->m_Hdr.dime.dim[dim+1]  = numberOfPixelsAlongThisDimension;
+    m_Hdr.dime.dim[dim+1]  = numberOfPixelsAlongThisDimension;
     }
 
   //DEBUG--HACK It seems that analyze 7.5 requires 4 dimensions.
-  this->m_Hdr.dime.dim[0]= 4;
-  for( dim=this->GetNumberOfDimensions();(int)dim < this->m_Hdr.dime.dim[0];
+  m_Hdr.dime.dim[0]= 4;
+  for( dim=this->GetNumberOfDimensions();(int)dim < m_Hdr.dime.dim[0];
        dim++ )
     {
     //NOTE: Analyze dim[0] are the number of dims,
     //and dim[1..7] are the actual dims.
-    this->m_Hdr.dime.dim[dim+1]  = 1; //Hardcoded to be 1;
+    m_Hdr.dime.dim[dim+1]  = 1; //Hardcoded to be 1;
     }
   for( dim=0; dim< this->GetNumberOfDimensions(); dim++ )
     {
     //NOTE: Analyze pixdim[0] is ignored, and the number of dims are
     //taken from dims[0], and pixdim[1..7] are the actual pixdims.
-    this->m_Hdr.dime.pixdim[dim+1]= static_cast< float >( m_Spacing[ dim ] );
+    m_Hdr.dime.pixdim[dim+1]= static_cast< float >( m_Spacing[ dim ] );
     }
   //The next funciton sets bitpix, and datatype, and data_type fields
   //Along with gl_min and gl_max fields.
   this->DefineHeaderObjectDataType();
 
-  local_OutputStream.write( (const char *)&(this->m_Hdr), sizeof(struct dsr) );
+  local_OutputStream.write( (const char *)&(m_Hdr), sizeof(struct dsr) );
   if( local_OutputStream.eof() )
     {
     itkExceptionMacro(<< "Unexpected end of file");
@@ -1352,7 +1352,7 @@ AnalyzeImageIO3160
 ::GetDirection( unsigned int k ) const
 {
   std::vector<double> correctedDirection = this->ImageIOBase::GetDirection(k);
-  if( this->m_Dimensions.size() == correctedDirection.size() )
+  if( m_Dimensions.size() == correctedDirection.size() )
     {
     return correctedDirection;
     }

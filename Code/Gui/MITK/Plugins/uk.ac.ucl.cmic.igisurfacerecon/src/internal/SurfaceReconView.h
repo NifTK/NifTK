@@ -16,15 +16,16 @@
 #define SurfaceReconView_h
 
 #include "QmitkBaseView.h"
-#include "mitkSurfaceReconstruction.h"
+#include "SurfaceReconstruction.h"
 #include <service/event/ctkEvent.h>
+#include "ui_SurfaceReconViewWidget.h"
 
 /**
  * \class SurfaceReconView
  * \brief User interface to provide a reconstructed surface from video images.
  * \ingroup uk_ac_ucl_cmic_igisurfacerecon_internal
 */
-class SurfaceReconView : public QmitkBaseView
+class SurfaceReconView : public QmitkBaseView, public Ui::SurfaceReconViewWidget
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -58,12 +59,24 @@ protected:
    */
   virtual void SetFocus();
 
+  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
+
+  // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
+  void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
+  void LoadStereoRig(const std::string& filename, mitk::Image::Pointer img);
+
 protected slots:
 
   /**
    * \brief The main method to perform the surface reconstruction.
    */
   void DoSurfaceReconstruction();
+
+  void UpdateNodeNameComboBox();
+
+  void LeftBrowseButtonClicked();
+  void RightBrowseButtonClicked();
+  void StereoRigBrowseButtonClicked();
 
 protected:
 
@@ -89,7 +102,7 @@ private:
   /**
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
-  mitk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+  niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
 };
 
 #endif // SurfaceReconView_h

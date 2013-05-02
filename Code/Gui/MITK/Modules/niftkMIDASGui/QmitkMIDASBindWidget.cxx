@@ -13,19 +13,24 @@
 =============================================================================*/
 
 #include "QmitkMIDASBindWidget.h"
-#include <QtDebug>
 
+#include <mitkLogMacros.h>
+
+//-----------------------------------------------------------------------------
 QmitkMIDASBindWidget::QmitkMIDASBindWidget(QWidget *parent)
 {
   m_CurrentBindType = MIDAS_BIND_NONE;
   setupUi(this);
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASBindWidget::~QmitkMIDASBindWidget()
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASBindWidget::setupUi(parent);
@@ -40,6 +45,8 @@ void QmitkMIDASBindWidget::setupUi(QWidget* parent)
   connect(m_BindGeometryCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnGeometryCheckBoxStateChanged(int)));
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::SetBlockSignals(bool block)
 {
   m_BindNoneCheckBox->blockSignals(block);
@@ -48,14 +55,8 @@ void QmitkMIDASBindWidget::SetBlockSignals(bool block)
   m_BindGeometryCheckBox->blockSignals(block);
 }
 
-void QmitkMIDASBindWidget::SetEnabled(bool enabled)
-{
-  m_BindNoneCheckBox->setEnabled(enabled);
-  m_BindCursorsCheckBox->setEnabled(enabled);
-  m_BindMagnificationCheckBox->setEnabled(enabled);
-  m_BindGeometryCheckBox->setEnabled(enabled);
-}
 
+//-----------------------------------------------------------------------------
 bool QmitkMIDASBindWidget::IsGeometryBound() const
 {
   if (m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION
@@ -69,6 +70,8 @@ bool QmitkMIDASBindWidget::IsGeometryBound() const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASBindWidget::AreCursorsBound() const
 {
   if (m_CurrentBindType == MIDAS_BIND_CURSORS
@@ -85,6 +88,8 @@ bool QmitkMIDASBindWidget::AreCursorsBound() const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASBindWidget::IsMagnificationBound() const
 {
   if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS
@@ -100,6 +105,8 @@ bool QmitkMIDASBindWidget::IsMagnificationBound() const
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::SetToBindType(MIDASBindType bindType)
 {
   if (bindType == m_CurrentBindType)
@@ -149,7 +156,7 @@ void QmitkMIDASBindWidget::SetToBindType(MIDASBindType bindType)
     m_BindGeometryCheckBox->setCheckState(Qt::Checked);
     break;
   default:
-    qWarning() << "QmitkMIDASBindWidget::SetToBindType, unrecognised type, can't set check box";
+    MITK_INFO << "QmitkMIDASBindWidget::SetToBindType, unrecognised type, can't set check box" << std::endl;
   }
 
   m_CurrentBindType = bindType;
@@ -157,6 +164,8 @@ void QmitkMIDASBindWidget::SetToBindType(MIDASBindType bindType)
   this->SetBlockSignals(false);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::OnNoneCheckBoxStateChanged(int state)
 {
   this->SetBlockSignals(true);
@@ -176,6 +185,8 @@ void QmitkMIDASBindWidget::OnNoneCheckBoxStateChanged(int state)
   emit BindTypeChanged(m_CurrentBindType);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::OnCursorsCheckBoxStateChanged(int state)
 {
   this->SetBlockSignals(true);
@@ -211,6 +222,8 @@ void QmitkMIDASBindWidget::OnCursorsCheckBoxStateChanged(int state)
   emit BindTypeChanged(m_CurrentBindType);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::OnMagnificationCheckBoxStateChanged(int state)
 {
   this->SetBlockSignals(true);
@@ -252,6 +265,8 @@ void QmitkMIDASBindWidget::OnMagnificationCheckBoxStateChanged(int state)
   emit BindTypeChanged(m_CurrentBindType);
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBindWidget::OnGeometryCheckBoxStateChanged(int state)
 {
   this->SetBlockSignals(true);

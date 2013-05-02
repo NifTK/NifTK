@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDATASTORAGEVISIBILITYTRACKER_H_
-#define MITKMIDASDATASTORAGEVISIBILITYTRACKER_H_
+#ifndef DataStorageVisibilityTracker_h
+#define DataStorageVisibilityTracker_h
 
 #include "niftkCoreExports.h"
 #include "mitkDataStoragePropertyListener.h"
@@ -23,7 +23,6 @@
 
 namespace mitk
 {
-
 
 class BaseRenderer;
 

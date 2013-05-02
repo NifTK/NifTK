@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASORIENTATIONUTILS_H
-#define MITKMIDASORIENTATIONUTILS_H
+#ifndef mitk_MIDASOrientationUtils_h
+#define mitk_MIDASOrientationUtils_h
 
 #include "niftkCoreExports.h"
 #include <mitkImage.h>

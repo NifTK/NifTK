@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASGENERALSEGMENTORVIEWACTIVATOR_H
-#define MIDASGENERALSEGMENTORVIEWACTIVATOR_H
+#ifndef mitk_MIDASGeneralSegmentorViewActivator_h
+#define mitk_MIDASGeneralSegmentorViewActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -39,4 +39,4 @@ public:
 
 }
 
-#endif // MIDASGENERALSEGMENTORVIEWACTIVATOR_H
+#endif

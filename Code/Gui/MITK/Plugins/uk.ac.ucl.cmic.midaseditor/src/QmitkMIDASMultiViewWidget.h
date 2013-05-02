@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWWIDGET_H_
-#define QMITKMIDASMULTIVIEWWIDGET_H_
+#ifndef QmitkMIDASMultiViewWidget_h
+#define QmitkMIDASMultiViewWidget_h
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
@@ -122,17 +122,17 @@ public:
   /// \brief Sets the visibility flag on the layout buttons.
   void SetShowLayoutButtons(bool visible);
 
-  /// \brief Sets the flag controlling the visibility of 2D cursors.
-  void SetShow2DCursors(bool visibile);
-
   /// \brief Returns the flag indicating whether we show 2D cursors.
   bool GetShow2DCursors() const;
 
-  /// \brief Sets the flag controlling whether we see the 3D window when in ortho view.
-  void SetShow3DViewInOrthoView(bool visible);
+  /// \brief Sets the flag controlling the visibility of 2D cursors.
+  void SetShow2DCursors(bool visibile);
 
-  /// \brief Gets the flag controlling whether we see the 3D window when in ortho view.
-  bool GetShow3DViewInOrthoView() const;
+  /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
+  bool GetShow3DWindowInOrthoView() const;
+
+  /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
+  void SetShow3DWindowInOrthoView(bool enabled);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
@@ -167,6 +167,9 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches sagittal.
   void SetSelectedWindowToCoronal();
 
+  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
+  void SetSelectedWindowTo3D();
+
   /// \brief Move anterior a slice.
   bool MoveAnterior();
 
@@ -181,6 +184,9 @@ public:
 
   /// \brief Switch to Coronal.
   bool SwitchToCoronal();
+
+  /// \brief Switch to 3D.
+  bool SwitchTo3D();
 
   /// \brief Switch the from single window to multiple windows or back
   bool ToggleMultiWindowLayout();
@@ -222,14 +228,16 @@ public:
   virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
 
   /**
-   * \see mitk::IRenderWindowPart::GetSelectionPosition(), where we report the position of the currently selected render window.
+   * \brief Gets the crosshair position in the render window with the given id or
+   * in the currently selected render window if no id is given.
    */
-  virtual mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
+  mitk::Point3D GetCrossPosition(const QString& id = QString()) const;
 
   /**
-   * \see mitk::IRenderWindowPart::SetSelectedPosition(), where we set the position of the currently selected render window, and if linked mode is on, make sure all the others update.
+   * \brief Sets the crosshair position in the render window with the given id or
+   * in the currently selected render window if no id is given.
    */
-  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetCrossPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
@@ -251,8 +259,6 @@ public:
 
 signals:
 
-public slots:
-
 protected slots:
 
   // Qt slots, connected to Qt GUI elements.
@@ -266,6 +272,7 @@ protected slots:
   void OnRowsSliderValueChanged(int);
   void OnColumnsSliderValueChanged(int);
   void OnOrientationSelected(MIDASView midasView);
+  void OnShow2DCursorsCheckBoxToggled(bool);
   void OnDropSingleRadioButtonToggled(bool);
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
@@ -276,7 +283,7 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void OnCrossPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, int sliceNumber);
 
   /// \brief Called when the centre is changed by moving or zooming in a renderer window.
   void OnCentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre);
@@ -354,7 +361,7 @@ private:
   void UpdateBoundGeometry(bool isBoundNow);
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
-  void UpdateBoundMagnification(bool isBoundNow);
+  void UpdateBoundMagnification();
 
   void SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow);
 
@@ -378,6 +385,7 @@ private:
 
   // Widgets
   QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
+  QCheckBox                                     *m_Show2DCursorsCheckBox;
   QmitkMIDASSlidersWidget                       *m_MIDASSlidersWidget;
   QmitkMIDASBindWidget                          *m_MIDASBindWidget;
   QPushButton                                   *m_1x1LayoutButton;
@@ -422,7 +430,7 @@ private:
   int                                            m_NumberOfRowsBeforeSegmentationMode;
   int                                            m_NumberOfColumnsBeforeSegmentationMode;
   bool                                           m_Show2DCursors;
-  bool                                           m_Show3DViewInOrthoview;
+  bool                                           m_Show3DWindowInOrthoView;
   QColor                                         m_BackgroundColour;
   bool                                           m_RememberViewSettingsPerOrientation;
   bool                                           m_IsThumbnailMode;
@@ -433,4 +441,4 @@ private:
   MIDASView                                      m_MultiWindowLayout;
 };
 
-#endif /*QMITKMIDASMULTIWIDGET_H_*/
+#endif

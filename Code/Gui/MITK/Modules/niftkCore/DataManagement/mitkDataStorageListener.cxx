@@ -85,7 +85,7 @@ bool DataStorageListener::Pass(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void DataStorageListener::Activate(const mitk::DataStorage::Pointer dataStorage)
 {
-  if (this->m_DataStorage.IsNotNull())
+  if (m_DataStorage.IsNotNull())
   {
     this->Deactivate();
   }

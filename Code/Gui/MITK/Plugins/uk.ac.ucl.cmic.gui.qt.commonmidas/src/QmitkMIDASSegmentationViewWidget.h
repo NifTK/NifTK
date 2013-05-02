@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSEGMENTATIONVIEWWIDGET_H
-#define QMITKMIDASSEGMENTATIONVIEWWIDGET_H
+#ifndef mitk_QmitkMIDASSegmentationViewWidget_h
+#define mitk_QmitkMIDASSegmentationViewWidget_h
 
 #include "ui_QmitkMIDASSegmentationViewWidget.h"
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
@@ -160,5 +160,4 @@ private:
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 };
 
-#endif // QMITKMIDASSEGMENTATIONVIEWWIDGET_H
-
+#endif

@@ -28,6 +28,7 @@
 #include <mitkBaseRenderer.h>
 #include <itkCommand.h>
 
+
 //-----------------------------------------------------------------------------
 QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *parent)
 : m_ContainingFunctionality(NULL)
@@ -52,9 +53,9 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   ChangeLayout(true);
 
   std::vector<mitk::BaseRenderer*> renderers;
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetAxialWindow()->GetVtkRenderWindow()));
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetSagittalWindow()->GetVtkRenderWindow()));
-  renderers.push_back(mitk::BaseRenderer::GetInstance(m_ViewerWidget->GetCoronalWindow()->GetVtkRenderWindow()));
+  renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
+  renderers.push_back(m_ViewerWidget->GetSagittalWindow()->GetRenderer());
+  renderers.push_back(m_ViewerWidget->GetCoronalWindow()->GetRenderer());
 
   m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
   m_NodeAddedSetter->SetRenderers(renderers);
@@ -129,7 +130,7 @@ void QmitkMIDASSegmentationViewWidget::Deactivated()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
-  this->m_ViewerWidget->SetEnabled(false);
+  m_ViewerWidget->SetEnabled(false);
 }
 
 
@@ -157,10 +158,10 @@ void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::EnableOrientationWidgets(bool enabled)
 {
-  this->m_AxialRadioButton->setEnabled(enabled);
-  this->m_SagittalRadioButton->setEnabled(enabled);
-  this->m_CoronalRadioButton->setEnabled(enabled);
-  this->m_OrthoRadioButton->setEnabled(enabled);
+  m_AxialRadioButton->setEnabled(enabled);
+  m_SagittalRadioButton->setEnabled(enabled);
+  m_CoronalRadioButton->setEnabled(enabled);
+  m_OrthoRadioButton->setEnabled(enabled);
 }
 
 
@@ -181,7 +182,7 @@ void QmitkMIDASSegmentationViewWidget::OnVerticalLayoutStateChanged(int state)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnAxialToggled(bool)
 {
-  if (this->m_AxialRadioButton->isChecked())
+  if (m_AxialRadioButton->isChecked())
   {
     this->ChangeLayout();
   }
@@ -191,7 +192,7 @@ void QmitkMIDASSegmentationViewWidget::OnAxialToggled(bool)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnCoronalToggled(bool)
 {
-  if (this->m_CoronalRadioButton->isChecked())
+  if (m_CoronalRadioButton->isChecked())
   {
     this->ChangeLayout();
   }
@@ -201,7 +202,7 @@ void QmitkMIDASSegmentationViewWidget::OnCoronalToggled(bool)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnSagittalToggled(bool)
 {
-  if (this->m_SagittalRadioButton->isChecked())
+  if (m_SagittalRadioButton->isChecked())
   {
     this->ChangeLayout();
   }
@@ -211,7 +212,7 @@ void QmitkMIDASSegmentationViewWidget::OnSagittalToggled(bool)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnOrthoToggled(bool)
 {
-  if (this->m_OrthoRadioButton->isChecked())
+  if (m_OrthoRadioButton->isChecked())
   {
     this->ChangeLayout();
   }
@@ -231,30 +232,30 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     {
       if (m_MainWindowView == MIDAS_VIEW_AXIAL)
       {
-        nextView = MIDAS_VIEW_SAG_COR_V;
+        nextView = MIDAS_VIEW_COR_SAG_V;
       }
       else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_AX_COR_V;
+        nextView = MIDAS_VIEW_COR_AX_V;
       }
       else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
       {
-        nextView = MIDAS_VIEW_AX_SAG_V;
+        nextView = MIDAS_VIEW_SAG_AX_V;
       }
     }
     else
     {
       if (m_MainWindowView == MIDAS_VIEW_AXIAL)
       {
-        nextView = MIDAS_VIEW_SAG_COR_H;
+        nextView = MIDAS_VIEW_COR_SAG_H;
       }
       else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_AX_COR_H;
+        nextView = MIDAS_VIEW_COR_AX_H;
       }
       else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
       {
-        nextView = MIDAS_VIEW_AX_SAG_H;
+        nextView = MIDAS_VIEW_SAG_AX_H;
       }
     }
   }
@@ -262,50 +263,50 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
   {
     if (m_MainWindowView == MIDAS_VIEW_AXIAL)
     {
-      if (this->m_SagittalRadioButton->isChecked())
+      if (m_SagittalRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_SAGITTAL;
       }
-      else if (this->m_OrthoRadioButton->isChecked())
+      else if (m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_CORONAL;
-        this->m_CoronalRadioButton->setChecked(true);
+        m_CoronalRadioButton->setChecked(true);
       }
     }
     else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
     {
-      if (this->m_AxialRadioButton->isChecked())
+      if (m_AxialRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_AXIAL;
       }
-      else if (this->m_OrthoRadioButton->isChecked())
+      else if (m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_CORONAL;
-        this->m_CoronalRadioButton->setChecked(true);
+        m_CoronalRadioButton->setChecked(true);
       }
     }
     else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
     {
-      if (this->m_SagittalRadioButton->isChecked())
+      if (m_SagittalRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_SAGITTAL;
       }
-      else if (this->m_OrthoRadioButton->isChecked())
+      else if (m_OrthoRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_AXIAL;
-        this->m_AxialRadioButton->setChecked(true);
+        m_AxialRadioButton->setChecked(true);
       }
     }
   }
@@ -318,13 +319,13 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     m_View = nextView;
     if (isInitialising)
     {
-      this->m_ViewerWidget->SetView(this->m_View, false);
+      m_ViewerWidget->SetView(m_View, false);
     }
     else
     {
-      this->m_ViewerWidget->SwitchView(this->m_View);
+      m_ViewerWidget->SwitchView(m_View);
     }
-    emit ViewChanged(this->m_View);
+    emit ViewChanged(m_View);
   }
 }
 
@@ -344,19 +345,19 @@ void QmitkMIDASSegmentationViewWidget::EnableWidgets()
 
     if (m_MainWindowView == MIDAS_VIEW_AXIAL)
     {
-      this->m_AxialRadioButton->setEnabled(false);
+      m_AxialRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
     {
-      this->m_SagittalRadioButton->setEnabled(false);
+      m_SagittalRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
     {
-      this->m_CoronalRadioButton->setEnabled(false);
+      m_CoronalRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_ORTHO)
     {
-      this->m_OrthoRadioButton->setEnabled(false);
+      m_OrthoRadioButton->setEnabled(false);
     }
   }
 }
@@ -406,15 +407,15 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   MIDASView mainWindowView = this->GetCurrentMainWindowView();
 
   bool mainWindowViewChanged = false;
-  if (mainWindowView != MIDAS_VIEW_UNKNOWN && mainWindowView != this->m_MainWindowView)
+  if (mainWindowView != MIDAS_VIEW_UNKNOWN && mainWindowView != m_MainWindowView)
   {
     mainWindowViewChanged = true;
-    this->m_MainWindowView = mainWindowView;
+    m_MainWindowView = mainWindowView;
   }
 
   mitk::BaseRenderer* currentlyFocusedRenderer = this->GetCurrentlyFocusedRenderer();
 
-  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && this->m_View == MIDAS_VIEW_UNKNOWN))
+  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && m_View == MIDAS_VIEW_UNKNOWN))
   {
     mitk::SliceNavigationController::Pointer snc = mainWindowAxial->GetSliceNavigationController();
     assert(snc);
@@ -425,30 +426,30 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       mitk::Geometry3D::Pointer geom = const_cast<mitk::Geometry3D*>(worldGeom.GetPointer());
       assert(geom);
 
-      this->m_MainWindowAxial = mainWindowAxial;
-      this->m_MainWindowSagittal = mainWindowSagittal;
-      this->m_MainWindowCoronal = mainWindowCoronal;
-      this->m_MainWindow3d = mainWindow3d;
+      m_MainWindowAxial = mainWindowAxial;
+      m_MainWindowSagittal = mainWindowSagittal;
+      m_MainWindowCoronal = mainWindowCoronal;
+      m_MainWindow3d = mainWindow3d;
 
-      this->m_ViewerWidget->SetGeometry(geom);
-      this->m_ViewerWidget->SetBoundGeometryActive(false);
-      this->m_ViewerWidget->SetNavigationControllerEventListening(true);
-      this->m_ViewerWidget->SetDisplay2DCursorsLocally(true);
-      this->m_ViewerWidget->SetDisplay3DViewInOrthoView(true);
-      if (!this->m_ViewerWidget->IsEnabled())
+      m_ViewerWidget->SetGeometry(geom);
+      m_ViewerWidget->SetBoundGeometryActive(false);
+      m_ViewerWidget->SetNavigationControllerEventListening(true);
+      m_ViewerWidget->SetDisplay2DCursorsLocally(true);
+      m_ViewerWidget->SetShow3DWindowInOrthoView(true);
+      if (!m_ViewerWidget->IsEnabled())
       {
-        this->m_ViewerWidget->SetEnabled(true);
+        m_ViewerWidget->SetEnabled(true);
       }
 
       std::vector<mitk::DataNode*> crossHairs = m_ViewerWidget->GetWidgetPlanes();
       std::vector<mitk::BaseRenderer*> windowsToTrack;
       windowsToTrack.push_back(mitk::BaseRenderer::GetInstance(mainWindowAxial->GetVtkRenderWindow()));
 
-      this->m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
-      this->m_VisibilityTracker->SetNodesToIgnore(crossHairs);
-      this->m_VisibilityTracker->OnPropertyChanged(); // force update
+      m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+      m_VisibilityTracker->SetNodesToIgnore(crossHairs);
+      m_VisibilityTracker->OnPropertyChanged(); // force update
 
-      this->m_ViewerWidget->FitToDisplay();
+      m_ViewerWidget->FitToDisplay();
       this->ChangeLayout(true);
     }
   }
@@ -456,8 +457,8 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   {
     this->ChangeLayout(false);
   }
-  this->m_CurrentRenderer = currentlyFocusedRenderer;
-  this->m_ViewerWidget->RequestUpdate();
+  m_CurrentRenderer = currentlyFocusedRenderer;
+  m_ViewerWidget->RequestUpdate();
 }
 
 

@@ -22,6 +22,8 @@
 
 MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, QmitkMIDASPaintbrushToolGUI, "")
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASPaintbrushToolGUI::QmitkMIDASPaintbrushToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
@@ -49,6 +51,8 @@ QmitkMIDASPaintbrushToolGUI::QmitkMIDASPaintbrushToolGUI()
   connect( this, SIGNAL(NewToolAssociated(mitk::Tool*)), this, SLOT(OnNewToolAssociated(mitk::Tool*)) );
 }
 
+
+//-----------------------------------------------------------------------------
 QmitkMIDASPaintbrushToolGUI::~QmitkMIDASPaintbrushToolGUI()
 {
   if (m_PaintbrushTool.IsNotNull())
@@ -57,6 +61,8 @@ QmitkMIDASPaintbrushToolGUI::~QmitkMIDASPaintbrushToolGUI()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_PaintbrushTool.IsNotNull())
@@ -72,6 +78,8 @@ void QmitkMIDASPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASPaintbrushToolGUI::OnSliderValueChanged(int value)
 {
   if (m_PaintbrushTool.IsNotNull())
@@ -81,6 +89,8 @@ void QmitkMIDASPaintbrushToolGUI::OnSliderValueChanged(int value)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged(int current)
 {
   m_Slider->setValue(current);

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIO3160_H
-#define ITKDRCANALYZEIMAGEIO3160_H
+#ifndef DRCAnalyzeImageIO3160_h
+#define DRCAnalyzeImageIO3160_h
 
 #include "niftkCoreExports.h"
 #include "itkAnalyzeImageIO3160.h"
@@ -85,4 +85,4 @@ private:
 
 } // end namespace itk
 
-#endif // ITKDRCANALYZEIMAGEIO_H
+#endif

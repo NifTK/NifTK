@@ -40,9 +40,6 @@ public:
   /// \brief Calls blockSignals(block) on all contained widgets.
   bool BlockSignals(bool block);
 
-  /// \brief Calls setEnabled(enabled) on all contained widgets.
-  void SetEnabled(bool enabled);
-
   /// \brief Set whether the slice selection ctkSlidersWidget is tracking.
   void SetSliceTracking(bool isTracking);
 

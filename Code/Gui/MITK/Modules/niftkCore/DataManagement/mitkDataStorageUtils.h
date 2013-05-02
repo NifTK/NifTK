@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKDATASTORAGEUTILS_H
-#define MITKDATASTORAGEUTILS_H
+#ifndef mitk_DataStorageUtils_h
+#define mitk_DataStorageUtils_h
 
 #include "niftkCoreExports.h"
 #include "mitkDataNode.h"
@@ -77,4 +77,4 @@ namespace mitk
   NIFTKCORE_EXPORT mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex=-1);
 }
 
-#endif // MITKDATASTORAGEUTILS_H
+#endif

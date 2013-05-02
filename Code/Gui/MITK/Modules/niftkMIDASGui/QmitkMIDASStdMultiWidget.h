@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSTDMULTIWIDGET_H
-#define QMITKMIDASSTDMULTIWIDGET_H
+#ifndef QmitkMIDASStdMultiWidget_h
+#define QmitkMIDASStdMultiWidget_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -24,7 +24,6 @@
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
-#include <mitkSliceNavigationController.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -35,6 +34,11 @@
 class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
+
+namespace mitk
+{
+class SliceNavigationController;
+}
 
 /**
  * \class QmitkMIDASStdMultiWidget
@@ -105,11 +109,11 @@ public:
   /// \brief Get the flag controlling 2D cursors global visibility.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  void SetDisplay3DViewInOrthoView(bool visible);
+  /// \brief If true, then nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  void SetShow3DWindowInOrthoView(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in orthoview. In 3D view, always visible.
-  bool GetDisplay3DViewInOrthoView() const;
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
+  bool GetShow3DWindowInOrthoView() const;
 
   /// \brief Set the view (layout), as the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
@@ -191,6 +195,9 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
+  /// \brief Sets the cross position.
+  void SetCrossPosition(const mitk::Point3D& crossPosition);
+
   /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
   const mitk::Vector3D& GetCentre() const;
 
@@ -233,7 +240,7 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-  void PositionChanged(QmitkRenderWindow *renderWindow, mitk::Index3D voxelLocation, mitk::Point3D millimetreLocation, int sliceNumber, MIDASOrientation orientation);
+  void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
   void CentreChanged(const mitk::Vector3D& centre);
   void MagnificationFactorChanged(double magnificationFactor);
 
@@ -253,14 +260,14 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit PositionChanged
-  void OnPositionChanged(MIDASOrientation orientation);
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit CrossPositionChanged
+  void OnCrossPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
   /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
-  mitk::SliceNavigationController::Pointer GetSliceNavigationController(MIDASOrientation orientation) const;
+  mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
@@ -284,7 +291,7 @@ private:
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool updateOtherRenderWindows);
+  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
@@ -308,7 +315,7 @@ private:
   bool                  m_IsEnabled;
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
-  bool                  m_Display3DViewInOrthoView;
+  bool                  m_Show3DWindowInOrthoView;
   MIDASView             m_View;
   mitk::Vector3D        m_Centre;
   double                m_MagnificationFactor;

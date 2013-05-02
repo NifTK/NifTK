@@ -409,5 +409,5 @@ void BitmapOverlay::SetRequestedRegion(itk::DataObject*)
 
 void BitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 {
-  this->m_DataStorage = dataStorage;
+  m_DataStorage = dataStorage;
 }

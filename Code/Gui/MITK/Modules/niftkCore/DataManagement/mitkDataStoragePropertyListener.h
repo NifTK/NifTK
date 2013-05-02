@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDATASTORAGEPROPERTYLISTENER_H_
-#define MITKMIDASDATASTORAGEPROPERTYLISTENER_H_
+#ifndef mitk_DataStoragePropertyListener_h
+#define mitk_DataStoragePropertyListener_h
 
 #include "niftkCoreExports.h"
 #include "mitkDataStorageListener.h"

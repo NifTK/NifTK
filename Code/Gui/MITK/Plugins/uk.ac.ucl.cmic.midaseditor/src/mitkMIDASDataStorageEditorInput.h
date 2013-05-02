@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDATASTORAGEEDITORINPUT_H_
-#define MITKMIDASDATASTORAGEEDITORINPUT_H_
+#ifndef mitk_MIDASDataStorageEditorInput_h
+#define mitk_MIDASDataStorageEditorInput_h
 
 #include <berryIEditorInput.h>
 #include <mitkIDataStorageReference.h>
@@ -52,4 +52,4 @@ private:
 
 }
 
-#endif /*MITKMIDASDATASTORAGEEDITORINPUT_H_*/
+#endif
