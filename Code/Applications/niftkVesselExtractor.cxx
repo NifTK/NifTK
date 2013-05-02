@@ -122,6 +122,13 @@ std::string xml_vesselextractor=
 "        <label>Binarisation</label>\n"
 "        <default>1</default>\n"
 "    </boolean>\n"
+"    <boolean>\n"
+"        <name>isCT</name>\n"
+"        <longflag>ct</longflag>\n"
+"        <description>Input image is CT.</description>\n"
+"        <label>CT input</label>\n"
+"        <default>1</default>\n"
+"    </boolean>\n"
 "   </parameters>\n"
 "</executable>\n";
 
@@ -143,7 +150,8 @@ void Usage(char *exec)
     std::cout << "    --aone   <float> [0.5]   Alpha one parameter" << std::endl;
     std::cout << "    --atwo   <float> [2.0]   Alpha two parameter" << std::endl;
     std::cout << "    --max    <float> [8]    Maximum scale for exponential mode" << std::endl;
-    std::cout << "    --bin   Binarise output" << std::endl;	
+    std::cout << "    --bin   Binarise output" << std::endl;
+    std::cout << "    --ct   Input image is CTA" << std::endl;
 }
   
 
@@ -159,6 +167,7 @@ int main( int argc, char *argv[] )
     float alphaone = 0.5;
     float alphatwo = 2.0; 
     bool isBin = false;
+    bool isCT = false;
     
     // Parse command line args
     for(int i=1; i < argc; i++){
@@ -206,6 +215,10 @@ int main( int argc, char *argv[] )
 	    isBin=true;
 	    std::cout << "Set -bin=ON" << std::endl;
 	}
+    else if(strcmp(argv[i], "--ct") == 0){
+        isCT=true;
+        std::cout << "Set -ct=ON" << std::endl;
+    }
 	else if(strcmp(argv[i], "--xml") == 0){
 	    std::cout << xml_vesselextractor;
 	    return EXIT_SUCCESS;
@@ -271,14 +284,24 @@ int main( int argc, char *argv[] )
     ReaderType::Pointer   reader = ReaderType::New();			    			    
     reader->SetFileName( inputImageName );
     reader->Update();
+    InputImageType::Pointer in_image = reader->GetOutput();
 
-    ReaderType::Pointer   mask_reader = ReaderType::New();
-    mask_reader->SetFileName( brainImageName );
-    mask_reader->Update();
-    InputImageType::Pointer mask_image = mask_reader->GetOutput();
+    ReaderType::Pointer   mask_reader;
+    InputImageType::Pointer mask_image;
+    bool useMask = false;
+    if (brainImageName.length() > 0 )
+    {
+        mask_reader = ReaderType::New();
+        mask_reader->SetFileName( brainImageName );
+        mask_reader->Update();
+        mask_image = mask_reader->GetOutput();
+        useMask = true;
+    }
+
+
      
-    InputImageType::SpacingType spacing = reader->GetOutput()->GetSpacing(); 
-    InputImageType::SizeType size_in = reader->GetOutput()->GetLargestPossibleRegion().GetSize();
+    InputImageType::SpacingType spacing = in_image->GetSpacing();
+    InputImageType::SizeType size_in = in_image->GetLargestPossibleRegion().GetSize();
          
     float min_spacing = static_cast<float>(spacing[0]);
       
@@ -317,7 +340,7 @@ int main( int argc, char *argv[] )
     VesselImageType::Pointer vesselnessImage;
 
 
-    caster->SetInput( reader->GetOutput() );
+    caster->SetInput( in_image );
     hessianFilter->SetInput( caster->GetOutput() );
     hessianFilter->SetNormalizeAcrossScale( true );
     vesselnessFilter->SetInput( hessianFilter->GetOutput() );
@@ -330,14 +353,6 @@ int main( int argc, char *argv[] )
     maxImage->DisconnectPipeline();
 
     itk::ImageRegionIterator<VesselImageType> outimageIterator(maxImage,maxImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<InputImageType> maskIterator(mask_image,maxImage->GetLargestPossibleRegion());
-    while(!outimageIterator.IsAtEnd())          //Apply brain mask
-    {
-        if  (maskIterator.Get() == 0)
-            outimageIterator.Set(0);
-        ++outimageIterator;
-        ++maskIterator;
-    }
 
     for (size_t s = 1; s < all_scales.size(); ++s)
     {
@@ -349,22 +364,60 @@ int main( int argc, char *argv[] )
 
         vesselimageIterator.GoToBegin();
         outimageIterator.GoToBegin();
-        maskIterator.GoToBegin();
         while(!vesselimageIterator.IsAtEnd())
         {
-            if (maskIterator.Get() != 0)        //Check only on the mask
-            {
-                if (vesselimageIterator.Get() > outimageIterator.Get())
-                    outimageIterator.Set( vesselimageIterator.Get() );
-            }
+
+             if (vesselimageIterator.Get() > outimageIterator.Get())
+                outimageIterator.Set( vesselimageIterator.Get() );
 
             ++outimageIterator;
             ++vesselimageIterator;
+        }
+    }
+
+    if (useMask)
+    {
+        itk::ImageRegionConstIterator<InputImageType> maskIterator(mask_image,maxImage->GetLargestPossibleRegion());
+        outimageIterator.GoToBegin();
+        while(!outimageIterator.IsAtEnd())          //Apply brain mask
+        {
+            if  (maskIterator.Get() == 0)
+                outimageIterator.Set(0);
+            ++outimageIterator;
             ++maskIterator;
         }
     } // end of vesselextractor.cpp
+    else if (isCT)
+    {
+         itk::ImageRegionIterator<InputImageType> inimageIterator(in_image,maxImage->GetLargestPossibleRegion());
+         bool neg_img = false;
+         while(!inimageIterator.IsAtEnd() && !neg_img)
+         {
+             if (inimageIterator.Get() < 0)
+             {
+                 neg_img = true;
+             }
+             ++inimageIterator;
+         }
 
-
+         inimageIterator.GoToBegin();
+         outimageIterator.GoToBegin();
+         while(!inimageIterator.IsAtEnd())
+         {
+             if (neg_img)
+             {
+                 if (inimageIterator.Get() >= 1000 || inimageIterator.Get() < 0)
+                     outimageIterator.Set(0);
+             }
+             else
+             {
+                 if (inimageIterator.Get() >= 2000)
+                     outimageIterator.Set(0);
+             }
+             ++inimageIterator;
+             ++outimageIterator;
+         }
+    }
 
     if (isBin)
     {
@@ -377,7 +430,7 @@ int main( int argc, char *argv[] )
         vesselrescaler->Update();
         VesselImageType::Pointer vessel_image = vesselrescaler->GetOutput();
 
-        inputrescaler->SetInput( reader->GetOutput() );
+        inputrescaler->SetInput( in_image );
         inputrescaler->SetOutputMaximum(1);
         inputrescaler->SetOutputMinimum(0);
         inputrescaler->Update();
@@ -388,24 +441,23 @@ int main( int argc, char *argv[] )
         OutputImageType::IndexType start;
         start.Fill(0);
 
-        region.SetSize(reader->GetOutput()->GetLargestPossibleRegion().GetSize());
+        region.SetSize(in_image->GetLargestPossibleRegion().GetSize());
         region.SetIndex(start);
 
         VesselImageType::Pointer out_image = VesselImageType::New();
         out_image->SetRegions(region);
         out_image->Allocate();
-        out_image->SetSpacing( reader->GetOutput()->GetSpacing());
-        out_image->SetOrigin( reader->GetOutput()->GetOrigin() );
-        out_image->SetDirection( reader->GetOutput()->GetDirection() );
+        out_image->SetSpacing( in_image->GetSpacing());
+        out_image->SetOrigin( in_image->GetOrigin() );
+        out_image->SetDirection( in_image->GetDirection() );
 
         itk::ImageRegionConstIterator<VesselImageType> imageIterator(inres_image,maxImage->GetLargestPossibleRegion());
         itk::ImageRegionConstIterator<VesselImageType> vesselimageIterator(vessel_image,maxImage->GetLargestPossibleRegion());
         itk::ImageRegionIterator<VesselImageType> outimageIterator(out_image,maxImage->GetLargestPossibleRegion());
-        itk::ImageRegionConstIterator<InputImageType> maskIterator(mask_image,maxImage->GetLargestPossibleRegion());
 
         while(!imageIterator.IsAtEnd())
         {
-            if  (maskIterator.Get() != 0)
+            if  (vesselimageIterator.Get() != 0)
             {
                 // Get the value of the current pixel
                 InternalPixelType val_in = vesselimageIterator.Get();
@@ -425,7 +477,7 @@ int main( int argc, char *argv[] )
             ++imageIterator;
             ++vesselimageIterator;
             ++outimageIterator;
-            ++maskIterator;
+
 
         }
 
