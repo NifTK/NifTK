@@ -174,13 +174,14 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   if (axialAxis != -1)
   {
     // 4. Calculate size of region of interest in that axis
-    regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
     if (orientationString[axialAxis] == 'I')
     {
+      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
       regionOfInterestIndex[axialAxis] = p.m_AxialCutoffSlice;
     }
     else
     {
+      regionOfInterestSize[axialAxis] = p.m_AxialCutoffSlice + 1;
       regionOfInterestIndex[axialAxis] = 0;
     }
 
