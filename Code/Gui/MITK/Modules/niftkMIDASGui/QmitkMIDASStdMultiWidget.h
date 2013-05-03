@@ -327,8 +327,6 @@ private:
 
   friend class DisplayGeometryModificationCommand;
 
-  mitk::Geometry3D::Pointer m_CreatedGeometries[3];
-
   mitk::MIDASDisplayInteractor::Pointer m_DisplayInteractor;
 
   /**

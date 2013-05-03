@@ -277,7 +277,7 @@ protected slots:
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
   void OnDropAccumulateStateChanged(int);
-  void OnBindModeSelected(MIDASBindType bind);
+  void OnBindTypeChanged();
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);

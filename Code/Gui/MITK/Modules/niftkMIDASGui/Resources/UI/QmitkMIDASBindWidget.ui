@@ -18,12 +18,9 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QCheckBox" name="m_BindNoneCheckBox">
-     <property name="toolTip">
-      <string>unbind windows</string>
-     </property>
+    <widget class="QCheckBox" name="m_BindLayoutCheckBox">
      <property name="text">
-      <string>none</string>
+      <string>layout</string>
      </property>
     </widget>
    </item>
@@ -38,12 +35,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="m_BindMagnificationCheckBox">
+    <widget class="QCheckBox" name="m_BindZoomAndPanCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>pan&amp;&amp;zoom</string>
+      <string>zoom&amp;&amp;pan</string>
      </property>
     </widget>
    </item>
