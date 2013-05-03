@@ -86,7 +86,7 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
     const void* rightPtr = rightReadAccess.GetData();
 
     int numComponents = image1->GetPixelType().GetNumberOfComponents();
-    assert(image2->GetPixelType().GetNumberOfComponents() == numComponents);
+    assert((int)(image2->GetPixelType().GetNumberOfComponents()) == numComponents);
 
     // mitk images are tightly packed (i hope)
     int bytesPerRow = width * numComponents * (image1->GetPixelType().GetBitsPerComponent() / 8);
@@ -107,8 +107,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
         {
           // internal buffers of SeqQDS are fixed during construction
           // but our input images can vary in size
-          if ((m_SequentialCpuQds->GetWidth()  != width) ||
-              (m_SequentialCpuQds->GetHeight() != height))
+          if ((m_SequentialCpuQds->GetWidth()  != (int)width) ||
+              (m_SequentialCpuQds->GetHeight() != (int)height))
           {
             // will be recreated below, with the correct dimensions
             delete m_SequentialCpuQds;
@@ -161,9 +161,9 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
 
             mitk::PointSet::Pointer   points = mitk::PointSet::New();
 
-            for (int y = 0; y < height; ++y)
+            for (unsigned int y = 0; y < height; ++y)
             {
-              for (int x = 0; x < width; ++x)
+              for (unsigned int x = 0; x < width; ++x)
               {
                 CvPoint r = m_SequentialCpuQds->GetMatch(x, y);
                 if (r.x != 0)
