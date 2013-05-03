@@ -372,7 +372,7 @@ private:
   bool GetNavigationControllerEventListening() const;
 
   /// \brief Used to move either anterior/posterior by a certain number of slices.
-  bool MoveAnteriorPosterior(bool moveAnterior, int slices);
+  bool MoveAnteriorPosterior(int slices);
 
   // Layouts
   QHBoxLayout                                   *m_TopLevelLayout;

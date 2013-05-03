@@ -51,7 +51,7 @@ public:
   void EnableControls(bool b);
 
   /// \brief Set the dialog according to relevant image data.
-  void SetControlsByImageData(double lowestValue, double highestValue, int numberAxialSlices);
+  void SetControlsByImageData(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
   void SetControlsByParameterValues(MorphologicalSegmentorPipelineParams &params);

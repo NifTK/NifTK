@@ -25,6 +25,7 @@
 #include <mitkColorProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkUndoController.h>
+#include <mitkMIDASOrientationUtils.h>
 
 #include "itkConversionUtils.h"
 #include "mitkITKRegionParametersDataNodeProperty.h"
@@ -566,11 +567,13 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
     int numberOfAxialSlices = image->GetDimension(axialAxis);
+    int upDirection = mitk::GetUpDirection(image, MIDAS_ORIENTATION_AXIAL);
 
-    m_MorphologicalControls->SetControlsByImageData(
+    m_MorphologicalControls->SetControlsByImageData(    
         image->GetStatistics()->GetScalarValueMin(),
         image->GetStatistics()->GetScalarValueMax(),
-        numberOfAxialSlices);
+        numberOfAxialSlices,
+        upDirection);
   }
 }
 
