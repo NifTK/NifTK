@@ -39,7 +39,7 @@ void QmitkMIDASBindWidget::setupUi(QWidget* parent)
   m_BindZoomAndPanCheckBox->setChecked(false);
   m_BindGeometryCheckBox->setChecked(false);
 
-  m_BindLayoutCheckBox->setEnabled(false);
+//  m_BindLayoutCheckBox->setEnabled(false);
 
   connect(m_BindLayoutCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLayoutCheckBoxToggled(bool)));
   connect(m_BindCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnCursorsCheckBoxToggled(bool)));
