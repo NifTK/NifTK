@@ -49,8 +49,8 @@ public:
   /// \brief Returns true if cursors are bound, and false otherwise.
   bool AreCursorsBound() const;
 
-  /// \brief Returns true if magnification is bound, and false otherwise.
-  bool IsMagnificationBound() const;
+  /// \brief Returns true if the zooming and panning is bound, and false otherwise.
+  bool IsZoomAndPanBound() const;
 
   /// \brief Returns true if the geometry is bound and false otherwise.
   bool IsGeometryBound() const;

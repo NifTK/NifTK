@@ -63,7 +63,7 @@ bool QmitkMIDASBindWidget::AreCursorsBound() const
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBindWidget::IsMagnificationBound() const
+bool QmitkMIDASBindWidget::IsZoomAndPanBound() const
 {
   return m_BindType & MIDAS_BIND_ZOOM_AND_PAN;
 }
