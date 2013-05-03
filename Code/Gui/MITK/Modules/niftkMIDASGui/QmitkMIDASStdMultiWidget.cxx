@@ -112,10 +112,6 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   m_RenderWindows[2] = this->GetRenderWindow3();
   m_RenderWindows[3] = this->GetRenderWindow4();
 
-  m_CreatedGeometries[0] = NULL;
-  m_CreatedGeometries[1] = NULL;
-  m_CreatedGeometries[2] = NULL;
-
   if (dataStorage != NULL)
   {
     this->SetDataStorage(dataStorage);
@@ -1065,7 +1061,6 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         {
           MITK_DEBUG << "Matt - final geometry j=" << j << ", p=" << createdTimeSlicedGeometry->GetCornerPoint(j) << std::endl;
         }
-        m_CreatedGeometries[i] = createdTimeSlicedGeometry;
         sliceNavigationController->SetInputWorldGeometry(createdTimeSlicedGeometry);
         sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
         sliceNavigationController->SetViewDirection(viewDirection);
@@ -1575,13 +1570,17 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
 void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
 {
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  snc->SelectSliceByPoint(crossPosition);
+  // Check if the slice navigation controller has a valid geometry.
+  if (snc->GetCreatedWorldGeometry())
+  {
+    snc->SelectSliceByPoint(crossPosition);
 
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-  snc->SelectSliceByPoint(crossPosition);
+    snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+    snc->SelectSliceByPoint(crossPosition);
 
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
-  snc->SelectSliceByPoint(crossPosition);
+    snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+    snc->SelectSliceByPoint(crossPosition);
+  }
 }
 
 
