@@ -340,7 +340,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
   connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropThumbnailRadioButtonToggled(bool)));
   connect(m_DropAccumulateCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnDropAccumulateStateChanged(int)));
-  connect(m_MIDASBindWidget, SIGNAL(BindTypeChanged(MIDASBindType)), this, SLOT(OnBindModeSelected(MIDASBindType)));
+  connect(m_MIDASBindWidget, SIGNAL(BindTypeChanged()), this, SLOT(OnBindModeSelected()));
   connect(m_PopupWidget, SIGNAL(popupOpened(bool)), this, SLOT(OnPopupOpened(bool)));
 
   // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
@@ -1876,7 +1876,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnBindModeSelected(MIDASBindType bind)
+void QmitkMIDASMultiViewWidget::OnBindModeSelected()
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
   bool requestedGeometryBound = m_MIDASBindWidget->IsGeometryBound();
