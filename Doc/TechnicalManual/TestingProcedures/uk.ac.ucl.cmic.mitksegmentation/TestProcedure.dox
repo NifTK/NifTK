@@ -2,6 +2,92 @@
 
 \page TestProcedureMITKSegmentation MITK Segmentation View Test Procedure
 
+\section TestProcedureMITKSegmentation Basic Segmentation Test
+
 \li Read the Doxygen help page
+\li Load an image 
+\li Make sure you are using the MITK "Display" as your main editor window.
+\li Drag and drop the image from the Datamanager to the Drag and Drop Display
+\li Open the MITK Segmentation Editor. Window->Show View->MITK Segmentation
+\li Select the image in the Datamanager
+\li Click on "start/re-start segmentation" in the MITK Segmentation
+\li Set a name and a color for the segmetation image
+\li Click "OK"
+\li Click on the "Add" button for drawing a segmetation region. The Add tool
+allows the user to draw a freehand contour on an image slice by clicking and
+dragging. Once the mouse button is released, the inside of the contour will be
+marked as belonging to the segmentation (i.e. it is filled). For testing it, you
+have to click and dragging the mouse around the desired closed region. 
+\li Click on the "Substract" button for removing a set of voxels from a
+segmentation region. The Subtract tool has the opposite effect of the Add tool:
+it allows an area within the drawn contour to be marked as background. For
+testing it, you have to click and dragging the mouse drawing the desired region
+to remove.
+\li Click on the "Paint" button for drawing voxel a voxel. For testing it, you
+can click voxel by voxel, adding it in each click to the segmetation mask, or
+dragging the mouse. 
+\li Click on the "Wipe" button for removing voxel a voxel. For testing it, you
+can click voxel by voxel, removing it in each click to the segmetation mask, or
+dragging the mouse.
+\li Click on the "Region Growing" button for automatic drawing of a region
+segmentation following region growing algorithm. The interactive region growing
+tool performs 2D region growing on the slice clicked by the user, i.e. it selects a
+connected region around the mouse cursor based on a common gray
+value interval. Parameters for region growing are all determined
+by mouse interaction. The initial interval is determined
+by the first mouse click within the image—the initial value
+suggested for interval width is 20% of visible gray values (as
+determined by the current level window settings). A contour
+in the image always shows the region that would be selected
+by using the current interval. The user can change the interval
+width by moving the mouse up or down with the mouse
+button continually pressed. The region growing tool has a second
+function to alleviate the common problem of leakage: gray
+value-based region growing will often leak into neighboring
+structures with the same gray values through thin connecting
+areas. If this happens, the user can click inside the leak region
+and the tool will try to detect and remove the leakage area.
+To achieve this, a skeletonization of the segmentation is calculated
+and the algorithm looks for the thinnest connecting
+“bridge” between the old and new area. If such a bridge can be
+determined, the leak region will be removed.
+\li Click on the "Correction" button for correcting a segmentation region. It is
+designed for small corrective changes and supports interactions that
+do not require the user to actively choose the Add or Subtract
+tool or even draw a closed contour. The tool allows the user
+to draw a freehand line (not a closed contour) and decide on
+the appropriate action depending on the relation between the
+drawn line and the existing segmentation.
+\li Click on the "Fill" button for filling the holes. With the Fill tool, the
+user can click within an unsegmented
+region that is completely surrounded by segmented parts (a hole). Such a region
+will be detected and labeled as segmentation.
+For testing it, click inside a hole of a segmetation mask, check that it is
+filled in the selected slice only. Click over a segmetation region for filling
+all the holes in one click.
+\li Click on the "Erase" button for removing whole segmetation regions. The
+Erase tool detects the connected segmented area
+around the point clicked by the user and marks it as unsegmented.
+This can be used to quickly remove small spots that
+are not part of the foreground object (islands). Click over the region and it
+will be removed.
+\li Move to a new slice using the mouse wheel to scroll and follow drawing.
+\li Click on the main image in the Datamaneger to finish the segmentation (inactive it) or
+start a new one.
+\li Click on the segmentation's name in the Datamaneger and change a previous
+segmentation.
+\li Go to Window->Preferences->MITK Segmentation for changing main settings.
+
+Segmentations are identified by a name and a color, both
+of which can be changed by way of a context menu in the Datamanager. One segmentation
+can be marked as the active one, indicated by the
+highlighted item in the Datamanager. All selected segmentation
+will be displayed as an overlay on the reference image. 
+
+Segmentations can be saved to disk in several file formats by way of a context menu in the Datamanager.
+
+For extended information about this tool see D. Maleike et al. (2009) -
+Interactive segmentation framework of the Medical Imaging
+Interaction Toolkit
 
 */
