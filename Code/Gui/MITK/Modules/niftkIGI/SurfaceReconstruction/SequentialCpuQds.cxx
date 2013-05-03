@@ -271,7 +271,7 @@ void SequentialCpuQds::QuasiDensePropagation()
   std::priority_queue<Match, std::vector<Match>, std::less<Match> >   seeds;
 
   // Build a list of seeds from the starting features
-  for (int i = 0; i < m_SparseFeaturesLeft.size(); i++)
+  for (unsigned int i = 0; i < m_SparseFeaturesLeft.size(); i++)
   {
     if (m_FeatureStatus[i] != 0)
     {

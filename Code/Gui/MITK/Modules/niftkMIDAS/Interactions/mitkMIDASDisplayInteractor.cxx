@@ -87,11 +87,17 @@ bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* i
   // --------------------------------------------------------------------------
   // MIDAS customisation starts.
   //
+  // First, check if the slice navigation controllers have a valid geometry,
+  // i.e. an image is loaded.
+  if (!m_SliceNavigationControllers[0]->GetCreatedWorldGeometry())
+  {
+    return false;
+  }
+
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
-  // This crashes if the DnD display is closed and reopened.
   m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
   m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
   m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);

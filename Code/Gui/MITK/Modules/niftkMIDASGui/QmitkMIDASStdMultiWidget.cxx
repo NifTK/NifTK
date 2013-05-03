@@ -1315,9 +1315,9 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxSlice(MIDASOrientation orientation)
 
   if (snc->GetSlice() != NULL)
   {
-    if (snc->GetSlice()->GetSteps() >= 1)
+    if (snc->GetSlice()->GetSteps() > 0)
     {
-      result = snc->GetSlice()->GetSteps() -1;
+      result = snc->GetSlice()->GetSteps() - 1;
     }
   }
   return result;
@@ -1480,8 +1480,6 @@ void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientati
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
       renderWindow = this->mitkWidget1;
-      unsigned maxSlice = this->GetMaxSlice(orientation);
-      sliceNumber = maxSlice - sliceNumber;
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
@@ -1543,12 +1541,6 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
 
     int axis = m_OrientationToAxisMap[orientation];
     sliceNumber = voxelPoint[axis];
-
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      unsigned maxSlice = this->GetMaxSlice(orientation);
-      sliceNumber = maxSlice - sliceNumber;
-    }
   }
 
   return sliceNumber;

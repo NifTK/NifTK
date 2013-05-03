@@ -1221,19 +1221,19 @@ QList<int> QmitkMIDASMultiViewWidget::GetViewIndexesToUpdate(bool doAllVisible) 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::MoveAnterior()
 {
-  return this->MoveAnteriorPosterior(true, 1);
+  return this->MoveAnteriorPosterior(1);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidget::MovePosterior()
 {
-  return this->MoveAnteriorPosterior(false, 1);
+  return this->MoveAnteriorPosterior(-1);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int slices)
+bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(int slices)
 {
   bool actuallyDidSomething = false;
   int selectedViewIndex = this->GetSelectedViewIndex();
@@ -1246,22 +1246,14 @@ bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(bool moveAnterior, int sli
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
       unsigned int currentSlice = selectedView->GetSliceNumber(orientation);
+      int upDirection = selectedView->GetSliceUpDirection(orientation);
+
+      int nextSlice = currentSlice + slices * upDirection;
+
       unsigned int minSlice = selectedView->GetMinSlice(orientation);
       unsigned int maxSlice = selectedView->GetMaxSlice(orientation);
 
-      int upDirection = selectedView->GetSliceUpDirection(orientation);
-      int nextSlice = currentSlice;
-
-      if (moveAnterior)
-      {
-        nextSlice = currentSlice + slices*upDirection;
-      }
-      else
-      {
-        nextSlice = currentSlice - slices*upDirection;
-      }
-
-      if (nextSlice >= (int)minSlice && nextSlice <= (int)maxSlice)
+      if (nextSlice >= static_cast<int>(minSlice) && nextSlice <= static_cast<int>(maxSlice))
       {
         this->SetSelectedWindowSliceNumber(nextSlice);
         actuallyDidSomething = true;
