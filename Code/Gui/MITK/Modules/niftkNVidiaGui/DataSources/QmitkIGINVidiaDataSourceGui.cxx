@@ -82,7 +82,7 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
 
       // FIXME: one for each channel?
       m_OglWin = new QmitkVideoPreviewWidget(this, capturecontext);
-      previewgridlayout->addWidget(m_OglWin);
+      PreviewGridLayout->addWidget(m_OglWin);
       m_OglWin->show();
 
       connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
@@ -112,15 +112,12 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
     QString   ss = QString::fromStdString(s.str());
     // only change text if it's actually different
     // otherwise the window is resetting a selection all the time: annoying as hell
-    if (signal_tb->text().compare(ss) != 0)
-      signal_tb->setText(ss);
+    if (SignalTextBox->text().compare(ss) != 0)
+      SignalTextBox->setText(ss);
 
-    actualcaptureformat_tb->setText(QString::fromAscii("FIXME"));
-
-
-    for (int i = 0; i < previewgridlayout->count(); ++i)
+    for (int i = 0; i < PreviewGridLayout->count(); ++i)
     {
-      QLayoutItem* l = previewgridlayout->itemAt(i);
+      QLayoutItem* l = PreviewGridLayout->itemAt(i);
       QWidget*     w = l->widget();
       if (w)
       {
