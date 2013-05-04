@@ -474,6 +474,56 @@ if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
 
+########################################################################
+# Simplest if we list ALL our include directories here.
+# We need to reference the CMAKE_BINARY_DIR, as we generate stuff there.
+########################################################################
+set(NIFTK_INCLUDE_DIRS_BUILD_TREE
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}/Config
+  ${CMAKE_BINARY_DIR}/Code
+  ${CMAKE_SOURCE_DIR}/Code/Libs/Common
+  ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Exceptions
+  ${CMAKE_SOURCE_DIR}/Code/Libs/MIDAS
+  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK
+  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK/Common
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/IO
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Construction
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Constraints
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Filters
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Projection
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/xRay
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
+)
+IF (BUILD_MESHING)
+  SET(NIFTK_INCLUDE_DIRS_BUILD_TREE
+    ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
+    ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing
+  )
+ENDIF (BUILD_MESHING)
+
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
 # the Superbuild, because VTK needs to know if we have Qt.
@@ -514,9 +564,7 @@ endif(BUILD_GUI)
 if(NIFTK_USE_CUDA)
   find_package(CUDA)
   if(CUDA_FOUND)
-    include_directories(${CUDA_TOOLKIT_INCLUDE})
-    # include_directories(${CUDA_CUT_INCLUDE_DIR} ${CUDA_TOOLKIT_INCLUDE})
-    # CUDA_INCLUDE_DIRECTORIES(${CUDA_CUT_INCLUDE_DIR}) 
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${CUDA_CUT_INCLUDE_DIR} ${CUDA_TOOLKIT_INCLUDE})
     add_definitions(-D_USE_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_USE_CUDA")
     message("Found CUDA")
@@ -531,7 +579,7 @@ endif(NIFTK_USE_CUDA)
 find_package(NVidiaAPI)
 if(NVAPI_FOUND)
   message("Found NVidia API")
-  include_directories(${NVAPI_INCLUDE_DIR})
+  set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NVAPI_INCLUDE_DIR})
   add_definitions(-D_USE_NVAPI)
 else()
   message("Did not find NVidia API")
@@ -637,7 +685,7 @@ endif (BUILD_MESHING)
 find_package( Boost COMPONENTS filesystem system date_time REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
-  include_directories(${Boost_INCLUDE_DIRS})
+  set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
   if(WIN32)
     if(NIFTK_WITHIN_SUPERBUILD)
@@ -731,7 +779,7 @@ if (BUILD_IGI)
   if(aruco_FOUND)
     message("Found aruco in ${aruco_DIR}")
     link_directories(${aruco_DIR}/lib)
-    include_directories(${aruco_DIR}/include)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${aruco_DIR}/include)
   endif()
 endif()
 
@@ -749,12 +797,12 @@ if(NIFTK_USE_FFTW)
   find_package(FFTW)
   if(FFTW_FOUND)
     include_directories(${FFTW_INCLUDE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${FFTW_INCLUDE_DIR})
     message("Found FFTW")
   else(FFTW_FOUND)
     message("Didn't find FFTW, so Fluid based registration will not be built.")
   endif(FFTW_FOUND)
 endif(NIFTK_USE_FFTW)
-
 
 ######################################################################
 # Find NIFTYREG - (version will vary according to whether CUDA found)
@@ -762,7 +810,7 @@ endif(NIFTK_USE_FFTW)
 if(BUILD_NIFTYREG)
   find_package(NiftyReg)
   if(NIFTYREG_FOUND)
-    include_directories(${NIFTYREG_INCLUDE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREG_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREG)
     set(NIFTYREG_NVCC_FLAGS "${NIFTYREG_NVCC_FLAGS};-DUSE_NIFTYREG")
     message("Found NiftyReg")
@@ -776,7 +824,6 @@ if(NOT NIFTYREG_FOUND)
   set("NIFTK_Plugins/uk.ac.ucl.cmic.niftyreg" OFF CACHE BOOL "NiftyReg plugin" FORCE)
 endif()
 
-
 ######################################################################
 # Find NIFTYREC - (version will vary according to whether CUDA found)
 # NB: Is dependent on NIFTYREG and at time of writing only has GPU version
@@ -785,7 +832,7 @@ endif()
 if(BUILD_NIFTYREC)
   find_package(NiftyRec)
   if(NIFTYREC_FOUND)
-    include_directories(${NIFTYREC_INCLUDE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREC_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREC)
     set(NIFTYREC_NVCC_FLAGS "${NIFTYREC_NVCC_FLAGS};-DUSE_NIFTYREC")
     message("Found NiftyRec")
@@ -794,7 +841,6 @@ if(BUILD_NIFTYREC)
   endif(NIFTYREC_FOUND)
 endif(BUILD_NIFTYREC)
 
-
 ######################################################################
 # Find NIFTYSIM
 ######################################################################
@@ -802,7 +848,7 @@ endif(BUILD_NIFTYREC)
 if(BUILD_NIFTYSIM)
   find_package(NiftySim)
   if(NIFTYSIM_FOUND)
-    include_directories(${NIFTYSIM_INCLUDE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSIM_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSIM)
     set(NIFTYSIM_NVCC_FLAGS "${NIFTYSIM_NVCC_FLAGS};-DUSE_NIFTYSIM")
     message("Found NiftySim")
@@ -811,7 +857,6 @@ if(BUILD_NIFTYSIM)
   endif(NIFTYSIM_FOUND)
 endif(BUILD_NIFTYSIM)
 
-
 ######################################################################
 # Find NIFTYSEG
 ######################################################################
@@ -819,7 +864,7 @@ endif(BUILD_NIFTYSIM)
 if(BUILD_NIFTYSEG)
   find_package(NiftySeg)
   if(NIFTYSEG_FOUND)
-    include_directories(${NIFTYSEG_INCLUDE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSEG_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSEG)
     set(NIFTYSEG_NVCC_FLAGS "${NIFTYSEG_NVCC_FLAGS};-DUSE_NIFTYSEG")
     message("Found NiftySeg")
@@ -833,7 +878,6 @@ if(NOT NIFTYSEG_FOUND)
   set("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
 endif()
 
-
 ######################################################################
 # Find SlicerExecutionModel
 ######################################################################
@@ -846,58 +890,6 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
     message("Didn't find SlicerExecutionModel")
   endif()
 endif()
-
-########################################################################
-# Simplest if we list ALL our include directories here.
-# We need to reference the CMAKE_BINARY_DIR, as we generate stuff there.
-########################################################################
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_BINARY_DIR}/Config)
-include_directories(${CMAKE_BINARY_DIR}/Code)
-include_directories(${CMAKE_BINARY_DIR}/Code/Libs/Qt)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Common)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Common/File)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Exceptions)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Image)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/MIDAS)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/VTK)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/VTK/Common)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/VTKNiftyReg)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/IO)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Methods)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Transforms)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Optimizers)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Commands)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Construction)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Constraints)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Filters)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Methods)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Optimizers)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Projection)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Metrics)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Commands)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/xRay)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Transforms)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Qt)
-include_directories(${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox)
-
-if (BUILD_MESHING) 
-  include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing)
-endif (BUILD_MESHING) 
-
 
 ######################################################################
 # Output directories, for when compiling, not installing.
@@ -983,6 +975,13 @@ set(NIFTK_INSTALL_INCLUDE_DIR "include/NifTK")
 set(NIFTK_INSTALL_MATLAB_DIR "matlab")
 set(NIFTK_INSTALL_DOC_DIR "doc")
 set(NIFTK_INSTALL_LIB_DIR "bin")
+
+#######################################################################
+# Set the main include path, just before generating NifTKConfigure.
+#######################################################################
+include_directories(
+  ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
+  )
 
 ######################################################################
 # Configure files that need variables substituting. Note that
@@ -1142,6 +1141,7 @@ if (BUILD_PROTOTYPE)
   endif()
 
   if (EXISTS ${PROTOTYPE_DIR} AND IS_DIRECTORY ${PROTOTYPE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${CMAKE_SOURCE_DIR}/Prototype/CUDA)
     include_directories(${CMAKE_SOURCE_DIR}/Prototype/CUDA)
 
     # Note that for these Insight Journal extensions, we dont compile the subpackage,

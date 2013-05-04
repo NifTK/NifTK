@@ -1,0 +1,74 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+###############################################################################
+# NifTKConfig.cmake - NifTK CMake configuration file for external projects.
+#
+# This file is configured by NifTK and used by the UseNifTK.cmake module
+# to load NifTK settings for an external project.
+#
+###############################################################################
+
+# Make all the right CMake macros are available.
+SET(NifTK_CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
+INCLUDE(mitkMacroEmptyExternalProject)
+INCLUDE(niftkMacroCreateApplication)
+INCLUDE(niftkMacroBuildCLI)
+INCLUDE(niftkMacroInstallCLI)
+INCLUDE(niftkMacroConfigureAndBuildCLI)
+
+# The NifTK include file directories.
+SET(NifTK_INCLUDE_DIRS
+  @VTK_INCLUDE_DIRS@
+  @CUDA_INCLUDE_DIRECTORIES@
+  @NIFTK_INCLUDE_DIRS_BUILD_TREE@
+)
+
+# The NifTK library directories.
+SET(NifTK_LIBRARY_DIRS
+  @Boost_LIBRARY_DIRS@
+  @MITK_LINK_DIRECTORIES@
+  @CMAKE_BINARY_DIR@/bin
+)
+
+# The NifTK Library version number
+SET(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
+SET(NifTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
+SET(NifTK_VERSION_PATCH "@NIFTK_VERSION_PATCH@")
+
+# Other version numbers
+SET(NifTK_VTK_MAJOR_VERSION @VTK_MAJOR_VERSION@)
+SET(NifTK_VTK_MINOR_VERSION @VTK_MINOR_VERSION@)
+SET(NifTK_VTK_BUILD_VERSION @VTK_BUILD_VERSION@)
+
+# The location of the UseNiftyLink.cmake file.
+SET(NifTK_USE_FILE "@CMAKE_BINARY_DIR@/UseNifTK.cmake")
+
+# Whether NifTK was built with shared libraries.
+SET(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
+
+# A list of all libraries for NifTK.
+SET(NifTK_LIBRARIES
+  @VTK_LIBRARIES@
+  niftkcommon
+  niftkITK
+  niftkVTK
+)
+
+# Add in MITK stuff if necessary
+IF(
+# Additional documentation, to enable compliance with licenses.
+SET(NifTK_README_FILE "@CMAKE_BINARY_DIR@/README.txt")
+SET(NifTK_LICENSE_FILE "@CMAKE_BINARY_DIR@/LICENSE.txt")
+
