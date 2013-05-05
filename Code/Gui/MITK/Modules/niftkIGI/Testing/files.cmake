@@ -18,6 +18,7 @@ SET(MODULE_TESTS
   mitkTrackedImageCommandTest.cxx
   mitkTrackedPointerCommandTest.cxx
   QDSCommonTest.cxx
+  ImageConversionTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
