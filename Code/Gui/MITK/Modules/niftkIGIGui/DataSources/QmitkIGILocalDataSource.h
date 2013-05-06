@@ -57,16 +57,6 @@ protected:
   QmitkIGILocalDataSource& operator=(const QmitkIGILocalDataSource&); // Purposefully not implemented.
 
 
-  // FIXME: use mitkImageConversion instead!
-  mitk::Image::Pointer CreateMitkImage(const IplImage* image) const;
-
-  /**
-   * \brief Helper method for sub-classes, that will instantiate a
-   * new MITK image from an RGB OpenCV IplImage.
-   */
-  mitk::Image::Pointer CreateRGBMitkImage(const IplImage* image) const;
-  mitk::Image::Pointer CreateRGBAMitkImage(const IplImage* image) const;
-
   /**
    * \brief Derived classes call this when they are ready for the updates to start,
    * and this method instantiates the thread and laumches it.
