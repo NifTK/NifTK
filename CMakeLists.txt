@@ -1150,7 +1150,22 @@ IF(WIN32)
         ${VS_BUILD_TYPE})
 
       MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+    endforeach()
 
+    foreach(NIFTK_APP ${NIFTK_APPS}) 
+      # extract option_name
+      STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+      SET(target_info_list ${target_info})
+      LIST(GET target_info_list 1 option_name)
+      LIST(GET target_info_list 0 app_name)
+      message("Current App Name: ${app_name}")
+	  
+	  foreach(VS_BUILD_TYPE debug release)
+		MESSAGE("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
+		mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
+		${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
+        ${VS_BUILD_TYPE}) 
+	  endforeach()
     endforeach()
     
   ELSE(MITK_FOUND)
