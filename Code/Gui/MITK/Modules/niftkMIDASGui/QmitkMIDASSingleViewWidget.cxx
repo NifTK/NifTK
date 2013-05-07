@@ -724,9 +724,9 @@ mitk::Point3D QmitkMIDASSingleViewWidget::GetCrossPosition() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
 {
-  if (m_ViewInitialised[Index(m_View)])
+  if (m_View != MIDAS_VIEW_UNKNOWN)
   {
-    m_MultiWidget->SetCrossPosition(crossPosition);
+     m_MultiWidget->SetCrossPosition(crossPosition);
   }
 }
 
@@ -741,7 +741,10 @@ const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCrossPositionOnDisplay() co
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetCrossPositionOnDisplay(const mitk::Vector3D& crossPositionOnDisplay)
 {
-  m_MultiWidget->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+  if (m_View != MIDAS_VIEW_UNKNOWN)
+  {
+    m_MultiWidget->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+  }
 }
 
 
@@ -755,7 +758,10 @@ double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
 {
-  m_MultiWidget->SetMagnificationFactor(magnificationFactor);
+  if (m_View != MIDAS_VIEW_UNKNOWN)
+  {
+    m_MultiWidget->SetMagnificationFactor(magnificationFactor);
+  }
 }
 
 
