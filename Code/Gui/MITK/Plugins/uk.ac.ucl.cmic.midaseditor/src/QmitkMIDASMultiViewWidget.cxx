@@ -384,7 +384,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(CrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnCrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
-//  connect(widget, SIGNAL(CentreChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCentreChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
+  connect(widget, SIGNAL(CrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
   connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
@@ -939,20 +939,20 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
 }
 
 
-////-----------------------------------------------------------------------------
-//void QmitkMIDASMultiViewWidget::OnCentreChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& centre)
-//{
-//  if (m_MIDASBindWidget->IsZoomAndPanBound())
-//  {
-//    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
-//    {
-//      if (m_SingleViewWidgets[i] != widget)
-//      {
-//        m_SingleViewWidgets[i]->SetCentre(centre);
-//      }
-//    }
-//  }
-//}
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& crossPositionOnDisplay)
+{
+  if (m_MIDASBindWidget->IsZoomAndPanBound())
+  {
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (m_SingleViewWidgets[i] != widget)
+      {
+        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+      }
+    }
+  }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -1588,14 +1588,14 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-//  mitk::Vector3D centre = selectedView->GetCentre();
+  mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
   double magnification = selectedView->GetMagnificationFactor();
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (i != selectedViewIndex)
     {
+      m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
-//      m_SingleViewWidgets[i]->SetCentre(centre);
     }
   }
 }
@@ -1893,14 +1893,14 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-//    mitk::Vector3D centre = selectedView->GetCentre();
+    mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
     double magnification = selectedView->GetMagnificationFactor();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
-//        m_SingleViewWidgets[i]->SetCentre(centre);
+        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       }
     }
   }

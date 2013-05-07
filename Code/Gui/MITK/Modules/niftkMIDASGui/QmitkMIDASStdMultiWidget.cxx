@@ -71,7 +71,10 @@ public:
     mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
     if (origin != m_LastOrigin)
     {
-      m_StdMultiWidget->OnOriginChanged(m_RenderWindow, beingPanned);
+      if (beingPanned)
+      {
+        m_StdMultiWidget->OnOriginChanged(m_RenderWindow, beingPanned);
+      }
       m_LastOrigin = origin;
     }
   }
@@ -1405,8 +1408,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     this->RequestUpdate();
     if (beingPanned)
     {
-      // TODO
-//      emit CentreChanged(m_Centre);
+      emit CrossPositionOnDisplayChanged(m_CrossPositionOnDisplay);
     }
   }
 }

@@ -255,8 +255,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
-  void CentreChanged(const mitk::Vector3D& centre);
-//  void ImagePanned(const mitk::Vector3D& centre);
+  void CrossPositionOnDisplayChanged(const mitk::Vector3D& crossPositionOnDisplay);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
