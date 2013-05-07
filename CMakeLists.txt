@@ -211,7 +211,7 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "f70be82e03" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_MITK "34e60452a9" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
 SET(NIFTK_VERSION_NIFTYLINK "670cde1afd" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
@@ -1150,7 +1150,22 @@ IF(WIN32)
         ${VS_BUILD_TYPE})
 
       MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+    endforeach()
 
+    foreach(NIFTK_APP ${NIFTK_APPS}) 
+      # extract option_name
+      STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+      SET(target_info_list ${target_info})
+      LIST(GET target_info_list 1 option_name)
+      LIST(GET target_info_list 0 app_name)
+      message("Current App Name: ${app_name}")
+	  
+	  foreach(VS_BUILD_TYPE debug release)
+		MESSAGE("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
+		mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
+		${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
+        ${VS_BUILD_TYPE}) 
+	  endforeach()
     endforeach()
     
   ELSE(MITK_FOUND)
