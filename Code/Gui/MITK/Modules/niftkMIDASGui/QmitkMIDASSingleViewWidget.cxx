@@ -105,15 +105,15 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
     m_SliceNumbers[i] = 0;
     m_TimeSliceNumbers[i] = 0;
   }
-  for (int i = 0; i < MIDAS_VIEW_NUMBER * 2; i++)
-  {
-    for (int j = 0; j < 3; ++j)
-    {
-      m_Centres[i][j] = 0.5;
-    }
-    m_MagnificationFactors[i] = m_MinimumMagnification;
-    m_ViewInitialised[i] = false;
-  }
+//  for (int i = 0; i < MIDAS_VIEW_NUMBER * 2; i++)
+//  {
+//    for (int j = 0; j < 3; ++j)
+//    {
+//      m_Centres[i][j] = 0.5;
+//    }
+//    m_MagnificationFactors[i] = m_MinimumMagnification;
+//    m_ViewInitialised[i] = false;
+//  }
 
   // Create the main QmitkMIDASStdMultiWidget
   m_MultiWidget = new QmitkMIDASStdMultiWidget(this, NULL, m_RenderingManager, m_DataStorage);
@@ -131,7 +131,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(CrossPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnCrossPositionChanged(QmitkRenderWindow*, int)));
-  connect(m_MultiWidget, SIGNAL(CentreChanged(const mitk::Vector3D&)), this, SLOT(OnCentreChanged(const mitk::Vector3D&)));
+//  connect(m_MultiWidget, SIGNAL(CentreChanged(const mitk::Vector3D&)), this, SLOT(OnCentreChanged(const mitk::Vector3D&)));
   connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
 }
 
@@ -157,11 +157,11 @@ void QmitkMIDASSingleViewWidget::OnCrossPositionChanged(QmitkRenderWindow *windo
 }
 
 
-//-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnCentreChanged(const mitk::Vector3D& centre)
-{
-  emit CentreChanged(this, centre);
-}
+////-----------------------------------------------------------------------------
+//void QmitkMIDASSingleViewWidget::OnCentreChanged(const mitk::Vector3D& centre)
+//{
+//  emit CentreChanged(this, centre);
+//}
 
 
 //-----------------------------------------------------------------------------
@@ -477,7 +477,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
 
   m_SliceNumbers[Index(orientation)] = this->GetSliceNumber(orientation);
   m_TimeSliceNumbers[Index(orientation)] = this->GetTime();
-  m_Centres[Index(view)] = m_MultiWidget->GetCentre();
+//  m_Centres[Index(view)] = m_MultiWidget->GetCentre();
   m_MagnificationFactors[Index(view)] = m_MultiWidget->GetMagnificationFactor();
   m_ViewInitialised[Index(view)] = true;
 
@@ -495,10 +495,10 @@ void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
 {
   m_SliceNumbers[Index(m_Orientation)] = 0;
   m_TimeSliceNumbers[Index(m_Orientation)] = 0;
-  for (int j = 0; j < 3; ++j)
-  {
-    m_Centres[Index(m_View)][j] = 0.5;
-  }
+//  for (int j = 0; j < 3; ++j)
+//  {
+//    m_Centres[Index(m_View)][j] = 0.5;
+//  }
   m_MagnificationFactors[Index(m_View)] = m_MinimumMagnification;
   m_ViewInitialised[Index(m_View)] = false;
 }
@@ -514,10 +514,10 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
   }
   for (int i = 0; i < MIDAS_VIEW_NUMBER; i++)
   {
-    for (int j = 0; j < 3; ++j)
-    {
-      m_Centres[Index(i)][j] = 0.5;
-    }
+//    for (int j = 0; j < 3; ++j)
+//    {
+//      m_Centres[Index(i)][j] = 0.5;
+//    }
     m_MagnificationFactors[Index(i)] = m_MinimumMagnification;
     m_ViewInitialised[Index(i)] = false;
   }
@@ -690,7 +690,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
         this->SetTime(m_TimeSliceNumbers[Index(orientation)]);
       }
       this->SetMagnificationFactor(m_MagnificationFactors[Index(view)]);
-      this->SetCentre(m_Centres[Index(view)]);
+//      this->SetCentre(m_Centres[Index(view)]);
     }
     else
     {
@@ -702,14 +702,14 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
       double magnificationFactor = m_MultiWidget->FitMagnificationFactor();
-      const mitk::Vector3D& centre = m_MultiWidget->GetCentre();
+//      const mitk::Vector3D& centre = m_MultiWidget->GetCentre();
 
       // TODO what to do with the centre?
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
       this->SetMagnificationFactor(magnificationFactor);
-      this->SetCentre(centre);
+//      this->SetCentre(centre);
       m_ViewInitialised[Index(view)] = true;
     }
   } // end view != MIDAS_VIEW_UNKNOWN
@@ -733,18 +733,18 @@ void QmitkMIDASSingleViewWidget::SetCrossPosition(const mitk::Point3D& crossPosi
 }
 
 
-//-----------------------------------------------------------------------------
-const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCentre() const
-{
-  return m_MultiWidget->GetCentre();
-}
+////-----------------------------------------------------------------------------
+//const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCentre() const
+//{
+//  return m_MultiWidget->GetCentre();
+//}
 
 
-//-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetCentre(const mitk::Vector3D& centre)
-{
-  m_MultiWidget->SetCentre(centre);
-}
+////-----------------------------------------------------------------------------
+//void QmitkMIDASSingleViewWidget::SetCentre(const mitk::Vector3D& centre)
+//{
+//  m_MultiWidget->SetCentre(centre);
+//}
 
 
 //-----------------------------------------------------------------------------

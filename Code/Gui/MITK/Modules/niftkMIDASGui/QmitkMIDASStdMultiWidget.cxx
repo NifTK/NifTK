@@ -180,10 +180,16 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   onCoronalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged );
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
-  // The image centre is at the middle of the display at the beginning.
-  m_Centre[0] = 0.5;
-  m_Centre[1] = 0.5;
-  m_Centre[2] = 0.5;
+  // The crosshair is at the middle of the display at the beginning.
+  m_CrossPositionOnDisplay[0] = 0.5;
+  m_CrossPositionOnDisplay[1] = 0.5;
+  m_CrossPositionOnDisplay[2] = 0.5;
+
+  // The world position is unknown until the geometry is set. These values are invalid,
+  // but still better then having undefined values.
+  m_CrossPosition[0] = 0.0;
+  m_CrossPosition[1] = 0.0;
+  m_CrossPosition[2] = 0.0;
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
@@ -1353,39 +1359,34 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
     mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
 
-    mitk::ScalarType scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
     const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
 
     const mitk::Vector2D& origin = displayGeometry->GetOriginInDisplayUnits();
     mitk::Vector2D imageSize;
     imageSize[0] = worldGeometry->GetExtent(0);
     imageSize[1] = worldGeometry->GetExtent(1);
-    mitk::Vector2D imageSizeScaled = imageSize / scaleFactor;
-    mitk::Vector2D imageCentre = imageSizeScaled / 2 - origin;
-    mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
-    mitk::Vector2D centre2D;
-    centre2D[0] = imageCentre[0] / displaySize[0];
-    centre2D[1] = imageCentre[1] / displaySize[1];
 
-    if (renderWindow == this->GetRenderWindow1())
-    {
-      m_Centre[0] = centre2D[0];
-      m_Centre[1] = centre2D[1];
-    }
-    else if (renderWindow == this->GetRenderWindow2())
-    {
-      m_Centre[1] = 1.0 - centre2D[0];
-      m_Centre[2] = centre2D[1];
-    }
-    else if (renderWindow == this->GetRenderWindow3())
-    {
-      m_Centre[0] = centre2D[0];
-      m_Centre[2] = centre2D[1];
-    }
+    mitk::Vector2D crossPositionOnDisplay = this->GetCrossPositionOnDisplay(renderWindow);
 
-    // horizontal movement in axial <-> horizontal movement in coronal
-    // vertical movement in axial <-> horizontal movement in sagittal (up <-> left, down <-> right)
-    // vertical movement in sagittal <-> vertical movement in coronal
+    // axial[0] <-> coronal[0]
+    // axial[1] <-> -sagittal[0]
+    // sagittal[1] <-> coronal[1]
+
+    if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
+    {
+      m_CrossPositionOnDisplay[0] = crossPositionOnDisplay[0];
+      m_CrossPositionOnDisplay[1] = crossPositionOnDisplay[1];
+    }
+    else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
+    {
+      m_CrossPositionOnDisplay[1] = 1.0 - crossPositionOnDisplay[0];
+      m_CrossPositionOnDisplay[2] = crossPositionOnDisplay[1];
+    }
+    else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
+    {
+      m_CrossPositionOnDisplay[0] = crossPositionOnDisplay[0];
+      m_CrossPositionOnDisplay[2] = crossPositionOnDisplay[1];
+    }
 
     if (beingPanned)
     {
@@ -1395,7 +1396,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          mitk::Vector2D origin = this->ComputeOrigin(otherRenderWindow, m_Centre);
+          mitk::Vector2D origin = this->ComputeOriginFromCrossPositionOnDisplay(otherRenderWindow, m_CrossPositionOnDisplay);
           this->SetOrigin(otherRenderWindow, origin);
         }
       }
@@ -1404,7 +1405,8 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     this->RequestUpdate();
     if (beingPanned)
     {
-      emit CentreChanged(m_Centre);
+      // TODO
+//      emit CentreChanged(m_Centre);
     }
   }
 }
@@ -1461,30 +1463,37 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientation)
 {
   const mitk::Geometry3D *geometry = m_Geometry;
-  if (geometry != NULL)
+  if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    int sliceNumber = 0;
-    mitk::Index3D voxelPoint;
-    mitk::Point3D millimetrePoint = this->GetCrossPosition();
+    int sliceIndex = 0;
+    mitk::Index3D crossIndex;
+    mitk::Point3D crossPosition = this->GetCrossPosition();
     int axis = m_OrientationToAxisMap[orientation];
 
-    geometry->WorldToIndex(millimetrePoint, voxelPoint);
-    sliceNumber = voxelPoint[axis];
+    geometry->WorldToIndex(crossPosition, crossIndex);
+    sliceIndex = crossIndex[axis];
 
-    QmitkRenderWindow *renderWindow = NULL;
+    // axial[0] <-> coronal[0]
+    // axial[1] <-> -sagittal[0]
+    // sagittal[1] <-> coronal[1]
+
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      renderWindow = this->mitkWidget1;
+      mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+      m_CrossPositionOnDisplay[2] = crossPositionOnSagittalDisplay[1];
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      renderWindow = this->mitkWidget2;
+      mitk::Vector2D crossPositionOnAxialDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+      m_CrossPositionOnDisplay[0] = crossPositionOnAxialDisplay[0];
     }
-    else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    else // if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      renderWindow = this->mitkWidget3;
+      mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+      m_CrossPositionOnDisplay[1] = crossPositionOnSagittalDisplay[0];
     }
-    emit CrossPositionChanged(renderWindow, sliceNumber);
+
+    emit CrossPositionChanged(m_RenderWindows[orientation], sliceIndex);
   }
 }
 
@@ -1530,7 +1539,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
   if (m_Geometry != NULL)
   {
     mitk::Index3D voxelPoint;
-    mitk::Point3D millimetrePoint = this->GetCrossPosition();
+    const mitk::Point3D millimetrePoint = this->GetCrossPosition();
 
     m_Geometry->WorldToIndex(millimetrePoint, voxelPoint);
 
@@ -1585,21 +1594,43 @@ void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPositi
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCentre() const
+const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCrossPositionOnDisplay() const
 {
-  return m_Centre;
+  return m_CrossPositionOnDisplay;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetCentre(const mitk::Vector3D& centre)
+const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCrossPositionOnDisplay(QmitkRenderWindow* renderWindow) const
 {
-  if (m_Centre == centre)
+  const mitk::Point3D crossPosition = this->GetCrossPosition();
+
+  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
+
+  mitk::Point2D crossPositionOnDisplayInMM;
+  mitk::Point2D crossPositionOnDisplayInPixels;
+  displayGeometry->Map(crossPosition, crossPositionOnDisplayInMM);
+  displayGeometry->WorldToDisplay(crossPositionOnDisplayInMM, crossPositionOnDisplayInPixels);
+
+  mitk::Vector2D crossPositionOnDisplayNormalised;
+  crossPositionOnDisplayNormalised[0] = crossPositionOnDisplayInPixels[0] / displaySize[0];
+  crossPositionOnDisplayNormalised[1] = crossPositionOnDisplayInPixels[1] / displaySize[1];
+
+  return crossPositionOnDisplayNormalised;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetCrossPositionOnDisplay(const mitk::Vector3D& crossPositionOnDisplay)
+{
+  if (m_CrossPositionOnDisplay == crossPositionOnDisplay)
   {
     return;
   }
 
-  m_Centre = centre;
+  m_CrossPositionOnDisplay = crossPositionOnDisplay;
 
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
   for (int i = 0; i < 3; ++i)
@@ -1607,58 +1638,62 @@ void QmitkMIDASStdMultiWidget::SetCentre(const mitk::Vector3D& centre)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      mitk::Vector2D origin = this->ComputeOrigin(renderWindow, m_Centre);
+      mitk::Vector2D origin = this->ComputeOriginFromCrossPositionOnDisplay(renderWindow, crossPositionOnDisplay);
       this->SetOrigin(renderWindow, origin);
     }
   }
 
   this->RequestUpdate();
-  emit CentreChanged(m_Centre);
+//  emit CrossPositionChanged();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre)
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector3D& crossPositionOnDisplay)
 {
-  mitk::Vector2D centre2D;
-  if (renderWindow == this->GetRenderWindow1())
+  mitk::Vector2D crossPositionOnDisplay2D;
+  if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
   {
-    centre2D[0] = centre[0];
-    centre2D[1] = centre[1];
+    crossPositionOnDisplay2D[0] = crossPositionOnDisplay[0];
+    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[1];
   }
-  else if (renderWindow == this->GetRenderWindow2())
+  else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
   {
-    centre2D[0] = 1.0 - centre[1];
-    centre2D[1] = centre[2];
+    crossPositionOnDisplay2D[0] = 1.0 - crossPositionOnDisplay[1];
+    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[2];
   }
-  else if (renderWindow == this->GetRenderWindow3())
+  else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
   {
-    centre2D[0] = centre[0];
-    centre2D[1] = centre[2];
+    crossPositionOnDisplay2D[0] = crossPositionOnDisplay[0];
+    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[2];
   }
 
-  return this->ComputeOrigin(renderWindow, centre2D);
+  return this->ComputeOriginFromCrossPositionOnDisplay(renderWindow, crossPositionOnDisplay2D);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre2D)
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector2D& crossPositionOnDisplay)
 {
-  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+  mitk::Point3D crossPosition = this->GetCrossPosition();
+
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
-  const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
 
-  mitk::Vector2D imageSize;
-  imageSize[0] = worldGeometry->GetExtent(0);
-  imageSize[1] = worldGeometry->GetExtent(1);
-  mitk::ScalarType scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  mitk::Vector2D crossPositionOnDisplayInPixels;
+  crossPositionOnDisplayInPixels[0] = crossPositionOnDisplay[0] * displaySize[0];
+  crossPositionOnDisplayInPixels[1] = crossPositionOnDisplay[1] * displaySize[1];
+  mitk::Vector2D crossPosition2DInPixels;
+  displayGeometry->DisplayToWorld(crossPositionOnDisplayInPixels, crossPosition2DInPixels);
 
-  mitk::Vector2D imageSizeScaled = imageSize / (2 * scaleFactor);
-  mitk::Vector2D centreInPixel;
-  centreInPixel[0] = centre2D[0] * displaySize[0];
-  centreInPixel[1] = centre2D[1] * displaySize[1];
-  mitk::Vector2D origin = imageSizeScaled - centreInPixel;
+  mitk::Point2D crossPosition2D;
+  displayGeometry->Map(crossPosition, crossPosition2D);
+  double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  mitk::Vector2D crossPosition2DScaled;
+  crossPosition2DScaled[0] = crossPosition2D[0] / scaleFactor;
+  crossPosition2DScaled[1] = crossPosition2D[1] / scaleFactor;
+
+  mitk::Vector2D origin = crossPosition2DScaled - crossPositionOnDisplayInPixels;
 
   return origin;
 }
@@ -1901,56 +1936,6 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
       }
     } // end geometry and bounding box != NULL
   } // end renderWindow != NULL
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor)
-{
-  if (renderWindow != NULL)
-  {
-    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
-    mitk::SliceNavigationController* sliceNavigationController = renderWindow->GetSliceNavigationController();
-    assert(sliceNavigationController);
-
-    mitk::BaseRenderer* baseRenderer = sliceNavigationController->GetRenderer();
-    assert(baseRenderer);
-
-    mitk::DisplayGeometry* displayGeometry = baseRenderer->GetDisplayGeometry();
-    assert(displayGeometry);
-
-    mitk::Vector2D sizeInDisplayUnits = displayGeometry->GetSizeInDisplayUnits();
-    mitk::Point2D centreOfDisplayInDisplayUnits;
-
-    centreOfDisplayInDisplayUnits[0] = (sizeInDisplayUnits[0]-1.0)/2.0;
-    centreOfDisplayInDisplayUnits[1] = (sizeInDisplayUnits[1]-1.0)/2.0;
-
-    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(scaleFactor, centreOfDisplayInDisplayUnits);
-
-    // Now shift the origin, so the viewport is centred on the centre of the image.
-    mitk::Geometry3D::ConstPointer geometry = sliceNavigationController->GetInputWorldGeometry();
-    if (geometry.IsNotNull())
-    {
-      mitk::Point3D centreInVoxels;
-      mitk::Point3D centreInMillimetres;
-      mitk::Point2D projectedCentreInMillimetres;
-      mitk::Point2D projectedCentreInPixels;
-
-      centreInVoxels[0] = (geometry->GetExtent(0)-1)/2.0;
-      centreInVoxels[1] = (geometry->GetExtent(1)-1)/2.0;
-      centreInVoxels[2] = (geometry->GetExtent(2)-1)/2.0;
-
-      geometry->IndexToWorld(centreInVoxels, centreInMillimetres);
-      displayGeometry->Map(centreInMillimetres, projectedCentreInMillimetres);
-      displayGeometry->WorldToDisplay(projectedCentreInMillimetres, projectedCentreInPixels);
-
-      mitk::Vector2D difference;
-      difference[0] = projectedCentreInPixels[0] - centreOfDisplayInDisplayUnits[0];
-      difference[1] = projectedCentreInPixels[1] - centreOfDisplayInDisplayUnits[1];
-      displayGeometry->MoveBy(difference);
-    }
-  }
 }
 
 
