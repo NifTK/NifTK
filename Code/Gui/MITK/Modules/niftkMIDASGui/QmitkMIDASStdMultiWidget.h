@@ -195,7 +195,7 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
-  /// \brief Sets the cross position.
+  /// \brief Sets the cross position in the world coordinate system.
   void SetCrossPosition(const mitk::Point3D& crossPosition);
 
   /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
@@ -203,6 +203,20 @@ public:
 
   /// \brief Sets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
   void SetCentre(const mitk::Vector3D& centre);
+
+  /// \brief Gets the crosshair position relative to the display size. The values are in the [0.0, 1.0] range
+  /// and represent the position inside the displayed region: pixel coordinate / display size.
+  const mitk::Vector2D GetCrossPositionOnDisplay(QmitkRenderWindow* renderWindow) const;
+
+  /// \brief Gets the crosshair position relative to the display size. The values are in the [0.0, 1.0] range
+  /// and represent the position inside the displayed region: pixel coordinate / display size.
+  const mitk::Vector3D& GetCrossPositionOnDisplay() const;
+
+  /// \brief Moves the image on the display so that the crosshair gets to the specified position,
+  /// relatively to the diplay size. This function does not affect the world position of the crosshair.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the displayed region:
+  /// pixel coordinate / display size.
+  void SetCrossPositionOnDisplay(const mitk::Vector3D& crossPositionOnDisplay);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
   double GetMagnificationFactor() const;
@@ -241,7 +255,7 @@ signals:
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
-  void CentreChanged(const mitk::Vector3D& centre);
+  void CrossPositionOnDisplayChanged(const mitk::Vector3D& crossPositionOnDisplay);
   void MagnificationFactorChanged(double magnificationFactor);
 
 protected slots:
@@ -276,7 +290,7 @@ private:
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
 
   /// \brief Scales a specific render window about it's centre.
-  void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
+//  void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
 
   /// \brief Scales a specific render window about the crosshair.
   void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
@@ -297,10 +311,16 @@ private:
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
   /// \brief Computes the origin for a render window from the image centre.
-  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre);
+//  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre);
 
   /// \brief Computes the origin for a render window from the image centre.
-  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre2D);
+//  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector3D& crossPositionOnDisplay);
+
+  /// \brief Computes the origin for a render window from the image centre.
+  mitk::Vector2D ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector2D& crossPositionOnDisplay);
 
   /// \brief Computes the scale factor for a render window from a magnification factor.
   double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
@@ -317,7 +337,8 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Show3DWindowInOrthoView;
   MIDASView             m_View;
-  mitk::Vector3D        m_Centre;
+  mitk::Point3D         m_CrossPosition;
+  mitk::Vector3D        m_CrossPositionOnDisplay;
   double                m_MagnificationFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
