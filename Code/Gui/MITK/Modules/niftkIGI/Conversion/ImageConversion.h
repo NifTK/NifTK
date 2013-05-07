@@ -25,8 +25,7 @@ namespace niftk
 
 
 mitk::Image::Pointer NIFTKIGI_EXPORT CreateMitkImage(const IplImage* image);
-mitk::Image::Pointer NIFTKIGI_EXPORT CreateRGBMitkImage(const IplImage* image);
-mitk::Image::Pointer NIFTKIGI_EXPORT CreateRGBAMitkImage(const IplImage* image);
+
 
 } // namespace
 
