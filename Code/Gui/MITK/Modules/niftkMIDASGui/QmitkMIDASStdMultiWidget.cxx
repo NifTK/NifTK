@@ -1364,7 +1364,6 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 
     const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
 
-    const mitk::Vector2D& origin = displayGeometry->GetOriginInDisplayUnits();
     mitk::Vector2D imageSize;
     imageSize[0] = worldGeometry->GetExtent(0);
     imageSize[1] = worldGeometry->GetExtent(1);
