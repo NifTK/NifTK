@@ -44,7 +44,7 @@ bool AreImagesTheSame(const typename boost::gil::image<A, false>::const_view_t& 
 
 
 //-----------------------------------------------------------------------------
-static void TestAreImagesTheSame()
+static void TestAreImagesTheSameRGB()
 {
   // FIXME: check different pixel types
   boost::gil::rgb8_image_t  zero(123, 45);
@@ -56,11 +56,42 @@ static void TestAreImagesTheSame()
 
   MITK_TEST_CONDITION(
     (AreImagesTheSame<boost::gil::rgb8_pixel_t, boost::gil::rgb8_pixel_t>(boost::gil::const_view(zero), boost::gil::const_view(zero))), 
-    "Checking test code: image is self-same");
+    "Checking test code: RGB image is self-same");
   MITK_TEST_CONDITION(
     !(AreImagesTheSame<boost::gil::rgb8_pixel_t, boost::gil::rgb8_pixel_t>(boost::gil::const_view(one), boost::gil::const_view(zero))), 
-    "Checking test code: different images are not the same");
+    "Checking test code: different RGB images are not the same");
   MITK_TEST_CONDITION(
     !(AreImagesTheSame<boost::gil::rgb8_pixel_t, boost::gil::rgb8_pixel_t>(boost::gil::const_view(wrongsize), boost::gil::const_view(zero))), 
-    "Checking test code: differently sized images are not the same");
+    "Checking test code: differently sized RGB images are not the same");
+}
+
+
+//-----------------------------------------------------------------------------
+static void TestAreImagesTheSameRGBA()
+{
+  // FIXME: check different pixel types
+  boost::gil::rgba8_image_t  zero(123, 45);
+  boost::gil::rgba8_image_t  one(zero.dimensions());
+  boost::gil::rgba8_image_t  wrongsize(45, 123);
+  boost::gil::fill_pixels(boost::gil::view(zero), boost::gil::rgba8_pixel_t(0, 0, 0, 0));
+  boost::gil::fill_pixels(boost::gil::view(one), boost::gil::rgba8_pixel_t(1, 1, 1, 1));
+  boost::gil::fill_pixels(boost::gil::view(wrongsize), boost::gil::rgba8_pixel_t(0, 0, 0, 0));
+
+  MITK_TEST_CONDITION(
+    (AreImagesTheSame<boost::gil::rgba8_pixel_t, boost::gil::rgba8_pixel_t>(boost::gil::const_view(zero), boost::gil::const_view(zero))), 
+    "Checking test code: RGBA image is self-same");
+  MITK_TEST_CONDITION(
+    !(AreImagesTheSame<boost::gil::rgba8_pixel_t, boost::gil::rgba8_pixel_t>(boost::gil::const_view(one), boost::gil::const_view(zero))), 
+    "Checking test code: different RGBA images are not the same");
+  MITK_TEST_CONDITION(
+    !(AreImagesTheSame<boost::gil::rgba8_pixel_t, boost::gil::rgba8_pixel_t>(boost::gil::const_view(wrongsize), boost::gil::const_view(zero))), 
+    "Checking test code: differently sized RGBA images are not the same");
+}
+
+
+//-----------------------------------------------------------------------------
+static void TestAreImagesTheSame()
+{
+  TestAreImagesTheSameRGB();
+  TestAreImagesTheSameRGBA();
 }
