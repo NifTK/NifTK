@@ -31,7 +31,7 @@ typedef itk::Image<UCRGBAPixelType, 2>              RGBAItkImage;
 typedef itk::ImportImageFilter<UCRGBAPixelType, 2>  RGBAImportFilterType;
 
 
-
+//-----------------------------------------------------------------------------
 mitk::Image::Pointer CreateMitkImage(const IplImage* image)
 {
   switch (image->nChannels)
@@ -46,6 +46,8 @@ mitk::Image::Pointer CreateMitkImage(const IplImage* image)
   return 0;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::Image::Pointer CreateRGBAMitkImage(const IplImage* image)
 {
   assert(image->nChannels == 4);
@@ -126,6 +128,8 @@ mitk::Image::Pointer CreateRGBAMitkImage(const IplImage* image)
   return mitkImage;
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::Image::Pointer CreateRGBMitkImage(const IplImage* image)
 {
   assert(image->nChannels == 3);
@@ -205,5 +209,6 @@ mitk::Image::Pointer CreateRGBMitkImage(const IplImage* image)
 
   return mitkImage;
 }
+
 
 } // namespace
