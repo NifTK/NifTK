@@ -1875,6 +1875,20 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
     this->UpdateBoundGeometry(requestedGeometryBound);
   }
 
+  if (m_MIDASBindWidget->IsLayoutBound())
+  {
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
+    MIDASView midasView = selectedView->GetView();
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (i != selectedViewIndex)
+      {
+        m_SingleViewWidgets[i]->SetView(midasView, false);
+      }
+    }
+  }
+
   if (m_MIDASBindWidget->AreCursorsBound())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
