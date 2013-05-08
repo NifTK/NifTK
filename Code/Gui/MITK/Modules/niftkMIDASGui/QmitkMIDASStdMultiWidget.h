@@ -201,12 +201,6 @@ public:
   /// \brief Sets the selected position in the world coordinate system (mm).
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-  /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
-  const mitk::Vector3D& GetCentre() const;
-
-  /// \brief Sets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
-  void SetCentre(const mitk::Vector3D& centre);
-
   /// \brief Gets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
@@ -334,10 +328,10 @@ private:
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
-  /// \brief Computes the origin for a render window from the image centre.
+  /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Computes the origin for a render window from the image centre.
+  /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the scale factor for a render window from a magnification factor.
