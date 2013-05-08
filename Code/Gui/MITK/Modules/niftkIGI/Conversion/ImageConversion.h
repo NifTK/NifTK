@@ -24,9 +24,12 @@ namespace niftk
 {
 
 
+/**
+ * Supports RGB and RGBA images.
+ * Known bug: does not take care of different channel layouts: BGR vs RGB!
+ */
 mitk::Image::Pointer NIFTKIGI_EXPORT CreateMitkImage(const IplImage* image);
-mitk::Image::Pointer NIFTKIGI_EXPORT CreateRGBMitkImage(const IplImage* image);
-mitk::Image::Pointer NIFTKIGI_EXPORT CreateRGBAMitkImage(const IplImage* image);
+
 
 } // namespace
 

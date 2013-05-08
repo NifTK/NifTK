@@ -14,6 +14,7 @@
 
 #include "QmitkIGINVidiaDataSource.h"
 #include "mitkIGINVidiaDataType.h"
+#include "../Conversion/ImageConversion.h"
 #include <igtlTimeStamp.h>
 #include <QTimer>
 #include <QCoreApplication>
@@ -751,7 +752,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 
         if (imageInNode.IsNull())
         {
-          mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
+          mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
           // our image is only half the pixel height!
           // so tell the renderer/mitk/whatever that each pixel is actually two units tall
           mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();

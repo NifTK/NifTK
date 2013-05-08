@@ -17,32 +17,11 @@
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 
+// FIXME: how do i pull in non-test-driver code?
+#include "ImageTestHelper.cxx"
 
-template <typename A, typename B>
-bool AreImagesTheSame(const typename boost::gil::image<A, false>::const_view_t& a, const typename boost::gil::image<B, false>::const_view_t& b)
-{
-  if (a.dimensions() != b.dimensions())
-    return false;
 
-  // FIXME: check number of channels
-
-  for (int y = 0; y < a.height(); ++y)
-  {
-    for (int x = 0; x < a.width(); ++x)
-    {
-      BOOST_AUTO(ap, a(x, y));
-      BOOST_AUTO(bp, b(x, y));
-
-      if (ap[0] != bp[0])
-      {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
+//-----------------------------------------------------------------------------
 template <typename P>
 void MakeGradientImage(typename boost::gil::image<P, false>::view_t dst)
 {
@@ -66,6 +45,7 @@ void MakeGradientImage(typename boost::gil::image<P, false>::view_t dst)
     }
   }
 }
+
 
 //-----------------------------------------------------------------------------
 void BuildTextureDescriptorTests()
@@ -123,6 +103,7 @@ void BuildTextureDescriptorTests()
 }
 
 
+//-----------------------------------------------------------------------------
 void calcIntegralImages(boost::gil::gray8c_view_t img, boost::gil::gray32s_view_t integral, boost::gil::gray64f_view_t squared)
 {
   IplImage  grayipl;
@@ -139,6 +120,7 @@ void calcIntegralImages(boost::gil::gray8c_view_t img, boost::gil::gray32s_view_
 
   cvIntegral(&grayipl,  &integralipl,  &squaredintegralipl);
 }
+
 
 //-----------------------------------------------------------------------------
 void Zncc_C1Tests()
@@ -164,10 +146,6 @@ void Zncc_C1Tests()
 
 
   // check that our test method works
-  MITK_TEST_CONDITION_REQUIRED(
-    (AreImagesTheSame<boost::gil::gray8c_pixel_t, boost::gil::gray8c_pixel_t>
-      (boost::gil::const_view(uniformgray), boost::gil::const_view(uniformgray))), 
-      "Zncc_C1: pre-requisites: our test equipment works");
 //MITK_TEST_CONDITION_REQUIRED(
 //  (!AreImagesTheSame<boost::gil::gray8c_pixel_t, boost::gil::gray32sc_pixel_t>
 //    (boost::gil::const_view(uniformgray), boost::gil::const_view(expectedintegral))), 
@@ -276,8 +254,10 @@ void Zncc_C1Tests()
 }
 
 
+//-----------------------------------------------------------------------------
 int QDSCommonTest(int /*argc*/, char* /*argv*/[])
 {
+  TestAreImagesTheSame();
 
   BuildTextureDescriptorTests();
 
