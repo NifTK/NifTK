@@ -39,17 +39,17 @@ static mitk::Image::Pointer CreateMitkImageInternal(const IplImage* image)
     throw std::runtime_error("Source and target image type differ");
   }
 
-  ImportFilterType::Pointer importFilter = ImportFilterType::New();
-  mitk::ITKImageImport<ItkImageType>::Pointer mitkFilter = mitk::ITKImageImport<ItkImageType>::New();
+  typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
+  typename mitk::ITKImageImport<ItkImageType>::Pointer mitkFilter = mitk::ITKImageImport<ItkImageType>::New();
 
-  ImportFilterType::SizeType size;
+  typename ImportFilterType::SizeType size;
   size[0] = image->width;
   size[1] = image->height;
 
-  ImportFilterType::IndexType start;
+  typename ImportFilterType::IndexType start;
   start.Fill( 0 );
 
-  ImportFilterType::RegionType region;
+  typename ImportFilterType::RegionType region;
   region.SetIndex( start );
   region.SetSize(  size  );
 
@@ -104,7 +104,7 @@ static mitk::Image::Pointer CreateMitkImageInternal(const IplImage* image)
   importFilter->Update();
 
   // We then need a stand-alone ITK image, that survives after a pipeline.
-  ItkImageType::Pointer itkOutput = importFilter->GetOutput();
+  typename ItkImageType::Pointer itkOutput = importFilter->GetOutput();
   itkOutput->DisconnectPipeline();
 
   // We then convert it to MITK, and this conversion takes responsibility for the memory.
