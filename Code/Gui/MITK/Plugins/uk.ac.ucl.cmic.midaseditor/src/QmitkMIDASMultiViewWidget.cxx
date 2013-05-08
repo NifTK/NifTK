@@ -942,7 +942,7 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& crossPositionOnDisplay)
 {
-  if (m_MIDASBindWidget->IsZoomAndPanBound())
+  if (m_MIDASBindWidget->AreCursorsBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
@@ -1588,13 +1588,13 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-  mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
+//  mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
   double magnification = selectedView->GetMagnificationFactor();
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (i != selectedViewIndex)
     {
-      m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+//      m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
     }
   }
@@ -1894,11 +1894,13 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
     mitk::Point3D crossPosition = selectedView->GetCrossPosition();
+    mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
+        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       }
     }
   }
@@ -1907,14 +1909,12 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-    mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
     double magnification = selectedView->GetMagnificationFactor();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
-        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       }
     }
   }
