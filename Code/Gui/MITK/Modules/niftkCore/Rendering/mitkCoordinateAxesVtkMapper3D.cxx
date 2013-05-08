@@ -72,6 +72,10 @@ void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* rend
     ls->m_Actor->VisibilityOff();
     return;
   }
+  else
+  {
+    ls->m_Actor->VisibilityOn();
+  }
 
   if(showText)
   {

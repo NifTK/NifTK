@@ -23,6 +23,7 @@
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
 #include "mitkCoordinateAxesData.h"
+#include "mitkAffineTransformDataNodeProperty.h"
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
@@ -222,8 +223,15 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
           node->SetData(coordinateAxes);
           node->SetBoolProperty("show text", false);
           node->SetIntProperty("size", 10);
+          node->SetVisibility(false); // by default we don't need to see it.
         }
         coordinateAxes->SetVtkMatrix(*vtkMatrix);
+
+        mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
+        affTransProp->SetTransform(*vtkMatrix);
+
+        std::string propertyName = "niftk." + nodeName.toStdString();
+        node->SetProperty(propertyName.c_str(), affTransProp);
         node->Modified();
 
         // And output a status message to console.
