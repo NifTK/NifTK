@@ -106,7 +106,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display2DCursorsGlobally(false)
 , m_Show3DWindowInOrthoView(false)
 , m_View(MIDAS_VIEW_ORTHO)
-, m_MagnificationFactor(0.0)
+, m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 {
@@ -183,16 +183,16 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   onCoronalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged );
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
-  // The crosshair is at the middle of the display at the beginning.
-  m_CrossPositionOnDisplay[0] = 0.5;
-  m_CrossPositionOnDisplay[1] = 0.5;
-  m_CrossPositionOnDisplay[2] = 0.5;
+  // The cursor is at the middle of the display at the beginning.
+  m_CursorPosition[0] = 0.5;
+  m_CursorPosition[1] = 0.5;
+  m_CursorPosition[2] = 0.5;
 
   // The world position is unknown until the geometry is set. These values are invalid,
   // but still better then having undefined values.
-  m_CrossPosition[0] = 0.0;
-  m_CrossPosition[1] = 0.0;
-  m_CrossPosition[2] = 0.0;
+  m_SelectedPosition[0] = 0.0;
+  m_SelectedPosition[1] = 0.0;
+  m_SelectedPosition[2] = 0.0;
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
@@ -277,21 +277,21 @@ void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, s
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnAxialSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnCrossPositionChanged(MIDAS_ORIENTATION_AXIAL);
+  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnSagittalSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnCrossPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
+  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
-  this->OnCrossPositionChanged(MIDAS_ORIENTATION_CORONAL);
+  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_CORONAL);
 }
 
 
@@ -1359,7 +1359,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    mitk::Vector2D crossPositionOnDisplay = this->GetCrossPositionOnDisplay(renderWindow);
+    mitk::Vector2D cursorPosition = this->GetCursorPosition(renderWindow);
 
     // axial[0] <-> coronal[0]
     // axial[1] <-> -sagittal[0]
@@ -1367,18 +1367,18 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 
     if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
     {
-      m_CrossPositionOnDisplay[0] = crossPositionOnDisplay[0];
-      m_CrossPositionOnDisplay[1] = crossPositionOnDisplay[1];
+      m_CursorPosition[0] = cursorPosition[0];
+      m_CursorPosition[1] = cursorPosition[1];
     }
     else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
     {
-      m_CrossPositionOnDisplay[1] = 1.0 - crossPositionOnDisplay[0];
-      m_CrossPositionOnDisplay[2] = crossPositionOnDisplay[1];
+      m_CursorPosition[1] = 1.0 - cursorPosition[0];
+      m_CursorPosition[2] = cursorPosition[1];
     }
     else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
     {
-      m_CrossPositionOnDisplay[0] = crossPositionOnDisplay[0];
-      m_CrossPositionOnDisplay[2] = crossPositionOnDisplay[1];
+      m_CursorPosition[0] = cursorPosition[0];
+      m_CursorPosition[2] = cursorPosition[1];
     }
 
     if (beingPanned)
@@ -1389,7 +1389,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          mitk::Vector2D origin = this->ComputeOriginFromCrossPositionOnDisplay(otherRenderWindow, m_CrossPositionOnDisplay);
+          mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(otherRenderWindow, m_CursorPosition);
           this->SetOrigin(otherRenderWindow, origin);
         }
       }
@@ -1398,7 +1398,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
     this->RequestUpdate();
     if (beingPanned)
     {
-      emit CrossPositionOnDisplayChanged(m_CrossPositionOnDisplay);
+      emit CursorPositionChanged(m_CursorPosition);
     }
   }
 }
@@ -1424,10 +1424,10 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    double magnificationFactor = ComputeMagnificationFactor(renderWindow);
-    if (magnificationFactor != m_MagnificationFactor)
+    double magnification = ComputeMagnification(renderWindow);
+    if (magnification != m_Magnification)
     {
-      // The aim of this method, is that when a magnificationFactor is passed in,
+      // The aim of this method, is that when a magnification is passed in,
       // all 2D views update to an equivalent zoom, even if they were different beforehand.
       // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
       // that corresponds to the rules given at the top of the header file.
@@ -1438,21 +1438,21 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnificationFactor);
-          this->ZoomDisplayAboutCrosshair(otherRenderWindow, zoomScaleFactor);
+          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnification);
+          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomScaleFactor);
         }
       }
 
-      m_MagnificationFactor = magnificationFactor;
+      m_Magnification = magnification;
       this->RequestUpdate();
-      emit MagnificationFactorChanged(magnificationFactor);
+      emit MagnificationChanged(magnification);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientation)
+void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orientation)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
@@ -1460,12 +1460,12 @@ void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientati
     if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
       int sliceIndex = 0;
-      mitk::Index3D crossIndex;
-      mitk::Point3D crossPosition = this->GetCrossPosition();
+      mitk::Index3D selectedPositionIndex;
+      mitk::Point3D selectedPosition = this->GetSelectedPosition();
       int axis = m_OrientationToAxisMap[orientation];
 
-      geometry->WorldToIndex(crossPosition, crossIndex);
-      sliceIndex = crossIndex[axis];
+      geometry->WorldToIndex(selectedPosition, selectedPositionIndex);
+      sliceIndex = selectedPositionIndex[axis];
 
       // axial[0] <-> coronal[0]
       // axial[1] <-> -sagittal[0]
@@ -1473,21 +1473,21 @@ void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientati
 
       if (orientation == MIDAS_ORIENTATION_AXIAL)
       {
-        mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-        m_CrossPositionOnDisplay[2] = crossPositionOnSagittalDisplay[1];
+        mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+        m_CursorPosition[2] = cursorPositionOnSagittalDisplay[1];
       }
       else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
       {
-        mitk::Vector2D crossPositionOnAxialDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-        m_CrossPositionOnDisplay[0] = crossPositionOnAxialDisplay[0];
+        mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+        m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
       }
       else // if (orientation == MIDAS_ORIENTATION_CORONAL)
       {
-        mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-        m_CrossPositionOnDisplay[1] = crossPositionOnSagittalDisplay[0];
+        mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+        m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
       }
 
-      emit CrossPositionChanged(m_RenderWindows[orientation], sliceIndex);
+      emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
     }
   }
 }
@@ -1500,7 +1500,7 @@ void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsi
   if (geometry != NULL)
   {
     mitk::Index3D voxelPoint;
-    mitk::Point3D millimetrePoint = this->GetCrossPosition();
+    mitk::Point3D millimetrePoint = this->GetSelectedPosition();
 
     geometry->WorldToIndex(millimetrePoint, voxelPoint);
 
@@ -1534,7 +1534,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
   if (m_Geometry != NULL)
   {
     mitk::Index3D voxelPoint;
-    const mitk::Point3D millimetrePoint = this->GetCrossPosition();
+    const mitk::Point3D millimetrePoint = this->GetSelectedPosition();
 
     m_Geometry->WorldToIndex(millimetrePoint, voxelPoint);
 
@@ -1571,63 +1571,70 @@ unsigned int QmitkMIDASStdMultiWidget::GetTime() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPosition)
+const mitk::Point3D QmitkMIDASStdMultiWidget::GetSelectedPosition() const
+{
+  return this->GetCrossPosition();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   // Check if the slice navigation controller has a valid geometry.
   m_BlockDisplayGeometryEvents = true;
   if (snc->GetCreatedWorldGeometry())
   {
-    snc->SelectSliceByPoint(crossPosition);
+    snc->SelectSliceByPoint(selectedPosition);
 
     snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-    snc->SelectSliceByPoint(crossPosition);
+    snc->SelectSliceByPoint(selectedPosition);
 
     snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
-    snc->SelectSliceByPoint(crossPosition);
+    snc->SelectSliceByPoint(selectedPosition);
   }
   m_BlockDisplayGeometryEvents = false;
 }
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCrossPositionOnDisplay() const
+const mitk::Vector3D& QmitkMIDASStdMultiWidget::GetCursorPosition() const
 {
-  return m_CrossPositionOnDisplay;
+  return m_CursorPosition;
 }
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCrossPositionOnDisplay(QmitkRenderWindow* renderWindow) const
+const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCursorPosition(QmitkRenderWindow* renderWindow) const
 {
-  const mitk::Point3D crossPosition = this->GetCrossPosition();
+  const mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
-  mitk::Point2D crossPositionOnDisplayInMM;
-  mitk::Point2D crossPositionOnDisplayInPixels;
-  displayGeometry->Map(crossPosition, crossPositionOnDisplayInMM);
-  displayGeometry->WorldToDisplay(crossPositionOnDisplayInMM, crossPositionOnDisplayInPixels);
+  mitk::Point2D cursorPositionInMM;
+  mitk::Point2D cursorPositionInPixels;
+  displayGeometry->Map(selectedPosition, cursorPositionInMM);
+  displayGeometry->WorldToDisplay(cursorPositionInMM, cursorPositionInPixels);
 
-  mitk::Vector2D crossPositionOnDisplayNormalised;
-  crossPositionOnDisplayNormalised[0] = crossPositionOnDisplayInPixels[0] / displaySize[0];
-  crossPositionOnDisplayNormalised[1] = crossPositionOnDisplayInPixels[1] / displaySize[1];
+  mitk::Vector2D cursorPositionNormalised;
+  cursorPositionNormalised[0] = cursorPositionInPixels[0] / displaySize[0];
+  cursorPositionNormalised[1] = cursorPositionInPixels[1] / displaySize[1];
 
-  return crossPositionOnDisplayNormalised;
+  return cursorPositionNormalised;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetCrossPositionOnDisplay(const mitk::Vector3D& crossPositionOnDisplay)
+void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
 {
-  if (m_CrossPositionOnDisplay == crossPositionOnDisplay)
+  if (m_CursorPosition == cursorPosition)
   {
     return;
   }
 
-  m_CrossPositionOnDisplay = crossPositionOnDisplay;
+  m_CursorPosition = cursorPosition;
 
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
   for (int i = 0; i < 3; ++i)
@@ -1635,83 +1642,79 @@ void QmitkMIDASStdMultiWidget::SetCrossPositionOnDisplay(const mitk::Vector3D& c
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      mitk::Vector2D origin = this->ComputeOriginFromCrossPositionOnDisplay(renderWindow, crossPositionOnDisplay);
+      mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
       this->SetOrigin(renderWindow, origin);
     }
   }
 
   this->RequestUpdate();
-//  emit CrossPositionOnDisplayChanged();
+//  emit CursorPositionChanged();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector3D& crossPositionOnDisplay)
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition)
 {
-  mitk::Vector2D crossPositionOnDisplay2D;
+  mitk::Vector2D cursorPosition2D;
   if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
   {
-    crossPositionOnDisplay2D[0] = crossPositionOnDisplay[0];
-    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[1];
+    cursorPosition2D[0] = cursorPosition[0];
+    cursorPosition2D[1] = cursorPosition[1];
   }
   else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
   {
-    crossPositionOnDisplay2D[0] = 1.0 - crossPositionOnDisplay[1];
-    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[2];
+    cursorPosition2D[0] = 1.0 - cursorPosition[1];
+    cursorPosition2D[1] = cursorPosition[2];
   }
   else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
   {
-    crossPositionOnDisplay2D[0] = crossPositionOnDisplay[0];
-    crossPositionOnDisplay2D[1] = crossPositionOnDisplay[2];
+    cursorPosition2D[0] = cursorPosition[0];
+    cursorPosition2D[1] = cursorPosition[2];
   }
 
-  return this->ComputeOriginFromCrossPositionOnDisplay(renderWindow, crossPositionOnDisplay2D);
+  return this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition2D);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector2D& crossPositionOnDisplay)
+mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition)
 {
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
-  mitk::Point3D crossPosition = this->GetCrossPosition();
+  mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
-  mitk::Vector2D crossPositionOnDisplayInPixels;
-  crossPositionOnDisplayInPixels[0] = crossPositionOnDisplay[0] * displaySize[0];
-  crossPositionOnDisplayInPixels[1] = crossPositionOnDisplay[1] * displaySize[1];
-  mitk::Vector2D crossPosition2DInPixels;
-  displayGeometry->DisplayToWorld(crossPositionOnDisplayInPixels, crossPosition2DInPixels);
+  mitk::Vector2D cursorPositionInPixels;
+  cursorPositionInPixels[0] = cursorPosition[0] * displaySize[0];
+  cursorPositionInPixels[1] = cursorPosition[1] * displaySize[1];
 
-  mitk::Point2D crossPosition2D;
-  displayGeometry->Map(crossPosition, crossPosition2D);
+  mitk::Point2D selectedPosition2D;
+  displayGeometry->Map(selectedPosition, selectedPosition2D);
   double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  mitk::Vector2D crossPosition2DScaled;
-  crossPosition2DScaled[0] = crossPosition2D[0] / scaleFactor;
-  crossPosition2DScaled[1] = crossPosition2D[1] / scaleFactor;
+  mitk::Vector2D selectedPositionInPixels;
+  selectedPositionInPixels[0] = selectedPosition2D[0] / scaleFactor;
+  selectedPositionInPixels[1] = selectedPosition2D[1] / scaleFactor;
 
-  mitk::Vector2D origin = crossPosition2DScaled - crossPositionOnDisplayInPixels;
-
-  return origin;
+  return selectedPositionInPixels - cursorPositionInPixels;
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
+double QmitkMIDASStdMultiWidget::GetMagnification() const
 {
-  return m_MagnificationFactor;
+  return m_Magnification;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor)
+void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 {
-  if (m_MagnificationFactor == magnificationFactor)
+  if (m_Magnification == magnification)
   {
     return;
   }
 
-  // The aim of this method, is that when a magnificationFactor is passed in,
+  // The aim of this method, is that when a magnification is passed in,
   // all 2D views update to an equivalent zoom, even if they were different beforehand.
   // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
   // that corresponds to the rules given at the top of the header file.
@@ -1722,32 +1725,32 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
-      this->ZoomDisplayAboutCrosshair(renderWindow, zoomScaleFactor);
+      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnification);
+      this->ZoomDisplayAboutCursor(renderWindow, zoomScaleFactor);
     }
   }
 
-  m_MagnificationFactor = magnificationFactor;
+  m_Magnification = magnification;
   this->RequestUpdate();
-  emit MagnificationFactorChanged(magnificationFactor);
+  emit MagnificationChanged(magnification);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor)
+double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification)
 {
   mitk::Point2D scaleFactorPixPerVoxel;
   mitk::Point2D scaleFactorPixPerMillimetres;
   this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
 
-  double effectiveMagnificationFactor = 0.0;
-  if (magnificationFactor >= 0.0)
+  double effectiveMagnification = 0.0;
+  if (magnification >= 0.0)
   {
-    effectiveMagnificationFactor = magnificationFactor + 1.0;
+    effectiveMagnification = magnification + 1.0;
   }
   else
   {
-    effectiveMagnificationFactor = -1.0 / (magnificationFactor - 1.0);
+    effectiveMagnification = -1.0 / (magnification - 1.0);
   }
 
   mitk::Point2D targetScaleFactor;
@@ -1755,7 +1758,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
   // Need to scale both of the current scaleFactorPixPerVoxel[i]
   for (int i = 0; i < 2; i++)
   {
-    targetScaleFactor[i] = effectiveMagnificationFactor / scaleFactorPixPerVoxel[i];
+    targetScaleFactor[i] = effectiveMagnification / scaleFactorPixPerVoxel[i];
   }
 
   // Pick the one that has changed the least
@@ -1776,7 +1779,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* renderWindow)
+double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderWindow)
 {
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -1792,19 +1795,19 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* r
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
   double scaleFactor = std::max(scaleFactorPixelPerVoxel[0], scaleFactorPixelPerVoxel[1]);
 
-  double magnificationFactor = scaleFactor - 1.0;
-  if (magnificationFactor < 0.0)
+  double magnification = scaleFactor - 1.0;
+  if (magnification < 0.0)
   {
-    magnificationFactor /= scaleFactor;
+    magnification /= scaleFactor;
   }
-  return magnificationFactor;
+  return magnification;
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
+double QmitkMIDASStdMultiWidget::FitMagnification()
 {
-  double magnificationFactor = 0.0;
+  double magnification = 0.0;
 
   MIDASOrientation orientation = this->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -1822,9 +1825,9 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     // due to the user manually (right click + mouse move) zooming the window.
     //////////////////////////////////////////////////////////////////////////
 
-    magnificationFactor = ComputeMagnificationFactor(renderWindow);
+    magnification = ComputeMagnification(renderWindow);
   }
-  return magnificationFactor;
+  return magnification;
 }
 
 
@@ -1937,7 +1940,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor)
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow *renderWindow, double scaleFactor)
 {
   if (renderWindow != NULL)
   {
@@ -1948,12 +1951,12 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCrosshair(QmitkRenderWindow *rend
     mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
     assert(displayGeometry);
 
-    const mitk::Point3D& crossPosition = this->GetCrossPosition();
+    const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
 
     mitk::Point2D focusInMM;
     mitk::Point2D focusInPixels;
 
-    displayGeometry->Map(crossPosition, focusInMM);
+    displayGeometry->Map(selectedPosition, focusInMM);
     displayGeometry->WorldToDisplay(focusInMM, focusInPixels);
 
     m_BlockDisplayGeometryEvents = true;

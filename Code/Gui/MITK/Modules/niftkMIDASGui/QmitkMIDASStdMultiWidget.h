@@ -195,40 +195,61 @@ public:
   /// \brief Set the current time slice number.
   void SetTime(unsigned int timeSlice);
 
-  /// \brief Sets the cross position in the world coordinate system.
-  void SetCrossPosition(const mitk::Point3D& crossPosition);
+  /// \brief Gets the selected position in the world coordinate system (mm).
+  const mitk::Point3D GetSelectedPosition() const;
 
-  /// \brief Gets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
-  const mitk::Vector3D& GetCentre() const;
+  /// \brief Sets the selected position in the world coordinate system (mm).
+  void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-  /// \brief Sets the "Centre", which is a MIDAS term describing where the centre of the image is within the render windows.
-  void SetCentre(const mitk::Vector3D& centre);
+  /// \brief Gets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  const mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
 
-  /// \brief Gets the crosshair position relative to the display size. The values are in the [0.0, 1.0] range
-  /// and represent the position inside the displayed region: pixel coordinate / display size.
-  const mitk::Vector2D GetCrossPositionOnDisplay(QmitkRenderWindow* renderWindow) const;
+  /// \brief Gets the cursor position normalised with the size of the render windows.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  /// The first two coordinates correspond to the coordinates in the axial render window. The third
+  /// coordinate corresponds to the second coordinate in the sagittal render window.
+  /// The correspondence of the orientation axes is the following:
+  ///
+  ///     axial[0] <-> coronal[0]
+  ///     axial[1] <-> -sagittal[0]
+  ///     sagittal[1] <-> coronal[1]
+  ///
+  const mitk::Vector3D& GetCursorPosition() const;
 
-  /// \brief Gets the crosshair position relative to the display size. The values are in the [0.0, 1.0] range
-  /// and represent the position inside the displayed region: pixel coordinate / display size.
-  const mitk::Vector3D& GetCrossPositionOnDisplay() const;
-
-  /// \brief Moves the image on the display so that the crosshair gets to the specified position,
-  /// relatively to the diplay size. This function does not affect the world position of the crosshair.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the displayed region:
-  /// pixel coordinate / display size.
-  void SetCrossPositionOnDisplay(const mitk::Vector3D& crossPositionOnDisplay);
+  /// \brief Moves the image (world) in the render windows so that the selected position gets to the
+  /// specified position in the render windows. The function does not change the selected position.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  /// The first two coordinates correspond to the coordinates in the axial render window. The third
+  /// coordinate corresponds to the second coordinate in the sagittal render window.
+  /// The correspondence of the orientation axes is the following:
+  ///
+  ///     axial[0] <-> coronal[0]
+  ///     axial[1] <-> -sagittal[0]
+  ///     sagittal[1] <-> coronal[1]
+  ///
+  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  double GetMagnificationFactor() const;
+  double GetMagnification() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  void SetMagnificationFactor(double magnificationFactor);
+  void SetMagnification(double magnification);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
-  double FitMagnificationFactor();
+  double FitMagnification();
 
   /// \brief Computes the magnification factor of a render window.
-  double ComputeMagnificationFactor(QmitkRenderWindow* renderWindow);
+  double ComputeMagnification(QmitkRenderWindow* renderWindow);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -254,9 +275,9 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-  void CrossPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
-  void CrossPositionOnDisplayChanged(const mitk::Vector3D& crossPositionOnDisplay);
-  void MagnificationFactorChanged(double magnificationFactor);
+  void SelectedPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
+  void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
+  void MagnificationChanged(double magnification);
 
 protected slots:
 
@@ -274,8 +295,8 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit CrossPositionChanged
-  void OnCrossPositionChanged(MIDASOrientation orientation);
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged
+  void OnSelectedPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
@@ -289,8 +310,8 @@ private:
   // \brief Sets the origin of the display geometry of the render window
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
 
-  /// \brief Scales a specific render window about the crosshair.
-  void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
+  /// \brief Scales a specific render window about the cursor.
+  void ZoomDisplayAboutCursor(QmitkRenderWindow *renderWindow, double scaleFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
@@ -307,20 +328,14 @@ private:
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
 
-  /// \brief Computes the origin for a render window from the image centre.
-//  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector3D& centre);
+  /// \brief Computes the origin for a render window from the cursor position.
+  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Computes the origin for a render window from the image centre.
-//  mitk::Vector2D ComputeOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& centre);
-
-  /// \brief Computes the origin for a render window from the image centre.
-  mitk::Vector2D ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector3D& crossPositionOnDisplay);
-
-  /// \brief Computes the origin for a render window from the image centre.
-  mitk::Vector2D ComputeOriginFromCrossPositionOnDisplay(QmitkRenderWindow* renderWindow, const mitk::Vector2D& crossPositionOnDisplay);
+  /// \brief Computes the origin for a render window from the cursor position.
+  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the scale factor for a render window from a magnification factor.
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
+  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
@@ -334,9 +349,9 @@ private:
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Show3DWindowInOrthoView;
   MIDASView             m_View;
-  mitk::Point3D         m_CrossPosition;
-  mitk::Vector3D        m_CrossPositionOnDisplay;
-  double                m_MagnificationFactor;
+  mitk::Point3D         m_SelectedPosition;
+  mitk::Vector3D        m_CursorPosition;
+  double                m_Magnification;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
 

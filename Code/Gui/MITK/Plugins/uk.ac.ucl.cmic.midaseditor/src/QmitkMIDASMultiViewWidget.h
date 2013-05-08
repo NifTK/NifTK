@@ -228,16 +228,16 @@ public:
   virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
 
   /**
-   * \brief Gets the crosshair position in the world (mm) in the render window with the given id or
+   * \brief Gets the selected position in world coordinates (mm) in the render window with the given id or
    * in the currently selected render window if no id is given.
    */
-  mitk::Point3D GetCrossPosition(const QString& id = QString()) const;
+  mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
 
   /**
-   * \brief Sets the crosshair position in the world in the render window with the given id or
+   * \brief Sets the selected position in world coordinates (mm) in the render window with the given id or
    * in the currently selected render window if no id is given.
    */
-  virtual void SetCrossPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
@@ -263,7 +263,7 @@ protected slots:
 
   // Qt slots, connected to Qt GUI elements.
   void OnSliceNumberChanged(double sliceNumber);
-  void OnMagnificationFactorChanged(double magnificationFactor);
+  void OnMagnificationChanged(double magnification);
   void OnTimeChanged(double timeStep);
   void On1x1ButtonPressed();
   void On1x2ButtonPressed();
@@ -283,13 +283,13 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnCrossPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, int sliceNumber);
+  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, int sliceNumber);
 
-  /// \brief Called when the cross position is changed on a render window because of panning.
-  void OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& crossPositionOnDisplay);
+  /// \brief Called when the cursor position is changed on a render window because of panning.
+  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
+  void OnMagnificationChanged(QmitkMIDASSingleViewWidget *view, double magnification);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
@@ -436,7 +436,7 @@ private:
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
-  double                                         m_PreviousMagnificationFactor;
+  double                                         m_PreviousMagnification;
   MIDASView                                      m_SingleWindowLayout;
   MIDASView                                      m_MultiWindowLayout;
 };
