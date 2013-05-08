@@ -49,8 +49,8 @@ public:
   /// \brief Returns true if cursors are bound, and false otherwise.
   bool AreCursorsBound() const;
 
-  /// \brief Returns true if the zooming and panning is bound, and false otherwise.
-  bool IsZoomAndPanBound() const;
+  /// \brief Returns true if the magnification is bound, and false otherwise.
+  bool IsMagnificationBound() const;
 
   /// \brief Returns true if the geometry is bound and false otherwise.
   bool IsGeometryBound() const;
@@ -68,8 +68,8 @@ protected slots:
   /// \brief Qt slot called when the "cursors" checkbox is toggled.
   void OnCursorsCheckBoxToggled(bool value);
 
-  /// \brief Qt slot called when the "zoom&pan" checkbox is toggled.
-  void OnZoomAndPanCheckBoxToggled(bool value);
+  /// \brief Qt slot called when the "magnification" checkbox is toggled.
+  void OnMagnificationCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "geometry" checkbox is toggled.
   void OnGeometryCheckBoxToggled(bool value);

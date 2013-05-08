@@ -1359,15 +1359,6 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-
-    const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
-
-    mitk::Vector2D imageSize;
-    imageSize[0] = worldGeometry->GetExtent(0);
-    imageSize[1] = worldGeometry->GetExtent(1);
-
     mitk::Vector2D crossPositionOnDisplay = this->GetCrossPositionOnDisplay(renderWindow);
 
     // axial[0] <-> coronal[0]
@@ -1463,38 +1454,41 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnCrossPositionChanged(MIDASOrientation orientation)
 {
-  const mitk::Geometry3D *geometry = m_Geometry;
-  if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (!m_BlockDisplayGeometryEvents)
   {
-    int sliceIndex = 0;
-    mitk::Index3D crossIndex;
-    mitk::Point3D crossPosition = this->GetCrossPosition();
-    int axis = m_OrientationToAxisMap[orientation];
-
-    geometry->WorldToIndex(crossPosition, crossIndex);
-    sliceIndex = crossIndex[axis];
-
-    // axial[0] <-> coronal[0]
-    // axial[1] <-> -sagittal[0]
-    // sagittal[1] <-> coronal[1]
-
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    const mitk::Geometry3D *geometry = m_Geometry;
+    if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-      m_CrossPositionOnDisplay[2] = crossPositionOnSagittalDisplay[1];
-    }
-    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      mitk::Vector2D crossPositionOnAxialDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-      m_CrossPositionOnDisplay[0] = crossPositionOnAxialDisplay[0];
-    }
-    else // if (orientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-      m_CrossPositionOnDisplay[1] = crossPositionOnSagittalDisplay[0];
-    }
+      int sliceIndex = 0;
+      mitk::Index3D crossIndex;
+      mitk::Point3D crossPosition = this->GetCrossPosition();
+      int axis = m_OrientationToAxisMap[orientation];
 
-    emit CrossPositionChanged(m_RenderWindows[orientation], sliceIndex);
+      geometry->WorldToIndex(crossPosition, crossIndex);
+      sliceIndex = crossIndex[axis];
+
+      // axial[0] <-> coronal[0]
+      // axial[1] <-> -sagittal[0]
+      // sagittal[1] <-> coronal[1]
+
+      if (orientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+        m_CrossPositionOnDisplay[2] = crossPositionOnSagittalDisplay[1];
+      }
+      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        mitk::Vector2D crossPositionOnAxialDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+        m_CrossPositionOnDisplay[0] = crossPositionOnAxialDisplay[0];
+      }
+      else // if (orientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        mitk::Vector2D crossPositionOnSagittalDisplay = this->GetCrossPositionOnDisplay(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+        m_CrossPositionOnDisplay[1] = crossPositionOnSagittalDisplay[0];
+      }
+
+      emit CrossPositionChanged(m_RenderWindows[orientation], sliceIndex);
+    }
   }
 }
 
@@ -1581,6 +1575,7 @@ void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPositi
 {
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   // Check if the slice navigation controller has a valid geometry.
+  m_BlockDisplayGeometryEvents = true;
   if (snc->GetCreatedWorldGeometry())
   {
     snc->SelectSliceByPoint(crossPosition);
@@ -1591,6 +1586,7 @@ void QmitkMIDASStdMultiWidget::SetCrossPosition(const mitk::Point3D& crossPositi
     snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
     snc->SelectSliceByPoint(crossPosition);
   }
+  m_BlockDisplayGeometryEvents = false;
 }
 
 
@@ -1645,7 +1641,7 @@ void QmitkMIDASStdMultiWidget::SetCrossPositionOnDisplay(const mitk::Vector3D& c
   }
 
   this->RequestUpdate();
-//  emit CrossPositionChanged();
+//  emit CrossPositionOnDisplayChanged();
 }
 
 

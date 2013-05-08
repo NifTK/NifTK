@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>93</width>
+    <width>112</width>
     <height>83</height>
    </rect>
   </property>
@@ -35,12 +35,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="m_BindZoomAndPanCheckBox">
+    <widget class="QCheckBox" name="m_BindMagnificationCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>zoom&amp;&amp;pan</string>
+      <string>magnification</string>
      </property>
     </widget>
    </item>
