@@ -240,10 +240,10 @@ public:
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Get the current magnification factor.
-  double GetMagnificationFactor() const;
+  double GetMagnification() const;
 
   /// \brief Set the current magnification factor.
-  void SetMagnificationFactor(double magnificationFactor);
+  void SetMagnification(double magnification);
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -278,7 +278,7 @@ signals:
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   void SelectedPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, int sliceNumber);
   void CursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
-  void MagnificationFactorChanged(QmitkMIDASSingleViewWidget *widget, double magnificationFactor);
+  void MagnificationChanged(QmitkMIDASSingleViewWidget *widget, double magnification);
 
 protected slots:
 
@@ -286,7 +286,7 @@ protected slots:
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
   virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceNumber);
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
-  virtual void OnMagnificationFactorChanged(double magnificationFactor);
+  virtual void OnMagnificationChanged(double magnification);
 
 private:
 
@@ -329,7 +329,7 @@ private:
   int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
   mitk::Vector3D                       m_CursorPositions[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
-  double                               m_MagnificationFactors[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
+  double                               m_Magnifications[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
   bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;

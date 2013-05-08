@@ -106,7 +106,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display2DCursorsGlobally(false)
 , m_Show3DWindowInOrthoView(false)
 , m_View(MIDAS_VIEW_ORTHO)
-, m_MagnificationFactor(0.0)
+, m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 {
@@ -1424,10 +1424,10 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    double magnificationFactor = ComputeMagnificationFactor(renderWindow);
-    if (magnificationFactor != m_MagnificationFactor)
+    double magnification = ComputeMagnification(renderWindow);
+    if (magnification != m_Magnification)
     {
-      // The aim of this method, is that when a magnificationFactor is passed in,
+      // The aim of this method, is that when a magnification is passed in,
       // all 2D views update to an equivalent zoom, even if they were different beforehand.
       // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
       // that corresponds to the rules given at the top of the header file.
@@ -1438,14 +1438,14 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnificationFactor);
+          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnification);
           this->ZoomDisplayAboutCursor(otherRenderWindow, zoomScaleFactor);
         }
       }
 
-      m_MagnificationFactor = magnificationFactor;
+      m_Magnification = magnification;
       this->RequestUpdate();
-      emit MagnificationFactorChanged(magnificationFactor);
+      emit MagnificationChanged(magnification);
     }
   }
 }
@@ -1700,21 +1700,21 @@ mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCursorPosition(QmitkRe
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::GetMagnificationFactor() const
+double QmitkMIDASStdMultiWidget::GetMagnification() const
 {
-  return m_MagnificationFactor;
+  return m_Magnification;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor)
+void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 {
-  if (m_MagnificationFactor == magnificationFactor)
+  if (m_Magnification == magnification)
   {
     return;
   }
 
-  // The aim of this method, is that when a magnificationFactor is passed in,
+  // The aim of this method, is that when a magnification is passed in,
   // all 2D views update to an equivalent zoom, even if they were different beforehand.
   // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
   // that corresponds to the rules given at the top of the header file.
@@ -1725,32 +1725,32 @@ void QmitkMIDASStdMultiWidget::SetMagnificationFactor(double magnificationFactor
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnificationFactor);
+      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnification);
       this->ZoomDisplayAboutCursor(renderWindow, zoomScaleFactor);
     }
   }
 
-  m_MagnificationFactor = magnificationFactor;
+  m_Magnification = magnification;
   this->RequestUpdate();
-  emit MagnificationFactorChanged(magnificationFactor);
+  emit MagnificationChanged(magnification);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor)
+double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification)
 {
   mitk::Point2D scaleFactorPixPerVoxel;
   mitk::Point2D scaleFactorPixPerMillimetres;
   this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
 
-  double effectiveMagnificationFactor = 0.0;
-  if (magnificationFactor >= 0.0)
+  double effectiveMagnification = 0.0;
+  if (magnification >= 0.0)
   {
-    effectiveMagnificationFactor = magnificationFactor + 1.0;
+    effectiveMagnification = magnification + 1.0;
   }
   else
   {
-    effectiveMagnificationFactor = -1.0 / (magnificationFactor - 1.0);
+    effectiveMagnification = -1.0 / (magnification - 1.0);
   }
 
   mitk::Point2D targetScaleFactor;
@@ -1758,7 +1758,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
   // Need to scale both of the current scaleFactorPixPerVoxel[i]
   for (int i = 0; i < 2; i++)
   {
-    targetScaleFactor[i] = effectiveMagnificationFactor / scaleFactorPixPerVoxel[i];
+    targetScaleFactor[i] = effectiveMagnification / scaleFactorPixPerVoxel[i];
   }
 
   // Pick the one that has changed the least
@@ -1779,7 +1779,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* renderWindow)
+double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderWindow)
 {
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -1795,19 +1795,19 @@ double QmitkMIDASStdMultiWidget::ComputeMagnificationFactor(QmitkRenderWindow* r
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
   double scaleFactor = std::max(scaleFactorPixelPerVoxel[0], scaleFactorPixelPerVoxel[1]);
 
-  double magnificationFactor = scaleFactor - 1.0;
-  if (magnificationFactor < 0.0)
+  double magnification = scaleFactor - 1.0;
+  if (magnification < 0.0)
   {
-    magnificationFactor /= scaleFactor;
+    magnification /= scaleFactor;
   }
-  return magnificationFactor;
+  return magnification;
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
+double QmitkMIDASStdMultiWidget::FitMagnification()
 {
-  double magnificationFactor = 0.0;
+  double magnification = 0.0;
 
   MIDASOrientation orientation = this->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -1825,9 +1825,9 @@ double QmitkMIDASStdMultiWidget::FitMagnificationFactor()
     // due to the user manually (right click + mouse move) zooming the window.
     //////////////////////////////////////////////////////////////////////////
 
-    magnificationFactor = ComputeMagnificationFactor(renderWindow);
+    magnification = ComputeMagnification(renderWindow);
   }
-  return magnificationFactor;
+  return magnification;
 }
 
 

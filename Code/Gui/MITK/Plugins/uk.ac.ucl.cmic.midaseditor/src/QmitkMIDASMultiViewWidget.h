@@ -263,7 +263,7 @@ protected slots:
 
   // Qt slots, connected to Qt GUI elements.
   void OnSliceNumberChanged(double sliceNumber);
-  void OnMagnificationFactorChanged(double magnificationFactor);
+  void OnMagnificationChanged(double magnification);
   void OnTimeChanged(double timeStep);
   void On1x1ButtonPressed();
   void On1x2ButtonPressed();
@@ -289,7 +289,7 @@ protected slots:
   void OnCursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget *view, double magnificationFactor);
+  void OnMagnificationChanged(QmitkMIDASSingleViewWidget *view, double magnification);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
@@ -436,7 +436,7 @@ private:
   bool                                           m_IsThumbnailMode;
   bool                                           m_IsMIDASSegmentationMode;
   bool                                           m_NavigationControllerEventListening;
-  double                                         m_PreviousMagnificationFactor;
+  double                                         m_PreviousMagnification;
   MIDASView                                      m_SingleWindowLayout;
   MIDASView                                      m_MultiWindowLayout;
 };

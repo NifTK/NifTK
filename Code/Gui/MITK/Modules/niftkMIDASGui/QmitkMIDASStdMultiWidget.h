@@ -240,16 +240,16 @@ public:
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  double GetMagnificationFactor() const;
+  double GetMagnification() const;
 
   /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
-  void SetMagnificationFactor(double magnificationFactor);
+  void SetMagnification(double magnification);
 
   /// \brief Works out a suitable magnification factor given the current geometry.
-  double FitMagnificationFactor();
+  double FitMagnification();
 
   /// \brief Computes the magnification factor of a render window.
-  double ComputeMagnificationFactor(QmitkRenderWindow* renderWindow);
+  double ComputeMagnification(QmitkRenderWindow* renderWindow);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -277,7 +277,7 @@ signals:
   void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
   void SelectedPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
-  void MagnificationFactorChanged(double magnificationFactor);
+  void MagnificationChanged(double magnification);
 
 protected slots:
 
@@ -335,7 +335,7 @@ private:
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the scale factor for a render window from a magnification factor.
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnificationFactor);
+  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
@@ -351,7 +351,7 @@ private:
   MIDASView             m_View;
   mitk::Point3D         m_SelectedPosition;
   mitk::Vector3D        m_CursorPosition;
-  double                m_MagnificationFactor;
+  double                m_Magnification;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
 

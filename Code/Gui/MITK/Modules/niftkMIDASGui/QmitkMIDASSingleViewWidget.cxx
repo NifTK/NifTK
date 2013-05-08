@@ -111,7 +111,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
     {
       m_CursorPositions[i][j] = 0.5;
     }
-    m_MagnificationFactors[i] = m_MinimumMagnification;
+    m_Magnifications[i] = m_MinimumMagnification;
     m_ViewInitialised[i] = false;
   }
 
@@ -132,7 +132,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
   connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
-  connect(m_MultiWidget, SIGNAL(MagnificationFactorChanged(double)), this, SLOT(OnMagnificationFactorChanged(double)));
+  connect(m_MultiWidget, SIGNAL(MagnificationChanged(double)), this, SLOT(OnMagnificationChanged(double)));
 }
 
 
@@ -165,9 +165,9 @@ void QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& c
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnMagnificationFactorChanged(double magnificationFactor)
+void QmitkMIDASSingleViewWidget::OnMagnificationChanged(double magnification)
 {
-  emit MagnificationFactorChanged(this, magnificationFactor);
+  emit MagnificationChanged(this, magnification);
 }
 
 
@@ -478,7 +478,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   m_SliceNumbers[Index(orientation)] = this->GetSliceNumber(orientation);
   m_TimeSliceNumbers[Index(orientation)] = this->GetTime();
   m_CursorPositions[Index(view)] = m_MultiWidget->GetCursorPosition();
-  m_MagnificationFactors[Index(view)] = m_MultiWidget->GetMagnificationFactor();
+  m_Magnifications[Index(view)] = m_MultiWidget->GetMagnification();
   m_ViewInitialised[Index(view)] = true;
 
   MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
@@ -486,7 +486,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
       << ", view=" << view \
       << ", so storing slice=" << this->GetSliceNumber(orientation) \
       << ", time=" << this->GetTime() \
-      << ", magnification=" << m_MultiWidget->GetMagnificationFactor() << std::endl;
+      << ", magnification=" << m_MultiWidget->GetMagnification() << std::endl;
 }
 
 
@@ -499,7 +499,7 @@ void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
   {
     m_CursorPositions[Index(m_View)][j] = 0.5;
   }
-  m_MagnificationFactors[Index(m_View)] = m_MinimumMagnification;
+  m_Magnifications[Index(m_View)] = m_MinimumMagnification;
   m_ViewInitialised[Index(m_View)] = false;
 }
 
@@ -518,7 +518,7 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
     {
       m_CursorPositions[Index(i)][j] = 0.5;
     }
-    m_MagnificationFactors[Index(i)] = m_MinimumMagnification;
+    m_Magnifications[Index(i)] = m_MinimumMagnification;
     m_ViewInitialised[Index(i)] = false;
   }
 }
@@ -690,7 +690,7 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
         this->SetTime(m_TimeSliceNumbers[Index(orientation)]);
       }
       this->SetCursorPosition(m_CursorPositions[Index(view)]);
-      this->SetMagnificationFactor(m_MagnificationFactors[Index(view)]);
+      this->SetMagnification(m_Magnifications[Index(view)]);
     }
     else
     {
@@ -701,13 +701,13 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 
       unsigned int sliceNumber = this->GetSliceNumber(orientation);
       unsigned int timeStep = this->GetTime();
-      double magnificationFactor = m_MultiWidget->FitMagnificationFactor();
+      double magnification = m_MultiWidget->FitMagnification();
       const mitk::Vector3D& cursorPosition = m_MultiWidget->GetCursorPosition();
 
       this->SetSliceNumber(orientation, sliceNumber);
       this->SetTime(timeStep);
       this->SetCursorPosition(cursorPosition);
-      this->SetMagnificationFactor(magnificationFactor);
+      this->SetMagnification(magnification);
       m_ViewInitialised[Index(view)] = true;
     }
   } // end view != MIDAS_VIEW_UNKNOWN
@@ -749,18 +749,18 @@ void QmitkMIDASSingleViewWidget::SetCursorPosition(const mitk::Vector3D& cursorP
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSingleViewWidget::GetMagnificationFactor() const
+double QmitkMIDASSingleViewWidget::GetMagnification() const
 {
-  return m_MultiWidget->GetMagnificationFactor();
+  return m_MultiWidget->GetMagnification();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetMagnificationFactor(double magnificationFactor)
+void QmitkMIDASSingleViewWidget::SetMagnification(double magnification)
 {
   if (m_View != MIDAS_VIEW_UNKNOWN)
   {
-    m_MultiWidget->SetMagnificationFactor(magnificationFactor);
+    m_MultiWidget->SetMagnification(magnification);
   }
 }
 
