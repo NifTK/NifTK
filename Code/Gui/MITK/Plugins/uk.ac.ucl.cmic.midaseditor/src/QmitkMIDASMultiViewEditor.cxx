@@ -307,14 +307,14 @@ QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetQmitkRenderWindow(const QString
 //-----------------------------------------------------------------------------
 mitk::Point3D QmitkMIDASMultiViewEditor::GetSelectedPosition(const QString& id) const
 {
-  return d->m_MIDASMultiViewWidget->GetCrossPosition(id);
+  return d->m_MIDASMultiViewWidget->GetSelectedPosition(id);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString& id)
+void QmitkMIDASMultiViewEditor::SetSelectedPosition(const mitk::Point3D &position, const QString& id)
 {
-  return d->m_MIDASMultiViewWidget->SetCrossPosition(pos, id);
+  return d->m_MIDASMultiViewWidget->SetSelectedPosition(position, id);
 }
 
 

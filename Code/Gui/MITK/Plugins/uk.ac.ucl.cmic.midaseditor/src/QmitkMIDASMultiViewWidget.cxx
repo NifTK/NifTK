@@ -383,8 +383,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
-  connect(widget, SIGNAL(CrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnCrossPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
-  connect(widget, SIGNAL(CrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
+  connect(widget, SIGNAL(SelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
+  connect(widget, SIGNAL(CursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
   connect(widget, SIGNAL(MagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
@@ -907,7 +907,7 @@ void QmitkMIDASMultiViewWidget::OnColumnsSliderValueChanged(int c)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, int sliceNumber)
+void QmitkMIDASMultiViewWidget::OnSelectedPositionChanged(QmitkMIDASSingleViewWidget *view, QmitkRenderWindow* renderWindow, int sliceNumber)
 {
   // If the view is not found, we do not do anything.
   if (std::find(m_SingleViewWidgets.begin(), m_SingleViewWidgets.end(), view) == m_SingleViewWidgets.end())
@@ -926,8 +926,8 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
     m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
   }
 
-  mitk::Point3D crossPosition = view->GetCrossPosition();
-  mitk::Vector3D crossPositionOnDisplay = view->GetCrossPositionOnDisplay();
+  mitk::Point3D selectedPosition = view->GetSelectedPosition();
+  mitk::Vector3D cursorPosition = view->GetCursorPosition();
 
   if (m_MIDASBindWidget->AreCursorsBound())
   {
@@ -935,8 +935,8 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
     {
       if (m_SingleViewWidgets[i] != view)
       {
-        m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
-        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+        m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
+        m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
       }
     }
   }
@@ -944,7 +944,7 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnCrossPositionOnDisplayChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& crossPositionOnDisplay)
+void QmitkMIDASMultiViewWidget::OnCursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition)
 {
   if (m_MIDASBindWidget->AreCursorsBound())
   {
@@ -952,7 +952,7 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionOnDisplayChanged(QmitkMIDASSingle
     {
       if (m_SingleViewWidgets[i] != widget)
       {
-        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+        m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
       }
     }
   }
@@ -1722,12 +1722,12 @@ QmitkRenderWindow* QmitkMIDASMultiViewWidget::GetRenderWindow(const QString& id)
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D QmitkMIDASMultiViewWidget::GetCrossPosition(const QString& id) const
+mitk::Point3D QmitkMIDASMultiViewWidget::GetSelectedPosition(const QString& id) const
 {
   if (id.isNull())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
-    return m_SingleViewWidgets[selectedViewIndex]->GetCrossPosition();
+    return m_SingleViewWidgets[selectedViewIndex]->GetSelectedPosition();
   }
   else
   {
@@ -1738,7 +1738,7 @@ mitk::Point3D QmitkMIDASMultiViewWidget::GetCrossPosition(const QString& id) con
       {
         if (m_SingleViewWidgets[i]->ContainsRenderWindow(renderWindow))
         {
-          return m_SingleViewWidgets[i]->GetCrossPosition();
+          return m_SingleViewWidgets[i]->GetSelectedPosition();
         }
       }
     }
@@ -1750,12 +1750,12 @@ mitk::Point3D QmitkMIDASMultiViewWidget::GetCrossPosition(const QString& id) con
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetCrossPosition(const mitk::Point3D& crossPosition, const QString& id)
+void QmitkMIDASMultiViewWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition, const QString& id)
 {
   if (id.isNull())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
-    m_SingleViewWidgets[selectedViewIndex]->SetCrossPosition(crossPosition);
+    m_SingleViewWidgets[selectedViewIndex]->SetSelectedPosition(selectedPosition);
   }
   else
   {
@@ -1766,7 +1766,7 @@ void QmitkMIDASMultiViewWidget::SetCrossPosition(const mitk::Point3D& crossPosit
       {
         if (m_SingleViewWidgets[i]->ContainsRenderWindow(renderWindow))
         {
-          m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
+          m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
         }
       }
     }
@@ -1895,14 +1895,14 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-    mitk::Point3D crossPosition = selectedView->GetCrossPosition();
-    mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
+    mitk::Point3D selectedPosition = selectedView->GetSelectedPosition();
+    mitk::Vector3D cursorPosition = selectedView->GetCursorPosition();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
-        m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
-        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
+        m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
+        m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
       }
     }
   }

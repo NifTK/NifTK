@@ -228,10 +228,10 @@ public:
   void SwitchView(MIDASView view);
 
   /// \brief Get the currently selected position in world coordinates (mm)
-  mitk::Point3D GetSelectedPosition() const;
+  mitk::Point3D GetCrossPosition() const;
 
   /// \brief Set the currently selected position in world coordinates (mm)
-  void SetSelectedPosition(const mitk::Point3D& selectedPosition);
+  void SetCrossPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Get the current cursor position on the render window in pixels, normalised with the size of the render windows.
   const mitk::Vector3D& GetCursorPosition() const;
@@ -284,12 +284,11 @@ protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceNumber);
+  virtual void OnCrossPositionChanged(QmitkRenderWindow* window, int sliceNumber);
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
   virtual void OnMagnificationFactorChanged(double magnificationFactor);
 
 private:
-
 
   /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
   void InitializeStandardViews(const mitk::Geometry3D * geometry );

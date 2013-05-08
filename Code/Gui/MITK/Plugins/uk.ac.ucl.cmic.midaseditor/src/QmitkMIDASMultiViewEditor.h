@@ -101,7 +101,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::SetSelectedPosition()
    */
-  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetSelectedPosition(const mitk::Point3D& position, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableDecorations(), and in this class, deliberately implemented as a no-op.
