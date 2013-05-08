@@ -822,7 +822,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
   {
     this->UpdateBoundGeometry(true);
   }
-  if (m_MIDASBindWidget->IsZoomAndPanBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     this->UpdateBoundMagnification();
   }
@@ -925,7 +925,10 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
     m_MIDASSlidersWidget->m_SliceSelectionWidget->setValue(sliceNumber);
     m_MIDASSlidersWidget->m_SliceSelectionWidget->blockSignals(wasBlocked);
   }
+
   mitk::Point3D crossPosition = view->GetCrossPosition();
+  mitk::Vector3D crossPositionOnDisplay = view->GetCrossPositionOnDisplay();
+
   if (m_MIDASBindWidget->AreCursorsBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -933,6 +936,7 @@ void QmitkMIDASMultiViewWidget::OnCrossPositionChanged(QmitkMIDASSingleViewWidge
       if (m_SingleViewWidgets[i] != view)
       {
         m_SingleViewWidgets[i]->SetCrossPosition(crossPosition);
+        m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       }
     }
   }
@@ -962,7 +966,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(QmitkMIDASSingleVie
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->setValue(magnificationFactor);
   m_MIDASSlidersWidget->m_MagnificationFactorWidget->blockSignals(wasBlocked);
 
-  if (m_MIDASBindWidget->IsZoomAndPanBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
@@ -1320,7 +1324,7 @@ void QmitkMIDASMultiViewWidget::OnMagnificationFactorChanged(double magnificatio
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnificationFactor)
 {
-  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(m_MIDASBindWidget->IsZoomAndPanBound());
+  QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(m_MIDASBindWidget->IsMagnificationBound());
   for (int i = 0; i < viewsToUpdate.size(); i++)
   {
     m_SingleViewWidgets[viewsToUpdate[i]]->SetMagnificationFactor(magnificationFactor);
@@ -1588,13 +1592,11 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-//  mitk::Vector3D crossPositionOnDisplay = selectedView->GetCrossPositionOnDisplay();
   double magnification = selectedView->GetMagnificationFactor();
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (i != selectedViewIndex)
     {
-//      m_SingleViewWidgets[i]->SetCrossPositionOnDisplay(crossPositionOnDisplay);
       m_SingleViewWidgets[i]->SetMagnificationFactor(magnification);
     }
   }
@@ -1905,7 +1907,7 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
     }
   }
 
-  if (m_MIDASBindWidget->IsZoomAndPanBound())
+  if (m_MIDASBindWidget->IsMagnificationBound())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];

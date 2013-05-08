@@ -289,9 +289,6 @@ private:
   // \brief Sets the origin of the display geometry of the render window
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
 
-  /// \brief Scales a specific render window about it's centre.
-//  void ZoomDisplayAboutCentre(QmitkRenderWindow *renderWindow, double scaleFactor);
-
   /// \brief Scales a specific render window about the crosshair.
   void ZoomDisplayAboutCrosshair(QmitkRenderWindow *renderWindow, double scaleFactor);
 

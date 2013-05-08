@@ -36,14 +36,12 @@ void QmitkMIDASBindWidget::setupUi(QWidget* parent)
   Ui_QmitkMIDASBindWidget::setupUi(parent);
   m_BindLayoutCheckBox->setChecked(false);
   m_BindCursorsCheckBox->setChecked(false);
-  m_BindZoomAndPanCheckBox->setChecked(false);
+  m_BindMagnificationCheckBox->setChecked(false);
   m_BindGeometryCheckBox->setChecked(false);
-
-//  m_BindLayoutCheckBox->setEnabled(false);
 
   connect(m_BindLayoutCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLayoutCheckBoxToggled(bool)));
   connect(m_BindCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnCursorsCheckBoxToggled(bool)));
-  connect(m_BindZoomAndPanCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnZoomAndPanCheckBoxToggled(bool)));
+  connect(m_BindMagnificationCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnMagnificationCheckBoxToggled(bool)));
   connect(m_BindGeometryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnGeometryCheckBoxToggled(bool)));
 }
 
@@ -63,9 +61,9 @@ bool QmitkMIDASBindWidget::AreCursorsBound() const
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBindWidget::IsZoomAndPanBound() const
+bool QmitkMIDASBindWidget::IsMagnificationBound() const
 {
-  return m_BindType & MIDAS_BIND_ZOOM_AND_PAN;
+  return m_BindType & MIDAS_BIND_MAGNIFICATION;
 }
 
 
@@ -93,9 +91,9 @@ void QmitkMIDASBindWidget::SetToBindType(int bindType)
   m_BindCursorsCheckBox->setChecked(bindType & MIDAS_BIND_CURSORS);
   m_BindCursorsCheckBox->blockSignals(wasBlocked);
 
-  wasBlocked = m_BindZoomAndPanCheckBox->blockSignals(true);
-  m_BindZoomAndPanCheckBox->setChecked(bindType & MIDAS_BIND_ZOOM_AND_PAN);
-  m_BindZoomAndPanCheckBox->blockSignals(wasBlocked);
+  wasBlocked = m_BindMagnificationCheckBox->blockSignals(true);
+  m_BindMagnificationCheckBox->setChecked(bindType & MIDAS_BIND_MAGNIFICATION);
+  m_BindMagnificationCheckBox->blockSignals(wasBlocked);
 
   wasBlocked = m_BindGeometryCheckBox->blockSignals(true);
   m_BindGeometryCheckBox->setChecked(bindType & MIDAS_BIND_GEOMETRY);
@@ -136,15 +134,15 @@ void QmitkMIDASBindWidget::OnCursorsCheckBoxToggled(bool value)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::OnZoomAndPanCheckBoxToggled(bool value)
+void QmitkMIDASBindWidget::OnMagnificationCheckBoxToggled(bool value)
 {
   if (value)
   {
-    m_BindType |= MIDAS_BIND_ZOOM_AND_PAN;
+    m_BindType |= MIDAS_BIND_MAGNIFICATION;
   }
   else
   {
-    m_BindType &= ~MIDAS_BIND_ZOOM_AND_PAN;
+    m_BindType &= ~MIDAS_BIND_MAGNIFICATION;
   }
   emit BindTypeChanged();
 }
