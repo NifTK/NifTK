@@ -34,7 +34,6 @@ SET(CPP_FILES
   DataSources/QmitkIGIUltrasonixToolGui.cxx
   DataSources/QmitkIGIOpenCVDataSource.cxx
   DataSources/QmitkIGIOpenCVDataSourceGui.cxx
-  LaparoscopicSurgery/QmitkLaparoscopicSurgeryManager.cxx
 )
 
 SET(MOC_H_FILES
@@ -54,7 +53,6 @@ SET(MOC_H_FILES
   DataSources/QmitkIGIUltrasonixToolGui.h
   DataSources/QmitkIGIOpenCVDataSource.h
   DataSources/QmitkIGIOpenCVDataSourceGui.h
-  LaparoscopicSurgery/QmitkLaparoscopicSurgeryManager.h
 )
 
 SET(UI_FILES
@@ -63,7 +61,6 @@ SET(UI_FILES
   DataSources/QmitkIGITrackerToolGui.ui
   DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
-  LaparoscopicSurgery/QmitkLaparoscopicSurgeryManager.ui
 )
 
 SET(QRC_FILES
