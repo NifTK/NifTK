@@ -428,8 +428,9 @@ IF(NOT DEFINED MITK_DIR)
     #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
     #       + Trac 2280, MITK 15077 = https://github.com/NifTK/MITK/commit/f5b1eeb4d4ae15b91fae7a30801a91a64e1015e0
     #       + Trac 2337, MITK 15092 = https://github.com/NifTK/MITK/commit/058528efa534d758faac787808220671801ea1b1
+    #       + Trac 2337, MITK 15092 = https://github.com/NifTK/MITK/commit/3919b0a1fd15c4b14ebb2485f2a881d9f64a0b3c
     #
-    #     Giving 8f40b417d3 on NifTK/MITK/niftk branch.
+    #     Giving d85f6e888f  on NifTK/MITK/niftk branch.
     # 
     #########################################################
 
