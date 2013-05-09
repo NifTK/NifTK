@@ -1361,9 +1361,9 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
   {
     mitk::Vector2D cursorPosition = this->GetCursorPosition(renderWindow);
 
-    // axial[0] <-> coronal[0]
-    // axial[1] <-> -sagittal[0]
-    // sagittal[1] <-> coronal[1]
+    // cursor[0] <-> axial[0] <-> coronal[0]
+    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[2] <-> sagittal[1] <-> coronal[1]
 
     if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
     {
@@ -1387,7 +1387,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
       for (int i = 0; i < 3; ++i)
       {
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
-        if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+        if (otherRenderWindow != renderWindow)
         {
           mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(otherRenderWindow, m_CursorPosition);
           this->SetOrigin(otherRenderWindow, origin);
@@ -1467,24 +1467,59 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       geometry->WorldToIndex(selectedPosition, selectedPositionIndex);
       sliceIndex = selectedPositionIndex[axis];
 
-      // axial[0] <-> coronal[0]
-      // axial[1] <-> -sagittal[0]
-      // sagittal[1] <-> coronal[1]
+      // cursor[0] <-> axial[0] <-> coronal[0]
+      // cursor[1] <-> axial[1] <-> -sagittal[0]
+      // cursor[2] <-> sagittal[1] <-> coronal[1]
 
-      if (orientation == MIDAS_ORIENTATION_AXIAL)
+      mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+      mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+      mitk::Vector2D cursorPositionOnCoronalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
+
+      QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
+      if (renderWindow == this->mitkWidget1)
       {
-        mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-        m_CursorPosition[2] = cursorPositionOnSagittalDisplay[1];
+        if (orientation == MIDAS_ORIENTATION_AXIAL)
+        {
+          m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
+        }
+        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+        {
+          m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
+        }
+        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
+        {
+          m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
+        }
       }
-      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      else if (renderWindow == this->mitkWidget2)
       {
-        mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-        m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
+        if (orientation == MIDAS_ORIENTATION_AXIAL)
+        {
+          m_CursorPosition[2] = cursorPositionOnSagittalDisplay[1];
+        }
+        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+        {
+          m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
+        }
+        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
+        {
+          m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
+        }
       }
-      else // if (orientation == MIDAS_ORIENTATION_CORONAL)
+      else// if (renderWindow == this->mitkWidget3)
       {
-        mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-        m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
+        if (orientation == MIDAS_ORIENTATION_AXIAL)
+        {
+          m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
+        }
+        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+        {
+          m_CursorPosition[0] = cursorPositionOnCoronalDisplay[0];
+        }
+        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
+        {
+          m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
+        }
       }
 
       emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
@@ -1499,29 +1534,29 @@ void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsi
   const mitk::Geometry3D *geometry = m_Geometry;
   if (geometry != NULL)
   {
-    mitk::Index3D voxelPoint;
-    mitk::Point3D millimetrePoint = this->GetSelectedPosition();
+    mitk::Index3D selectedPositionIndex;
+    mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-    geometry->WorldToIndex(millimetrePoint, voxelPoint);
+    geometry->WorldToIndex(selectedPosition, selectedPositionIndex);
 
     int axis = m_OrientationToAxisMap[orientation];
-    voxelPoint[axis] = sliceNumber;
+    selectedPositionIndex[axis] = sliceNumber;
 
     mitk::Point3D tmp;
-    tmp[0] = voxelPoint[0];
-    tmp[1] = voxelPoint[1];
-    tmp[2] = voxelPoint[2];
+    tmp[0] = selectedPositionIndex[0];
+    tmp[1] = selectedPositionIndex[1];
+    tmp[2] = selectedPositionIndex[2];
 
-    geometry->IndexToWorld(tmp, millimetrePoint);
+    geometry->IndexToWorld(tmp, selectedPosition);
 
     // Does not work, as it relies on the StateMachine event broadcasting mechanism,
     // and if the widget is not listening, then it goes unnoticed.
-    //this->MoveCrossToPosition(millimetrePoint);
+    //this->MoveCrossToPosition(selectedPosition);
 
     // This however, directly forces the SNC to the right place.
-    mitkWidget1->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
-    mitkWidget2->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
-    mitkWidget3->GetSliceNavigationController()->SelectSliceByPoint(millimetrePoint);
+    mitkWidget1->GetSliceNavigationController()->SelectSliceByPoint(selectedPosition);
+    mitkWidget2->GetSliceNavigationController()->SelectSliceByPoint(selectedPosition);
+    mitkWidget3->GetSliceNavigationController()->SelectSliceByPoint(selectedPosition);
   }
 }
 
@@ -1613,16 +1648,18 @@ const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCursorPosition(QmitkRenderWind
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
+  mitk::Vector2D cursorPosition;
+
   mitk::Point2D cursorPositionInMM;
   mitk::Point2D cursorPositionInPixels;
+
   displayGeometry->Map(selectedPosition, cursorPositionInMM);
   displayGeometry->WorldToDisplay(cursorPositionInMM, cursorPositionInPixels);
 
-  mitk::Vector2D cursorPositionNormalised;
-  cursorPositionNormalised[0] = cursorPositionInPixels[0] / displaySize[0];
-  cursorPositionNormalised[1] = cursorPositionInPixels[1] / displaySize[1];
+  cursorPosition[0] = cursorPositionInPixels[0] / displaySize[0];
+  cursorPosition[1] = cursorPositionInPixels[1] / displaySize[1];
 
-  return cursorPositionNormalised;
+  return cursorPosition;
 }
 
 
