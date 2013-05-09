@@ -24,48 +24,31 @@ ENDIF(NOT NIFTYREC_DIR)
 IF(CUDA_FOUND)
 
 FIND_PATH(NIFTYREC_INCLUDE_DIR
-  _et_line_integral_gpu.h
-  ${NIFTYREC_DIR}/et-lib_gpu
-  ${NIFTYREC_DIR}/et-lib_gpu
-  ${NIFTYREC_DIR}/include
-  ${NIFTYREC_DIR}-1.1/include
-  ${NIFTYREC_DIR}-1.0/include
-  @NIFTK_LINK_PREFIX@/include
-  /usr/local/include
-  /usr/include
+  NAME _et_line_integral_gpu.h
+  PATHS ${NIFTYREC_DIR}/et-lib_gpu
+        ${NIFTYREC_DIR}/include
+  NO_DEFAULT_PATH
   )
 
 FIND_LIBRARY(NIFTYREC_LIBRARIES
-  _et_line_integral_gpu
-  ${NIFTYREC_DIR}/lib
-  ${NIFTYREC_DIR}-1.1/lib
-  ${NIFTYREC_DIR}-1.0/lib
-  @NIFTK_LINK_PREFIX@/lib
-  /usr/local/lib
-  /usr/lib
+  NAMES _et_line_integral_gpu
+  PATHS ${NIFTYREC_DIR}/lib
+  NO_DEFAULT_PATH
   )
 
 ELSE(CUDA_FOUND)
 
 FIND_PATH(NIFTYREC_INCLUDE_DIR
-  _et_line_integral.h
-  ${NIFTYREC_DIR}/et-lib
-  ${NIFTYREC_DIR}/include
-  ${NIFTYREC_DIR}-1.1/include
-  ${NIFTYREC_DIR}-1.0/include
-  @NIFTK_LINK_PREFIX@/include
-  /usr/local/include
-  /usr/include
+  NAME _et_line_integral.h
+  PATHS ${NIFTYREC_DIR}/et-lib
+        ${NIFTYREC_DIR}/include
+  NO_DEFAULT_PATH
   )
 
 FIND_LIBRARY(NIFTYREC_LIBRARIES
-  _et_line_integral
-  ${NIFTYREC_DIR}/lib
-  ${NIFTYREC_DIR}-1.1/lib
-  ${NIFTYREC_DIR}-1.0/lib
-  @NIFTK_LINK_PREFIX@/lib
-  /usr/local/lib
-  /usr/lib
+  NAMES _et_line_integral
+  PATHS ${NIFTYREC_DIR}/lib
+  NO_DEFAULT_PATH
   )
 
 ENDIF(CUDA_FOUND)
