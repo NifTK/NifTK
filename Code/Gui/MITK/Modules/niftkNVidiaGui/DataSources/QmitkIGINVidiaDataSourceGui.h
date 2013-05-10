@@ -58,6 +58,8 @@ protected slots:
    */
   void OnUpdateDisplay();
 
+  void OnFieldModeChange(int index);
+
 private:
 
   QmitkIGINVidiaDataSource* GetQmitkIGINVidiaDataSource() const;

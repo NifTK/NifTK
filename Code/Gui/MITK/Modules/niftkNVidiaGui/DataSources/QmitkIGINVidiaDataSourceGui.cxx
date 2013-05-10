@@ -69,6 +69,7 @@ QmitkIGINVidiaDataSource* QmitkIGINVidiaDataSourceGui::GetQmitkIGINVidiaDataSour
 void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
 {
   setupUi(this);
+  connect(FieldModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFieldModeChange(int)));
 
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
@@ -96,6 +97,34 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
     MITK_ERROR << "QmitkIGINVidiaDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
   }
 
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
+{
+  QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
+  if (source != NULL)
+  {
+    // FIXME: if we are recording do not allow changing it!
+
+    bool    wascapturing = source->IsCapturing();
+    if (wascapturing)
+    {
+      source->StopCapturing();
+    }
+
+    source->SetFieldMode((QmitkIGINVidiaDataSource::InterlacedBehaviour) index);
+
+    if (wascapturing)
+    {
+      source->StartCapturing();
+    }
+  }
+  else
+  {
+    MITK_ERROR << "QmitkIGINVidiaDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
+  }
 }
 
 

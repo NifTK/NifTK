@@ -65,6 +65,19 @@ public:
    */
   bool IsCapturing();
 
+  // this should match libvideo/SDIInput::InterlacedBehaviour
+  enum InterlacedBehaviour
+  {
+    DO_NOTHING_SPECIAL,
+    DROP_ONE_FIELD,
+    STACK_FIELDS
+  };
+
+  // used to capture a lower-resolution image
+  // can only be changed when no capture is running! see IsCapturing() etc 
+  void SetMipmapLevel(unsigned int l);
+  void SetFieldMode(InterlacedBehaviour b);
+
 
 public:
   // to be used to share with the preview window, for example
@@ -113,6 +126,8 @@ private:
   // holds internals to prevent header pollution
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
+  unsigned int            m_MipmapLevel;
+  InterlacedBehaviour     m_FieldMode;
 
   // used to correlate clock, frame numbers and other events
   std::ofstream           m_FrameMapLogFile;
