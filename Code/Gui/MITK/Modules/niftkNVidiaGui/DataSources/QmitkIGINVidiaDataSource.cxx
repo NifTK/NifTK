@@ -360,8 +360,6 @@ public:
     return std::make_pair(sdiin->get_width(), sdiin->get_height());
   }
 
-
-
   int get_texture_id(unsigned int stream) const
   {
     QMutexLocker    l(&lock);
@@ -935,7 +933,12 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
 //-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 {
-  return 0;
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  return m_Pimpl->get_stream_count();
 }
 
 
@@ -943,7 +946,9 @@ int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 int QmitkIGINVidiaDataSource::GetCaptureWidth()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_width();
@@ -954,7 +959,9 @@ int QmitkIGINVidiaDataSource::GetCaptureWidth()
 int QmitkIGINVidiaDataSource::GetCaptureHeight()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_height();
@@ -965,7 +972,9 @@ int QmitkIGINVidiaDataSource::GetCaptureHeight()
 int QmitkIGINVidiaDataSource::GetRefreshRate()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_refreshrate();
@@ -975,14 +984,23 @@ int QmitkIGINVidiaDataSource::GetRefreshRate()
 //-----------------------------------------------------------------------------
 QGLWidget* QmitkIGINVidiaDataSource::GetCaptureContext()
 {
-    assert(m_Pimpl != 0);
-    assert(m_Pimpl->oglshare != 0);
-    return m_Pimpl->oglshare;
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  assert(m_Pimpl->oglshare != 0);
+  return m_Pimpl->oglshare;
 }
 
 
 //-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 {
-    return m_Pimpl->get_texture_id(stream);
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  return m_Pimpl->get_texture_id(stream);
 }

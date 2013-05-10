@@ -64,6 +64,9 @@ private:
 
   // init'd by Initialize()
   QmitkVideoPreviewWidget* m_OglWin;
+
+  // used to check whether stream format has changed in between calls to OnUpdateDisplay()
+  int     m_PreviousBaseResolution;
 }; // end class
 
 #endif
