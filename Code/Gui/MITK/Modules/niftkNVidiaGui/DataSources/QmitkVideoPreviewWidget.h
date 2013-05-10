@@ -38,7 +38,15 @@ protected:
   virtual void resizeGL(int width, int height);
   virtual void paintGL();
 
+  void setupViewport();
+
   int   m_TextureId;
+  // i guess we could query this from QWidget?
+  int   m_WidgetWidth;
+  int   m_WidgetHeight;
+
+  int   m_VideoWidth;
+  int   m_VideoHeight;
 };
 
 #endif // QMITKVIDEOPREVIEWWIDGET_H

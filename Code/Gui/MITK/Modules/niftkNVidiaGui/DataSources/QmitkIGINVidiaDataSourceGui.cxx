@@ -144,6 +144,7 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
           QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
           if (g)
           {
+            g->SetVideoDimensions(width, height);
             g->SetTextureId(source->GetTextureId(0));
             g->updateGL();
             // one preview widget for all input streams
