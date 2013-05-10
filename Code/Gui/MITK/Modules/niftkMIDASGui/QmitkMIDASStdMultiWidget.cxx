@@ -46,14 +46,14 @@ public:
 
 
   //-----------------------------------------------------------------------------
-  void Execute(itk::Object *caller, const itk::EventObject & event)
+  void Execute(itk::Object* caller, const itk::EventObject& event)
   {
-    Execute( (const itk::Object *)caller, event);
+    Execute( (const itk::Object*) caller, event);
   }
 
 
   //-----------------------------------------------------------------------------
-  void Execute(const itk::Object * object, const itk::EventObject & event)
+  void Execute(const itk::Object* object, const itk::EventObject& /*event*/)
   {
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
@@ -268,28 +268,28 @@ void QmitkMIDASStdMultiWidget::RemoveDisplayGeometryModificationObserver(QmitkRe
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   emit NodesDropped(this, renderWindow, nodes);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnAxialSliceChanged(const itk::EventObject & geometrySliceEvent)
+void QmitkMIDASStdMultiWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(MIDAS_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnSagittalSliceChanged(const itk::EventObject & geometrySliceEvent)
+void QmitkMIDASStdMultiWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent)
+void QmitkMIDASStdMultiWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(MIDAS_ORIENTATION_CORONAL);
 }
@@ -626,7 +626,7 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible)
+void QmitkMIDASStdMultiWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible)
 {
   if (renderWindow != NULL && node != NULL)
   {
@@ -659,7 +659,7 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
+bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindow) const
 {
   bool result = false;
   if (   mitkWidget1 == renderWindow
@@ -675,7 +675,7 @@ bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow *renderWin
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(vtkRenderWindow *vtkRenderWindow) const
+QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(vtkRenderWindow* vtkRenderWindow) const
 {
   QmitkRenderWindow* renderWindow = 0;
   if (mitkWidget1->GetVtkRenderWindow() == vtkRenderWindow)
@@ -761,7 +761,7 @@ void QmitkMIDASStdMultiWidget::FitToDisplay()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *geometry)
+void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D* geometry)
 {
   this->SetGeometry(geometry);
   this->SetMIDASView(view, false);
@@ -769,7 +769,7 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view, mitk::Geometry3D *ge
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
+void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
 {
   if (geometry != NULL)
   {
@@ -884,11 +884,11 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
     for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
       QmitkRenderWindow* renderWindow = renderWindows[i];
-      mitk::BaseRenderer *baseRenderer = renderWindow->GetRenderer();
-      int id = baseRenderer->GetMapperID();
+      mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+      int id = renderer->GetMapperID();
 
       // Get access to slice navigation controller, as this sorts out most of the process.
-      mitk::SliceNavigationController *sliceNavigationController = baseRenderer->GetSliceNavigationController();
+      mitk::SliceNavigationController* sliceNavigationController = renderer->GetSliceNavigationController();
       sliceNavigationController->SetViewDirectionToDefault();
 
       // Get the view/orientation flags.
@@ -897,8 +897,8 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
       if (i < 3)
       {
 
-        mitk::Point3D    originVoxels;
-        mitk::Point3D    originMillimetres;
+        mitk::Point3D    originInVx;
+        mitk::Point3D    originInMm;
         mitk::Point3D    originOfSlice;
         mitk::VnlVector  rightDV(3);
         mitk::VnlVector  bottomDV(3);
@@ -915,29 +915,29 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
           voxelOffset = 0.5;
         }
 
-        originVoxels[0] = 0;
-        originVoxels[1] = 0;
-        originVoxels[2] = 0;
+        originInVx[0] = 0;
+        originInVx[1] = 0;
+        originInVx[2] = 0;
 
         if (flippedAxes[0] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[0] < 0, so flipping axis " << permutedAxes[0] << std::endl;
-          originVoxels[permutedAxes[0]] = geometry->GetExtent(permutedAxes[0]) - 1;
+          originInVx[permutedAxes[0]] = geometry->GetExtent(permutedAxes[0]) - 1;
         }
         if (flippedAxes[1] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[1] < 0, so flipping axis " << permutedAxes[1] << std::endl;
-          originVoxels[permutedAxes[1]] = geometry->GetExtent(permutedAxes[1]) - 1;
+          originInVx[permutedAxes[1]] = geometry->GetExtent(permutedAxes[1]) - 1;
         }
         if (flippedAxes[2] < 0)
         {
           MITK_DEBUG << "Matt, flippedAxis[2] < 0, so flipping axis " << permutedAxes[2] << std::endl;
-          originVoxels[permutedAxes[2]] = geometry->GetExtent(permutedAxes[2]) - 1;
+          originInVx[permutedAxes[2]] = geometry->GetExtent(permutedAxes[2]) - 1;
         }
 
-        geometry->IndexToWorld(originVoxels, originMillimetres);
+        geometry->IndexToWorld(originInVx, originInMm);
 
-        MITK_DEBUG << "Matt, originVoxels=" << originVoxels << ", originMillimetres=" << originMillimetres << std::endl;
+        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
 
         // Setting up the width, height, axis orientation.
         switch(viewDirection)
@@ -945,15 +945,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         case mitk::SliceNavigationController::Sagittal:
           width  = permutedBoundingBox[1];
           height = permutedBoundingBox[2];
-          originOfSlice[0] = originMillimetres[0];
-          originOfSlice[1] = originMillimetres[1] - voxelOffset*permutedSpacing[1];
-          originOfSlice[2] = originMillimetres[2] - voxelOffset*permutedSpacing[2];
-          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][1];
-          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][1];
-          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][1];
-          bottomDV[0] = permutedSpacing[0]*permutedMatrix[0][2];
-          bottomDV[1] = permutedSpacing[1]*permutedMatrix[1][2];
-          bottomDV[2] = permutedSpacing[2]*permutedMatrix[2][2];
+          originOfSlice[0] = originInMm[0];
+          originOfSlice[1] = originInMm[1] - voxelOffset * permutedSpacing[1];
+          originOfSlice[2] = originInMm[2] - voxelOffset * permutedSpacing[2];
+          rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
+          rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
+          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
+          bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
           normal[0] = permutedMatrix[0][0];
           normal[1] = permutedMatrix[1][0];
           normal[2] = permutedMatrix[2][0];
@@ -964,15 +964,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         case mitk::SliceNavigationController::Frontal:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[2];
-          originOfSlice[0] = originMillimetres[0] - voxelOffset*permutedSpacing[0];
-          originOfSlice[1] = originMillimetres[1];
-          originOfSlice[2] = originMillimetres[2] - voxelOffset*permutedSpacing[2];
-          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][0];
-          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][0];
-          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][0];
-          bottomDV[0] = permutedSpacing[0]*permutedMatrix[0][2];
-          bottomDV[1] = permutedSpacing[1]*permutedMatrix[1][2];
-          bottomDV[2] = permutedSpacing[2]*permutedMatrix[2][2];
+          originOfSlice[0] = originInMm[0] - voxelOffset * permutedSpacing[0];
+          originOfSlice[1] = originInMm[1];
+          originOfSlice[2] = originInMm[2] - voxelOffset * permutedSpacing[2];
+          rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
+          rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
+          bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
           normal[0] = permutedMatrix[0][1];
           normal[1] = permutedMatrix[1][1];
           normal[2] = permutedMatrix[2][1];
@@ -983,15 +983,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         default:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
-          originOfSlice[0] = originMillimetres[0] + permutedBoundingBox[0]*permutedSpacing[0]*permutedMatrix[0][1] - voxelOffset*permutedSpacing[0];
-          originOfSlice[1] = originMillimetres[1] + permutedBoundingBox[1]*permutedSpacing[1]*permutedMatrix[1][1] + voxelOffset*permutedSpacing[1];
-          originOfSlice[2] = originMillimetres[2] + permutedBoundingBox[2]*permutedSpacing[2]*permutedMatrix[2][1];
-          rightDV[0] = permutedSpacing[0]*permutedMatrix[0][0];
-          rightDV[1] = permutedSpacing[1]*permutedMatrix[1][0];
-          rightDV[2] = permutedSpacing[2]*permutedMatrix[2][0];
-          bottomDV[0] = -1.0 * permutedSpacing[0]*permutedMatrix[0][1];
-          bottomDV[1] = -1.0 * permutedSpacing[1]*permutedMatrix[1][1];
-          bottomDV[2] = -1.0 * permutedSpacing[2]*permutedMatrix[2][1];
+          originOfSlice[0] = originInMm[0] + permutedBoundingBox[0] * permutedSpacing[0] * permutedMatrix[0][1] - voxelOffset * permutedSpacing[0];
+          originOfSlice[1] = originInMm[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1] + voxelOffset * permutedSpacing[1];
+          originOfSlice[2] = originInMm[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][1];
+          rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
+          rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
+          bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
+          bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
+          bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
           normal[0] = permutedMatrix[0][2];
           normal[1] = permutedMatrix[1][2];
           normal[2] = permutedMatrix[2][2];
@@ -1083,8 +1083,8 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D *geometry)
         }
 
         // Now geometry is established, get the display geometry to fit the picture to the window.
-        baseRenderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
-        baseRenderer->GetDisplayGeometry()->Fit();
+        renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
+        renderer->GetDisplayGeometry()->Fit();
 
       } // if window < 3
     }
@@ -1355,7 +1355,7 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, bool beingPanned)
+void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
@@ -1405,22 +1405,22 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow *renderWindow, 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetOrigin(QmitkRenderWindow *renderWindow, const mitk::Vector2D& origin)
+void QmitkMIDASStdMultiWidget::SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& origin)
 {
-  mitk::Vector2D originInMM;
+  mitk::Vector2D originInMm;
 
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
 
-  displayGeometry->DisplayToWorld(origin, originInMM);
+  displayGeometry->DisplayToWorld(origin, originInMm);
 
   m_BlockDisplayGeometryEvents = true;
-  displayGeometry->SetOriginInMM(originInMM);
+  displayGeometry->SetOriginInMM(originInMm);
   m_BlockDisplayGeometryEvents = false;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWindow)
+void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWindow)
 {
   if (!m_BlockDisplayGeometryEvents)
   {
@@ -1438,8 +1438,8 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow *renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          double zoomScaleFactor = ComputeScaleFactor(otherRenderWindow, magnification);
-          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomScaleFactor);
+          double scaleFactor = ComputeScaleFactor(otherRenderWindow, magnification);
+          this->ZoomDisplayAboutCursor(otherRenderWindow, scaleFactor);
         }
       }
 
@@ -1456,16 +1456,16 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    const mitk::Geometry3D *geometry = m_Geometry;
+    const mitk::Geometry3D* geometry = m_Geometry;
     if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
       int sliceIndex = 0;
-      mitk::Index3D selectedPositionIndex;
+      mitk::Index3D selectedPositionInVx;
       mitk::Point3D selectedPosition = this->GetSelectedPosition();
       int axis = m_OrientationToAxisMap[orientation];
 
-      geometry->WorldToIndex(selectedPosition, selectedPositionIndex);
-      sliceIndex = selectedPositionIndex[axis];
+      geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+      sliceIndex = selectedPositionInVx[axis];
 
       // cursor[0] <-> axial[0] <-> coronal[0]
       // cursor[1] <-> axial[1] <-> -sagittal[0]
@@ -1531,21 +1531,21 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber)
 {
-  const mitk::Geometry3D *geometry = m_Geometry;
+  const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
   {
-    mitk::Index3D selectedPositionIndex;
+    mitk::Index3D selectedPositionInVx;
     mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-    geometry->WorldToIndex(selectedPosition, selectedPositionIndex);
+    geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    selectedPositionIndex[axis] = sliceNumber;
+    selectedPositionInVx[axis] = sliceNumber;
 
     mitk::Point3D tmp;
-    tmp[0] = selectedPositionIndex[0];
-    tmp[1] = selectedPositionIndex[1];
-    tmp[2] = selectedPositionIndex[2];
+    tmp[0] = selectedPositionInVx[0];
+    tmp[1] = selectedPositionInVx[1];
+    tmp[2] = selectedPositionInVx[2];
 
     geometry->IndexToWorld(tmp, selectedPosition);
 
@@ -1568,13 +1568,13 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
 
   if (m_Geometry != NULL)
   {
-    mitk::Index3D voxelPoint;
-    const mitk::Point3D millimetrePoint = this->GetSelectedPosition();
+    mitk::Index3D selectedPositionInVx;
+    const mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-    m_Geometry->WorldToIndex(millimetrePoint, voxelPoint);
+    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    sliceNumber = voxelPoint[axis];
+    sliceNumber = selectedPositionInVx[axis];
   }
 
   return sliceNumber;
@@ -1650,14 +1650,14 @@ const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCursorPosition(QmitkRenderWind
 
   mitk::Vector2D cursorPosition;
 
-  mitk::Point2D cursorPositionInMM;
-  mitk::Point2D cursorPositionInPixels;
+  mitk::Point2D cursorPositionInMm;
+  mitk::Point2D cursorPositionInPx;
 
-  displayGeometry->Map(selectedPosition, cursorPositionInMM);
-  displayGeometry->WorldToDisplay(cursorPositionInMM, cursorPositionInPixels);
+  displayGeometry->Map(selectedPosition, cursorPositionInMm);
+  displayGeometry->WorldToDisplay(cursorPositionInMm, cursorPositionInPx);
 
-  cursorPosition[0] = cursorPositionInPixels[0] / displaySize[0];
-  cursorPosition[1] = cursorPositionInPixels[1] / displaySize[1];
+  cursorPosition[0] = cursorPositionInPx[0] / displaySize[0];
+  cursorPosition[1] = cursorPositionInPx[1] / displaySize[1];
 
   return cursorPosition;
 }
@@ -1721,18 +1721,18 @@ mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCursorPosition(QmitkRe
 
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
-  mitk::Vector2D cursorPositionInPixels;
-  cursorPositionInPixels[0] = cursorPosition[0] * displaySize[0];
-  cursorPositionInPixels[1] = cursorPosition[1] * displaySize[1];
+  mitk::Vector2D cursorPositionInPx;
+  cursorPositionInPx[0] = cursorPosition[0] * displaySize[0];
+  cursorPositionInPx[1] = cursorPosition[1] * displaySize[1];
 
   mitk::Point2D selectedPosition2D;
   displayGeometry->Map(selectedPosition, selectedPosition2D);
   double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  mitk::Vector2D selectedPositionInPixels;
-  selectedPositionInPixels[0] = selectedPosition2D[0] / scaleFactor;
-  selectedPositionInPixels[1] = selectedPosition2D[1] / scaleFactor;
+  mitk::Vector2D selectedPositionInPx;
+  selectedPositionInPx[0] = selectedPosition2D[0] / scaleFactor;
+  selectedPositionInPx[1] = selectedPosition2D[1] / scaleFactor;
 
-  return selectedPositionInPixels - cursorPositionInPixels;
+  return selectedPositionInPx - cursorPositionInPx;
 }
 
 
@@ -1762,8 +1762,8 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      double zoomScaleFactor = ComputeScaleFactor(renderWindow, magnification);
-      this->ZoomDisplayAboutCursor(renderWindow, zoomScaleFactor);
+      double scaleFactor = ComputeScaleFactor(renderWindow, magnification);
+      this->ZoomDisplayAboutCursor(renderWindow, scaleFactor);
     }
   }
 
@@ -1776,9 +1776,9 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 //-----------------------------------------------------------------------------
 double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification)
 {
-  mitk::Point2D scaleFactorPixPerVoxel;
-  mitk::Point2D scaleFactorPixPerMillimetres;
-  this->GetScaleFactors(renderWindow, scaleFactorPixPerVoxel, scaleFactorPixPerMillimetres);
+  mitk::Point2D scaleFactorPxPerVx;
+  mitk::Point2D scaleFactorPxPerMm;
+  this->GetScaleFactors(renderWindow, scaleFactorPxPerVx, scaleFactorPxPerMm);
 
   double effectiveMagnification = 0.0;
   if (magnification >= 0.0)
@@ -1792,10 +1792,10 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
 
   mitk::Point2D targetScaleFactor;
 
-  // Need to scale both of the current scaleFactorPixPerVoxel[i]
+  // Need to scale both of the current scaleFactorPxPerVx[i]
   for (int i = 0; i < 2; i++)
   {
-    targetScaleFactor[i] = effectiveMagnification / scaleFactorPixPerVoxel[i];
+    targetScaleFactor[i] = effectiveMagnification / scaleFactorPxPerVx[i];
   }
 
   // Pick the one that has changed the least
@@ -1825,12 +1825,12 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   }
 
   // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
-  mitk::Point2D scaleFactorPixelPerVoxel;
-  mitk::Point2D scaleFactorPixelPerMM;
-  this->GetScaleFactors(renderWindow, scaleFactorPixelPerVoxel, scaleFactorPixelPerMM);
+  mitk::Point2D scaleFactorPxPerVx;
+  mitk::Point2D scaleFactorPxPerMm;
+  this->GetScaleFactors(renderWindow, scaleFactorPxPerVx, scaleFactorPxPerMm);
 
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-  double scaleFactor = std::max(scaleFactorPixelPerVoxel[0], scaleFactorPixelPerVoxel[1]);
+  double scaleFactor = std::max(scaleFactorPxPerVx[0], scaleFactorPxPerVx[1]);
 
   double magnification = scaleFactor - 1.0;
   if (magnification < 0.0)
@@ -1851,7 +1851,7 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
   {
     // Note, that this method should only be called for MIDAS purposes, when the view is a 2D
     // view, so it will either be Axial, Coronal, Sagittal, and not 3D or OthoView.
-    QmitkRenderWindow *renderWindow = this->GetRenderWindow(orientation);
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(orientation);
 
     // Given the above comment, this means, we MUST have a window from this choice of 3.
     assert(renderWindow);
@@ -1862,7 +1862,7 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
     // due to the user manually (right click + mouse move) zooming the window.
     //////////////////////////////////////////////////////////////////////////
 
-    magnification = ComputeMagnification(renderWindow);
+    magnification = this->ComputeMagnification(renderWindow);
   }
   return magnification;
 }
@@ -1870,15 +1870,15 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::GetScaleFactors(
-    QmitkRenderWindow *renderWindow,
-    mitk::Point2D &scaleFactorPixPerVoxel,
-    mitk::Point2D &scaleFactorPixPerMillimetres)
+    QmitkRenderWindow* renderWindow,
+    mitk::Point2D& scaleFactorPxPerVx,
+    mitk::Point2D& scaleFactorPxPerMm)
 {
   // Basic initialization - default value is arbitrarily 1 in both cases.
-  scaleFactorPixPerVoxel[0] = 1;
-  scaleFactorPixPerVoxel[1] = 1;
-  scaleFactorPixPerMillimetres[0] = 1;
-  scaleFactorPixPerMillimetres[1] = 1;
+  scaleFactorPxPerVx[0] = 1.0;
+  scaleFactorPxPerVx[1] = 1.0;
+  scaleFactorPxPerMm[0] = 1.0;
+  scaleFactorPxPerMm[1] = 1.0;
 
   if (renderWindow != NULL)
   {
@@ -1888,7 +1888,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
     mitk::DisplayGeometry::Pointer displayGeometry = renderer->GetDisplayGeometry();
     assert(displayGeometry);
 
-    const mitk::Geometry3D *geometry = renderWindow->GetSliceNavigationController()->GetInputWorldGeometry();
+    const mitk::Geometry3D* geometry = renderWindow->GetSliceNavigationController()->GetInputWorldGeometry();
     if (geometry != NULL && geometry->GetBoundingBox() != NULL)
     {
       mitk::Point3D cornerPointsInImage[8];
@@ -1901,52 +1901,52 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
       cornerPointsInImage[6] = geometry->GetCornerPoint(false, false, true);
       cornerPointsInImage[7] = geometry->GetCornerPoint(false, false, false);
 
-      scaleFactorPixPerVoxel[0] = std::numeric_limits<float>::max();
-      scaleFactorPixPerVoxel[1] = std::numeric_limits<float>::max();
+      scaleFactorPxPerVx[0] = std::numeric_limits<float>::max();
+      scaleFactorPxPerVx[1] = std::numeric_limits<float>::max();
 
       // Take every combination of pairs of 3D corner points taken from the 8 corners of the geometry.
-      for (unsigned int i = 0; i < 8; i++)
+      for (unsigned int i = 0; i < 8; ++i)
       {
-        mitk::Point3D pointsInVoxels[2];
+        mitk::Point3D pointsInVx[2];
 
-        for (unsigned int j = 1; j < 8; j++)
+        for (unsigned int j = 1; j < 8; ++j)
         {
-          geometry->WorldToIndex(cornerPointsInImage[i], pointsInVoxels[0]);
-          geometry->WorldToIndex(cornerPointsInImage[j], pointsInVoxels[1]);
+          geometry->WorldToIndex(cornerPointsInImage[i], pointsInVx[0]);
+          geometry->WorldToIndex(cornerPointsInImage[j], pointsInVx[1]);
 
           // We only want to pick pairs of points where the points are different
           // and also differ in 3D space along exactly one axis (i.e. no diagonals).
-          unsigned int differentVoxelIndexesCounter=0;
+          unsigned int differentVoxelIndexesCounter = 0;
 
-          for (unsigned int k = 0; k < 3; k++)
+          for (unsigned int k = 0; k < 3; ++k)
           {
-            if (fabs(pointsInVoxels[1][k] - pointsInVoxels[0][k]) > 0.1)
+            if (fabs(pointsInVx[1][k] - pointsInVx[0][k]) > 0.1)
             {
-              differentVoxelIndexesCounter++;
+              ++differentVoxelIndexesCounter;
             }
           }
           if (differentVoxelIndexesCounter == 1)
           {
             // So, for this pair (i,j) of points, project to 2D
-            mitk::Point2D displayPointInMillimetreCoordinates[2];
-            mitk::Point2D displayPointInPixelCoordinates[2];
+            mitk::Point2D displayPointInMm[2];
+            mitk::Point2D displayPointInPx[2];
 
-            displayGeometry->Map(cornerPointsInImage[i], displayPointInMillimetreCoordinates[0]);
-            displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[0], displayPointInPixelCoordinates[0]);
+            displayGeometry->Map(cornerPointsInImage[i], displayPointInMm[0]);
+            displayGeometry->WorldToDisplay(displayPointInMm[0], displayPointInPx[0]);
 
-            displayGeometry->Map(cornerPointsInImage[j], displayPointInMillimetreCoordinates[1]);
-            displayGeometry->WorldToDisplay(displayPointInMillimetreCoordinates[1], displayPointInPixelCoordinates[1]);
+            displayGeometry->Map(cornerPointsInImage[j], displayPointInMm[1]);
+            displayGeometry->WorldToDisplay(displayPointInMm[1], displayPointInPx[1]);
 
             // Similarly, we only want to pick pairs of points where the projected 2D points
             // differ in 2D display coordinates along exactly one axis.
-            unsigned int differentDisplayIndexesCounter=0;
+            unsigned int differentDisplayIndexesCounter = 0;
             int differentDisplayAxis = -1;
 
-            for (unsigned int k = 0; k < 2; k++)
+            for (unsigned int k = 0; k < 2; ++k)
             {
-              if (fabs(displayPointInPixelCoordinates[1][k] - displayPointInPixelCoordinates[0][k]) > 0.1)
+              if (fabs(displayPointInPx[1][k] - displayPointInPx[0][k]) > 0.1)
               {
-                differentDisplayIndexesCounter++;
+                ++differentDisplayIndexesCounter;
                 differentDisplayAxis = k;
               }
             }
@@ -1956,16 +1956,16 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
               // 1 axis in voxel space, and different in one axis in diplay space, we can
               // use them to calculate scale factors.
 
-              double distanceInMillimetres = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
-              double distanceInVoxels = pointsInVoxels[0].EuclideanDistanceTo(pointsInVoxels[1]);
-              double distanceInPixels = displayPointInPixelCoordinates[0].EuclideanDistanceTo(displayPointInPixelCoordinates[1]);
-              double scaleFactorInDisplayPixelsPerImageVoxel = distanceInPixels / distanceInVoxels;
-              double scaleFactorInDisplayPixelsPerMillimetres = distanceInPixels / distanceInMillimetres;
+              double distanceInMm = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
+              double distanceInVx = pointsInVx[0].EuclideanDistanceTo(pointsInVx[1]);
+              double distanceInPx = displayPointInPx[0].EuclideanDistanceTo(displayPointInPx[1]);
+              double scaleFactorInDisplayPxPerVx = distanceInPx / distanceInVx;
+              double scaleFactorInDisplayPxPerMm = distanceInPx / distanceInMm;
 
-              if (scaleFactorInDisplayPixelsPerImageVoxel < scaleFactorPixPerVoxel[differentDisplayAxis])
+              if (scaleFactorInDisplayPxPerVx < scaleFactorPxPerVx[differentDisplayAxis])
               {
-                scaleFactorPixPerVoxel[differentDisplayAxis] = scaleFactorInDisplayPixelsPerImageVoxel;
-                scaleFactorPixPerMillimetres[differentDisplayAxis] = scaleFactorInDisplayPixelsPerMillimetres;
+                scaleFactorPxPerVx[differentDisplayAxis] = scaleFactorInDisplayPxPerVx;
+                scaleFactorPxPerMm[differentDisplayAxis] = scaleFactorInDisplayPxPerMm;
               }
             }
           }
@@ -1977,7 +1977,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow *renderWindow, double scaleFactor)
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double scaleFactor)
 {
   if (renderWindow != NULL)
   {
@@ -1990,16 +1990,16 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow *renderW
 
     const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
 
-    mitk::Point2D focusInMM;
-    mitk::Point2D focusInPixels;
+    mitk::Point2D focusInMm;
+    mitk::Point2D focusInPx;
 
-    displayGeometry->Map(selectedPosition, focusInMM);
-    displayGeometry->WorldToDisplay(focusInMM, focusInPixels);
+    displayGeometry->Map(selectedPosition, focusInMm);
+    displayGeometry->WorldToDisplay(focusInMm, focusInPx);
 
     m_BlockDisplayGeometryEvents = true;
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(scaleFactor, focusInPixels);
+    displayGeometry->Zoom(scaleFactor, focusInPx);
 
     m_BlockDisplayGeometryEvents = false;
   }
@@ -2009,7 +2009,7 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow *renderW
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientation& orientation) const
 {
-  QmitkRenderWindow *renderWindow = NULL;
+  QmitkRenderWindow* renderWindow = NULL;
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
     renderWindow = this->GetRenderWindow1();
