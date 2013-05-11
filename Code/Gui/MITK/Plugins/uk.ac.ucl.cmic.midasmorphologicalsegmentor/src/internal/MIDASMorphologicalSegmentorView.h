@@ -15,14 +15,14 @@
 #ifndef MIDASMorphologicalSegmentorView_h
 #define MIDASMorphologicalSegmentorView_h
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
 #include <mitkImage.h>
-#include "MorphologicalSegmentorPipeline.h"
-#include "MorphologicalSegmentorPipelineInterface.h"
-#include "MorphologicalSegmentorPipelineParams.h"
+#include <MorphologicalSegmentorPipeline.h>
+#include <MorphologicalSegmentorPipelineInterface.h>
+#include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include "mitkMIDASMorphologicalSegmentorPipelineManager.h"
+#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
 
 /**
  * \class MIDASMorphologicalSegmentorView

@@ -16,9 +16,9 @@
 #define __itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_txx
 
 #include "itkImageMatrixFormReconTwoDataSetsWithoutRegMetric.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

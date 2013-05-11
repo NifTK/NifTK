@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include "mitkTrackedPointerCommand.h"
+#include <mitkTrackedPointerCommand.h>
 #include <vtkMatrix4x4.h>
 #include <vtkLinearTransform.h>
 #include <vtkTransform.h>

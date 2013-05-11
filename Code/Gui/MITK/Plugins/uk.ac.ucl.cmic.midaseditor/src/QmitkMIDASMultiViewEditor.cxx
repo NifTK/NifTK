@@ -21,14 +21,14 @@
 #include <QWidget>
 #include <QGridLayout>
 
-#include "mitkGlobalInteraction.h"
-#include "mitkIDataStorageService.h"
-#include "mitkNodePredicateNot.h"
-#include "mitkNodePredicateProperty.h"
+#include <mitkGlobalInteraction.h>
+#include <mitkIDataStorageService.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
 #include "mitkMIDASDataStorageEditorInput.h"
 
 #include "QmitkMIDASMultiViewWidget.h"
-#include "QmitkMIDASMultiViewVisibilityManager.h"
+#include <QmitkMIDASMultiViewVisibilityManager.h>
 #include "QmitkMIDASMultiViewEditorPreferencePage.h"
 
 const std::string QmitkMIDASMultiViewEditor::EDITOR_ID = "org.mitk.editors.midasmultiview";

@@ -17,7 +17,7 @@
 
 #include "niftkNVidiaGuiExports.h"
 #include <QWidget>
-#include "QmitkIGIDataSourceGui.h"
+#include <QmitkIGIDataSourceGui.h>
 #include "ui_QmitkIGINVidiaDataSourceGui.h"
 
 class QmitkIGINVidiaDataSource;

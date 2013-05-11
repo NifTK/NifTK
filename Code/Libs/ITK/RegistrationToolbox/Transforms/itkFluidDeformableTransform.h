@@ -16,8 +16,8 @@
 #define ITKFLUIDDEFORMABLETRANSFORM_H_
 
 #include "itkDeformableTransform.h"
-#include "itkImage.h"
-#include "itkVector.h"
+#include <itkImage.h>
+#include <itkVector.h>
 
 
 namespace itk

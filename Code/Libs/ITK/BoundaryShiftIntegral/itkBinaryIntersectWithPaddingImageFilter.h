@@ -15,7 +15,7 @@
 #ifndef ITKBINARYINTERSECTWITHPADDINGIMAGE_H_
 #define ITKBINARYINTERSECTWITHPADDINGIMAGE_H_
 
-#include "itkBinaryFunctorImageFilter.h"
+#include <itkBinaryFunctorImageFilter.h>
 
 namespace itk
 {

@@ -18,7 +18,7 @@
 #include "niftkMIDASExports.h"
 #include <vector>
 #include <mitkDataStorage.h>
-#include "mitkDataStorageListener.h"
+#include <mitkDataStorageListener.h>
 #include "mitkMIDASDataNodeNameStringFilter.h"
 
 namespace mitk

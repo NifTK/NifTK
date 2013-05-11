@@ -16,10 +16,10 @@
 #define itkMIDASConditionalDilationFilter_txx
 
 #include "itkMIDASConditionalDilationFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
-#include "itkUCLMacro.h"
-#include "itkLogHelper.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <itkUCLMacro.h>
+#include <itkLogHelper.h>
 
 
 namespace itk

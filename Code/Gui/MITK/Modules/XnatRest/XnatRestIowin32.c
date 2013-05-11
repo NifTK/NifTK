@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-#include "zlib.h"
+#include <zlib.h>
 #include "XnatRestIoapi.h"
 #include "XnatRestIowin32.h"
 

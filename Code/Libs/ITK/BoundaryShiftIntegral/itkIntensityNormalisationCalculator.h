@@ -15,9 +15,9 @@
 #ifndef INTENSITY_NORMALISATION_CALCULATOR_H_
 #define INTENSITY_NORMALISATION_CALCULATOR_H_
 
-#include "itkImage.h"
-#include "itkObject.h"
-#include "itkMacro.h"
+#include <itkImage.h>
+#include <itkObject.h>
+#include <itkMacro.h>
 
 namespace itk
 {

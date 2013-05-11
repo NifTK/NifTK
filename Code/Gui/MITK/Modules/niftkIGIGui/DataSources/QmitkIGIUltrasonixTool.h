@@ -18,8 +18,8 @@
 #include "niftkIGIGuiExports.h"
 #include "QmitkQImageToMitkImageFilter.h"
 #include "QmitkIGINiftyLinkDataSource.h"
-#include "mitkImage.h"
-#include "mitkDataNode.h"
+#include <mitkImage.h>
+#include <mitkDataNode.h>
 
 /**
  * \class QmitkIGIUltrasonixTool

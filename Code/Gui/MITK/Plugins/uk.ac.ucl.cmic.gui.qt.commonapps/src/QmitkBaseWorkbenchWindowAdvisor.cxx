@@ -20,19 +20,19 @@
 #include <QAction>
 #include <QList>
 #include <QApplication>
-#include "QmitkHelpAboutDialog.h"
-#include "mitkDataNode.h"
-#include "mitkDataNodeFactory.h"
-#include "mitkDataStorage.h"
-#include "mitkDataStorageEditorInput.h"
-#include "mitkIDataStorageService.h"
-#include "mitkNodePredicateData.h"
-#include "mitkNodePredicateNot.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkProperties.h"
-#include "mitkRenderingManager.h"
-#include "EnvironmentHelper.h"
-#include "NifTKConfigure.h"
+#include <QmitkHelpAboutDialog.h>
+#include <mitkDataNode.h>
+#include <mitkDataNodeFactory.h>
+#include <mitkDataStorage.h>
+#include <mitkDataStorageEditorInput.h>
+#include <mitkIDataStorageService.h>
+#include <mitkNodePredicateData.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkProperties.h>
+#include <mitkRenderingManager.h>
+#include <EnvironmentHelper.h>
+#include <NifTKConfigure.h>
 
 //-----------------------------------------------------------------------------
 QmitkBaseWorkbenchWindowAdvisor::QmitkBaseWorkbenchWindowAdvisor(

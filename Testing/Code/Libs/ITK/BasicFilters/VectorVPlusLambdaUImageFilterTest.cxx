@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkVectorVPlusLambdaUImageFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkVectorVPlusLambdaUImageFilter.h>
 
 /**
  * Basic tests for VectorVPlusLambdaUImageFilterTest

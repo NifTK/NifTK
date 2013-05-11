@@ -19,9 +19,9 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkObjectFactoryBase.h"
-#include "itkTransformIOBase.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <itkObjectFactoryBase.h>
+#include <itkTransformIOBase.h>
+#include <niftkITKWin32ExportHeader.h>
 
 namespace itk
 {

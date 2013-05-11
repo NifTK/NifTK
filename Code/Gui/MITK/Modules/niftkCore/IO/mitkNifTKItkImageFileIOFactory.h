@@ -20,8 +20,8 @@
 #endif
 
 #include "niftkCoreExports.h"
-#include "itkObjectFactoryBase.h"
-#include "mitkBaseData.h"
+#include <itkObjectFactoryBase.h>
+#include <mitkBaseData.h>
 
 namespace mitk
 {

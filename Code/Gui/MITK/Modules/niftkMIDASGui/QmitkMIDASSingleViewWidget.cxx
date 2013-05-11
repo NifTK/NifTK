@@ -20,9 +20,9 @@
 #include <itkMatrix.h>
 #include <itkSpatialOrientationAdapter.h>
 
-#include "itkConversionUtils.h"
-#include "mitkPointUtils.h"
-#include "mitkMIDASOrientationUtils.h"
+#include <itkConversionUtils.h>
+#include <mitkPointUtils.h>
+#include <mitkMIDASOrientationUtils.h>
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASStdMultiWidget.h"
 

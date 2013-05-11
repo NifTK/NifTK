@@ -15,7 +15,7 @@
 #ifndef TrackedImageViewPreferencePage_h
 #define TrackedImageViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 

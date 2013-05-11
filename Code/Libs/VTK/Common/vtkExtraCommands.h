@@ -15,10 +15,10 @@
 #ifndef VTKEXTRACOMMANDS_H
 #define VTKEXTRACOMMANDS_H
 
-#include "NifTKConfigure.h"
-#include "niftkVTKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkVTKWin32ExportHeader.h>
 
-#include "vtkCommand.h"
+#include <vtkCommand.h>
 
 /**
  * \class vtkExtraCommands

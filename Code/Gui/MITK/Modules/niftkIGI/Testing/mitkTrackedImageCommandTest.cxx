@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include "mitkTrackedImageCommand.h"
+#include <mitkTrackedImageCommand.h>
 
 /**
  * \file mitkTrackedImageCommandTest.cxx

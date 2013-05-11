@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "QmitkIGIOpenCVDataSource.h"
-#include "mitkIGIOpenCVDataType.h"
-#include "../Conversion/ImageConversion.h"
+#include <mitkIGIOpenCVDataType.h>
+#include <../Conversion/ImageConversion.h>
 #include <mitkDataNode.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>

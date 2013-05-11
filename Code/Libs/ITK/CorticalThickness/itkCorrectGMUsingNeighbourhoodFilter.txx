@@ -16,11 +16,11 @@
 #define __itkCorrectGMUsingNeighbourhoodFilter_txx
 
 #include "itkCorrectGMUsingNeighbourhoodFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

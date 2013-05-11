@@ -18,17 +18,17 @@
 #define __itkUCLMultiResolutionPyramidImageFilter_txx
 
 #include "itkUCLMultiResolutionPyramidImageFilter.h"
-#include "itkGaussianOperator.h"
-#include "itkCastImageFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkExceptionObject.h"
-#include "itkResampleImageFilter.h"
-#include "itkShrinkImageFilter.h"
-#include "itkIdentityTransform.h"
-#include "ConversionUtils.h"
-#include "itkLogHelper.h"
-#include "itkUCLMacro.h"
-#include "vnl/vnl_math.h"
+#include <itkGaussianOperator.h>
+#include <itkCastImageFilter.h>
+#include <itkDiscreteGaussianImageFilter.h>
+#include <itkExceptionObject.h>
+#include <itkResampleImageFilter.h>
+#include <itkShrinkImageFilter.h>
+#include <itkIdentityTransform.h>
+#include <ConversionUtils.h>
+#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
+#include <vnl/vnl_math.h>
 
 namespace itk
 {

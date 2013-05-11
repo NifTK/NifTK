@@ -15,19 +15,19 @@
 #ifndef __itkRegistrationBasedCorticalThicknessFilter_txx
 #define __itkRegistrationBasedCorticalThicknessFilter_txx
 
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 #include "itkRegistrationBasedCorticalThicknessFilter.h"
 #include "itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter.h"
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "itkDemonsRegistrationFilter.h"
-#include "itkDiffeomorphicDemonsRegistrationFilter.h"
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
+#include <itkMinimumMaximumImageCalculator.h>
+#include <itkDemonsRegistrationFilter.h>
+#include <itkDiffeomorphicDemonsRegistrationFilter.h>
 #include "itkAddUpdateToTimeVaryingVelocityFieldFilter.h"
-#include "itkGaussianSmoothVectorFieldFilter.h"
-#include "itkWarpImageFilter.h"
-#include "itkImageFileWriter.h"
+#include <itkGaussianSmoothVectorFieldFilter.h>
+#include <itkWarpImageFilter.h>
+#include <itkImageFileWriter.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

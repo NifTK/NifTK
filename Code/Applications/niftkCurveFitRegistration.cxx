@@ -18,17 +18,17 @@
 #include <vector>
 #include <fstream>
 
-#include "itkLevenbergMarquardtOptimizer.h"
-#include "itkCurveFitRegistrationMethod.h"
-#include "itkBSplineCurveFitMetric.h"
+#include <itkLevenbergMarquardtOptimizer.h>
+#include <itkCurveFitRegistrationMethod.h>
+#include <itkBSplineCurveFitMetric.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCommandLineHelper.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkCommandLineHelper.h>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
 #include <boost/filesystem.hpp>
 

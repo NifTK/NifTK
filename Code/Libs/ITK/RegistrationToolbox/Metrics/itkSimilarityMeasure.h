@@ -15,15 +15,15 @@
 #ifndef __itkSimilarityMeasure_h
 #define __itkSimilarityMeasure_h
 
-#include "itkUCLBaseTransform.h"
+#include <itkUCLBaseTransform.h>
 #include "itkImageToImageMetricWithConstraint.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkImageFileWriter.h"
-#include "itkSignedMaurerDistanceMapImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkEulerAffineTransform.h"
-#include "itkImageMaskSpatialObject.h"
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkImageFileWriter.h>
+#include <itkSignedMaurerDistanceMapImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkEulerAffineTransform.h>
+#include <itkImageMaskSpatialObject.h>
 
 namespace itk
 {

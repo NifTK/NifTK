@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkMIDASMeanIntensityWithinARegionFilter.h"
+#include <itkImage.h>
+#include <itkMIDASMeanIntensityWithinARegionFilter.h>
 
 /**
  * Basic tests for MIDASMeanIntensityWithinARegionFilterTest

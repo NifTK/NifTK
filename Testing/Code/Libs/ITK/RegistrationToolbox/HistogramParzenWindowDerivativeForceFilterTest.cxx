@@ -17,13 +17,13 @@
 #endif
 #include <iostream>
 #include <memory>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkTranslationTransform.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkNMIImageToImageMetric.h"
-#include "itkParzenWindowNMIDerivativeForceGenerator.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkTranslationTransform.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkNMIImageToImageMetric.h>
+#include <itkParzenWindowNMIDerivativeForceGenerator.h>
 
 int HistogramParzenWindowDerivativeForceFilterTest(int argc, char * argv[])
 {

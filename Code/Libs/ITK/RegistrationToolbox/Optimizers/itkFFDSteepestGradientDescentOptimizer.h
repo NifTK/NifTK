@@ -15,15 +15,15 @@
 #ifndef ITKFFDSTEEPESTGRADIENTDESCENTOPTIMIZER_H_
 #define ITKFFDSTEEPESTGRADIENTDESCENTOPTIMIZER_H_
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h" 
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 #include "itkFFDGradientDescentOptimizer.h"
-#include "itkImageToImageMetricWithConstraint.h"
-#include "itkBSplineTransform.h"
-#include "itkRegistrationForceFilter.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkScaleVectorFieldFilter.h"
+#include <itkImageToImageMetricWithConstraint.h>
+#include <itkBSplineTransform.h>
+#include <itkRegistrationForceFilter.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkScaleVectorFieldFilter.h>
 
 namespace itk
 {

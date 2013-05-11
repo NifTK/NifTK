@@ -16,7 +16,7 @@
 #define NamedLookupTableProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkLookupTableProperty.h"
+#include <mitkLookupTableProperty.h>
 
 namespace mitk {
 

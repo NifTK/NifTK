@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
-#include "mitkStereoDistortionCorrectionVideoProcessor.h"
-#include "FileHelper.h"
+#include <mitkStereoDistortionCorrectionVideoProcessor.h>
+#include <FileHelper.h>
 #include <iostream>
 #include <fstream>
 #include <cv.h>

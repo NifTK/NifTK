@@ -14,8 +14,8 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include "mitkIGIDataSource.h"
-#include "mitkIGIDataType.h"
+#include <mitkIGIDataSource.h>
+#include <mitkIGIDataType.h>
 
 namespace mitk
 {

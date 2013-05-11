@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkLargestConnectedComponentFilter.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImage.h>
+#include <itkLargestConnectedComponentFilter.h>
+#include <itkImageRegionConstIterator.h>
 
 /**
  * Basic tests for LargestConnectedComponentFilterTest

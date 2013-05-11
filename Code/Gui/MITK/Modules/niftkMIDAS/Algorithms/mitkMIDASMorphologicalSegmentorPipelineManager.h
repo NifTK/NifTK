@@ -21,9 +21,9 @@
 #include <mitkToolManager.h>
 #include <mitkImage.h>
 
-#include "MorphologicalSegmentorPipelineParams.h"
-#include "MorphologicalSegmentorPipelineInterface.h"
-#include "MorphologicalSegmentorPipeline.h"
+#include <MorphologicalSegmentorPipelineParams.h>
+#include <MorphologicalSegmentorPipelineInterface.h>
+#include <MorphologicalSegmentorPipeline.h>
 
 namespace mitk {
 

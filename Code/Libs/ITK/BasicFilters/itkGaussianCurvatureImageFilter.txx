@@ -16,8 +16,8 @@
 #define __itkGaussianCurvatureImageFilter_txx
 
 #include "itkGaussianCurvatureImageFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 
 namespace itk
 {

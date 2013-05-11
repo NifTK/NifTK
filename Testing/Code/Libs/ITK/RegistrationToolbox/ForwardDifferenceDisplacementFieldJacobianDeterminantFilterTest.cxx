@@ -17,9 +17,9 @@
 #endif
 
 #include <iostream>
-#include "itkImage.h"
-#include "itkForwardDifferenceDisplacementFieldJacobianDeterminantFilter.h"
-#include "itkVector.h"
+#include <itkImage.h>
+#include <itkForwardDifferenceDisplacementFieldJacobianDeterminantFilter.h>
+#include <itkVector.h>
 
 //
 // Taken from ITK and modified. 

@@ -19,7 +19,7 @@
 
 #include "ui_QmitkMIDASBindWidget.h"
 
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 
 /**
  * \class QmitkMIDASBindWidget

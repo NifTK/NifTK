@@ -23,9 +23,9 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkErrorCode.h>
 
-#include "CommandLineParser.h"
-#include "MeshGenerator.h"
-#include "MeshMerger.h"
+#include <CommandLineParser.h>
+#include <MeshGenerator.h>
+#include <MeshMerger.h>
 
 static niftk::CommandLineArgumentDescription g_opts[] = {
     { OPT_SWITCH, "surf", 0, "Generate only a surface mesh" },

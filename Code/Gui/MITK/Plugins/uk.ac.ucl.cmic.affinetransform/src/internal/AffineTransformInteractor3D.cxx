@@ -17,21 +17,21 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "AffineTransformInteractor3D.h"
 
-#include "mitkInteractionConst.h"
-#include "mitkPointOperation.h"
-#include "mitkPositionEvent.h"
-#include "mitkStatusBar.h"
-#include "mitkDataNode.h"
-#include "mitkInteractionConst.h"
-#include "mitkAction.h"
-#include "mitkStateMachine.h"
-#include "mitkStateEvent.h"
-#include "mitkOperationEvent.h"
-#include "mitkUndoController.h"
-#include "mitkStateMachineFactory.h"
-#include "mitkStateTransitionOperation.h"
-#include "mitkRenderingManager.h"
-#include "mitkRotationOperation.h"
+#include <mitkInteractionConst.h>
+#include <mitkPointOperation.h>
+#include <mitkPositionEvent.h>
+#include <mitkStatusBar.h>
+#include <mitkDataNode.h>
+#include <mitkInteractionConst.h>
+#include <mitkAction.h>
+#include <mitkStateMachine.h>
+#include <mitkStateEvent.h>
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
+#include <mitkStateMachineFactory.h>
+#include <mitkStateTransitionOperation.h>
+#include <mitkRenderingManager.h>
+#include <mitkRotationOperation.h>
 
 #include <vtkCamera.h>
 #include <vtkPoints.h>

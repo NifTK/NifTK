@@ -15,10 +15,10 @@
 #ifndef __itkUCLSimplexOptimizer_h
 #define __itkUCLSimplexOptimizer_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkAmoebaOptimizer.h"
+#include <itkAmoebaOptimizer.h>
 
 namespace itk
 {

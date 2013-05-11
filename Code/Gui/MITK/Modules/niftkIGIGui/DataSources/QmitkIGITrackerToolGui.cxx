@@ -17,7 +17,7 @@
 #include <QmitkFiducialRegistrationWidget.h>
 #include "QmitkIGITrackerTool.h"
 #include "QmitkFiducialRegistrationWidgetDialog.h"
-#include "QmitkDataStorageComboBox.h"
+#include <QmitkDataStorageComboBox.h>
 #include "QmitkIGIDataSourceMacro.h"
 
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerToolGui, "IGI Tracker Tool Gui")

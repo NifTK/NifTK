@@ -29,10 +29,10 @@
 #include <itksys/SystemTools.hxx>
 
 
-#include "mitkDataStorageUtils.h"
-#include "mitkNodePredicateDataType.h"
+#include <mitkDataStorageUtils.h>
+#include <mitkNodePredicateDataType.h>
 
-#include "_reg_ReadWriteImage.h"
+#include <_reg_ReadWriteImage.h>
 
 #include "RegistrationExecution.h"
 

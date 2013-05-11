@@ -16,28 +16,28 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkCommand.h"
-#include "itkSimpleFilterWatcher.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkBasicImageFeaturesImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkImage.h"
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkScalarToRGBBIFPixelFunctor.h"
-#include "itkScalarToRGBOBIFPixelFunctor.h"
+#include <itkCommand.h>
+#include <itkSimpleFilterWatcher.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkBasicImageFeaturesImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkImage.h>
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkScalarToRGBBIFPixelFunctor.h>
+#include <itkScalarToRGBOBIFPixelFunctor.h>
 #if 0
-#include "itkMaskImageFilter.h"
+#include <itkMaskImageFilter.h>
 #endif
-#include "itkResampleImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkIdentityTransform.h"
-#include "itkSliceBySliceImageFilterPatched.h"
+#include <itkResampleImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkIdentityTransform.h>
+#include <itkSliceBySliceImageFilterPatched.h>
 
 #include <boost/filesystem.hpp>
 

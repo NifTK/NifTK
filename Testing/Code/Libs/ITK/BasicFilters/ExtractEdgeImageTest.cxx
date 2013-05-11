@@ -19,15 +19,15 @@
 #include <memory>
 #include <math.h>
 #include <time.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkResampleImageFilter.h"
-#include "itkExtractImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkMultipleDilateImageFilter.h"
-#include "itkMultipleErodeImageFilter.h"
-#include "itkImageFileWriter.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkResampleImageFilter.h>
+#include <itkExtractImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkMultipleDilateImageFilter.h>
+#include <itkMultipleErodeImageFilter.h>
+#include <itkImageFileWriter.h>
 
 /**
  * Basic tests to compare ITK and VTK pipelines to extract a slice, and draw a region.

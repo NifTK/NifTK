@@ -15,7 +15,7 @@
 #ifndef ITK_RAYLEIGHFUNCTION_H
 #define ITK_RAYLEIGHFUNCTION_H
 
-#include "vnl/vnl_least_squares_function.h"
+#include <vnl/vnl_least_squares_function.h>
 
 
 class ITK_EXPORT RayleighFunction : public vnl_least_squares_function

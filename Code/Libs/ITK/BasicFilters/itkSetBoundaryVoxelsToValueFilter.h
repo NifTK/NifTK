@@ -15,7 +15,7 @@
 #ifndef __itkSetBoundaryVoxelsToValueFilter_h
 #define __itkSetBoundaryVoxelsToValueFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk {
   

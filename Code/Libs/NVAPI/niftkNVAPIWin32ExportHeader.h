@@ -14,7 +14,7 @@
 #ifndef __NIFTKNVAPIWIN32EXPORTHEADER_H
 #define __NIFTKNVAPIWIN32EXPORTHEADER_H
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 
 #if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
   #ifdef NIFTKNVAPI_WINDOWS_EXPORT

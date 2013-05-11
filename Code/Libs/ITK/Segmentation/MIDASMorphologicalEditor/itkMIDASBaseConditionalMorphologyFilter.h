@@ -15,9 +15,9 @@
 #ifndef itkMIDASBaseConditionalMorphologyFilter_h
 #define itkMIDASBaseConditionalMorphologyFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkImageDuplicator.h"
-#include "itkConstNeighborhoodIterator.h"
+#include <itkImageToImageFilter.h>
+#include <itkImageDuplicator.h>
+#include <itkConstNeighborhoodIterator.h>
 
 namespace itk
 {

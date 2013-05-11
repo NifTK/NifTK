@@ -15,7 +15,7 @@
 #ifndef ITKMULTIPLEDILATEIMAGEFILTER_TXX_
 #define ITKMULTIPLEDILATEIMAGEFILTER_TXX_
 
-#include "itkImageDuplicator.h"
+#include <itkImageDuplicator.h>
 
 namespace itk 
 {

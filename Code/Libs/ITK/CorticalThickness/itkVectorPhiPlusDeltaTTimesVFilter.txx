@@ -16,10 +16,10 @@
 #define __itkVectorPhiPlusDeltaTTimesVFilter_txx
 
 #include "itkVectorPhiPlusDeltaTTimesVFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

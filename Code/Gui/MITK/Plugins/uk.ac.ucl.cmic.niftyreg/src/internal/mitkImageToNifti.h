@@ -15,10 +15,10 @@
 #ifndef MITKIMAGETONIFTI_HEADER_INCLUDED
 #define MITKIMAGETONIFTI_HEADER_INCLUDED
 
-#include "mitkImage.h"
-#include "mitkImageDataItem.h"
+#include <mitkImage.h>
+#include <mitkImageDataItem.h>
 
-#include "nifti1_io.h"
+#include <nifti1_io.h>
 
 
 /// Create a Nifti image from an mitk::Image

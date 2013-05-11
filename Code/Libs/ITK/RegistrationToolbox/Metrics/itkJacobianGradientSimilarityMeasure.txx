@@ -16,9 +16,9 @@
 #define _itkJacobianGradientSimilarityMeasure_txx
 
 #include "itkJacobianGradientSimilarityMeasure.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

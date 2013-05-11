@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 
 /**
  * Basic tests for itkMIDASImageUpdatePixelWiseSingleValueProcessor

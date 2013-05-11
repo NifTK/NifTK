@@ -15,9 +15,9 @@
 #ifndef __itkVectorVPlusLambdaUImageFilter_h
 #define __itkVectorVPlusLambdaUImageFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 /**

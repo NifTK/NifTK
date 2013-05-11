@@ -13,19 +13,19 @@
 =============================================================================*/
 
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkCommandLineHelper.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkCommandLineHelper.h>
 
-#include "itkAffineTransform.h"
-#include "itkTransformFileReader.h"
+#include <itkAffineTransform.h>
+#include <itkTransformFileReader.h>
 
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkResampleImageFilter.h"
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkMath.h"
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkResampleImageFilter.h>
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkMath.h>
 
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {

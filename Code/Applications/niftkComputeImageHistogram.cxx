@@ -16,12 +16,12 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkScalarImageToHistogramGenerator.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkScalarImageToHistogramGenerator.h>
 
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {

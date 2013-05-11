@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkInterpolateVectorFieldFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkInterpolateVectorFieldFilter.h>
 
 /**
  * Basic tests for BSpline interpolating.

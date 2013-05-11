@@ -17,7 +17,7 @@
 
 #include <niftkMIDASGuiExports.h>
 #include "ui_QmitkMIDASOrientationWidget.h"
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 
 class QButtonGroup;
 

@@ -18,21 +18,21 @@
 //#undef _USE_CUDA
 
 #include "ui_QmitkNiftyRegViewControls.h"
-#include "berryISelectionListener.h"
-#include "QmitkAbstractView.h"
+#include <berryISelectionListener.h>
+#include <QmitkAbstractView.h>
 
 // ITK
 #include <itkMultiThreader.h>
 
 #include "NiftyRegParameters.h"
 
-#include "_reg_aladin.h"
-#include "_reg_tools.h"
+#include <_reg_aladin.h>
+#include <_reg_tools.h>
 
-#include "_reg_f3d2.h"
+#include <_reg_f3d2.h>
 
 #ifdef _USE_CUDA
-#include "_reg_f3d_gpu.h"
+#include <_reg_f3d_gpu.h>
 #endif
 
 

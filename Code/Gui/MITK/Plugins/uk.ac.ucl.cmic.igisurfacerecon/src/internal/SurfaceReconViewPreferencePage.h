@@ -15,7 +15,7 @@
 #ifndef SurfaceReconViewPreferencePage_h
 #define SurfaceReconViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 

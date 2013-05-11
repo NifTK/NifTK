@@ -16,9 +16,9 @@
 #define __itkSmoothVectorFieldFilter_txx
 
 #include "itkSmoothVectorFieldFilter.h"
-#include "itkImageFileWriter.h"
+#include <itkImageFileWriter.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

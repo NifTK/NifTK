@@ -15,7 +15,7 @@
 #ifndef ITKBINARYUNIONWITHPADDINGIMAGE_H_
 #define ITKBINARYUNIONWITHPADDINGIMAGE_H_
 
-#include "itkBinaryFunctorImageFilter.h"
+#include <itkBinaryFunctorImageFilter.h>
 
 namespace itk
 {

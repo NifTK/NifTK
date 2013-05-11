@@ -15,7 +15,7 @@
 #ifndef _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
 #define _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

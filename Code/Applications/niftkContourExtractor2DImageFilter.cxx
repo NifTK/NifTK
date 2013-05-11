@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkContourExtractor2DImageFilter.h"
-#include "itkOrthogonalContourExtractor2DImageFilter.h"
-#include "itkPolyLineParametricPath.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkContourExtractor2DImageFilter.h>
+#include <itkOrthogonalContourExtractor2DImageFilter.h>
+#include <itkPolyLineParametricPath.h>
 
 /*!
  * \file niftkContourExtractor2DImageFilter.cxx

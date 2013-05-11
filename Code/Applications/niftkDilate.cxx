@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryDilateImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryDilateImageFilter.h>
 
-#include "niftkDilateCLP.h"
+#include <niftkDilateCLP.h>
 
 /*!
  * \file niftkDilate.cxx

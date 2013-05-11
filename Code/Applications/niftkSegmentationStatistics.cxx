@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkLogHelper.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkLogHelper.h>
 
 /*!
  * \file niftkSegmentationStatistics.cxx

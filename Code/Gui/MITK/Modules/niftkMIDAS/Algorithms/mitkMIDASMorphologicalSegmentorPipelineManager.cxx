@@ -19,12 +19,12 @@
 #include <mitkITKImageImport.h>
 #include <mitkSegmentationObjectFactory.h>
 
-#include "mitkDataStorageUtils.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
-#include "mitkMIDASPaintbrushTool.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkMIDASOrientationUtils.h"
+#include <mitkDataStorageUtils.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
+#include <mitkMIDASPaintbrushTool.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkMIDASOrientationUtils.h>
 
 namespace mitk
 {

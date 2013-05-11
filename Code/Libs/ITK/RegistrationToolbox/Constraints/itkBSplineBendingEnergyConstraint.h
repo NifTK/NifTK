@@ -16,7 +16,7 @@
 #define __itkBSplineBendingEnergyConstraint_h
 
 #include "itkConstraint.h"
-#include "itkBSplineTransform.h"
+#include <itkBSplineTransform.h>
 
 
 namespace itk

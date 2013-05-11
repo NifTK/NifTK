@@ -16,9 +16,9 @@
 #define NifTKItkImageFileReader_h
 
 #include "niftkCoreExports.h"
-#include "mitkCommon.h"
-#include "mitkItkImageFileReader.h"
-#include "itkImage.h"
+#include <mitkCommon.h>
+#include <mitkItkImageFileReader.h>
+#include <itkImage.h>
 
 namespace mitk {
 

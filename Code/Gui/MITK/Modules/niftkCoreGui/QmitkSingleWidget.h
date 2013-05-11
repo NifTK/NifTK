@@ -16,18 +16,18 @@
 #define QMITKSINGLEWIDGET_H_
 
 #include "niftkCoreGuiExports.h"
-#include "mitkPositionTracker.h"
-#include "mitkSlicesRotator.h"
-#include "mitkSlicesSwiveller.h"
-#include "mitkRenderWindowFrame.h"
+#include <mitkPositionTracker.h>
+#include <mitkSlicesRotator.h>
+#include <mitkSlicesSwiveller.h>
+#include <mitkRenderWindowFrame.h>
 #include "QmitkCmicLogo.h"
 #include "QmitkBitmapOverlay.h"
-//#include "mitkManufacturerLogo.h"
-#include "mitkGradientBackground.h"
-#include "mitkCoordinateSupplier.h"
-#include "mitkDataStorage.h"
+//#include <mitkManufacturerLogo.h>
+#include <mitkGradientBackground.h>
+#include <mitkCoordinateSupplier.h>
+#include <mitkDataStorage.h>
 
-#include "mitkMouseModeSwitcher.h"
+#include <mitkMouseModeSwitcher.h>
 
 #include <qwidget.h>
 #include <qsplitter.h>
@@ -36,8 +36,8 @@
 #include <QmitkRenderWindow.h>
 #include <QmitkLevelWindowWidget.h>
 
-#include "vtkTextProperty.h"
-#include "vtkCornerAnnotation.h"
+#include <vtkTextProperty.h>
+#include <vtkCornerAnnotation.h>
 
 class QHBoxLayout;
 class QVBoxLayout;

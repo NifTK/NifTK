@@ -16,8 +16,8 @@
 #define QMITKIGINIFTYLINKDATATYPE_H
 
 #include "niftkIGIGuiExports.h"
-#include "mitkIGIDataType.h"
-#include "NiftyLinkMessage.h"
+#include <mitkIGIDataType.h>
+#include <NiftyLinkMessage.h>
 
 /**
  * \class QmitkIGINiftyLinkDataType

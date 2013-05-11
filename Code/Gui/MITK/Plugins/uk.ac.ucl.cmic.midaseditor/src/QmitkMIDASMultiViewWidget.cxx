@@ -43,9 +43,9 @@
 #include <QmitkRenderWindow.h>
 #include <mitkIRenderWindowPart.h>
 
-#include "mitkMIDASOrientationUtils.h"
-#include "mitkMIDASViewKeyPressResponder.h"
-#include "QmitkMIDASSingleViewWidget.h"
+#include <mitkMIDASOrientationUtils.h>
+#include <mitkMIDASViewKeyPressResponder.h>
+#include <QmitkMIDASSingleViewWidget.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(

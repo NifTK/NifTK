@@ -16,7 +16,7 @@
 #define QmitkMIDASSingleViewWidget_h
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 #include "QmitkMIDASStdMultiWidget.h"
 #include <QWidget>
 #include <QColor>

@@ -18,14 +18,14 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkCheckForThreeLevelsFilter.h"
-#include "itkLaplacianSolverImageFilter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
-#include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkImage.h>
+#include <itkCheckForThreeLevelsFilter.h>
+#include <itkLaplacianSolverImageFilter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
+#include <itkLagrangianInitializedRelaxStreamlinesFilter.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkCastImageFilter.h>
 
 int LagrangianInitializedStreamlinesFilterTest(int argc, char * argv[])
 {

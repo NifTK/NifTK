@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCheckForThreeLevelsFilter.h"
-#include "itkCorrectGMUsingPVMapFilter.h"
-#include "itkCorrectGMUsingNeighbourhoodFilter.h"
-#include "itkHighResLaplacianSolverImageFilter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
-#include "itkHighResRelaxStreamlinesFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkCheckForThreeLevelsFilter.h>
+#include <itkCorrectGMUsingPVMapFilter.h>
+#include <itkCorrectGMUsingNeighbourhoodFilter.h>
+#include <itkHighResLaplacianSolverImageFilter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
+#include <itkHighResRelaxStreamlinesFilter.h>
+#include <itkCastImageFilter.h>
 
 /*!
  * \file niftkCTEHighRes.cxx

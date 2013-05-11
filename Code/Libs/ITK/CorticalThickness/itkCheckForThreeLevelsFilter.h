@@ -15,7 +15,7 @@
 #ifndef __itkCheckForThreeLevelsFilter_h
 #define __itkCheckForThreeLevelsFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 

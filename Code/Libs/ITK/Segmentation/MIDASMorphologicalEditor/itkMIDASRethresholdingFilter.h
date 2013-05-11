@@ -15,11 +15,11 @@
 #ifndef itkMIDASRethresholdingFilter_h
 #define itkMIDASRethresholdingFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkRegionOfInterestImageFilter.h"
-#include "itkPasteImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryErodeImageFilter.h"
+#include <itkImageToImageFilter.h>
+#include <itkRegionOfInterestImageFilter.h>
+#include <itkPasteImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryErodeImageFilter.h>
 #include "itkMIDASDownSamplingFilter.h"
 #include "itkMIDASUpSamplingFilter.h"
 #include "itkMIDASMeanIntensityWithinARegionFilter.h"

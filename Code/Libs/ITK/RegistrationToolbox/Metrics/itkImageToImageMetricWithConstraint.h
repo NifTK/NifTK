@@ -15,8 +15,8 @@
 #ifndef __itkImageToImageMetricWithConstraint_h
 #define __itkImageToImageMetricWithConstraint_h
 
-#include "itkImageToImageMetric.h"
-#include "itkConstraint.h"
+#include <itkImageToImageMetric.h>
+#include <itkConstraint.h>
 #include "itkMetricDerivativeBridge.h"
 
 namespace itk

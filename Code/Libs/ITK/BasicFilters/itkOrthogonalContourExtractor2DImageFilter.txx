@@ -32,10 +32,10 @@
 #ifndef __itkOrthogonalContourExtractor2DImageFilter_txx
 #define __itkOrthogonalContourExtractor2DImageFilter_txx
 
-#include "itkConstShapedNeighborhoodIterator.h"
-#include "itkProgressReporter.h"
-#include "itkConstShapedNeighborhoodIterator.h"
-#include "vcl_cmath.h"
+#include <itkConstShapedNeighborhoodIterator.h>
+#include <itkProgressReporter.h>
+#include <itkConstShapedNeighborhoodIterator.h>
+#include <vcl_cmath.h>
 #include "itkOrthogonalContourExtractor2DImageFilter.h"
 
 namespace itk

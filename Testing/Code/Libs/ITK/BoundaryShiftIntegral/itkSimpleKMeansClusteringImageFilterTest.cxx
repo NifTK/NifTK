@@ -16,13 +16,13 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinariseUsingPaddingImageFilter.h"
-#include "itkIntensityNormalisationCalculator.h"
-#include "itkMultipleDilateImageFilter.h"
-#include "itkSimpleKMeansClusteringImageFilter.h"
-#include "itkIndent.h"
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinariseUsingPaddingImageFilter.h>
+#include <itkIntensityNormalisationCalculator.h>
+#include <itkMultipleDilateImageFilter.h>
+#include <itkSimpleKMeansClusteringImageFilter.h>
+#include <itkIndent.h>
 #include <stdio.h>
 
 int itkSimpleKMeansClusteringImageFilterTest(int argc, char* argv[])

@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASMultiViewEditorPreferencePage_h
 #define QmitkMIDASMultiViewEditorPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 #include <berryIPreferences.h>
 

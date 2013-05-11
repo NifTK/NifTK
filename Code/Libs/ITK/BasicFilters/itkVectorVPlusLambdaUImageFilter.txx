@@ -16,10 +16,10 @@
 #define __itkVectorVPlusLambdaUImageFilter_txx
 
 #include "itkVectorVPlusLambdaUImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
-#include "itkUCLMacro.h"
-#include "itkLogHelper.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
+#include <itkUCLMacro.h>
+#include <itkLogHelper.h>
 
 namespace itk {
 

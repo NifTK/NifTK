@@ -24,9 +24,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkCubeSource.h>
 
-#include "QmitkMouseEventEater.h"
-#include "QmitkWheelEventEater.h"
-#include "mitkDataStorageUtils.h"
+#include <QmitkMouseEventEater.h>
+#include <QmitkWheelEventEater.h>
+#include <mitkDataStorageUtils.h>
 
 
 //-----------------------------------------------------------------------------

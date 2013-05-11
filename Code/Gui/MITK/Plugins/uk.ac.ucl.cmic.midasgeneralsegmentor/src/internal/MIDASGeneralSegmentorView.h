@@ -34,14 +34,14 @@
 #include <mitkOperation.h>
 #include <mitkSliceNavigationController.h>
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
-#include "itkMIDASHelper.h"
-#include "itkMIDASRegionGrowingImageFilter.h"
-#include "mitkMIDASContourTool.h"
-#include "mitkMIDASDrawTool.h"
-#include "mitkMIDASPolyTool.h"
-#include "mitkMIDASToolKeyPressStateMachine.h"
-#include "mitkMIDASToolKeyPressResponder.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
+#include <itkMIDASHelper.h>
+#include <itkMIDASRegionGrowingImageFilter.h>
+#include <mitkMIDASContourTool.h>
+#include <mitkMIDASDrawTool.h>
+#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASToolKeyPressStateMachine.h>
+#include <mitkMIDASToolKeyPressResponder.h>
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 #include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewPipeline.h"

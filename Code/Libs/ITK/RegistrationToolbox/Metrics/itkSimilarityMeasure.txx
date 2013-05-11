@@ -14,11 +14,11 @@
 
 #ifndef _itkSimilarityMeasure_txx
 #define _itkSimilarityMeasure_txx
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 #include "itkSimilarityMeasure.h"
-#include "itkStatisticsImageFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkUCLMacro.h"
+#include <itkStatisticsImageFilter.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

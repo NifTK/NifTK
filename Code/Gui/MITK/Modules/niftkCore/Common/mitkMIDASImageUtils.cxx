@@ -21,7 +21,7 @@
 #include <mitkPositionEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkInteractionConst.h>
-#include "itkMIDASHelper.h"
+#include <itkMIDASHelper.h>
 
 namespace mitk
 {

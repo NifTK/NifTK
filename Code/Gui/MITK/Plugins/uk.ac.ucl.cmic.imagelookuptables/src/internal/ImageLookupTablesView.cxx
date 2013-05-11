@@ -31,15 +31,15 @@
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
-#include "LookupTableManager.h"
-#include "LookupTableContainer.h"
+#include <LookupTableManager.h>
+#include <LookupTableContainer.h>
 
-#include "mitkLevelWindowManager.h"
-#include "mitkNodePredicateData.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkNodePredicateAnd.h"
-#include "mitkNodePredicateNot.h"
+#include <mitkLevelWindowManager.h>
+#include <mitkNodePredicateData.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateNot.h>
 
 const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 

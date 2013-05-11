@@ -18,15 +18,15 @@
 #include "itkBoundaryShiftIntegralCalculator.h"
 #include "itkBinaryIntersectWithPaddingImageFilter.h"
 #include "itkBinaryUnionWithPaddingImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkXorImageFilter.h"
-#include "itkImageFileWriter.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkXorImageFilter.h>
+#include <itkImageFileWriter.h>
 #include "itkBinariseUsingPaddingImageFilter.h"
 #include "itkBasicImageComparisonFunctions.h"
 #include "itkMultipleDilateImageFilter.h"
 #include "itkMultipleErodeImageFilter.h"
-#include "algorithm"
-#include "iostream"
+#include <algorithm>
+#include <iostream>
 
 namespace itk
 {

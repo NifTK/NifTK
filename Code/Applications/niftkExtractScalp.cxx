@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkBinaryBallStructuringElement.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryDilateImageFilter.h"
-#include "itkBinaryErodeImageFilter.h"
-#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
-#include "itkLargestConnectedComponentFilter.h"
-#include "itkMIDASDownSamplingFilter.h"
-#include "itkMIDASUpSamplingFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkBinaryBallStructuringElement.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryDilateImageFilter.h>
+#include <itkBinaryErodeImageFilter.h>
+#include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
+#include <itkLargestConnectedComponentFilter.h>
+#include <itkMIDASDownSamplingFilter.h>
+#include <itkMIDASUpSamplingFilter.h>
 
 /*!
  * \file niftkExtractScalp.cxx

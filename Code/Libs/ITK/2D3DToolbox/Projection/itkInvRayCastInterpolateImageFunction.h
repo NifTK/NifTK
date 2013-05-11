@@ -15,10 +15,10 @@
 #ifndef __itkInvRayCastInterpolateImageFunction_h
 #define __itkInvRayCastInterpolateImageFunction_h
 
-#include "itkInterpolateImageFunction.h"
-#include "itkTransform.h"
-#include "itkVector.h"
-#include "itkImage.h" // I ADDED THAT
+#include <itkInterpolateImageFunction.h>
+#include <itkTransform.h>
+#include <itkVector.h>
+#include <itkImage.h>
 
 namespace itk
 {

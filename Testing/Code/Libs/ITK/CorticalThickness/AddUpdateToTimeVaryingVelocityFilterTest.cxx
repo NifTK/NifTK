@@ -16,11 +16,11 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkAddUpdateToTimeVaryingVelocityFieldFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkAddUpdateToTimeVaryingVelocityFieldFilter.h>
 
 int AddUpdateToTimeVaryingVelocityFilterTest(int argc, char * argv[])
 {

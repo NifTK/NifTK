@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkRegisterProbeModelToStereoPair.h"
-#include "mitkCameraCalibrationFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 #include "mitkRegistrationHelper.h"
 #include "mitkStereoImageToModelSSD.h"
 #include <cv.h>

@@ -15,11 +15,11 @@
 #ifndef __NIFTK_FILEHELPER_H
 #define __NIFTK_FILEHELPER_H
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
 #define BOOST_FILESYSTEM_VERSION 2
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 #if (defined(WIN32) || defined(_WIN32))
 #define FILE_SEPARATOR "\\"

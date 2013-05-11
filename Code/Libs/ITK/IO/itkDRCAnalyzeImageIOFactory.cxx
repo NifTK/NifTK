@@ -16,9 +16,9 @@
 #define ITKDRCANALYZEIMAGEIO_CXX
 
 #include "itkDRCAnalyzeImageIOFactory.h"
-#include "itkCreateObjectFunction.h"
+#include <itkCreateObjectFunction.h>
 #include "itkDRCAnalyzeImageIO.h"
-#include "itkVersion.h"
+#include <itkVersion.h>
 
 namespace itk
 {

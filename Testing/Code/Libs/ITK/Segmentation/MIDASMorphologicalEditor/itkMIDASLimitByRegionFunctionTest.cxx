@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkMIDASHelper.h"
+#include <itkImage.h>
+#include <itkMIDASHelper.h>
 /**
  * Basic test for
  */

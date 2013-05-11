@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkNeighborhoodConnectedImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkNeighborhoodConnectedImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
 
 /*!
  * \file niftkFillHoles.cxx

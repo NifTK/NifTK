@@ -17,14 +17,14 @@
 #endif
 #include <iostream>
 #include <memory>
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkTranslationTransform.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkSimilarityMeasure.h"
-#include "ConversionUtils.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkTranslationTransform.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkSimilarityMeasure.h>
+#include <ConversionUtils.h>
 
 int ImageMetricTest2D(int argc, char * argv[])
 {

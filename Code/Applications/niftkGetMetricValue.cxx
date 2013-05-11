@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageIOFactory.h"
-#include "itkImageIOBase.h"
-#include "itkGiplImageIO.h"
-#include "itkVTKImageIO.h"
-#include "itkINRImageIOFactory.h"
+#include <itkLogHelper.h>
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageIOFactory.h>
+#include <itkImageIOBase.h>
+#include <itkGiplImageIO.h>
+#include <itkVTKImageIO.h>
+#include <itkINRImageIOFactory.h>
 /* ********************************************************************** */
 
 typedef itk::Image<float,2> ImageType;

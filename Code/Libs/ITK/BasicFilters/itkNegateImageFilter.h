@@ -15,8 +15,8 @@
 #ifndef __itkNegateImageFilter_h
 #define __itkNegateImageFilter_h
 
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkConceptChecking.h"
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkConceptChecking.h>
 
 namespace itk
 {
