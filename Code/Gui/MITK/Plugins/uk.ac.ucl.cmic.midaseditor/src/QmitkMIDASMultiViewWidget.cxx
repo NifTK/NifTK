@@ -806,12 +806,13 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
 
   // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
   int selectedViewIndex = this->GetSelectedViewIndex();
+  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
   if (this->GetRowFromIndex(selectedViewIndex) >= numberOfRows || this->GetColumnFromIndex(selectedViewIndex) >= numberOfColumns)
   {
     selectedViewIndex = 0;
+    selectedRenderWindow = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindow();
   }
-  // Pass NULL for the selected vtkRenderWindow, to make sure that new windows don't look selected
-  this->SwitchWindows(selectedViewIndex, NULL);
+  this->SwitchWindows(selectedViewIndex, selectedRenderWindow);
 
   // Now the number of views has changed, we need to make sure they are all in synch with all the right properties.
   this->Update2DCursorVisibility();
