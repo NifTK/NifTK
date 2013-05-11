@@ -1776,39 +1776,48 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 //-----------------------------------------------------------------------------
 double QmitkMIDASStdMultiWidget::ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification)
 {
-  mitk::Point2D currentScaleFactorPxPerVx;
-  mitk::Point2D currentScaleFactorPxPerMm;
-  this->GetScaleFactors(renderWindow, currentScaleFactorPxPerVx, currentScaleFactorPxPerMm);
+  mitk::Vector2D currentScaleFactorsPxPerVx;
+  mitk::Vector2D currentScaleFactorsPxPerMm;
+  this->GetScaleFactors(renderWindow, currentScaleFactorsPxPerVx, currentScaleFactorsPxPerMm);
 
-  double requiredScaleFactor = 0.0;
+  double requiredScaleFactorPxPerVx;
   if (magnification >= 0.0)
   {
-    requiredScaleFactor = magnification + 1.0;
+    requiredScaleFactorPxPerVx = magnification + 1.0;
   }
   else
   {
-    requiredScaleFactor = -1.0 / (magnification - 1.0);
+    requiredScaleFactorPxPerVx = -1.0 / (magnification - 1.0);
   }
 
   // Need to scale both of the current scaleFactorPxPerVx[i]
-  mitk::Point2D zoomFactor;
-  zoomFactor[0] = requiredScaleFactor / currentScaleFactorPxPerVx[0];
-  zoomFactor[1] = requiredScaleFactor / currentScaleFactorPxPerVx[1];
+  mitk::Vector2D zoomFactors;
+  zoomFactors[0] = requiredScaleFactorPxPerVx / currentScaleFactorsPxPerVx[0];
+  zoomFactors[1] = requiredScaleFactorPxPerVx / currentScaleFactorsPxPerVx[1];
 
-  // Pick the one that has changed the least
-  int axisWithLeastDifference = -1;
-  double leastDifference = std::numeric_limits<double>::max();
-  for(int i = 0; i < 2; i++)
-  {
-    double difference = std::fabs(zoomFactor[i] - 1.0);
-    if (difference < leastDifference)
-    {
-      leastDifference = difference;
-      axisWithLeastDifference = i;
-    }
-  }
+  // TODO Anisotropic voxel size not handled correctly.
+//  // Pick the one that has changed the least
+//  int axisWithLeastDifference = -1;
+//  double leastDifference = std::numeric_limits<double>::max();
+//  int axisWithMostDifference = -1;
+//  double mostDifference = std::numeric_limits<double>::min();
+//  for(int i = 0; i < 2; i++)
+//  {
+//    double difference = std::fabs(zoomFactors[i] - 1.0);
+//    if (difference < leastDifference)
+//    {
+//      leastDifference = difference;
+//      axisWithLeastDifference = i;
+//    }
+//    if (difference > mostDifference)
+//    {
+//      mostDifference = difference;
+//      axisWithMostDifference = i;
+//    }
+//  }
+  double zoomFactor = zoomFactors[0];
 
-  return zoomFactor[axisWithLeastDifference];
+  return zoomFactor;
 }
 
 
@@ -1822,17 +1831,19 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   }
 
   // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
-  mitk::Point2D scaleFactorPxPerVx;
-  mitk::Point2D scaleFactorPxPerMm;
-  this->GetScaleFactors(renderWindow, scaleFactorPxPerVx, scaleFactorPxPerMm);
+  mitk::Vector2D scaleFactorsPxPerVx;
+  mitk::Vector2D scaleFactorsPxPerMm;
+  this->GetScaleFactors(renderWindow, scaleFactorsPxPerVx, scaleFactorsPxPerMm);
 
+  // TODO Anisotropic voxel size not handled correctly.
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-  double scaleFactor = std::max(scaleFactorPxPerVx[0], scaleFactorPxPerVx[1]);
+//  double scaleFactorPxPerVx = std::max(scaleFactorsPxPerVx[0], scaleFactorsPxPerVx[1]);
+  double scaleFactorPxPerVx = scaleFactorsPxPerVx[0];
 
-  double magnification = scaleFactor - 1.0;
+  double magnification = scaleFactorPxPerVx - 1.0;
   if (magnification < 0.0)
   {
-    magnification /= scaleFactor;
+    magnification /= scaleFactorPxPerVx;
   }
 
   return magnification;
@@ -1869,8 +1880,8 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::GetScaleFactors(
     QmitkRenderWindow* renderWindow,
-    mitk::Point2D& scaleFactorPxPerVx,
-    mitk::Point2D& scaleFactorPxPerMm)
+    mitk::Vector2D& scaleFactorPxPerVx,
+    mitk::Vector2D& scaleFactorPxPerMm)
 {
   // Basic initialization - default value is arbitrarily 1 in both cases.
   scaleFactorPxPerVx[0] = 1.0;

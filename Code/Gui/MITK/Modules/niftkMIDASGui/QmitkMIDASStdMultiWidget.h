@@ -315,7 +315,7 @@ private:
   void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
-  void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Point2D& scaleFactorPixPerVoxel, mitk::Point2D& scaleFactorPixPerMillimetres);
+  void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
