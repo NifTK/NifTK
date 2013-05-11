@@ -166,10 +166,10 @@ public:
   QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
-  bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
+  bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
-  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
+  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow* aVtkRenderWindow) const;
 
   /// \brief Returns the minimum allowed slice number for a given orientation.
   unsigned int GetMinSlice(MIDASOrientation orientation) const;
@@ -274,26 +274,26 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkRenderWindow *renderWindow, int sliceNumber);
+  void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceNumber);
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
   void MagnificationChanged(double magnification);
 
 protected slots:
 
   /// \brief The 4 individual render windows get connected to this slot, and then all emit NodesDropped.
-  void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
 private:
 
   /// \brief Callback from internal Axial SliceNavigatorController
-  void OnAxialSliceChanged(const itk::EventObject & geometrySliceEvent);
+  void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
 
   /// \brief Callback from internal Sagittal SliceNavigatorController
-  void OnSagittalSliceChanged(const itk::EventObject & geometrySliceEvent);
+  void OnSagittalSliceChanged(const itk::EventObject& geometrySliceEvent);
 
   /// \brief Callback from internal Coronal SliceNavigatorController
-  void OnCoronalSliceChanged(const itk::EventObject & geometrySliceEvent);
+  void OnCoronalSliceChanged(const itk::EventObject& geometrySliceEvent);
 
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged
   void OnSelectedPositionChanged(MIDASOrientation orientation);
@@ -305,16 +305,17 @@ private:
   mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
-  void SetVisibility(QmitkRenderWindow *renderWindow, mitk::DataNode *node, bool visible);
+  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
   // \brief Sets the origin of the display geometry of the render window
-  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
+  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
-  /// \brief Scales a specific render window about the cursor.
-  void ZoomDisplayAboutCursor(QmitkRenderWindow *renderWindow, double scaleFactor);
+  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the current
+  /// and the required scale factor.
+  void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
-  void GetScaleFactors(QmitkRenderWindow *renderWindow, mitk::Point2D &scaleFactorPixPerVoxel, mitk::Point2D &scaleFactorPixPerMillimetres);
+  void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
@@ -323,10 +324,10 @@ private:
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow *renderWindow, bool beingPanned);
+  void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(QmitkRenderWindow *renderWindow);
+  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow);
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
@@ -334,12 +335,13 @@ private:
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
-  /// \brief Computes the scale factor for a render window from a magnification factor.
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification);
+  /// \brief Computes the zoom factor for a render window from a magnification factor.
+  /// The zoom factor is the ratio of the current and the required scale factor.
+  double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
-  QGridLayout          *m_GridLayout;
+  QGridLayout*          m_GridLayout;
   unsigned int          m_AxialSliceTag;
   unsigned int          m_SagittalSliceTag;
   unsigned int          m_CoronalSliceTag;
