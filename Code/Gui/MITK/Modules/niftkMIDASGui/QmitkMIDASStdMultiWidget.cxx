@@ -1438,8 +1438,8 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          double scaleFactor = ComputeScaleFactor(otherRenderWindow, magnification);
-          this->ZoomDisplayAboutCursor(otherRenderWindow, scaleFactor);
+          double zoomFactor = ComputeZoomFactor(otherRenderWindow, magnification);
+          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomFactor);
         }
       }
 
@@ -1762,8 +1762,8 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      double scaleFactor = ComputeScaleFactor(renderWindow, magnification);
-      this->ZoomDisplayAboutCursor(renderWindow, scaleFactor);
+      double zoomFactor = ComputeZoomFactor(renderWindow, magnification);
+      this->ZoomDisplayAboutCursor(renderWindow, zoomFactor);
     }
   }
 
@@ -1774,36 +1774,33 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification)
+double QmitkMIDASStdMultiWidget::ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification)
 {
-  mitk::Point2D scaleFactorPxPerVx;
-  mitk::Point2D scaleFactorPxPerMm;
-  this->GetScaleFactors(renderWindow, scaleFactorPxPerVx, scaleFactorPxPerMm);
+  mitk::Point2D currentScaleFactorPxPerVx;
+  mitk::Point2D currentScaleFactorPxPerMm;
+  this->GetScaleFactors(renderWindow, currentScaleFactorPxPerVx, currentScaleFactorPxPerMm);
 
-  double effectiveMagnification = 0.0;
+  double requiredScaleFactor = 0.0;
   if (magnification >= 0.0)
   {
-    effectiveMagnification = magnification + 1.0;
+    requiredScaleFactor = magnification + 1.0;
   }
   else
   {
-    effectiveMagnification = -1.0 / (magnification - 1.0);
+    requiredScaleFactor = -1.0 / (magnification - 1.0);
   }
-
-  mitk::Point2D targetScaleFactor;
 
   // Need to scale both of the current scaleFactorPxPerVx[i]
-  for (int i = 0; i < 2; i++)
-  {
-    targetScaleFactor[i] = effectiveMagnification / scaleFactorPxPerVx[i];
-  }
+  mitk::Point2D zoomFactor;
+  zoomFactor[0] = requiredScaleFactor / currentScaleFactorPxPerVx[0];
+  zoomFactor[1] = requiredScaleFactor / currentScaleFactorPxPerVx[1];
 
   // Pick the one that has changed the least
   int axisWithLeastDifference = -1;
   double leastDifference = std::numeric_limits<double>::max();
   for(int i = 0; i < 2; i++)
   {
-    double difference = fabs(targetScaleFactor[i] - 1.0);
+    double difference = std::fabs(zoomFactor[i] - 1.0);
     if (difference < leastDifference)
     {
       leastDifference = difference;
@@ -1811,7 +1808,7 @@ double QmitkMIDASStdMultiWidget::ComputeScaleFactor(QmitkRenderWindow* renderWin
     }
   }
 
-  return targetScaleFactor[axisWithLeastDifference];
+  return zoomFactor[axisWithLeastDifference];
 }
 
 
@@ -1837,6 +1834,7 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   {
     magnification /= scaleFactor;
   }
+
   return magnification;
 }
 
@@ -1888,7 +1886,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
     mitk::DisplayGeometry::Pointer displayGeometry = renderer->GetDisplayGeometry();
     assert(displayGeometry);
 
-    const mitk::Geometry3D* geometry = renderWindow->GetSliceNavigationController()->GetInputWorldGeometry();
+    const mitk::Geometry3D* geometry = renderWindow->GetRenderer()->GetWorldGeometry();
     if (geometry != NULL && geometry->GetBoundingBox() != NULL)
     {
       mitk::Point3D cornerPointsInImage[8];
@@ -1920,7 +1918,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
           for (unsigned int k = 0; k < 3; ++k)
           {
-            if (fabs(pointsInVx[1][k] - pointsInVx[0][k]) > 0.1)
+            if (std::fabs(pointsInVx[1][k] - pointsInVx[0][k]) > 0.1)
             {
               ++differentVoxelIndexesCounter;
             }
@@ -1944,7 +1942,7 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
             for (unsigned int k = 0; k < 2; ++k)
             {
-              if (fabs(displayPointInPx[1][k] - displayPointInPx[0][k]) > 0.1)
+              if (std::fabs(displayPointInPx[1][k] - displayPointInPx[0][k]) > 0.1)
               {
                 ++differentDisplayIndexesCounter;
                 differentDisplayAxis = k;
@@ -1977,16 +1975,11 @@ void QmitkMIDASStdMultiWidget::GetScaleFactors(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double scaleFactor)
+void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor)
 {
   if (renderWindow != NULL)
   {
-    // I'm using assert statements, because fundamentally, if the render window exists, so should all the other objects.
-    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-    assert(renderer);
-
-    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-    assert(displayGeometry);
+    mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
 
     const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
 
@@ -1999,7 +1992,7 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderW
     m_BlockDisplayGeometryEvents = true;
 
     // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(scaleFactor, focusInPx);
+    displayGeometry->Zoom(zoomFactor, focusInPx);
 
     m_BlockDisplayGeometryEvents = false;
   }

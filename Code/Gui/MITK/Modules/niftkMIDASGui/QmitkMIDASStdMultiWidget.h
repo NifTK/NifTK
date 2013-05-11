@@ -308,10 +308,11 @@ private:
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
   // \brief Sets the origin of the display geometry of the render window
-  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMM);
+  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
-  /// \brief Scales a specific render window about the cursor.
-  void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double scaleFactor);
+  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the current
+  /// and the required scale factor.
+  void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
   void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Point2D& scaleFactorPixPerVoxel, mitk::Point2D& scaleFactorPixPerMillimetres);
@@ -334,8 +335,9 @@ private:
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
-  /// \brief Computes the scale factor for a render window from a magnification factor.
-  double ComputeScaleFactor(QmitkRenderWindow* renderWindow, double magnification);
+  /// \brief Computes the zoom factor for a render window from a magnification factor.
+  /// The zoom factor is the ratio of the current and the required scale factor.
+  double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
