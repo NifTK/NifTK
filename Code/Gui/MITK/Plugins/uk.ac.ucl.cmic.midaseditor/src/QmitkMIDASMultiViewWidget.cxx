@@ -810,7 +810,7 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
   if (this->GetRowFromIndex(selectedViewIndex) >= numberOfRows || this->GetColumnFromIndex(selectedViewIndex) >= numberOfColumns)
   {
     selectedViewIndex = 0;
-    selectedRenderWindow = this->m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindow();
+    selectedRenderWindow = m_SingleViewWidgets[selectedViewIndex]->GetSelectedRenderWindow();
   }
   this->SwitchWindows(selectedViewIndex, selectedRenderWindow);
 
