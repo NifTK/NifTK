@@ -15,9 +15,9 @@
 #ifndef ITKMULTIPLEERODEIMAGEFILTER_H_
 #define ITKMULTIPLEERODEIMAGEFILTER_H_
 
-#include "itkImageToImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryErodeImageFilter.h"
+#include <itkImageToImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryErodeImageFilter.h>
 
 namespace itk 
 {

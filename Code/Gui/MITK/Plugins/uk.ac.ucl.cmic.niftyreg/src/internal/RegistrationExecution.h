@@ -18,7 +18,7 @@
 #include <QThread>
 
 #include "QmitkNiftyRegView.h"
-#include "niftkF3DControlGridToVTKPolyData.h"
+#include <niftkF3DControlGridToVTKPolyData.h>
 
 
 class RegistrationExecution : public QThread

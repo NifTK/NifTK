@@ -16,7 +16,7 @@
 #define QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
-#include "QmitkBaseWorkbenchWindowAdvisor.h"
+#include <QmitkBaseWorkbenchWindowAdvisor.h>
 
 /**
  * \class QmitkNiftyViewWorkbenchWindowAdvisor

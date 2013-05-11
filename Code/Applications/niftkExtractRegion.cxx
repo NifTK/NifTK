@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRegionOfInterestImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRegionOfInterestImageFilter.h>
 
-#include "itkImage.h"
+#include <itkImage.h>
 
 
 void Usage(char *exec)

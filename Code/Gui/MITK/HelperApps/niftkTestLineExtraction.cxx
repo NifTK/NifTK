@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkTestLineExtraction.h"
+#include <mitkTestLineExtraction.h>
 
 int main(int argc, char** argv)
 {

@@ -18,7 +18,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QGLWidget>
-#include "QmitkIGIDataSourceMacro.h"
+#include <QmitkIGIDataSourceMacro.h>
 #include "QmitkIGINVidiaDataSource.h"
 #include "QmitkVideoPreviewWidget.h"
 

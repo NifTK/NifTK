@@ -16,7 +16,7 @@
 
 extern "C"
 {
-#include "XnatRest.h"
+#include <XnatRest.h>
 }
 
 #include "XnatException.h"

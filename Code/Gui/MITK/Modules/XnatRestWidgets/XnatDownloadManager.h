@@ -21,7 +21,7 @@
 
 extern "C"
 {
-#include "XnatRest.h"
+#include <XnatRest.h>
 }
 
 class QString;

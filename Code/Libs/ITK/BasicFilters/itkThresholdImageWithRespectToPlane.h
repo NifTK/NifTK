@@ -15,7 +15,7 @@
 #ifndef __itkThresholdImageWithRespectToPlane_h
 #define __itkThresholdImageWithRespectToPlane_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk {
   

@@ -16,9 +16,9 @@
 #define _itkMultiResolutionDeformableImageRegistrationMethod_txx
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
-#include "itkDeformableTransform.h"
+#include <itkDeformableTransform.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

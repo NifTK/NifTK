@@ -20,7 +20,7 @@
 #include <sstream>
 #include <cv.h>
 #include <highgui.h>
-#include "FileHelper.h"
+#include <FileHelper.h>
 
 namespace mitk {
 

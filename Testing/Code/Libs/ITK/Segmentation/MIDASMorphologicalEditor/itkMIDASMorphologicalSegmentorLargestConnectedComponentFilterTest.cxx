@@ -16,7 +16,7 @@
 #include <cstdlib>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-#include "itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.h"
+#include <itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.h>
 
 using namespace std;
 

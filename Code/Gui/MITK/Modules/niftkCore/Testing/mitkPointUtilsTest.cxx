@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <mitkTestingMacros.h>
 #include <mitkVector.h>
-#include "mitkPointUtils.h"
+#include <mitkPointUtils.h>
 
 /**
  * \brief Test class for mitkPointUtils

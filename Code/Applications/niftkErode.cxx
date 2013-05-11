@@ -13,16 +13,16 @@
 =============================================================================*/
 
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryErodeImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryErodeImageFilter.h>
 
-#include "niftkErodeCLP.h"
+#include <niftkErodeCLP.h>
 
 /*!
  * \file niftkErode.cxx

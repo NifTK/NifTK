@@ -25,9 +25,9 @@
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include "TrackedImageViewActivator.h"
-#include "mitkCoordinateAxesData.h"
-#include "mitkTrackedImageCommand.h"
-#include "QmitkFileIOUtils.h"
+#include <mitkCoordinateAxesData.h>
+#include <mitkTrackedImageCommand.h>
+#include <QmitkFileIOUtils.h>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 

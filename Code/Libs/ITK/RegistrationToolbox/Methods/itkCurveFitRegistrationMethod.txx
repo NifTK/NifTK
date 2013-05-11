@@ -15,12 +15,12 @@
 #ifndef _itkCurveFitRegistrationMethod_txx
 #define _itkCurveFitRegistrationMethod_txx
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 #include "itkCurveFitRegistrationMethod.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

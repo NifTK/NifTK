@@ -14,7 +14,7 @@
 
 #include "mitkStereoImageToModelMetric.h"
 #include "mitkRegistrationHelper.h"
-#include "mitkCameraCalibrationFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPoints.h>

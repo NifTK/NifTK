@@ -13,9 +13,9 @@
 =============================================================================*/
 
 #include "itkINRImageIOFactory.h"
-#include "itkCreateObjectFunction.h"
+#include <itkCreateObjectFunction.h>
 #include "itkINRImageIO.h"
-#include "itkVersion.h"
+#include <itkVersion.h>
 
 namespace itk
 {

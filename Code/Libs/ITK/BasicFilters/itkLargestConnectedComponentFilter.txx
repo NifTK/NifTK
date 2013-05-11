@@ -19,9 +19,9 @@
 #include <algorithm>
 
 #include "itkLargestConnectedComponentFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageFileWriter.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageFileWriter.h>
 
 using namespace std;
 

@@ -17,7 +17,7 @@
 
 #include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
 #include "itkHighResLaplacianSolverImageFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
+#include <itkVectorInterpolateImageFunction.h>
 
 namespace itk {
 /** 

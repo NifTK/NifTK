@@ -22,8 +22,8 @@
 #include "LookupTableManager.h"
 #include "LookupTableSaxHandler.h"
 #include "LookupTableContainer.h"
-#include "vtkLookupTable.h"
-#include "mitkLogMacros.h"
+#include <vtkLookupTable.h>
+#include <mitkLogMacros.h>
 
 LookupTableManager::LookupTableManager()
 {

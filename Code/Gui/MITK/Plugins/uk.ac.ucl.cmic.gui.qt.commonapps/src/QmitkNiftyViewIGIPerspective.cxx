@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyViewIGIPerspective.h"
-#include "berryIViewLayout.h"
+#include <berryIViewLayout.h>
 
 //-----------------------------------------------------------------------------
 QmitkNiftyViewIGIPerspective::QmitkNiftyViewIGIPerspective()

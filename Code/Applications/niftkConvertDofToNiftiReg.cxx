@@ -12,23 +12,23 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkGradientDescentOptimizer.h"
-#include "itkUCLSimplexOptimizer.h"
-#include "itkUCLRegularStepGradientDescentOptimizer.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkTransformFileWriter.h"
-#include "itkEulerAffineTransform.h"
-#include "itkIdentityTransform.h"
-#include "fstream"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkGradientDescentOptimizer.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkUCLRegularStepGradientDescentOptimizer.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkTransformFileWriter.h>
+#include <itkEulerAffineTransform.h>
+#include <itkIdentityTransform.h>
+#include <fstream>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

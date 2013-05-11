@@ -15,8 +15,8 @@
 #ifndef __itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter_h
 #define __itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter_h
 
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

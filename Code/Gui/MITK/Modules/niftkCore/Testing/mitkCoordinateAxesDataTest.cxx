@@ -18,7 +18,7 @@
 
 #include <vtkMatrix4x4.h>
 #include <mitkTestingMacros.h>
-#include "mitkCoordinateAxesData.h"
+#include <mitkCoordinateAxesData.h>
 
 /**
  * \class CoordinateAxesDataTest

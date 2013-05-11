@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include "niftkRegisterProbeModelToStereoPairCLP.h"
-#include "mitkRegisterProbeModelToStereoPair.h"
+#include <niftkRegisterProbeModelToStereoPairCLP.h>
+#include <mitkRegisterProbeModelToStereoPair.h>
 
 int main(int argc, char** argv)
 {

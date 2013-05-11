@@ -17,7 +17,7 @@
 
 #include <niftkCoreGuiExports.h>
 #include <QString>
-#include "vtkLookupTable.h"
+#include <vtkLookupTable.h>
 
 /**
  * \class LookupTableContainer

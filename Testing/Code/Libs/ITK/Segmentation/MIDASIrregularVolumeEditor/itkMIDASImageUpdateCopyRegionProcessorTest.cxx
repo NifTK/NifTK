@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkMIDASImageUpdateCopyRegionProcessor.h"
+#include <itkMIDASImageUpdateCopyRegionProcessor.h>
 
 /**
  * Basic tests for itkMIDASImageUpdateCopyRegionProcessor

@@ -17,17 +17,17 @@
 
 #include <nifti1_io.h> // Needed to make sure that the overlapping
                        // Analyze/Nifti readers do not overlap
-#include "itkAnalyzeImageIO.h"
+#include <itkAnalyzeImageIO.h>
 #include "itkAnalyzeImageIO3160.h"
-#include "itkIOCommon.h"
-#include "itkExceptionObject.h"
-#include "itkByteSwapper.h"
-#include "itkMetaDataObject.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "itkRGBPixel.h"
+#include <itkIOCommon.h>
+#include <itkExceptionObject.h>
+#include <itkByteSwapper.h>
+#include <itkMetaDataObject.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <itkRGBPixel.h>
 #include <itksys/SystemTools.hxx>
-#include "itkMacro.h"
-#include "itk_zlib.h"
+#include <itkMacro.h>
+#include <itk_zlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 

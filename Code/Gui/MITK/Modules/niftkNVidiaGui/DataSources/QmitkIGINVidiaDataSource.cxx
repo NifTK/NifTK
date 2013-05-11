@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "QmitkIGINVidiaDataSource.h"
-#include "mitkIGINVidiaDataType.h"
-#include "../Conversion/ImageConversion.h"
+#include <mitkIGINVidiaDataType.h>
+#include <../Conversion/ImageConversion.h>
 #include <igtlTimeStamp.h>
 #include <QTimer>
 #include <QCoreApplication>
@@ -24,8 +24,8 @@
 #include <QWaitCondition>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
-#include "video/sdiinput.h"
-#include "video/compress.h"
+#include <video/sdiinput.h>
+#include <video/compress.h>
 #include <Mmsystem.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>

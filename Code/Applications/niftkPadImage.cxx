@@ -15,11 +15,11 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include "itkLogHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkConstantPadImageFilter.h"
-#include "itkRegionOfInterestImageFilter.h"
+#include <itkLogHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkConstantPadImageFilter.h>
+#include <itkRegionOfInterestImageFilter.h>
 
 /*!
  * \file niftkPadImage.cxx

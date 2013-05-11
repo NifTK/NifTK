@@ -16,10 +16,10 @@
 #define itkMIDASDownSamplingFilter_txx
 
 #include "itkMIDASDownSamplingFilter.h"
-#include "itkImageRegion.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkLogHelper.h"
+#include <itkImageRegion.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkLogHelper.h>
 
 namespace itk
 {

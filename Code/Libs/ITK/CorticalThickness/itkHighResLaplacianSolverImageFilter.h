@@ -16,7 +16,7 @@
 #define __itkHighResLaplacianSolverImageFilter_h
 
 #include "itkLaplacianSolverImageFilter.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
+#include <itkNearestNeighborInterpolateImageFunction.h>
 #include "itkFiniteDifferenceVoxel.h"
 
 namespace itk

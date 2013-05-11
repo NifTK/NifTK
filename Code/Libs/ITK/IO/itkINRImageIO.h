@@ -19,11 +19,11 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkImageIOBase.h"
-#include "itkByteSwapper.h"
+#include <itkImageIOBase.h>
+#include <itkByteSwapper.h>
 
 namespace itk
 {

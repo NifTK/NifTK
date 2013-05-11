@@ -13,17 +13,17 @@
 =============================================================================*/
  
 // Blueberry
-#include "berryPlatform.h"
-#include "berryISelectionService.h"
-#include "berryIWorkbenchWindow.h"
-#include "berryIWorkbenchPage.h"
+#include <berryPlatform.h>
+#include <berryISelectionService.h>
+#include <berryIWorkbenchWindow.h>
+#include <berryIWorkbenchPage.h>
 
 // Qmitk
 #include "SnapshotView.h"
-#include "QmitkRenderWindow.h"
+#include <QmitkRenderWindow.h>
 
 // MITK
-#include "mitkIRenderWindowPart.h"
+#include <mitkIRenderWindowPart.h>
 
 // Qt
 #include <QMessageBox>
@@ -31,11 +31,11 @@
 #include <QFileDialog>
 
 // VTK
-#include "vtkRenderWindow.h"
-#include "vtkRenderLargeImage.h"
-#include "vtkImageWriter.h"
-#include "vtkPNGWriter.h"
-#include "vtkJPEGWriter.h"
+#include <vtkRenderWindow.h>
+#include <vtkRenderLargeImage.h>
+#include <vtkImageWriter.h>
+#include <vtkPNGWriter.h>
+#include <vtkJPEGWriter.h>
 
 const std::string SnapshotView::VIEW_ID = "uk.ac.ucl.cmic.snapshot";
 

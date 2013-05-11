@@ -15,7 +15,7 @@
 #ifndef __itkConjugateGradientMaxIterOptimizer_h
 #define __itkConjugateGradientMaxIterOptimizer_h
 
-#include "itkSingleValuedNonLinearVnlOptimizer.h"
+#include <itkSingleValuedNonLinearVnlOptimizer.h>
 #include <vnl/algo/vnl_conjugate_gradient.h>
 
 namespace itk

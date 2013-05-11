@@ -15,10 +15,10 @@
 #ifndef __itkImageProjectionBaseClass2D3D_h
 #define __itkImageProjectionBaseClass2D3D_h
 
-#include "itkImageToImageFilter.h"
-#include "itkConceptChecking.h"
-#include "itkPerspectiveProjectionTransform.h"
-#include "itkEulerAffineTransform.h"
+#include <itkImageToImageFilter.h>
+#include <itkConceptChecking.h>
+#include <itkPerspectiveProjectionTransform.h>
+#include <itkEulerAffineTransform.h>
 
 namespace itk
 {

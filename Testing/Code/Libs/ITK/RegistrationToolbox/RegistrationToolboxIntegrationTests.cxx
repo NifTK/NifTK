@@ -20,7 +20,7 @@
 // this file defines the itkIOTests for the test driver
 // and all it expects is that you have a function called RegisterTests
 #include <iostream>
-#include "itkTestMain.h" 
+#include <itkTestMain.h>
 
 void RegisterTests()
 {

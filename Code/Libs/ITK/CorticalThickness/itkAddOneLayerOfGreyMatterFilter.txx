@@ -16,10 +16,10 @@
 #define __itkAddOneLayerOfGreyMatterFilter_txx
 
 #include "itkAddOneLayerOfGreyMatterFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

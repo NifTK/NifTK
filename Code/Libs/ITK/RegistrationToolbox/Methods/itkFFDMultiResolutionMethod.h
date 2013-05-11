@@ -16,7 +16,7 @@
 #define __itkFFDMultiResolutionMethod_h
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
-#include "itkBSplineTransform.h"
+#include <itkBSplineTransform.h>
 
 namespace itk
 {

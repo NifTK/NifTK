@@ -43,8 +43,8 @@
 #endif
 
 #include <fstream>
-#include "itkImageIOBase.h"
-#include "itkAnalyzeDbh.h"
+#include <itkImageIOBase.h>
+#include <itkAnalyzeDbh.h>
 
 namespace itk
 {

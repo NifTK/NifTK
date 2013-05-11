@@ -15,8 +15,8 @@
 #ifndef ITKSIMPLEKMEANSCLUSTERINGIMAGEFILTER_TXX_
 #define ITKSIMPLEKMEANSCLUSTERINGIMAGEFILTER_TXX_
 
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
 
 namespace itk 
 {

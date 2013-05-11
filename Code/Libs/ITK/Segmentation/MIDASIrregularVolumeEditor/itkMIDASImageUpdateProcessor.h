@@ -15,9 +15,9 @@
 #ifndef ITKMIDASIMAGEUPDATEPROCESSOR_H
 #define ITKMIDASIMAGEUPDATEPROCESSOR_H
 
-#include "itkObject.h"
-#include "itkObjectFactory.h"
-#include "itkImage.h"
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <itkImage.h>
 
 namespace itk
 {

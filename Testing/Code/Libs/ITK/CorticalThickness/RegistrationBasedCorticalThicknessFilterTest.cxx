@@ -16,11 +16,11 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkRegistrationBasedCorticalThicknessFilter.h"
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <itkRegistrationBasedCorticalThicknessFilter.h>
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
 
 /**
  * Test the RegistrationBasedCorticalThicknessFilter.

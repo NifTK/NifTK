@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkExtractImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkExtractImageFilter.h>
 
 /*!
  * \file niftkExtract2DSliceFrom3DImage.cxx

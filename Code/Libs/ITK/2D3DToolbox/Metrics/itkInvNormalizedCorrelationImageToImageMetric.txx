@@ -16,7 +16,7 @@
 #define __itkInvNormalizedCorrelationImageToImageMetric_txx
 
 #include "itkInvNormalizedCorrelationImageToImageMetric.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk
 {

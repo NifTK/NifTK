@@ -14,8 +14,8 @@
 
 #ifndef ITKEXCLUDEIMAGEFILTER_H_
 #define ITKEXCLUDEIMAGEFILTER_H_
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 
 namespace itk

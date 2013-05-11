@@ -16,19 +16,19 @@
 #define __itkMeanVoxelwiseIntensityOfMultipleImages_txx
 
 #include "itkMeanVoxelwiseIntensityOfMultipleImages.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageFileWriter.h"
-#include "itkProgressReporter.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkResampleImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkImageDuplicator.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageFileWriter.h>
+#include <itkProgressReporter.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkResampleImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkImageDuplicator.h>
+#include <itkMinimumMaximumImageCalculator.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

@@ -21,7 +21,7 @@
 #include <QmitkRenderWindow.h>
 #include "QmitkIGIDataSourceMacro.h"
 #include "QmitkIGIOpenCVDataSource.h"
-#include "QmitkStdMultiWidget.h"
+#include <QmitkStdMultiWidget.h>
 
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI Open CV Video Gui")
 

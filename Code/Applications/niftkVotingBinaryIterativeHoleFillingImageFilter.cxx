@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkCommandLineHelper.h"
+#include <itkCommandLineHelper.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
 
-#include "niftkVotingBinaryIterativeHoleFillingImageFilterCLP.h"
+#include <niftkVotingBinaryIterativeHoleFillingImageFilterCLP.h>
 
 /*!
  * \file niftkVotingBinaryIterativeHoleFillingImageFilter.cxx

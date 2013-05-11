@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkMIDASMaskByRegionImageFilter.h"
+#include <itkImage.h>
+#include <itkMIDASMaskByRegionImageFilter.h>
 
 /**
  * Basic tests for itkMIDASMaskByRegionFilter.

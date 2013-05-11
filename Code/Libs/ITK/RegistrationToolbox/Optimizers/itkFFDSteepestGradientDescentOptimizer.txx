@@ -16,7 +16,7 @@
 #define ITKFFDSteepestGradientDescentOptimizer_TXX_
 
 #include "itkFFDSteepestGradientDescentOptimizer.h"
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

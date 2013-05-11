@@ -16,8 +16,8 @@
 #define QmitkNiftySegView_h
 
 #include "ui_QmitkNiftySegViewControls.h"
-#include "berryISelectionListener.h"
-#include "QmitkAbstractView.h"
+#include <berryISelectionListener.h>
+#include <QmitkAbstractView.h>
 
 /**
  * \class QmitkNiftySegView

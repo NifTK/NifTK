@@ -17,9 +17,9 @@
 #ifndef __itkImageToVTKImageFilter_h
 #define __itkImageToVTKImageFilter_h
 
-#include "itkVTKImageExport.h"
-#include "vtkImageImport.h"
-#include "vtkImageData.h"
+#include <itkVTKImageExport.h>
+#include <vtkImageImport.h>
+#include <vtkImageData.h>
 #include <vector>
 
 namespace itk

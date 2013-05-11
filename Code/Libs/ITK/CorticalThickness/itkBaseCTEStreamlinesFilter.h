@@ -15,11 +15,11 @@
 #ifndef __itkBaseCTEStreamlinesFilter_h
 #define __itkBaseCTEStreamlinesFilter_h
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageToImageFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
-#include "itkInterpolateImageFunction.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageToImageFilter.h>
+#include <itkVectorInterpolateImageFunction.h>
+#include <itkInterpolateImageFunction.h>
 
 
 namespace itk {

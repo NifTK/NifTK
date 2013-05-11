@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkTagTrackingFacade.h"
-#include "mitkCameraCalibrationFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <aruco/aruco.h>
 
 namespace mitk

@@ -17,7 +17,7 @@
 
 #include "itkSimulateMammogramFromMRI.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

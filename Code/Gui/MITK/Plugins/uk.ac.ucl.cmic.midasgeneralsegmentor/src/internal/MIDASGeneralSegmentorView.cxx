@@ -54,16 +54,16 @@
 
 #include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewHelper.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPosnTool.h"
-#include "mitkMIDASSeedTool.h"
-#include "mitkMIDASPolyTool.h"
-#include "mitkMIDASDrawTool.h"
-#include "mitkMIDASOrientationUtils.h"
-#include "mitkMIDASImageUtils.h"
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPosnTool.h>
+#include <mitkMIDASSeedTool.h>
+#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASDrawTool.h>
+#include <mitkMIDASOrientationUtils.h>
+#include <mitkMIDASImageUtils.h>
 
 /*
-#include "sys/time.h"
+#include <sys/time.h>
 double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
 {
   return (((timeA_p->tv_sec * 1000000000) + timeA_p->tv_nsec) -

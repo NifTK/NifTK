@@ -15,11 +15,11 @@
 #ifndef __itkKnownCorEuclideanDistancePointMetric_h
 #define __itkKnownCorEuclideanDistancePointMetric_h
 
-#include "itkPointSetToPointSetMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkImage.h"
+#include <itkPointSetToPointSetMetric.h>
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkImage.h>
 
 namespace itk
 {

@@ -15,8 +15,8 @@
 #ifndef __itkGaussianSmoothVectorFieldFilter_h
 #define __itkGaussianSmoothVectorFieldFilter_h
 #include "itkSmoothVectorFieldFilter.h"
-#include "itkGaussianOperator.h"
-#include "itkFixedArray.h"
+#include <itkGaussianOperator.h>
+#include <itkFixedArray.h>
 
 namespace itk {
 /** 

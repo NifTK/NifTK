@@ -16,7 +16,7 @@
 #define __itkKnownCorEuclideanDistancePointMetric_txx
 
 #include "itkKnownCorEuclideanDistancePointMetric.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk
 {

@@ -15,10 +15,10 @@
 #ifndef _itkUCLRegularStepOptimizer_cxx
 #define _itkUCLRegularStepOptimizer_cxx
 #include "itkUCLRegularStepOptimizer.h"
-#include "itkCommand.h"
-#include "itkEventObject.h"
-#include "vnl/vnl_math.h"
-#include "itkUCLMacro.h"
+#include <itkCommand.h>
+#include <itkEventObject.h>
+#include <vnl/vnl_math.h>
+#include <itkUCLMacro.h>
 
 
 namespace itk

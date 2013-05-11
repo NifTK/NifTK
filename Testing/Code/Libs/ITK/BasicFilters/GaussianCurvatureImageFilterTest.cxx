@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkGaussianCurvatureImageFilter.h"
+#include <itkImage.h>
+#include <itkGaussianCurvatureImageFilter.h>
 /**
  * Basic tests for GaussianCurvatureImageFilter
  */

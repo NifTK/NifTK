@@ -27,15 +27,15 @@
 #include <berryIBerryPreferences.h>
 
 // Qmitk for Qt/MITK stuff.
-#include "QmitkBaseView.h"
-#include "QmitkMIDASImageAndSegmentationSelectorWidget.h"
-#include "QmitkMIDASToolSelectorWidget.h"
+#include <QmitkBaseView.h>
+#include <QmitkMIDASImageAndSegmentationSelectorWidget.h>
+#include <QmitkMIDASToolSelectorWidget.h>
 #include "QmitkMIDASSegmentationViewWidget.h"
 
 // Miscellaneous.
 #include <mitkToolManager.h>
 #include <itkImage.h>
-#include "itkMIDASHelper.h"
+#include <itkMIDASHelper.h>
 
 class QmitkRenderWindow;
 

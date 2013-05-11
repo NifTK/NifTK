@@ -15,7 +15,7 @@
 #ifndef QmitkImageLookupTablesPreferencePage_h
 #define QmitkImageLookupTablesPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

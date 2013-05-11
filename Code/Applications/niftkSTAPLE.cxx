@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkSTAPLEImageFilter.h"
+#include <itkLogHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkSTAPLEImageFilter.h>
 
 /*!
  * \file niftkSTAPLE.cxx

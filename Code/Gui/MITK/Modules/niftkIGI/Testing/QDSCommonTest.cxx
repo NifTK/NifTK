@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <mitkTestingMacros.h>
-#include "QDSCommon.h"
+#include <QDSCommon.h>
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 

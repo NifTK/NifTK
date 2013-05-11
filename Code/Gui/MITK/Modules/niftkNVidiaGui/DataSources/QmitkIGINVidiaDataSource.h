@@ -16,8 +16,8 @@
 #define QMITKIGINVIDIADATASOURCE_H
 
 #include "niftkNVidiaGuiExports.h"
-#include "QmitkIGILocalDataSource.h"
-#include "mitkIGINVidiaDataType.h"
+#include <QmitkIGILocalDataSource.h>
+#include <mitkIGINVidiaDataType.h>
 #include <QObject>
 #include <QMetaType>
 #include <opencv2/core/types_c.h>

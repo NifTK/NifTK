@@ -16,9 +16,9 @@
 #include <mitkTestingMacros.h>
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
-#include "QmitkIGITrackerTool.h"
-#include "QmitkIGINiftyLinkDataType.h"
-#include "NiftyLinkTrackingDataMessage.h"
+#include <QmitkIGITrackerTool.h>
+#include <QmitkIGINiftyLinkDataType.h>
+#include <NiftyLinkTrackingDataMessage.h>
 
 /**
  * \brief This test is simply so we can run through valgrind and check

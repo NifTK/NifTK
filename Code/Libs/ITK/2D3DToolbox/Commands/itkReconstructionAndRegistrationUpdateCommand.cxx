@@ -17,7 +17,7 @@
 
 #include <sstream>
 #include "itkReconstructionAndRegistrationUpdateCommand.h"
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 
 namespace itk

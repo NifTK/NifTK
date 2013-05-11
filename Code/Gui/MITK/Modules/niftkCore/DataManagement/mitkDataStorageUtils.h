@@ -16,11 +16,11 @@
 #define mitk_DataStorageUtils_h
 
 #include "niftkCoreExports.h"
-#include "mitkDataNode.h"
-#include "mitkDataStorage.h"
-#include "mitkTimeSlicedGeometry.h"
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkTimeSlicedGeometry.h>
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
 
 /**
  * \file mitkDataStorageUtils.h

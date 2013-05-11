@@ -15,12 +15,12 @@
 #ifndef _itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_txx
 #define _itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_txx
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 #include "itkImageMatrixFormReconTwoDataSetsWithoutRegMethod.h"
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

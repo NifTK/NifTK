@@ -27,7 +27,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <ctkDirectoryButton.h>
-#include "QmitkIGIDataSourceManager.h"
+#include <QmitkIGIDataSourceManager.h>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>

@@ -13,17 +13,17 @@
 =============================================================================*/
 
 #include "QmitkMIDASMultiViewVisibilityManager.h"
-#include "QmitkRenderWindow.h"
+#include <QmitkRenderWindow.h>
 #include "QmitkMIDASSingleViewWidget.h"
-#include "mitkBaseRenderer.h"
-#include "mitkVtkResliceInterpolationProperty.h"
-#include "mitkDataStorageUtils.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPolyTool.h"
-#include "vtkRenderWindow.h"
-#include "itkConversionUtils.h"
-#include "itkSpatialOrientationAdapter.h"
+#include <mitkBaseRenderer.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPolyTool.h>
+#include <vtkRenderWindow.h>
+#include <itkConversionUtils.h>
+#include <itkSpatialOrientationAdapter.h>
 
 
 //-----------------------------------------------------------------------------

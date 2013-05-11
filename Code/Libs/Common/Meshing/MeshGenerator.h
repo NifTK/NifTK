@@ -21,7 +21,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMultiBlockDataSet.h>
 #include <itkImage.h>
-#include "IOException.h"
+#include <IOException.h>
 
 namespace niftk {
   /**

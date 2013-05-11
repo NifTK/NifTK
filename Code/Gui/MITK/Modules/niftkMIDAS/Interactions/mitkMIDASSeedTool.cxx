@@ -14,13 +14,13 @@
 
 #include "mitkMIDASSeedTool.h"
 #include "mitkMIDASSeedTool.xpm"
-#include "mitkToolManager.h"
-#include "mitkPointSet.h"
-#include "mitkProperties.h"
-#include "mitkStateEvent.h"
-#include "mitkPositionEvent.h"
-#include "mitkRenderingManager.h"
-#include "mitkGlobalInteraction.h"
+#include <mitkToolManager.h>
+#include <mitkPointSet.h>
+#include <mitkProperties.h>
+#include <mitkStateEvent.h>
+#include <mitkPositionEvent.h>
+#include <mitkRenderingManager.h>
+#include <mitkGlobalInteraction.h>
 
 namespace mitk{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");

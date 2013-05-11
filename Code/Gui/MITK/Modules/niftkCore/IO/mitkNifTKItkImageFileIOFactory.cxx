@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#include "mitkIOAdapter.h"
+#include <mitkIOAdapter.h>
 #include "mitkNifTKItkImageFileIOFactory.h"
 #include "mitkNifTKItkImageFileReader.h"
-#include "itkVersion.h"
+#include <itkVersion.h>
 
 namespace mitk
 {

@@ -14,7 +14,7 @@
 
 #ifndef __itkBasicFiniteDifferenceBaseClassImageFilter_h
 #define __itkBasicFiniteDifferenceBaseClassImageFilter_h
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

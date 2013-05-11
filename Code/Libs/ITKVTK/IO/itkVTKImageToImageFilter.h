@@ -17,9 +17,9 @@
 #ifndef __itkVTKImageToImageFilter_h
 #define __itkVTKImageToImageFilter_h
 
-#include "itkVTKImageImport.h"
-#include "vtkImageExport.h"
-#include "vtkImageData.h"
+#include <itkVTKImageImport.h>
+#include <vtkImageExport.h>
+#include <vtkImageData.h>
 
 #ifndef vtkFloatingPointType
 #define vtkFloatingPointType float

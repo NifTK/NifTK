@@ -18,13 +18,13 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkLaplacianSolverImageFilter.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkImage.h>
+#include <itkLaplacianSolverImageFilter.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkCastImageFilter.h>
 
 /**
  * Basic tests for LaplacianSolverImageFilter

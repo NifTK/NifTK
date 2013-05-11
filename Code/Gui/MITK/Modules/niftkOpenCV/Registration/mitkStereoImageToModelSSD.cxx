@@ -14,7 +14,7 @@
 
 #include "mitkStereoImageToModelSSD.h"
 #include "mitkRegistrationHelper.h"
-#include "mitkCameraCalibrationFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 
 namespace mitk
 {

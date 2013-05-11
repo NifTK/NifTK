@@ -16,7 +16,7 @@
 #define QMITKNIFTYVIEWAPPLICATIONPLUGIN_H_
 
 #include <berryAbstractUICTKPlugin.h>
-#include "QmitkCommonAppsApplicationPlugin.h"
+#include <QmitkCommonAppsApplicationPlugin.h>
 
 /**
  * \class QmitkNiftyViewApplicationPlugin

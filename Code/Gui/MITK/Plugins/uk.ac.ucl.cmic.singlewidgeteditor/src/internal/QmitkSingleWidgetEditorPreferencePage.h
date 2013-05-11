@@ -15,7 +15,7 @@
 #ifndef QMITKSINGLEWIDGETEDITORPREFERENCEPAGE_H_
 #define QMITKSINGLEWIDGETEDITORPREFERENCEPAGE_H_
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

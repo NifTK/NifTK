@@ -15,7 +15,7 @@
 #ifndef TagTrackerViewPreferencePage_h
 #define TagTrackerViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 

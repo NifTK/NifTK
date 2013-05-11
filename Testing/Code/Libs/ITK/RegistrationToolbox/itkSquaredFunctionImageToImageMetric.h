@@ -15,9 +15,9 @@
 #ifndef __itkSquaredFunctionImageToImageMetric_h
 #define __itkSquaredFunctionImageToImageMetric_h
 
-#include "itkImageToImageMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
+#include <itkImageToImageMetric.h>
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
 
 namespace itk
 {

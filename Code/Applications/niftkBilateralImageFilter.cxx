@@ -17,11 +17,11 @@
 #endif
 
 #include <iostream>
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkBilateralImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkBilateralImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
 /*!
  * \file niftkBilateralImageFilter.cxx
  * \page niftkBilateralImageFilter

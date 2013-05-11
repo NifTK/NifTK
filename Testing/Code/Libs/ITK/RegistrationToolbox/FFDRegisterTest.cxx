@@ -16,32 +16,32 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkResampleImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkBSplineInterpolateImageFunction.h"         // for final interpolation instead of sinc
-#include "itkLinearInterpolateImageFunction.h"          // for registration interpolation
-#include "itkNearestNeighborInterpolateImageFunction.h" // for interim testing.
-#include "itkWindowedSincInterpolateImageFunction.h"
-#include "itkNMIImageToImageMetric.h"
-#include "itkTranslationTransform.h"
-#include "itkBSplineBendingEnergyConstraint.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkFFDSteepestGradientDescentOptimizer.h"
-#include "itkNMILocalHistogramDerivativeForceFilter.h"
-#include "itkParzenWindowNMIDerivativeForceGenerator.h"
-#include "itkBSplineDeformableTransform.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkFFDMultiResolutionMethod.h"
-#include "itkLinearlyInterpolatedDerivativeFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkTransformFileWriter.h"
-#include "itkImageRegistrationFactory.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkResampleImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkSubtractImageFilter.h>
+#include <itkBSplineInterpolateImageFunction.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkWindowedSincInterpolateImageFunction.h>
+#include <itkNMIImageToImageMetric.h>
+#include <itkTranslationTransform.h>
+#include <itkBSplineBendingEnergyConstraint.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkFFDSteepestGradientDescentOptimizer.h>
+#include <itkNMILocalHistogramDerivativeForceFilter.h>
+#include <itkParzenWindowNMIDerivativeForceGenerator.h>
+#include <itkBSplineDeformableTransform.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkFFDMultiResolutionMethod.h>
+#include <itkLinearlyInterpolatedDerivativeFilter.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkTransformFileWriter.h>
+#include <itkImageRegistrationFactory.h>
 
 int FFDRegisterTest( int argc, char *argv[] )
 {

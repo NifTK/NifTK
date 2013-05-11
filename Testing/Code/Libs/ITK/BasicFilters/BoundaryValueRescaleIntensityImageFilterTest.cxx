@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkBoundaryValueRescaleIntensityImageFilter.h"
+#include <itkImage.h>
+#include <itkBoundaryValueRescaleIntensityImageFilter.h>
 
 /**
  * Basic tests for BoundaryValueRescaleIntensityImageFilterTest

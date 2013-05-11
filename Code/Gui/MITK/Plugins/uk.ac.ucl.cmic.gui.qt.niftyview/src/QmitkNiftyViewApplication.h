@@ -16,7 +16,7 @@
 #define QMITKNIFTYVIEWAPPLICATION_H_
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
-#include "QmitkBaseApplication.h"
+#include <QmitkBaseApplication.h>
 
 /**
  * \class QmitkNiftyViewApplication

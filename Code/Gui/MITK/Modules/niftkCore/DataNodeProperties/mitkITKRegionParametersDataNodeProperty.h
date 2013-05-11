@@ -16,7 +16,7 @@
 #define ITKRegionParametersDataNodeProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkBaseProperty.h"
+#include <mitkBaseProperty.h>
 #include <algorithm>
 
 namespace mitk {

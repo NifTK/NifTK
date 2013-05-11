@@ -15,11 +15,11 @@
 #ifndef MITKSegmentationView_h
 #define MITKSegmentationView_h
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
 #include "ui_MITKSegmentationViewControls.h"
-#include "berryIPreferences.h"
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
+#include <berryIPreferences.h>
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
 
 /*!
  * \class MITKSegmentationView

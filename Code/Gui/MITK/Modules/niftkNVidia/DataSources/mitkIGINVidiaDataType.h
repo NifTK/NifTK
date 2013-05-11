@@ -16,7 +16,7 @@
 #define MITKIGINVIDIADATATYPE_H
 
 #include "niftkNVidiaExports.h"
-#include "mitkIGIDataType.h"
+#include <mitkIGIDataType.h>
 
 namespace mitk
 {

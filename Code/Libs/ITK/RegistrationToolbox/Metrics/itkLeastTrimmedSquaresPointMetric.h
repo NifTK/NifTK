@@ -16,10 +16,10 @@
 #define __itkLeastTrimmedSquaresPointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkImage.h"
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkImage.h>
 
 namespace itk
 {

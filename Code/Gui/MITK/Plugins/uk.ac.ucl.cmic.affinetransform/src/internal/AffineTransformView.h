@@ -15,28 +15,28 @@
 #ifndef AffineTransformView_h
 #define AffineTransformView_h
 
-#include "QmitkAbstractView.h"
+#include <QmitkAbstractView.h>
 #include <QmitkBaseView.h>
 #include <QmitkRenderWindow.h>
-#include "berryISelectionListener.h"
+#include <berryISelectionListener.h>
 
-#include "itkImage.h"
+#include <itkImage.h>
 
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyle.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
-#include "mitkAffineTransformParametersDataNodeProperty.h"
-#include "mitkDataNode.h"
-#include "mitkDataStorage.h"
-#include "mitkGeometry3D.h"
-#include "mitkGlobalInteraction.h"
-#include "mitkWeakPointer.h"
-#include "mitkBoundingObject.h"
-#include "mitkAffineInteractor3D.h"
+#include <mitkAffineTransformParametersDataNodeProperty.h>
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkWeakPointer.h>
+#include <mitkBoundingObject.h>
+#include <mitkAffineInteractor3D.h>
 
-#include "mitkNifTKAffineTransformer.h"
+#include <mitkNifTKAffineTransformer.h>
 
 #include "ui_AffineTransformViewControls.h"
 #include "AffineTransformInteractor3D.h"

@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include "niftkProject3DPointsToStereoPairCLP.h"
-#include "mitkStereoPointProjectionIntoTwoImages.h"
+#include <niftkProject3DPointsToStereoPairCLP.h>
+#include <mitkStereoPointProjectionIntoTwoImages.h>
 
 int main(int argc, char** argv)
 {

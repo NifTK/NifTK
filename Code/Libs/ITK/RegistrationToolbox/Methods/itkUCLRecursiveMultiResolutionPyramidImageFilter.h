@@ -18,7 +18,7 @@
 #define __itkUCLRecursiveMultiResolutionPyramidImageFilter_h
 
 #include "itkUCLMultiResolutionPyramidImageFilter.h"
-#include "vnl/vnl_matrix.h"
+#include <vnl/vnl_matrix.h>
 
 namespace itk
 {
