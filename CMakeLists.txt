@@ -18,7 +18,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 SET(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 03 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -124,6 +124,10 @@ FOREACH(NIFTK_APP ${NIFTK_APPS})
       SET(BUILD_IGI ON)
     ENDIF()
   
+    IF (${app_name} STREQUAL "NiftyView")
+      SET(BUILD_IGI ON)
+    ENDIF()
+  
   ENDIF()
       
 ENDFOREACH()
@@ -175,7 +179,7 @@ ENDIF (NIFTK_MESHING_CAN_BUILD)
 ######################################################################
 SET(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
 SET(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
-SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
+SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2013 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 SET(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 SET(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 SET(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -196,9 +200,9 @@ SET(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 SET(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 SET(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 SET(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-SET(NIFTK_VERSION_DATA_GIT "6b380c592f" CACHE STRING "Version of NifTKData in git" FORCE)
+SET(NIFTK_VERSION_DATA_GIT "5517584a57" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-SET(NIFTK_VERSION_DATA_TAR "6b380c592f" CACHE STRING "Version of NifTKData in tarball" FORCE)
+SET(NIFTK_VERSION_DATA_TAR "5517584a57" CACHE STRING "Version of NifTKData in tarball" FORCE)
 SET(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 SET(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 SET(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -206,15 +210,16 @@ SET(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
 SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-SET(NIFTK_VERSION_CTK "fef76cef38" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "d5eb05f63b" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
+SET(NIFTK_VERSION_MITK "d85f6e888f" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
-SET(NIFTK_VERSION_NIFTYLINK "d5fa20c1d9" CACHE STRING "Version of NiftyLink" FORCE)
+SET(NIFTK_VERSION_NIFTYLINK "670cde1afd" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 SET(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 SET(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 SET(NIFTK_VERSION_NIFTYSIM "127" CACHE STRING "Version of NiftySim" FORCE)
 SET(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
+SET(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 SET(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 SET(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 SET(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
@@ -236,6 +241,7 @@ SET(NIFTK_LOCATION_NIFTYREC "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 SET(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftySim-${NIFTK_VERSION_NIFTYSIM}.tar.gz" CACHE STRING  "Location of NiftyRec" FORCE)
 SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
 SET(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
+SET(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -283,6 +289,7 @@ MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_VERSION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_VERSION_CGAL)
 MARK_AS_ADVANCED(NIFTK_VERSION_SEM)
+MARK_AS_ADVANCED(NIFTK_VERSION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_GIT)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_SVN)
 MARK_AS_ADVANCED(NIFTK_LOCATION_DATA_TAR)
@@ -303,6 +310,7 @@ MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYREC)
 MARK_AS_ADVANCED(NIFTK_LOCATION_NIFTYSIM)
 MARK_AS_ADVANCED(NIFTK_LOCATION_CGAL)
 MARK_AS_ADVANCED(NIFTK_LOCATION_SEM)
+MARK_AS_ADVANCED(NIFTK_LOCATION_ARUCO)
 MARK_AS_ADVANCED(NIFTK_USE_FFTW)
 MARK_AS_ADVANCED(NIFTK_USE_CUDA)
 MARK_AS_ADVANCED(BUILD_SLS_TESTING)
@@ -497,6 +505,15 @@ MESSAGE("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
 ######################################################################
+# Add additional entries to the CMAKE_MODULE_PATH, now all externals
+# are already built.
+######################################################################
+SET(CMAKE_MODULE_PATH
+    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/aruco/lib/cmake
+    ${CMAKE_MODULE_PATH}
+   )
+
+######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
 # as libraries are copied into each bundle.
 ######################################################################
@@ -640,16 +657,22 @@ IF (BUILD_IGI)
     MESSAGE("Found NiftyLink")
     INCLUDE(${NiftyLink_USE_FILE})
     ADD_DEFINITIONS(-DBUILD_IGI)
-    MESSAGE("BUILD_IGI=ON, so turning surgical guidance plugin ON.")
-    SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
-  ELSE (NOT NiftyLink_FOUND)
-    MESSAGE("BUILD_IGI=ON, but no NiftyLink found, so setting BUILD_IGI to OFF.")
-    SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
-  ENDIF(NiftyLink_FOUND)
-ELSE (BUILD_IGI)
-  MESSAGE("BUILD_IGI=OFF, so turning surgical guidance plugin OFF.")
+  ENDIF()
+
+  FIND_PACKAGE(aruco)
+  IF(aruco_FOUND)
+    MESSAGE("Found aruco in ${aruco_DIR}")
+    LINK_DIRECTORIES(${aruco_DIR}/lib)
+    INCLUDE_DIRECTORIES(${aruco_DIR}/include)
+  ENDIF()
+ENDIF()
+
+IF(BUILD_IGI AND NiftyLink_FOUND AND aruco_FOUND)
+  SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" ON CACHE BOOL "Surgical Guidance plugin" FORCE)
+ELSE()
   SET("NIFTK_Plugins/uk.ac.ucl.cmic.surgicalguidance" OFF CACHE BOOL "Surgical Guidance plugin" FORCE)
-ENDIF (BUILD_IGI)
+  SET("BUILD_IGI" OFF CACHE BOOL "Build CMIC IGI platform." FORCE)
+ENDIF()
 
 ######################################################################
 # Find FFTW.
@@ -935,6 +958,7 @@ INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyLink.txt DESTINATION ${NI
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Aruco.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/INSTALLATION.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
@@ -1126,7 +1150,22 @@ IF(WIN32)
         ${VS_BUILD_TYPE})
 
       MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+    endforeach()
 
+    foreach(NIFTK_APP ${NIFTK_APPS}) 
+      # extract option_name
+      STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+      SET(target_info_list ${target_info})
+      LIST(GET target_info_list 1 option_name)
+      LIST(GET target_info_list 0 app_name)
+      message("Current App Name: ${app_name}")
+	  
+	  foreach(VS_BUILD_TYPE debug release)
+		MESSAGE("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
+		mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
+		${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
+        ${VS_BUILD_TYPE}) 
+	  endforeach()
     endforeach()
     
   ELSE(MITK_FOUND)

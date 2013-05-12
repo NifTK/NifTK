@@ -181,7 +181,7 @@ int DoMain(arguments args)
   binaryThreshold->SetOutsideValue(backGround);
   binaryThreshold->SetInsideValue(foreGround);
   binaryThreshold->SetUpperThreshold(std::numeric_limits<PixelType>::max());
-  binaryThreshold->SetLowerThreshold(t_scalp);
+  binaryThreshold->SetLowerThreshold(static_cast<typename InputImageType::PixelType>(t_scalp));
 
   dilateByBall->SetKernel(ballElement);
   dilateByBall->SetDilateValue(foreGround);

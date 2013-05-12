@@ -12,9 +12,11 @@
 #
 #============================================================================*/
 
+FIND_PACKAGE(CUDA REQUIRED)
+
 MITK_CREATE_MODULE(niftkNVidiaGui
   EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
-  INCLUDE_DIRS ToolsGui
+  INCLUDE_DIRS DataSources
   DEPENDS niftkIGIGui niftkNVidia
   PACKAGE_DEPENDS QT
   QT_MODULE 
@@ -22,6 +24,7 @@ MITK_CREATE_MODULE(niftkNVidiaGui
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
 INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
 
 # stuffing this into DEPENDS above doesnt work for some reason
 TARGET_LINK_LIBRARIES(niftkNVidiaGui

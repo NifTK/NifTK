@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPOSNTOOL_H
-#define MITKMIDASPOSNTOOL_H
+#ifndef mitk_MIDASPosnTool_h
+#define mitk_MIDASPosnTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"

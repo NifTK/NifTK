@@ -24,41 +24,29 @@ ENDIF(NOT NIFTYSEG_DIR)
 IF(CUDA_FOUND)
 
   FIND_PATH(NIFTYSEG_INCLUDE_DIR
-    _seg_tools.h
-    ${NIFTYSEG_DIR}/include
-    ${NIFTYSEG_DIR}-1.0/include
-    @NIFTK_LINK_PREFIX@/include
-    /usr/local/include
-    /usr/include
+    NAME _seg_tools.h
+    PATHS ${NIFTYSEG_DIR}/include
+    NO_DEFAULT_PATH
     )
   
   FIND_LIBRARY(NIFTYSEG_LIBRARIES
-    _seg_nifti
-    ${NIFTYSEG_DIR}/lib
-    ${NIFTYSEG_DIR}-1.0/lib
-    @NIFTK_LINK_PREFIX@/lib
-    /usr/local/lib
-    /usr/lib
+    NAMES _seg_nifti
+    PATHS ${NIFTYSEG_DIR}/lib
+    NO_DEFAULT_PATH
     )
 
 ELSE(CUDA_FOUND)
 
   FIND_PATH(NIFTYSEG_INCLUDE_DIR
-    _seg_tools.h
-    ${NIFTYSEG_DIR}/include
-    ${NIFTYSEG_DIR}-1.0/include
-    @NIFTK_LINK_PREFIX@/include
-    /usr/local/include
-    /usr/include
+    NAME _seg_tools.h
+    PATHS ${NIFTYSEG_DIR}/include
+    NO_DEFAULT_PATH
     )
   
   FIND_LIBRARY(NIFTYSEG_LIBRARIES
-    _seg_nifti
-    ${NIFTYSEG_DIR}/lib
-    ${NIFTYSEG_DIR}-1.0/lib
-    @NIFTK_LINK_PREFIX@/lib
-    /usr/local/lib
-    /usr/lib
+    NAMES _seg_nifti
+    PATHS ${NIFTYSEG_DIR}/lib
+    NO_DEFAULT_PATH
     )
 
 ENDIF(CUDA_FOUND)

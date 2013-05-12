@@ -12,11 +12,13 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASBINDWIDGET_H
-#define QMITKMIDASBINDWIDGET_H
+#ifndef QmitkMIDASBindWidget_h
+#define QmitkMIDASBindWidget_h
 
 #include <niftkMIDASGuiExports.h>
+
 #include "ui_QmitkMIDASBindWidget.h"
+
 #include "mitkMIDASEnums.h"
 
 /**
@@ -25,59 +27,58 @@
  */
 class NIFTKMIDASGUI_EXPORT QmitkMIDASBindWidget : public QWidget, public Ui_QmitkMIDASBindWidget
 {
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
 
+  /// \brief Constructs a QmitkMIDASBindWidget object.
   QmitkMIDASBindWidget(QWidget *parent = 0);
-  ~QmitkMIDASBindWidget();
+
+  /// \brief Destructs the QmitkMIDASBindWidget object.
+  virtual ~QmitkMIDASBindWidget();
 
   /// \brief Creates the GUI.
   void setupUi(QWidget*);
 
-  /// \brief Calls setBlockSignals(block) on all contained widgets.
-  void SetBlockSignals(bool block);
-
-  /// \brief Calls setEnabled(enabled) on all contained widgets.
-  void SetEnabled(bool enabled);
-
   /// \brief Method to set the widget check-boxes to match the supplied bind type, without emmitting signals.
-  void SetToBindType(MIDASBindType bindType);
+  void SetToBindType(int bindType);
 
-  /// \brief Returns true if the geometry is bound and false otherwise.
-  bool IsGeometryBound() const;
+  /// \brief Returns true if the render window layout is bound and false otherwise.
+  bool IsLayoutBound() const;
 
   /// \brief Returns true if cursors are bound, and false otherwise.
   bool AreCursorsBound() const;
 
-  /// \brief Returns true if magnification is bound, and false otherwise.
+  /// \brief Returns true if the magnification is bound, and false otherwise.
   bool IsMagnificationBound() const;
+
+  /// \brief Returns true if the geometry is bound and false otherwise.
+  bool IsGeometryBound() const;
 
 signals:
 
   /// \brief Indicates when the bind type has changed by user input, and not when SetToBindType is called.
-  void BindTypeChanged(MIDASBindType bindType);
+  void BindTypeChanged();
 
 protected slots:
 
-  /// \brief Qt slot called when the "none" checkbox is toggled.
-  void OnNoneCheckBoxStateChanged(int state);
+  /// \brief Qt slot called when the "layout" checkbox is toggled.
+  void OnLayoutCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "cursors" checkbox is toggled.
-  void OnCursorsCheckBoxStateChanged(int state);
+  void OnCursorsCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "magnification" checkbox is toggled.
-  void OnMagnificationCheckBoxStateChanged(int state);
+  void OnMagnificationCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "geometry" checkbox is toggled.
-  void OnGeometryCheckBoxStateChanged(int state);
+  void OnGeometryCheckBoxToggled(bool value);
 
 protected:
 
 private:
 
-  MIDASBindType m_CurrentBindType;
+  int m_BindType;
 };
 
 #endif

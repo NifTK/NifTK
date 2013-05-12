@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASENUMS_H
-#define MITKMIDASENUMS_H
+#ifndef MIDASEnums_h
+#define MIDASEnums_h
 
 /*!
  * \file mitkMIDASEnums.h
@@ -61,13 +61,34 @@ enum MIDASView
   MIDAS_VIEW_3V = 6,
   MIDAS_VIEW_AS_ACQUIRED = 7,
   MIDAS_VIEW_UNKNOWN = 8,
-  MIDAS_VIEW_SAG_COR_H = 9,
-  MIDAS_VIEW_SAG_COR_V = 10,
-  MIDAS_VIEW_AX_COR_H = 11,
-  MIDAS_VIEW_AX_COR_V = 12,
-  MIDAS_VIEW_AX_SAG_H = 13,
-  MIDAS_VIEW_AX_SAG_V = 14
+  MIDAS_VIEW_COR_SAG_H = 9,
+  MIDAS_VIEW_COR_SAG_V = 10,
+  MIDAS_VIEW_COR_AX_H = 11,
+  MIDAS_VIEW_COR_AX_V = 12,
+  MIDAS_VIEW_SAG_AX_H = 13,
+  MIDAS_VIEW_SAG_AX_V = 14
 };
+
+
+/*!
+ * \brief Returns true if the view contains only one window, otherwise false.
+ */
+inline bool IsSingleWindowLayout(MIDASView midasView)
+{
+  return midasView == MIDAS_VIEW_AXIAL ||
+      midasView == MIDAS_VIEW_SAGITTAL ||
+      midasView == MIDAS_VIEW_CORONAL ||
+      midasView == MIDAS_VIEW_3D;
+}
+
+
+/*!
+ * \brief Returns true if the view contains multiple windows, otherwise false.
+ */
+inline bool IsMultiWindowLayout(MIDASView midasView)
+{
+  return !IsSingleWindowLayout(midasView);
+}
 
 /*!
  * \brief The number of the possible views.
@@ -83,7 +104,7 @@ enum MIDASDropType
 {
   MIDAS_DROP_TYPE_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
   MIDAS_DROP_TYPE_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
-  MIDAS_DROP_TYPE_ALL = 2,      /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
+  MIDAS_DROP_TYPE_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
 };
 
 /*!
@@ -104,11 +125,10 @@ enum MIDASDefaultInterpolationType
 enum MIDASBindType
 {
   MIDAS_BIND_NONE = 0,
-  MIDAS_BIND_CURSORS = 1,
-  MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS = 2,
-  MIDAS_BIND_MAGNIFICATION_WITH_CURSORS = 3,
-  MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION = 4,
-  MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION = 5,
+  MIDAS_BIND_LAYOUT = 1,
+  MIDAS_BIND_CURSORS = 2,
+  MIDAS_BIND_MAGNIFICATION = 4,
+  MIDAS_BIND_GEOMETRY = 8
 };
 
 #endif

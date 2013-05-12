@@ -14,11 +14,11 @@
 
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS Tools DataManagement
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport
+  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer
+  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration
   PACKAGE_DEPENDS ITK NiftyLink
 )
 
-IF(BUILD_TESTING)  
+IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)
 ENDIF()  

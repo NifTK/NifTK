@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include "itkCastImageFilter.h"
 #include "itkSubtractImageFilter.h"
+#include "ConversionUtils.h"
 
 /*!
  * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx
@@ -305,7 +306,7 @@ void saveNormalisedImage(char* repeatImageName, char* outputImageName, double sl
   {
     short repeatValue = repeatImageIterator.Get(); 
         
-    repeatImageIterator.Set(static_cast<short>(itk::Math::Round(fabs(slope*repeatValue+intercept))));
+    repeatImageIterator.Set(static_cast<short>(niftk::Round(fabs(slope*repeatValue+intercept))));
   }
   
   WriterType::Pointer writer = WriterType::New(); 

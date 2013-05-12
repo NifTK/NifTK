@@ -54,7 +54,7 @@ public:
 protected slots:
 
   /// \brief Qt slot called when the user hits the button "New segmentation", which creates the new image.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
 protected:
 

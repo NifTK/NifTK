@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWEDITOR_H
-#define QMITKMIDASMULTIVIEWEDITOR_H
+#ifndef QmitkMIDASMultiViewEditor_h
+#define QmitkMIDASMultiViewEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -101,7 +101,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::SetSelectedPosition()
    */
-  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetSelectedPosition(const mitk::Point3D& position, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableDecorations(), and in this class, deliberately implemented as a no-op.
@@ -174,4 +174,4 @@ private:
   const QScopedPointer<QmitkMIDASMultiViewEditorPrivate> d;
 };
 
-#endif /*QMITKMIDASMULTIVIEWEDITOR_H*/
+#endif

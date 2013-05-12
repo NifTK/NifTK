@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASDRAWTOOL_H
-#define MITKMIDASDRAWTOOL_H
+#ifndef mitk_MIDASDrawTool_h
+#define mitk_MIDASDrawTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASContourTool.h"

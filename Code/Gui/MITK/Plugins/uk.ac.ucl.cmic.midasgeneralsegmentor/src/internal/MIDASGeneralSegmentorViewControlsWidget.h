@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_H
-#define MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_H
+#ifndef MIDASGeneralSegmentorViewControlsWidget_h
+#define MIDASGeneralSegmentorViewControlsWidget_h
 
 #include <QWidget>
 #include "ui_MIDASGeneralSegmentorViewControls.h"

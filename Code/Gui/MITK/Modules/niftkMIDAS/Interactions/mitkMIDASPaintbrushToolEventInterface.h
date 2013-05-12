@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPAINTBRUSHTOOLEVENTINTERFACE_H
-#define MITKMIDASPAINTBRUSHTOOLEVENTINTERFACE_H
+#ifndef mitk_MIDASPaintbrushToolEventInterface_h
+#define mitk_MIDASPaintbrushToolEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>

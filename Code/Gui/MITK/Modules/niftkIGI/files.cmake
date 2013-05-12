@@ -13,8 +13,14 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataManagement/mitkIGITestDataUtils.cxx
-  DataManagement/mitkIGIDataType.cxx
-  DataManagement/mitkIGIDataSource.cxx
-  DataManagement/mitkIGIOpenCVDataType.cxx
+  Conversion/ImageConversion.cxx
+  DataSources/mitkIGITestDataUtils.cxx
+  DataSources/mitkIGIDataType.cxx
+  DataSources/mitkIGIDataSource.cxx
+  DataSources/mitkIGIOpenCVDataType.cxx
+  SurfaceReconstruction/SurfaceReconstruction.cxx
+  SurfaceReconstruction/SequentialCpuQds.cxx
+  SurfaceReconstruction/QDSCommon.cxx
+  TrackedImage/mitkTrackedImageCommand.cxx
+  TrackedPointer/mitkTrackedPointerCommand.cxx
 )

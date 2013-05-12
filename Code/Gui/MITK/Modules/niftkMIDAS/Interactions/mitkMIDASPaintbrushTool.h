@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASPAINTBRUSHTOOL_H
-#define MITKMIDASPAINTBRUSHTOOL_H
+#ifndef mitk_MIDASPaintbrushTool_h
+#define mitk_MIDASPaintbrushTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
@@ -190,6 +190,10 @@ private:
 
   // If m_ErosionMode is true, we update WorkingData 0 and 1, if m_ErosionMode is false, we update WorkingData 2 and 3.
   bool m_ErosionMode;
+
+  // Stores the current display interactor configurations when this tool is activated.
+  // The configurations are restored when the tool is deactivated.
+  std::map<mitk::ServiceReference, mitk::EventConfig> m_DisplayInteractorConfigs;
 
 };//class
 

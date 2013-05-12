@@ -12,8 +12,13 @@
 #
 #============================================================================*/
 
+set(H_FILES
+  Common/mitkMIDASEnums.h
+)
+
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cxx
+  Algorithms/mitkNifTKAffineTransformer.cxx
   Common/mitkMIDASImageUtils.cxx
   Common/mitkMIDASOrientationUtils.cxx
   Common/mitkPointUtils.cxx

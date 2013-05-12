@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="/uk.ac.ucl.cmic.gui.qt.igisurfacerecon">
+   <file>icon.png</file>
+ </qresource>
+ </RCC>

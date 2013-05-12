@@ -328,8 +328,6 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
   // Create a VTK polydata object and add everything to it
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkIdType id;
-
   vtkSmartPointer<vtkStructuredGrid> sgrid = vtkStructuredGrid::New();
 
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -384,9 +382,9 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 	// The final control point position:
 	//    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
 
-	id = points->InsertNextPoint( -xInit, 
-				      -yInit,
-				       zInit );
+	points->InsertNextPoint( -xInit, 
+	    	      -yInit,
+		       zInit );
 
 	v[0] = -( deformationPtrX[index] - xInit ); 
 	v[1] = -( deformationPtrY[index] - yInit );
@@ -459,8 +457,6 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
   // Create a VTK polydata object and add everything to it
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  vtkIdType id;
-
   vtkSmartPointer<vtkStructuredGrid> sgrid = vtkStructuredGrid::New();
 
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -528,9 +524,9 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
 	// The final control point position:
 	//    deformationPtrX[index], deformationPtrY[index], deformationPtrZ[index];
 
-	id = points->InsertNextPoint( -xInit, 
-				      -yInit,
-				       zInit );
+	points->InsertNextPoint( -xInit, 
+			      -yInit,
+			       zInit );
 
 	v[0] = -( deformationPtrX[index] - xInit ); 
 	v[1] = -( deformationPtrY[index] - yInit );

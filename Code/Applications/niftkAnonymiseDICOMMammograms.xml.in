@@ -84,7 +84,7 @@
       <longflag>labelHeight</longflag>
       <description>The height of the label as a percentage of the image height.</description>
       <label>Label height (% of image)</label>
-      <default>40</default>
+      <default>100</default>
       <constraints>
         <minimum>0</minimum>
         <maximum>100</maximum>
@@ -95,13 +95,11 @@
     <string-enumeration>
       <name>labelPosition</name>
       <longflag>labelPosn</longflag>
-      <description>The position/quadrant of the label.</description>
+      <description>The position of the label (i.e. the upper or lower corner of the image).</description>
       <label>Label position</label>
-      <default>Top-Right</default>
-      <element>Top-Right</element>
-      <element>Top-Left</element>
-      <element>Bottom-Right</element>
-      <element>Bottom-Left</element>
+      <default>Upper</default>
+      <element>Upper</element>
+      <element>Lower</element>
     </string-enumeration>
 
   </parameters>

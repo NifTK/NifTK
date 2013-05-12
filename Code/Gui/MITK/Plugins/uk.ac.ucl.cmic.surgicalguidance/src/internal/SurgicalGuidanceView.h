@@ -18,6 +18,7 @@
 #include "QmitkBaseLegacyView.h"
 #include "QmitkIGIDataSourceManager.h"
 #include <berryIBerryPreferences.h>
+#include <ctkDictionary.h>
 
 /**
  * \class SurgicalGuidanceView
@@ -49,12 +50,24 @@ protected:
   /// \brief Called by framework, sets the focus on a specific widget.
   virtual void SetFocus();
 
+signals:
+
+  /**
+   * \brief We publish an update signal onto the Event Bus so that any other plugin can listen.
+   */
+  void Updated(const ctkDictionary&);
+
 protected slots:
 
 protected:
 
 private slots:
   
+  /**
+   * \brief We listen to the QmitkIGIDataSourceManager to publish the update signal.
+   */
+  void OnUpdateGuiEnd(igtlUint64 timeStamp);
+
 private:
 
   /// \brief Retrieve's the pref values from preference service, and stored in member variables.

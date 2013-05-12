@@ -402,6 +402,36 @@ IF(NOT DEFINED MITK_DIR)
     #
     #     Giving d5eb05f63b on NifTK/MITK/niftk branch.
     #
+    # 28. Trac 2255: New MITK version to pick up bug 14355, fix usResourceCompiler path.
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 48573155e7 from Sun Apr 14 15:44:12 2013 +0200,
+    #       + bugs listed above.
+    #     
+    #     Giving c46b74d625 on NifTK/MITK/niftk branch.
+    #
+    # 29. Trac 2315: New MITK version to pick up latest 2013.03.02 patch, and bug 15051 about PlanarFigure crashes.
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 4a983348b6 (v2013.03.02) from Mon Apr 29 16:47:24 2013 +0200,
+    #       + bugs listed above.
+    #
+    #     Giving f70be82e03 on NifTK/MITK/niftk branch.
+    #
+    # 30. Trac: 2280: New MITK version to pick up MITK bug 15077.
+    #           2337: New MITK version to pick up MITK bug 15092.
+    #
+    #     Current MITK code base (i.e. if we have to recreate from scratch) is in effect:
+    #       MITK 4a983348b6 (v2013.03.02) from Mon Apr 29 16:47:24 2013 +0200,
+    #       + MITK commit c4accfb73bb22380f0d7c9cc014467e27042c25d to fix PlanarFigure issue
+    #       + Trac 1256, MITK 10783 = https://github.com/NifTK/MITK/commit/82efd288c7f7b5b5d098e33e2de6fc83c8ed79b7 (gz file extension handling)
+    #       + Trac 1628, MITK 12431 = https://github.com/NifTK/MITK/commit/3976cb339ba7468815ffbf96f85bd36b832aa648 (Dont crash if bounding box invalid)  (this was fixed using an alternative method in MITK 13321, but we leave this change intact in our NifTK version rather than backing it out).
+    #       + Trac 1469, MITK 12003 = https://github.com/NifTK/MITK/commit/6dc50f81de6ad7b9c3344554d0a4dc53867112f9 (Crosses not on out of plane slices)
+    #       + Trac 2280, MITK 15077 = https://github.com/NifTK/MITK/commit/f5b1eeb4d4ae15b91fae7a30801a91a64e1015e0
+    #       + Trac 2337, MITK 15092 = https://github.com/NifTK/MITK/commit/058528efa534d758faac787808220671801ea1b1
+    #       + Trac 2337, MITK 15092 = https://github.com/NifTK/MITK/commit/3919b0a1fd15c4b14ebb2485f2a881d9f64a0b3c
+    #
+    #     Giving d85f6e888f  on NifTK/MITK/niftk branch.
+    # 
     #########################################################
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
@@ -410,7 +440,7 @@ IF(NOT DEFINED MITK_DIR)
       URL ${NIFTK_LOCATION_MITK}
       URL_MD5 ${NIFTK_CHECKSUM_MITK}
       BINARY_DIR ${proj}-build
-      UPDATE_COMMAND ""
+      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS

@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "QmitkMIDASSlidersWidget.h"
-#include <QDebug>
+
+#include <mitkLogMacros.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
@@ -36,9 +37,9 @@ void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
   m_SliceSelectionWidget->setDecimals(0);
   m_SliceSelectionWidget->setTickInterval(1.0);
   m_SliceSelectionWidget->setSingleStep(1.0);
-  m_MagnificationFactorWidget->setDecimals(2);
-  m_MagnificationFactorWidget->setTickInterval(1.0);
-  m_MagnificationFactorWidget->setSingleStep(1.0);
+  m_MagnificationWidget->setDecimals(2);
+  m_MagnificationWidget->setTickInterval(1.0);
+  m_MagnificationWidget->setSingleStep(1.0);
   m_TimeSelectionWidget->setDecimals(0);
   m_TimeSelectionWidget->setTickInterval(1.0);
   m_TimeSelectionWidget->setSingleStep(1.0);
@@ -48,20 +49,11 @@ void QmitkMIDASSlidersWidget::setupUi(QWidget* parent)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASSlidersWidget::BlockSignals(bool block)
 {
-  bool wasBlocked = m_MagnificationFactorWidget->signalsBlocked();
-  m_MagnificationFactorWidget->blockSignals(block);
+  bool wasBlocked = m_MagnificationWidget->signalsBlocked();
+  m_MagnificationWidget->blockSignals(block);
   m_SliceSelectionWidget->blockSignals(block);
   m_TimeSelectionWidget->blockSignals(block);
   return wasBlocked;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetEnabled(bool enabled)
-{
-  m_MagnificationFactorWidget->setEnabled(enabled);
-  m_SliceSelectionWidget->setEnabled(enabled);
-  m_TimeSelectionWidget->setEnabled(enabled);
 }
 
 
@@ -75,7 +67,7 @@ void QmitkMIDASSlidersWidget::SetSliceTracking(bool isTracking)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSlidersWidget::SetMagnificationTracking(bool isTracking)
 {
-  m_MagnificationFactorWidget->setTracking(isTracking);
+  m_MagnificationWidget->setTracking(isTracking);
 }
 
 

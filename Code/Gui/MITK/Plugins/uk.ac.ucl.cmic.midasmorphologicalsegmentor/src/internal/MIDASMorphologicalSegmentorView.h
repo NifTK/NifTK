@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
-#define _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
+#ifndef MIDASMorphologicalSegmentorView_h
+#define MIDASMorphologicalSegmentorView_h
 
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 #include <mitkImage.h>
@@ -71,7 +71,7 @@ public:
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed();
+  void OnCreateNewSegmentationButtonPressed();
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
@@ -162,4 +162,4 @@ private:
   int m_TabCounter;
 };
 
-#endif // _MIDASMORPHOLOGICALSEGMENTORVIEW_H_INCLUDED
+#endif

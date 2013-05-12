@@ -174,13 +174,14 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   if (axialAxis != -1)
   {
     // 4. Calculate size of region of interest in that axis
-    regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
     if (orientationString[axialAxis] == 'I')
     {
+      regionOfInterestSize[axialAxis] = regionOfInterestSize[axialAxis] - p.m_AxialCutoffSlice;
       regionOfInterestIndex[axialAxis] = p.m_AxialCutoffSlice;
     }
     else
     {
+      regionOfInterestSize[axialAxis] = p.m_AxialCutoffSlice + 1;
       regionOfInterestIndex[axialAxis] = 0;
     }
 
@@ -188,20 +189,20 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
     regionOfInterest.SetSize(regionOfInterestSize);
     regionOfInterest.SetIndex(regionOfInterestIndex);
     
-    if (regionOfInterest != this->m_ThresholdingMaskFilter->GetRegion())
+    if (regionOfInterest != m_ThresholdingMaskFilter->GetRegion())
     {
-      this->m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
+      m_ThresholdingMaskFilter->SetRegion(regionOfInterest);
     }
 
-    if (regionOfInterest != this->m_ErosionMaskFilter->GetRegion())
+    if (regionOfInterest != m_ErosionMaskFilter->GetRegion())
     { 
-      this->m_ErosionFilter->SetRegion(regionOfInterest);
-      this->m_ErosionMaskFilter->SetRegion(regionOfInterest);
+      m_ErosionFilter->SetRegion(regionOfInterest);
+      m_ErosionMaskFilter->SetRegion(regionOfInterest);
     }
     
-    if (regionOfInterest != this->m_DilationMaskFilter->GetRegion())
+    if (regionOfInterest != m_DilationMaskFilter->GetRegion())
     {        
-      this->m_DilationMaskFilter->SetRegion(regionOfInterest);
+      m_DilationMaskFilter->SetRegion(regionOfInterest);
     }
   }
 

@@ -29,6 +29,8 @@
 
 const std::string MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
 
+
+//-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorViewPreferencePage::MIDASMorphologicalSegmentorViewPreferencePage()
 : m_MainControl(0)
 , m_Initializing(false)
@@ -36,6 +38,8 @@ MIDASMorphologicalSegmentorViewPreferencePage::MIDASMorphologicalSegmentorViewPr
 
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorViewPreferencePage::MIDASMorphologicalSegmentorViewPreferencePage(const MIDASMorphologicalSegmentorViewPreferencePage& other)
 : berry::Object(), QObject()
 {
@@ -43,16 +47,22 @@ MIDASMorphologicalSegmentorViewPreferencePage::MIDASMorphologicalSegmentorViewPr
   throw std::runtime_error("Copy constructor not implemented");
 }
 
+
+//-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorViewPreferencePage::~MIDASMorphologicalSegmentorViewPreferencePage()
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
@@ -89,11 +99,15 @@ void MIDASMorphologicalSegmentorViewPreferencePage::CreateQtControl(QWidget* par
   m_Initializing = false;
 }
 
+
+//-----------------------------------------------------------------------------
 QWidget* MIDASMorphologicalSegmentorViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
+
+//-----------------------------------------------------------------------------
 bool MIDASMorphologicalSegmentorViewPreferencePage::PerformOk()
 {
   m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
@@ -102,11 +116,14 @@ bool MIDASMorphologicalSegmentorViewPreferencePage::PerformOk()
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::PerformCancel()
 {
-
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::Update()
 {
   m_DefauleColorStyleSheet = QString::fromStdString(m_MIDASMorphologicalSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, ""));
@@ -122,6 +139,8 @@ void MIDASMorphologicalSegmentorViewPreferencePage::Update()
   m_DefaultColorPushButton->setStyleSheet(m_DefauleColorStyleSheet);
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::OnDefaultColourChanged()
 {
   QColor colour = QColorDialog::getColor();
@@ -147,6 +166,8 @@ void MIDASMorphologicalSegmentorViewPreferencePage::OnDefaultColourChanged()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::OnResetDefaultColour()
 {
   m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";

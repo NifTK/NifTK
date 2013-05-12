@@ -27,10 +27,14 @@ set(CPP_FILES
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
+  CameraCalibration/mitkHandeyeCalibrate.cxx
   Registration/mitkRegistrationHelper.cxx
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx
   Registration/mitkRegisterProbeModelToStereoPair.cxx
+  Tracking/mitkTagTrackingFacade.cxx
+  Tracking/mitkMonoTagExtractor.cxx
+  Tracking/mitkStereoTagExtractor.cxx
   demo/mitkTestLineExtraction.cxx
   demo/mitkTestCornerExtraction.cxx
 )

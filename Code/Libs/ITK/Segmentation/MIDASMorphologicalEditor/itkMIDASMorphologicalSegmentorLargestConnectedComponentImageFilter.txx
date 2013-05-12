@@ -60,8 +60,8 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
   int activeComponentIndexBuffer;
   std::vector<unsigned int> *currComponentIndices, *largestComponentIndices;
   std::vector<unsigned int> componentIndicies[2];
-  componentIndicies[0].reserve(this->m_Capacity);
-  componentIndicies[1].reserve(this->m_Capacity);
+  componentIndicies[0].reserve(m_Capacity);
+  componentIndicies[1].reserve(m_Capacity);
   
   IndexType    voxelIndex;
   unsigned int voxelNumber;

@@ -24,6 +24,7 @@
 #include "mitkMIDASPaintbrushTool.h"
 #include "mitkMIDASTool.h"
 #include "mitkMIDASImageUtils.h"
+#include "mitkMIDASOrientationUtils.h"
 
 namespace mitk
 {
@@ -46,7 +47,7 @@ MIDASMorphologicalSegmentorPipelineManager::~MIDASMorphologicalSegmentorPipeline
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
-  this->m_DataStorage = dataStorage;
+  m_DataStorage = dataStorage;
   this->Modified();
 }
 
@@ -54,14 +55,14 @@ void MIDASMorphologicalSegmentorPipelineManager::SetDataStorage(mitk::DataStorag
 //-----------------------------------------------------------------------------
 mitk::DataStorage::Pointer MIDASMorphologicalSegmentorPipelineManager::GetDataStorage() const
 {
-  return this->m_DataStorage;
+  return m_DataStorage;
 }
 
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::SetToolManager(mitk::ToolManager::Pointer toolManager)
 {
-  this->m_ToolManager = toolManager;
+  m_ToolManager = toolManager;
   this->Modified();
 }
 
@@ -69,7 +70,7 @@ void MIDASMorphologicalSegmentorPipelineManager::SetToolManager(mitk::ToolManage
 //-----------------------------------------------------------------------------
 mitk::ToolManager::Pointer MIDASMorphologicalSegmentorPipelineManager::GetToolManager() const
 {
-  return this->m_ToolManager;
+  return m_ToolManager;
 }
 
 
@@ -375,10 +376,18 @@ void MIDASMorphologicalSegmentorPipelineManager::SetDefaultParameterValuesFromRe
 
   if(referenceImage.IsNotNull() && segmentationNode.IsNotNull())
   {
+    int thresholdingSlice = 0;
+    int upDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+    if (upDirection == -1)
+    {
+      int axialAxis = GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+      thresholdingSlice = referenceImage->GetDimension(axialAxis) - 1;
+    }
+
     segmentationNode->SetIntProperty("midas.morph.stage", 0);
     segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", referenceImage->GetStatistics()->GetScalarValueMin());
     segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", referenceImage->GetStatistics()->GetScalarValueMin());
-    segmentationNode->SetIntProperty("midas.morph.thresholding.slice", 0);
+    segmentationNode->SetIntProperty("midas.morph.thresholding.slice", thresholdingSlice);
     segmentationNode->SetFloatProperty("midas.morph.erosion.threshold", referenceImage->GetStatistics()->GetScalarValueMax());
     segmentationNode->SetIntProperty("midas.morph.erosion.iterations", 0);
     segmentationNode->SetFloatProperty("midas.morph.dilation.lower", 60);

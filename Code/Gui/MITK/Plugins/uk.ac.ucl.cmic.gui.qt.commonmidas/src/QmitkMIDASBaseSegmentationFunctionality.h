@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
-#define QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
+#ifndef QmitkMIDASBaseSegmentationFunctionality_h
+#define QmitkMIDASBaseSegmentationFunctionality_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -78,7 +78,7 @@ public:
    * \param defaultColor The default colour to pass to the new segmentation dialog box.
    * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
    */
-  virtual mitk::DataNode* OnCreateNewSegmentationButtonPressed(QColor &defaultColor);
+  virtual mitk::DataNode* CreateNewSegmentation(QColor &defaultColor);
 
 signals:
 
@@ -95,6 +95,11 @@ protected slots:
   virtual void OnToolSelected(int);
 
 protected:
+
+  /**
+   * \see mitk::ILifecycleAwarePart::PartActivated
+   */
+  virtual void Activated();
 
   /**
    * \see mitk::ILifecycleAwarePart::PartVisible
@@ -244,4 +249,4 @@ private:
   ctkEventAdmin* m_EventAdmin;
 
 };
-#endif // QMITKMIDASBASESEGMENTATIONFUNCTIONALITY_H_INCLUDED
+#endif

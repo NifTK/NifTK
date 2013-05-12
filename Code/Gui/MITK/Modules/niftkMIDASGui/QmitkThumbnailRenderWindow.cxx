@@ -28,6 +28,7 @@
 #include "QmitkWheelEventEater.h"
 #include "mitkDataStorageUtils.h"
 
+
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
@@ -536,8 +537,8 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
               // Setup the visibility tracker.
               std::vector<mitk::BaseRenderer*> windowsToTrack;
               windowsToTrack.push_back(const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()));
-              this->m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
-              this->m_VisibilityTracker->OnPropertyChanged(); // force update
+              m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+              m_VisibilityTracker->OnPropertyChanged(); // force update
 
               // Get the box to update
               this->UpdateBoundingBox();

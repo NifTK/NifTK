@@ -12,13 +12,14 @@
 
 =============================================================================*/
 
-#ifndef MITKCOORDINATEAXESVTKMAPPER3D_H
-#define MITKCOORDINATEAXESVTKMAPPER3D_H
+#ifndef CoordinateAxesVtkMapper3D_h
+#define CoordinateAxesVtkMapper3D_h
 
 #include "niftkCoreExports.h"
-#include <mitkVtkMapper.h>
+
 #include <mitkBaseRenderer.h>
-#include "mitkCoordinateAxesData.h"
+#include <mitkCoordinateAxesData.h>
+#include <mitkVtkMapper.h>
 
 class vtkAxesActor;
 
@@ -65,4 +66,4 @@ protected:
 
 } // end namespace
 
-#endif // MITKCOORDINATEAXESVTKMAPPER3D_H
+#endif

@@ -35,8 +35,8 @@
  *         The University of Iowa 2002
  */
 
-#ifndef __itkAnalyzeImageIO3160_h
-#define __itkAnalyzeImageIO3160_h
+#ifndef AnalyzeImageIO3160_h
+#define AnalyzeImageIO3160_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
@@ -252,4 +252,4 @@ extern const char *const ANALYZE_CALIBRATIONUNITS;
 
 } // end namespace itk
 
-#endif // __itkAnalyzeImageIO3160_h
+#endif

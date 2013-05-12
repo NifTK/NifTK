@@ -174,7 +174,7 @@ int main( int argc, char *argv[] )
 
       // Left breast
 
-      if ( idx[0] < (unsigned int) lateralSize[0] )
+      if ( idx[0] < (int) lateralSize[0] )
       {
 	nLeftVoxels++;
 	leftDensity += segmIterator.Get();

@@ -24,6 +24,7 @@ IF(WIN32)
     "E:/build/R304-developer/"
     "E:/NifTK/nvapi/"
     "E:/NifTK/R304-developer/"
+    ${CMAKE_SOURCE_DIR}/../nvapi/
   )
 
   FIND_PATH(NVAPI_INCLUDE_DIR

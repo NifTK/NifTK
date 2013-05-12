@@ -15,6 +15,10 @@
 # tests with no extra command line parameter
 SET(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
+  mitkTrackedImageCommandTest.cxx
+  mitkTrackedPointerCommandTest.cxx
+  QDSCommonTest.cxx
+  ImageConversionTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

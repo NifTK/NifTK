@@ -398,7 +398,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
       }
 
       // The points from the positionEvent will not be continuous.
-      // So we have the currentPoint and also the this->m_MostRecentPointInMillimetres
+      // So we have the currentPoint and also the m_MostRecentPointInMillimetres
       // Imagine a line between these two points, we step along it to simulate having
       // more mouse events than what we really had. So this stepping is done in "true" millimetres.
       contourAlongLine.AddVertex(incrementedPoint);

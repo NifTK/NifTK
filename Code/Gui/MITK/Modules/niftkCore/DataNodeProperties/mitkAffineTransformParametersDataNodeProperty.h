@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKAFFINETRANSFORMPARAMETERSDATANODEPROPERTY_H
-#define MITKAFFINETRANSFORMPARAMETERSDATANODEPROPERTY_H
+#ifndef AffineTransformParametersDataNodeProperty_h
+#define AffineTransformParametersDataNodeProperty_h
 
 #include "niftkCoreExports.h"
 #include "mitkBaseProperty.h"
@@ -94,4 +94,4 @@ private:
 
 } // namespace mitk
 
-#endif /* MITKLEVELWINDOWPROPERTY_H_HEADER_INCLUDED_C10EEAA8 */
+#endif
