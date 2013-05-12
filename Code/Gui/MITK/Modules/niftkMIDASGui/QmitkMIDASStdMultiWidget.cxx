@@ -1427,10 +1427,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
     double magnification = ComputeMagnification(renderWindow);
     if (magnification != m_Magnification)
     {
-      // The aim of this method, is that when a magnification is passed in,
-      // all 2D views update to an equivalent zoom, even if they were different beforehand.
-      // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
-      // that corresponds to the rules given at the top of the header file.
+      mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1438,8 +1435,17 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          double zoomFactor = ComputeZoomFactor(otherRenderWindow, magnification);
-          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomFactor);
+          // Deprecated. This checks the current current scale factor in the render
+          // window and calculates a 'relative' scale factor, that is how much zooming
+          // is needed to reach the required scaling.
+//          double zoomFactor = this->ComputeZoomFactor(otherRenderWindow, magnification);
+//          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomFactor);
+
+          // Instead, we use the SetScaleFactor function to set the required 'absolute'
+          // scaling.
+          // TODO: instead of using the scale factor of the first axis,
+          // we should probable use the one with the highest mm/vx ratio.
+          this->SetScaleFactor(otherRenderWindow, scaleFactors[0]);
         }
       }
 
@@ -1751,10 +1757,7 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     return;
   }
 
-  // The aim of this method, is that when a magnification is passed in,
-  // all 2D views update to an equivalent zoom, even if they were different beforehand.
-  // The magnification factor is as it would be displayed in MIDAS, i.e. an integer
-  // that corresponds to the rules given at the top of the header file.
+  mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
   // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
   for (int i = 0; i < 3; ++i)
@@ -1762,8 +1765,18 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      double zoomFactor = ComputeZoomFactor(renderWindow, magnification);
-      this->ZoomDisplayAboutCursor(renderWindow, zoomFactor);
+      // Deprecated. This checks the current current scale factor in the render
+      // window and calculates a 'relative' scale factor, that is how much zooming
+      // is needed to reach the required scaling.
+//      double zoomFactor = this->ComputeZoomFactor(renderWindow, magnification);
+//      this->ZoomDisplayAboutCursor(renderWindow, zoomFactor);
+
+      // Instead, we use the SetScaleFactor function to set the required 'absolute'
+      // scaling.
+      // TODO: Anisotropic voxel size not handled correctly.
+      // Instead of using the scale factor of the first axis,
+      // we should probable use the one with the highest mm/vx ratio.
+      this->SetScaleFactor(renderWindow, scaleFactors[0]);
     }
   }
 
@@ -1822,6 +1835,38 @@ double QmitkMIDASStdMultiWidget::ComputeZoomFactor(QmitkRenderWindow* renderWind
 
 
 //-----------------------------------------------------------------------------
+mitk::Vector3D QmitkMIDASStdMultiWidget::ComputeScaleFactors(double magnification)
+{
+  double requiredScaleFactorVxPerPx;
+  if (magnification >= 0.0)
+  {
+    requiredScaleFactorVxPerPx = 1.0 / (magnification + 1.0);
+  }
+  else
+  {
+    requiredScaleFactorVxPerPx = -magnification + 1.0;
+  }
+
+  // The size of one voxel, in mm. The dimensions will differ t for anisotropic voxels.
+  // TODO:
+  // This should be initialised based on the world geometry, preferably only when
+  // the geometry changes.
+  mitk::Vector3D mmPerVx;
+  mmPerVx[0] = 1.0;
+  mmPerVx[0] = 1.0;
+  mmPerVx[0] = 1.0;
+
+  mitk::Vector3D scaleFactorsMmPerPx;
+
+  scaleFactorsMmPerPx[0] = requiredScaleFactorVxPerPx * mmPerVx[0];
+  scaleFactorsMmPerPx[1] = requiredScaleFactorVxPerPx * mmPerVx[1];
+  scaleFactorsMmPerPx[2] = requiredScaleFactorVxPerPx * mmPerVx[2];
+
+  return scaleFactorsMmPerPx;
+}
+
+
+//-----------------------------------------------------------------------------
 double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderWindow)
 {
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
@@ -1830,16 +1875,35 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
     return 0;
   }
 
-  // We do this with mitk::Point2D, so we have different values in X and Y, as images can be anisotropic.
-  mitk::Vector2D scaleFactorsPxPerVx;
-  mitk::Vector2D scaleFactorsPxPerMm;
-  this->GetScaleFactors(renderWindow, scaleFactorsPxPerVx, scaleFactorsPxPerMm);
+  // Deprecated.
+  // We do this with mitk::Vector2D, so we have different values in X and Y, as images can be anisotropic.
+//  mitk::Vector2D scaleFactorsPxPerVx;
+//  mitk::Vector2D scaleFactorsPxPerMm;
+//  this->GetScaleFactors(renderWindow, scaleFactorsPxPerVx, scaleFactorsPxPerMm);
 
-  // TODO Anisotropic voxel size not handled correctly.
   // We may have anisotropic voxels, so find the axis that requires most scale factor change.
 //  double scaleFactorPxPerVx = std::max(scaleFactorsPxPerVx[0], scaleFactorsPxPerVx[1]);
+
+  mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+  double scaleFactorMmPerPx = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
+  // The size of one voxel, in mm. The dimensions will differ t for anisotropic voxels.
+  // TODO:
+  // This should be initialised based on the world geometry, preferably only when
+  // the geometry changes.
+  mitk::Vector3D mmPerVx;
+  mmPerVx[0] = 1.0;
+  mmPerVx[0] = 1.0;
+  mmPerVx[0] = 1.0;
+
+  mitk::Vector3D scaleFactorsPxPerVx = mmPerVx / scaleFactorMmPerPx;
+
+  // TODO: Anisotropic voxel size not handled correctly.
+  // Instead of using the scale factor of the first axis,
+  // we should probable use the one with the highest mm/vx ratio.
   double scaleFactorPxPerVx = scaleFactorsPxPerVx[0];
 
+  // Finally, we calculate the magnification from the scale factor.
   double magnification = scaleFactorPxPerVx - 1.0;
   if (magnification < 0.0)
   {
@@ -2007,6 +2071,48 @@ void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderW
 
     m_BlockDisplayGeometryEvents = false;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor)
+{
+  if (renderWindow != NULL)
+  {
+    mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+
+    const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
+
+    mitk::Point2D focusInMm;
+    mitk::Point2D focusInPx;
+
+    displayGeometry->Map(selectedPosition, focusInMm);
+    displayGeometry->WorldToDisplay(focusInMm, focusInPx);
+
+    this->SetScaleFactor(displayGeometry, scaleFactor, focusInPx);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::SetScaleFactor(mitk::DisplayGeometry* displayGeometry, double scaleFactor, const mitk::Point2D& focusInPx)
+{
+  assert(scaleFactor > 0.0);
+
+  bool retVal;
+  double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  m_BlockDisplayGeometryEvents = true;
+  if (displayGeometry->SetScaleFactor(scaleFactor))
+  {
+    mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
+    retVal = displayGeometry->SetOriginInMM(originInMm - focusInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
+  }
+  else
+  {
+    retVal = false;
+  }
+  m_BlockDisplayGeometryEvents = false;
+  return retVal;
 }
 
 

@@ -65,7 +65,6 @@ class SliceNavigationController;
  * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
  * etc.
  * </pre>
- * So, it is deliberately not a continuous magnification scale.
  *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
@@ -310,11 +309,21 @@ private:
   // \brief Sets the origin of the display geometry of the render window
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
-  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the current
-  /// and the required scale factor.
+  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
+  /// and the current scale factor.
+  /// \deprecated
+  /// {
+  ///   This function is deprecated because it requires the 'relative' scale factor.
+  ///   Use the SetScaleFactor functions instead.
+  /// }
   void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
+  /// \deprecated
+  /// {
+  ///   This should be calculated from the world geometry dimensions, display geometry dimensions
+  ///   and the scale factor of the display geometry.
+  /// }
   void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
@@ -336,8 +345,27 @@ private:
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the zoom factor for a render window from a magnification factor.
-  /// The zoom factor is the ratio of the current and the required scale factor.
+  /// The zoom factor is the ratio of the required and the current scale factor.
+  /// \deprecated
+  /// {
+  ///   This function is deprecated because it needs to know the current scaling in the render window.
+  ///   The function was used to compute the zoom factor for the ZoomDisplayAboutCursor function that
+  ///   has been deprecated as well. Use the ComputeScaleFactors function to calculate the absolute
+  ///   scale factors from the magnification and the SetScaleFactor function to set the required
+  ///   scale factor for a render window.
+  /// }
   double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
+
+  /// \brief Computes the scale factors for each axes in mm/px. Since the magnification is
+  /// in linear relation with the px/vx ratio, the three scale factors can differ if the image
+  /// has anisotropic voxels.
+  mitk::Vector3D ComputeScaleFactors(double magnification);
+
+  /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
+
+  /// \brief Zooms the display to the given scale factor (mm/px) around the focus point given in px.
+  bool SetScaleFactor(mitk::DisplayGeometry* displayGeometry, double scaleFactor, const mitk::Point2D& focusInPx);
 
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
