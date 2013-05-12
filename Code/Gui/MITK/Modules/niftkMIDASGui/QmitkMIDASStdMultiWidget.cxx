@@ -194,6 +194,11 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   m_SelectedPosition[1] = 0.0;
   m_SelectedPosition[2] = 0.0;
 
+  // Set the default voxel size to 1.0mm for each axes.
+  m_MmPerVx[0] = 1.0;
+  m_MmPerVx[1] = 1.0;
+  m_MmPerVx[2] = 1.0;
+
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
@@ -775,6 +780,13 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
   {
     m_Geometry = geometry;
 
+    // Calculating the voxel size. This is needed for the conversion between the
+    // magnification and the scale factors.
+    for (int i = 0; i < 3; ++i)
+    {
+      m_MmPerVx[i] = m_Geometry->GetExtentInMM(i) / m_Geometry->GetExtent(i);
+    }
+
     // Add these annotations the first time we have a real geometry.
     m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
     m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
@@ -1088,6 +1100,13 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
 
       } // if window < 3
     }
+  }
+  else
+  {
+    // Probably not necessary, but we restore the default voxel size if there is no geometry.
+    m_MmPerVx[0] = 1.0;
+    m_MmPerVx[1] = 1.0;
+    m_MmPerVx[2] = 1.0;
   }
 }
 
@@ -1837,32 +1856,17 @@ double QmitkMIDASStdMultiWidget::ComputeZoomFactor(QmitkRenderWindow* renderWind
 //-----------------------------------------------------------------------------
 mitk::Vector3D QmitkMIDASStdMultiWidget::ComputeScaleFactors(double magnification)
 {
-  double requiredScaleFactorVxPerPx;
+  double scaleFactorVxPerPx;
   if (magnification >= 0.0)
   {
-    requiredScaleFactorVxPerPx = 1.0 / (magnification + 1.0);
+    scaleFactorVxPerPx = 1.0 / (magnification + 1.0);
   }
   else
   {
-    requiredScaleFactorVxPerPx = -magnification + 1.0;
+    scaleFactorVxPerPx = -magnification + 1.0;
   }
 
-  // The size of one voxel, in mm. The dimensions will differ t for anisotropic voxels.
-  // TODO:
-  // This should be initialised based on the world geometry, preferably only when
-  // the geometry changes.
-  mitk::Vector3D mmPerVx;
-  mmPerVx[0] = 1.0;
-  mmPerVx[0] = 1.0;
-  mmPerVx[0] = 1.0;
-
-  mitk::Vector3D scaleFactorsMmPerPx;
-
-  scaleFactorsMmPerPx[0] = requiredScaleFactorVxPerPx * mmPerVx[0];
-  scaleFactorsMmPerPx[1] = requiredScaleFactorVxPerPx * mmPerVx[1];
-  scaleFactorsMmPerPx[2] = requiredScaleFactorVxPerPx * mmPerVx[2];
-
-  return scaleFactorsMmPerPx;
+  return m_MmPerVx * scaleFactorVxPerPx;
 }
 
 
@@ -1887,16 +1891,7 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
   double scaleFactorMmPerPx = displayGeometry->GetScaleFactorMMPerDisplayUnit();
 
-  // The size of one voxel, in mm. The dimensions will differ t for anisotropic voxels.
-  // TODO:
-  // This should be initialised based on the world geometry, preferably only when
-  // the geometry changes.
-  mitk::Vector3D mmPerVx;
-  mmPerVx[0] = 1.0;
-  mmPerVx[0] = 1.0;
-  mmPerVx[0] = 1.0;
-
-  mitk::Vector3D scaleFactorsPxPerVx = mmPerVx / scaleFactorMmPerPx;
+  mitk::Vector3D scaleFactorsPxPerVx = m_MmPerVx / scaleFactorMmPerPx;
 
   // TODO: Anisotropic voxel size not handled correctly.
   // Instead of using the scale factor of the first axis,

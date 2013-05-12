@@ -356,9 +356,10 @@ private:
   /// }
   double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
 
-  /// \brief Computes the scale factors for each axes in mm/px. Since the magnification is
-  /// in linear relation with the px/vx ratio, the three scale factors can differ if the image
-  /// has anisotropic voxels.
+  /// \brief Computes the scale factors from the magnification for each axes in mm/px.
+  /// Since the magnification is in linear relation with the px/vx ratio but not the
+  /// voxel size, the three scale factors can differ if the image has anisotropic voxels.
+  /// The voxel sizes are calculated when the geometry is set.
   mitk::Vector3D ComputeScaleFactors(double magnification);
 
   /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
@@ -384,6 +385,9 @@ private:
   double                m_Magnification;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D*     m_Geometry;
+
+  /// \brief Voxel size in millimetres.
+  mitk::Vector3D        m_MmPerVx;
 
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
