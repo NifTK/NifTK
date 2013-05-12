@@ -15,7 +15,7 @@
 #ifndef itkMIDASMeanIntensityWithinARegionFilter_h
 #define itkMIDASMeanIntensityWithinARegionFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

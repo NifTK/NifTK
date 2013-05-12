@@ -18,19 +18,19 @@
 // First make sure that the configuration is available.
 // This line can be removed once the optimized versions
 // gets integrated into the main directories.
-#include "itkConfigure.h"
+#include <itkConfigure.h>
 
 
 #include "itkInvResampleImageFilter.h"
-#include "itkObjectFactory.h"
-#include "itkIdentityTransform.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkProgressReporter.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageLinearIteratorWithIndex.h"
-#include "itkSpecialCoordinatesImage.h"
+#include <itkObjectFactory.h>
+#include <itkIdentityTransform.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkProgressReporter.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageLinearIteratorWithIndex.h>
+#include <itkSpecialCoordinatesImage.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

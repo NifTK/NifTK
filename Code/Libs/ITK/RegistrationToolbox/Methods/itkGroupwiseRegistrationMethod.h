@@ -15,10 +15,10 @@
 #ifndef __itkGroupwiseRegistrationMethod_h
 #define __itkGroupwiseRegistrationMethod_h
 
-#include "itkProcessObject.h"
-#include "itkImage.h"
-#include "itkMeanVoxelwiseIntensityOfMultipleImages.h"
-#include "itkImageRegistrationFilter.h"
+#include <itkProcessObject.h>
+#include <itkImage.h>
+#include <itkMeanVoxelwiseIntensityOfMultipleImages.h>
+#include <itkImageRegistrationFilter.h>
 
 namespace itk
 {

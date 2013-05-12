@@ -16,14 +16,14 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkShapeBasedAveragingImageFilter.h"
-#include "itkSTAPLEImageFilter.h"
-#include "itkUCLLabelVotingImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkShapeBasedAveragingImageFilter.h>
+#include <itkSTAPLEImageFilter.h>
+#include <itkUCLLabelVotingImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryThresholdImageFilter.h>
 
 const unsigned int Dimension = 3;
 typedef short PixelType;

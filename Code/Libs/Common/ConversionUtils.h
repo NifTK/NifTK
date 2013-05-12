@@ -15,7 +15,7 @@
 #ifndef __NIFTK_CONVERSIONUTILS_H
 #define __NIFTK_CONVERSIONUTILS_H
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
 #include <string>

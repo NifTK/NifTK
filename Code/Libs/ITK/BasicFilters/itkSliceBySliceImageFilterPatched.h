@@ -18,7 +18,7 @@
 #ifndef __itkSliceBySliceImageFilter_h
 #define __itkSliceBySliceImageFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 
 namespace itk {
@@ -177,7 +177,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkSliceBySliceImageFilter.txx"
+#include <itkSliceBySliceImageFilter.txx>
 #endif
 
 #endif

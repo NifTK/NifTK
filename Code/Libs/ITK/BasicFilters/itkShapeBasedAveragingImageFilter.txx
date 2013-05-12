@@ -15,12 +15,12 @@
 #ifndef ITKSHAPEBASEDAVERAGINGIMAGEFILTER_TXX_
 #define ITKSHAPEBASEDAVERAGINGIMAGEFILTER_TXX_
 
-#include "itkSignedMaurerDistanceMapImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkSignedMaurerDistanceMapImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionConstIterator.h>
 #include <map>
-// #include "../../../Prototype/kkl/STAPLE/itkSegmentationReliabilityCalculator.h"
+// #include <../../../Prototype/kkl/STAPLE/itkSegmentationReliabilityCalculator.h>
 
 namespace itk 
 {

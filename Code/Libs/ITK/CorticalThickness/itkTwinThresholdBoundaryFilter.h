@@ -15,7 +15,7 @@
 #ifndef __itkTwinThresholdBoundaryFilter_h
 #define __itkTwinThresholdBoundaryFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 

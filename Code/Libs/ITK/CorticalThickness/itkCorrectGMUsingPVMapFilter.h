@@ -15,7 +15,7 @@
 #ifndef __itkCorrectGMUsingPVMapFilter_h
 #define __itkCorrectGMUsingPVMapFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 

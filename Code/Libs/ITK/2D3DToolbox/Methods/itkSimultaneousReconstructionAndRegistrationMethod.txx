@@ -15,14 +15,14 @@
 #ifndef _itkSimultaneousReconstructionAndRegistrationMethod_txx
 #define _itkSimultaneousReconstructionAndRegistrationMethod_txx
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
-#include "itkImageFileWriter.h"
+#include <itkImageFileWriter.h>
 
 #include "itkSimultaneousReconstructionAndRegistrationMethod.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

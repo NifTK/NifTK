@@ -15,11 +15,11 @@
 #ifndef _itkUCLRegularStepGradientDescentOptimizer_cxx
 #define _itkUCLRegularStepGradientDescentOptimizer_cxx
 #include "itkUCLRegularStepGradientDescentOptimizer.h"
-#include "itkCommand.h"
-#include "itkEventObject.h"
-#include "vnl/vnl_math.h"
+#include <itkCommand.h>
+#include <itkEventObject.h>
+#include <vnl/vnl_math.h>
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

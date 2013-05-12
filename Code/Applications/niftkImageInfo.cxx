@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageIOBase.h"
-#include "itkImageIOFactory.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "itkContinuousIndex.h"
-#include "itkPoint.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageIOBase.h>
+#include <itkImageIOFactory.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <itkContinuousIndex.h>
+#include <itkPoint.h>
 
 /*!
  * \file niftkImageInfo.cxx

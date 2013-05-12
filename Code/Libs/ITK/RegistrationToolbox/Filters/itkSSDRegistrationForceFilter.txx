@@ -16,12 +16,12 @@
 #define __itkSSDRegistrationForceFilter_txx
 
 #include "itkSSDRegistrationForceFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkGradientImageFilter.h"
-#include "itkCurvatureAnisotropicDiffusionImageFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkSubtractImageFilter.h>
+#include <itkGradientImageFilter.h>
+#include <itkCurvatureAnisotropicDiffusionImageFilter.h>
+#include <itkCastImageFilter.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

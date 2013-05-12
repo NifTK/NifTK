@@ -15,7 +15,7 @@
 #ifndef __NIFTK_COMMANDLINEPARSER_H_
 #define __NIFTK_COMMANDLINEPARSER_H_
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
 #include <ostream>

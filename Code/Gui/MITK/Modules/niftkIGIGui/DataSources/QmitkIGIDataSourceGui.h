@@ -19,7 +19,7 @@
 #include <itkObject.h>
 #include <QWidget>
 #include <mitkDataStorage.h>
-#include "mitkIGIDataSource.h"
+#include <mitkIGIDataSource.h>
 
 class QmitkStdMultiWidget;
 

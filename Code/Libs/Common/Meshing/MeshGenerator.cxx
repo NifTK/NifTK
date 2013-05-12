@@ -28,8 +28,8 @@
 
 #include "MeshGenerator.h"
 #include "CGALMesherBackEnd.h"
-#include "itkINRImageIO.h"
-#include "FileHelper.h"
+#include <itkINRImageIO.h>
+#include <FileHelper.h>
 #include "MeditMeshParser.h"
 
 using namespace niftk;

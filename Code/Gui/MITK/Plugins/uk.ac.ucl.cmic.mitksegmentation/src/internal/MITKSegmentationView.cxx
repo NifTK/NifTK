@@ -20,18 +20,18 @@
 #include "MITKSegmentationView.h"
 
 // MITK
-#include "mitkSegmentationObjectFactory.h"
-#include "mitkTool.h"
-#include "mitkToolManager.h"
-#include "mitkAddContourTool.h"
-#include "mitkSubtractContourTool.h"
-#include "mitkDrawPaintbrushTool.h"
-#include "mitkErasePaintbrushTool.h"
-#include "mitkRegionGrowingTool.h"
-#include "mitkCorrectorTool2D.h"
-#include "mitkFillRegionTool.h"
-#include "mitkEraseRegionTool.h"
-#include "mitkDataStorageUtils.h"
+#include <mitkSegmentationObjectFactory.h>
+#include <mitkTool.h>
+#include <mitkToolManager.h>
+#include <mitkAddContourTool.h>
+#include <mitkSubtractContourTool.h>
+#include <mitkDrawPaintbrushTool.h>
+#include <mitkErasePaintbrushTool.h>
+#include <mitkRegionGrowingTool.h>
+#include <mitkCorrectorTool2D.h>
+#include <mitkFillRegionTool.h>
+#include <mitkEraseRegionTool.h>
+#include <mitkDataStorageUtils.h>
 
 // Qt
 #include <QMessageBox>

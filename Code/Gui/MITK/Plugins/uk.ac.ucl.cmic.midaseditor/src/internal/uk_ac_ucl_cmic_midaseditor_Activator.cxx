@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "uk_ac_ucl_cmic_midaseditor_Activator.h"
-#include "QmitkMIDASMultiViewEditor.h"
-#include "QmitkMIDASMultiViewEditorPreferencePage.h"
+#include <QmitkMIDASMultiViewEditor.h>
+#include <QmitkMIDASMultiViewEditorPreferencePage.h>
 #include <QtPlugin>
 
 namespace mitk {

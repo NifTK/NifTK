@@ -15,7 +15,7 @@
 #ifndef _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
 #define _SURGICALGUIDANCEVIEWPREFERENCEPAGE_H_INCLUDED
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 #include <QColor>

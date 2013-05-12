@@ -16,8 +16,8 @@
 #define ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
 
 #include "itkMIDASImageUpdateProcessor.h"
-#include "itkExtractImageFilter.h"
-#include "itkPasteImageFilter.h"
+#include <itkExtractImageFilter.h>
+#include <itkPasteImageFilter.h>
 
 namespace itk
 {

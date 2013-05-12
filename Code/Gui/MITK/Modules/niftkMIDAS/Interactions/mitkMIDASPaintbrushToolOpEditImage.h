@@ -16,7 +16,7 @@
 #define mitk_MIDASPaintbrushToolOpEditImage_h
 
 #include "niftkMIDASExports.h"
-#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkTool.h>

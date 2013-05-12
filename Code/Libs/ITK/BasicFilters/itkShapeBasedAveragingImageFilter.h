@@ -15,7 +15,7 @@
 #ifndef ITKSHAPEBASEDAVERAGINGIMAGEFILTER_H_
 #define ITKSHAPEBASEDAVERAGINGIMAGEFILTER_H_
  
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 #include <stdlib.h>
 #include <time.h>
 

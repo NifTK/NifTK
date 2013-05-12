@@ -13,13 +13,13 @@
 =============================================================================*/
 
 #include "mitkMIDASPointSetInteractor.h"
-#include "mitkPositionEvent.h"
-#include "mitkBaseRenderer.h"
-#include "mitkRenderingManager.h"
-#include "mitkPointSet.h"
-#include "mitkStateEvent.h"
-#include "mitkAction.h"
-#include "mitkInteractionConst.h"
+#include <mitkPositionEvent.h>
+#include <mitkBaseRenderer.h>
+#include <mitkRenderingManager.h>
+#include <mitkPointSet.h>
+#include <mitkStateEvent.h>
+#include <mitkAction.h>
+#include <mitkInteractionConst.h>
 
 mitk::MIDASPointSetInteractor
 ::MIDASPointSetInteractor(const char * type, DataNode* dataNode, int n)

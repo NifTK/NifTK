@@ -15,12 +15,12 @@
 #ifndef GeneralSegmentorPipelineParams_h
 #define GeneralSegmentorPipelineParams_h
 
-#include "itkPointSet.h"
-#include "itkPolyLineParametricPath.h"
-#include "mitkPointSet.h"
-#include "mitkContourSet.h"
+#include <itkPointSet.h>
+#include <itkPolyLineParametricPath.h>
+#include <mitkPointSet.h>
+#include <mitkContourSet.h>
 
-#include "itkMIDASHelper.h"
+#include <itkMIDASHelper.h>
 
 /** Typedefs that we use for this plugin. */
 typedef itk::PointSet<float, 3>      PointSetType;

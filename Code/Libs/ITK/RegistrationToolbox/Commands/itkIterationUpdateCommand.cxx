@@ -18,7 +18,7 @@
 #include <sstream>
 #include "itkIterationUpdateCommand.h"
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

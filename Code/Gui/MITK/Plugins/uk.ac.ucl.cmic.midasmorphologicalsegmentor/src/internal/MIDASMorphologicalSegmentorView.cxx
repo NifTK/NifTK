@@ -27,10 +27,10 @@
 #include <mitkUndoController.h>
 #include <mitkMIDASOrientationUtils.h>
 
-#include "itkConversionUtils.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPaintbrushTool.h"
+#include <itkConversionUtils.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPaintbrushTool.h>
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 

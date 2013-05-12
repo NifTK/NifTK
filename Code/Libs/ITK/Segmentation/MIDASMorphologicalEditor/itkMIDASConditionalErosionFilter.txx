@@ -16,8 +16,8 @@
 #define itkMIDASConditionalErosionFilter_txx
 
 #include "itkMIDASConditionalErosionFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 
 namespace itk
 {

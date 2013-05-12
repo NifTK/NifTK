@@ -15,12 +15,12 @@
 #ifndef __itkCurveFitRegistrationMethod_h
 #define __itkCurveFitRegistrationMethod_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
-#include "itkImage.h"
-#include "itkImageReconstructionMetric.h"
-#include "itkMultipleValuedNonLinearOptimizer.h"
-#include "itkBSplineCurveFitMetric.h"
+#include <itkImage.h>
+#include <itkImageReconstructionMetric.h>
+#include <itkMultipleValuedNonLinearOptimizer.h>
+#include <itkBSplineCurveFitMetric.h>
 
 
 namespace itk

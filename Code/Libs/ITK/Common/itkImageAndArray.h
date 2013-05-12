@@ -15,8 +15,8 @@
 #ifndef __itkImageAndArray_h
 #define __itkImageAndArray_h
 
-#include "itkImage.h"
-#include "itkArray.h"
+#include <itkImage.h>
+#include <itkArray.h>
 
 
 namespace itk

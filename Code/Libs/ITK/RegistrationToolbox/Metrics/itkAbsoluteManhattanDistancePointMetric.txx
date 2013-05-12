@@ -16,7 +16,7 @@
 #define _itkAbsoluteManhattanDistancePointMetric_txx
 
 #include "itkAbsoluteManhattanDistancePointMetric.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk
 {

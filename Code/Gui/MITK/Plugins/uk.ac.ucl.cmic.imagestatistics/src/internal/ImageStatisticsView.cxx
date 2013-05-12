@@ -15,8 +15,8 @@
 // Blueberry
 #include <berryISelectionService.h>
 #include <berryIWorkbenchWindow.h>
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
 
 // Qmitk
 #include "ImageStatisticsView.h"
@@ -27,11 +27,11 @@
 #include <QTableWidgetItem>
 
 // ITK
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
 
 // MITK
-#include "mitkImageAccessByItk.h"
+#include <mitkImageAccessByItk.h>
 
 const std::string ImageStatisticsView::VIEW_ID = "uk.ac.ucl.cmic.imagestatistics";
 

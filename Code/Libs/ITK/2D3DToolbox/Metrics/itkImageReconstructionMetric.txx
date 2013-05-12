@@ -15,11 +15,11 @@
 #ifndef __itkImageReconstructionMetric_txx
 #define __itkImageReconstructionMetric_txx
 
-#include "itkCastImageFilter.h"
+#include <itkCastImageFilter.h>
 
 #include "itkImageReconstructionMetric.h"
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 
 namespace itk

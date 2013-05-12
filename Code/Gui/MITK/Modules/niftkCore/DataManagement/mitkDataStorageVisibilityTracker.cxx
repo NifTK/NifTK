@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkDataStorageVisibilityTracker.h"
-#include "mitkBaseRenderer.h"
+#include <mitkBaseRenderer.h>
 
 namespace mitk
 {

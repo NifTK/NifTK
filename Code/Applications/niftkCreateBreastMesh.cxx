@@ -12,25 +12,25 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "itkImageToVTKImageFilter.h"
-#include "itkConnectedThresholdImageFilter.h"
-#include "itkCurvatureFlowImageFilter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkInvertIntensityImageFilter.h"
-#include "itkResampleImageFilter.h"
-#include "itkAffineTransform.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkThresholdImageWithRespectToPlane.h"
-#include "itkSetBoundaryVoxelsToValueFilter.h"
-#include "itkSignedMaurerDistanceMapImageFilter.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkMinimumMaximumImageCalculator.h>
+#include <itkImageToVTKImageFilter.h>
+#include <itkConnectedThresholdImageFilter.h>
+#include <itkCurvatureFlowImageFilter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkDiscreteGaussianImageFilter.h>
+#include <itkInvertIntensityImageFilter.h>
+#include <itkResampleImageFilter.h>
+#include <itkAffineTransform.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkThresholdImageWithRespectToPlane.h>
+#include <itkSetBoundaryVoxelsToValueFilter.h>
+#include <itkSignedMaurerDistanceMapImageFilter.h>
 
 #include <vtkCamera.h>
 #include <vtkDecimatePro.h>

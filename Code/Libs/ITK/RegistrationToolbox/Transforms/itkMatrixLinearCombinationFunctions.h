@@ -15,7 +15,7 @@
 #ifndef __itkMatrixLinearCombinationFunctions_h
 #define __itkMatrixLinearCombinationFunctions_h
 #include <algorithm>
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 
 namespace itk
 {

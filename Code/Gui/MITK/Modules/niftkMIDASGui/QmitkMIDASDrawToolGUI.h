@@ -16,7 +16,7 @@
 #define QMITKMIDASMIDASDRAWTOOL_H
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASDrawTool.h"
+#include <mitkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
 
 class QSlider;

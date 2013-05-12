@@ -15,7 +15,7 @@
 #ifndef MIDASMorphologicalSegmentorViewPreferencePage_h
 #define MIDASMorphologicalSegmentorViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

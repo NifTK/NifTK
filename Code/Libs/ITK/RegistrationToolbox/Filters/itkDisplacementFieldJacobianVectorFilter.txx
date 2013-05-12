@@ -16,8 +16,8 @@
 #define __itkDisplacementFieldJacobianVectorFilter_txx
 
 #include "itkDisplacementFieldJacobianVectorFilter.h"
-#include "itkConstNeighborhoodIterator.h"
-#include "itkImageRegionIterator.h"
+#include <itkConstNeighborhoodIterator.h>
+#include <itkImageRegionIterator.h>
 
 namespace itk {
 

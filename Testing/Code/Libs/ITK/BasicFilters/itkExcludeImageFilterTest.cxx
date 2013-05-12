@@ -18,8 +18,8 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkExcludeImageFilter.h"
+#include <itkImage.h>
+#include <itkExcludeImageFilter.h>
 
 /**
  * Basic tests for ExcludeImageFilterTest

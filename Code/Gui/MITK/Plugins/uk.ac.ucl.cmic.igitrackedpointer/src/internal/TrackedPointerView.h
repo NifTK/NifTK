@@ -15,7 +15,7 @@
 #ifndef TrackedPointerView_h
 #define TrackedPointerView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>

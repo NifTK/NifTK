@@ -17,7 +17,7 @@
 
 #include "itkRigidPCADeformationModelTransform.h"
 
-#include "vnl/algo/vnl_matrix_inverse.h"
+#include <vnl/algo/vnl_matrix_inverse.h>
 
 namespace itk
 {

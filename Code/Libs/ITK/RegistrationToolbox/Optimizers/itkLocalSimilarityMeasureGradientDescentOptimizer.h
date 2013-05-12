@@ -15,10 +15,10 @@
 #ifndef ITKLOCALSIMILARITYMEASUREGRADIENTDESCENTOPTIMIZER_H_
 #define ITKLOCALSIMILARITYMEASUREGRADIENTDESCENTOPTIMIZER_H_
 
-#include "NifTKConfigure.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkDeformableTransform.h"
-#include "itkSimilarityMeasure.h"
+#include <NifTKConfigure.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkDeformableTransform.h>
+#include <itkSimilarityMeasure.h>
 
 namespace itk
 {

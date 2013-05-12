@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include "niftkTrackLapUSProbeCLP.h"
-#include "mitkTrackLapUS.h"
+#include <niftkTrackLapUSProbeCLP.h>
+#include <mitkTrackLapUS.h>
 
 int main(int argc, char** argv)
 {

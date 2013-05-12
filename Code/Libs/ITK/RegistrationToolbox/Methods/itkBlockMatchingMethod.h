@@ -17,18 +17,18 @@
 
 
 #include "itkMaskedImageRegistrationMethod.h"
-#include "itkResampleImageFilter.h"
-#include "itkArray.h"
-#include "itkPointSet.h"
-#include "itkRegionOfInterestImageFilter.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkSimilarityMeasure.h"
-#include "itkDefaultStaticMeshTraits.h"
-#include "itkPointSetToPointSetSingleValuedMetric.h"
-#include "itkCovarianceCalculator.h"
-#include "itkScalarImageToListAdaptor.h"
-#include "itkGradientMagnitudeImageFilter.h"
-#include "itkMinimumMaximumImageCalculator.h"
+#include <itkResampleImageFilter.h>
+#include <itkArray.h>
+#include <itkPointSet.h>
+#include <itkRegionOfInterestImageFilter.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkSimilarityMeasure.h>
+#include <itkDefaultStaticMeshTraits.h>
+#include <itkPointSetToPointSetSingleValuedMetric.h>
+#include <itkCovarianceCalculator.h>
+#include <itkScalarImageToListAdaptor.h>
+#include <itkGradientMagnitudeImageFilter.h>
+#include <itkMinimumMaximumImageCalculator.h>
 
 namespace itk
 {

@@ -15,7 +15,7 @@
 #ifndef _itkSingleResolutionImageRegistrationMethod_txx
 #define _itkSingleResolutionImageRegistrationMethod_txx
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 #include "itkSingleResolutionImageRegistrationMethod.h"
 
 

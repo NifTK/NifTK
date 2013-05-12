@@ -17,9 +17,9 @@
 
 
 #include "itkMaskedImageRegistrationMethod.h"
-#include "itkImageToImageMetric.h"
-#include "itkEulerAffineTransform.h"
-#include "itkUCLRegularStepOptimizer.h"
+#include <itkImageToImageMetric.h>
+#include <itkEulerAffineTransform.h>
+#include <itkUCLRegularStepOptimizer.h>
 
 namespace itk
 {

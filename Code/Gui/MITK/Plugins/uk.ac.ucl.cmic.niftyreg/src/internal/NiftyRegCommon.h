@@ -15,7 +15,7 @@
 #ifndef NiftyRegCommon_h
 #define NiftyRegCommon_h
 
-#include "nifti1_io.h"
+#include <nifti1_io.h>
 
 
 /// Codes for interpolation type

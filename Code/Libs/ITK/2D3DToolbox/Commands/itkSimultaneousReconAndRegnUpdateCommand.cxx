@@ -17,7 +17,7 @@
 
 #include <sstream>
 #include "itkSimultaneousReconAndRegnUpdateCommand.h"
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

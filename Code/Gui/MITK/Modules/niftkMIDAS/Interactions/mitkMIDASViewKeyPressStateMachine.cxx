@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkMIDASViewKeyPressStateMachine.h"
-#include "mitkWheelEvent.h"
-#include "mitkStateEvent.h"
+#include <mitkWheelEvent.h>
+#include <mitkStateEvent.h>
 
 namespace mitk
 {

@@ -16,11 +16,11 @@
 #define __itkInterpolateVectorFieldFilter_txx
 
 #include "itkInterpolateVectorFieldFilter.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
-#include "itkProgressReporter.h"
-#include "itkImageRegionIteratorWithIndex.h"
+#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkProgressReporter.h>
+#include <itkImageRegionIteratorWithIndex.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "niftkMakeCheckerboardMarkerCLP.h"
-#include "itkImage.h"
-#include "itkImageFileWriter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <niftkMakeCheckerboardMarkerCLP.h>
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
 
 bool IsOnEvenSquare(const std::vector<int>& vec, const int pixelIndex)
 {

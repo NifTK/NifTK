@@ -17,8 +17,8 @@
 #endif
 
 #include <iostream>
-#include "itkTestMain.h"
-#include "stdlib.h"
+#include <itkTestMain.h>
+#include <stdlib.h>
 
 void RegisterTests()
 {

@@ -19,9 +19,9 @@
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 #include <QWidget>
 #include <QString>
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
-#include "mitkDataStorageVisibilityTracker.h"
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkDataStorageVisibilityTracker.h>
 
 namespace mitk
 {

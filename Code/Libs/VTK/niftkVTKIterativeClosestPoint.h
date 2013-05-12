@@ -24,8 +24,8 @@
 #define __niftkVTKIterativeClosestPoint_h
 
 
-#include "NifTKConfigure.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkCommonWin32ExportHeader.h>
 #include "niftkVTKWin32ExportHeader.h"
 
 #include <ostream>

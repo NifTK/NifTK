@@ -16,7 +16,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "QmitkBitmapOverlay.h"
 
-#include "mitkVtkLayerController.h"
+#include <mitkVtkLayerController.h>
 
 #include <mitkStandardFileLocations.h>
 #include <mitkConfig.h>

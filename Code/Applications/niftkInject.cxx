@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h>
 
 /*!
  * \file niftkInject.cxx

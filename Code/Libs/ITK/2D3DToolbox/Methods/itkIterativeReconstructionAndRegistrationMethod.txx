@@ -15,11 +15,11 @@
 #ifndef _itkIterativeReconstructionAndRegistrationMethod_txx
 #define _itkIterativeReconstructionAndRegistrationMethod_txx
 
-#include "itkImageFileWriter.h"
+#include <itkImageFileWriter.h>
 
 #include "itkIterativeReconstructionAndRegistrationMethod.h"
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 
 namespace itk

@@ -28,9 +28,9 @@
 #include <vtkVersion.h>
 #include <vtkVertex.h>
 
-#include "_reg_aladin.h"
-#include "_reg_tools.h"
-#include "_reg_f3d2.h"
+#include <_reg_aladin.h>
+#include <_reg_tools.h>
+#include <_reg_f3d2.h>
 
 
 #ifdef _USE_NR_DOUBLE

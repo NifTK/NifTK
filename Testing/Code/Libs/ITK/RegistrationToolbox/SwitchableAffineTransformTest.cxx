@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkVector.h"
-#include "itkArray.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkVector.h>
+#include <itkArray.h>
 
 /**
  * This tests, whether or not the switching mechanism in

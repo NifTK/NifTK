@@ -15,10 +15,10 @@
 #ifndef __itkImageRegistrationFilter_txx
 #define __itkImageRegistrationFilter_txx
 
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 #include "itkImageRegistrationFilter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkLogHelper.h"
+#include <itkImageRegistrationFactory.h>
+#include <itkLogHelper.h>
 
 namespace itk
 {

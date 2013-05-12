@@ -16,9 +16,9 @@
 #define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
 
 #include "MIDASGeneralSegmentorViewHelper.h"
-#include "itkImage.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>

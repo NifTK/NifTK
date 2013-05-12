@@ -25,9 +25,9 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkNifTKCoreObjectFactory.h"
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkNifTKCoreObjectFactory.h>
 
 /**
  * \brief Test class for mitkMIDASImageUtils.

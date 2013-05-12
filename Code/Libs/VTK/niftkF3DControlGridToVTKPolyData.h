@@ -16,15 +16,15 @@
 #define __NIFTKF3DCONTROLGRIDTOVTKPOLYDATA_H
 
 
-#include "NifTKConfigure.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkCommonWin32ExportHeader.h>
 #include "niftkVTKWin32ExportHeader.h"
 
 #include <ostream>
 #include <stdio.h>
 #include <string>
 
-#include "nifti1_io.h"
+#include <nifti1_io.h>
 
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>

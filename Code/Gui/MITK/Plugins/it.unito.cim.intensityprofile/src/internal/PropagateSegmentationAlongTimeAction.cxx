@@ -18,11 +18,11 @@
 
 #include "PropagateSegmentationAlongTimeAction.h"
 
-#include "mitkRenderingManager.h"
-#include "mitkBaseRenderer.h"
-#include "mitkImage.h"
-#include "mitkImageDataItem.h"
-#include "mitkSliceNavigationController.h"
+#include <mitkRenderingManager.h>
+#include <mitkBaseRenderer.h>
+#include <mitkImage.h>
+#include <mitkImageDataItem.h>
+#include <mitkSliceNavigationController.h>
 
 #include <mitkImageAccessByItk.h>
 

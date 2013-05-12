@@ -14,7 +14,7 @@
 
 #include "QmitkMIDASSegmentationViewWidget.h"
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
-#include "QmitkMIDASSingleViewWidgetListVisibilityManager.h"
+#include <QmitkMIDASSingleViewWidgetListVisibilityManager.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSpacerItem>

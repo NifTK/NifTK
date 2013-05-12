@@ -16,7 +16,7 @@
 #define mitk_MIDASDataNodeNameStringFilter_h
 
 #include "niftkMIDASExports.h"
-#include "mitkDataNodeStringPropertyFilter.h"
+#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
 
 namespace mitk

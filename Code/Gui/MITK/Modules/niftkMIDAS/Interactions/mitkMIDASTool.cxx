@@ -13,14 +13,14 @@
 =============================================================================*/
 
 #include "mitkMIDASTool.h"
-#include "mitkToolManager.h"
-#include "mitkGlobalInteraction.h"
-#include "itkCommand.h"
+#include <mitkToolManager.h>
+#include <mitkGlobalInteraction.h>
+#include <itkCommand.h>
 
 // MicroServices
-#include "mitkGetModuleContext.h"
-#include "mitkModule.h"
-#include "mitkModuleRegistry.h"
+#include <mitkGetModuleContext.h>
+#include <mitkModule.h>
+#include <mitkModuleRegistry.h>
 
 #include "mitkMIDASDisplayInteractor.h"
 

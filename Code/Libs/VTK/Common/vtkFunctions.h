@@ -15,8 +15,8 @@
 #ifndef VTKFUNCTIONS_H
 #define VTKFUNCTIONS_H
 
-#include "NifTKConfigure.h"
-#include "niftkVTKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkVTKWin32ExportHeader.h>
 
 
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
@@ -58,9 +58,9 @@ extern "C++" NIFTKVTK_WINEXPORT double GetBoundingBoxDiagonalLength(const double
 /** Copies n doubles from a to b, which must be allocated, and at least of length n. */
 extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, double *b);
 
-#include "vtkPolyData.h"
-#include "vtkTransform.h"
-#include "vtkRandomSequence.h"
+#include <vtkPolyData.h>
+#include <vtkTransform.h>
+#include <vtkRandomSequence.h>
 /** 
  * \brief Perturbs the points in a polydata object by with random values, using existing random number generator
  * \param the polydata 

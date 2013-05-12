@@ -18,9 +18,9 @@
 
 #include <vector>
 
-#include "itkConceptChecking.h"
-#include "itkMultipleValuedCostFunction.h"
-#include "itkPoint.h"
+#include <itkConceptChecking.h>
+#include <itkMultipleValuedCostFunction.h>
+#include <itkPoint.h>
 
 
 namespace itk

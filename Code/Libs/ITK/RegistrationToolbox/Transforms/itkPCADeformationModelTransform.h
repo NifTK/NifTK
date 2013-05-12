@@ -18,12 +18,12 @@
 #define __itkPCADeformationModelTransform_h
 
 #include <iostream>
-#include "itkImage.h"
-#include "itkTransform.h"
-#include "itkExceptionObject.h"
-#include "itkMatrix.h"
+#include <itkImage.h>
+#include <itkTransform.h>
+#include <itkExceptionObject.h>
+#include <itkMatrix.h>
 
-#include "itkVectorLinearInterpolateNearestNeighborExtrapolateImageFunction.h"
+#include <itkVectorLinearInterpolateNearestNeighborExtrapolateImageFunction.h>
 
 namespace itk
 {

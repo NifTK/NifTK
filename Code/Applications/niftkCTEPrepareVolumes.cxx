@@ -13,21 +13,21 @@
 =============================================================================*/
 
 #include <string>
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
-#include "itkConnectedComponentImageFilter.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
-#include "itkCorrectGMUsingPVMapFilter.h"
-#include "itkCorrectGMUsingNeighbourhoodFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkSubtractImageFilter.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
+#include <itkConnectedComponentImageFilter.h>
+#include <itkMinimumMaximumImageCalculator.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
+#include <itkCorrectGMUsingPVMapFilter.h>
+#include <itkCorrectGMUsingNeighbourhoodFilter.h>
+#include <itkCastImageFilter.h>
 
 typedef float InputPixelType;
 

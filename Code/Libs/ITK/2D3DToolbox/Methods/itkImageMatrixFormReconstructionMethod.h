@@ -15,12 +15,12 @@
 #ifndef __itkImageMatrixFormReconstructionMethod_h
 #define __itkImageMatrixFormReconstructionMethod_h
 
-#include "itkProcessObject.h"
-#include "itkImage.h"
-#include "itkImageMatrixFormReconstructionMetric.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkProjectionGeometry.h"
-#include "itkReconstructionUpdateCommand.h"
+#include <itkProcessObject.h>
+#include <itkImage.h>
+#include <itkImageMatrixFormReconstructionMetric.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkProjectionGeometry.h>
+#include <itkReconstructionUpdateCommand.h>
 
 namespace itk
 {

@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkNiftyViewMIDASPerspective.h"
-#include "berryIViewLayout.h"
+#include <berryIViewLayout.h>
 
 //-----------------------------------------------------------------------------
 QmitkNiftyViewMIDASPerspective::QmitkNiftyViewMIDASPerspective()

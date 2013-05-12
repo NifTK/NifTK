@@ -18,16 +18,16 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkArray.h"
-#include "itkArray2D.h"
-#include "itkPoint.h"
-#include "itkUCLSimplexOptimizer.h"
-#include "itkVnlIterationUpdateCommand.h"
-#include "itkTranslationTransform.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkArray.h>
+#include <itkArray2D.h>
+#include <itkPoint.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkVnlIterationUpdateCommand.h>
+#include <itkTranslationTransform.h>
 #include "itkSquaredFunctionImageToImageMetric.h"
-#include "itkArray.h"
+#include <itkArray.h>
 
 int SquaredUCLSimplexTest(int argc, char * argv[])
 {

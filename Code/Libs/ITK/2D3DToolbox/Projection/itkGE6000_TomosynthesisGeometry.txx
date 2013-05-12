@@ -19,7 +19,7 @@
 
 #include "itkGE6000_TomosynthesisGeometry.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

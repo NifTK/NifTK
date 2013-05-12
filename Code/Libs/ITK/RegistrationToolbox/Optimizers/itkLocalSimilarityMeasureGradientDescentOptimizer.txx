@@ -16,23 +16,23 @@
 #define ITKLocalSimilarityMeasureGradientDescentOptimizer_TXX_
 
 #include "itkLocalSimilarityMeasureGradientDescentOptimizer.h"
-#include "itkResampleImageFilter.h"
-#include "itkImageDuplicator.h"
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkWindowedSincInterpolateImageFunction.h"
-#include "itkAddImageFilter.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkBSplineInterpolateImageFunction.h"
-#include "itkIdentityTransform.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "ConversionUtils.h"
-#include "itkAbsImageFilter.h"
+#include <itkResampleImageFilter.h>
+#include <itkImageDuplicator.h>
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkWindowedSincInterpolateImageFunction.h>
+#include <itkAddImageFilter.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkBSplineInterpolateImageFunction.h>
+#include <itkIdentityTransform.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <ConversionUtils.h>
+#include <itkAbsImageFilter.h>
 
-#include "itkLogHelper.h"
-#include "itkUCLMacro.h"
+#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

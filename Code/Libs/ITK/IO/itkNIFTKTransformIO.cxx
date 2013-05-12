@@ -16,7 +16,7 @@
 #include <itksys/SystemTools.hxx>
 #include <vnl/vnl_matlab_read.h>
 #include <vnl/vnl_matlab_write.h>
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

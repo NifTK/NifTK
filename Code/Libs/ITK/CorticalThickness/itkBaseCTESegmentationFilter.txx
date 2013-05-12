@@ -16,10 +16,10 @@
 #define __itkBaseCTESegmentationImageFilter_txx
 
 #include "itkBaseCTESegmentationFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <ConversionUtils.h>
 
 namespace itk
 {

@@ -16,11 +16,11 @@
 #define mitk_MIDASImageUtils_h
 
 #include "niftkCoreExports.h"
-#include "itkConversionUtils.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "mitkImage.h"
-#include "mitkDataNode.h"
-#include "mitkPositionEvent.h"
+#include <itkConversionUtils.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <mitkImage.h>
+#include <mitkDataNode.h>
+#include <mitkPositionEvent.h>
 #include "mitkMIDASEnums.h"
 
 /**

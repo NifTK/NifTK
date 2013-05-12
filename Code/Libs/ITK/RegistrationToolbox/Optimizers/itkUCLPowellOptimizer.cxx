@@ -16,8 +16,8 @@
 #define _itkUCLPowellOptimizer_cxx
 
 #include "itkUCLPowellOptimizer.h"
-#include "itkUCLMacro.h"
-#include "vnl/vnl_math.h"
+#include <itkUCLMacro.h>
+#include <vnl/vnl_math.h>
 
 
 namespace itk

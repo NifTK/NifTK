@@ -16,8 +16,8 @@
 #define ITKFFDGradientDescentOptimizer_TXX_
 
 #include "itkFFDGradientDescentOptimizer.h"
-#include "itkLogHelper.h"
-#include "itkUCLMacro.h"
+#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

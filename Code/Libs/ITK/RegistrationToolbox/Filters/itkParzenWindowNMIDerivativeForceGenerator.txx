@@ -16,13 +16,13 @@
 #define __itkParzenWindowNMIDerivativeForceGenerator_txx
 
 #include "itkParzenWindowNMIDerivativeForceGenerator.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageFileWriter.h"
-#include "itkImage.h"
-#include "itkVector.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageFileWriter.h>
+#include <itkImage.h>
+#include <itkVector.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

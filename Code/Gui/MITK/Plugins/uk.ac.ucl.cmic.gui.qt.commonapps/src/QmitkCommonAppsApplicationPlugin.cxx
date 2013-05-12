@@ -32,9 +32,9 @@
 #include <QDateTime>
 #include <QtPlugin>
 
-#include "NifTKConfigure.h"
-#include "mitkMIDASTool.h"
-#include "mitkDataStorageUtils.h"
+#include <NifTKConfigure.h>
+#include <mitkMIDASTool.h>
+#include <mitkDataStorageUtils.h>
 
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
 

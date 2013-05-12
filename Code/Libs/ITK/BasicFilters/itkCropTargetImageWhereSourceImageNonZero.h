@@ -15,8 +15,8 @@
 #ifndef __itkCropTargetImageWhereSourceImageNonZero_h
 #define __itkCropTargetImageWhereSourceImageNonZero_h
 
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

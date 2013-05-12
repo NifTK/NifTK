@@ -17,14 +17,14 @@
 
 
 #include "itkSingleResolutionImageRegistrationMethod.h"
-#include "itkImageMaskSpatialObject.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryDilateImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkSmoothingRecursiveGaussianImageFilter.h"
-#include "itkBoundaryValueRescaleIntensityImageFilter.h"
-#include "itkMultiplyImageFilter.h"
+#include <itkImageMaskSpatialObject.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryDilateImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkSmoothingRecursiveGaussianImageFilter.h>
+#include <itkBoundaryValueRescaleIntensityImageFilter.h>
+#include <itkMultiplyImageFilter.h>
 
 namespace itk
 {

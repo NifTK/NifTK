@@ -15,7 +15,7 @@
 #ifndef __itkScalarToRGBOBIFPixelFunctor_h
 #define __itkScalarToRGBOBIFPixelFunctor_h
 
-#include "itkRGBPixel.h"
+#include <itkRGBPixel.h>
 
 namespace itk {
 

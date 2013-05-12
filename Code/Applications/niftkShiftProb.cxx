@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <itkLogHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
 
 /*!
  * \file niftkShiftProb.cxx

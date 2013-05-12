@@ -15,7 +15,7 @@
 #ifndef _itkTranslateRotateScaleImageRegistrationMethod_txx
 #define _itkTranslateRotateScaleImageRegistrationMethod_txx
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 #include "itkTranslateRotateScaleImageRegistrationMethod.h"
 
 namespace itk

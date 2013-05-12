@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkMIDASDataNodeNameStringFilter.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPolyTool.h"
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPolyTool.h>
 
 namespace mitk
 {

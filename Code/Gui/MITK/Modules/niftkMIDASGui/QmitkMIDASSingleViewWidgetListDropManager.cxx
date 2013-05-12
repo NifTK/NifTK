@@ -13,10 +13,10 @@
 =============================================================================*/
 
 #include "QmitkMIDASSingleViewWidgetListDropManager.h"
-#include "mitkDataStorageUtils.h"
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkDataStorageUtils.h"
+#include <mitkDataStorageUtils.h>
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkDataStorageUtils.h>
 #include "QmitkMIDASSingleViewWidget.h"
 #include "QmitkMIDASSingleViewWidgetListVisibilityManager.h"
 

@@ -18,15 +18,15 @@
 #include <QDesktopServices>
 #include <QDateTime>
 #include <mitkDataStorage.h>
-#include "mitkIGIDataSource.h"
-#include "QmitkIGINiftyLinkDataSource.h"
-#include "QmitkIGITrackerTool.h"
-#include "QmitkIGIUltrasonixTool.h"
-#include "QmitkIGIOpenCVDataSource.h"
-#include "QmitkIGIDataSourceGui.h"
+#include <mitkIGIDataSource.h>
+#include <QmitkIGINiftyLinkDataSource.h>
+#include <QmitkIGITrackerTool.h>
+#include <QmitkIGIUltrasonixTool.h>
+#include <QmitkIGIOpenCVDataSource.h>
+#include <QmitkIGIDataSourceGui.h>
 
 #ifdef _USE_NVAPI
-#include "QmitkIGINVidiaDataSource.h"
+#include <QmitkIGINVidiaDataSource.h>
 #endif
 
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);

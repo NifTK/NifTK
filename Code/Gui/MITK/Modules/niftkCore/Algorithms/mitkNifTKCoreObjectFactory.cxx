@@ -22,9 +22,9 @@
 #include <mitkImage.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include "itkPNMImageIOFactory.h"
-#include "mitkNifTKItkImageFileIOFactory.h"
-#include "mitkCoordinateAxesVtkMapper3D.h"
+#include <itkPNMImageIOFactory.h>
+#include <mitkNifTKItkImageFileIOFactory.h>
+#include <mitkCoordinateAxesVtkMapper3D.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)

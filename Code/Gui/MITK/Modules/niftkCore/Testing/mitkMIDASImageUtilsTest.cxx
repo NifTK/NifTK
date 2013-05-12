@@ -26,8 +26,8 @@
 #include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
 
-#include "mitkNifTKCoreObjectFactory.h"
-#include "mitkMIDASImageUtils.h"
+#include <mitkNifTKCoreObjectFactory.h>
+#include <mitkMIDASImageUtils.h>
 
 /**
  * \brief Test class for mitkMIDASImageUtilsTest.

@@ -12,26 +12,26 @@
 
 =============================================================================*/
 
-#include "mitkVector.h"
+#include <mitkVector.h>
 #include "mitkMIDASContourTool.h"
 #include "mitkMIDASContourToolEventInterface.h"
-#include "mitkToolManager.h"
-#include "mitkBaseRenderer.h"
-#include "mitkRenderingManager.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkInstantiateAccessFunctions.h"
-#include "mitkGeometry3D.h"
-#include "mitkExtractImageFilter.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkContourSet.h"
+#include <mitkToolManager.h>
+#include <mitkBaseRenderer.h>
+#include <mitkRenderingManager.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkInstantiateAccessFunctions.h>
+#include <mitkGeometry3D.h>
+#include <mitkExtractImageFilter.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkContourSet.h>
 #include "mitkMIDASContourToolOpAccumulateContour.h"
-#include "mitkOperationEvent.h"
-#include "mitkUndoController.h"
-#include "vtkImageData.h"
-#include "itkImage.h"
-#include "itkPoint.h"
-#include "itkIndex.h"
-#include "itkContinuousIndex.h"
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
+#include <vtkImageData.h>
+#include <itkImage.h>
+#include <itkPoint.h>
+#include <itkIndex.h>
+#include <itkContinuousIndex.h>
 
 const std::string mitk::MIDASContourTool::EDITING_PROPERTY_NAME = std::string("midas.contour.editing");
 const std::string mitk::MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");

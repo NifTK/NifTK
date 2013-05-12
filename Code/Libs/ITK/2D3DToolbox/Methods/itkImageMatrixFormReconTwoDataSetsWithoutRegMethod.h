@@ -15,12 +15,12 @@
 #ifndef __itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
 #define __itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
 
-#include "itkProcessObject.h"
-#include "itkImage.h"
-#include "itkImageMatrixFormReconTwoDataSetsWithoutRegMetric.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkProjectionGeometry.h"
-#include "itkReconstructionUpdateCommand.h"
+#include <itkProcessObject.h>
+#include <itkImage.h>
+#include <itkImageMatrixFormReconTwoDataSetsWithoutRegMetric.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkProjectionGeometry.h>
+#include <itkReconstructionUpdateCommand.h>
 
 namespace itk
 {

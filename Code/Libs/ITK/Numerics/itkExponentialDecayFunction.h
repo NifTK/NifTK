@@ -15,7 +15,7 @@
 #ifndef ITK_EXPONENTIALDECAYFUNCTION_H
 #define ITK_EXPONENTIALDECAYFUNCTION_H
 
-#include "vnl/vnl_least_squares_function.h"
+#include <vnl/vnl_least_squares_function.h>
 
 
 class ITK_EXPORT ExponentialDecayFunction : public vnl_least_squares_function

@@ -18,8 +18,8 @@
 #include "MorphologicalSegmentorPipelineParams.h"
 #include "MorphologicalSegmentorPipelineInterface.h"
 
-#include "itkImage.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include <itkImage.h>
+#include <itkBinaryThresholdImageFilter.h>
 #include "itkMIDASMaskByRegionImageFilter.h"
 #include "itkMIDASConditionalErosionFilter.h"
 #include "itkMIDASConditionalDilationFilter.h"

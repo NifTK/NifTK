@@ -15,8 +15,8 @@
 #ifndef SurfaceReconView_h
 #define SurfaceReconView_h
 
-#include "QmitkBaseView.h"
-#include "SurfaceReconstruction.h"
+#include <QmitkBaseView.h>
+#include <SurfaceReconstruction.h>
 #include <service/event/ctkEvent.h>
 #include "ui_SurfaceReconViewWidget.h"
 

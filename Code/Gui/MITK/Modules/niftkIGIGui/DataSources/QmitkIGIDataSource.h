@@ -16,7 +16,7 @@
 #define QMITKIGIDATASOURCE_H
 
 #include "niftkIGIGuiExports.h"
-#include "mitkIGIDataSource.h"
+#include <mitkIGIDataSource.h>
 #include <QObject>
 #include <QThread>
 #include <QTimer>

@@ -14,11 +14,11 @@
 =========================================================================*/
 #include "niftkvtk4PointsReader.h"
 
-#include "vtkCellArray.h"
-#include "vtkObjectFactory.h"
-#include "vtkPoints.h"
-#include "vtkPolyData.h"
-#include "vtkSmartPointer.h"
+#include <vtkCellArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 #include <sstream>
 

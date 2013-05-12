@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkMIDASImageUpdateClearRegionProcessor.h"
+#include <itkMIDASImageUpdateClearRegionProcessor.h>
 
 /**
  * Basic tests for itkMIDASImageUpdateClearRegionProcessor

@@ -21,7 +21,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "InvalidArgumentException.h"
+#include <InvalidArgumentException.h>
 
 namespace niftk {
   class MeshMerger {

@@ -17,8 +17,8 @@
 #ifndef __itkUCLMultiResolutionPyramidImageFilter_h
 #define __itkUCLMultiResolutionPyramidImageFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkArray2D.h"
+#include <itkImageToImageFilter.h>
+#include <itkArray2D.h>
 
 namespace itk
 {

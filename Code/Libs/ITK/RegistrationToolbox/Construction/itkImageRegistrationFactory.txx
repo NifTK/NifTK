@@ -15,13 +15,13 @@
 #ifndef __itkImageRegistrationFactory_txx
 #define __itkImageRegistrationFactory_txx
 
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 #include "itkImageRegistrationFactory.h"
-#include "itkTransformFactory.h"
-#include "itkTransformFileReader.h"
-#include "itkNIFTKTransformIOFactory.h"
+#include <itkTransformFactory.h>
+#include <itkTransformFileReader.h>
+#include <itkNIFTKTransformIOFactory.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

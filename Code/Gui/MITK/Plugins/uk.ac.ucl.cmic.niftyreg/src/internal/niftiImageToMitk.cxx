@@ -15,16 +15,16 @@
 #include <fstream>
 
 // ITK
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
-#include "itkSpatialOrientationAdapter.h"
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkSpatialOrientationAdapter.h>
 
 // MITK
 #include "niftiImageToMitk.h"
-#include "mitkBaseProcess.h"
-#include "mitkImageAccessByItk.h"
+#include <mitkBaseProcess.h>
+#include <mitkImageAccessByItk.h>
 
 
 // ---------------------------------------------------------------------------
