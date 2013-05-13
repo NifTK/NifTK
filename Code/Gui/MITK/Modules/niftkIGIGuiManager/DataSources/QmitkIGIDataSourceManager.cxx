@@ -20,7 +20,7 @@
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <QmitkIGINiftyLinkDataSource.h>
-#include <QmitkIGITrackerTool.h>
+#include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>

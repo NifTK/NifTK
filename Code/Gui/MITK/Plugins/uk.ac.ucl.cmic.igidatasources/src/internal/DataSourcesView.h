@@ -15,7 +15,7 @@
 #ifndef DataSourcesView_h
 #define DataSourcesView_h
 
-#include <QmitkBaseLegacyView.h>
+#include <QmitkBaseView.h>
 #include <QmitkIGIDataSourceManager.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
