@@ -175,7 +175,7 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                      r.x, r.y, cam2->GetValue(),
                                      stereorig->GetValue(),
                                      &error);
-                  if (error < 0.01)
+                  if (error < 0.1)
                   {
                     points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
                   }
@@ -195,20 +195,17 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
             outputNode->SetData(imgData4Node);
             break;
           }
-        }
-      }
-
+        } // end switch on output
+      } // end sequential CPU
+      break;
       default:
         throw std::logic_error("Method not implemented");
-    }
-
-    // FIXME: convert disparity image to point cloud
+    } // end switch method
   }
   catch (const mitk::Exception& e)
   {
     throw std::runtime_error(std::string("Something went wrong with MITK bits: ") + e.what());
   }
-
 }
 
 } // end namespace

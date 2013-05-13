@@ -245,7 +245,7 @@ void SequentialCpuQds::InitSparseFeatures()
 #ifndef NDEBUG
   // help with debugging this
   // throw out all failed points, otherwise it's a mess trying to figure out which features were tracked and which were not
-  for (unsigned int i = m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
+  for (int i = (int)m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
   {
     if (m_FeatureStatus[i] == 0)
     {
