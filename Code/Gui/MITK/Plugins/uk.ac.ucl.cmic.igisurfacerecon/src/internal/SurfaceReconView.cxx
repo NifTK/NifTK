@@ -22,6 +22,7 @@
 #include <service/event/ctkEvent.h>
 #include "SurfaceReconViewActivator.h"
 #include <mitkCameraIntrinsicsProperty.h>
+#include <mitkNodePredicateDataType.h>
 #include <QFileDialog>
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
@@ -103,6 +104,13 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
   this->RetrievePreferenceValues();
   this->LeftChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   this->RightChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
+
+  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+  this->LeftChannelNodeNameComboBox->SetAutoSelectNewItems(false);
+  this->LeftChannelNodeNameComboBox->SetPredicate(isImage);
+  this->RightChannelNodeNameComboBox->SetAutoSelectNewItems(false);
+  this->RightChannelNodeNameComboBox->SetPredicate(isImage);
+
   UpdateNodeNameComboBox();
 }
 

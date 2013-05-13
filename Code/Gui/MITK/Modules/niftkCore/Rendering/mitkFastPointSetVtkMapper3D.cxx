@@ -97,8 +97,15 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
 {
   LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);
 
+  mitk::DataNode* dataNode = this->GetDataNode();
+  assert(dataNode);
+
   bool visible = true;
-  this->GetDataNode()->GetVisibility(visible, renderer, "visible");
+  bool gotVisibility = dataNode->GetVisibility(visible, renderer);
+  if (!gotVisibility)
+  {
+    dataNode->SetVisibility(visible, renderer);
+  }
 
   if(!visible)
   {
@@ -109,6 +116,57 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
   {
     ls->m_Actor->VisibilityOn();
   }
+
+  float opacity = 1;
+  bool gotOpacity = dataNode->GetOpacity(opacity, renderer);
+  if (!gotOpacity)
+  {
+    dataNode->SetBoolProperty("opacity", opacity, renderer);
+  }
+  ls->m_Actor->GetProperty()->SetOpacity(opacity);
+
+  int pointSize = 1;
+  bool gotPointSize = dataNode->GetIntProperty("pointsize", pointSize);
+  if (!gotPointSize)
+  {
+    dataNode->SetIntProperty("pointsize", pointSize, renderer);
+  }
+  ls->m_Actor->GetProperty()->SetPointSize(pointSize);
+
+  if (dynamic_cast<mitk::ColorProperty*>(dataNode->GetPropertyList(renderer)->GetProperty("color")) == NULL)
+  {
+    float unselectedColor[3] = {1.0f, 1.0f, 0.0f};
+    dataNode->SetColor(unselectedColor, renderer, "color");
+  }
+
+  if (dynamic_cast<mitk::ColorProperty*>(dataNode->GetPropertyList(renderer)->GetProperty("selectedcolor")) == NULL)
+  {
+    float selectedColor[3] = {1.0f, 0.0f, 0.0f};
+    dataNode->SetColor(selectedColor, renderer, "selectedcolor");
+  }
+
+  mitk::Color colour;
+  vtkFloatingPointType colourVtk[4]={1.0f, 1.0f, 1.0f,1.0f};
+
+  bool isSelected = false;
+  bool gotSelected = dataNode->GetBoolProperty("selected", isSelected);
+  if (!gotSelected)
+  {
+    dataNode->SetBoolProperty("selected", isSelected, renderer);
+  }
+
+  if (isSelected)
+  {
+    colour = dynamic_cast<mitk::ColorProperty *>(this->GetDataNode()->GetPropertyList(renderer)->GetProperty("selectedcolor"))->GetValue();
+  }
+  else
+  {
+    colour = dynamic_cast<mitk::ColorProperty *>(this->GetDataNode()->GetPropertyList(renderer)->GetProperty("color"))->GetValue();
+  }
+  colourVtk[0] = colour[0];
+  colourVtk[1] = colour[1];
+  colourVtk[2] = colour[2];
+  ls->m_Actor->GetProperty()->SetColor(colourVtk);
 
   mitk::PointSet::PointType point;
   const mitk::PointSet* pointSet = this->GetInput();
@@ -132,8 +190,6 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
       ls->m_PolyData->SetVerts(ls->m_CellArray);
       ls->m_PolyDataMapper->SetInputConnection(0, ls->m_PolyData->GetProducerPort());
       ls->m_Actor->SetMapper(ls->m_PolyDataMapper);
-      ls->m_Actor->GetProperty()->SetPointSize(1);
-
       m_NumberOfPoints = numberOfPoints;
     }
 
@@ -142,6 +198,7 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
     unsigned long int indexCounter = 0;
     mitk::PointSet::PointsIterator pIt;
 
+    // Processing each point one at a time.
     for (pIt = points->Begin(); pIt != points->End(); ++pIt)  // for each point in the pointset
     {
       point = pIt->Value();
@@ -149,10 +206,14 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
       arrayCounter = pointCounter*3;
       indexCounter = pointCounter*2;
 
+      // Copy x,y,z in sequence for each point.
       ls->m_Array->SetValue(arrayCounter, point[0]);
       ls->m_Array->SetValue(arrayCounter+1, point[1]);
       ls->m_Array->SetValue(arrayCounter+2, point[2]);
 
+      // Copy a list of cells, where the first number is
+      // the number of points in the cell (always 1), and
+      // the second number is the point ID.
       ls->m_Indicies->SetValue(indexCounter, 1);
       ls->m_Indicies->SetValue(indexCounter+1, pointCounter);
 
