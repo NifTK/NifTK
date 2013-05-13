@@ -20,11 +20,13 @@
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
+#include <mitkPointSet.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
 #include <itkPNMImageIOFactory.h>
 #include <mitkNifTKItkImageFileIOFactory.h>
 #include <mitkCoordinateAxesVtkMapper3D.h>
+#include <mitkFastPointSetVtkMapper3D.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
@@ -76,12 +78,17 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
 
   if ( id == mitk::BaseRenderer::Standard3D )
   {
-    if((dynamic_cast<Image*>(data) != NULL))
+    if(dynamic_cast<Image*>(data) != NULL)
     {
       newMapper = mitk::VolumeDataVtkMapper3D::New();
       newMapper->SetDataNode(node);
     }
-    else if ((dynamic_cast<CoordinateAxesData*>(data) != NULL))
+    else if (dynamic_cast<PointSet*>(data) != NULL )
+    {
+      newMapper = mitk::FastPointSetVtkMapper3D::New();
+      newMapper->SetDataNode(node);
+    }
+    else if (dynamic_cast<CoordinateAxesData*>(data) != NULL)
     {
       newMapper = mitk::CoordinateAxesVtkMapper3D::New();
       newMapper->SetDataNode(node);
