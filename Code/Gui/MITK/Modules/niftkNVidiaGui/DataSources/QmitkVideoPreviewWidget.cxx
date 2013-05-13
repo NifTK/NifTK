@@ -94,6 +94,12 @@ void QmitkVideoPreviewWidget::setupViewport()
 //-----------------------------------------------------------------------------
 void QmitkVideoPreviewWidget::paintGL()
 {
+  // do nothing if we dont have an up-to-date texture id
+  if (m_TextureId == 0)
+  {
+    return;
+  }
+
   setupViewport();
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -105,6 +111,10 @@ void QmitkVideoPreviewWidget::paintGL()
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, m_TextureId);
+  // we reset texture id so that we render at most one frame with it.
+  // reason is that the sdi code uses a ringbuffer of textures
+  // and using a repurposed texture id here causes some funny glitches.
+  m_TextureId = 0;
 
   glColor4f(1, 1, 1, 1);
   glBegin(GL_QUADS);
@@ -117,6 +127,8 @@ void QmitkVideoPreviewWidget::paintGL()
     glTexCoord2f(1, 1);
     glVertex2f( 1,  1);
   glEnd();
+  // dont leave it dangling
+  glBindTexture(GL_TEXTURE_2D, 0);
 
   assert(glGetError() == GL_NO_ERROR);
 }

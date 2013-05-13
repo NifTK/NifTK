@@ -108,6 +108,9 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
   {
     // FIXME: if we are recording do not allow changing it!
 
+    // if we dont stop then preview-widget will reference a deleted texture
+    StopPreviewWidget();
+
     bool    wascapturing = source->IsCapturing();
     if (wascapturing)
     {
@@ -124,6 +127,26 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
   else
   {
     MITK_ERROR << "QmitkIGINVidiaDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceGui::StopPreviewWidget()
+{
+  assert(PreviewGroupBox->layout() != 0);
+  for (int i = 0; i < PreviewGroupBox->layout()->count(); ++i)
+  {
+    QLayoutItem* l = PreviewGroupBox->layout()->itemAt(i);
+    QWidget*     w = l->widget();
+    if (w)
+    {
+      QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
+      if (g)
+      {
+        g->SetTextureId(0);
+      }
+    }
   }
 }
 

@@ -51,6 +51,8 @@ protected:
    */
   virtual void Initialize(QWidget *parent);
 
+  void StopPreviewWidget();
+
 protected slots:
 
   /**

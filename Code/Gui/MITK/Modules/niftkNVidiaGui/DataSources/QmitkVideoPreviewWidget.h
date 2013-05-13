@@ -30,6 +30,10 @@ public:
 
 public:
   void SetVideoDimensions(int width, int height);
+
+  /**
+   * Needs to be called repeatedly. At most one frame will be rendered with the given texture id.
+   */
   void SetTextureId(int id);
 
 
