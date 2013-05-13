@@ -433,6 +433,12 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   if (m_TableWidget->rowCount() == 0)
     return;
 
+  // Stop the timers to make sure they don't trigger.
+  bool guiTimerWasOn = m_GuiUpdateTimer->isActive();
+  bool clearDownTimerWasOn = m_ClearDownTimer->isActive();
+  m_GuiUpdateTimer->stop();
+  m_ClearDownTimer->stop();
+
   int rowIndex = m_TableWidget->currentRow();
 
   if (rowIndex < 0)
@@ -495,10 +501,18 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   // as this class has no idea what the source is or what it contains etc.
   m_Sources.erase(m_Sources.begin() + rowIndex);
 
-  if (m_TableWidget->rowCount() == 0)
+  // Given we stopped the timers to make sure they don't trigger, we need
+  // to restart them, if indeed they were on.
+  if (m_TableWidget->rowCount() > 0)
   {
-    m_GuiUpdateTimer->stop();
-    m_ClearDownTimer->stop();
+    if (guiTimerWasOn)
+    {
+      m_GuiUpdateTimer->start();
+    }
+    if (clearDownTimerWasOn)
+    {
+      m_ClearDownTimer->start();
+    }
   }
 }
 
