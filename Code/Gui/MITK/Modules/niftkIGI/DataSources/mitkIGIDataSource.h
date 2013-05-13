@@ -294,6 +294,7 @@ protected:
    */
   std::string m_SavePrefix;
   std::string m_Description;
+  igtlUint64  m_TimeStampTolerance;
 
 private:
 
@@ -330,7 +331,6 @@ private:
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;
-  igtlUint64                                      m_TimeStampTolerance;
   std::list<std::string>                          m_RelatedSources;
 }; // end class
 

@@ -83,7 +83,7 @@ void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
     QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
     wrapper->SetMessage(msg.data());
     wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->GetTimeCreated()));
-    wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+    wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");

@@ -643,7 +643,7 @@ void QmitkIGINVidiaDataSource::GrabData()
       mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
       wrapper->SetValues(1, fi.sequence_number, fi.arrival_time);
       wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+      wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
       // under certain circumstances, this might call back into SaveData()
       this->AddData(wrapper.GetPointer());

@@ -138,7 +138,7 @@ void QmitkIGIOpenCVDataSource::GrabData()
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+  wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
   this->SetStatus("Grabbing");
