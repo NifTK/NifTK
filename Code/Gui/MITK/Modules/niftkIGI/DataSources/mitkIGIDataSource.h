@@ -27,7 +27,7 @@
 #include <list>
 #include <set>
 #include "mitkIGIDataType.h"
-#include "itkNifTKMacro.h"
+#include <itkNifTKMacro.h>
 
 namespace mitk {
 

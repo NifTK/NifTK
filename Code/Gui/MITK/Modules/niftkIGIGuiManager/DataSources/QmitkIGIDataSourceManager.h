@@ -28,7 +28,7 @@
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
-#include "QmitkIGIDataSource.h"
+#include <QmitkIGIDataSource.h>
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;

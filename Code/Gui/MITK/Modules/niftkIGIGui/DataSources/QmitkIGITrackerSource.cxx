@@ -22,8 +22,8 @@
 #include <NiftyLinkMessage.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
-#include "mitkCoordinateAxesData.h"
-#include "mitkAffineTransformDataNodeProperty.h"
+#include <mitkCoordinateAxesData.h>
+#include <mitkAffineTransformDataNodeProperty.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
