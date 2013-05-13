@@ -99,6 +99,7 @@ private:
   // Other controls.
   QSpinBox           *m_FramesPerSecondSpinBox;
   QSpinBox           *m_ClearDataSpinBox;
+  QSpinBox           *m_MilliSecondsTolerance;
   ctkDirectoryButton *m_DirectoryPrefix;
   QRadioButton       *m_SaveOnUpdate;
   QRadioButton       *m_SaveOnReceive;

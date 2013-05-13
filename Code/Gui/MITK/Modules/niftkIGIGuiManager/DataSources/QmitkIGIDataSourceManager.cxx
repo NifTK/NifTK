@@ -34,6 +34,7 @@ const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
 const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
 const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 2; // every 2 seconds
+const int    QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE = 5000; // 5 seconds expressed in milliseconds
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
 
@@ -51,6 +52,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_ErrorColour = DEFAULT_ERROR_COLOUR;
   m_FrameRate = DEFAULT_FRAME_RATE;
   m_ClearDataRate = DEFAULT_CLEAR_RATE;
+  m_TimingTolerance = DEFAULT_TIMING_TOLERANCE;
   m_DirectoryPrefix = GetDefaultPath();
   m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
@@ -156,7 +158,7 @@ void QmitkIGIDataSourceManager::SetDataStorage(mitk::DataStorage* dataStorage)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
+void QmitkIGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 {
   if (m_GuiUpdateTimer != NULL)
   {
@@ -170,7 +172,7 @@ void QmitkIGIDataSourceManager::SetFramesPerSecond(int framesPerSecond)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
+void QmitkIGIDataSourceManager::SetClearDataRate(const int& numberOfSeconds)
 {
   if (m_ClearDownTimer != NULL)
   {
@@ -179,6 +181,19 @@ void QmitkIGIDataSourceManager::SetClearDataRate(int numberOfSeconds)
   }
 
   m_ClearDataRate = numberOfSeconds;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetTimingTolerance(const int& timingTolerance)
+{
+  m_TimingTolerance = (igtlUint64)timingTolerance*(igtlUint64)1000000; // input is in milliseconds, but the underlying source is in nano-seconds.
+  for (unsigned int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->SetTimeStampTolerance(m_TimingTolerance);
+  }
+
   this->Modified();
 }
 
@@ -401,6 +416,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
 
   source->SetSourceType(sourceType);
   source->SetIdentifier(m_NextSourceIdentifier);
+  source->SetTimeStampTolerance(m_TimingTolerance);
 
   m_NextSourceIdentifier++;
   m_Sources.push_back(source);
@@ -682,7 +698,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
       // Update the status icon.
       QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
-      if (!isValid || lag > 1) // lag in seconds. TODO: This should be a preference.
+      if (!isValid || lag > m_TimingTolerance/1000000000) // lag is in seconds, timing tolerance in nanoseconds.
       {
         // Highlight that current row is in error.
         QPixmap pix(22, 22);

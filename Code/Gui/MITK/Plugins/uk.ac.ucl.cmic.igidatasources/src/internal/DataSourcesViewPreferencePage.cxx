@@ -39,6 +39,7 @@ DataSourcesViewPreferencePage::DataSourcesViewPreferencePage()
 : m_MainControl(0)
 , m_FramesPerSecondSpinBox(0)
 , m_ClearDataSpinBox(0)
+, m_MilliSecondsTolerance(0)
 , m_DirectoryPrefix(0)
 , m_SaveOnUpdate(0)
 , m_SaveOnReceive(0)
@@ -138,6 +139,10 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   m_ClearDataSpinBox->setMinimum(1);
   m_ClearDataSpinBox->setMaximum(3600);
 
+  m_MilliSecondsTolerance = new QSpinBox();
+  m_MilliSecondsTolerance->setMinimum(1);
+  m_MilliSecondsTolerance->setMaximum(1000*60*10); // 10 minutes in milliseconds
+
   m_DirectoryPrefix = new ctkDirectoryButton();
 
   m_SaveOnUpdate = new QRadioButton();
@@ -149,6 +154,7 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("OK colour", okButtonLayout);
   formLayout->addRow("refresh rate (per second)", m_FramesPerSecondSpinBox);
   formLayout->addRow("clear data rate (seconds)", m_ClearDataSpinBox);
+  formLayout->addRow("timing tolerance (milli-seconds)", m_MilliSecondsTolerance);
   formLayout->addRow("output directory prefix", m_DirectoryPrefix);
   formLayout->addRow("save data each screen update", m_SaveOnUpdate);
   formLayout->addRow("save data as it is received", m_SaveOnReceive);
@@ -179,6 +185,7 @@ bool DataSourcesViewPreferencePage::PerformOk()
   m_DataSourcesViewPreferencesNode->PutByteArray("ok colour", m_Color[2]);
   m_DataSourcesViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
   m_DataSourcesViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
+  m_DataSourcesViewPreferencesNode->PutInt("timing tolerance", m_MilliSecondsTolerance->value());
   m_DataSourcesViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
   m_DataSourcesViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
   m_DataSourcesViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
@@ -234,6 +241,7 @@ void DataSourcesViewPreferencePage::Update()
 
   m_FramesPerSecondSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE));
   m_ClearDataSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
+  m_MilliSecondsTolerance->setValue(m_DataSourcesViewPreferencesNode->GetInt("timing tolerance", QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE));
 
   QString path = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("output directory prefix", ""));
 

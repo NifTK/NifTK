@@ -111,6 +111,7 @@ bool QmitkIGIUltrasonixTool::CanHandleData(mitk::IGIDataType* data) const
       }
     }
   }
+
   return canHandle;
 }
 
@@ -175,13 +176,6 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
         }
       }
 
-      // We emit this, so that the GUI class associated with this tool (i.e.
-      // containing a preview of this data) also knows to update.
-      //
-      // This Update method is called from a Non-GUI thread.
-      //
-      // So clients binding to this signal should be updating the GUI from the GUI thread (i.e. a different thread).
-      // This means that clients connecting should be using a Qt::QueuedConnection.
       imageMsg->GetMatrix(imageMatrix);
       emit UpdatePreviewDisplay(&qImage, this->GetMotorPos(imageMatrix));
 

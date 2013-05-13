@@ -61,6 +61,7 @@ public:
   static const QColor DEFAULT_OK_COLOUR;
   static const int    DEFAULT_FRAME_RATE;
   static const int    DEFAULT_CLEAR_RATE;
+  static const int    DEFAULT_TIMING_TOLERANCE;
   static const bool   DEFAULT_SAVE_ON_RECEIPT;
   static const bool   DEFAULT_SAVE_IN_BACKGROUND;
 
@@ -93,12 +94,17 @@ public:
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
-  void SetFramesPerSecond(int framesPerSecond);
+  void SetFramesPerSecond(const int& framesPerSecond);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
-  void SetClearDataRate(int numberOfSeconds);
+  void SetClearDataRate(const int& numberOfSeconds);
+
+  /**
+   * \brief Called from the GUI to set the timing tolerance, in milliseconds, which is the time during which data is considered valid.
+   */
+  void SetTimingTolerance(const int& timingTolerance);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -240,6 +246,7 @@ private:
   QColor                                    m_OKColour;
   int                                       m_FrameRate;
   int                                       m_ClearDataRate;
+  igtlUint64                                m_TimingTolerance;
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;

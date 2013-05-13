@@ -101,6 +101,7 @@ void DataSourcesView::RetrievePreferenceValues()
 
     int refreshRate = prefs->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);
     int clearRate = prefs->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE);
+    int timingTolerance = prefs->GetInt("timing tolerance", QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
     bool saveOnReceipt = prefs->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
     bool saveInBackground = prefs->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
 
@@ -110,6 +111,7 @@ void DataSourcesView::RetrievePreferenceValues()
     m_DataSourceManager->SetWarningColour(warningColour);
     m_DataSourceManager->SetOKColour(okColour);
     m_DataSourceManager->SetClearDataRate(clearRate);
+    m_DataSourceManager->SetTimingTolerance(timingTolerance);
     m_DataSourceManager->SetSaveOnReceipt(saveOnReceipt);
     m_DataSourceManager->SetSaveInBackground(saveInBackground);
   }
@@ -126,6 +128,7 @@ void DataSourcesView::RetrievePreferenceValues()
     m_DataSourceManager->SetWarningColour(defaultWarningColor);
     m_DataSourceManager->SetOKColour(defaultOKColor);
     m_DataSourceManager->SetClearDataRate(QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE);
+    m_DataSourceManager->SetTimingTolerance(QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
     m_DataSourceManager->SetSaveOnReceipt(QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
     m_DataSourceManager->SetSaveInBackground(QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
   }
