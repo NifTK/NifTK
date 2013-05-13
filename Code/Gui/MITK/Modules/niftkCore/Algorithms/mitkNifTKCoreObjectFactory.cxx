@@ -27,6 +27,7 @@
 #include <mitkNifTKItkImageFileIOFactory.h>
 #include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkFastPointSetVtkMapper3D.h>
+#include <mitkPointSetVtkMapper3D.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
@@ -85,7 +86,15 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
     }
     else if (dynamic_cast<PointSet*>(data) != NULL )
     {
-      newMapper = mitk::FastPointSetVtkMapper3D::New();
+      mitk::PointSet* pointSet = dynamic_cast<PointSet*>(data);
+      if (pointSet->GetSize() > 1000)
+      {
+        newMapper = mitk::FastPointSetVtkMapper3D::New();
+      }
+      else
+      {
+        newMapper = mitk::PointSetVtkMapper3D::New();
+      }
       newMapper->SetDataNode(node);
     }
     else if (dynamic_cast<CoordinateAxesData*>(data) != NULL)
