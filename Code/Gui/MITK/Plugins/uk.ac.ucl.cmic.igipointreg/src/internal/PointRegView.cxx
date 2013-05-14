@@ -17,8 +17,8 @@
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
-#include "mitkPointBasedRegistration.h"
-#include "QmitkFileIOUtils.h"
+#include <mitkPointBasedRegistration.h>
+#include <QmitkFileIOUtils.h>
 
 const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
 

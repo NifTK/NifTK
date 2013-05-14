@@ -15,7 +15,7 @@
 #ifndef SurfaceRegViewPreferencePage_h
 #define SurfaceRegViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 

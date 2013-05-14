@@ -15,7 +15,7 @@
 #ifndef PointRegView_h
 #define PointRegView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_PointRegView.h"
 #include <vtkSmartPointer.h>

@@ -15,7 +15,7 @@
 #ifndef PointRegViewPreferencePage_h
 #define PointRegViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 

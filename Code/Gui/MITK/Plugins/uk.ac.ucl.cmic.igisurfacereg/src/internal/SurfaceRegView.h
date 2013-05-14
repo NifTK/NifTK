@@ -15,7 +15,7 @@
 #ifndef SurfaceRegView_h
 #define SurfaceRegView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include "ui_SurfaceRegView.h"
 
 class vtkMatrix4x4;
