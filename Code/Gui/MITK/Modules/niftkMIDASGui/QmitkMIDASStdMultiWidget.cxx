@@ -304,13 +304,13 @@ void QmitkMIDASStdMultiWidget::OnCoronalSliceChanged(const itk::EventObject& /*g
 void QmitkMIDASStdMultiWidget::SetBackgroundColor(QColor colour)
 {
   m_BackgroundColor = colour;
-  m_GradientBackground1->SetGradientColors(colour.redF(),colour.greenF(),colour.blueF(),colour.redF(),colour.greenF(),colour.blueF());
+  m_GradientBackground1->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground1->Enable();
-  m_GradientBackground2->SetGradientColors(colour.redF(),colour.greenF(),colour.blueF(),colour.redF(),colour.greenF(),colour.blueF());
+  m_GradientBackground2->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground2->Enable();
-  m_GradientBackground3->SetGradientColors(colour.redF(),colour.greenF(),colour.blueF(),colour.redF(),colour.greenF(),colour.blueF());
+  m_GradientBackground3->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground3->Enable();
-  m_GradientBackground4->SetGradientColors(colour.redF(),colour.greenF(),colour.blueF(),colour.redF(),colour.greenF(),colour.blueF());
+  m_GradientBackground4->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground4->Enable();
 }
 
@@ -323,11 +323,11 @@ QColor QmitkMIDASStdMultiWidget::GetBackgroundColor() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetSelected(bool b)
+void QmitkMIDASStdMultiWidget::SetSelected(bool selected)
 {
-  m_IsSelected = b;
+  m_IsSelected = selected;
 
-  if (b)
+  if (selected)
   {
     this->EnableColoredRectangles();
   }
@@ -666,16 +666,10 @@ void QmitkMIDASStdMultiWidget::SetRendererSpecificVisibility(std::vector<mitk::D
 //-----------------------------------------------------------------------------
 bool QmitkMIDASStdMultiWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindow) const
 {
-  bool result = false;
-  if (   mitkWidget1 == renderWindow
+  return mitkWidget1 == renderWindow
       || mitkWidget2 == renderWindow
       || mitkWidget3 == renderWindow
-      || mitkWidget4 == renderWindow
-      )
-  {
-    result = true;
-  }
-  return result;
+      || mitkWidget4 == renderWindow;
 }
 
 
@@ -1454,16 +1448,8 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          // Deprecated. This checks the current current scale factor in the render
-          // window and calculates a 'relative' scale factor, that is how much zooming
-          // is needed to reach the required scaling.
-//          double zoomFactor = this->ComputeZoomFactor(otherRenderWindow, magnification);
-//          this->ZoomDisplayAboutCursor(otherRenderWindow, zoomFactor);
-
-          // Instead, we use the SetScaleFactor function to set the required 'absolute'
-          // scaling.
           // TODO: instead of using the scale factor of the first axis,
-          // we should probable use the one with the highest mm/vx ratio.
+          // we should probable use the one with the smallest mm/vx ratio.
           this->SetScaleFactor(otherRenderWindow, scaleFactors[0]);
         }
       }
@@ -1784,17 +1770,9 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      // Deprecated. This checks the current current scale factor in the render
-      // window and calculates a 'relative' scale factor, that is how much zooming
-      // is needed to reach the required scaling.
-//      double zoomFactor = this->ComputeZoomFactor(renderWindow, magnification);
-//      this->ZoomDisplayAboutCursor(renderWindow, zoomFactor);
-
-      // Instead, we use the SetScaleFactor function to set the required 'absolute'
-      // scaling.
       // TODO: Anisotropic voxel size not handled correctly.
       // Instead of using the scale factor of the first axis,
-      // we should probable use the one with the highest mm/vx ratio.
+      // we should probable use the one with the smallest mm/vx ratio.
       this->SetScaleFactor(renderWindow, scaleFactors[0]);
     }
   }
@@ -1802,54 +1780,6 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
   m_Magnification = magnification;
   this->RequestUpdate();
   emit MagnificationChanged(magnification);
-}
-
-
-//-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification)
-{
-  mitk::Vector2D currentScaleFactorsPxPerVx;
-  mitk::Vector2D currentScaleFactorsPxPerMm;
-  this->GetScaleFactors(renderWindow, currentScaleFactorsPxPerVx, currentScaleFactorsPxPerMm);
-
-  double requiredScaleFactorPxPerVx;
-  if (magnification >= 0.0)
-  {
-    requiredScaleFactorPxPerVx = magnification + 1.0;
-  }
-  else
-  {
-    requiredScaleFactorPxPerVx = -1.0 / (magnification - 1.0);
-  }
-
-  // Need to scale both of the current scaleFactorPxPerVx[i]
-  mitk::Vector2D zoomFactors;
-  zoomFactors[0] = requiredScaleFactorPxPerVx / currentScaleFactorsPxPerVx[0];
-  zoomFactors[1] = requiredScaleFactorPxPerVx / currentScaleFactorsPxPerVx[1];
-
-  // TODO Anisotropic voxel size not handled correctly.
-//  // Pick the one that has changed the least
-//  int axisWithLeastDifference = -1;
-//  double leastDifference = std::numeric_limits<double>::max();
-//  int axisWithMostDifference = -1;
-//  double mostDifference = std::numeric_limits<double>::min();
-//  for(int i = 0; i < 2; i++)
-//  {
-//    double difference = std::fabs(zoomFactors[i] - 1.0);
-//    if (difference < leastDifference)
-//    {
-//      leastDifference = difference;
-//      axisWithLeastDifference = i;
-//    }
-//    if (difference > mostDifference)
-//    {
-//      mostDifference = difference;
-//      axisWithMostDifference = i;
-//    }
-//  }
-  double zoomFactor = zoomFactors[0];
-
-  return zoomFactor;
 }
 
 
@@ -1876,26 +1806,17 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN)
   {
     MITK_DEBUG << "if (this->GetOrientation() == MIDAS_ORIENTATION_UNKNOWN): true";
-    return 0;
+    return 0.0;
   }
-
-  // Deprecated.
-  // We do this with mitk::Vector2D, so we have different values in X and Y, as images can be anisotropic.
-//  mitk::Vector2D scaleFactorsPxPerVx;
-//  mitk::Vector2D scaleFactorsPxPerMm;
-//  this->GetScaleFactors(renderWindow, scaleFactorsPxPerVx, scaleFactorsPxPerMm);
-
-  // We may have anisotropic voxels, so find the axis that requires most scale factor change.
-//  double scaleFactorPxPerVx = std::max(scaleFactorsPxPerVx[0], scaleFactorsPxPerVx[1]);
 
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
   double scaleFactorMmPerPx = displayGeometry->GetScaleFactorMMPerDisplayUnit();
 
   mitk::Vector3D scaleFactorsPxPerVx = m_MmPerVx / scaleFactorMmPerPx;
 
-  // TODO: Anisotropic voxel size not handled correctly.
-  // Instead of using the scale factor of the first axis,
-  // we should probable use the one with the highest mm/vx ratio.
+  // Note that we take the scale factor from the first axis always, consequently.
+  // Other strategies could be followed as well, e.g. taking the axes with the smallest
+  // voxel size.
   double scaleFactorPxPerVx = scaleFactorsPxPerVx[0];
 
   // Finally, we calculate the magnification from the scale factor.
@@ -1937,139 +1858,6 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::GetScaleFactors(
-    QmitkRenderWindow* renderWindow,
-    mitk::Vector2D& scaleFactorPxPerVx,
-    mitk::Vector2D& scaleFactorPxPerMm)
-{
-  // Basic initialization - default value is arbitrarily 1 in both cases.
-  scaleFactorPxPerVx[0] = 1.0;
-  scaleFactorPxPerVx[1] = 1.0;
-  scaleFactorPxPerMm[0] = 1.0;
-  scaleFactorPxPerMm[1] = 1.0;
-
-  if (renderWindow != NULL)
-  {
-    mitk::BaseRenderer::Pointer renderer = renderWindow->GetRenderer();
-    assert(renderer);
-
-    mitk::DisplayGeometry::Pointer displayGeometry = renderer->GetDisplayGeometry();
-    assert(displayGeometry);
-
-    const mitk::Geometry3D* geometry = renderWindow->GetRenderer()->GetWorldGeometry();
-    if (geometry != NULL && geometry->GetBoundingBox() != NULL)
-    {
-      mitk::Point3D cornerPointsInImage[8];
-      cornerPointsInImage[0] = geometry->GetCornerPoint(true, true, true);
-      cornerPointsInImage[1] = geometry->GetCornerPoint(true, true, false);
-      cornerPointsInImage[2] = geometry->GetCornerPoint(true, false, true);
-      cornerPointsInImage[3] = geometry->GetCornerPoint(true, false, false);
-      cornerPointsInImage[4] = geometry->GetCornerPoint(false, true, true);
-      cornerPointsInImage[5] = geometry->GetCornerPoint(false, true, false);
-      cornerPointsInImage[6] = geometry->GetCornerPoint(false, false, true);
-      cornerPointsInImage[7] = geometry->GetCornerPoint(false, false, false);
-
-      scaleFactorPxPerVx[0] = std::numeric_limits<float>::max();
-      scaleFactorPxPerVx[1] = std::numeric_limits<float>::max();
-
-      // Take every combination of pairs of 3D corner points taken from the 8 corners of the geometry.
-      for (unsigned int i = 0; i < 8; ++i)
-      {
-        mitk::Point3D pointsInVx[2];
-
-        for (unsigned int j = 1; j < 8; ++j)
-        {
-          geometry->WorldToIndex(cornerPointsInImage[i], pointsInVx[0]);
-          geometry->WorldToIndex(cornerPointsInImage[j], pointsInVx[1]);
-
-          // We only want to pick pairs of points where the points are different
-          // and also differ in 3D space along exactly one axis (i.e. no diagonals).
-          unsigned int differentVoxelIndexesCounter = 0;
-
-          for (unsigned int k = 0; k < 3; ++k)
-          {
-            if (std::fabs(pointsInVx[1][k] - pointsInVx[0][k]) > 0.1)
-            {
-              ++differentVoxelIndexesCounter;
-            }
-          }
-          if (differentVoxelIndexesCounter == 1)
-          {
-            // So, for this pair (i,j) of points, project to 2D
-            mitk::Point2D displayPointInMm[2];
-            mitk::Point2D displayPointInPx[2];
-
-            displayGeometry->Map(cornerPointsInImage[i], displayPointInMm[0]);
-            displayGeometry->WorldToDisplay(displayPointInMm[0], displayPointInPx[0]);
-
-            displayGeometry->Map(cornerPointsInImage[j], displayPointInMm[1]);
-            displayGeometry->WorldToDisplay(displayPointInMm[1], displayPointInPx[1]);
-
-            // Similarly, we only want to pick pairs of points where the projected 2D points
-            // differ in 2D display coordinates along exactly one axis.
-            unsigned int differentDisplayIndexesCounter = 0;
-            int differentDisplayAxis = -1;
-
-            for (unsigned int k = 0; k < 2; ++k)
-            {
-              if (std::fabs(displayPointInPx[1][k] - displayPointInPx[0][k]) > 0.1)
-              {
-                ++differentDisplayIndexesCounter;
-                differentDisplayAxis = k;
-              }
-            }
-            if (differentDisplayIndexesCounter == 1)
-            {
-              // We now have i,j corresponding to a pair of points that are different in
-              // 1 axis in voxel space, and different in one axis in diplay space, we can
-              // use them to calculate scale factors.
-
-              double distanceInMm = cornerPointsInImage[i].EuclideanDistanceTo(cornerPointsInImage[j]);
-              double distanceInVx = pointsInVx[0].EuclideanDistanceTo(pointsInVx[1]);
-              double distanceInPx = displayPointInPx[0].EuclideanDistanceTo(displayPointInPx[1]);
-              double scaleFactorInDisplayPxPerVx = distanceInPx / distanceInVx;
-              double scaleFactorInDisplayPxPerMm = distanceInPx / distanceInMm;
-
-              if (scaleFactorInDisplayPxPerVx < scaleFactorPxPerVx[differentDisplayAxis])
-              {
-                scaleFactorPxPerVx[differentDisplayAxis] = scaleFactorInDisplayPxPerVx;
-                scaleFactorPxPerMm[differentDisplayAxis] = scaleFactorInDisplayPxPerMm;
-              }
-            }
-          }
-        }
-      }
-    } // end geometry and bounding box != NULL
-  } // end renderWindow != NULL
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor)
-{
-  if (renderWindow != NULL)
-  {
-    mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
-
-    const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
-
-    mitk::Point2D focusInMm;
-    mitk::Point2D focusInPx;
-
-    displayGeometry->Map(selectedPosition, focusInMm);
-    displayGeometry->WorldToDisplay(focusInMm, focusInPx);
-
-    m_BlockDisplayGeometryEvents = true;
-
-    // Note that the scaleFactor is cumulative or multiplicative rather than absolute.
-    displayGeometry->Zoom(zoomFactor, focusInPx);
-
-    m_BlockDisplayGeometryEvents = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor)
 {
   if (renderWindow != NULL)
@@ -2084,30 +1872,15 @@ void QmitkMIDASStdMultiWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, d
     displayGeometry->Map(selectedPosition, focusInMm);
     displayGeometry->WorldToDisplay(focusInMm, focusInPx);
 
-    this->SetScaleFactor(displayGeometry, scaleFactor, focusInPx);
+    double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+    m_BlockDisplayGeometryEvents = true;
+    if (displayGeometry->SetScaleFactor(scaleFactor))
+    {
+      mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
+      displayGeometry->SetOriginInMM(originInMm - focusInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
+    }
+    m_BlockDisplayGeometryEvents = false;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::SetScaleFactor(mitk::DisplayGeometry* displayGeometry, double scaleFactor, const mitk::Point2D& focusInPx)
-{
-  assert(scaleFactor > 0.0);
-
-  bool retVal;
-  double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  m_BlockDisplayGeometryEvents = true;
-  if (displayGeometry->SetScaleFactor(scaleFactor))
-  {
-    mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
-    retVal = displayGeometry->SetOriginInMM(originInMm - focusInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
-  }
-  else
-  {
-    retVal = false;
-  }
-  m_BlockDisplayGeometryEvents = false;
-  return retVal;
 }
 
 
@@ -2161,9 +1934,9 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
     }
 
     std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
-    sliceNavigationControllers[0] = GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-    sliceNavigationControllers[1] = GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-    sliceNavigationControllers[2] = GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+    sliceNavigationControllers[0] = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+    sliceNavigationControllers[1] = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+    sliceNavigationControllers[2] = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
 
     // Here we create our own display interactor...
     m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers, sliceNavigationControllers);
