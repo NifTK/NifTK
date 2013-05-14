@@ -365,9 +365,6 @@ private:
   /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
   void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
 
-  /// \brief Zooms the display to the given scale factor (mm/px) around the focus point given in px.
-  bool SetScaleFactor(mitk::DisplayGeometry* displayGeometry, double scaleFactor, const mitk::Point2D& focusInPx);
-
   QmitkRenderWindow*    m_RenderWindows[4];
   QColor                m_BackgroundColor;
   QGridLayout*          m_GridLayout;
