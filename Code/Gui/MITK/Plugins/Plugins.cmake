@@ -41,9 +41,9 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
   Plugins/uk.ac.ucl.cmic.igitagtracker:ON
-  Plugins/uk.ac.ucl.cmic.igisurfacerecon:OFF
-  Plugins/uk.ac.ucl.cmic.igitrackedimage:OFF
-  Plugins/uk.ac.ucl.cmic.igitrackedpointer:OFF
+  Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
+  Plugins/uk.ac.ucl.cmic.igitrackedimage:ON
+  Plugins/uk.ac.ucl.cmic.igitrackedpointer:ON
   Plugins/uk.ac.ucl.cmic.igipointreg:ON
   Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
 
