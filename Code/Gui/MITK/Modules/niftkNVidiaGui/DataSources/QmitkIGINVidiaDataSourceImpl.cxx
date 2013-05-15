@@ -180,6 +180,8 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
     if (format.format != video::StreamFormat::PF_NONE)
     {
       sdiin = new video::SDIInput(sdidev, m_FieldMode, format.get_refreshrate());
+
+      m_Cookie = (unsigned int) ((((std::size_t) ((void*) sdiin)) >> 4) & 0xFFFFFFFF);
     }
   }
 
@@ -287,6 +289,14 @@ bool QmitkIGINVidiaDataSourceImpl::HasInput() const
 {
   QMutexLocker    l(&lock);
   return sdiin != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+unsigned int QmitkIGINVidiaDataSourceImpl::GetCookie() const
+{
+  QMutexLocker    l(&lock);
+  return m_Cookie;
 }
 
 

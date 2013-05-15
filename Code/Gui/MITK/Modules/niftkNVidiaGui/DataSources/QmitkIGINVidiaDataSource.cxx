@@ -164,7 +164,7 @@ void QmitkIGINVidiaDataSource::GrabData()
       {
         mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
 
-        wrapper->SetValues(1, sn.sequence_number, sn.arrival_time);
+        wrapper->SetValues(m_Pimpl->GetCookie(), sn.sequence_number, sn.arrival_time);
         wrapper->SetTimeStampInNanoSeconds(sn.id);
         wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
         m_MostRecentSequenceNumber = sn.sequence_number;
@@ -198,103 +198,108 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
   {
-    // one massive image, with all streams stacked in
-    std::pair<IplImage*, int> frame = m_Pimpl->GetRgbaImage(dataType->GetSequenceNumber());
-    // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-    if (frame.first)
+    if (m_Pimpl->GetCookie() == dataType->GetCookie())
     {
-      // max 4 streams
-      const int streamcount = frame.second;
-      for (int i = 0; i < streamcount; ++i)
+      // one massive image, with all streams stacked in
+      std::pair<IplImage*, int> frame = m_Pimpl->GetRgbaImage(dataType->GetSequenceNumber());
+      // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
+      if (frame.first)
       {
-        std::ostringstream  nodename;
-        nodename << s_NODE_NAME << i;
-
-        mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
-        if (node.IsNull())
+        // max 4 streams
+        const int streamcount = frame.second;
+        for (int i = 0; i < streamcount; ++i)
         {
-          MITK_ERROR << "Can't find mitk::DataNode with name " << nodename.str() << std::endl;
-          this->SetStatus("Failed");
-          cvReleaseImage(&frame.first);
-          return false;
-        }
+          std::ostringstream  nodename;
+          nodename << s_NODE_NAME << i;
 
-        // subimagheight counts for both fields, stacked on top of each other...
-        int   subimagheight = frame.first->height / streamcount;
-        IplImage  subimg;
-        // ...while subimg will have half the height only, i.e. the top field only
-        cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight / 2), IPL_DEPTH_8U, frame.first->nChannels);
-        cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
-
-        // Check if we already have an image on the node.
-        // We dont want to create a new one in that case (there is a lot of stuff going on
-        // for allocating a new image).
-        mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-
-        if (!imageInNode.IsNull())
-        {
-          // check size of image that is already attached to data node!
-          bool haswrongsize = false;
-          haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
-          haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
-          haswrongsize |= imageInNode->GetDimension(2) != 1;
-
-          if (haswrongsize)
+          mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+          if (node.IsNull())
           {
-            imageInNode = mitk::Image::Pointer();
+            MITK_ERROR << "Can't find mitk::DataNode with name " << nodename.str() << std::endl;
+            this->SetStatus("Failed");
+            cvReleaseImage(&frame.first);
+            return false;
           }
-        }
 
-        if (imageInNode.IsNull())
-        {
-          mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
-          // our image is only half the pixel height!
-          // so tell the renderer/mitk/whatever that each pixel is actually two units tall
-          mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
-          s[1] *= 2;
-          convertedImage->GetGeometry()->SetSpacing(s);
+          // subimagheight counts for both fields, stacked on top of each other...
+          int   subimagheight = frame.first->height / streamcount;
+          IplImage  subimg;
+          // ...while subimg will have half the height only, i.e. the top field only
+          cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight / 2), IPL_DEPTH_8U, frame.first->nChannels);
+          cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
-          node->SetData(convertedImage);
-        }
-        else
-        {
-          try
+          // Check if we already have an image on the node.
+          // We dont want to create a new one in that case (there is a lot of stuff going on
+          // for allocating a new image).
+          mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+
+          if (!imageInNode.IsNull())
           {
-            mitk::ImageWriteAccessor writeAccess(imageInNode);
-            void* vPointer = writeAccess.GetData();
+            // check size of image that is already attached to data node!
+            bool haswrongsize = false;
+            haswrongsize |= imageInNode->GetDimension(0) != subimg.width;
+            haswrongsize |= imageInNode->GetDimension(1) != subimg.height;
+            haswrongsize |= imageInNode->GetDimension(2) != 1;
 
-            // the mitk image is tightly packed
-            // but the opencv image might not
-            const unsigned int numberOfBytesPerLine = subimg.width * subimg.nChannels;
-            if (numberOfBytesPerLine == static_cast<unsigned int>(subimg.widthStep))
+            if (haswrongsize)
             {
-              std::memcpy(vPointer, subimg.imageData, numberOfBytesPerLine * subimg.height);
+              imageInNode = mitk::Image::Pointer();
             }
-            else
-            {
-              // if that is not true then something is seriously borked
-              assert(subimg.widthStep >= numberOfBytesPerLine);
+          }
 
-              // "slow" path: copy line by line
-              for (int y = 0; y < subimg.height; ++y)
+          if (imageInNode.IsNull())
+          {
+            mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
+            // our image is only half the pixel height!
+            // so tell the renderer/mitk/whatever that each pixel is actually two units tall
+            mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
+            s[1] *= 2;
+            convertedImage->GetGeometry()->SetSpacing(s);
+
+            node->SetData(convertedImage);
+          }
+          else
+          {
+            try
+            {
+              mitk::ImageWriteAccessor writeAccess(imageInNode);
+              void* vPointer = writeAccess.GetData();
+
+              // the mitk image is tightly packed
+              // but the opencv image might not
+              const unsigned int numberOfBytesPerLine = subimg.width * subimg.nChannels;
+              if (numberOfBytesPerLine == static_cast<unsigned int>(subimg.widthStep))
               {
-                // widthStep is in bytes while width is in pixels
-                std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(subimg.imageData[y * subimg.widthStep]), numberOfBytesPerLine); 
+                std::memcpy(vPointer, subimg.imageData, numberOfBytesPerLine * subimg.height);
+              }
+              else
+              {
+                // if that is not true then something is seriously borked
+                assert(subimg.widthStep >= numberOfBytesPerLine);
+
+                // "slow" path: copy line by line
+                for (int y = 0; y < subimg.height; ++y)
+                {
+                  // widthStep is in bytes while width is in pixels
+                  std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(subimg.imageData[y * subimg.widthStep]), numberOfBytesPerLine); 
+                }
               }
             }
+            catch(mitk::Exception& e)
+            {
+              MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+            }
           }
-          catch(mitk::Exception& e)
-          {
-            MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
-          }
-        }
-        node->Modified();
-      } // for
+          node->Modified();
+        } // for
 
-      cvReleaseImage(&frame.first);
-    } 
+        cvReleaseImage(&frame.first);
+      } 
+      else
+        this->SetStatus("Failed");
+    }
     else
-      this->SetStatus("Failed");
+      this->SetStatus("...");
   }
   else
     this->SetStatus("...");

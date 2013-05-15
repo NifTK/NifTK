@@ -64,6 +64,8 @@ public:
   video::FrameInfo GetNextSequenceNumber(unsigned int ihavealready) const;
 
 
+  unsigned int GetCookie() const;
+
   bool IsRunning() const;
 
   std::pair<int, int> get_capture_dimensions() const;
@@ -154,6 +156,10 @@ private:
 
 
   video::SDIInput::InterlacedBehaviour    m_FieldMode;
+
+  // used to check whether any in-flight IGINVidiaDataType are still valid.
+  // it is set during InitVideo().
+  unsigned int        m_Cookie;
 };
 
 
