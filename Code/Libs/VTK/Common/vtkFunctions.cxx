@@ -315,6 +315,22 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
 }
                            
 
+double DistanceToSurface ( double point[3], vtkPolyData * target )
+{
+  return -1.0;
+}
+
+double DistanceToSurface ( double point[3], 
+    vtkCellLocator * targetLocator, vtkGenericCell * cell )
+{
+  return -1.0;
+}
+
+vtkPolyData* DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+{
+  vtkSmartPointer<vtkPolyData> SortedSource = vtkSmartPointer<vtkPolyData>::New();
+  return SortedSource;
+}
                                                                       
 
 #endif
