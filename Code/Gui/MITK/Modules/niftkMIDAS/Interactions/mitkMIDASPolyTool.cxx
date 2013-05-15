@@ -17,12 +17,12 @@
 #include "mitkMIDASPolyToolOpAddToFeedbackContour.h"
 #include "mitkMIDASPolyToolOpUpdateFeedbackContour.h"
 #include "mitkMIDASPolyTool.xpm"
-#include "mitkOperationEvent.h"
-#include "mitkUndoController.h"
-#include "mitkPointUtils.h"
-#include "mitkToolManager.h"
-#include "mitkBaseRenderer.h"
-#include "mitkContour.h"
+#include <mitkOperationEvent.h>
+#include <mitkUndoController.h>
+#include <mitkPointUtils.h>
+#include <mitkToolManager.h>
+#include <mitkBaseRenderer.h>
+#include <mitkContour.h>
 
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");

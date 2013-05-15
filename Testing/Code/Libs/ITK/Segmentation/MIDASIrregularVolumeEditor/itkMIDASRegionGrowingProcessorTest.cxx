@@ -18,11 +18,11 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkMIDASRegionGrowingProcessor.h"
-#include "itkMIDASRegionOfInterestCalculator.h"
+#include <itkImage.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkMIDASRegionGrowingProcessor.h>
+#include <itkMIDASRegionOfInterestCalculator.h>
 #include "../itkMIDASSegmentationTestUtils.h"
 
 /**

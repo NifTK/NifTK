@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string>
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
@@ -31,14 +31,14 @@
 
 #include <vcl_cmath.h>
 
-#include "_reg_ReadWriteImage.h"
-#include "_reg_resampling.h"
-#include "_reg_globalTransformation.h"
-#include "_reg_localTransformation.h"
-#include "_reg_tools.h"
+#include <_reg_ReadWriteImage.h>
+#include <_reg_resampling.h>
+#include <_reg_globalTransformation.h>
+#include <_reg_localTransformation.h>
+#include <_reg_tools.h>
 
-#include "niftkF3DControlGridToVTKPolyData.h"
-#include "niftkF3DControlGridToVTKPolyDataCLP.h"
+#include <niftkF3DControlGridToVTKPolyData.h>
+#include <niftkF3DControlGridToVTKPolyDataCLP.h>
 
 
 

@@ -18,17 +18,17 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkCorrectGMUsingPVMapFilter.h"
-#include "itkLaplacianSolverImageFilter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
-#include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
-#include "itkCastImageFilter.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkImage.h>
+#include <itkCorrectGMUsingPVMapFilter.h>
+#include <itkLaplacianSolverImageFilter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
+#include <itkLagrangianInitializedRelaxStreamlinesFilter.h>
+#include <itkCastImageFilter.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkCastImageFilter.h>
 /**
  * Basic tests for Bourgeat et. al. 2008 paper.
  */

@@ -18,7 +18,7 @@
 #include <sstream>
 #include "itkVnlIterationUpdateCommand.h"
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 namespace itk
 {

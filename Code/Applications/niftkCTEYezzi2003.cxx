@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCheckForThreeLevelsFilter.h"
-#include "itkLaplacianSolverImageFilter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
-#include "itkRelaxStreamlinesFilter.h"
-#include "itkOrderedTraversalStreamlinesFilter.h"
-#include "itkCastImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkCheckForThreeLevelsFilter.h>
+#include <itkLaplacianSolverImageFilter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
+#include <itkRelaxStreamlinesFilter.h>
+#include <itkOrderedTraversalStreamlinesFilter.h>
+#include <itkCastImageFilter.h>
 
 /*!
  * \file niftkCTEYezzi2003.cxx

@@ -18,8 +18,8 @@
 #include <niftkMIDASGuiExports.h>
 #include <vector>
 #include "QmitkMIDASSingleViewWidgetListManager.h"
-#include "mitkMIDASEnums.h"
-#include "mitkDataStorage.h"
+#include <mitkMIDASEnums.h>
+#include <mitkDataStorage.h>
 
 namespace mitk
 {

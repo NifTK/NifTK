@@ -20,7 +20,7 @@
 #include "mitkImageToNifti.h"
 #include "niftiImageToMitk.h"
 
-#include "mitkSurface.h"
+#include <mitkSurface.h>
 
 #include <vtkVersion.h>
 #include <vtkSmartPointer.h>

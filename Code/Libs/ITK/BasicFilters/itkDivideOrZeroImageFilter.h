@@ -15,8 +15,8 @@
 #ifndef __itkDivideOrZeroImageFilter_h
 #define __itkDivideOrZeroImageFilter_h
 
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

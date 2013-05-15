@@ -15,9 +15,9 @@
 #ifndef _itkSingleResolutionImageRegistrationBuilder_txx
 #define _itkSingleResolutionImageRegistrationBuilder_txx
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 #include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkContinuousIndex.h"
+#include <itkContinuousIndex.h>
 
 namespace itk
 {

@@ -26,8 +26,8 @@
 #include <mitkPointSet.h>
 #include "TagTrackerViewActivator.h"
 #include "TagTrackerViewPreferencePage.h"
-#include "mitkMonoTagExtractor.h"
-#include "mitkStereoTagExtractor.h"
+#include <mitkMonoTagExtractor.h>
+#include <mitkStereoTagExtractor.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
 const std::string TagTrackerView::NODE_ID = "Tag Locations";

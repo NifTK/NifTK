@@ -15,7 +15,7 @@
 #ifndef TagTrackerView_h
 #define TagTrackerView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <mitkDataNode.h>
 #include "ui_TagTrackerViewControls.h"

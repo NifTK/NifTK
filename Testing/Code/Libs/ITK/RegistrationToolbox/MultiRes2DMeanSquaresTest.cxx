@@ -18,13 +18,13 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkMultiResolutionImageRegistrationWrapper.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkMultiResolutionImageRegistrationWrapper.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
 
 /**
  * Aim of this test is simply to test the base class

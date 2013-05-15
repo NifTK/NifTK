@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataReader.h"
-#include "vtkPolyDataWriter.h"
-#include "vtkSmoothPolyDataFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyDataWriter.h>
+#include <vtkSmoothPolyDataFilter.h>
 
 /*!
  * \file niftkSmoothPolyData.cxx

@@ -16,10 +16,10 @@
 #define __itkJorgesInitializationRelaxStreamlinesFilter_txx
 
 #include "itkJorgesInitializationRelaxStreamlinesFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

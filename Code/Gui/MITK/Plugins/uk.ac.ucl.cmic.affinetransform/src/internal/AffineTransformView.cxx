@@ -40,8 +40,8 @@
 #include <itkBoundingBox.h>
 
 // VTK
-#include "vtkLinearTransform.h"
-#include "vtkMatrix4x4.h"
+#include <vtkLinearTransform.h>
+#include <vtkMatrix4x4.h>
 
 // MITK Misc
 #include <mitkImage.h>
@@ -57,13 +57,13 @@
 #include <mitkCone.h>
 #include <mitkCuboid.h>
 
-//#include "mitkAffineInteractor3D.h"
+//#include <mitkAffineInteractor3D.h>
 
 // NIFTK
 #include "AffineTransformView.h"
-#include "mitkAffineTransformDataNodeProperty.h"
-#include "mitkAffineTransformParametersDataNodeProperty.h"
-#include "ConversionUtils.h"
+#include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkAffineTransformParametersDataNodeProperty.h>
+#include <ConversionUtils.h>
 
 //-----------------------------------------------------------------------------
 AffineTransformView::AffineTransformView()

@@ -14,8 +14,8 @@
 
 #ifndef __itkJonesThicknessFilter_h
 #define __itkJonesThicknessFilter_h
-#include "itkImageToImageFilter.h"
-#include "itkVector.h"
+#include <itkImageToImageFilter.h>
+#include <itkVector.h>
 #include "itkCheckForThreeLevelsFilter.h"
 #include "itkLaplacianSolverImageFilter.h"
 #include "itkScalarImageToNormalizedGradientVectorImageFilter.h"

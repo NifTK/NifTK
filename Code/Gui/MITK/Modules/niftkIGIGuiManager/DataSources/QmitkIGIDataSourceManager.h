@@ -26,7 +26,7 @@
 #include <QColor>
 #include <QThread>
 #include <mitkDataStorage.h>
-#include "mitkIGIDataSource.h"
+#include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
 
 class QmitkStdMultiWidget;

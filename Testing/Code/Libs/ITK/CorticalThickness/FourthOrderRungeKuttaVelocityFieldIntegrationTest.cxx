@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter.h"
+#include <itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter.h>
 
 /**
  * Test the FourthOrderRungeKuttaVelocityFieldIntegrationFilter.

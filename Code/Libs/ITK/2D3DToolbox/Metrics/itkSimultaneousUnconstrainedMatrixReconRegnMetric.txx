@@ -16,9 +16,9 @@
 #define __itkSimultaneousUnconstrainedMatrixReconRegnMetric_txx
 
 #include "itkSimultaneousUnconstrainedMatrixReconRegnMetric.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

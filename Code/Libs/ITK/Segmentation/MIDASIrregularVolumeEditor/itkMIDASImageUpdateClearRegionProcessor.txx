@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "itkMIDASImageUpdateClearRegionProcessor.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionIterator.h>
 
 namespace itk
 {

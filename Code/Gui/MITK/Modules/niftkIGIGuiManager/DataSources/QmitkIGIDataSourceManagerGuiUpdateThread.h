@@ -16,7 +16,7 @@
 #define QMITKIGIDATASOURCEMANAGERGUIUPDATETHREAD_H
 
 #include "niftkIGIGuiManagerExports.h"
-#include "QmitkIGITimerBasedThread.h"
+#include <QmitkIGITimerBasedThread.h>
 #include "QmitkIGIDataSourceManager.h"
 
 /**

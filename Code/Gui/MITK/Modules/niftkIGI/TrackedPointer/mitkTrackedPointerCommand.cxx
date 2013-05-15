@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkTrackedPointerCommand.h"
-#include "mitkCoordinateAxesData.h"
+#include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkTimeSlicedGeometry.h>

@@ -18,11 +18,11 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkArray.h"
-#include "itkArray2D.h"
-#include "itkPoint.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkArray.h>
+#include <itkArray2D.h>
+#include <itkPoint.h>
 
 typedef itk::EulerAffineTransform< double, 3, 3 > TransformType;
 typedef itk::Array2D<double> JacobianType;

@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkDivideImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkContinuousIndex.h"
-#include "itkPoint.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkDiscreteGaussianImageFilter.h>
+#include <itkDivideImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkContinuousIndex.h>
+#include <itkPoint.h>
 #include <stdio.h>
 
 /*!

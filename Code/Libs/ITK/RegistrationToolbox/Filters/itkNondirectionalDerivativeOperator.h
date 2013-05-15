@@ -15,9 +15,9 @@
 #ifndef __itkNondirectionalDerivativeOperator_h
 #define __itkNondirectionalDerivativeOperator_h
 
-#include "itkNeighborhood.h"
-#include "itkVector.h"
-#include "itkDerivativeOperator.h"
+#include <itkNeighborhood.h>
+#include <itkVector.h>
+#include <itkDerivativeOperator.h>
 
 namespace itk {
 

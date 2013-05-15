@@ -15,8 +15,8 @@
 #ifndef SurgicalGuidanceView_h
 #define SurgicalGuidanceView_h
 
-#include "QmitkBaseLegacyView.h"
-#include "QmitkIGIDataSourceManager.h"
+#include <QmitkBaseLegacyView.h>
+#include <QmitkIGIDataSourceManager.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
 

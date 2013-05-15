@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 QmitkMIDASBindWidget::QmitkMIDASBindWidget(QWidget *parent)
 {
-  m_CurrentBindType = MIDAS_BIND_NONE;
+  m_BindType = MIDAS_BIND_NONE;
   setupUi(this);
 }
 
@@ -34,274 +34,130 @@ QmitkMIDASBindWidget::~QmitkMIDASBindWidget()
 void QmitkMIDASBindWidget::setupUi(QWidget* parent)
 {
   Ui_QmitkMIDASBindWidget::setupUi(parent);
-  m_BindNoneCheckBox->setCheckState(Qt::Checked);
-  m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-  m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-  m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
+  m_BindLayoutCheckBox->setChecked(false);
+  m_BindCursorsCheckBox->setChecked(false);
+  m_BindMagnificationCheckBox->setChecked(false);
+  m_BindGeometryCheckBox->setChecked(false);
 
-  connect(m_BindNoneCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnNoneCheckBoxStateChanged(int)));
-  connect(m_BindCursorsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnCursorsCheckBoxStateChanged(int)));
-  connect(m_BindMagnificationCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnMagnificationCheckBoxStateChanged(int)));
-  connect(m_BindGeometryCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnGeometryCheckBoxStateChanged(int)));
+  connect(m_BindLayoutCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLayoutCheckBoxToggled(bool)));
+  connect(m_BindCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnCursorsCheckBoxToggled(bool)));
+  connect(m_BindMagnificationCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnMagnificationCheckBoxToggled(bool)));
+  connect(m_BindGeometryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnGeometryCheckBoxToggled(bool)));
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::SetBlockSignals(bool block)
+bool QmitkMIDASBindWidget::IsLayoutBound() const
 {
-  m_BindNoneCheckBox->blockSignals(block);
-  m_BindCursorsCheckBox->blockSignals(block);
-  m_BindMagnificationCheckBox->blockSignals(block);
-  m_BindGeometryCheckBox->blockSignals(block);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASBindWidget::IsGeometryBound() const
-{
-  if (m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION
-      || m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return m_BindType & MIDAS_BIND_LAYOUT;
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBindWidget::AreCursorsBound() const
 {
-  if (m_CurrentBindType == MIDAS_BIND_CURSORS
-      || m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITH_CURSORS
-      || m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION
-      || m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION
-      )
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return m_BindType & MIDAS_BIND_CURSORS;
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBindWidget::IsMagnificationBound() const
 {
-  if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS
-      || m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITH_CURSORS
-      || m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION
-      )
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return m_BindType & MIDAS_BIND_MAGNIFICATION;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::SetToBindType(MIDASBindType bindType)
+bool QmitkMIDASBindWidget::IsGeometryBound() const
 {
-  if (bindType == m_CurrentBindType)
+  return m_BindType & MIDAS_BIND_GEOMETRY;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASBindWidget::SetToBindType(int bindType)
+{
+  if (bindType == m_BindType)
   {
     // Nothing to do.
     return;
   }
 
-  this->SetBlockSignals(true);
+  bool wasBlocked = m_BindLayoutCheckBox->blockSignals(true);
+  m_BindLayoutCheckBox->setChecked(bindType & MIDAS_BIND_LAYOUT);
+  m_BindLayoutCheckBox->blockSignals(wasBlocked);
 
-  switch(bindType)
-  {
-  case MIDAS_BIND_NONE:
-    m_BindNoneCheckBox->setCheckState(Qt::Checked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-    break;
-  case MIDAS_BIND_CURSORS:
-    m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-    break;
-  case MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS:
-    m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Checked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-    break;
-  case MIDAS_BIND_MAGNIFICATION_WITH_CURSORS:
-    m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Checked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-    break;
-  case MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION:
-    m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Checked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Checked);
-    break;
-  case MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION:
-    m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Checked);
-    break;
-  default:
-    MITK_INFO << "QmitkMIDASBindWidget::SetToBindType, unrecognised type, can't set check box" << std::endl;
-  }
+  wasBlocked = m_BindCursorsCheckBox->blockSignals(true);
+  m_BindCursorsCheckBox->setChecked(bindType & MIDAS_BIND_CURSORS);
+  m_BindCursorsCheckBox->blockSignals(wasBlocked);
 
-  m_CurrentBindType = bindType;
+  wasBlocked = m_BindMagnificationCheckBox->blockSignals(true);
+  m_BindMagnificationCheckBox->setChecked(bindType & MIDAS_BIND_MAGNIFICATION);
+  m_BindMagnificationCheckBox->blockSignals(wasBlocked);
 
-  this->SetBlockSignals(false);
+  wasBlocked = m_BindGeometryCheckBox->blockSignals(true);
+  m_BindGeometryCheckBox->setChecked(bindType & MIDAS_BIND_GEOMETRY);
+  m_BindGeometryCheckBox->blockSignals(wasBlocked);
+
+  m_BindType = bindType;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::OnNoneCheckBoxStateChanged(int state)
+void QmitkMIDASBindWidget::OnLayoutCheckBoxToggled(bool value)
 {
-  this->SetBlockSignals(true);
-  if (state == Qt::Checked)
+  if (value)
   {
-    m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-    m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
+    m_BindType |= MIDAS_BIND_LAYOUT;
   }
-  else if (state == Qt::Unchecked)
+  else
   {
-    // Doesn't make sense to uncheck "none", so force it back on.
-    m_BindNoneCheckBox->setCheckState(Qt::Checked);
+    m_BindType &= ~MIDAS_BIND_LAYOUT;
   }
-  m_CurrentBindType = MIDAS_BIND_NONE;
-  this->SetBlockSignals(false);
-  emit BindTypeChanged(m_CurrentBindType);
+  emit BindTypeChanged();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::OnCursorsCheckBoxStateChanged(int state)
+void QmitkMIDASBindWidget::OnCursorsCheckBoxToggled(bool value)
 {
-  this->SetBlockSignals(true);
-  if (state == Qt::Checked)
+  if (value)
   {
-    if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_MAGNIFICATION_WITH_CURSORS;
-    }
-    else
-    {
-      m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-      m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-      m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-      m_CurrentBindType = MIDAS_BIND_CURSORS;
-    }
+    m_BindType |= MIDAS_BIND_CURSORS;
   }
-  else if (state == Qt::Unchecked)
+  else
   {
-    if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITH_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS;
-    }
-    else
-    {
-      m_BindNoneCheckBox->setCheckState(Qt::Checked);
-      m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-      m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-      m_CurrentBindType = MIDAS_BIND_NONE;
-    }
+    m_BindType &= ~MIDAS_BIND_CURSORS;
   }
-  this->SetBlockSignals(false);
-  emit BindTypeChanged(m_CurrentBindType);
+  emit BindTypeChanged();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::OnMagnificationCheckBoxStateChanged(int state)
+void QmitkMIDASBindWidget::OnMagnificationCheckBoxToggled(bool value)
 {
-  this->SetBlockSignals(true);
-  if (state == Qt::Checked)
+  if (value)
   {
-    if (m_CurrentBindType == MIDAS_BIND_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_MAGNIFICATION_WITH_CURSORS;
-    }
-    else if (m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION)
-    {
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION;
-    }
-    else
-    {
-      m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-      m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-      m_BindGeometryCheckBox->setCheckState(Qt::Unchecked);
-      m_CurrentBindType = MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS;
-    }
+    m_BindType |= MIDAS_BIND_MAGNIFICATION;
   }
-  else if (state == Qt::Unchecked)
+  else
   {
-    if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS)
-    {
-      m_BindNoneCheckBox->setCheckState(Qt::Checked);
-      m_CurrentBindType = MIDAS_BIND_NONE;
-    }
-    else if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITH_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_CURSORS;
-    }
-    else if (m_CurrentBindType == MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION)
-    {
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION;
-    }
+    m_BindType &= ~MIDAS_BIND_MAGNIFICATION;
   }
-  this->SetBlockSignals(false);
-  emit BindTypeChanged(m_CurrentBindType);
+  emit BindTypeChanged();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBindWidget::OnGeometryCheckBoxStateChanged(int state)
+void QmitkMIDASBindWidget::OnGeometryCheckBoxToggled(bool value)
 {
-  this->SetBlockSignals(true);
-  if (state == Qt::Checked)
+  if (value)
   {
-    if (m_CurrentBindType == MIDAS_BIND_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION;
-    }
-    else if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS)
-    {
-      m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION;
-    }
-    else if (m_CurrentBindType == MIDAS_BIND_MAGNIFICATION_WITH_CURSORS)
-    {
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION;
-    }
-    else
-    {
-      // Default MIDAS behaviour is effectively "none" then "all", so turn all on.
-      m_BindNoneCheckBox->setCheckState(Qt::Unchecked);
-      m_BindCursorsCheckBox->setCheckState(Qt::Checked);
-      m_BindMagnificationCheckBox->setCheckState(Qt::Checked);
-      m_CurrentBindType = MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION;
-    }
+    m_BindType |= MIDAS_BIND_GEOMETRY;
   }
-  else if (state == Qt::Unchecked)
+  else
   {
-    // Default MIDAS behviour is effectively "none" then "all", so revert to none.
-    m_BindNoneCheckBox->setCheckState(Qt::Checked);
-    m_BindCursorsCheckBox->setCheckState(Qt::Unchecked);
-    m_BindMagnificationCheckBox->setCheckState(Qt::Unchecked);
-    m_CurrentBindType = MIDAS_BIND_NONE;
+    m_BindType &= ~MIDAS_BIND_GEOMETRY;
   }
-  this->SetBlockSignals(false);
-  emit BindTypeChanged(m_CurrentBindType);
+  emit BindTypeChanged();
 }

@@ -16,10 +16,10 @@
 #define itkMIDASBaseConditionalMorphologyFilter_txx
 
 #include "itkMIDASBaseConditionalMorphologyFilter.h"
-#include "itkMIDASHelper.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
-#include "itkConstNeighborhoodIterator.h"
+#include <itkMIDASHelper.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <itkConstNeighborhoodIterator.h>
 
 namespace itk
 {

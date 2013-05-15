@@ -16,17 +16,17 @@
 #pragma warning ( disable : 4786 )
 #pragma warning ( disable : 4996 )
 #endif
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkIntensityNormalisationCalculator.h"
-#include "itkBoundaryShiftIntegralCalculator.h"
-#include "itkSimpleKMeansClusteringImageFilter.h"
-#include "itkBinariseUsingPaddingImageFilter.h"
-#include "itkIndent.h"
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkIntensityNormalisationCalculator.h>
+#include <itkBoundaryShiftIntegralCalculator.h>
+#include <itkSimpleKMeansClusteringImageFilter.h>
+#include <itkBinariseUsingPaddingImageFilter.h>
+#include <itkIndent.h>
 #include <stdio.h>
-#include "itkCastImageFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "ConversionUtils.h"
+#include <itkCastImageFilter.h>
+#include <itkSubtractImageFilter.h>
+#include <ConversionUtils.h>
 
 /*!
  * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx

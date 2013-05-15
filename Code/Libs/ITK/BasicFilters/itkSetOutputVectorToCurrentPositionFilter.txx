@@ -16,10 +16,10 @@
 #define __itkSetOutputVectorToCurrentPositionFilter_txx
 
 #include "itkSetOutputVectorToCurrentPositionFilter.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

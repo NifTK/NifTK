@@ -15,9 +15,9 @@
 #ifndef ITKBOUNDARYSHIFTINTEGRALCALCULATOR_H_
 #define ITKBOUNDARYSHIFTINTEGRALCALCULATOR_H_
 
-#include "itkImage.h"
-#include "itkObject.h"
-#include "itkMacro.h"
+#include <itkImage.h>
+#include <itkObject.h>
+#include <itkMacro.h>
 
 namespace itk
 {

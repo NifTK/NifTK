@@ -17,10 +17,10 @@
 
 
 #include "itkMetricDerivativeBridge.h"
-#include "itkRegistrationForceFilter.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkBSplineTransform.h"
+#include <itkRegistrationForceFilter.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkBSplineTransform.h>
 
 namespace itk
 {

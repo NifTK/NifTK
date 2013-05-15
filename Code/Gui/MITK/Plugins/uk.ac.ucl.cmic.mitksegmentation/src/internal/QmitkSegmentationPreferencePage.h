@@ -18,7 +18,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QmitkSegmentationPreferencePage_h_included
 #define QmitkSegmentationPreferencePage_h_included
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

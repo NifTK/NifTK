@@ -16,11 +16,11 @@
 #include <fstream>
 #include <algorithm>
 #include <vector>
-#include "itkPixelTraits.h"
-#include "itkByteSwapper.h"
-#include "itkPixelTraits.h"
-#include "itkzlib/zlib.h"
-#include "itkUCLMacro.h"
+#include <itkPixelTraits.h>
+#include <itkByteSwapper.h>
+#include <itkPixelTraits.h>
+#include <itkzlib/zlib.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

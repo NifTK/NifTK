@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "QmitkIGINVidiaDataSource.h"
-#include "mitkIGINVidiaDataType.h"
+#include <mitkIGINVidiaDataType.h>
+#include <../Conversion/ImageConversion.h>
 #include <igtlTimeStamp.h>
 #include <QTimer>
 #include <QCoreApplication>
@@ -23,8 +24,8 @@
 #include <QWaitCondition>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
-#include "video/sdiinput.h"
-#include "video/compress.h"
+#include <video/sdiinput.h>
+#include <video/compress.h>
 #include <Mmsystem.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -193,7 +194,7 @@ public:
   }
 
   // FIXME: needs cfg param to decide which channel to capture, format, etc
-  void check_video()
+  void check_video(video::SDIInput::InterlacedBehaviour ib)
   {
     // make sure nobody messes around with contexts
     assert(QGLContext::currentContext() == oglwin->context());
@@ -241,7 +242,7 @@ public:
 
       if (format.format != video::StreamFormat::PF_NONE)
       {
-        sdiin = new video::SDIInput(sdidev, video::SDIInput::STACK_FIELDS, format.get_refreshrate());
+        sdiin = new video::SDIInput(sdidev, ib, format.get_refreshrate());
       }
     }
 
@@ -359,8 +360,6 @@ public:
     return std::make_pair(sdiin->get_width(), sdiin->get_height());
   }
 
-
-
   int get_texture_id(unsigned int stream) const
   {
     QMutexLocker    l(&lock);
@@ -386,7 +385,9 @@ const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
-, m_Pimpl(new QmitkIGINVidiaDataSourceImpl)
+, m_Pimpl(new QmitkIGINVidiaDataSourceImpl), m_MipmapLevel(0)
+// NOTE: has to match GUI's default value!
+, m_FieldMode(STACK_FIELDS)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
@@ -403,6 +404,42 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   }
 
   StartCapturing();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::SetMipmapLevel(unsigned int l)
+{
+  if (IsCapturing())
+  {
+    throw std::runtime_error("Cannot change capture parameter while capture is in progress");
+  }
+
+  // whether the requested level is meaningful or not depends on the incoming video size.
+  // i dont want to check that here!
+  // so we just silently accept most values and clamp it later.
+
+  if (l > 32)
+  {
+    // this would mean we have an input video of more than 4 billion by 4 billion pixels.
+    // while technology will eventually get there, i think it's safe to assume that
+    // somebody would have checked this code here by then.
+    throw std::runtime_error("Requested mipmap level is not sane (> 32)");
+  }
+
+  m_MipmapLevel = l;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::SetFieldMode(InterlacedBehaviour b)
+{
+  if (IsCapturing())
+  {
+    throw std::runtime_error("Cannot change capture parameter while capture is in progress");
+  }
+
+  m_FieldMode = b;
 }
 
 
@@ -433,6 +470,10 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StartCapturing()
 {
+  // we need to reset this here before the grabbing thread starts
+  // because it will check whether it has the correct opengl context.
+  // and that check would fail if we stop() and then restart capturing.
+  m_Pimpl->current_state = QmitkIGINVidiaDataSourceImpl::PRE_INIT;
   this->InitializeAndRunGrabbingThread(20);
 }
 
@@ -447,10 +488,7 @@ void QmitkIGINVidiaDataSource::StopCapturing()
 //-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::IsCapturing()
 {
-  bool result = false;
-
-  // To do.
-
+  bool result = m_GrabbingThread != 0;
   return result;
 }
 
@@ -554,7 +592,7 @@ void QmitkIGINVidiaDataSource::GrabData()
     try
     {
       // libvideo does its own glew init, so we can get cracking straight away
-      m_Pimpl->check_video();
+      m_Pimpl->check_video((video::SDIInput::InterlacedBehaviour) m_FieldMode);
 
       // once we have an input setup
       //  grab at least one frame (not quite sure why)
@@ -751,7 +789,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 
         if (imageInNode.IsNull())
         {
-          mitk::Image::Pointer convertedImage = this->CreateMitkImage(&subimg);
+          mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
           // our image is only half the pixel height!
           // so tell the renderer/mitk/whatever that each pixel is actually two units tall
           mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
@@ -934,7 +972,12 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
 //-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 {
-  return 0;
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  return m_Pimpl->get_stream_count();
 }
 
 
@@ -942,7 +985,9 @@ int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 int QmitkIGINVidiaDataSource::GetCaptureWidth()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_width();
@@ -953,7 +998,9 @@ int QmitkIGINVidiaDataSource::GetCaptureWidth()
 int QmitkIGINVidiaDataSource::GetCaptureHeight()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_height();
@@ -964,7 +1011,9 @@ int QmitkIGINVidiaDataSource::GetCaptureHeight()
 int QmitkIGINVidiaDataSource::GetRefreshRate()
 {
   if (m_Pimpl == 0)
+  {
     return 0;
+  }
 
   video::StreamFormat format = m_Pimpl->get_format();
   return format.get_refreshrate();
@@ -974,14 +1023,23 @@ int QmitkIGINVidiaDataSource::GetRefreshRate()
 //-----------------------------------------------------------------------------
 QGLWidget* QmitkIGINVidiaDataSource::GetCaptureContext()
 {
-    assert(m_Pimpl != 0);
-    assert(m_Pimpl->oglshare != 0);
-    return m_Pimpl->oglshare;
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  assert(m_Pimpl->oglshare != 0);
+  return m_Pimpl->oglshare;
 }
 
 
 //-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 {
-    return m_Pimpl->get_texture_id(stream);
+  if (m_Pimpl == 0)
+  {
+    return 0;
+  }
+
+  return m_Pimpl->get_texture_id(stream);
 }

@@ -25,7 +25,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
 
 const std::string MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
 

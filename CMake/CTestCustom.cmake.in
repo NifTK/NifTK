@@ -160,4 +160,10 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   
   # Trac 2254: Tidying dashboard
   "itk.*FixedArray.*may be used uninitialized in this function"
+
+  # Trac 2332: Tidying dashboard
+  ".*itk.*FixedArray.*is used uninitialized in this function.*"
+  ".*CTK-src.*"
+  ".*DCMTK-src.*"
+  ".*OpenCV-src.*"
   )

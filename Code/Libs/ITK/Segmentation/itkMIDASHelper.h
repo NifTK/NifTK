@@ -15,15 +15,15 @@
 #ifndef itkMIDASHelper_h
 #define itkMIDASHelper_h
 
-#include "niftkITKWin32ExportHeader.h"
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkConversionUtils.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "itkSpatialOrientation.h"
-#include "itkMatrix.h"
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkConversionUtils.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <itkSpatialOrientation.h>
+#include <itkMatrix.h>
 
 /**
  * \file itkMIDASHelper.h

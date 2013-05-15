@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkSingleWidgetEditorPreferencePage.h"
-#include "QmitkSingleWidgetEditor.h"
+#include <QmitkSingleWidgetEditor.h>
 
 #include <QLabel>
 #include <QPushButton>

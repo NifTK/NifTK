@@ -18,7 +18,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "IOException.h"
+#include <IOException.h>
 
 namespace niftk {
   /**

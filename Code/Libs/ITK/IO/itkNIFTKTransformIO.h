@@ -14,8 +14,8 @@
 
 #ifndef __itkNIFTKTransformIO_h
 #define __itkNIFTKTransformIO_h
-#include "niftkITKWin32ExportHeader.h"
-#include "itkTransformIOBase.h"
+#include <niftkITKWin32ExportHeader.h>
+#include <itkTransformIOBase.h>
 
 namespace itk
 {

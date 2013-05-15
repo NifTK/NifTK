@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageRegionIterator.h"
-#include "itkContinuousIndex.h"
-#include "itkVector.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageRegionIterator.h>
+#include <itkContinuousIndex.h>
+#include <itkVector.h>
 
 /*!
  * \file niftkResetVoxelDimensionsField.cxx

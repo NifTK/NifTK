@@ -16,10 +16,10 @@
 #define __itkIntegrateStreamlinesFilter_txx
 
 #include "itkIntegrateStreamlinesFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

@@ -34,10 +34,10 @@
 
 #include <uk_ac_ucl_cmic_midaseditor_Export.h>
 
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 #include "QmitkMIDASMultiViewWidget.h"
-#include "QmitkMIDASMultiViewVisibilityManager.h"
-#include "mitkMIDASViewKeyPressStateMachine.h"
+#include <QmitkMIDASMultiViewVisibilityManager.h>
+#include <mitkMIDASViewKeyPressStateMachine.h>
 
 namespace mitk {
   class DataNode;
@@ -101,7 +101,7 @@ public:
   /**
    * \see mitk::IRenderWindowPart::SetSelectedPosition()
    */
-  virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  virtual void SetSelectedPosition(const mitk::Point3D& position, const QString& id = QString());
 
   /**
    * \see mitk::IRenderWindowPart::EnableDecorations(), and in this class, deliberately implemented as a no-op.

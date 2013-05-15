@@ -15,12 +15,12 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include "mitkVector.h"
-#include "mitkTestingMacros.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
+#include <mitkVector.h>
+#include <mitkTestingMacros.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
 #include <math.h>
 #include <iostream>
-#include "stdlib.h"
+#include <stdlib.h>
 
 /**
  * \brief Test class for mitkITKRegionParametersDataNodePropertyTest

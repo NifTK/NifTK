@@ -25,18 +25,18 @@
 *
 */
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "niftkVTKIterativeClosestPointRegisterCLP.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataReader.h"
-#include "vtkPolyDataWriter.h"
-#include "vtkMatrix4x4.h"
-#include "vtkTransform.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "niftkVTKIterativeClosestPoint.h"
-#include "niftkvtk4PointsReader.h"
-#include "vtkFunctions.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <niftkVTKIterativeClosestPointRegisterCLP.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyDataWriter.h>
+#include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <niftkVTKIterativeClosestPoint.h>
+#include <niftkvtk4PointsReader.h>
+#include <vtkFunctions.h>
 
 #include <vtkActor.h>
 #include <vtkRenderWindow.h>

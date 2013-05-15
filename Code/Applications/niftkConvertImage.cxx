@@ -14,21 +14,21 @@
 
 #include <map>
 
-#include "itkLogHelper.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageIOFactory.h"
-#include "itkImageIOBase.h"
-#include "itkGiplImageIO.h"
-#include "itkVTKImageIO.h"
-#include "itkINRImageIOFactory.h"
-#include "itkVectorImage.h"
-#include "itkRGBPixel.h"
-#include "itkRGBToLuminanceImageFilter.h"
+#include <itkLogHelper.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageIOFactory.h>
+#include <itkImageIOBase.h>
+#include <itkGiplImageIO.h>
+#include <itkVTKImageIO.h>
+#include <itkINRImageIOFactory.h>
+#include <itkVectorImage.h>
+#include <itkRGBPixel.h>
+#include <itkRGBToLuminanceImageFilter.h>
 
-#include "niftkConvertImageCLP.h"
+#include <niftkConvertImageCLP.h>
 
 /*!
  * \file niftkConvertImage.cxx

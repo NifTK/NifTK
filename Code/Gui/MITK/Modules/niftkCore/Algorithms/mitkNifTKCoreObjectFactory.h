@@ -15,7 +15,7 @@
 #ifndef mitk_NifTKCoreObjectFactory_h
 #define mitk_NifTKCoreObjectFactory_h
 
-#include "mitkCoreObjectFactory.h"
+#include <mitkCoreObjectFactory.h>
 #include "niftkCoreExports.h"
 
 namespace mitk {

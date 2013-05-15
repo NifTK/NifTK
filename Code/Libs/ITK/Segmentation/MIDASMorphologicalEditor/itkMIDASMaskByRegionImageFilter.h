@@ -15,7 +15,7 @@
 #ifndef itkMIDASMaskByRegionImageFilter_h
 #define itkMIDASMaskByRegionImageFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

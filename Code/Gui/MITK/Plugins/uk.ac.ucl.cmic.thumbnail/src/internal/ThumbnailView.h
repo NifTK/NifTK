@@ -15,14 +15,14 @@
 #ifndef ThumbnailView_h
 #define ThumbnailView_h
 
-#include "QmitkAbstractView.h"
-#include "berryIPartListener.h"
-#include "berryIPreferences.h"
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
-#include "berryISelection.h"
-#include "berryISelectionProvider.h"
-#include "berryISelectionListener.h"
+#include <QmitkAbstractView.h>
+#include <berryIPartListener.h>
+#include <berryIPreferences.h>
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
+#include <berryISelection.h>
+#include <berryISelectionProvider.h>
+#include <berryISelectionListener.h>
 #include "ui_ThumbnailViewControls.h"
 /**
  * \class ThumbnailView

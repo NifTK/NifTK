@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "QmitkIGIOpenCVDataSource.h"
-#include "mitkIGIOpenCVDataType.h"
+#include <mitkIGIOpenCVDataType.h>
+#include <../Conversion/ImageConversion.h>
 #include <mitkDataNode.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
@@ -180,7 +181,7 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     std::memcpy(&rgbOpenCVImage->channelSeq[0], "RGB\0", 4);
 
     // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-    mitk::Image::Pointer convertedImage = this->CreateMitkImage(rgbOpenCVImage);
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbOpenCVImage);
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
     if (imageInNode.IsNull())
     {

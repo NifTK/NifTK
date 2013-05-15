@@ -15,14 +15,14 @@
 #ifndef VTKFUNCTIONS_CPP
 #define VTKFUNCTIONS_CPP
 
-#include "math.h"
-#include "iostream"
-#include "ConversionUtils.h"
+#include <math.h>
+#include <iostream>
+#include <ConversionUtils.h>
 #include "vtkFunctions.h"
-#include "vtkSmartPointer.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkBoxMuellerRandomSequence.h"
-#include "vtkMinimalStandardRandomSequence.h"
+#include <vtkSmartPointer.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkBoxMuellerRandomSequence.h>
+#include <vtkMinimalStandardRandomSequence.h>
 #include <vtkDoubleArray.h>
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>

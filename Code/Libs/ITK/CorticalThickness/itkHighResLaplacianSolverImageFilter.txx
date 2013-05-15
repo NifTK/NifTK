@@ -16,10 +16,10 @@
 #define __itkHighResLaplacianSolverImageFilter_txx
 
 #include "itkHighResLaplacianSolverImageFilter.h"
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 #include <cmath>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

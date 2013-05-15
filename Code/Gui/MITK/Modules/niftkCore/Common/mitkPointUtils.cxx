@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkPointUtils.h"
-#include "mitkCommon.h"
+#include <mitkCommon.h>
 
 //-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)

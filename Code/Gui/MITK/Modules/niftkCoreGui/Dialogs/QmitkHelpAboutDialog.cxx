@@ -17,7 +17,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <iostream>
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 
 QmitkHelpAboutDialog::QmitkHelpAboutDialog(QWidget *parent, QString applicationName)
                 : m_ApplicationName(applicationName)

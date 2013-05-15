@@ -17,12 +17,12 @@
 
 #include "itkEulerAffineTransformMatrixAndItsVariations.h"
 
-#include "itkImageRegionIterator.h"
-#include "itkProgressReporter.h"
+#include <itkImageRegionIterator.h>
+#include <itkProgressReporter.h>
 
-#include "itkCastImageFilter.h"
+#include <itkCastImageFilter.h>
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 
 namespace itk

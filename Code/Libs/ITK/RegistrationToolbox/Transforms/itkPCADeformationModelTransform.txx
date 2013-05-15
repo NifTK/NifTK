@@ -16,7 +16,7 @@
 #define _itkPCADeformationModelTransform_txx
 
 #include "itkPCADeformationModelTransform.h"
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

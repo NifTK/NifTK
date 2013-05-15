@@ -16,7 +16,7 @@
 #define _itkSumOfSquaredDifferencePointMetric_txx
 
 #include "itkSumOfSquaredDifferencePointMetric.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk
 {

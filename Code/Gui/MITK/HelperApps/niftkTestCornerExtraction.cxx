@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkTestCornerExtraction.h"
+#include <mitkTestCornerExtraction.h>
 
 int main(int argc, char** argv)
 {

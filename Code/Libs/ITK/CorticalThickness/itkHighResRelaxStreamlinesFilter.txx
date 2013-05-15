@@ -18,9 +18,9 @@
 #include "itkHighResRelaxStreamlinesFilter.h"
 #include "itkFiniteDifferenceVoxel.h"
 #include "itkFiniteDifferenceVoxel.h"
-#include "itkVectorNearestNeighborInterpolateImageFunction.h"
+#include <itkVectorNearestNeighborInterpolateImageFunction.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

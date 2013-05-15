@@ -26,11 +26,11 @@
 #ifndef __niftkvtk4PointsReader_h
 #define __niftkvtk4PointsReader_h
 
-#include "NifTKConfigure.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkCommonWin32ExportHeader.h>
 #include "niftkVTKWin32ExportHeader.h"
 
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
 class NIFTKVTK_WINEXPORT niftkvtk4PointsReader : public vtkPolyDataAlgorithm
 {

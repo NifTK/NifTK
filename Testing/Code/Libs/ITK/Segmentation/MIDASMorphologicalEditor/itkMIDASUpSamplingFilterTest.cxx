@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkMIDASUpSamplingFilter.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImage.h>
+#include <itkMIDASUpSamplingFilter.h>
+#include <itkImageRegionConstIterator.h>
 using namespace std;
 
 /**

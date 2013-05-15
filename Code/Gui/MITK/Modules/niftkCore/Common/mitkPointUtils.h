@@ -16,8 +16,8 @@
 #define mitk_PointUtils_h
 
 #include "niftkCoreExports.h"
-#include "mitkVector.h"
-#include "mitkPositionEvent.h"
+#include <mitkVector.h>
+#include <mitkPositionEvent.h>
 
 /**
  * \file mitkPointUtils.h

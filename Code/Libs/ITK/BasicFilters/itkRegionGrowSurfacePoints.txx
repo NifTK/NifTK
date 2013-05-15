@@ -18,12 +18,12 @@
 #define __itkRegionGrowSurfacePoints_txx
 
 #include "itkRegionGrowSurfacePoints.h"
-#include "itkBinaryThresholdSurfaceVoxelImageFunction.h"
-#include "itkFloodFilledImageFunctionConditionalIterator.h"
-#include "itkProgressReporter.h"
+#include <itkBinaryThresholdSurfaceVoxelImageFunction.h>
+#include <itkFloodFilledImageFunctionConditionalIterator.h>
+#include <itkProgressReporter.h>
 
 #ifdef ITK_USE_REVIEW
-#include "itkShapedFloodFilledImageFunctionConditionalIterator.h"
+#include <itkShapedFloodFilledImageFunctionConditionalIterator.h>
 #endif
 
 namespace itk

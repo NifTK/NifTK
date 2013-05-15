@@ -104,7 +104,7 @@ enum MIDASDropType
 {
   MIDAS_DROP_TYPE_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
   MIDAS_DROP_TYPE_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
-  MIDAS_DROP_TYPE_ALL = 2,      /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
+  MIDAS_DROP_TYPE_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
 };
 
 /*!
@@ -125,11 +125,10 @@ enum MIDASDefaultInterpolationType
 enum MIDASBindType
 {
   MIDAS_BIND_NONE = 0,
-  MIDAS_BIND_CURSORS = 1,
-  MIDAS_BIND_MAGNIFICATION_WITHOUT_CURSORS = 2,
-  MIDAS_BIND_MAGNIFICATION_WITH_CURSORS = 3,
-  MIDAS_BIND_GEOMETRY_WITHOUT_MAGNIFICATION = 4,
-  MIDAS_BIND_GEOMETRY_WITH_MAGNIFICATION = 5,
+  MIDAS_BIND_LAYOUT = 1,
+  MIDAS_BIND_CURSORS = 2,
+  MIDAS_BIND_MAGNIFICATION = 4,
+  MIDAS_BIND_GEOMETRY = 8
 };
 
 #endif

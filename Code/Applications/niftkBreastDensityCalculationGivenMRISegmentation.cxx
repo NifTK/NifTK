@@ -16,14 +16,14 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 
-#include "niftkBreastDensityCalculationGivenMRISegmentationCLP.h"
+#include <niftkBreastDensityCalculationGivenMRISegmentationCLP.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageRegionConstIterator.h>
 
 /*!
  * \file niftkBreastDensityCalculationGivenMRISegmentation.cxx

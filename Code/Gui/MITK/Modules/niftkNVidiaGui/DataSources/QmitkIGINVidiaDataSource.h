@@ -16,8 +16,8 @@
 #define QMITKIGINVIDIADATASOURCE_H
 
 #include "niftkNVidiaGuiExports.h"
-#include "QmitkIGILocalDataSource.h"
-#include "mitkIGINVidiaDataType.h"
+#include <QmitkIGILocalDataSource.h>
+#include <mitkIGINVidiaDataType.h>
 #include <QObject>
 #include <QMetaType>
 #include <opencv2/core/types_c.h>
@@ -64,6 +64,19 @@ public:
    * \brief Returns true if capturing and false otherwise.
    */
   bool IsCapturing();
+
+  // this should match libvideo/SDIInput::InterlacedBehaviour
+  enum InterlacedBehaviour
+  {
+    DO_NOTHING_SPECIAL,
+    DROP_ONE_FIELD,
+    STACK_FIELDS
+  };
+
+  // used to capture a lower-resolution image
+  // can only be changed when no capture is running! see IsCapturing() etc 
+  void SetMipmapLevel(unsigned int l);
+  void SetFieldMode(InterlacedBehaviour b);
 
 
 public:
@@ -113,6 +126,8 @@ private:
   // holds internals to prevent header pollution
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
+  unsigned int            m_MipmapLevel;
+  InterlacedBehaviour     m_FieldMode;
 
   // used to correlate clock, frame numbers and other events
   std::ofstream           m_FrameMapLogFile;

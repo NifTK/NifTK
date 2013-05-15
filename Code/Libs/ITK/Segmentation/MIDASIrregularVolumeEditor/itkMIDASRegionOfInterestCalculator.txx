@@ -13,9 +13,9 @@
 =============================================================================*/
 
 #include "itkMIDASRegionOfInterestCalculator.h"
-#include "itkConversionUtils.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkConversionUtils.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk
 {

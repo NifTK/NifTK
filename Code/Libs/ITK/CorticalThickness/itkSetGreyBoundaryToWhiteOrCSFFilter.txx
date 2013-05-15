@@ -16,11 +16,11 @@
 #define __itkSetGreyBoundaryToWhiteOrCSFFilter_txx
 
 #include "itkSetGreyBoundaryToWhiteOrCSFFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

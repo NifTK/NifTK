@@ -16,7 +16,7 @@
 #define QMITKMIDASMULTIVIEWVISIBILITYMANAGER_H_
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 #include "QmitkMIDASSingleViewWidget.h"
 #include <QWidget>
 #include <mitkDataStorage.h>

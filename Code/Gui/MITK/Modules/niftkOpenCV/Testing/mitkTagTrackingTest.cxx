@@ -21,8 +21,8 @@
 #include <mitkIOUtil.h>
 #include <cv.h>
 #include <highgui.h>
-#include "mitkMonoTagExtractor.h"
-#include "mitkStereoTagExtractor.h"
+#include <mitkMonoTagExtractor.h>
+#include <mitkStereoTagExtractor.h>
 
 /**
  * \class TagTrackingTest

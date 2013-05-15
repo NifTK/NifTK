@@ -15,14 +15,14 @@
 #ifndef __itkScalarImageToNormalizedGradientVectorImageFilter_h
 #define __itkScalarImageToNormalizedGradientVectorImageFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkGradientImageFilter.h"
-#include "itkGradientRecursiveGaussianImageFilter.h"
-#include "itkCovariantVector.h"
+#include <itkImageToImageFilter.h>
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkGradientImageFilter.h>
+#include <itkGradientRecursiveGaussianImageFilter.h>
+#include <itkCovariantVector.h>
 #include "itkNormaliseVectorFilter.h"
-#include "itkGaussianSmoothVectorFieldFilter.h"
+#include <itkGaussianSmoothVectorFieldFilter.h>
 
 namespace itk {
 

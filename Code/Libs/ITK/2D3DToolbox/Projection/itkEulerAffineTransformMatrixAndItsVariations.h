@@ -15,8 +15,8 @@
 #ifndef __itkEulerAffineTransformMatrixAndItsVariations_h
 #define __itkEulerAffineTransformMatrixAndItsVariations_h
 
-#include "itkEulerAffineTransform.h"
-#include "itkImage.h"
+#include <itkEulerAffineTransform.h>
+#include <itkImage.h>
 
 #include <vnl/vnl_math.h>
 #include <vnl/vnl_vector.h>

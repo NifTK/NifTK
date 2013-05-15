@@ -18,11 +18,11 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "MorphologicalSegmentorPipeline.h"
-#include "MorphologicalSegmentorPipelineParams.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <MorphologicalSegmentorPipeline.h>
+#include <MorphologicalSegmentorPipelineParams.h>
 
 /**
  * Basic tests for the base morpological (brain editor) without edits.

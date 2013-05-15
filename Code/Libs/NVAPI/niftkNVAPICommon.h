@@ -14,7 +14,7 @@
 #ifndef NIFTKNVAPICOMMON_H
 #define NIFTKNVAPICOMMON_H
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkNVAPIWin32ExportHeader.h"
 
 extern "C" NIFTKNVAPI_WINEXPORT void TestFunction();

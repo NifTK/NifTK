@@ -15,7 +15,7 @@
 #ifndef __itkRay_h
 #define __itkRay_h
 
-#include "itkMatrix.h"
+#include <itkMatrix.h>
 
 namespace itk {
 

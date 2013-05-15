@@ -43,7 +43,7 @@
 #endif
 
 #include <fstream>
-#include "itkImageIOBase.h"
+#include <itkImageIOBase.h>
 #include <nifti1_io.h>
 #include "niftkCoreExports.h"
 

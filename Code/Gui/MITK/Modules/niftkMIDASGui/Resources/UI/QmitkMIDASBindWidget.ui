@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>93</width>
+    <width>112</width>
     <height>83</height>
    </rect>
   </property>
@@ -18,12 +18,9 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QCheckBox" name="m_BindNoneCheckBox">
-     <property name="toolTip">
-      <string>unbind windows</string>
-     </property>
+    <widget class="QCheckBox" name="m_BindLayoutCheckBox">
      <property name="text">
-      <string>none</string>
+      <string>layout</string>
      </property>
     </widget>
    </item>
@@ -43,7 +40,7 @@
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>pan&amp;&amp;zoom</string>
+      <string>magnification</string>
      </property>
     </widget>
    </item>

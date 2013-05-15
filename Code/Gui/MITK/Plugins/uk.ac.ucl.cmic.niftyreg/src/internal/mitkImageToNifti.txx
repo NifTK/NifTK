@@ -17,15 +17,15 @@
 
 
 // ITK
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageFileWriter.h"
-#include "itkNiftiImageIO3201.h"
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkImageFileWriter.h>
+#include <itkNiftiImageIO3201.h>
 
 // MITK
 #include "mitkImageToNifti.h"
-#include "mitkBaseProcess.h"
-#include "mitkImageAccessByItk.h"
+#include <mitkBaseProcess.h>
+#include <mitkImageAccessByItk.h>
 
 
 

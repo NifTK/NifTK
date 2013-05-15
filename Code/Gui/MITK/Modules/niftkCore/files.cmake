@@ -30,6 +30,7 @@ set(CPP_FILES
   DataManagement/mitkDataStorageVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
+  Rendering/mitkFastPointSetVtkMapper3D.cxx
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx

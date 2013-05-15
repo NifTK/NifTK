@@ -13,9 +13,9 @@
 =============================================================================*/
 
 #include "itkNIFTKTransformIOFactory.h"
-#include "itkCreateObjectFunction.h"
+#include <itkCreateObjectFunction.h>
 #include "itkNIFTKTransformIO.h"
-#include "itkVersion.h"
+#include <itkVersion.h>
 
 
 namespace itk

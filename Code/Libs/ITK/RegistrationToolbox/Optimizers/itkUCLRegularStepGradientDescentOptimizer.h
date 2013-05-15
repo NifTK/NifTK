@@ -15,10 +15,10 @@
 #ifndef __itkUCLRegularStepGradientDescentOptimizer_h
 #define __itkUCLRegularStepGradientDescentOptimizer_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkSingleValuedNonLinearOptimizer.h"
+#include <itkSingleValuedNonLinearOptimizer.h>
 
 namespace itk
 {

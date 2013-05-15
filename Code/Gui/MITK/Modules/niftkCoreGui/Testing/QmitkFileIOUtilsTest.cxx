@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include "QmitkFileIOUtils.h"
+#include <QmitkFileIOUtils.h>
 
 /**
  * \file QmitkFileIOUtilsTest.cxx

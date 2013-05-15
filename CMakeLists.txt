@@ -18,7 +18,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 SET(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-SET(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
+SET(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
 MARK_AS_ADVANCED(NIFTK_VERSION_MAJOR)
 MARK_AS_ADVANCED(NIFTK_VERSION_MINOR)
 
@@ -179,7 +179,7 @@ ENDIF (NIFTK_MESHING_CAN_BUILD)
 ######################################################################
 SET(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
 SET(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
-SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2012 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
+SET(NIFTK_COPYRIGHT "Copyright (C) 2008-2013 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 SET(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
 SET(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 SET(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
@@ -211,7 +211,7 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
-SET(NIFTK_VERSION_MITK "f70be82e03" CACHE STRING "Version of MITK" FORCE)
+SET(NIFTK_VERSION_MITK "7596b036f2" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
 SET(NIFTK_VERSION_NIFTYLINK "670cde1afd" CACHE STRING "Version of NiftyLink" FORCE)
 SET(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
@@ -1150,7 +1150,22 @@ IF(WIN32)
         ${VS_BUILD_TYPE})
 
       MESSAGE( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
+    endforeach()
 
+    foreach(NIFTK_APP ${NIFTK_APPS}) 
+      # extract option_name
+      STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+      SET(target_info_list ${target_info})
+      LIST(GET target_info_list 1 option_name)
+      LIST(GET target_info_list 0 app_name)
+      message("Current App Name: ${app_name}")
+	  
+	  foreach(VS_BUILD_TYPE debug release)
+		MESSAGE("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
+		mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
+		${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
+        ${VS_BUILD_TYPE}) 
+	  endforeach()
     endforeach()
     
   ELSE(MITK_FOUND)

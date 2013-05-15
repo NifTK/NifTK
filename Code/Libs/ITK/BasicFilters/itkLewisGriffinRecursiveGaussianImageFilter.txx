@@ -16,10 +16,10 @@
 #define __itkLewisGriffinRecursiveGaussianImageFilter_txx
 
 #include "itkLewisGriffinRecursiveGaussianImageFilter.h"
-#include "itkObjectFactory.h"
-#include "itkImageLinearIteratorWithIndex.h"
-#include "itkImageLinearConstIteratorWithIndex.h"
-#include "itkProgressReporter.h"
+#include <itkObjectFactory.h>
+#include <itkImageLinearIteratorWithIndex.h>
+#include <itkImageLinearConstIteratorWithIndex.h>
+#include <itkProgressReporter.h>
 #include <new>
 
 

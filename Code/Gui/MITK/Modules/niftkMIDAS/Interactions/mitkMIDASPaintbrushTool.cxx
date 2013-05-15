@@ -14,25 +14,25 @@
 
 #include "mitkMIDASPaintbrushTool.h"
 #include "mitkMIDASPaintbrushTool.xpm"
-#include "vtkImageData.h"
-#include "mitkDataStorageUtils.h"
-#include "mitkVector.h"
-#include "mitkToolManager.h"
-#include "mitkBaseRenderer.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkInstantiateAccessFunctions.h"
-#include "mitkITKImageImport.h"
-#include "mitkRenderingManager.h"
-#include "mitkUndoController.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
+#include <vtkImageData.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkVector.h>
+#include <mitkToolManager.h>
+#include <mitkBaseRenderer.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkInstantiateAccessFunctions.h>
+#include <mitkITKImageImport.h>
+#include <mitkRenderingManager.h>
+#include <mitkUndoController.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
-#include "mitkPointUtils.h"
+#include <mitkPointUtils.h>
 
 // MicroServices
-#include "mitkGetModuleContext.h"
-#include "mitkModule.h"
-#include "mitkModuleRegistry.h"
+#include <mitkGetModuleContext.h>
+#include <mitkModule.h>
+#include <mitkModuleRegistry.h>
 
 #include "mitkMIDASDisplayInteractor.h"
 

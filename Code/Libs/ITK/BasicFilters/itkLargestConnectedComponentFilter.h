@@ -15,10 +15,10 @@
 #ifndef itkLargestConnectedComponentFilter_h
 #define itkLargestConnectedComponentFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkConnectedComponentImageFilter.h"
-#include "itkImage.h"
+#include <itkImageToImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkConnectedComponentImageFilter.h>
+#include <itkImage.h>
 #include <map>
 #include <algorithm>
 

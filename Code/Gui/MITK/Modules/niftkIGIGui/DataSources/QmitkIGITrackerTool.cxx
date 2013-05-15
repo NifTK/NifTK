@@ -19,16 +19,16 @@
 #include <mitkRenderingManager.h>
 #include <mitkBaseRenderer.h>
 
-#include "mitkIGITestDataUtils.h"
+#include <mitkIGITestDataUtils.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
-#include "vtkCamera.h"
-#include "vtkRenderer.h"
-#include "vtkRendererCollection.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkTransform.h"
-#include "vtkMatrix4x4.h"
+#include <vtkCamera.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkTransform.h>
+#include <vtkMatrix4x4.h>
 
 //NIFTK_IGISOURCE_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerTool, "IGI Tracker Tool");
 

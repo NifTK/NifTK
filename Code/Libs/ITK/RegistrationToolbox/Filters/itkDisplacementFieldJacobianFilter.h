@@ -15,7 +15,7 @@
 #ifndef __itkDisplacementFieldJacobianFilter_h
 #define __itkDisplacementFieldJacobianFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 /** 

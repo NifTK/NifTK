@@ -16,7 +16,7 @@
 #define __itkLagrangianInitializedRelaxStreamlinesFilter_h
 
 #include "itkRelaxStreamlinesFilter.h"
-#include "itkContinuousIndex.h"
+#include <itkContinuousIndex.h>
 
 namespace itk {
 /** 

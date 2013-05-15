@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkMIDASDownSamplingFilter.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImage.h>
+#include <itkMIDASDownSamplingFilter.h>
+#include <itkImageRegionConstIterator.h>
 
 /**
  * Basic tests for MIDASDownSamplingFilterTest

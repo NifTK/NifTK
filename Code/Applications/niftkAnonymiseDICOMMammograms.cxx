@@ -22,25 +22,25 @@
  */
 
 
-#include "FileHelper.h"
+#include <FileHelper.h>
 
-#include "itkLogHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
-#include "itkGDCMImageIO.h"
-#include "itkImageLinearIteratorWithIndex.h"
+#include <itkLogHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
+#include <itkImageLinearIteratorWithIndex.h>
 
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-#include "boost/progress.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/progress.hpp>
 
 #include <vector>
 
-#include "niftkAnonymiseDICOMMammogramsCLP.h"
+#include <niftkAnonymiseDICOMMammogramsCLP.h>
 
 
 namespace fs = boost::filesystem;
