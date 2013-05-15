@@ -41,10 +41,6 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
-  // FIXME: what exactly are these disconnecting?
-  m_Background->disconnect();
-  this->disconnect();
-
   // gui is destroyed before data source (by igi data manager)
   // so disconnect ourselfs from source
   QmitkIGIOpenCVDataSource* source = GetOpenCVDataSource();
@@ -54,6 +50,10 @@ QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
     // and source is sender
     this->disconnect(source);
   }
+
+  // Disable the background so that if the VideoSource is deleted
+  // we will not trigger an itk::DeleteEvent to QmitkVideoBackground::OnVideoSourceDelete.
+  this->m_Background->Disable();
 
   // delete render window first.
   if (m_RenderWindow != NULL)

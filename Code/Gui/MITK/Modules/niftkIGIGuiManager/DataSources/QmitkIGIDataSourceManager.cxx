@@ -73,11 +73,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     m_ClearDownTimer->stop();
   }
 
-  // Must delete the current GUI before the sources.
-  this->DeleteCurrentGuiWidget();
-
-  // Smart pointers delete each source.
   m_Sources.clear();
+  this->DeleteCurrentGuiWidget();
 }
 
 
