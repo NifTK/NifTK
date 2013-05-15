@@ -43,6 +43,10 @@ SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #--------------------------------------------------------------------------------------
 ADD_TEST(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk noperturb)
 
+ADD_TEST(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK4PointReaderTest ${INPUT_DATA}/4points.txt)
+
+ADD_TEST(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK3PointReaderTest ${INPUT_DATA}/3points.txt)
+
 IF(BUILD_SLS_TESTING)
   ADD_TEST(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
   ADD_TEST(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointRepeatTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk)
@@ -53,6 +57,7 @@ ENDIF()
 #################################################################################
 SET( VTKIntegrationTests_SRCS
 	VTKIterativeClosestPointTest.cxx
+	VTKTextFileReaderTests.cxx
 )
 
 ADD_EXECUTABLE(VTKIntegrationTests VTKIntegrationTests.cxx ${VTKIntegrationTests_SRCS})
