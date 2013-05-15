@@ -26,6 +26,7 @@ vtkStandardNewMacro(niftkvtk4PointsReader);
 
 //----------------------------------------------------------------------------
 niftkvtk4PointsReader::niftkvtk4PointsReader()
+:m_ReadWeights(true)
 {
   this->FileName = 0;
   this->SetNumberOfInputPorts(0);
@@ -33,7 +34,6 @@ niftkvtk4PointsReader::niftkvtk4PointsReader()
   {
     m_Clipping[i] = false;
   }
-
 }
 
 //----------------------------------------------------------------------------
@@ -85,7 +85,16 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      if ( linestream >> x[0] >> x[1] >> x[2] >> weight) 
+      bool parseSuccess;
+      if ( m_ReadWeights ) 
+      {
+        parseSuccess = linestream >> x[0] >> x[1] >> x[2] >> weight;
+      }
+      else
+      {
+        parseSuccess = linestream >> x[0] >> x[1] >> x[2];
+      }
+      if ( parseSuccess ) 
       {
         bool ok=true;
         for ( int i = 0 ; i < 3 ; i++)
@@ -95,10 +104,13 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
            ok = false;
           }
         }
-        if ( m_Clipping[3] && ( ( weight < m_Min[3] ) || ( weight > m_Max[3] )) )
+        if ( m_ReadWeights )
         {
-          ok = false;
-        } 
+          if ( m_Clipping[3] && ( ( weight < m_Min[3] ) || ( weight > m_Max[3] )) )
+          {
+            ok = false;
+          }
+        }
 
         if ( ok )
         {
