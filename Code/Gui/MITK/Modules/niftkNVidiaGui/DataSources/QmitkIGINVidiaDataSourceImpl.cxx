@@ -443,7 +443,7 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
 
         // make sure we are checking with twice the frame rate.
         // sampling theorem and stuff
-        SetInterval((unsigned int) std::max(1, (int) (1000.0f / format.get_refreshrate())));
+        SetInterval((unsigned int) std::max(1, (int) (500.0f / format.get_refreshrate())));
       }
     }
     // getting an exception means something is broken
