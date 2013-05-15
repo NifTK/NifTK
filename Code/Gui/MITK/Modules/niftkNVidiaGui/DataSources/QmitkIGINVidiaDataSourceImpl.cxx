@@ -1,0 +1,635 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
+#include "QmitkIGINVidiaDataSourceImpl.h"
+#include <iostream>
+#include <cuda_runtime_api.h>
+#include <cuda_gl_interop.h>
+#include <Mmsystem.h>
+#include <opencv2/core/core_c.h>
+#include <igtlTimeStamp.h>
+#include <boost/typeof/typeof.hpp>
+#include <NiftyLinkUtils.h>
+
+
+//-----------------------------------------------------------------------------
+QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
+  : QmitkIGITimerBasedThread(0),
+    sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
+    current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), /*m_WasSavingMessagesPreviously(false),*/ m_NumFramesCompressed(0),
+    state_message("Starting up")
+{
+  // helps with debugging
+  setObjectName("QmitkIGINVidiaDataSourceImpl");
+  // sample interval in milliseconds that a timer will kick in to check for sdi hardware.
+  // once capture has been setup, it will trigger much more often to keep up with video refresh rate.
+  SetInterval(100);
+
+
+  std::memset(&textureids[0], 0, sizeof(textureids));
+  // we create the opengl widget on the ui thread once
+  // and then never modify or signal/etc again
+  oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+  oglwin->hide();
+  assert(oglwin->isValid());
+
+  // hack to get context sharing to work while the capture thread is cracking away
+  oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+  oglshare->hide();
+  assert(oglshare->isValid());
+  assert(oglwin->isSharing());
+
+  // we need to activate our capture context once for cuda setup
+  QGLContext* prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
+  oglwin->makeCurrent();
+
+  // Find out which gpu is rendering our window.
+  // We need to know because this is where the video comes in
+  // and on which we do compression.
+  int           cudadevices[10];
+  unsigned int  actualcudadevices = 0;
+  // note that zero is a valid device index
+  std::memset(&cudadevices[0], -1, sizeof(cudadevices));
+  if (cudaGLGetDevices(&actualcudadevices, &cudadevices[0], sizeof(cudadevices) / sizeof(cudadevices[0]), cudaGLDeviceListAll) == cudaSuccess)
+  {
+    if (cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cudadevices[0]) == CUDA_SUCCESS)
+    {
+      cuCtxGetCurrent(&cuContext);
+      // FIXME: do we need to pop the current context? is it leaking to the caller somehow?
+      CUcontext oldctx;
+      cuCtxPopCurrent(&oldctx);
+    }
+  }
+  // else case is not very interesting: we could be running this on non-nvidia hardware
+  // but we'll only know once we start enumerating sdi devices during QmitkIGINVidiaDataSource::GrabData()
+
+  if (prevctx)
+    prevctx->makeCurrent();
+  else
+    oglwin->doneCurrent();
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
+{
+  // we dont really support concurrent destruction
+  // if some other thread is still holding on to a pointer
+  //  while we are cleaning up here then things are going to blow up anyway
+  // might as well fail fast
+  bool wasnotlocked = lock.tryLock();
+  assert(wasnotlocked);
+  wasnotlocked = copyoutmutex.tryLock();
+  assert(wasnotlocked);
+
+  QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
+  try
+  {
+    // we need the capture context for proper cleanup
+    oglwin->makeCurrent();
+
+    delete compressor;
+    delete sdiin;
+    // we do not own sdidev!
+    sdidev = 0;
+    
+    if (ctx)
+      ctx->makeCurrent();
+    else
+      oglwin->doneCurrent();
+  }
+  catch (...)
+  {
+      std::cerr << "sdi cleanup threw exception" << std::endl;
+  }
+
+  if (cuContext)
+  {
+    cuCtxDestroy(cuContext);
+  }
+
+  delete oglshare;
+  delete oglwin;
+
+  // they'll get cleaned up now
+  // if someone else is currently waiting on these
+  //  deleting but not unlocking does what to their waiting?
+  copyoutmutex.unlock();
+  lock.unlock();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::InitVideo()
+{
+  // make sure nobody messes around with contexts
+  assert(QGLContext::currentContext() == oglwin->context());
+
+  // we do not own the device!
+  sdidev = 0;
+  // but we gotta clear up this one
+  delete sdiin;
+  sdiin = 0;
+  format = video::StreamFormat();
+  // even though this pimpl class doesnt use the compressor directly
+  // we should cleanup anyway.
+  // so that whenever video dies we get a new file (because format could differ!)
+  delete compressor;
+  compressor = 0;
+
+  // find our capture card
+  for (int i = 0; ; ++i)
+  {
+    video::SDIDevice* d = video::SDIDevice::get_device(i);
+    if (d == 0)
+      break;
+
+    if (d->get_type() == video::SDIDevice::INPUT)
+    {
+      sdidev = d;
+      break;
+    }
+  }
+
+  // so we have a card, check the incoming video format and hook up capture
+  if (sdidev)
+  {
+    streamcount = 0;
+    for (int i = 0; ; ++i, ++streamcount)
+    {
+      video::StreamFormat f = sdidev->get_format(i);
+      if (f.format == video::StreamFormat::PF_NONE)
+      {
+        break;
+      }
+
+      format = f;
+    }
+
+    if (format.format != video::StreamFormat::PF_NONE)
+    {
+      sdiin = new video::SDIInput(sdidev, m_FieldMode, format.get_refreshrate());
+    }
+  }
+
+  // assuming everything went fine
+  //  we now have texture objects that will receive video data everytime we call capture()
+}
+
+
+#if 0
+  void QmitkIGINVidiaDataSourceImpl::readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
+  {
+    assert(sdiin != 0);
+    assert(bufferpitch >= width * 3);
+
+    // lock here first, before querying dimensions so that there's no gap
+    QMutexLocker    l(&lock);
+
+    std::pair<int, int> dim = get_capture_dimensions();
+    if (dim.first > width)
+      // FIXME: should somehow communicate failure to the requester
+      return;
+
+    // unfortunately we have 3 bytes per pixel
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    assert((bufferpitch % 3) == 0);
+    glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
+
+    for (int i = 0; i < 4; ++i)
+    {
+      int texid = sdiin->get_texture_id(i, copyoutslot);
+      if (texid == 0)
+        break;
+
+      // while we have the lock, texture dimensions are not going to change
+
+      // remaining buffer too small?
+      if (height - (i * dim.second) < dim.second)
+        return;
+
+      char*   subbuf = &buffer[i * dim.second * bufferpitch];
+
+      glBindTexture(GL_TEXTURE_2D, texid);
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, subbuf);
+      assert(glGetError() == GL_NO_ERROR);
+    }
+  }
+#endif
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::ReadbackRgba(char* buffer, std::size_t bufferpitch, int width, int height)
+{
+  assert(sdiin != 0);
+  assert(bufferpitch >= width * 4);
+
+  std::pair<int, int> dim = get_capture_dimensions();
+  if (dim.first > width)
+    // FIXME: should somehow communicate failure to the requester
+    return;
+
+  // fortunately we have 4 bytes per pixel
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  assert((bufferpitch % 4) == 0);
+  glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 4);
+
+  for (int i = 0; i < 4; ++i)
+  {
+    int texid = sdiin->get_texture_id(i, copyoutslot);
+    if (texid == 0)
+      break;
+
+    // while we have the lock, texture dimensions are not going to change
+
+    // remaining buffer too small?
+    if (height - (i * dim.second) < dim.second)
+      return;
+
+    char*   subbuf = &buffer[i * dim.second * bufferpitch];
+
+    glBindTexture(GL_TEXTURE_2D, texid);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, subbuf);
+    assert(glGetError() == GL_NO_ERROR);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::IsRunning() const
+{
+  QMutexLocker    l(&lock);
+  return current_state == RUNNING;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::HasHardware() const
+{
+  QMutexLocker    l(&lock);
+  return sdidev != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::HasInput() const
+{
+  QMutexLocker    l(&lock);
+  return sdiin != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+video::FrameInfo QmitkIGINVidiaDataSourceImpl::GetNextSequenceNumber(unsigned int ihavealready) const
+{
+  QMutexLocker    l(&lock);
+
+  video::FrameInfo  fi = {0};
+  fi.sequence_number = ihavealready;
+
+  BOOST_TYPEOF(sn2slot_map)::const_iterator i = sn2slot_map.upper_bound(fi);
+  if (i == sn2slot_map.end())
+  {
+    video::FrameInfo  empty = {0};
+    return empty;
+  }
+
+  return i->first;
+}
+
+
+//-----------------------------------------------------------------------------
+// this is the format reported by sdi
+// the actual capture format might be different!
+video::StreamFormat QmitkIGINVidiaDataSourceImpl::GetFormat() const
+{
+  QMutexLocker    l(&lock);
+  return format;
+}
+
+
+//-----------------------------------------------------------------------------
+// might be different from advertised stream format
+std::pair<int, int> QmitkIGINVidiaDataSourceImpl::get_capture_dimensions() const
+{
+  QMutexLocker    l(&lock);
+  if (sdiin == 0)
+    return std::make_pair(0, 0);
+  return std::make_pair(sdiin->get_width(), sdiin->get_height());
+}
+
+
+//-----------------------------------------------------------------------------
+QGLWidget* QmitkIGINVidiaDataSourceImpl::GetCaptureContext()
+{
+  QMutexLocker    l(&lock);
+  assert(oglshare != 0);
+  return oglshare;
+}
+
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSourceImpl::GetTextureId(unsigned int stream) const
+{
+  QMutexLocker    l(&lock);
+  if (sdiin == 0)
+      return 0;
+  if (stream >= 4)
+      return 0;
+  return textureids[stream];
+}
+
+
+//-----------------------------------------------------------------------------
+int QmitkIGINVidiaDataSourceImpl::GetStreamCount() const
+{
+  QMutexLocker    l(&lock);
+  return streamcount;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::SetFieldMode(video::SDIInput::InterlacedBehaviour mode)
+{
+  QMutexLocker    l(&lock);
+  m_FieldMode = mode;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGINVidiaDataSourceImpl::CaptureState QmitkIGINVidiaDataSourceImpl::GetCaptureState() const
+{
+  QMutexLocker    l(&lock);
+  return current_state;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string QmitkIGINVidiaDataSourceImpl::GetStateMessage() const
+{
+  QMutexLocker    l(&lock);
+  return state_message;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::run()
+{
+  // it's possible for someone else to start and stop our thread.
+  // just make sure we start clean if that happens.
+  Reset();
+
+  // let base class deal with timer and event loop and stuff
+  QmitkIGITimerBasedThread::run();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
+{
+  QMutexLocker    l(&lock);
+
+  if (current_state == QmitkIGINVidiaDataSourceImpl::FAILED)
+  {
+    return;
+  }
+  if (current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
+  {
+    return;
+  }
+
+  if (current_state == QmitkIGINVidiaDataSourceImpl::PRE_INIT)
+  {
+    oglwin->makeCurrent();
+    current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+  }
+
+  // make sure nobody messes around with contexts
+  assert(QGLContext::currentContext() == oglwin->context());
+
+  if (current_state == QmitkIGINVidiaDataSourceImpl::HW_ENUM)
+  {
+    try
+    {
+      // libvideo does its own glew init, so we can get cracking straight away
+      InitVideo();
+
+      // once we have an input setup
+      //  grab at least one frame (not quite sure why)
+      if (sdiin)
+      {
+        sdiin->capture();
+
+        // make sure we are checking with twice the frame rate.
+        // sampling theorem and stuff
+        SetInterval((unsigned int) std::max(1, (int) (1000.0f / format.get_refreshrate())));
+      }
+    }
+    // getting an exception means something is broken
+    // during normal operation this should never happen
+    //  even if there's no hardware or signal
+    catch (const std::exception& e)
+    {
+      state_message = std::string("Failed: ") + e.what();
+      current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      // no point trying check often, it's not going to recover
+      SetInterval(1000);
+      return;
+    }
+    catch (...)
+    {
+      state_message = "Failed";
+      current_state = QmitkIGINVidiaDataSourceImpl::FAILED;
+      // no point trying check often, it's not going to recover
+      SetInterval(1000);
+      return;
+    }
+  }
+
+  if (!HasHardware())
+  {
+    state_message = "No SDI hardware";
+    // no hardware then nothing to do
+    current_state = QmitkIGINVidiaDataSourceImpl::DEAD;
+    // no point trying check often, it's not going to recover
+    SetInterval(1000);
+    return;
+  }
+
+  if (!HasInput())
+  {
+    state_message = "No input signal";
+    // no signal, try again next round
+    current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    // dont re-setup too quickly
+    SetInterval(500);
+    return;
+  }
+
+  // if we get to here then we should be good to go!
+  current_state = QmitkIGINVidiaDataSourceImpl::RUNNING;
+
+  try
+  {
+    bool hasframe = sdiin->has_frame();
+    // note: has_frame() will not throw an exception in case setup is broken
+
+    // make sure we try to capture a frame if the previous one was too long ago.
+    // that will check for errors and throw an exception if necessary, which will then allow us to restart.
+    if ((timeGetTime() - m_LastSuccessfulFrame) > 1000)
+      hasframe = true;
+
+
+    if (hasframe)
+    {
+      // note: capture() will block for a frame to arrive
+      // that's why we have hasframe above
+      video::FrameInfo fi = sdiin->capture();
+      m_LastSuccessfulFrame = timeGetTime();
+
+      // keep the most recent set of texture ids around
+      // this is mainly for the preview window
+      for (int i = 0; i < 4; ++i)
+      {
+        textureids[i] = sdiin->get_texture_id(i, -1);
+      }
+
+      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+      fi.id = GetTimeInNanoSeconds(timeCreated);//->GetTimeUint64();
+
+      int newest_slot = sdiin->get_current_ringbuffer_slot();
+      // whatever we had in this slot is now obsolete
+      BOOST_TYPEOF(slot2sn_map)::iterator oldsni = slot2sn_map.find(newest_slot);
+      if (oldsni != slot2sn_map.end())
+      {
+        BOOST_TYPEOF(sn2slot_map)::iterator oldsloti = sn2slot_map.find(oldsni->second);
+        if (oldsloti != sn2slot_map.end())
+        {
+          sn2slot_map.erase(oldsloti);
+        }
+        slot2sn_map.erase(oldsni);
+      }
+      slot2sn_map[newest_slot] = fi;
+      sn2slot_map[fi] = newest_slot;
+
+      state_message = "Grabbing";
+    }
+  }
+  // capture() might throw if the capture setup has become invalid
+  // e.g. a mode change or signal lost
+  catch (...)
+  {
+    state_message = "Glitched out";
+    current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+    // dont re-setup too quickly
+    SetInterval(500);
+    return;
+  }
+
+  // dont put the copy-out bits in the has_frame condition
+  // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
+  if (copyoutasap)
+  {
+    if (copyoutasap->nChannels == 4)
+    {
+      ReadbackRgba(copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
+    }
+    else
+    {
+      assert(false);
+    }
+    copyoutasap = 0;
+    copyoutfinished.wakeOne();
+  }
+
+#ifdef JOHANNES_HAS_FIXED_RECORDING
+  // because there's currently no notification when the user clicked stop-record
+  // we need to check this way to clean up the compressor.
+  if (m_Pimpl->m_WasSavingMessagesPreviously && !GetSavingMessages())
+  {
+    delete m_Pimpl->compressor;
+    m_Pimpl->compressor = 0;
+    m_Pimpl->m_WasSavingMessagesPreviously = false;
+
+    m_FrameMapLogFile.close();
+  }
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::Reset()
+{
+  QMutexLocker    l(&lock);
+
+  // dont forget to remove any stale sequence numbers.
+  sn2slot_map.clear();
+  slot2sn_map.clear();
+
+  state_message = "Initialising";
+
+  current_state = PRE_INIT;
+}
+
+
+//-----------------------------------------------------------------------------
+std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned int sequencenumber)
+{
+  // i dont like this way of unstructured locking
+  lock.lock();
+  // but the waitcondition stuff doesnt work otherwise
+
+  // temp obj to search for the correct slot
+  video::FrameInfo    fi = {0};
+  fi.sequence_number = sequencenumber;
+
+  BOOST_AUTO(sni, sn2slot_map.lower_bound(fi));
+  // we need to check whether the request sequence number is still valid.
+  // there may have been a capture reset.
+  if (sni == sn2slot_map.end())
+  {
+    lock.unlock();
+    return std::make_pair((IplImage*) 0, 0);
+  }
+
+  std::pair<int, int>   imgdim = get_capture_dimensions();
+  int                   streamcount = GetStreamCount();
+
+  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 4);
+  // mark layout as rgba instead of the opencv-default bgr
+  std::memcpy(&frame->channelSeq[0], "RGBA", 4);
+
+
+  copyoutasap = frame;
+  copyoutslot = sni->second;
+
+  // this smells like deadlock...
+  copyoutmutex.lock();
+  // until here, capture thread would be stuck waiting for the lock
+  lock.unlock();
+
+  // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
+  //        otherwise we are locking in on its refresh rate
+
+  copyoutfinished.wait(&copyoutmutex);
+  copyoutmutex.unlock();
+  return std::make_pair(frame, streamcount);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::SequenceNumberComparator::operator()(const video::FrameInfo& a, const video::FrameInfo& b) const
+{
+  return a.sequence_number < b.sequence_number;
+}
