@@ -73,8 +73,8 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
     m_ClearDownTimer->stop();
   }
 
-  m_Sources.clear();
   this->DeleteCurrentGuiWidget();
+  m_Sources.clear();
 }
 
 
@@ -439,21 +439,25 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   int rowIndex = m_TableWidget->currentRow();
 
   if (rowIndex < 0)
-    rowIndex = m_TableWidget->rowCount()-1;
+  {
+    rowIndex = m_TableWidget->rowCount() - 1;
+  }
 
-  QmitkIGIDataSource::Pointer source = m_Sources[rowIndex];
+  // scoping for source smart pointer
+  {
+    QmitkIGIDataSource::Pointer source = m_Sources[rowIndex];
 
-  // Disconnect from signal.
-  disconnect(source, 0, this, 0);
+    // Disconnect from signal.
+    disconnect(source, 0, this, 0);
 
-  // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
-  // linked sources is not unique to network tools. So we either move the "related sources"
-  // down the class hierarchy, so that it only applies to networked tools, or we generalise
-  // this to destroy any related data source.
+    // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
+    // linked sources is not unique to network tools. So we either move the "related sources"
+    // down the class hierarchy, so that it only applies to networked tools, or we generalise
+    // this to destroy any related data source.
 
-  // If it is a networked tool, removes the port number from our list of "ports in use".
-  QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
-  if (niftyLinkSource.IsNotNull())
+    // If it is a networked tool, removes the port number from our list of "ports in use".
+    QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
+                                                            if (niftyLinkSource.IsNotNull())
   {
 
     int portNumber = niftyLinkSource->GetPort();
@@ -487,12 +491,13 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
     m_PortsInUse.remove(portNumber);
   }
 
-  m_TableWidget->removeRow(rowIndex);
-  m_TableWidget->update();
+    m_TableWidget->removeRow(rowIndex);
+    m_TableWidget->update();
 
-  // FIXME: this should not delete the gui if it doesnt belong to the to-be-removed source!
-  //        but this should be a safe way of cleaning up for now
-  this->DeleteCurrentGuiWidget();
+    // FIXME: this should not delete the gui if it doesnt belong to the to-be-removed source!
+    //        but this should be a safe way of cleaning up for now
+    this->DeleteCurrentGuiWidget();
+  }
 
   // This destroys the source. It is up to the source to correctly destroy itself,
   // as this class has no idea what the source is or what it contains etc.
