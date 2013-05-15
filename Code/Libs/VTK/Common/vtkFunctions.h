@@ -136,7 +136,7 @@ extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source,
  * \param, the point, and the polydata
  * \return the euclidean distance
  */
-extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( const double  point[3] , const vtkPolyData * target);
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vtkPolyData * target);
 
 /**
  * \brief Returns the euclidean distance (in 3D) between a point and the closest point
@@ -145,7 +145,7 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( const double  point[3
  * speed up the process.
  * \return the euclidean distance
  */
-extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( const double point [3] , const vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
 
 /**
  * \brief Calculates the euclidean distance (in 3D) between each point in the 
