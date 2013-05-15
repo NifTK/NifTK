@@ -78,6 +78,14 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
     prevctx->makeCurrent();
   else
     oglwin->doneCurrent();
+
+
+  // we want signal/slot processing to happen on our background thread.
+  // for that to work we need to explicitly move this object because
+  // it is currently owned by the gui thread.
+  // FIXME: i wonder how well that works with start() and quit(). our thread instance stays
+  //        the same so it should be ok?
+  this->moveToThread(this);
 }
 
 
@@ -400,8 +408,21 @@ void QmitkIGINVidiaDataSourceImpl::run()
   // just make sure we start clean if that happens.
   Reset();
 
+  bool ok = connect(this, SIGNAL(Bump()), this, SLOT(WakeUp()), Qt::QueuedConnection);
+  assert(ok);
+
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
+
+  ok = disconnect(this, SIGNAL(Bump()), this, SLOT(WakeUp()));
+  assert(ok);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::WakeUp()
+{
+  OnTimeoutImpl();
 }
 
 
@@ -629,9 +650,10 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned in
   // until here, capture thread would be stuck waiting for the lock
   lock.unlock();
 
-  // FIXME: we should bump m_GrabbingThread so it wakes up early from its message loop sleep
-  //        otherwise we are locking in on its refresh rate
-
+  // we should bump m_GrabbingThread so it wakes up early from its message loop sleep.
+  // otherwise we are locking in on its refresh rate.
+  emit Bump();
+  // FIXME: qt has a Qt::BlockingQueuedConnection, use that instead!
   copyoutfinished.wait(&copyoutmutex);
   copyoutmutex.unlock();
   return std::make_pair(frame, streamcount);

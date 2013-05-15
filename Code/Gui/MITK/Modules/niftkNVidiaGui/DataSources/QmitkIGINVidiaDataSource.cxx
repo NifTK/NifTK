@@ -145,9 +145,6 @@ bool QmitkIGINVidiaDataSource::IsCapturing()
 void QmitkIGINVidiaDataSource::GrabData()
 {
   assert(m_Pimpl != 0);
-  
-  //should not be necessary anymore
-  //assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
 
   // always update status message
   this->SetStatus(m_Pimpl->GetStateMessage());
@@ -315,7 +312,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
 {
   assert(m_Pimpl != 0);
-  //assert(m_GrabbingThread == (QmitkIGILocalDataSourceGrabbingThread*) QThread::currentThread());
 
   bool success = false;
   outputFileName = "";

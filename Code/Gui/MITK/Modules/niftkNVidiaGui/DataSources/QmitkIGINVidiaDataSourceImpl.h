@@ -82,6 +82,14 @@ protected:
   virtual void run();
 
 
+protected slots:
+  void WakeUp();
+
+signals:
+  // bumping this thread means to wake it up from its timer sleep.
+  void Bump();
+
+
 private:
   // has to be called with lock held!
   void InitVideo();
