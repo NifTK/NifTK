@@ -28,6 +28,7 @@ SET(CPP_FILES
   QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
   QmitkMIDASSingleViewWidgetListDropManager.cxx
   QmitkThumbnailRenderWindow.cxx
+  vtkSideAnnotation.cxx
 )
 
 SET(MOC_H_FILES 

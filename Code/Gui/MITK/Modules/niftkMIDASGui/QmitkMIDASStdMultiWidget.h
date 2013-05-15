@@ -35,9 +35,8 @@ class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
 
-class vtkTextActor;
 class vtkRenderer;
-class vtkTextProperty;
+class vtkSideAnnotation;
 
 namespace mitk
 {
@@ -390,12 +389,8 @@ private:
   /// \brief Voxel size in millimetres.
   mitk::Vector3D        m_MmPerVx;
 
-  struct
-  {
-    vtkTextActor* TextActor;
-    vtkTextProperty* TextProp;
-    vtkRenderer* Renderer;
-  } m_DirectionAnnotations[3][4];
+  vtkSideAnnotation* m_DirectionAnnotations[3];
+  vtkRenderer* m_DirectionAnnotationRenderers[3];
 
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
