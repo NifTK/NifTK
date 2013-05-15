@@ -17,11 +17,15 @@
 #include <cmath>
 #include <itkMatrix.h>
 #include <vtkRenderWindow.h>
+#include <vtkTextActor.h>
+#include <vtkRenderer.h>
+#include <vtkTextProperty.h>
 #include <QmitkRenderWindow.h>
 #include <QGridLayout>
 #include <mitkMIDASOrientationUtils.h>
 
 #include <mitkGetModuleContext.h>
+#include <mitkVtkLayerController.h>
 
 
 /**
@@ -155,6 +159,43 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   m_CornerAnnotaions[1].cornerText->SetText(0, "");
   m_CornerAnnotaions[2].cornerText->SetText(0, "");
 
+  double axialColour[3] = {1.0, 0.0, 0.0};
+  double sagittalColour[3] = {0.0, 1.0, 0.0};
+  double coronalColour[3] = {0.295, 0.295, 1.0};
+  double directionAnnotationPositions[4][2] = {{20.0, 45.0}, {30.0, 35.0}, {20.0, 25.0}, {10.0, 35.0}};
+
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      m_DirectionAnnotations[i][j].TextActor = vtkTextActor::New();
+      m_DirectionAnnotations[i][j].TextActor->SetPosition(directionAnnotationPositions[j]);
+      m_DirectionAnnotations[i][j].TextActor->SetInput("");
+      m_DirectionAnnotations[i][j].TextProp = vtkTextProperty::New();
+      m_DirectionAnnotations[i][j].TextProp->BoldOn();
+      m_DirectionAnnotations[i][j].TextProp->SetJustificationToCentered();
+      m_DirectionAnnotations[i][j].TextProp->SetVerticalJustificationToCentered();
+      m_DirectionAnnotations[i][j].TextActor->SetTextProperty(m_DirectionAnnotations[i][j].TextProp);
+      m_DirectionAnnotations[i][j].Renderer = vtkRenderer::New();
+      m_DirectionAnnotations[i][j].Renderer->AddActor(m_DirectionAnnotations[i][j].TextActor);
+      m_DirectionAnnotations[i][j].Renderer->InteractiveOff();
+      mitk::VtkLayerController::GetInstance(m_RenderWindows[i]->GetRenderWindow())->InsertForegroundRenderer(m_DirectionAnnotations[i][j].Renderer, true);
+    }
+  }
+  m_DirectionAnnotations[0][0].TextProp->SetColor(coronalColour);
+  m_DirectionAnnotations[0][1].TextProp->SetColor(sagittalColour);
+  m_DirectionAnnotations[0][2].TextProp->SetColor(coronalColour);
+  m_DirectionAnnotations[0][3].TextProp->SetColor(sagittalColour);
+  m_DirectionAnnotations[1][0].TextProp->SetColor(axialColour);
+  m_DirectionAnnotations[1][1].TextProp->SetColor(coronalColour);
+  m_DirectionAnnotations[1][2].TextProp->SetColor(axialColour);
+  m_DirectionAnnotations[1][3].TextProp->SetColor(coronalColour);
+  m_DirectionAnnotations[2][0].TextProp->SetColor(axialColour);
+  m_DirectionAnnotations[2][1].TextProp->SetColor(sagittalColour);
+  m_DirectionAnnotations[2][2].TextProp->SetColor(axialColour);
+  m_DirectionAnnotations[2][3].TextProp->SetColor(sagittalColour);
+
+
   // Set default layout. This must be ORTHO.
   this->SetMIDASView(MIDAS_VIEW_ORTHO, true);
 
@@ -170,17 +211,17 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   // Register to listen to SliceNavigators, slice changed events.
   itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::Pointer onAxialSliceChangedCommand =
     itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::New();
-  onAxialSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnAxialSliceChanged );
+  onAxialSliceChangedCommand->SetCallbackFunction(this, &QmitkMIDASStdMultiWidget::OnAxialSliceChanged);
   m_AxialSliceTag = mitkWidget1->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onAxialSliceChangedCommand);
 
   itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::Pointer onSagittalSliceChangedCommand =
     itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::New();
-  onSagittalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnSagittalSliceChanged );
+  onSagittalSliceChangedCommand->SetCallbackFunction(this, &QmitkMIDASStdMultiWidget::OnSagittalSliceChanged);
   m_SagittalSliceTag = mitkWidget2->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSagittalSliceChangedCommand);
 
   itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::Pointer onCoronalSliceChangedCommand =
     itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::New();
-  onCoronalSliceChangedCommand->SetCallbackFunction( this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged );
+  onCoronalSliceChangedCommand->SetCallbackFunction(this, &QmitkMIDASStdMultiWidget::OnCoronalSliceChanged);
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
   // The cursor is at the middle of the display at the beginning.
@@ -239,6 +280,24 @@ QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
   for (unsigned i = 0; i < 3; ++i)
   {
     RemoveDisplayGeometryModificationObserver(renderWindows[i]);
+  }
+
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      mitk::VtkLayerController::GetInstance(this->m_RenderWindows[i]->GetRenderWindow())->RemoveRenderer(m_DirectionAnnotations[i][j].Renderer);
+    }
+  }
+
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      m_DirectionAnnotations[i][j].TextActor->Delete();
+      m_DirectionAnnotations[i][j].TextProp->Delete();
+      m_DirectionAnnotations[i][j].Renderer->Delete();
+    }
   }
 }
 
@@ -785,6 +844,26 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
     m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
     m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
     m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
+
+    {
+      int axialDirection = this->GetSliceUpDirection(MIDAS_ORIENTATION_AXIAL);
+      int sagittalDirection = this->GetSliceUpDirection(MIDAS_ORIENTATION_SAGITTAL);
+      int coronalDirection = this->GetSliceUpDirection(MIDAS_ORIENTATION_CORONAL);
+
+      // Neurological convention. Note that this is different from the radiological convention.
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL][0].TextActor->SetInput(coronalDirection > 0 ? "A" : "P");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL][1].TextActor->SetInput(sagittalDirection > 0 ? "L" : "R");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL][2].TextActor->SetInput(coronalDirection > 0 ? "P" : "A");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL][3].TextActor->SetInput(sagittalDirection > 0 ? "R" : "L");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL][0].TextActor->SetInput(axialDirection > 0 ? "I" : "S");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL][1].TextActor->SetInput(coronalDirection > 0 ? "P" : "A");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL][2].TextActor->SetInput(axialDirection > 0 ? "S" : "I");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL][3].TextActor->SetInput(coronalDirection > 0 ? "A" : "P");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL][0].TextActor->SetInput(axialDirection > 0 ? "I" : "S");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL][1].TextActor->SetInput(sagittalDirection > 0 ? "L" : "R");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL][2].TextActor->SetInput(axialDirection > 0 ? "S" : "I");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL][3].TextActor->SetInput(sagittalDirection > 0 ? "R" : "L");
+    }
 
     // If m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
