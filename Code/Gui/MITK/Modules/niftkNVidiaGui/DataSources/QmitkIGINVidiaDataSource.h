@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINVIDIADATASOURCE_H
-#define QMITKIGINVIDIADATASOURCE_H
+#ifndef QmitkIGINVidiaDataSource_H
+#define QmitkIGINVidiaDataSource_H
 
 #include "niftkNVidiaGuiExports.h"
 #include <QmitkIGILocalDataSource.h>
