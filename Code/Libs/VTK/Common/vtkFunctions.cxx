@@ -317,13 +317,33 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
 
 double DistanceToSurface ( double point[3], vtkPolyData * target )
 {
-  return -1.0;
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  return DistanceToSurface (point, targetLocator);
 }
 
 double DistanceToSurface ( double point[3], 
     vtkCellLocator * targetLocator, vtkGenericCell * cell )
 {
-  return -1.0;
+  double NearestPoint [3];
+  vtkIdType cellID;
+  int SubID;
+  double DistanceSquared;
+
+  if ( cell != NULL ) 
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint, cell,
+        cellID, SubID, DistanceSquared);
+  }
+  else
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint,
+        cellID, SubID, DistanceSquared);
+  }
+
+  return sqrt(DistanceSquared);
 }
 
 vtkPolyData* DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
