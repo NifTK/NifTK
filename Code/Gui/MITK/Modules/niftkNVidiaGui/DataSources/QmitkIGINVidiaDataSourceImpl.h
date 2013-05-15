@@ -63,13 +63,15 @@ public:
   // returns zero if no new ones have arrived yet.
   video::FrameInfo GetNextSequenceNumber(unsigned int ihavealready) const;
 
+  bool CompressFrame(unsigned int sequencenumber);
 
   unsigned int GetCookie() const;
 
   bool IsRunning() const;
 
-  std::pair<int, int> get_capture_dimensions() const;
 
+
+  std::pair<int, int> get_capture_dimensions() const;
 
 protected:
   // repeatedly called by timer to check for new frames.
@@ -84,6 +86,8 @@ protected:
 
 protected slots:
   void WakeUp();
+  // can only be used with Qt::BlockingQueuedConnection!
+  bool DoCompressFrame(unsigned int sequencenumber);
 
 signals:
   // bumping this thread means to wake it up from its timer sleep.
