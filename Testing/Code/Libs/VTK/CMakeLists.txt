@@ -45,7 +45,7 @@ ADD_TEST(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest 
 
 ADD_TEST(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK4PointReaderTest ${INPUT_DATA}/4points.txt)
 
-ADD_TEST(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK3PointReaderTest ${INPUT_DATA}/3points.txt)
+ADD_TEST(VTK-3Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK3PointReaderTest ${INPUT_DATA}/3points.txt)
 
 IF(BUILD_SLS_TESTING)
   ADD_TEST(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
