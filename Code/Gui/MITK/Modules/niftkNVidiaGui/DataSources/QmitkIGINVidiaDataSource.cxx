@@ -29,6 +29,9 @@
 // note the trailing space
 const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 
+const char*    QmitkIGINVidiaDataSource::s_SDISequenceNumberPropertyName      = "niftk.SDISequenceNumber";
+const char*    QmitkIGINVidiaDataSource::s_SDIFieldModePropertyName           = "niftk.SDIFieldMode";
+
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
@@ -218,11 +221,10 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             return false;
           }
 
-          // subimagheight counts for both fields, stacked on top of each other...
+          // we ignore field mode here, it's up to any consumer to deal with this properly
           int   subimagheight = frame.first->height / streamcount;
           IplImage  subimg;
-          // ...while subimg will have half the height only, i.e. the top field only
-          cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight / 2), IPL_DEPTH_8U, frame.first->nChannels);
+          cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
           cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
 
           // Check if we already have an image on the node.
@@ -247,12 +249,6 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           if (imageInNode.IsNull())
           {
             mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
-            // our image is only half the pixel height!
-            // so tell the renderer/mitk/whatever that each pixel is actually two units tall
-            mitk::Vector3D  s = convertedImage->GetGeometry()->GetSpacing();
-            s[1] *= 2;
-            convertedImage->GetGeometry()->SetSpacing(s);
-
             node->SetData(convertedImage);
           }
           else
@@ -287,6 +283,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
               MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
             }
           }
+          node->SetIntProperty(s_SDISequenceNumberPropertyName, dataType->GetSequenceNumber());
+          node->SetIntProperty(s_SDIFieldModePropertyName, m_Pimpl->GetFieldMode());
           node->Modified();
         } // for
 
@@ -392,6 +390,18 @@ int QmitkIGINVidiaDataSource::GetNumberOfStreams()
   }
 
   return m_Pimpl->GetStreamCount();
+}
+
+
+//-----------------------------------------------------------------------------
+const char* QmitkIGINVidiaDataSource::GetWireFormatString()
+{
+  if (m_Pimpl == 0)
+  {
+    return "FIXME";
+  }
+
+  return m_Pimpl->GetWireFormatString();
 }
 
 

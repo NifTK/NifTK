@@ -29,6 +29,9 @@ public:
     NvU32           id;
     NVVIOCAPS       caps;
 
+    // we use that to produce a human readable string, aiding in debugging
+    NVVIOSIGNALFORMAT   wireformat;
+
 
     SDIDeviceImpl()
     {

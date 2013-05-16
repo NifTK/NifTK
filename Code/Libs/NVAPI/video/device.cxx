@@ -24,6 +24,7 @@ namespace video
 SDIDevice::SDIDevice()
     : pimpl(new SDIDeviceImpl)
 {
+    pimpl->wireformat = NVVIOSIGNALFORMAT_NONE;
 }
 
 SDIDevice::~SDIDevice()
@@ -74,8 +75,6 @@ static bool map_nvformat_to_interlaced(NVVIOSIGNALFORMAT signalformat)
         // FIXNE: fill in all the others
     }
 
-    // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-    assert(false);
     return false;
 }
 
@@ -130,8 +129,6 @@ static StreamFormat::RefreshRate map_nvformat_to_rr(NVVIOSIGNALFORMAT signalform
 
         // FIXNE: fill in all the others
         default:
-            // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-            assert(false);
             return StreamFormat::RR_NONE;
     }
 
@@ -187,8 +184,6 @@ static StreamFormat::PictureFormat map_nvformat_to_pf(NVVIOSIGNALFORMAT signalfo
         // FIXNE: fill in all the others
     }
 
-    // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-    assert(false);
     return StreamFormat::PF_NONE;
 }
 
@@ -253,6 +248,9 @@ StreamFormat SDIDevice::get_format(int streamno)
                 }
             }
 
+            // we store this for later
+            pimpl->wireformat = foundformat;
+
             if (streamno >= streamcount)
                 return StreamFormat();
             // FIXME: this should use the actual format of the stream (despite the above mentioned limitation, which could go away with newer hardware revisions)
@@ -268,6 +266,83 @@ StreamFormat SDIDevice::get_format(int streamno)
     }
 
     return StreamFormat();
+}
+
+
+static const char*  wireformat_stringtable[] =
+{
+    "NONE",
+    "487I_59_94_SMPTE259_NTSC",
+    "576I_50_00_SMPTE259_PAL",
+    "1035I_60_00_SMPTE260",
+    "1035I_59_94_SMPTE260",
+    "1080I_50_00_SMPTE295",
+    "1080I_60_00_SMPTE274",
+    "1080I_59_94_SMPTE274",
+    "1080I_50_00_SMPTE274",
+    "1080P_30_00_SMPTE274",
+    "1080P_29_97_SMPTE274",
+    "1080P_25_00_SMPTE274",
+    "1080P_24_00_SMPTE274",
+    "1080P_23_976_SMPTE274",
+    "720P_60_00_SMPTE296",
+    "720P_59_94_SMPTE296",
+    "720P_50_00_SMPTE296",
+    "1080I_48_00_SMPTE274",
+    "1080I_47_96_SMPTE274",
+    "720P_30_00_SMPTE296",
+    "720P_29_97_SMPTE296",
+    "720P_25_00_SMPTE296",
+    "720P_24_00_SMPTE296",
+    "720P_23_98_SMPTE296",
+    "2048P_30_00_SMPTE372",
+    "2048P_29_97_SMPTE372",
+    "2048I_60_00_SMPTE372",
+    "2048I_59_94_SMPTE372",
+    "2048P_25_00_SMPTE372",
+    "2048I_50_00_SMPTE372",
+    "2048P_24_00_SMPTE372",
+    "2048P_23_98_SMPTE372",
+    "2048I_48_00_SMPTE372",
+    "2048I_47_96_SMPTE372",
+    "1080PSF_25_00_SMPTE274",
+    "1080PSF_29_97_SMPTE274",
+    "1080PSF_30_00_SMPTE274",
+    "1080PSF_24_00_SMPTE274",
+    "1080PSF_23_98_SMPTE274",
+    "1080P_50_00_SMPTE274_3G_LEVEL_A",
+    "1080P_59_94_SMPTE274_3G_LEVEL_A",
+    "1080P_60_00_SMPTE274_3G_LEVEL_A",
+    "1080P_60_00_SMPTE274_3G_LEVEL_B",
+    "1080I_60_00_SMPTE274_3G_LEVEL_B",
+    "2048I_60_00_SMPTE372_3G_LEVEL_B",
+    "1080P_50_00_SMPTE274_3G_LEVEL_B",
+    "1080I_50_00_SMPTE274_3G_LEVEL_B",
+    "2048I_50_00_SMPTE372_3G_LEVEL_B",
+    "1080P_30_00_SMPTE274_3G_LEVEL_B",
+    "2048P_30_00_SMPTE372_3G_LEVEL_B",
+    "1080P_25_00_SMPTE274_3G_LEVEL_B",
+    "2048P_25_00_SMPTE372_3G_LEVEL_B",
+    "1080P_24_00_SMPTE274_3G_LEVEL_B",
+    "2048P_24_00_SMPTE372_3G_LEVEL_B",
+    "1080I_48_00_SMPTE274_3G_LEVEL_B",
+    "2048I_48_00_SMPTE372_3G_LEVEL_B",
+    "1080P_59_94_SMPTE274_3G_LEVEL_B",
+    "1080I_59_94_SMPTE274_3G_LEVEL_B",
+    "2048I_59_94_SMPTE372_3G_LEVEL_B",
+    "1080P_29_97_SMPTE274_3G_LEVEL_B",
+    "2048P_29_97_SMPTE372_3G_LEVEL_B",
+    "1080P_23_98_SMPTE274_3G_LEVEL_B",
+    "2048P_23_98_SMPTE372_3G_LEVEL_B",
+    "1080I_47_96_SMPTE274_3G_LEVEL_B",
+    "2048I_47_96_SMPTE372_3G_LEVEL_B",
+    // this one last, get_wireformat() will clamp to here
+    "Unknown/invalid"
+};
+
+const char* SDIDevice::get_wireformat()
+{
+    return wireformat_stringtable[std::min((int) pimpl->wireformat, (int) (sizeof(wireformat_stringtable) / sizeof(wireformat_stringtable[0]) - 1))];
 }
 
 

@@ -57,6 +57,8 @@ public:
   CaptureState GetCaptureState() const;
   std::string GetStateMessage() const;
   void Reset();
+
+  video::SDIInput::InterlacedBehaviour GetFieldMode() const;
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
   std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
@@ -66,7 +68,7 @@ public:
   // returns zero if no new ones have arrived yet.
   video::FrameInfo GetNextSequenceNumber(unsigned int ihavealready) const;
 
-
+  const char* GetWireFormatString() const;
 
   unsigned int GetCookie() const;
 
@@ -140,6 +142,7 @@ private:
   video::SDIInput*        sdiin;
   video::StreamFormat     format;
   int                     streamcount;
+  const char*             wireformat;
 
   // we keep our own copy of the texture ids (instead of relying on sdiin)
   //  so that another thread can easily get these.

@@ -27,7 +27,7 @@
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-    current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0),
+    current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
     state_message("Starting up")
 {
   // helps with debugging
@@ -174,6 +174,7 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
     for (int i = 0; ; ++i, ++streamcount)
     {
       video::StreamFormat f = sdidev->get_format(i);
+      wireformat = sdidev->get_wireformat();
       if (f.format == video::StreamFormat::PF_NONE)
       {
         break;
@@ -266,6 +267,14 @@ unsigned int QmitkIGINVidiaDataSourceImpl::GetCookie() const
 
 
 //-----------------------------------------------------------------------------
+const char* QmitkIGINVidiaDataSourceImpl::GetWireFormatString() const
+{
+  QMutexLocker    l(&lock);
+  return wireformat;
+}
+
+
+//-----------------------------------------------------------------------------
 video::FrameInfo QmitkIGINVidiaDataSourceImpl::GetNextSequenceNumber(unsigned int ihavealready) const
 {
   QMutexLocker    l(&lock);
@@ -328,6 +337,14 @@ void QmitkIGINVidiaDataSourceImpl::SetFieldMode(video::SDIInput::InterlacedBehav
 {
   QMutexLocker    l(&lock);
   m_FieldMode = mode;
+}
+
+
+//-----------------------------------------------------------------------------
+video::SDIInput::InterlacedBehaviour QmitkIGINVidiaDataSourceImpl::GetFieldMode() const
+{
+  QMutexLocker    l(&lock);
+  return m_FieldMode;
 }
 
 
@@ -641,6 +658,7 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
     }
 
     // also keep sdi logs
+    sdiin->flush_log();
     sdiin->set_log_filename(m_CompressionOutputFilename + ".sdicapture.log");
 
     // when we get a new compressor we want to start counting from zero again
@@ -714,6 +732,8 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 
   // make sure nobody messes around with contexts
   assert(QGLContext::currentContext() == oglwin->context());
+
+  sdiin->flush_log();
 
   delete compressor;
   compressor = 0;
