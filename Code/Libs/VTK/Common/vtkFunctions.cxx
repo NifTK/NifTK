@@ -27,6 +27,7 @@
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkGenericCell.h>
 
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
@@ -315,6 +316,56 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
 }
                            
 
+double DistanceToSurface (  double point[3],  vtkPolyData * target )
+{
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  return DistanceToSurface (point, targetLocator);
+}
+
+double DistanceToSurface (  double point[3], 
+     vtkCellLocator * targetLocator, vtkGenericCell * cell )
+{
+  double NearestPoint [3];
+  vtkIdType cellID;
+  int SubID;
+  double DistanceSquared;
+
+  if ( cell != NULL ) 
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint, cell,
+        cellID, SubID, DistanceSquared);
+  }
+  else
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint,
+        cellID, SubID, DistanceSquared);
+  }
+
+  return sqrt(DistanceSquared);
+}
+
+void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+{
+  vtkSmartPointer<vtkDoubleArray> distances = vtkSmartPointer<vtkDoubleArray>::New();
+  distances->SetNumberOfComponents(1);
+  distances->SetName("Distances");
+  
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
+  double p[3];
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ ) 
+  {
+    source->GetPoint(i,p);
+    distances->InsertNextValue (DistanceToSurface ( p , targetLocator, cell ));
+  }
+  source->GetPointData()->SetScalars(distances);
+}
                                                                       
 
 #endif

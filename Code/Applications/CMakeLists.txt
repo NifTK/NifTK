@@ -109,6 +109,7 @@ IF(SlicerExecutionModel_FOUND)
       SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
         niftkF3DControlGridToVTKPolyData
         niftkVTKIterativeClosestPointRegister
+	niftkVTKDistanceToSurface
       )
 
       if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
