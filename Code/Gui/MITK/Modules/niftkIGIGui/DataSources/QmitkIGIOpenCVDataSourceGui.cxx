@@ -53,7 +53,11 @@ QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 
   // Disable the background so that if the VideoSource is deleted
   // we will not trigger an itk::DeleteEvent to QmitkVideoBackground::OnVideoSourceDelete.
-  this->m_Background->Disable();
+  m_Background->Disable();
+
+  // Also disconnect the video source, which has the effect of telling
+  // the video source that there are no observers.
+  m_Background->SetVideoSource(NULL);
 
   // delete render window first.
   if (m_RenderWindow != NULL)
