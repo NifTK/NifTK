@@ -25,9 +25,18 @@
  */
 
 /**
- * \brief Loads a plain 4x4 matrix from a text file.
- * \return a new vtkMatrix4x4 which becomes the responsibility of the caller, or return NULL if it fails.
+ * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
+ * \param fileName full path of file name
+ * \param matrix a matrix
+ * \param bool true if successful and false otherwise
  */
-NIFTKCOREGUI_EXPORT vtkMatrix4x4* Load4x4MatrixFromFile(const QString &fileName);
+NIFTKCOREGUI_EXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName);
+
+/**
+ * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
+ * \param fileName full path of file name
+ * \param matrix a matrix
+ */
+NIFTKCOREGUI_EXPORT bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix);
 
 #endif // QmitkFileIOUtil_h

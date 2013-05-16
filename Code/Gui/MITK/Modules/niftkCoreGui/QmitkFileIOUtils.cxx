@@ -16,34 +16,17 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
+#include <vtkFunctions.h>
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* Load4x4MatrixFromFile(const QString &fileName)
+vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName)
 {
-  vtkMatrix4x4 *result = NULL;
-
-  QFile matrixFile(fileName);
-  if (!matrixFile.open(QIODevice::ReadOnly | QIODevice::Text))
-  {
-    qDebug() << "Load4x4MatrixFromFile: failed to open file:" << fileName;
-    return result;
-  }
-
-  QTextStream matrixIn(&matrixFile);
-
-  result = vtkMatrix4x4::New();
-
-  for ( int row = 0 ; row < 4 ; row ++ )
-  {
-    for ( int col = 0 ; col < 4 ; col ++ )
-    {
-      double tmp;
-      matrixIn >> tmp;
-      result->SetElement(row, col, tmp);
-    }
-  }
-  matrixFile.close();
-
-  return result;
+  return LoadMatrix4x4FromFile(fileName.toStdString(), true);
 }
 
+
+//-----------------------------------------------------------------------------
+bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix)
+{
+  SaveMatrix4x4ToFile(fileName, matrix);
+}
