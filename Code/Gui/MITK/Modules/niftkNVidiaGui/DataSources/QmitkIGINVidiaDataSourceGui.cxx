@@ -168,6 +168,12 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
       StreamCountTextBox->setText(ss);
     }
 
+    QString wireformat(source->GetWireFormatString());
+    if (FormatIDTextBox->text().compare(wireformat) != 0)
+    {
+      FormatIDTextBox->setText(wireformat);
+    }
+
     if (streamcount > 0)
     {
       int width = source->GetCaptureWidth();
@@ -183,12 +189,6 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
       if (SignalTextBox->text().compare(ss) != 0)
       {
         SignalTextBox->setText(ss);
-      }
-
-      QString wireformat(source->GetWireFormatString());
-      if (FormatIDTextBox->text().compare(wireformat) != 0)
-      {
-        FormatIDTextBox->setText(wireformat);
       }
 
       // there should be only one, really
@@ -214,7 +214,6 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
     else
     {
       SignalTextBox->setText("None");
-      FormatIDTextBox->setText("None");
     }
   }
 }

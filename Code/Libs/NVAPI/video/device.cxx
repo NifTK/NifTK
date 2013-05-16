@@ -24,6 +24,7 @@ namespace video
 SDIDevice::SDIDevice()
     : pimpl(new SDIDeviceImpl)
 {
+    pimpl->wireformat = NVVIOSIGNALFORMAT_NONE;
 }
 
 SDIDevice::~SDIDevice()
@@ -74,8 +75,6 @@ static bool map_nvformat_to_interlaced(NVVIOSIGNALFORMAT signalformat)
         // FIXNE: fill in all the others
     }
 
-    // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-    assert(false);
     return false;
 }
 
@@ -130,8 +129,6 @@ static StreamFormat::RefreshRate map_nvformat_to_rr(NVVIOSIGNALFORMAT signalform
 
         // FIXNE: fill in all the others
         default:
-            // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-            assert(false);
             return StreamFormat::RR_NONE;
     }
 
@@ -187,8 +184,6 @@ static StreamFormat::PictureFormat map_nvformat_to_pf(NVVIOSIGNALFORMAT signalfo
         // FIXNE: fill in all the others
     }
 
-    // FIXME: i want to know when i'm testing combinations that i havent implemented yet
-    assert(false);
     return StreamFormat::PF_NONE;
 }
 

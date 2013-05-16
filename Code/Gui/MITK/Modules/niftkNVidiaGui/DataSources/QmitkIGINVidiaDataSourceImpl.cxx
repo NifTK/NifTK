@@ -174,6 +174,7 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
     for (int i = 0; ; ++i, ++streamcount)
     {
       video::StreamFormat f = sdidev->get_format(i);
+      wireformat = sdidev->get_wireformat();
       if (f.format == video::StreamFormat::PF_NONE)
       {
         break;
@@ -184,7 +185,6 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
 
     if (format.format != video::StreamFormat::PF_NONE)
     {
-      wireformat = sdidev->get_wireformat();
       sdiin = new video::SDIInput(sdidev, m_FieldMode, format.get_refreshrate());
 
       m_Cookie = (unsigned int) ((((std::size_t) ((void*) sdiin)) >> 4) & 0xFFFFFFFF);

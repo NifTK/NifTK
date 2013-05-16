@@ -59,6 +59,7 @@ public:
 
     // returns a technical string of what actually comes off the wire, irrespective of what StreamFormat thinks it is.
     // note that the return value is a statically allocated read-only string; do not free!
+    // only valid after probing with get_format()!
     const char* get_wireformat();
 
     Type get_type() const;
