@@ -153,7 +153,7 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
  * The result are stored the distances in the scalar values of the source
  * \param, the source and target polydata.
  */
-extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, const vtkPolyData * target);
+extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
 
 
 #endif
