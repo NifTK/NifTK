@@ -79,6 +79,10 @@ public:
   void SetFieldMode(InterlacedBehaviour b);
 
 
+  static const char*      s_SDISequenceNumberPropertyName;      // mitk::IntProperty
+  static const char*      s_SDIFieldModePropertyName;           // mitk::IntProperty --> InterlacedBehaviour
+
+
 public:
   // to be used to share with the preview window, for example
   QGLWidget* GetCaptureContext();

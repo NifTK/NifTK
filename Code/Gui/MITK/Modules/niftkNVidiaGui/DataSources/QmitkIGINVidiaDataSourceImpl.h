@@ -57,6 +57,8 @@ public:
   CaptureState GetCaptureState() const;
   std::string GetStateMessage() const;
   void Reset();
+
+  video::SDIInput::InterlacedBehaviour GetFieldMode() const;
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
   std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);

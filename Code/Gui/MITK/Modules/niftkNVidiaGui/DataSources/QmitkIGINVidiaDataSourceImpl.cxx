@@ -341,6 +341,14 @@ void QmitkIGINVidiaDataSourceImpl::SetFieldMode(video::SDIInput::InterlacedBehav
 
 
 //-----------------------------------------------------------------------------
+video::SDIInput::InterlacedBehaviour QmitkIGINVidiaDataSourceImpl::GetFieldMode() const
+{
+  QMutexLocker    l(&lock);
+  return m_FieldMode;
+}
+
+
+//-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceImpl::CaptureState QmitkIGINVidiaDataSourceImpl::GetCaptureState() const
 {
   QMutexLocker    l(&lock);
