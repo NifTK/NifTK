@@ -149,12 +149,11 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
 
 /**
  * \brief Calculates the euclidean distance (in 3D) between each point in the 
- * source polydata and the closest point on the target polydata mesh
+ * source polydata and the closest point on the target polydata mesh.
+ * The result are stored the distances in the scalar values of the source
  * \param, the source and target polydata.
- * \return A new polydata containing the source points, sorted by distance to the 
- * target and with the distances stored as scalar values for each point.
  */
-extern "C++" NIFTKVTK_WINEXPORT vtkPolyData DistanceToSurface (const vtkPolyData * source, const vtkPolyData * target);
+extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, const vtkPolyData * target);
 
 
 #endif

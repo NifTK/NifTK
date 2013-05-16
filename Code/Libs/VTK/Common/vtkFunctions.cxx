@@ -346,10 +346,8 @@ double DistanceToSurface (  double point[3],
   return sqrt(DistanceSquared);
 }
 
-vtkPolyData* DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 {
-  vtkSmartPointer<vtkPolyData> SortedSource = vtkSmartPointer<vtkPolyData>::New();
-  return SortedSource;
 }
                                                                       
 
