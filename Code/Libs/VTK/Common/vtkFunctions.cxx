@@ -353,6 +353,8 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
    return true;
 }
 
+
+//-----------------------------------------------------------------------------
 double DistanceToSurface (  double point[3],  vtkPolyData * target )
 {
   vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
@@ -362,6 +364,8 @@ double DistanceToSurface (  double point[3],  vtkPolyData * target )
   return DistanceToSurface (point, targetLocator);
 }
 
+
+//-----------------------------------------------------------------------------
 double DistanceToSurface (  double point[3], 
      vtkCellLocator * targetLocator, vtkGenericCell * cell )
 {
@@ -384,6 +388,8 @@ double DistanceToSurface (  double point[3],
   return sqrt(DistanceSquared);
 }
 
+
+//-----------------------------------------------------------------------------
 void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 {
   vtkSmartPointer<vtkDoubleArray> distances = vtkSmartPointer<vtkDoubleArray>::New();
@@ -409,7 +415,7 @@ void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
 {
   bool successful = false;
-
+  
   ofstream myfile(fileName.c_str());
   if (myfile.is_open())
   {
