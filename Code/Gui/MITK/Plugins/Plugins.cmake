@@ -12,7 +12,32 @@
 #
 #============================================================================*/
 
-# Plug-ins must be ordered according to their dependencies
+###################################################################
+# Plug-ins must be ordered according to their dependencies.
+#
+# Imagine that the build process, configures these plugins
+# in order, from top to bottom. So, if plugin A depends on
+# plugin B, then plugin B must be configured BEFORE plugin
+# A. i.e. nearer the top of this file.
+#
+# This is of particular importance if you change a base
+# class of a plugin. For example lets say your plugin
+# currently depends on MITK's QmitkAbstractView, and
+# hence you declare a dependency in manifest_headers.cmake
+# on org.mitk.gui.qt.common.
+#
+# If you then subsequently change to derive from QmitkBaseView
+# from the NifTK project, and declare a dependency in
+# manifest_headers.cmake on uk.ac.ucl.cmic.gui.qt.common
+# then your plugin must occur AFTER uk.ac.ucl.cmic.gui.qt.common.
+#
+# This is difficult to spot, as quite typically, during development
+# then will be multiple build, config, build, config cycles
+# anyway, such that the plugin will appear to be correctly
+# configured. Worse than this, if you see a problem and then
+# re-run cmake, the problem will disappear, but will re-appear
+# on the next full clean build.
+###################################################################
 
 set(PROJECT_PLUGINS
 
@@ -26,7 +51,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
-  Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
   Plugins/uk.ac.ucl.cmic.midaseditor:ON
   Plugins/uk.ac.ucl.cmic.xnat:ON
   Plugins/uk.ac.ucl.cmic.niftyreg:ON                      # Must be after the xnat plugin
@@ -39,6 +63,7 @@ set(PROJECT_PLUGINS
   Plugins/it.unito.cim.intensityprofile:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
+  Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
   Plugins/uk.ac.ucl.cmic.igitagtracker:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:OFF
   Plugins/uk.ac.ucl.cmic.igitrackedimage:OFF
