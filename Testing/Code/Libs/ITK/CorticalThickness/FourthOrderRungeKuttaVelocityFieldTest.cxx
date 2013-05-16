@@ -21,7 +21,7 @@
 /**
  * Test the FourthOrderRungeKuttaVelocityFieldIntegrationFilter.
  */
-int FourthOrderRungeKuttaVelocityFieldIntegrationTest(int, char* []) 
+int FourthOrderRungeKuttaVelocityFieldTest(int, char* []) 
 {
   
   typedef itk::FourthOrderRungeKuttaVelocityFieldIntegrationFilter<float, 2> FilterType;

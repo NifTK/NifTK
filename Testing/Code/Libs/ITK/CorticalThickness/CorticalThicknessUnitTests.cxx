@@ -28,7 +28,7 @@ void RegisterTests()
   REGISTER_TEST(CorrectGMUsingNeighbourhoodTest);
   REGISTER_TEST(LagrangianInitializedStreamlinesFilterTest);
   REGISTER_TEST(Bourgeat2008Test);
-  REGISTER_TEST(FourthOrderRungeKuttaVelocityFieldIntegrationTest);
+  REGISTER_TEST(FourthOrderRungeKuttaVelocityFieldTest);
   REGISTER_TEST(FourthOrderRungeKuttaVelocityFieldThicknessTest);
   REGISTER_TEST(DemonsRegistrationFilterTest);
   REGISTER_TEST(DemonsRegistrationFilterUpdateTest);

@@ -21,7 +21,7 @@ SET(NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(CORTICAL_THICKNESS_INTEGRATION_TESTS ${CXX_TEST_PATH}/CorticalThicknessIntegrationTests)
+SET(CORTICAL_THICKNESS_INTEGRATION_TESTS ${CXX_TEST_PATH}/CorticalThicknessUnitTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
@@ -66,7 +66,7 @@ ADD_TEST(CTE-Smooth ${CORTICAL_THICKNESS_INTEGRATION_TESTS} GaussianSmoothVector
 #################################################################################
 # Build instructions.
 #################################################################################
-SET( CorticalThicknessIntegrationTests_SRCS
+SET( CorticalThicknessUnitTests_SRCS
 LaplacianSolverImageFilterTest.cxx
 ScalarImageToNormalizedGradientVectorImageFilterTest.cxx
 StreamlinesFilterTest.cxx
@@ -74,7 +74,7 @@ CorrectGMUsingPVMapTest.cxx
 CorrectGMUsingNeighbourhoodTest.cxx
 LagrangianInitializedStreamlinesFilterTest.cxx
 Bourgeat2008Test.cxx
-FourthOrderRungeKuttaVelocityFieldIntegrationTest.cxx
+FourthOrderRungeKuttaVelocityFieldTest.cxx
 FourthOrderRungeKuttaVelocityFieldThicknessTest.cxx
 DemonsRegistrationFilterTest.cxx
 DemonsRegistrationFilterUpdateTest.cxx
@@ -83,5 +83,5 @@ GaussianSmoothVectorFieldFilterTest.cxx
 RegistrationBasedCorticalThicknessFilterTest.cxx
 )
 
-ADD_EXECUTABLE(CorticalThicknessIntegrationTests CorticalThicknessIntegrationTests.cxx ${CorticalThicknessIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(CorticalThicknessIntegrationTests ${NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES} )
+ADD_EXECUTABLE(CorticalThicknessUnitTests CorticalThicknessUnitTests.cxx ${CorticalThicknessUnitTests_SRCS})
+TARGET_LINK_LIBRARIES(CorticalThicknessUnitTests ${NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES} )
