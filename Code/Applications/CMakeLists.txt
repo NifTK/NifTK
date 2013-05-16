@@ -295,10 +295,7 @@ IF(VTK_FOUND)
     niftkSmoothPolyData
     niftkTransformPolyData
     niftkVTKIterativeClosestPointRegister
-<<<<<<< HEAD
     niftkVTKDistanceToSurface
-=======
->>>>>>> 82bbb8add996ee306ea0b227a23fb1b1e15da361
   )
 
   FOREACH(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
