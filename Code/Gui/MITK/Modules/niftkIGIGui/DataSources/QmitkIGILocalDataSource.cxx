@@ -54,3 +54,4 @@ void QmitkIGILocalDataSource::InitializeAndRunGrabbingThread(const int& interval
     m_GrabbingThread->start();
   }
 }
+

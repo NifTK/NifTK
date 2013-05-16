@@ -28,6 +28,8 @@ SET(CPP_FILES
   DataSources/QmitkIGILocalDataSourceGrabbingThread.cxx
   DataSources/QmitkIGITrackerTool.cxx
   DataSources/QmitkIGITrackerToolGui.cxx
+  DataSources/QmitkIGITrackerSource.cxx
+  DataSources/QmitkIGITrackerSourceGui.cxx
   DataSources/QmitkIGIUltrasonixTool.cxx
   DataSources/QmitkIGIUltrasonixToolGui.cxx
   DataSources/QmitkIGIOpenCVDataSource.cxx
@@ -45,6 +47,8 @@ SET(MOC_H_FILES
   DataSources/QmitkIGILocalDataSource.h
   DataSources/QmitkIGITrackerTool.h
   DataSources/QmitkIGITrackerToolGui.h  
+  DataSources/QmitkIGITrackerSource.h
+  DataSources/QmitkIGITrackerSourceGui.h
   DataSources/QmitkIGIUltrasonixTool.h
   DataSources/QmitkIGIUltrasonixToolGui.h
   DataSources/QmitkIGIOpenCVDataSource.h
@@ -55,6 +59,7 @@ SET(UI_FILES
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
   DataSources/QmitkIGITrackerToolGui.ui
+  DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
 )
 

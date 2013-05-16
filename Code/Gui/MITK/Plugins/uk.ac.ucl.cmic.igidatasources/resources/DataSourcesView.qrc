@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="/uk.ac.ucl.cmic.gui.qt.igidatasources">
+   <file>icon.png</file>
+ </qresource>
+ </RCC>

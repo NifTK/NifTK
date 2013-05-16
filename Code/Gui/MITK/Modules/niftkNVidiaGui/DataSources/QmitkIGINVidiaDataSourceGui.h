@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOLGUI_H
-#define QMITKIGIULTRASONIXTOOLGUI_H
+#ifndef QmitkIGINVidiaDataSourceGui_H
+#define QmitkIGINVidiaDataSourceGui_H
 
 #include "niftkNVidiaGuiExports.h"
 #include <QWidget>

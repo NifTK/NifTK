@@ -12,13 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINIFTYLINKDATASOURCEGUI_H
-#define QMITKIGINIFTYLINKDATASOURCEGUI_H
+#ifndef QmitkIGINiftyLinkDataSourceGui_h
+#define QmitkIGINiftyLinkDataSourceGui_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSourceGui.h"
-#include "QmitkIGITrackerTool.h"
-#include "ui_QmitkIGITrackerToolGui.h"
+#include "QmitkIGINiftyLinkDataSource.h"
 
 class ClientDescriptorXMLBuilder;
 
@@ -60,4 +59,3 @@ protected:
 }; // end class
 
 #endif
-

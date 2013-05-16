@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igidatasources} The Data Sources View
+
+\image html icon.png "The Icon for Data Sources View"
+
+\section DataSourcesViewIntro Introduction
+
+Do an introduction here.
+
+\section DataSourcesViewUsage Usage
+
+Put all usage information here.
+
+\section DataSourcesViewPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section DataSourcesViewReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

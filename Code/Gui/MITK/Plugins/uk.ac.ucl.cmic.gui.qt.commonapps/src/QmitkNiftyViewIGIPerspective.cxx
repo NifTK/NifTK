@@ -43,7 +43,7 @@ void QmitkNiftyViewIGIPerspective::CreateInitialLayout(berry::IPageLayout::Point
   layout->AddView("org.mitk.views.propertylistview",
     berry::IPageLayout::BOTTOM, 0.5f, "org.mitk.views.datamanager");
 
-  layout->AddView("uk.ac.ucl.cmic.surgicalguidance",
+  layout->AddView("uk.ac.ucl.cmic.igidatasources",
     berry::IPageLayout::RIGHT, 0.7f, editorArea);
 
 }
