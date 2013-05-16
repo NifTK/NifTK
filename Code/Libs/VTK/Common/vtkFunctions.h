@@ -20,10 +20,7 @@
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
-<<<<<<< HEAD
 #include <vtkCellLocator.h>
-=======
->>>>>>> Bug #2363: Doxygen changes
 
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b);
