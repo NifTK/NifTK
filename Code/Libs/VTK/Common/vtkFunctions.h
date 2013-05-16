@@ -61,6 +61,7 @@ extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, do
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
+#include <vtkCellLocator.h>
 /** 
  * \brief Perturbs the points in a polydata object by with random values, using existing random number generator
  * \param the polydata 
@@ -128,4 +129,31 @@ extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
  * \return true if Ok, false if error
  */
 extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target );
+
+/**
+ * \brief Returns the euclidean distance (in 3D) between a point and the closest point
+ * on a polydata mesh
+ * \param, the point, and the polydata
+ * \return the euclidean distance
+ */
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vtkPolyData * target);
+
+/**
+ * \brief Returns the euclidean distance (in 3D) between a point and the closest point
+ * on a polydata mesh
+ * \param, the point, a vtkCellLocator, built from the polydata, and optionally a vtkGenericCell 
+ * speed up the process.
+ * \return the euclidean distance
+ */
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
+
+/**
+ * \brief Calculates the euclidean distance (in 3D) between each point in the 
+ * source polydata and the closest point on the target polydata mesh.
+ * The result are stored the distances in the scalar values of the source
+ * \param, the source and target polydata.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
+
+
 #endif
