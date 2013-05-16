@@ -126,7 +126,7 @@ void TrackedPointerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnTipToProbeChanged()
 {
-  m_TipToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath());
+  m_TipToProbeTransform = LoadMatrix4x4FromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath());
 }
 
 
