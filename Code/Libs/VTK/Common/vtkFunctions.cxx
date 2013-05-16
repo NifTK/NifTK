@@ -12,9 +12,6 @@
 
 =============================================================================*/
 
-#ifndef VTKFUNCTIONS_CPP
-#define VTKFUNCTIONS_CPP
-
 #include <math.h>
 #include <iostream>
 #include <ConversionUtils.h>
@@ -28,6 +25,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 
+//-----------------------------------------------------------------------------
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
   double distance = 0;
@@ -39,6 +37,8 @@ double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
   return distance;
 }
 
+
+//-----------------------------------------------------------------------------
 double GetLength(const double *a)
 {
   double length = 0;
@@ -50,6 +50,8 @@ double GetLength(const double *a)
   return length;
 }
 
+
+//-----------------------------------------------------------------------------
 void SubtractTwo3DPoints(const double *a, const double *b, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -58,6 +60,8 @@ void SubtractTwo3DPoints(const double *a, const double *b, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void AddTwo3DPoints(const double *a, const double *b, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -66,6 +70,8 @@ void AddTwo3DPoints(const double *a, const double *b, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void Normalise3DPoint(const double *a, const double length, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -81,12 +87,16 @@ void Normalise3DPoint(const double *a, const double length, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void NormaliseToUnitLength(const double *a, double *output)
 {
   double length = GetLength(a);
   Normalise3DPoint(a, length, output);
 }
 
+
+//-----------------------------------------------------------------------------
 void CrossProductTwo3DVectors(const double *a, const double *b, double *c)
 {
   c[0] =        a[1]*b[2] - b[1]*a[2];
@@ -94,6 +104,8 @@ void CrossProductTwo3DVectors(const double *a, const double *b, double *c)
   c[2] =        a[0]*b[1] - b[0]*a[1];
 }
 
+
+//-----------------------------------------------------------------------------
 void CalculateUnitVector(const double *a, const double* b, double *output)
 {
   double normal[3];
@@ -103,6 +115,8 @@ void CalculateUnitVector(const double *a, const double* b, double *output)
   Normalise3DPoint(normal, length, output);
 }
 
+
+//-----------------------------------------------------------------------------
 double AngleBetweenTwoUnitVectors(const double *a, const double *b)
 {
   double cosTheta = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
@@ -110,12 +124,16 @@ double AngleBetweenTwoUnitVectors(const double *a, const double *b)
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 double AngleBetweenTwoUnitVectorsInDegrees(const double *a, const double *b)
 {
   double result = (AngleBetweenTwoUnitVectors(a, b))*180.0/NIFTK_PI;
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool ClipPointToWithinBoundingBox(const double *bounds, double *point)
 {
   bool wasClipped = false;
@@ -137,6 +155,8 @@ bool ClipPointToWithinBoundingBox(const double *bounds, double *point)
   return wasClipped;
 }
 
+
+//-----------------------------------------------------------------------------
 double GetBoundingBoxDiagonalLength(const double *boundingBoxVector6)
 {
   double length = 0;
@@ -147,6 +167,8 @@ double GetBoundingBoxDiagonalLength(const double *boundingBoxVector6)
   return length;
 }
 
+
+//-----------------------------------------------------------------------------
 void CopyDoubleVector(int n, const double *a, double *b)
 {
   for (int i = 0; i < n; i++)
@@ -155,6 +177,8 @@ void CopyDoubleVector(int n, const double *a, double *b)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
     vtkRandomSequence* rng)
@@ -181,6 +205,8 @@ void RandomTransform ( vtkTransform * transform,
   transform->RotateZ(rot);
 }
 
+
+//-----------------------------------------------------------------------------
 void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
 {
   vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter =
@@ -196,6 +222,9 @@ void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
   polydata->ShallowCopy(transformFilter->GetOutput());
 
 }
+
+
+//-----------------------------------------------------------------------------
 void PerturbPolyData(vtkPolyData* polydata, 
     double xerr, double yerr, double zerr, vtkRandomSequence* rng)
 {
@@ -221,6 +250,9 @@ void PerturbPolyData(vtkPolyData* polydata,
   }
   polydata->SetPoints(points);
 }
+
+
+//-----------------------------------------------------------------------------
 void PerturbPolyData(vtkPolyData* polydata, 
     double xerr, double yerr, double zerr)
 {
@@ -231,6 +263,8 @@ void PerturbPolyData(vtkPolyData* polydata,
    PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
 }
 
+
+//-----------------------------------------------------------------------------
 void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
 {
@@ -239,6 +273,8 @@ void RandomTransform ( vtkTransform * transform,
    RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
 }
 
+
+//-----------------------------------------------------------------------------
 double NormalisedRNG (vtkRandomSequence* rng) 
 {
   if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 ) 
@@ -253,6 +289,8 @@ double NormalisedRNG (vtkRandomSequence* rng)
   return rng->GetValue();
 }
 
+
+//-----------------------------------------------------------------------------
 bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
 {
   if ( source->GetNumberOfPoints() != target->GetNumberOfPoints() )
@@ -313,8 +351,86 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
    target->GetPointData()->SetScalars(colors);
    return true;
 }
-                           
 
-                                                                      
 
-#endif
+//-----------------------------------------------------------------------------
+bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
+{
+  bool successful = false;
+
+  ofstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      myfile << matrix.GetElement(i, 0) << " " \
+             << matrix.GetElement(i, 1) << " " \
+             << matrix.GetElement(i, 2) << " " \
+             << matrix.GetElement(i, 3) << std::endl;
+    }
+    myfile.close();
+    successful = true;
+  }
+  else
+  {
+    if (!silent)
+    {
+      std::cerr << "SaveMatrix4x4ToFile: failed to save to file '" << fileName << "'" << std::endl;
+    }
+  }
+
+  return successful;
+}
+
+
+//-----------------------------------------------------------------------------
+vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent)
+{
+  vtkMatrix4x4 *result = vtkMatrix4x4::New();
+  result->Identity();
+
+  ifstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        double value;
+        myfile >> value;
+
+        result->SetElement(i, j, value);
+      }
+    }
+  }
+  else
+  {
+    if (!silent)
+    {
+      std::cerr << "LoadMatrix4x4FromFile: failed to open file '" << fileName << "'" << std::endl;
+    }
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const double& tolerance)
+{
+  bool result = true;
+
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      if (fabs(m1.GetElement(i,j) - m2.GetElement(i,j)) > tolerance)
+      {
+        result = false;
+        break;
+      }
+    }
+  }
+
+  return result;
+}
