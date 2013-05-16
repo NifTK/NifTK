@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igidatasources"
+          name="Data Sources"
+          class="DataSourcesView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.DataSourcesViewPreferencePage" name="Data Sources" class="DataSourcesViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.DataSourcesViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

@@ -37,6 +37,8 @@ public:
 
   unsigned int GetSequenceNumber() const;
 
+  unsigned int GetCookie() const;
+
 protected:
 
   IGINVidiaDataType(); // Purposefully hidden.

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINVIDIADATASOURCE_H
-#define QMITKIGINVIDIADATASOURCE_H
+#ifndef QmitkIGINVidiaDataSource_H
+#define QmitkIGINVidiaDataSource_H
 
 #include "niftkNVidiaGuiExports.h"
 #include <QmitkIGILocalDataSource.h>
@@ -24,7 +24,7 @@
 
 
 // some forward decls to avoid header pollution
-struct QmitkIGINVidiaDataSourceImpl;
+class QmitkIGINVidiaDataSourceImpl;
 class QGLContext;
 class QGLWidget;
 
@@ -90,11 +90,6 @@ public:
   int GetRefreshRate();
   int GetTextureId(int stream);
 
-  // caller needs to cleanup!
-  // exists only for integration with mitk, otherwise: do not use!
-  // note: input streams are stacked! all streams transfered at the same time
-//std::pair<IplImage*, int> GetRgbImage();
-  std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
 
 protected:
   virtual void GrabData();
@@ -126,11 +121,17 @@ private:
   // holds internals to prevent header pollution
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
+  unsigned int            m_MostRecentSequenceNumber;
+
   unsigned int            m_MipmapLevel;
-  InterlacedBehaviour     m_FieldMode;
+  
 
   // used to correlate clock, frame numbers and other events
   std::ofstream           m_FrameMapLogFile;
+
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  bool  m_WasSavingMessagesPreviously;
 
 
   static const char*      s_NODE_NAME;

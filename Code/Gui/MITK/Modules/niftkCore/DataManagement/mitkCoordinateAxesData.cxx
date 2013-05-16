@@ -114,10 +114,12 @@ void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
 {
-  mitk::TimeSlicedGeometry::Pointer geometry = this->GetTimeSlicedGeometry();
+  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
   if (geometry.IsNotNull())
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&matrix));
+    geometry->Modified();
+    this->Modified();
   }
 }
 

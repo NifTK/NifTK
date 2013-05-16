@@ -97,9 +97,8 @@ void QmitkIGITrackerTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
     {
       QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
       wrapper->SetMessage(msg.data());
-      wrapper->SetDataSource("QmitkIGITrackerTool");
       wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->GetTimeCreated()));
-      wrapper->SetDuration(1000000000); // nanoseconds
+      wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
       this->AddData(wrapper.GetPointer());
       this->SetStatus("Receiving");
@@ -123,24 +122,22 @@ void QmitkIGITrackerTool::ProcessInitString(QString str)
       delete clientInfo;
       return;
     }
-    //A single source can have multiple tracked tools. 
+
+    // A single source can have multiple tracked tools. However, we only receive one "Client Info" message.
+    // Subsequently we get a separate message for each tool, so they are set up as separate sources, linked to the same port.
     QStringList trackerTools = dynamic_cast<TrackerClientDescriptor*>(clientInfo)->GetTrackerTools();
-    QString tool;
-    this->SetNumberOfTools(trackerTools.length());
-    std::list<std::string> StringList;
+    std::list<std::string> stringList;
 
+    foreach (QString tool , trackerTools)
+    {
+      stringList.push_back(tool.toStdString());
+    }
+    if ( stringList.size() > 0 )
+    {
+      this->SetDescription(stringList.front());
+      this->SetRelatedSources(stringList);
+    }
 
-    foreach (tool , trackerTools)
-    {
-      std::string String;
-      String = tool.toStdString();
-      StringList.push_back(String);
-      
-    }
-    if ( StringList.size() > 0 ) 
-    {
-      this->SetToolStringList(StringList);
-    }
     this->ProcessClientInfo(clientInfo);
   }
   else
@@ -916,7 +913,7 @@ bool QmitkIGITrackerTool::SaveData(mitk::IGIDataType* data, std::string& outputF
       NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->GetDescription());
+        QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGITrackerTool") + QDir::separator() + QString::fromStdString(this->m_Description);
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {

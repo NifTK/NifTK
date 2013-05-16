@@ -12,4 +12,4 @@ and is responsible for instantiating sources and their GUIs.
 4. The tools can use signals to broadcast information to the GUI.
 5. See the .cxx file for each tool and GUI as they must define macros 
 NIFTK_IGIDATASOURCE_MACRO and NIFTK_IGIDATASOURCE_GUI_MACRO for each tool.
-(see QmitkIGITrackerTool.cxx and QmitkIGITrackerToolGui.cxx).
+(see QmitkIGITrackerSource.cxx and QmitkIGITrackerSourceGui.cxx).

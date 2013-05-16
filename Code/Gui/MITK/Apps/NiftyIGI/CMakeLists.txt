@@ -24,6 +24,11 @@ SET(_exclude_plugins
   uk.ac.ucl.cmic.midasmorphologicalsegmentor
   uk.ac.ucl.cmic.niftyseg
   uk.ac.ucl.cmic.thumbnail
+  it.unito.cim.intensityprofile
+  uk.ac.ucl.cmic.imagestatistics
+  uk.ac.ucl.cmic.mitksegmentation
+  uk.ac.ucl.cmic.niftyreg
+  uk.ac.ucl.cmic.surfaceextractor
 )
 
 NIFTK_CREATE_APPLICATION(

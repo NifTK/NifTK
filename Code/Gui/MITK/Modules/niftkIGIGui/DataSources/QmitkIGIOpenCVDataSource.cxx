@@ -137,9 +137,8 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
-  wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-  wrapper->SetDuration(1000000000); // nanoseconds
+  wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
   this->SetStatus("Grabbing");
@@ -240,7 +239,7 @@ bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     const IplImage* imageFrame = dataType->GetImage();
     if (imageFrame != NULL)
     {
-      QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+      QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
       QDir directory(directoryPath);
       if (directory.mkpath(directoryPath))
       {
