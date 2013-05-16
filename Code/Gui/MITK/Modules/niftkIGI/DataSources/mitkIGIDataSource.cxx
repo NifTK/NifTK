@@ -24,6 +24,7 @@ namespace mitk
 IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 : m_SavePrefix("")
 , m_Description("")
+, m_TimeStampTolerance(1000000000)
 , m_Mutex(itk::FastMutexLock::New())
 , m_DataStorage(storage)
 , m_Identifier(-1)
@@ -39,7 +40,6 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
 , m_ActualData(NULL)
-, m_TimeStampTolerance(1000000000)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_ActualTimeStamp = igtl::TimeStamp::New();
