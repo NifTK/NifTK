@@ -28,5 +28,5 @@ vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName)
 //-----------------------------------------------------------------------------
 bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix)
 {
-  SaveMatrix4x4ToFile(fileName, matrix);
+  return SaveMatrix4x4ToFile(fileName, matrix);
 }
