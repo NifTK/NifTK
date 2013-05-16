@@ -125,7 +125,8 @@ int main(int argc, char** argv)
   for ( int i = 0 ; i < source->GetNumberOfPoints() ; i++ )
   {
     source->GetPoint( idarray->GetComponent(i,0), p);
-    *fp << idarray->GetComponent(i,0) << " : " << distancesArray->GetComponent(i,0) << "(" << p[0] << "," << p[1] << "," << p[2] << ")" << std::endl;
+    *fp << idarray->GetComponent(i,0) << "\t" << p[0] << "\t" << p[1] << "\t" << p[2];
+    *fp << "\t" << distancesArray->GetComponent(i,0) << std::endl;
   }
   if ( ! noVisualisation )
   {
