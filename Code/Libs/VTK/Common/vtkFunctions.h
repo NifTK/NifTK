@@ -122,7 +122,7 @@ extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
  * \brief Measures the euclidean distances between the points in two polydata, and sets the 
  * \brief scalars in both polydata to a color map to show the differences, min distance red, 
  * \brief max distance is blue. Mid distance is green
- * \param source the two polydata, they need the same number of points
+ * \param source,target the two polydata, they need the same number of points
  * \return true if Ok, false if error
  */
 extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target );
@@ -130,7 +130,8 @@ extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source,
 /**
  * \brief Returns the euclidean distance (in 3D) between a point and the closest point
  * on a polydata mesh
- * \param, the point, and the polydata
+ * \param point the point
+ * \param target and the polydata
  * \return the euclidean distance
  */
 extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vtkPolyData * target);
@@ -138,8 +139,9 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vt
 /**
  * \brief Returns the euclidean distance (in 3D) between a point and the closest point
  * on a polydata mesh
- * \param, the point, a vtkCellLocator, built from the polydata, and optionally a vtkGenericCell 
- * speed up the process.
+ * \param point the point
+ * \param targetLocator a vtkCellLocator, built from the polydata
+ * \param cell  and optionally a vtkGenericCell 
  * \return the euclidean distance
  */
 extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
@@ -148,7 +150,7 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
  * \brief Calculates the euclidean distance (in 3D) between each point in the 
  * source polydata and the closest point on the target polydata mesh.
  * The result are stored the distances in the scalar values of the source
- * \param, the source and target polydata.
+ * \param source,target the source and target polydata.
  */
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
 
