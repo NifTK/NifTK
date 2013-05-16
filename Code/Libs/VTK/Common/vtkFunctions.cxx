@@ -27,6 +27,7 @@
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkGenericCell.h>
 
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
@@ -348,6 +349,22 @@ double DistanceToSurface (  double point[3],
 
 void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 {
+  vtkSmartPointer<vtkDoubleArray> distances = vtkSmartPointer<vtkDoubleArray>::New();
+  distances->SetNumberOfComponents(1);
+  distances->SetName("Distances");
+  
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
+  double p[3];
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ ) 
+  {
+    source->GetPoint(i,p);
+    distances->InsertNextValue (DistanceToSurface ( p , targetLocator, cell ));
+  }
+  source->GetPointData()->SetScalars(distances);
 }
                                                                       
 
