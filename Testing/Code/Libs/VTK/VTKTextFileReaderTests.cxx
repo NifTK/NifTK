@@ -50,25 +50,31 @@ int VTK4PointReaderTest ( int argc, char * argv[] )
     std::cerr << "Read " << NumberOfPoints << " not 6, failing test." << std::endl;
     return EXIT_FAILURE;
   }
-#define __err 2.30
+  double tolerance = 1e-5;
   double y[18] = {-19.5231,-12.4419,41.5037,
     -19.544,-12.4676,41.6108,
       -19.5644,-12.493,41.717,
       -19.5843,-12.5183,41.8223,
       -19.5328,-12.4239,41.5334,
-      -19.5536,-12.4495,41.6401 + __err};
+      -19.5536,-12.4495,41.6401};
   double ErrorSum=0;
+  double ErrorDiff=0;
   for ( int i = 0 ; i < NumberOfPoints ; i ++ ) 
   {
     double *x = new double[3];
     x=points->GetPoint(i);
     ErrorSum += x[0] - y[0+i*3] + x[1] - y[1+i*3] + x[2] - y[2+i*3];
+    ErrorDiff += x[0] + y[0+i*3] + x[1] + y[1+i*3] + x[2] + y[2+i*3];
   }
-  if ( (ErrorSum > ( - __err + 1e-3)) || (ErrorSum <  ( - __err - 1e-3)  ))
+  if ( (ErrorSum > tolerance ) || (ErrorSum <   -tolerance  ) ||
+     ( fabs(ErrorDiff) < tolerance ))
   {
     std::cerr << "Got wrong error sum, " << ErrorSum << " failing test" << std::endl;
+    std::cerr << "or got wrong error diff, " << ErrorDiff << " failing test" << std::endl;
     return EXIT_FAILURE;
   }
+  std::cerr << "Error sum, " << ErrorSum << " passed test" << std::endl;
+  std::cerr << "Error diff, " << ErrorDiff << " passed test" << std::endl;
   return EXIT_SUCCESS;
 }
 
@@ -98,27 +104,34 @@ int VTK3PointReaderTest ( int argc, char * argv[] )
     std::cerr << "Read " << NumberOfPoints << " not 6, failing test." << std::endl;
     return EXIT_FAILURE;
   }
-#define __err3 2.35
+  double tolerance = 1e-5;
   
   double y[18] = {-9.02475,-9.84531,32.3076,
     -8.95866,-9.79347,32.2019,
     -7.37498,-11.6282,38.5877,
     -9.03727,-9.80649,32.2966,
     -8.97118,-9.77202,32.1867,
-    -8.95863,-9.77625,32.2062 + __err3};
+    -8.95863,-9.77625,32.2062};
 
   double ErrorSum=0;
+  double ErrorDiff=0;
   for ( int i = 0 ; i < NumberOfPoints ; i ++ ) 
   {
     double *x = new double[3];
     x=points->GetPoint(i);
     ErrorSum += x[0] - y[0+i*3] + x[1] - y[1+i*3] + x[2] - y[2+i*3];
+    ErrorDiff += x[0] + y[0+i*3] + x[1] + y[1+i*3] + x[2] + y[2+i*3];
   }
-  if ( (ErrorSum > ( - __err3 + 1e-3)) || (ErrorSum <  ( - __err3 - 1e-3)  ))
+  if ( (ErrorSum > tolerance ) || (ErrorSum <   -tolerance  ) ||
+     ( fabs(ErrorDiff) < tolerance ))
   {
     std::cerr << "Got wrong error sum, " << ErrorSum << " failing test" << std::endl;
+    std::cerr << "or got wrong error diff, " << ErrorDiff << " failing test" << std::endl;
     return EXIT_FAILURE;
   }
+  std::cerr << "Error sum, " << ErrorSum << " passed test" << std::endl;
+  std::cerr << "Error diff, " << ErrorDiff << " passed test" << std::endl;
+  
   return EXIT_SUCCESS;
 }
 
