@@ -35,8 +35,8 @@ endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
                       niftkITK
-                      niftkVTK
-		      ${NIFTYREG_LIBRARIES}
+                      niftkVTKNiftyReg
+                      ${NIFTYREG_LIBRARIES}
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg
