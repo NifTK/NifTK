@@ -34,6 +34,7 @@ const char* QmitkIGINVidiaDataSource::s_NODE_NAME = "NVIDIA SDI stream ";
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_Pimpl(new QmitkIGINVidiaDataSourceImpl), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
+, m_WasSavingMessagesPreviously(false)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
@@ -172,18 +173,16 @@ void QmitkIGINVidiaDataSource::GrabData()
     }
   }
 
-#ifdef JOHANNES_HAS_FIXED_RECORDING
+
   // because there's currently no notification when the user clicked stop-record
   // we need to check this way to clean up the compressor.
-  if (m_Pimpl->m_WasSavingMessagesPreviously && !GetSavingMessages())
+  if (m_WasSavingMessagesPreviously && !GetSavingMessages())
   {
-    delete m_Pimpl->compressor;
-    m_Pimpl->compressor = 0;
-    m_Pimpl->m_WasSavingMessagesPreviously = false;
+    m_Pimpl->StopCompression();
 
+    m_WasSavingMessagesPreviously = false;
     m_FrameMapLogFile.close();
   }
-#endif
 }
 
 
@@ -316,12 +315,66 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   bool success = false;
   outputFileName = "";
 
+  // are we starting to record now
+  if (m_WasSavingMessagesPreviously == false)
+  {
+    // FIXME: use qt for this
+    SYSTEMTIME  now;
+    GetSystemTime(&now);
+
+    std::string directoryPath = this->m_SavePrefix + '/' + "QmitkIGINVidiaDataSource";
+    QDir directory(QString::fromStdString(directoryPath));
+    if (directory.mkpath(QString::fromStdString(directoryPath)))
+    {
+      std::ostringstream    filename;
+      filename << directoryPath << "/capture-" 
+        << now.wYear << '_' << now.wMonth << '_' << now.wDay << '-' << now.wHour << '_' << now.wMinute << '_' << now.wSecond;
+
+      std::string filenamebase = filename.str();
+
+      // we need a map for frame number -> wall clock
+      assert(!m_FrameMapLogFile.is_open());
+      m_FrameMapLogFile.open((filenamebase + ".framemap.log").c_str());
+      if (!m_FrameMapLogFile.is_open())
+      {
+        // should we continue if we dont have a frame map?
+        std::cerr << "WARNING: could not create frame map file!" << std::endl;
+      }
+      else
+      {
+        // dump a header line
+        m_FrameMapLogFile << "#framenumber_starting_at_one sequencenumber channel timestamp" << std::endl;
+      }
+
+      m_Pimpl->setCompressionOutputFilename(filenamebase + ".264");
+    }
+  }
+
+  // no record-stop-notification work around
+  m_WasSavingMessagesPreviously = true;
+
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
   if (dataType.IsNotNull())
   {
     if (m_Pimpl->GetCookie() == dataType->GetCookie())
     {
-      success = m_Pimpl->CompressFrame(dataType->GetSequenceNumber());
+      unsigned int  seqnum = dataType->GetSequenceNumber();
+      unsigned int  frameindex = m_Pimpl->CompressFrame(seqnum);
+      if (frameindex > 0)
+      {
+        unsigned int t = frameindex - m_Pimpl->GetStreamCount();
+        for (unsigned int i = t; i < frameindex; ++i)
+        if (m_FrameMapLogFile.is_open())
+        {
+          m_FrameMapLogFile 
+            << (i + 1) << '\t' 
+            << seqnum << '\t'
+            << (i - t) << '\t'
+            << dataType->GetTimeStampInNanoSeconds() << '\t'
+            << std::endl;
+        }
+        success = true;
+      }
     }
   }
 

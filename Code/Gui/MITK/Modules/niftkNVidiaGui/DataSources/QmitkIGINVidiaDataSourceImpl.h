@@ -28,6 +28,8 @@
 
 
 // after construction, call start() to kick off capture
+// beware: all signal/event processing for this object needs to happen on this thread!
+// so if you didnt call start(), trying to emit Bump will mess up.
 class QmitkIGINVidiaDataSourceImpl : public QmitkIGITimerBasedThread
 {
   Q_OBJECT
@@ -56,6 +58,7 @@ public:
   std::string GetStateMessage() const;
   void Reset();
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
+
   std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
 
   // returns the next sequence number that has already been captured
@@ -63,12 +66,17 @@ public:
   // returns zero if no new ones have arrived yet.
   video::FrameInfo GetNextSequenceNumber(unsigned int ihavealready) const;
 
-  bool CompressFrame(unsigned int sequencenumber);
+
 
   unsigned int GetCookie() const;
 
   bool IsRunning() const;
 
+  std::string GetCompressionOutputFilename() const;
+  void setCompressionOutputFilename(const std::string& name);
+  // instead of emitting the compress signal directly you should call this function
+  unsigned int CompressFrame(unsigned int sequencenumber);
+  void StopCompression();
 
 
   std::pair<int, int> get_capture_dimensions() const;
@@ -85,13 +93,18 @@ protected:
 
 
 protected slots:
-  void WakeUp();
+  void DoWakeUp();
   // can only be used with Qt::BlockingQueuedConnection!
-  bool DoCompressFrame(unsigned int sequencenumber);
+  void DoCompressFrame(unsigned int sequencenumber, unsigned int* frameindex);
+  void DoStopCompression();
+
 
 signals:
   // bumping this thread means to wake it up from its timer sleep.
-  void Bump();
+  void SignalBump();
+  // internal! use CompressFrame() instead!
+  void SignalCompress(unsigned int sequencenumber, unsigned int* frameindex);
+  void SignalStopCompression();
 
 
 private:
@@ -127,9 +140,9 @@ private:
   int                     streamcount;
 
   // we keep our own copy of the texture ids (instead of relying on sdiin)
-  //  so that another thread can easily get these
+  //  so that another thread can easily get these.
   // SDIInput is actively enforcing an opengl context check that's incompatible
-  //  with the current threading situation
+  //  with the current threading situation.
   int                     textureids[4];
 
   video::Compressor*      compressor;
@@ -153,15 +166,8 @@ private:
 
   // time stamp of the previous successfully captured frame.
   // this is used to detect a capture glitch without unconditionally blocking for new frames.
-  // see QmitkIGINVidiaDataSource::GrabData().
+  // see QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl().
   DWORD     m_LastSuccessfulFrame;
-
-#ifdef JOHANNES_HAS_FIXED_RECORDING
-  // used to detect whether record has stopped or not.
-  // there's no notification when the user clicked stop-record.
-  // QmitkIGINVidiaDataSource::GrabData(), bottom
-  bool  m_WasSavingMessagesPreviously;
-#endif
 
   // used in a log file to correlate times stamps, frame index and sequence number
   unsigned int    m_NumFramesCompressed;
@@ -172,6 +178,9 @@ private:
   // used to check whether any in-flight IGINVidiaDataType are still valid.
   // it is set during InitVideo().
   unsigned int        m_Cookie;
+
+
+  std::string         m_CompressionOutputFilename;
 };
 
 

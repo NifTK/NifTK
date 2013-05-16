@@ -27,7 +27,7 @@
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-    current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), /*m_WasSavingMessagesPreviously(false),*/ m_NumFramesCompressed(0),
+    current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0),
     state_message("Starting up")
 {
   // helps with debugging
@@ -402,25 +402,49 @@ std::string QmitkIGINVidiaDataSourceImpl::GetStateMessage() const
 
 
 //-----------------------------------------------------------------------------
+std::string QmitkIGINVidiaDataSourceImpl::GetCompressionOutputFilename() const
+{
+  QMutexLocker    l(&lock);
+  return m_CompressionOutputFilename;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::setCompressionOutputFilename(const std::string& name)
+{
+  QMutexLocker    l(&lock);
+  m_CompressionOutputFilename = name;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::run()
 {
   // it's possible for someone else to start and stop our thread.
   // just make sure we start clean if that happens.
   Reset();
 
-  bool ok = connect(this, SIGNAL(Bump()), this, SLOT(WakeUp()), Qt::QueuedConnection);
+  bool ok = connect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()), Qt::QueuedConnection);
+  assert(ok);
+  ok = connect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)), Qt::BlockingQueuedConnection);
+  assert(ok);
+  ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), Qt::BlockingQueuedConnection);
   assert(ok);
 
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
 
-  ok = disconnect(this, SIGNAL(Bump()), this, SLOT(WakeUp()));
+  ok = disconnect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
   assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINVidiaDataSourceImpl::WakeUp()
+void QmitkIGINVidiaDataSourceImpl::DoWakeUp()
 {
   OnTimeoutImpl();
 }
@@ -650,9 +674,13 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned in
   // until here, capture thread would be stuck waiting for the lock
   lock.unlock();
 
-  // we should bump m_GrabbingThread so it wakes up early from its message loop sleep.
+  // we should bump sdi thread so it wakes up early from its message loop sleep.
   // otherwise we are locking in on its refresh rate.
-  emit Bump();
+  // FIXME: bumping the sdi thread does not work this way!
+  //        it opens a race condition in which the sdi thread finishes serving the 
+  //        copy-out-request before this caller here starts waiting for the mutex.
+  //        using windows event objects this would work!
+  //emit SignalBump();
   // FIXME: qt has a Qt::BlockingQueuedConnection, use that instead!
   copyoutfinished.wait(&copyoutmutex);
   copyoutmutex.unlock();
@@ -661,121 +689,109 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned in
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber)
+void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, unsigned int* frameindex)
 {
-#ifdef JOHANNES_HAS_FIXED_RECORDING
-    QMutexLocker    l(&m_Pimpl->lock);
+  QMutexLocker    l(&lock);
 
-    // make sure nobody messes around with contexts
-    assert(QGLContext::currentContext() == m_Pimpl->oglwin->context());
+  // make sure nobody messes around with contexts
+  assert(QGLContext::currentContext() == oglwin->context());
 
-    // no record-stop-notification work around
-    m_Pimpl->m_WasSavingMessagesPreviously = true;
 
-    if (m_Pimpl->compressor == 0)
+  if (compressor == 0)
+  {
+    CUresult r = cuCtxPushCurrent(cuContext);
+    // die straight away
+    if (r != CUDA_SUCCESS)
     {
-      CUresult r = cuCtxPushCurrent(m_Pimpl->cuContext);
-      // die straight away
-      if (r != CUDA_SUCCESS)
-        return false;
-
-      std::pair<int, int> dim = m_Pimpl->get_capture_dimensions();
-
-      // FIXME: use qt for this
-      SYSTEMTIME  now;
-      GetSystemTime(&now);
-
-      std::string directoryPath = this->m_SavePrefix + '/' + "QmitkIGINVidiaDataSource";
-      QDir directory(QString::fromStdString(directoryPath));
-      if (directory.mkpath(QString::fromStdString(directoryPath)))
-      {
-        std::ostringstream    filename;
-        filename << directoryPath << "/capture-" 
-          << now.wYear << '_' << now.wMonth << '_' << now.wDay << '-' << now.wHour << '_' << now.wMinute << '_' << now.wSecond;
-
-        std::string filenamebase = filename.str();
-
-        // we need a map for frame number -> wall clock
-        assert(!m_FrameMapLogFile.is_open());
-        m_FrameMapLogFile.open((filenamebase + ".framemap.log").c_str());
-        if (!m_FrameMapLogFile.is_open())
-        {
-          // should we continue if we dont have a frame map?
-          std::cerr << "WARNING: could not create frame map file!" << std::endl;
-        }
-        else
-        {
-          // dump a header line
-          m_FrameMapLogFile << "#framenumber sequencenumber channel timestamp" << std::endl;
-        }
-
-        // also keep sdi logs
-        m_Pimpl->sdiin->set_log_filename(filenamebase + ".sdicapture.log");
-
-        // when we get a new compressor we want to start counting from zero again
-        m_Pimpl->m_NumFramesCompressed = 0;
-
-        m_Pimpl->compressor = new video::Compressor(dim.first, dim.second, m_Pimpl->format.refreshrate * m_Pimpl->streamcount, filenamebase + ".264");
-      }
-    }
-    else
-    {
-      // we have compressor already so context should be all set up
-      // check it!
-      CUcontext ctx = 0;
-      CUresult r = cuCtxGetCurrent(&ctx);
-      // if for any reason we cant interact with cuda then there's no use of trying to do anything else
-      if (r != CUDA_SUCCESS)
-        return false;
-      assert(ctx == m_Pimpl->cuContext);
+      *frameindex = 0;
+      return;
     }
 
-    // find out which ringbuffer slot the request sequence number is in, if any
-    unsigned int requestedSN = dataType->GetSequenceNumber();
-    std::map<unsigned int, int>::iterator sloti = m_Pimpl->sn2slot_map.find(requestedSN);
-    if (sloti != m_Pimpl->sn2slot_map.end())
+    // also keep sdi logs
+    sdiin->set_log_filename(m_CompressionOutputFilename + ".sdicapture.log");
+
+    // when we get a new compressor we want to start counting from zero again
+    m_NumFramesCompressed = 0;
+
+    std::pair<int, int> dim = get_capture_dimensions();
+    compressor = new video::Compressor(dim.first, dim.second, format.refreshrate * streamcount, m_CompressionOutputFilename);
+  }
+  else
+  {
+    // we have compressor already so context should be all set up
+    // check it!
+    CUcontext ctx = 0;
+    CUresult r = cuCtxGetCurrent(&ctx);
+    // if for any reason we cant interact with cuda then there's no use of trying to do anything else
+    if (r != CUDA_SUCCESS)
     {
-      // sanity check
-      assert(m_Pimpl->slot2sn_map.find(sloti->second)->second == requestedSN);
-
-      // compress each stream
-      for (int i = 0; i < m_Pimpl->streamcount; ++i)
-      {
-        int tid = m_Pimpl->sdiin->get_texture_id(i, sloti->second);
-        assert(tid != 0);
-        // would need to do prepare() only once
-        // but more often is ok too
-        m_Pimpl->compressor->preparetexture(tid);
-        m_Pimpl->compressor->compresstexture(tid);
-
-        if (m_FrameMapLogFile.is_open())
-        {
-          m_FrameMapLogFile 
-            << m_Pimpl->m_NumFramesCompressed << '\t' 
-            << requestedSN << '\t'
-            << i << '\t'
-            << dataType->GetTimeStampInNanoSeconds() << '\t'
-            << std::endl;
-        }
-
-        m_Pimpl->m_NumFramesCompressed++;
-      }
-
-      success = true;
+      *frameindex = 0;
+      return;
     }
-    else
+    assert(ctx == cuContext);
+  }
+
+  // find out which ringbuffer slot the request sequence number is in, if any
+  video::FrameInfo  fi = {0};
+  fi.sequence_number = sequencenumber;
+  BOOST_TYPEOF(sn2slot_map)::const_iterator sloti = sn2slot_map.find(fi);
+  if (sloti != sn2slot_map.end())
+  {
+    // sanity check
+    assert(slot2sn_map.find(sloti->second)->second.sequence_number == sequencenumber);
+
+    // compress each stream
+    for (int i = 0; i < streamcount; ++i)
     {
-      assert(false);
+      int tid = sdiin->get_texture_id(i, sloti->second);
+      assert(tid != 0);
+      // would need to do prepare() only once
+      // but more often is ok too
+      compressor->preparetexture(tid);
+      compressor->compresstexture(tid);
+
+      m_NumFramesCompressed++;
     }
-#endif
-  return false;
+
+    *frameindex = m_NumFramesCompressed;
+  }
+  else
+  {
+    // i want to know how often this happens, really...
+    std::cerr << "Debug: sdi compressor: requested sn that is no longer available" << std::endl;
+    assert(false);
+    *frameindex = 0;
+  }
+
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGINVidiaDataSourceImpl::CompressFrame(unsigned int sequencenumber)
+unsigned int QmitkIGINVidiaDataSourceImpl::CompressFrame(unsigned int sequencenumber)
 {
-  return false;
+  unsigned int frameindex = 0;
+  emit SignalCompress(sequencenumber, &frameindex);
+  return frameindex;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
+{
+  QMutexLocker    l(&lock);
+
+  // make sure nobody messes around with contexts
+  assert(QGLContext::currentContext() == oglwin->context());
+
+  delete compressor;
+  compressor = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::StopCompression()
+{
+  emit SignalStopCompression();
 }
 
 

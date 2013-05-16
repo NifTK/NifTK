@@ -129,6 +129,10 @@ private:
   // used to correlate clock, frame numbers and other events
   std::ofstream           m_FrameMapLogFile;
 
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  bool  m_WasSavingMessagesPreviously;
+
 
   static const char*      s_NODE_NAME;
 
