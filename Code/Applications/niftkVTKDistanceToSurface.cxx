@@ -32,6 +32,8 @@
 #include <niftkvtk4PointsReader.h>
 #include <vtkFunctions.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkSortDataArray.h>
 
 #include <vtkActor.h>
 #include <vtkRenderWindow.h>
@@ -46,6 +48,7 @@
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkLookupTable.h>
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -64,6 +67,13 @@ int main(int argc, char** argv)
       return EXIT_FAILURE;
     }
 
+  std::ostream * fp = &std::cout;
+  std::ofstream fout;
+  if ( output.length() != 0 ) 
+  {
+    fout.open(output.c_str() );
+    fp=&fout;
+  }
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
 
@@ -82,8 +92,41 @@ int main(int argc, char** argv)
   
   DistanceToSurface(source, target);
 
+  vtkSmartPointer<vtkDoubleArray> distancesArray = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkSmartPointer<vtkUnsignedIntArray> idarray = vtkSmartPointer<vtkUnsignedIntArray>::New();
 
+  distancesArray->SetNumberOfComponents(1);
+  idarray->SetNumberOfComponents(1);
+  double max_dist;
+  double min_dist;
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
+  {
+    double distance = source->GetPointData()->GetScalars()->GetComponent(i,0);
+    if ( i == 0 )
+    {
+      max_dist = distance;
+      min_dist = distance;
+    }
+    else
+    {
+      min_dist = distance < min_dist ? distance : min_dist;
+      max_dist = distance > max_dist ? distance : max_dist;
+    }
+    distancesArray->InsertNextValue(distance);
+    idarray->InsertNextValue(i);
+  }
 
+  std::cout << "Max = " << max_dist << "  Min = " << min_dist << std::endl;
+
+  vtkSmartPointer<vtkSortDataArray> sorter = vtkSmartPointer<vtkSortDataArray>::New();
+  sorter->Sort(distancesArray,  idarray);
+
+  double p[3];
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i++ )
+  {
+    source->GetPoint( idarray->GetComponent(i,0), p);
+    *fp << idarray->GetComponent(i,0) << " : " << distancesArray->GetComponent(i,0) << "(" << p[0] << "," << p[1] << "," << p[2] << ")" << std::endl;
+  }
   if ( ! noVisualisation )
   {
     vtkSmartPointer<vtkPolyDataMapper> sourceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -99,10 +142,15 @@ int main(int argc, char** argv)
     sourceMapper->SetInputData(delaunay);
     delaunay->Update();
 #endif
+    //build a lookup table
+    vtkSmartPointer<vtkLookupTable> colorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
+    colorLookupTable->SetTableRange ( min_dist, max_dist);
+    colorLookupTable->Build();
+    sourceMapper->SetLookupTable (colorLookupTable);
     vtkSmartPointer<vtkActor> sourceActor = vtkSmartPointer<vtkActor>::New();
     sourceActor->SetMapper(sourceMapper);
     sourceActor->GetProperty()->SetColor(1,0,0);
-    sourceActor->GetProperty()->SetPointSize(4);
+    sourceActor->GetProperty()->SetPointSize(1);
     sourceActor->GetProperty()->SetRepresentationToPoints();
 
     vtkSmartPointer<vtkPolyDataMapper> targetMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -115,7 +163,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkActor> targetActor = vtkSmartPointer<vtkActor>::New();
     targetActor->SetMapper(targetMapper);
     targetActor->GetProperty()->SetColor(0,1,0);
-    targetActor->GetProperty()->SetOpacity(1.0);
+    targetActor->GetProperty()->SetOpacity(0.5);
 
     // Create a renderer, render window, and interactor
     vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
