@@ -152,4 +152,24 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
  */
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
 
+/**
+ * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
+ * \param fileName full path of file name
+ * \param matrix a matrix
+ * \param bool true if successful and false otherwise
+ */
+extern "C++" NIFTKVTK_WINEXPORT bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent=false);
+
+/**
+ * \brief Loads the matrix from file, or else creates an Identity matrix, and the caller is responsible for deallocation.
+ * \param fileName
+ */
+extern "C++" NIFTKVTK_WINEXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
+
+/**
+ * \brief Checks matrices for equality.
+ * \param tolerance absolute difference between corresponding elements must be less than this number.
+ */
+extern "C++" NIFTKVTK_WINEXPORT bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const double& tolerance=0.01);
+
 #endif // vtkFunctions_h
