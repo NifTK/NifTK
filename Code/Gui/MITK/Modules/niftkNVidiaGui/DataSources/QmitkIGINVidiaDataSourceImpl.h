@@ -59,7 +59,7 @@ public:
   void Reset();
   void SetFieldMode(video::SDIInput::InterlacedBehaviour mode);
 
-  std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
+  std::pair<IplImage*, int> GetRGBAImage(unsigned int sequencenumber);
 
   // returns the next sequence number that has already been captured
   // following ihavealready.
@@ -79,7 +79,7 @@ public:
   void StopCompression();
 
 
-  std::pair<int, int> get_capture_dimensions() const;
+  //std::pair<int, int> get_capture_dimensions() const;
 
 protected:
   // repeatedly called by timer to check for new frames.
@@ -97,6 +97,7 @@ protected slots:
   // can only be used with Qt::BlockingQueuedConnection!
   void DoCompressFrame(unsigned int sequencenumber, unsigned int* frameindex);
   void DoStopCompression();
+  void DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
 
 
 signals:
@@ -105,12 +106,13 @@ signals:
   // internal! use CompressFrame() instead!
   void SignalCompress(unsigned int sequencenumber, unsigned int* frameindex);
   void SignalStopCompression();
+  void SignalGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
 
 
 private:
   // has to be called with lock held!
   void InitVideo();
-  void ReadbackRgba(char* buffer, std::size_t bufferpitch, int width, int height);
+  void ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
 
 
   // any access to members needs to be locked
@@ -146,11 +148,6 @@ private:
   int                     textureids[4];
 
   video::Compressor*      compressor;
-
-  volatile IplImage*      copyoutasap;
-  QWaitCondition          copyoutfinished;
-  QMutex                  copyoutmutex;
-  volatile int            copyoutslot;      // which slot in the ringbuffer
 
 
   struct SequenceNumberComparator

@@ -27,7 +27,7 @@
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-    current_state(PRE_INIT), copyoutasap(0), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0),
+    current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0),
     state_message("Starting up")
 {
   // helps with debugging
@@ -98,8 +98,6 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
   // might as well fail fast
   bool wasnotlocked = lock.tryLock();
   assert(wasnotlocked);
-  wasnotlocked = copyoutmutex.tryLock();
-  assert(wasnotlocked);
 
   QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
   try
@@ -133,7 +131,6 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
   // they'll get cleaned up now
   // if someone else is currently waiting on these
   //  deleting but not unlocking does what to their waiting?
-  copyoutmutex.unlock();
   lock.unlock();
 }
 
@@ -198,57 +195,17 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
 }
 
 
-#if 0
-  void QmitkIGINVidiaDataSourceImpl::readback_rgb(char* buffer, std::size_t bufferpitch, int width, int height)
-  {
-    assert(sdiin != 0);
-    assert(bufferpitch >= width * 3);
-
-    // lock here first, before querying dimensions so that there's no gap
-    QMutexLocker    l(&lock);
-
-    std::pair<int, int> dim = get_capture_dimensions();
-    if (dim.first > width)
-      // FIXME: should somehow communicate failure to the requester
-      return;
-
-    // unfortunately we have 3 bytes per pixel
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    assert((bufferpitch % 3) == 0);
-    glPixelStorei(GL_PACK_ROW_LENGTH, bufferpitch / 3);
-
-    for (int i = 0; i < 4; ++i)
-    {
-      int texid = sdiin->get_texture_id(i, copyoutslot);
-      if (texid == 0)
-        break;
-
-      // while we have the lock, texture dimensions are not going to change
-
-      // remaining buffer too small?
-      if (height - (i * dim.second) < dim.second)
-        return;
-
-      char*   subbuf = &buffer[i * dim.second * bufferpitch];
-
-      glBindTexture(GL_TEXTURE_2D, texid);
-      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, subbuf);
-      assert(glGetError() == GL_NO_ERROR);
-    }
-  }
-#endif
-
-
 //-----------------------------------------------------------------------------
-void QmitkIGINVidiaDataSourceImpl::ReadbackRgba(char* buffer, std::size_t bufferpitch, int width, int height)
+void QmitkIGINVidiaDataSourceImpl::ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot)
 {
   assert(sdiin != 0);
   assert(bufferpitch >= width * 4);
 
-  std::pair<int, int> dim = get_capture_dimensions();
-  if (dim.first > width)
-    // FIXME: should somehow communicate failure to the requester
-    return;
+  int w = sdiin->get_width();
+  int h = sdiin->get_height();
+
+  assert(w <= width);
+
 
   // fortunately we have 4 bytes per pixel
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
@@ -257,17 +214,17 @@ void QmitkIGINVidiaDataSourceImpl::ReadbackRgba(char* buffer, std::size_t buffer
 
   for (int i = 0; i < 4; ++i)
   {
-    int texid = sdiin->get_texture_id(i, copyoutslot);
+    int texid = sdiin->get_texture_id(i, slot);
     if (texid == 0)
       break;
 
     // while we have the lock, texture dimensions are not going to change
 
     // remaining buffer too small?
-    if (height - (i * dim.second) < dim.second)
+    if (height - (i * h) < h)
       return;
 
-    char*   subbuf = &buffer[i * dim.second * bufferpitch];
+    char*   subbuf = &buffer[i * h * bufferpitch];
 
     glBindTexture(GL_TEXTURE_2D, texid);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, subbuf);
@@ -334,17 +291,6 @@ video::StreamFormat QmitkIGINVidiaDataSourceImpl::GetFormat() const
 {
   QMutexLocker    l(&lock);
   return format;
-}
-
-
-//-----------------------------------------------------------------------------
-// might be different from advertised stream format
-std::pair<int, int> QmitkIGINVidiaDataSourceImpl::get_capture_dimensions() const
-{
-  QMutexLocker    l(&lock);
-  if (sdiin == 0)
-    return std::make_pair(0, 0);
-  return std::make_pair(sdiin->get_width(), sdiin->get_height());
 }
 
 
@@ -420,6 +366,10 @@ void QmitkIGINVidiaDataSourceImpl::setCompressionOutputFilename(const std::strin
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::run()
 {
+  // make sure the correct opengl context is active
+  // OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
+  oglwin->makeCurrent();
+
   // it's possible for someone else to start and stop our thread.
   // just make sure we start clean if that happens.
   Reset();
@@ -430,6 +380,8 @@ void QmitkIGINVidiaDataSourceImpl::run()
   assert(ok);
   ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), Qt::BlockingQueuedConnection);
   assert(ok);
+  ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), Qt::BlockingQueuedConnection);
+  assert(ok);
 
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
@@ -439,6 +391,8 @@ void QmitkIGINVidiaDataSourceImpl::run()
   ok = disconnect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)));
   assert(ok);
   ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)));
   assert(ok);
 }
 
@@ -468,6 +422,11 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
   {
     oglwin->makeCurrent();
     current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
+
+    // side note: we could try to avoid a race-condition of PRE_INIT-make-current and signal delivery
+    // by connecting the signals only after HW_ENUM, when we know that it is safe to deliver them.
+    // however, i dont know how well that mixes with signal drop-out recovery and repeated HW_ENUM,
+    // which would then connect signals multiple times.
   }
 
   // make sure nobody messes around with contexts
@@ -591,35 +550,6 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     SetInterval(500);
     return;
   }
-
-  // dont put the copy-out bits in the has_frame condition
-  // otherwise we are again locking the datastorage-update-thread onto the sdi refresh rate
-  if (copyoutasap)
-  {
-    if (copyoutasap->nChannels == 4)
-    {
-      ReadbackRgba(copyoutasap->imageData, copyoutasap->widthStep, copyoutasap->width, copyoutasap->height);
-    }
-    else
-    {
-      assert(false);
-    }
-    copyoutasap = 0;
-    copyoutfinished.wakeOne();
-  }
-
-#ifdef JOHANNES_HAS_FIXED_RECORDING
-  // because there's currently no notification when the user clicked stop-record
-  // we need to check this way to clean up the compressor.
-  if (m_Pimpl->m_WasSavingMessagesPreviously && !GetSavingMessages())
-  {
-    delete m_Pimpl->compressor;
-    m_Pimpl->compressor = 0;
-    m_Pimpl->m_WasSavingMessagesPreviously = false;
-
-    m_FrameMapLogFile.close();
-  }
-#endif
 }
 
 
@@ -639,11 +569,9 @@ void QmitkIGINVidiaDataSourceImpl::Reset()
 
 
 //-----------------------------------------------------------------------------
-std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned int sequencenumber)
+void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg)
 {
-  // i dont like this way of unstructured locking
-  lock.lock();
-  // but the waitcondition stuff doesnt work otherwise
+  QMutexLocker    l(&lock);
 
   // temp obj to search for the correct slot
   video::FrameInfo    fi = {0};
@@ -654,37 +582,42 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRgbaImage(unsigned in
   // there may have been a capture reset.
   if (sni == sn2slot_map.end())
   {
-    lock.unlock();
-    return std::make_pair((IplImage*) 0, 0);
+    *img = 0;
+    *streamcountinimg = 0;
+    return;
   }
 
-  std::pair<int, int>   imgdim = get_capture_dimensions();
-  int                   streamcount = GetStreamCount();
 
-  IplImage* frame = cvCreateImage(cvSize(imgdim.first, imgdim.second * streamcount), IPL_DEPTH_8U, 4);
+  // make sure nobody messes around with contexts.
+  // notice that we put this check here and not at the top so that the above check for
+  // sequence number bails out if there are no captured frames.
+  // this is necessary because otherwise there could be a race condition between this-sdi-thread
+  // and gui-update where gui-update tries a GetRGBAImage() before sdi-thread has had a chance to 
+  // check for InitVideo() with the corresponding ogl-make-current.
+  assert(QGLContext::currentContext() == oglwin->context());
+
+  int w = sdiin->get_width();
+  int h = sdiin->get_height();
+
+  IplImage* frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
   // mark layout as rgba instead of the opencv-default bgr
   std::memcpy(&frame->channelSeq[0], "RGBA", 4);
 
+  ReadbackRGBA(frame->imageData, frame->widthStep, frame->width, frame->height, sni->second);
 
-  copyoutasap = frame;
-  copyoutslot = sni->second;
+  *img = frame;
+  *streamcountinimg = streamcount;
+}
 
-  // this smells like deadlock...
-  copyoutmutex.lock();
-  // until here, capture thread would be stuck waiting for the lock
-  lock.unlock();
 
-  // we should bump sdi thread so it wakes up early from its message loop sleep.
-  // otherwise we are locking in on its refresh rate.
-  // FIXME: bumping the sdi thread does not work this way!
-  //        it opens a race condition in which the sdi thread finishes serving the 
-  //        copy-out-request before this caller here starts waiting for the mutex.
-  //        using windows event objects this would work!
-  //emit SignalBump();
-  // FIXME: qt has a Qt::BlockingQueuedConnection, use that instead!
-  copyoutfinished.wait(&copyoutmutex);
-  copyoutmutex.unlock();
-  return std::make_pair(frame, streamcount);
+//-----------------------------------------------------------------------------
+std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned int sequencenumber)
+{
+  IplImage*     img = 0;
+  unsigned int  streamcount = 0;
+  emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
+
+  return std::make_pair(img, streamcount);
 }
 
 
@@ -713,8 +646,7 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
     // when we get a new compressor we want to start counting from zero again
     m_NumFramesCompressed = 0;
 
-    std::pair<int, int> dim = get_capture_dimensions();
-    compressor = new video::Compressor(dim.first, dim.second, format.refreshrate * streamcount, m_CompressionOutputFilename);
+    compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
   }
   else
   {

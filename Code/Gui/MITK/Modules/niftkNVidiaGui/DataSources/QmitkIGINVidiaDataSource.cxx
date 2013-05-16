@@ -120,7 +120,6 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 void QmitkIGINVidiaDataSource::StartCapturing()
 {
   m_MostRecentSequenceNumber = 1;
-  //m_Pimpl->Reset();
   m_Pimpl->start();
   this->InitializeAndRunGrabbingThread(20);
 }
@@ -129,8 +128,10 @@ void QmitkIGINVidiaDataSource::StartCapturing()
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StopCapturing()
 {
-  m_Pimpl->ForciblyStop();
+  // grabbing thread needs to stop before we can stop sdi thread
+  // otherwise it could still be sending signals to the not-anymore-existing sdi thread.
   StopGrabbingThread();
+  m_Pimpl->ForciblyStop();
 }
 
 
@@ -197,7 +198,7 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
     if (m_Pimpl->GetCookie() == dataType->GetCookie())
     {
       // one massive image, with all streams stacked in
-      std::pair<IplImage*, int> frame = m_Pimpl->GetRgbaImage(dataType->GetSequenceNumber());
+      std::pair<IplImage*, int> frame = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
       if (frame.first)
       {
