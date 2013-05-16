@@ -12,12 +12,15 @@
 
 =============================================================================*/
 
-#ifndef VTKFUNCTIONS_H
-#define VTKFUNCTIONS_H
+#ifndef vtkFunctions_h
+#define vtkFunctions_h
 
 #include <NifTKConfigure.h>
 #include <niftkVTKWin32ExportHeader.h>
-
+#include <vtkPolyData.h>
+#include <vtkTransform.h>
+#include <vtkRandomSequence.h>
+#include <vtkCellLocator.h>
 
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b);
@@ -58,15 +61,11 @@ extern "C++" NIFTKVTK_WINEXPORT double GetBoundingBoxDiagonalLength(const double
 /** Copies n doubles from a to b, which must be allocated, and at least of length n. */
 extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, double *b);
 
-#include <vtkPolyData.h>
-#include <vtkTransform.h>
-#include <vtkRandomSequence.h>
-#include <vtkCellLocator.h>
 /** 
- * \brief Perturbs the points in a polydata object by with random values, using existing random number generator
- * \param the polydata 
- * \param the multipliers for the random number generator in each direction.
- * \param the random number generator
+ * \brief Perturbs the points in a polydata object by random values, using existing random number generator
+ * \param polydata the polydata
+ * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
+ * \param rng the random number generator
  * \return void
  */
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
@@ -74,28 +73,27 @@ extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
 
 /** 
  * \brief Perturbs the points in a polydata object by with random values, intialising and using it's own random number generator 
- * \param the polydata
- * \param the multipliers for the random number generator in each direction.
+ * \param polydata the polydata
+ * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
         double xerr, double yerr, double zerr);
 
 /** 
- * \brief Translates a polydata object using a transform
- * \param The polydata
- * \param The transform
+ * \brief Translates a polydata object using a transform.
+ * \param polydata the polydata
+ * \param transform the transform
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
   (vtkPolyData  * polydata, vtkTransform * transform);
 
 /** 
- * \brief
- * Creates a randomly determined vtktransform, using existing random number geneterator 
- * \param the transform to hold the result
- * \param The multipliers in each of the 6 degrees of freedom
- * \param The random number generator
+ * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
+ * \param transform the transform to hold the result
+ * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
+ * \param rng the random number generator
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
@@ -104,10 +102,9 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   vtkRandomSequence * rng);
 
 /** 
- * \brief
- * Creates a randomly determined vtktransform, using it's own random number generator 
- * \param the transform to hold the result
- * \param The multipliers in each of the 6 degrees of freedom
+ * \brief Creates a randomly determined vtktransform, using it's own random number generator
+ * \param transform the transform to hold the result
+ * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
@@ -116,7 +113,7 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
 
 /** 
  * \brief Normalises the values returned by a vtk random sequence to be centred on zero 
- * \param The random number sequence
+ * \param rng the random number sequence
  * \return The normalised value
  * */
 extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
@@ -125,7 +122,7 @@ extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
  * \brief Measures the euclidean distances between the points in two polydata, and sets the 
  * \brief scalars in both polydata to a color map to show the differences, min distance red, 
  * \brief max distance is blue. Mid distance is green
- * \param The two polydata, they need the same number of points
+ * \param source the two polydata, they need the same number of points
  * \return true if Ok, false if error
  */
 extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target );
@@ -155,5 +152,4 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
  */
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
 
-
-#endif
+#endif // vtkFunctions_h
