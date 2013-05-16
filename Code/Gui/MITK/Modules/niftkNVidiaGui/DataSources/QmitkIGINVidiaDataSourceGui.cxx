@@ -185,6 +185,12 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
         SignalTextBox->setText(ss);
       }
 
+      QString wireformat(source->GetWireFormatString());
+      if (FormatIDTextBox->text().compare(wireformat) != 0)
+      {
+        FormatIDTextBox->setText(wireformat);
+      }
+
       // there should be only one, really
       assert(PreviewGroupBox->layout() != 0);
       for (int i = 0; i < PreviewGroupBox->layout()->count(); ++i)
@@ -205,5 +211,10 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
         }
       }
     } // if streamcount
+    else
+    {
+      SignalTextBox->setText("None");
+      FormatIDTextBox->setText("None");
+    }
   }
 }

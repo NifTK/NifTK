@@ -89,6 +89,7 @@ public:
   int GetCaptureHeight();
   int GetRefreshRate();
   int GetTextureId(int stream);
+  const char* GetWireFormatString();
 
 
 protected:

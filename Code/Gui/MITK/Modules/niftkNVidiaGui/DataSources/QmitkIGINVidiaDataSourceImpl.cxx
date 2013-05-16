@@ -27,7 +27,7 @@
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
-    current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0),
+    current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
     state_message("Starting up")
 {
   // helps with debugging
@@ -184,6 +184,7 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
 
     if (format.format != video::StreamFormat::PF_NONE)
     {
+      wireformat = sdidev->get_wireformat();
       sdiin = new video::SDIInput(sdidev, m_FieldMode, format.get_refreshrate());
 
       m_Cookie = (unsigned int) ((((std::size_t) ((void*) sdiin)) >> 4) & 0xFFFFFFFF);
@@ -262,6 +263,14 @@ unsigned int QmitkIGINVidiaDataSourceImpl::GetCookie() const
 {
   QMutexLocker    l(&lock);
   return m_Cookie;
+}
+
+
+//-----------------------------------------------------------------------------
+const char* QmitkIGINVidiaDataSourceImpl::GetWireFormatString() const
+{
+  QMutexLocker    l(&lock);
+  return wireformat;
 }
 
 

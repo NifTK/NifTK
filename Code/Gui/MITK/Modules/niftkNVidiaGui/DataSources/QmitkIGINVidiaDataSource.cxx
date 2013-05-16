@@ -396,6 +396,18 @@ int QmitkIGINVidiaDataSource::GetNumberOfStreams()
 
 
 //-----------------------------------------------------------------------------
+const char* QmitkIGINVidiaDataSource::GetWireFormatString()
+{
+  if (m_Pimpl == 0)
+  {
+    return "FIXME";
+  }
+
+  return m_Pimpl->GetWireFormatString();
+}
+
+
+//-----------------------------------------------------------------------------
 int QmitkIGINVidiaDataSource::GetCaptureWidth()
 {
   if (m_Pimpl == 0)

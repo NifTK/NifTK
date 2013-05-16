@@ -57,6 +57,10 @@ public:
     // note: hardware limitation means that all streams have the same signal format
     StreamFormat get_format(int streamno);
 
+    // returns a technical string of what actually comes off the wire, irrespective of what StreamFormat thinks it is.
+    // note that the return value is a statically allocated read-only string; do not free!
+    const char* get_wireformat();
+
     Type get_type() const;
 
 
