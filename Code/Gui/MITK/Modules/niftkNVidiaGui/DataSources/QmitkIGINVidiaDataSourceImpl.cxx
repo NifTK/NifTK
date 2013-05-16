@@ -650,6 +650,7 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
     }
 
     // also keep sdi logs
+    sdiin->flush_log();
     sdiin->set_log_filename(m_CompressionOutputFilename + ".sdicapture.log");
 
     // when we get a new compressor we want to start counting from zero again
@@ -723,6 +724,8 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 
   // make sure nobody messes around with contexts
   assert(QGLContext::currentContext() == oglwin->context());
+
+  sdiin->flush_log();
 
   delete compressor;
   compressor = 0;

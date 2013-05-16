@@ -80,6 +80,16 @@ void SDIInput::set_log_filename(const std::string& fn)
     logfilename = fn;
 }
 
+void SDIInput::flush_log()
+{
+    std::ofstream   logfile(logfilename, std::ios_base::app);
+    for (int i = 0; i < pimpl->frametimes.size(); ++i)
+    {
+        logfile << "frameno=" << pimpl->frametimes[i].frameno << ", arrival_gpu_time=" << pimpl->frametimes[i].arrival_time << ", pickup_wall_time=" << pimpl->frametimes[i].pickup_time << std::endl;
+    }
+    pimpl->frametimes.clear();
+}
+
 int SDIInput::get_texture_id(int streamno, int ringbufferslot) const
 {
     assert(wglGetCurrentContext() == pimpl->oglrc);
@@ -574,11 +584,7 @@ SDIInput::~SDIInput()
                 std::cerr << "Warning: Failed cleaning up video buffers! Leaking memory I guess..." << std::endl;
         }
 
-        std::ofstream   logfile(logfilename);
-        for (int i = 0; i < pimpl->frametimes.size(); ++i)
-        {
-            logfile << "frameno=" << pimpl->frametimes[i].frameno << ", arrival_gpu_time=" << pimpl->frametimes[i].arrival_time << ", pickup_wall_time=" << pimpl->frametimes[i].pickup_time << std::endl;
-        }
+        flush_log();
 
         delete pimpl;
     }
