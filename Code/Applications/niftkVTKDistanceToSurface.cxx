@@ -97,8 +97,8 @@ int main(int argc, char** argv)
 
   distancesArray->SetNumberOfComponents(1);
   idarray->SetNumberOfComponents(1);
-  double max_dist;
-  double min_dist;
+  double max_dist = 0;
+  double min_dist = 0;
   for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ )
   {
     double distance = source->GetPointData()->GetScalars()->GetComponent(i,0);
