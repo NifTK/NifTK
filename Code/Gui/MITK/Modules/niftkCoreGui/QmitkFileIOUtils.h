@@ -25,10 +25,9 @@
  */
 
 /**
- * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
+ * \brief Load a plain text file of 4 rows of 4 space separated numbers into a vtkMatrix4x4.  
  * \param fileName full path of file name
- * \param matrix a matrix
- * \param bool true if successful and false otherwise
+ * \return vtkMatrix4x4* that the caller is responsible for
  */
 NIFTKCOREGUI_EXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName);
 
@@ -36,6 +35,7 @@ NIFTKCOREGUI_EXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName)
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
  * \param fileName full path of file name
  * \param matrix a matrix
+ * \return true if successful and false otherwise 
  */
 NIFTKCOREGUI_EXPORT bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix);
 
