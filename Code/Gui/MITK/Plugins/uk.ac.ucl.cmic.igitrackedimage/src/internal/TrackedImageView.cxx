@@ -127,7 +127,7 @@ void TrackedImageView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedImageView::OnImageToProbeChanged()
 {
-  m_ImageToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
+  m_ImageToProbeTransform = LoadMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
 }
 
 

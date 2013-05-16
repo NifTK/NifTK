@@ -22,6 +22,7 @@ MITK_CREATE_MODULE(niftkCoreGui
 
 TARGET_LINK_LIBRARIES(niftkCoreGui
   niftkITK
+  niftkVTK
   )
 
 IF(BUILD_TESTING)
