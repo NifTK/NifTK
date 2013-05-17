@@ -32,9 +32,7 @@ SET(niftkVTKNiftyReg_SRCS
 ADD_LIBRARY(niftkVTKNiftyReg ${niftkVTKNiftyReg_SRCS})
 
 TARGET_LINK_LIBRARIES(niftkVTKNiftyReg
-  niftkcommon
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
-  ${Boost_LIBRARIES}
   ${NIFTYREG_LIBRARIES}
   )
 
