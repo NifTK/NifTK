@@ -18,7 +18,7 @@
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
-#include <QmitkFileIOUtils.h>
+#include <mitkFileIOUtils.h>
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 

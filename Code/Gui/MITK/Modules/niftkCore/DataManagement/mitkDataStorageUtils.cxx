@@ -15,6 +15,11 @@
 #include "mitkDataStorageUtils.h"
 #include <mitkDataStorage.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkFileIOUtils.h>
+#include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkCoordinateAxesData.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 namespace mitk
 {
@@ -346,6 +351,52 @@ namespace mitk
       }
     }
     return geometry;
+  }
+
+  //-----------------------------------------------------------------------------
+  void LoadMatrixOrCreateDefault(
+      const std::string& fileName,
+      const std::string& nodeName,
+      const bool& helperObject,
+      mitk::DataStorage* dataStorage)
+  {
+    vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
+    if (matrix.GetPointer() == NULL)
+    {
+      matrix = vtkMatrix4x4::New();
+      matrix->Identity();
+    }
+
+    mitk::DataNode::Pointer node = dataStorage->GetNamedNode(nodeName);
+    if (node.IsNull())
+    {
+      node = mitk::DataNode::New();
+      node->SetName(nodeName);
+      node->SetBoolProperty("show text", false);
+      node->SetIntProperty("size", 10);
+      node->SetVisibility(false); // by default we don't need to see it.
+      node->SetBoolProperty("helper object", helperObject);
+      dataStorage->Add(node);
+    }
+
+    std::string propertyName = "niftk.transform";
+    mitk::AffineTransformDataNodeProperty::Pointer affTransProp = static_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty(propertyName.c_str()));
+    if (affTransProp.IsNull())
+    {
+      affTransProp = mitk::AffineTransformDataNodeProperty::New();
+      node->SetProperty(propertyName.c_str(), affTransProp);
+    }
+    affTransProp->SetTransform(*matrix);
+
+    mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    if (coordinateAxes.IsNull())
+    {
+      coordinateAxes = mitk::CoordinateAxesData::New();
+      node->SetData(coordinateAxes);
+    }
+    coordinateAxes->SetVtkMatrix(*matrix);
+
+    node->Modified();
   }
 
 } // end namespace
