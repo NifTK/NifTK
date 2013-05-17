@@ -120,6 +120,19 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
+{
+  // reset it
+  IGIDataSource::SetSaveInBackground(false);
+
+  if (s)
+  {
+    std::cerr << "WARNING: sdi data source does not support SaveInBackground(true)" << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StartCapturing()
 {
   m_MostRecentSequenceNumber = 1;

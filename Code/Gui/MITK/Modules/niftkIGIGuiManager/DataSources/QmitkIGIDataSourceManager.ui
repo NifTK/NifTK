@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>626</width>
+    <width>1071</width>
     <height>838</height>
    </rect>
   </property>
@@ -185,32 +185,32 @@
           </attribute>
           <column>
            <property name="text">
-            <string>status</string>
+            <string>Status</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>type</string>
+            <string>Type</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>device</string>
+            <string>Device</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>description</string>
+            <string>Description</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>rate</string>
+            <string>Rate</string>
            </property>
           </column>
           <column>
            <property name="text">
-            <string>lag</string>
+            <string>Lag</string>
            </property>
           </column>
          </widget>

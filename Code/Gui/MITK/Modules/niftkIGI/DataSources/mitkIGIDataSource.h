@@ -140,6 +140,13 @@ public:
   itkThreadSafeGetConstMacro(SaveOnReceipt, bool);
 
   /**
+   * Whether the data source will call Update() as part of its processing.
+   * This effectively prevents a DataStorage update, kinda like freeze-frame.
+   */
+  itkThreadSafeSetMacro(ShouldCallUpdate, bool);
+  itkThreadSafeGetConstMacro(ShouldCallUpdate, bool);
+
+  /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
   itkThreadSafeGetConstMacro(FrameRate, float);
@@ -193,11 +200,13 @@ public:
   /**
    * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
    */
+  // FIXME: should these be virtual? derived class may need to do some special setup/teardown
   void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   /**
    * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
    */
+  // FIXME: should these be virtual? derived class may need to do some special setup/teardown
   void StopRecording();
 
   /**
@@ -295,6 +304,8 @@ protected:
   std::string m_SavePrefix;
   std::string m_Description;
   igtlUint64  m_TimeStampTolerance;
+
+  bool        m_ShouldCallUpdate;
 
 private:
 
