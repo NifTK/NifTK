@@ -27,7 +27,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedPointerCommand.h>
 #include "TrackedPointerViewActivator.h"
-#include <QmitkFileIOUtils.h>
+#include <mitkFileIOUtils.h>
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -126,7 +126,7 @@ void TrackedPointerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnTipToProbeChanged()
 {
-  m_TipToProbeTransform = LoadMatrix4x4FromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath());
+  m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_TipToProbeCalibrationFile->currentPath().toStdString());
 }
 
 

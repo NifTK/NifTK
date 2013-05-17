@@ -12,21 +12,22 @@
 
 =============================================================================*/
 
-#include "QmitkFileIOUtils.h"
-#include <QFile>
-#include <QTextStream>
-#include <QDebug>
+#include <mitkFileIOUtils.h>
 #include <vtkFunctions.h>
 
+namespace mitk {
+
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName)
+vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string& fileName)
 {
-  return LoadMatrix4x4FromFile(fileName.toStdString(), true);
+  return LoadMatrix4x4FromFile(fileName, true);
 }
 
 
 //-----------------------------------------------------------------------------
-bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix)
+bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix)
 {
   return SaveMatrix4x4ToFile(fileName, matrix);
 }
+
+} // end namespace

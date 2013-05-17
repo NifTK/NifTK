@@ -42,4 +42,5 @@ set(CPP_FILES
   IO/mitkNifTKItkImageFileIOFactory.cxx
   IO/itkPNMImageIOFactory.cxx
   IO/itkPNMImageIO.cxx
+  IO/mitkFileIOUtils.cxx
 )

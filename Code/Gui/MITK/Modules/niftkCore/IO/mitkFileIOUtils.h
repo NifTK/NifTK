@@ -12,16 +12,17 @@
 
 =============================================================================*/
 
-#ifndef QmitkFileIOUtils_h
-#define QmitkFileIOUtils_h
+#ifndef mitkFileIOUtils_h
+#define mitkFileIOUtils_h
 
-#include "niftkCoreGuiExports.h"
+#include "niftkCoreExports.h"
 #include <vtkMatrix4x4.h>
-#include <QString>
+
+namespace mitk {
 
 /**
- * \file QmitkFileIOUtils.h
- * \brief Various file IO stuff, like loading transformations from file, that also use Qt.
+ * \file mitkFileIOUtils.h
+ * \brief Various file IO stuff, like loading transformations from file.
  */
 
 /**
@@ -29,7 +30,7 @@
  * \param fileName full path of file name
  * \return vtkMatrix4x4* that the caller is responsible for
  */
-NIFTKCOREGUI_EXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName);
+NIFTKCORE_EXPORT vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string &fileName);
 
 /**
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
@@ -37,6 +38,8 @@ NIFTKCOREGUI_EXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const QString &fileName)
  * \param matrix a matrix
  * \return true if successful and false otherwise 
  */
-NIFTKCOREGUI_EXPORT bool SaveMatrix4x4ToFile (const QString& fileName, const vtkMatrix4x4& matrix);
+NIFTKCORE_EXPORT bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix);
+
+} // end namespace
 
 #endif // QmitkFileIOUtil_h
