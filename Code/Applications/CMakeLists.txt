@@ -91,6 +91,8 @@ IF(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
     SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
       niftkMakeLapUSProbeModel
+      niftkVTKIterativeClosestPointRegister
+      niftkVTKDistanceToSurface
     )
   
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
@@ -294,8 +296,6 @@ IF(VTK_FOUND)
     niftkMarchingCubes
     niftkSmoothPolyData
     niftkTransformPolyData
-    niftkVTKIterativeClosestPointRegister
-    niftkVTKDistanceToSurface
   )
 
   FOREACH(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
