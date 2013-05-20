@@ -58,7 +58,7 @@ DoubleWindowBoundaryShiftIntegralCalculator<TInputImage, TInputMask, TOutputImag
   this->m_BSIMap->SetSpacing(this->m_BaselineImage->GetSpacing()); 
   this->m_BSIMap->SetDirection(this->m_BaselineImage->GetDirection()); 
   this->m_BSIMap->Allocate(); 
-  this->m_BSIMap->FillBuffer(static_cast<typename TInputImage::PixelType>(1000));
+  this->m_BSIMap->FillBuffer(static_cast<typename TOutputImage::PixelType>(1000));
   this->m_SecondBSIMap = TOutputImage::New(); 
   this->m_SecondBSIMap->SetRegions(this->m_BaselineImage->GetLargestPossibleRegion()); 
   this->m_SecondBSIMap->SetOrigin(this->m_BaselineImage->GetOrigin()); 
