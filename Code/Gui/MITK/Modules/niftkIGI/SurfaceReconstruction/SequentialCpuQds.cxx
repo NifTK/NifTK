@@ -278,8 +278,8 @@ void SequentialCpuQds::QuasiDensePropagation()
       // Calculate correlation and store match in Seeds.
       Match m;
       // FIXME: check for negative coords! our guestimate in InitSparseFeatures() might have pushed these off
-      m.p0 = RefPoint(m_SparseFeaturesLeft[i].x,  m_SparseFeaturesLeft[i].y);
-      m.p1 = RefPoint(m_SparseFeaturesRight[i].x, m_SparseFeaturesRight[i].y);
+      m.p0 = RefPoint((unsigned short) m_SparseFeaturesLeft[i].x,  (unsigned short) m_SparseFeaturesLeft[i].y);
+      m.p1 = RefPoint((unsigned short) m_SparseFeaturesRight[i].x, (unsigned short) m_SparseFeaturesRight[i].y);
 
       // Check if too close to boundary.
       if (!CheckBorder(m, m_PropagationParams.BorderX, m_PropagationParams.BorderY, m_LeftImg.width(), m_LeftImg.height()))
