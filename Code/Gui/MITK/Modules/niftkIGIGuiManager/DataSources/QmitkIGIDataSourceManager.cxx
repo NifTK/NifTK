@@ -32,6 +32,7 @@
 const QColor QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR = QColor(Qt::red);
 const QColor QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR = QColor(255,127,0); // orange
 const QColor QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR = QColor(Qt::green);
+const QColor QmitkIGIDataSourceManager::DEFAULT_SUSPENDED_COLOUR = QColor(Qt::blue);
 const int    QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE = 2; // twice per second
 const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 2; // every 2 seconds
 const int    QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE = 5000; // 5 seconds expressed in milliseconds
@@ -47,6 +48,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_GuiUpdateTimer(NULL)
 , m_ClearDownTimer(NULL)
 {
+  m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
   m_WarningColour = DEFAULT_WARNING_COLOUR;
   m_ErrorColour = DEFAULT_ERROR_COLOUR;
@@ -223,6 +225,14 @@ void QmitkIGIDataSourceManager::SetWarningColour(QColor &colour)
 void QmitkIGIDataSourceManager::SetOKColour(QColor &colour)
 {
   m_OKColour = colour;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetSuspendedColour(QColor &colour)
+{
+  m_SuspendedColour = colour;
   this->Modified();
 }
 
@@ -690,6 +700,9 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       // Work out the sourceNumber == rowNumber.
       int rowNumber = this->GetSourceNumberFromIdentifier(source->GetIdentifier());
 
+      // side note: communicating this ShouldCallUpdate is a one-way thing, gui to datasource.
+      // i.e. the data source cannot set ShouldCallUpdate itself and expect the rest to do the right thing.
+      // gui is in charge of controlling this flag.
       bool  shouldUpdate = m_TableWidget->item(rowNumber, 0)->checkState() == Qt::Checked;
       source->SetShouldCallUpdate(shouldUpdate);
 
@@ -717,19 +730,28 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
       // Update the status icon.
       QTableWidgetItem *tItem = m_TableWidget->item(rowNumber, 0);
-      if (!isValid || lag > m_TimingTolerance/1000000000) // lag is in seconds, timing tolerance in nanoseconds.
+      if (!shouldUpdate)
       {
-        // Highlight that current row is in error.
         QPixmap pix(22, 22);
-        pix.fill(m_ErrorColour);
+        pix.fill(m_SuspendedColour);
         tItem->setIcon(pix);
       }
       else
       {
-        // Highlight that current row is OK.
-        QPixmap pix(22, 22);
-        pix.fill(m_OKColour);
-        tItem->setIcon(pix);
+        if (!isValid || lag > m_TimingTolerance/1000000000) // lag is in seconds, timing tolerance in nanoseconds.
+        {
+          // Highlight that current row is in error.
+          QPixmap pix(22, 22);
+          pix.fill(m_ErrorColour);
+          tItem->setIcon(pix);
+        }
+        else
+        {
+          // Highlight that current row is OK.
+          QPixmap pix(22, 22);
+          pix.fill(m_OKColour);
+          tItem->setIcon(pix);
+        }
       }
       // Update the status text.
       tItem->setText(QString::fromStdString(source->GetStatus()));
