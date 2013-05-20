@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>832</width>
-    <height>1390</height>
+    <width>795</width>
+    <height>626</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -341,6 +341,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="MethodComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <item>
          <property name="text">
           <string>Sequential Quasi Dense Matching</string>
