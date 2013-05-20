@@ -21,16 +21,34 @@
 namespace mitk 
 {
 
+
+ctkPluginContext* uk_ac_ucl_cmic_undistort_Activator::m_PluginContext = 0;
+
+
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_undistort_Activator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(UndistortView, context)
   BERRY_REGISTER_EXTENSION_CLASS(UndistortViewPreferencesPage, context);
+  m_PluginContext = context;
 }
 
+
+//-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_undistort_Activator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
+  assert(m_PluginContext == context);
+  m_PluginContext = 0;
 }
+
+
+//-----------------------------------------------------------------------------
+ctkPluginContext* uk_ac_ucl_cmic_undistort_Activator::getContext()
+{
+  return m_PluginContext;
+}
+
 
 }
 

@@ -56,16 +56,6 @@
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <row>
-      <property name="text">
-       <string/>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string/>
-      </property>
-     </row>
      <column>
       <property name="text">
        <string>Node</string>
@@ -76,27 +66,11 @@
        <string>Parameters</string>
       </property>
      </column>
-     <item row="0" column="0">
+     <column>
       <property name="text">
-       <string>dummy node name</string>
+       <string>Output</string>
       </property>
-      <property name="checkState">
-       <enum>Checked</enum>
-      </property>
-      <property name="flags">
-       <set>ItemIsSelectable|ItemIsUserCheckable|ItemIsEnabled</set>
-      </property>
-     </item>
-     <item row="0" column="1">
-      <property name="text">
-       <string>dummy param file</string>
-      </property>
-     </item>
-     <item row="1" column="1">
-      <property name="text">
-       <string>g</string>
-      </property>
-     </item>
+     </column>
     </widget>
    </item>
    <item>
