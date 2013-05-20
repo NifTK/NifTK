@@ -43,6 +43,9 @@ public:
   mitkClassMacro(QmitkIGINVidiaDataSource, QmitkIGILocalDataSource);
   mitkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
 
+  // overridden here to ignore it! sdi source does not support background saving.
+  virtual void SaveInBackground(bool);
+
   /**
    * \brief Defined in base class, so we check that the data type is in fact
    * a mitk::IGINVidiaDataType, returning true if it is and false otherwise.

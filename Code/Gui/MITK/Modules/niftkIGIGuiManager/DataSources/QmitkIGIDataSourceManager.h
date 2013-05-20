@@ -59,6 +59,7 @@ public:
   static const QColor DEFAULT_ERROR_COLOUR;
   static const QColor DEFAULT_WARNING_COLOUR;
   static const QColor DEFAULT_OK_COLOUR;
+  static const QColor DEFAULT_SUSPENDED_COLOUR;
   static const int    DEFAULT_FRAME_RATE;
   static const int    DEFAULT_CLEAR_RATE;
   static const int    DEFAULT_TIMING_TOLERANCE;
@@ -125,6 +126,8 @@ public:
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
   void SetOKColour(QColor &colour);
+
+  void SetSuspendedColour(QColor &colour);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -244,6 +247,7 @@ private:
   QColor                                    m_ErrorColour;
   QColor                                    m_WarningColour;
   QColor                                    m_OKColour;
+  QColor                                    m_SuspendedColour;
   int                                       m_FrameRate;
   int                                       m_ClearDataRate;
   igtlUint64                                m_TimingTolerance;

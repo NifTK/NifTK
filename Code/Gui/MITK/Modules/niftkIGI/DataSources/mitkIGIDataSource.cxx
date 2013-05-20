@@ -26,6 +26,7 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_Description("")
 , m_TimeStampTolerance(1000000000)
 , m_DataStorage(storage)
+, m_ShouldCallUpdate(true)
 , m_Mutex(itk::FastMutexLock::New())
 , m_Identifier(-1)
 , m_SourceType(SOURCE_TYPE_UNKNOWN)
@@ -463,14 +464,20 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 
           saveResult = this->DoSaveData(data);
 
-          if(saveResult)
+          if (saveResult)
           {
-            result = this->Update(data);
+            if (m_ShouldCallUpdate)
+            {
+              result = this->Update(data);
+            }
           }
         }
         else
         {
-          result = this->Update(data);
+          if (m_ShouldCallUpdate)
+          {
+            result = this->Update(data);
+          }
         }
       } catch (mitk::Exception& e)
       {
