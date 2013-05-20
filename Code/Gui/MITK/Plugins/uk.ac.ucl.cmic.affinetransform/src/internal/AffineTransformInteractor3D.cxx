@@ -173,7 +173,7 @@ bool AffineTransformInteractor3D::ColorizeSurface( vtkPolyData *polyData, const 
     return false;
   }
 
-  for ( unsigned int i = 0; i < pointData->GetNumberOfTuples(); ++i )
+  for ( int i = 0; i < pointData->GetNumberOfTuples(); ++i )
   {
     scalars->SetComponent( i, 0, scalar );
   }

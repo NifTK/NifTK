@@ -1607,7 +1607,7 @@ void QmitkMIDASMultiViewWidget::UpdateBoundMagnification()
 //-----------------------------------------------------------------------------
 int QmitkMIDASMultiViewWidget::GetSliceNumber() const
 {
-  return m_MIDASSlidersWidget->m_SliceSelectionWidget->value();
+  return static_cast<int>(m_MIDASSlidersWidget->m_SliceSelectionWidget->value());
 }
 
 

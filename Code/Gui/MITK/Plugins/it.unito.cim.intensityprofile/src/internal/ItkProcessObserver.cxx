@@ -79,7 +79,7 @@ ItkProcessObserver::onEndEvent() {
 void
 ItkProcessObserver::onProgressEvent() {
 	double progress = m_ItkProcess->GetProgress();
-	double stepsDone = static_cast<int>(progress * m_StepsToDo);
+	int stepsDone = static_cast<int>(progress * m_StepsToDo);
 	if (stepsDone > m_StepsDone) {
 		m_ProgressBar->Progress(stepsDone - m_StepsDone);
 		m_StepsDone = stepsDone;
