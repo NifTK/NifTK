@@ -560,7 +560,7 @@ QColor QmitkThumbnailRenderWindow::boundingBoxColor() const
   float colour[3];
   m_BoundingBoxNode->GetColor(colour);
 
-  QColor qtColour(colour[0] * 255, colour[1] * 255, colour[2] * 255);
+  QColor qtColour(static_cast<int>(colour[0] * 255), static_cast<int>(colour[1] * 255), static_cast<int>(colour[2] * 255));
   return qtColour;
 }
 

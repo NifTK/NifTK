@@ -138,10 +138,9 @@ void IGIDataSource::CleanBuffer()
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   unsigned int approxDoubleTheFrameRate = 1;
-  unsigned int frameRate = m_FrameRate;
-  if (frameRate > 0)
+  if (m_FrameRate > 0.0f)
   {
-    approxDoubleTheFrameRate = (int)(frameRate * 2);
+    approxDoubleTheFrameRate = static_cast<unsigned int>(m_FrameRate * 2);
   }
 
   // Don't forget that frame rate can deteriorate to zero if no data is arriving.
