@@ -77,7 +77,7 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   MITK_TEST_CONDITION_REQUIRED(tip[2] == expectedTip[2], ".. Testing z=" << expectedTip[2] << ", but got " << tip[2]);
 
   // Check that the matrix was set onto the surface.
-  vtkLinearTransform *surfaceGeometryTransform = surface->GetTimeSlicedGeometry()->GetVtkTransform();
+  vtkLinearTransform *surfaceGeometryTransform = surface->GetGeometry()->GetVtkTransform();
   vtkSmartPointer<vtkMatrix4x4> surfaceGeometryTransformMatrix = vtkMatrix4x4::New();
   surfaceGeometryTransform->GetMatrix(surfaceGeometryTransformMatrix);
 
