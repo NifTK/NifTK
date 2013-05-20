@@ -1569,10 +1569,10 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
 
   mitk::Geometry3D::Pointer selectedGeometry = selectedView->GetGeometry();
-  MIDASOrientation orientation               = selectedView->GetOrientation();
-  int sliceNumber                            = selectedView->GetSliceNumber(orientation);
-  int magnification                          = selectedView->GetMagnification();
-  int timeStepNumber                         = selectedView->GetTime();
+  MIDASOrientation orientation = selectedView->GetOrientation();
+  int sliceNumber = selectedView->GetSliceNumber(orientation);
+  double magnification = selectedView->GetMagnification();
+  int timeStepNumber = selectedView->GetTime();
 
   QList<int> viewIndexesToUpdate = this->GetViewIndexesToUpdate(isBoundNow);
   for (int i = 0; i < viewIndexesToUpdate.size(); i++)
