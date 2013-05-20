@@ -310,8 +310,8 @@ void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image:
     unsigned int w = img->GetDimension(0);
     unsigned int h = img->GetDimension(1);
     
-    mitk::Point3D::ValueType  focal[3] = {std::max(w, h), std::max(w, h), 1};
-    mitk::Point3D::ValueType  princ[3] = {w / 2, h / 2, 1};
+    mitk::Point3D::ValueType  focal[3] = {(float) std::max(w, h), (float) std::max(w, h), 1};
+    mitk::Point3D::ValueType  princ[3] = {(float) w / 2, (float) h / 2, 1};
     mitk::Point4D::ValueType  disto[4] = {0, 0, 0, 0};
 
     cam->SetIntrinsics(mitk::Point3D(focal), mitk::Point3D(princ), mitk::Point4D(disto));
