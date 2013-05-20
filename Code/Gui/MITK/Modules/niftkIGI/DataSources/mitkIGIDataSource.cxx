@@ -25,8 +25,8 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 : m_SavePrefix("")
 , m_Description("")
 , m_TimeStampTolerance(1000000000)
-, m_Mutex(itk::FastMutexLock::New())
 , m_DataStorage(storage)
+, m_Mutex(itk::FastMutexLock::New())
 , m_Identifier(-1)
 , m_SourceType(SOURCE_TYPE_UNKNOWN)
 , m_FrameRate(0)
@@ -509,7 +509,7 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
+mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
 {
   if (this->GetDataStorage() == NULL)
   {
@@ -534,7 +534,10 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
     result->SetOpacity(1);
     result->SetName(nodeName);
 
-    m_DataStorage->Add(result);
+    if (addToDataStorage)
+    {
+      m_DataStorage->Add(result);
+    }
     m_DataNodes.insert(result);
   }
 
