@@ -138,6 +138,7 @@ IF(BUILD_OPENCV)
 ENDIF(BUILD_OPENCV)
 
 IF(BUILD_IGI)
+  # aruco depends on opencv. our root CMakeLists.txt should have taken care of validating BUILD_OPENCV.
   LIST(APPEND EXTERNAL_PROJECTS aruco)
 ENDIF()
 
