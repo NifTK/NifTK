@@ -19,6 +19,7 @@
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>
+#include <mitkDataStorage.h>
 
 class vtkMatrix4x4;
 
@@ -99,6 +100,8 @@ private:
    */
   vtkSmartPointer<vtkMatrix4x4> m_TipToProbeTransform;
   std::string m_TipToProbeFileName;
+  bool m_UpdateViewCoordinate;
+  mitk::DataStorage* m_DataStorage;
 };
 
 #endif // TrackedPointerView_h

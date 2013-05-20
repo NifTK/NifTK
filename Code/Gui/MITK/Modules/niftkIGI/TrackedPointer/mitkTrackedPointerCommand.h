@@ -35,6 +35,8 @@ public:
   mitkClassMacro(TrackedPointerCommand, itk::Object);
   itkNewMacro(TrackedPointerCommand);
 
+  static const bool UPDATE_VIEW_COORDINATE_DEFAULT;
+
   /**
    * \brief Takes a surface representing a tracked pointer, updates the surface's geometry, and calculates the pointer position.
    */

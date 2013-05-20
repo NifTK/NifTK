@@ -20,7 +20,7 @@
 #include <QString>
 
 class QWidget;
-class QPushButton;
+class QCheckBox;
 
 /**
  * \class TrackedPointerViewPreferencePage
@@ -35,8 +35,15 @@ class TrackedPointerViewPreferencePage : public QObject, public berry::IQtPrefer
 
 public:
 
-  /// \brief Stores the name of the preferences node.
+  /**
+   * \brief Stores the name of the preferences node.
+   */
   static const std::string PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that stores the boolean of whether to update the ortho-view focus point.
+   */
+  static const std::string UPDATE_VIEW_COORDINATE_NAME;
 
   TrackedPointerViewPreferencePage();
   TrackedPointerViewPreferencePage(const TrackedPointerViewPreferencePage& other);
@@ -68,7 +75,7 @@ private slots:
 private:
 
   QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
+  QCheckBox      *m_UpdateViewCoordinate;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_TrackedPointerViewPreferencesNode;

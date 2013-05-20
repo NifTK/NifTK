@@ -281,8 +281,9 @@ protected:
    * be created with some default properties.
    * \param name if supplied the node will be assigned that name, and if empty, the node
    * will be given the name this->GetName().
+   * \param addToDataStorage if true, will be added to data storage, if false, the caller can determine when to do it.
    */
-  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string());
+  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
 
   /**
    * \brief Sets the list of related sources.
@@ -292,9 +293,10 @@ protected:
   /**
    * \brief So derived classes can access it without using the threadsafe Getters.
    */
-  std::string m_SavePrefix;
-  std::string m_Description;
-  igtlUint64  m_TimeStampTolerance;
+  std::string        m_SavePrefix;
+  std::string        m_Description;
+  igtlUint64         m_TimeStampTolerance;
+  mitk::DataStorage* m_DataStorage;
 
 private:
 
@@ -314,7 +316,7 @@ private:
 
   itk::FastMutexLock::Pointer                     m_Mutex;
   std::set<mitk::DataNode::Pointer>               m_DataNodes;
-  mitk::DataStorage*                              m_DataStorage;
+
   int                                             m_Identifier;
   SourceTypeEnum                                  m_SourceType;
   float                                           m_FrameRate;
