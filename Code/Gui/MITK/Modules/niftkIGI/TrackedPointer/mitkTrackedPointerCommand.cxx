@@ -19,6 +19,8 @@
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkSurface.h>
 
+const bool mitk::TrackedPointerCommand::UPDATE_VIEW_COORDINATE_DEFAULT(false);
+
 namespace mitk
 {
 
@@ -70,8 +72,12 @@ void TrackedPointerCommand::Update(
 
   combinedTransform->Multiply4x4(tipToPointerTransform, pointerToWorldTransform, combinedTransform);
 
-  mitk::TimeSlicedGeometry::Pointer surfaceGeometry = surface->GetTimeSlicedGeometry();
-  surfaceGeometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+  mitk::Geometry3D::Pointer geometry = surface->GetGeometry();
+  if (geometry.IsNotNull())
+  {
+    geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+    geometry->Modified();
+  }
 
   double coordinateIn[4] = {0, 0, 0, 1};
   double coordinateOut[4] = {0, 0, 0, 1};
