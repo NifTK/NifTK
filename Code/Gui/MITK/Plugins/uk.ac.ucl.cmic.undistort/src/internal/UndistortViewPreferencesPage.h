@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
-#define _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
+#ifndef UndistortViewPreferencesPage_h
+#define UndistortViewPreferencesPage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -22,29 +22,24 @@ class QWidget;
 class QCheckBox;
 class QSpinBox;
 
-/**
- * \class ImageStatisticsViewPreferencesPage
- * \brief Preference page for Image Statistics view, providing checkboxes for "automatic update", "assume binary image",
- * and "require same size image" etc.
- *
- * \ingroup uk_ac_ucl_cmic_imagestatistics_internal
- *
- */
-class ImageStatisticsViewPreferencesPage : public QObject, public berry::IQtPreferencePage
+
+class UndistortViewPreferencesPage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
 
-  ImageStatisticsViewPreferencesPage();
-  ImageStatisticsViewPreferencesPage(const ImageStatisticsViewPreferencesPage& other);
-  ~ImageStatisticsViewPreferencesPage();
+  UndistortViewPreferencesPage();
+  UndistortViewPreferencesPage(const UndistortViewPreferencesPage& other);
+  ~UndistortViewPreferencesPage();
 
+#if 0
   static const std::string AUTO_UPDATE_NAME;
   static const std::string ASSUME_BINARY_NAME;
   static const std::string REQUIRE_SAME_SIZE_IMAGE_NAME;
   static const std::string BACKGROUND_VALUE_NAME;
+#endif
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -70,6 +65,7 @@ public:
 protected slots:
 
 protected:
+#if 0
 
   QWidget*   m_MainControl;
   QCheckBox* m_AutoUpdate;
@@ -77,7 +73,8 @@ protected:
   QCheckBox* m_RequireSameSizeImage;
   QSpinBox*  m_BackgroundValue;
   berry::IPreferences::Pointer m_ImageStatisticsPreferencesNode;
+#endif
 };
 
-#endif /* QMITKDATAMANAGERPREFERENCEPAGE_H_ */
+#endif /* UndistortViewPreferencesPage */
 

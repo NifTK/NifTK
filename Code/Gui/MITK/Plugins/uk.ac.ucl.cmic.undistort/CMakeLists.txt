@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-project(uk.ac.ucl.cmic.undistort)
+project(uk_ac_ucl_cmic_undistort)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE UNDISTORT_EXPORT

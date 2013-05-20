@@ -36,12 +36,14 @@
 const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.undistort";
 
 UndistortView::UndistortView()
+#if 0
 : m_AutoUpdate(false)
 , m_RequireSameSizeImage(true)
 , m_AssumeBinary(true)
 , m_BackgroundValue(0)
 , m_MaskNode(NULL)
 , m_ImageNode(NULL)
+#endif
 {
 }
 
@@ -55,6 +57,8 @@ void UndistortView::SetFocus()
 
 void UndistortView::CreateQtPartControl( QWidget *parent )
 {
+#if 0
+
   // Create GUI widgets from the Qt Designer's .ui file
   m_Controls.setupUi( parent );
 
@@ -63,16 +67,19 @@ void UndistortView::CreateQtPartControl( QWidget *parent )
 
   // Connect slots, so we are ready for action.
   connect( m_Controls.m_UpdateButton, SIGNAL(clicked()), this, SLOT(TryUpdate()) );
+#endif
 }
 
 void UndistortView::EnableControls(bool enabled)
 {
+#if 0
   m_Controls.m_UpdateButton->setEnabled(enabled && !m_AutoUpdate);
   m_Controls.m_Table->setEnabled(enabled);
   m_Controls.m_MaskNameLabel->setEnabled(enabled);
   m_Controls.m_MaskLabel->setEnabled(enabled);
   m_Controls.m_ImageNameLabel->setEnabled(enabled);
   m_Controls.m_ImageLabel->setEnabled(enabled);
+#endif
 }
 
 void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
@@ -92,12 +99,16 @@ void UndistortView::RetrievePreferenceValues()
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
 
+#if 0
   m_AutoUpdate = prefs->GetBool(ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME, false);
   m_AssumeBinary = prefs->GetBool(ImageStatisticsViewPreferencesPage::ASSUME_BINARY_NAME, true);
   m_RequireSameSizeImage = prefs->GetBool(ImageStatisticsViewPreferencesPage::REQUIRE_SAME_SIZE_IMAGE_NAME, true);
   m_BackgroundValue = prefs->GetInt(ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME, 0);
+#endif
 }
 
+
+#if 0
 void UndistortView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
@@ -144,7 +155,10 @@ void UndistortView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*
     this->Update(nodes);
   }
 }
+#endif
 
+
+#if 0
 bool UndistortView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
   bool isValid = true;
@@ -202,7 +216,10 @@ bool UndistortView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes
   } // end if nodes.count()
   return isValid;
 }
+#endif
 
+
+#if 0
 void UndistortView::TryUpdate()
 {
 
@@ -228,8 +245,10 @@ void UndistortView::TryUpdate()
     this->Update(nodes);
   }
 }
+#endif
 
 
+#if 0
 void UndistortView::Update(const QList<mitk::DataNode::Pointer>& nodes)
 {
   // We are assuming nodes is valid input, and not checking it any further.
@@ -300,7 +319,10 @@ void UndistortView::Update(const QList<mitk::DataNode::Pointer>& nodes)
     MITK_ERROR << "During ImageStatisticsView::Update, caught itk::ExceptionObject caused by:" << err.what() << std::endl;
   }
 }
+#endif
 
+
+#if 0
 void UndistortView::InitializeTable()
 {
   m_Controls.m_Table->clear();
@@ -319,7 +341,10 @@ void UndistortView::InitializeTable()
   headers << "count";
   m_Controls.m_Table->setHorizontalHeaderLabels(headers);
 }
+#endif
 
+
+#if 0
 template <typename PixelType>
 void
 UndistortView
@@ -664,3 +689,4 @@ UndistortView
     }
   }
 }
+#endif

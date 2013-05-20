@@ -36,17 +36,21 @@ class UndistortView : public QmitkAbstractView
 
     virtual void CreateQtPartControl(QWidget *parent);
 
+#if 0
     /// \brief called by QmitkAbstractView when DataManager's selection has changed
     virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
                                      const QList<mitk::DataNode::Pointer>& nodes );
+#endif
 
     /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
     virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   protected slots:
   
+#if 0
     /// \brief Checks to see if there is a valid selection, and if so, triggers Update with the currently selected nodes.
     void TryUpdate();
+#endif
 
   protected:
   
@@ -60,6 +64,7 @@ class UndistortView : public QmitkAbstractView
     /// \brief Enables/Disables all widget controls in m_Controls.
     void EnableControls(bool enabled);
 
+#if 0
     /// \brief Checks the GUI selection.
     bool IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes);
 
@@ -183,7 +188,10 @@ class UndistortView : public QmitkAbstractView
         itk::Image<TPixel1, VImageDimension1>* itkImage,
         itk::Image<TPixel2, VImageDimension2>* itkMask
         );
+#endif
 
+
+#if 0
     Ui::UndistortViewControls       m_Controls;
     bool                            m_AutoUpdate;
     bool                            m_RequireSameSizeImage;
@@ -191,7 +199,7 @@ class UndistortView : public QmitkAbstractView
     int                             m_BackgroundValue;
     mitk::DataNode::Pointer         m_MaskNode;
     mitk::DataNode::Pointer         m_ImageNode;
-
+#endif
 };
 
 #endif // UndistortView_h
