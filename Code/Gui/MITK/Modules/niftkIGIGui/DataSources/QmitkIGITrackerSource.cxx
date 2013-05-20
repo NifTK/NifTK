@@ -198,7 +198,7 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
 
         // Get Data Node.
         nodeName.append(" tracker");
-        mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString());
+        mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString(), false);
         if (node.IsNull())
         {
           MITK_ERROR << "Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
@@ -233,6 +233,11 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
         std::string propertyName = "niftk." + nodeName.toStdString();
         node->SetProperty(propertyName.c_str(), affTransProp);
         node->Modified();
+
+        if (this->m_DataStorage->GetNamedNode(nodeName.toStdString()) == NULL)
+        {
+          m_DataStorage->Add(node);
+        }
 
         // And output a status message to console.
         matrixAsString.append("\n");
