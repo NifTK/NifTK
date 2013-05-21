@@ -17,6 +17,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <mitkProperties.h>
+#include <Conversion/ImageConversion.h>
 
 
 namespace niftk
@@ -241,8 +242,10 @@ void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
     // FIXME: copy geometry from input image
 
     // this is pretty disgusting stuff
+    IplImage* temp = cvCreateImage(cvSize(m_Image->GetDimension(0), m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
+    outputImage = CreateMitkImage(temp);
+    cvReleaseImage(&temp);
 
-    outputImage = mitk::Image::New();
     output->SetData(outputImage);
   }
 
