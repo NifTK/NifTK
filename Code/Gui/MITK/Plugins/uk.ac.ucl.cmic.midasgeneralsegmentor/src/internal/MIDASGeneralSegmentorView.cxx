@@ -3696,8 +3696,8 @@ MIDASGeneralSegmentorView
   regionGrowingFilter->SetSegmentationContourImageOutsideValue(2);
   regionGrowingFilter->SetManualContourImageNonBorderValue(0);
   regionGrowingFilter->SetManualContourImageBorderValue(1);
-  regionGrowingFilter->SetLowerThreshold(lowerThreshold);
-  regionGrowingFilter->SetUpperThreshold(upperThreshold);
+  regionGrowingFilter->SetLowerThreshold(static_cast<TPixel>(lowerThreshold));
+  regionGrowingFilter->SetUpperThreshold(static_cast<TPixel>(upperThreshold));
   regionGrowingFilter->SetSeedPoints(*(itkSeeds.GetPointer()));
   regionGrowingFilter->Update();
 
@@ -3926,6 +3926,7 @@ void MIDASGeneralSegmentorView
   int minimumDistance = -1;
   int bestDistance = -1;
   IndexType bestIndex;
+  bestIndex.Fill(0);
   IndexType workingIndex;
   IndexType currentIndex;
   PixelType currentPixel = 0;
