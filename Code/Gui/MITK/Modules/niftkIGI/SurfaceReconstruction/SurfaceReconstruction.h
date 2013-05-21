@@ -23,7 +23,6 @@
 #include <mitkGenericProperty.h>
 //#include <opencv2/core/core.hpp>
 #include <itkMatrix.h>
-// FIXME: this is a bit of a cyclic dependency here: niftkOpenCV depends on niftkIGI
 #include <CameraCalibration/Undistortion.h>
 
 

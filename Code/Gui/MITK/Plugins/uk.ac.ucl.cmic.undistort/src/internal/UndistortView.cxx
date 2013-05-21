@@ -150,6 +150,16 @@ void UndistortView::OnGoButtonClick()
     // we should always have an item in the node-name column...
     assert(nameitem != 0);
 
+    QTableWidgetItem* calibparamitem = m_NodeTable->item(i, 1);
+
+    QTableWidgetItem* outputitem = m_NodeTable->item(i, 2);
+    // if there's no name for the output node then don't do anything
+    assert(outputitem != 0);
+    if (outputitem->text().isEmpty())
+    {
+      nameitem->setCheckState(Qt::Unchecked);
+    }
+
     if (nameitem->checkState() == Qt::Checked)
     {
       // ...but the name might be empty
@@ -170,8 +180,23 @@ void UndistortView::OnGoButtonClick()
           ci = m_UndistortionMap.insert(std::make_pair(nodename, undist)).first;
         }
 
-        // FIXME: output node?
-        ci->second->Run();
+        mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
+        if (outputNode.IsNull())
+        {
+          // Undistortion takes care of sizing the output image correcly, etc
+          // we just need to make sure the output node exists
+          outputNode = mitk::DataNode::New();
+          outputNode->SetName(outputitem->text().toStdString());
+          storage->Add(outputNode, inputNode);
+        }
+
+        // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
+        if (calibparamitem != 0)
+        {
+          niftk::Undistortion::LoadCalibration(calibparamitem->text().toStdString(), inputNode);
+        }
+
+        ci->second->Run(outputNode);
       }
       else
       {

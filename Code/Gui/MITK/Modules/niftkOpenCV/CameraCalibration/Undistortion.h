@@ -40,11 +40,18 @@ public:
   virtual ~Undistortion();
 
 
+public:
+  static void LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node);
+  static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
+
   // FIXME: output node as parameter?
-  virtual void Run();
+  virtual void Run(mitk::DataNode::Pointer output);
 
 
 protected:
+  void PrepareOutput(mitk::DataNode::Pointer output);
+  void ValidateInput(bool& recomputeCache);
+
   virtual void Process(const IplImage* input, IplImage* output, bool recomputeCache);
 
 

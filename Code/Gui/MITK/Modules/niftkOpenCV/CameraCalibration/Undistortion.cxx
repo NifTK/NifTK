@@ -14,6 +14,9 @@
 
 #include "Undistortion.h"
 #include <mitkCameraIntrinsicsProperty.h>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
+#include <mitkProperties.h>
 
 
 namespace niftk
@@ -22,6 +25,65 @@ namespace niftk
 
 const char*    Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
 const char*    Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node)
+{
+  mitk::Image::Pointer  img = dynamic_cast<mitk::Image*>(node->GetData());
+
+  LoadCalibration(filename, img);
+
+  node->SetProperty(s_CameraCalibrationPropertyName, img->GetProperty(s_CameraCalibrationPropertyName));
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::LoadCalibration(const std::string& filename, mitk::Image::Pointer img)
+{
+  assert(img.IsNotNull());
+
+  mitk::CameraIntrinsics::Pointer    cam = mitk::CameraIntrinsics::New();
+
+  if (!filename.empty())
+  {
+    // FIXME: we need to try different formats: plain text, opencv's xml
+    std::ifstream   file(filename.c_str());
+    if (!file.good())
+    {
+      throw std::runtime_error("Cannot open calibration file " + filename);
+    }
+    float   values[9 + 4];
+    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    {
+      if (!file.good())
+      {
+        throw std::runtime_error("Cannot read enough data from calibration file " + filename);
+      }
+      file >> values[i];
+    }
+    file.close();
+
+    cam->SetFocalLength(values[0], values[4]);
+    cam->SetPrincipalPoint(values[2], values[5]);
+    cam->SetDistorsionCoeffs(values[9], values[10], values[11], values[12]);
+  }
+  else
+  {
+    // invent some stuff based on image dimensions
+    unsigned int w = img->GetDimension(0);
+    unsigned int h = img->GetDimension(1);
+    
+    mitk::Point3D::ValueType  focal[3] = {std::max(w, h), std::max(w, h), 1};
+    mitk::Point3D::ValueType  princ[3] = {w / 2, h / 2, 1};
+    mitk::Point4D::ValueType  disto[4] = {0, 0, 0, 0};
+
+    cam->SetIntrinsics(mitk::Point3D(focal), mitk::Point3D(princ), mitk::Point4D(disto));
+  }
+
+  mitk::CameraIntrinsicsProperty::Pointer   prop = mitk::CameraIntrinsicsProperty::New(cam);
+  img->SetProperty(s_CameraCalibrationPropertyName, prop);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -44,7 +106,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::Run()
+void Undistortion::ValidateInput(bool& recomputeCache)
 {
   mitk::CameraIntrinsics::Pointer   nodeIntrinsic;
 
@@ -92,6 +154,18 @@ void Undistortion::Run()
     throw std::runtime_error("No image data to work on");
   }
 
+  int numComponents     = m_Image->GetPixelType().GetNumberOfComponents();
+  int bitsPerComponent  = m_Image->GetPixelType().GetBitsPerComponent();
+  // very limited set for now
+  if (numComponents != 3 && numComponents != 4)
+  {
+    throw std::runtime_error("Only 3 or 4 component images supported");
+  }
+  if (bitsPerComponent != 8)
+  {
+    throw std::runtime_error("Only images with 8 bit depth supported");
+  }
+
   // we may or may not have checked yet whether image has a property
   // even if node has one already we check anyway for sanity-check purposes
   mitk::BaseProperty::Pointer   imgprop = m_Node->GetProperty(s_CameraCalibrationPropertyName);
@@ -127,14 +201,82 @@ void Undistortion::Run()
     throw std::runtime_error("No camera calibration data found");
   }
 
-  bool  needToRecomputeDistortionCache = true;
   if (m_Intrinsics.IsNotNull())
   {
-    needToRecomputeDistortionCache = !m_Intrinsics->Equals(nodeIntrinsic.GetPointer());
+    recomputeCache = !m_Intrinsics->Equals(nodeIntrinsic.GetPointer());
     // we need to copy it because somebody could modify that instance of CameraIntrinsics
     m_Intrinsics = nodeIntrinsic->Clone();
   }
 
+
+
+
+  // FIXME: check that calibration data is in some meaningful range for our input image
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
+{
+  // FIXME: check that output image matches input image in type/depth/dimensions
+  //        create a new one if necessary
+
+  mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+  if (!outputImage.IsNull())
+  {
+    bool haswrongsize = false;
+    haswrongsize |= outputImage->GetDimension(0) != m_Image->GetDimension(0);
+    haswrongsize |= outputImage->GetDimension(1) != m_Image->GetDimension(1);
+    haswrongsize |= outputImage->GetDimension(2) != 1;
+
+    if (haswrongsize)
+    {
+      outputImage = mitk::Image::Pointer();
+    }
+  }
+
+
+  if (outputImage.IsNull())
+  {
+    // FIXME: copy geometry from input image
+
+    // this is pretty disgusting stuff
+
+    outputImage = mitk::Image::New();
+    output->SetData(outputImage);
+  }
+
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::Run(mitk::DataNode::Pointer output)
+{
+  bool  recomputeCache = true;
+  ValidateInput(recomputeCache);
+
+  PrepareOutput(output);
+
+
+  mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+  mitk::ImageWriteAccessor  outputAccess(outputImage);
+  void* outputPointer = outputAccess.GetData();
+  mitk::ImageReadAccessor   inputAccess(m_Image);
+  const void* inputPointer = inputAccess.GetData();
+
+  IplImage  outipl;
+  cvInitImageHeader(&outipl, cvSize((int) outputImage->GetDimension(0), (int) outputImage->GetDimension(1)), outputImage->GetPixelType().GetBitsPerComponent(), outputImage->GetPixelType().GetNumberOfComponents());
+  cvSetData(&outipl, outputPointer, outputImage->GetDimension(0) * (outputImage->GetPixelType().GetBitsPerComponent() / 8) * outputImage->GetPixelType().GetNumberOfComponents());
+
+  IplImage  inipl;
+  cvInitImageHeader(&inipl, cvSize((int) m_Image->GetDimension(0), (int) m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
+  cvSetData(&inipl, const_cast<void*>(inputPointer), m_Image->GetDimension(0) * (m_Image->GetPixelType().GetBitsPerComponent() / 8) * m_Image->GetPixelType().GetNumberOfComponents());
+
+
+  Process(&inipl, &outipl, recomputeCache);
+
+  output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
+  output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
 }
 
 
