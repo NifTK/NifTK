@@ -15,7 +15,7 @@
 #ifndef niftkImageConversion_h
 #define niftkImageConversion_h
 
-#include "niftkIGIExports.h"
+#include "niftkOpenCVExports.h"
 #include <mitkITKImageImport.txx>
 #include <opencv2/core/types_c.h>
 
@@ -28,7 +28,7 @@ namespace niftk
  * Supports RGB and RGBA images.
  * Known bug: does not take care of different channel layouts: BGR vs RGB!
  */
-mitk::Image::Pointer NIFTKIGI_EXPORT CreateMitkImage(const IplImage* image);
+mitk::Image::Pointer NIFTKOPENCV_EXPORT CreateMitkImage(const IplImage* image);
 
 
 } // namespace
