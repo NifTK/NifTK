@@ -140,7 +140,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
-              voxelIndex[a] = continuousIndex[a];
+              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
             }
             voxelIndex[m_AxisNumber] = m_SliceNumber;
             paintingRegion.SetIndex(voxelIndex);
@@ -193,7 +193,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
-              voxelIndex[a] = continuousIndex[a];
+              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
             }
             voxelIndex[m_AxisNumber] = m_SliceNumber;
             paintingRegion.SetIndex(voxelIndex);
