@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKFIDUCIALREGISTRATIONWIDGETDIALOG_H
-#define QMITKFIDUCIALREGISTRATIONWIDGETDIALOG_H
+#ifndef QmitkIGIFiducialRegistrationWidgetDialog_h
+#define QmitkIGIFiducialRegistrationWidgetDialog_h
 
 #include <QDialog>
 #include "ui_QmitkFiducialRegistrationWidgetDialog.h"

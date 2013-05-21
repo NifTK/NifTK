@@ -21,7 +21,7 @@ SET(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(BASIC_FILTERS_INTEGRATION_TESTS ${CXX_TEST_PATH}/BasicFiltersIntegrationTests)
+SET(BASIC_FILTERS_INTEGRATION_TESTS ${CXX_TEST_PATH}/BasicFiltersUnitTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
@@ -46,7 +46,7 @@ ADD_TEST(BF-LargestConnected ${BASIC_FILTERS_INTEGRATION_TESTS} itkLargestConnec
 #################################################################################
 # Build instructions.
 #################################################################################
-SET( BasicFiltersIntegrationTests_SRCS
+SET( BasicFiltersUnitTests_SRCS
 BoundaryValueRescaleIntensityImageFilterTest.cxx
 SetOutputVectorToCurrentPositionFilterTest.cxx
 VectorMagnitudeImageFilterTest.cxx
@@ -59,5 +59,5 @@ itkExcludeImageFilterTest.cxx
 itkLargestConnectedComponentFilterTest.cxx
 )
 
-ADD_EXECUTABLE(BasicFiltersIntegrationTests BasicFiltersIntegrationTests.cxx ${BasicFiltersIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(BasicFiltersIntegrationTests ${NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES} )
+ADD_EXECUTABLE(BasicFiltersUnitTests BasicFiltersUnitTests.cxx ${BasicFiltersUnitTests_SRCS})
+TARGET_LINK_LIBRARIES(BasicFiltersUnitTests ${NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES} )

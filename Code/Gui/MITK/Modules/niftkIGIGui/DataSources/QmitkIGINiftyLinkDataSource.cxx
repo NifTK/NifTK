@@ -91,7 +91,7 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
   {
     this->SetStatus("Listening Failed");
   }
-  DataSourceStatusUpdated.Send(this->GetIdentifier());
+  emit DataSourceStatusUpdated(this->GetIdentifier());
   return isListening;
 }
 
@@ -100,7 +100,7 @@ bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
 void QmitkIGINiftyLinkDataSource::ClientConnected()
 {
   this->SetStatus("Client Connected");
-  DataSourceStatusUpdated.Send(this->GetIdentifier());
+  emit DataSourceStatusUpdated(this->GetIdentifier());
 }
 
 
@@ -108,7 +108,7 @@ void QmitkIGINiftyLinkDataSource::ClientConnected()
 void QmitkIGINiftyLinkDataSource::ClientDisconnected()
 {
   this->SetStatus("Listening");
-  DataSourceStatusUpdated.Send(this->GetIdentifier());
+  emit DataSourceStatusUpdated(this->GetIdentifier());
 }
 
 
@@ -123,7 +123,7 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   QString descr = QString("Address=") +  clientInfo->GetClientIP()
       + QString(":") + clientInfo->GetClientPort();
   
-  //Don't set description for trackers
+  // Don't set description for trackers
   if ( clientInfo->GetDeviceType() != "Tracker" ) 
     this->SetDescription(descr.toStdString());
 
@@ -154,7 +154,7 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
   deviceInfo.append("\n");
 
   qDebug() << deviceInfo;
-  DataSourceStatusUpdated.Send(this->GetIdentifier());
+  emit DataSourceStatusUpdated(this->GetIdentifier());
 }
 
 

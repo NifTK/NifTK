@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINVIDIADATASOURCE_H
-#define QMITKIGINVIDIADATASOURCE_H
+#ifndef QmitkIGINVidiaDataSource_H
+#define QmitkIGINVidiaDataSource_H
 
 #include "niftkNVidiaGuiExports.h"
 #include <QmitkIGILocalDataSource.h>
@@ -24,7 +24,7 @@
 
 
 // some forward decls to avoid header pollution
-struct QmitkIGINVidiaDataSourceImpl;
+class QmitkIGINVidiaDataSourceImpl;
 class QGLContext;
 class QGLWidget;
 
@@ -42,6 +42,9 @@ public:
 
   mitkClassMacro(QmitkIGINVidiaDataSource, QmitkIGILocalDataSource);
   mitkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
+
+  // overridden here to ignore it! sdi source does not support background saving.
+  virtual void SaveInBackground(bool);
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact
@@ -79,6 +82,10 @@ public:
   void SetFieldMode(InterlacedBehaviour b);
 
 
+  static const char*      s_SDISequenceNumberPropertyName;      // mitk::IntProperty
+  static const char*      s_SDIFieldModePropertyName;           // mitk::IntProperty --> InterlacedBehaviour
+
+
 public:
   // to be used to share with the preview window, for example
   QGLWidget* GetCaptureContext();
@@ -89,12 +96,8 @@ public:
   int GetCaptureHeight();
   int GetRefreshRate();
   int GetTextureId(int stream);
+  const char* GetWireFormatString();
 
-  // caller needs to cleanup!
-  // exists only for integration with mitk, otherwise: do not use!
-  // note: input streams are stacked! all streams transfered at the same time
-//std::pair<IplImage*, int> GetRgbImage();
-  std::pair<IplImage*, int> GetRgbaImage(unsigned int sequencenumber);
 
 protected:
   virtual void GrabData();
@@ -126,11 +129,17 @@ private:
   // holds internals to prevent header pollution
   QmitkIGINVidiaDataSourceImpl*     m_Pimpl;
 
+  unsigned int            m_MostRecentSequenceNumber;
+
   unsigned int            m_MipmapLevel;
-  InterlacedBehaviour     m_FieldMode;
+  
 
   // used to correlate clock, frame numbers and other events
   std::ofstream           m_FrameMapLogFile;
+
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  bool  m_WasSavingMessagesPreviously;
 
 
   static const char*      s_NODE_NAME;

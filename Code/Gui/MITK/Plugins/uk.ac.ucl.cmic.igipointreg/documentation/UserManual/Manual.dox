@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igipointreg} The Point Based Registration View
+
+\image html icon.png "The Icon for the Point Based Registration View"
+
+\section PointRegIntro Introduction
+
+Do an introduction here.
+
+\section PointRegUsage Usage
+
+Put all usage information here.
+
+\section PointRegPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section PointRegReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

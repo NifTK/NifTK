@@ -23,7 +23,7 @@ SET(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES
   )
 
 # These are the names of the actual executable that gets run.  
-SET(REGISTRATION_TOOLBOX_INTEGRATION_TESTS ${CXX_TEST_PATH}/RegistrationToolboxIntegrationTests)
+SET(REGISTRATION_TOOLBOX_INTEGRATION_TESTS ${CXX_TEST_PATH}/RegistrationToolboxUnitTests)
 
 # This is where we should dump any output files.
 SET(TEMP_DIR ${NIFTK_BINARY_DIR}/Testing/Temporary )
@@ -287,7 +287,7 @@ ADD_TEST(JacTest-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS}  ForwardDifferenceD
 #################################################################################
 # Build instructions.
 #################################################################################
-SET( RegistrationToolboxIntegrationTests_SRCS
+SET( RegistrationToolboxUnitTests_SRCS
 SwitchableAffineTransformTest.cxx
 SwitchableAffine2DTransformTest.cxx
 EulerAffine2DJacobianTest.cxx
@@ -318,6 +318,6 @@ CrossCorrelationDerivativeForceFilterTest.cxx
 ForwardDifferenceDisplacementFieldJacobianDeterminantFilterTest.cxx
 )
 
-ADD_EXECUTABLE(RegistrationToolboxIntegrationTests RegistrationToolboxIntegrationTests.cxx ${RegistrationToolboxIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(RegistrationToolboxIntegrationTests ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES} )
+ADD_EXECUTABLE(RegistrationToolboxUnitTests RegistrationToolboxUnitTests.cxx ${RegistrationToolboxUnitTests_SRCS})
+TARGET_LINK_LIBRARIES(RegistrationToolboxUnitTests ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES} )
 

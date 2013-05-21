@@ -21,8 +21,7 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIDataType::IGIDataType()
-: m_DataSource("")
-, m_TimeStamp(0)
+: m_TimeStamp(0)
 , m_Duration(0)
 , m_FrameId(0)
 , m_IsSaved(false)

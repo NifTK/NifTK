@@ -39,6 +39,13 @@ unsigned int IGINVidiaDataType::GetSequenceNumber() const
 
 
 //-----------------------------------------------------------------------------
+unsigned int IGINVidiaDataType::GetCookie() const
+{
+  return m_MagicCookie;
+}
+
+
+//-----------------------------------------------------------------------------
 void IGINVidiaDataType::SetValues(unsigned int cookie, unsigned int sn, unsigned __int64 gputime)
 {
   m_MagicCookie = cookie;

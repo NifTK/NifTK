@@ -16,12 +16,13 @@ MITK_CREATE_MODULE(niftkCore
   EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   DEPENDS MitkExt 
-  PACKAGE_DEPENDS ITK
+  PACKAGE_DEPENDS ITK VTK
 )
 
 TARGET_LINK_LIBRARIES(niftkCore
   niftkcommon
   niftkITK
+  niftkVTK
   )
   
 IF(BUILD_TESTING)

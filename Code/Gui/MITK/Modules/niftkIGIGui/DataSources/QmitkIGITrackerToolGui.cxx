@@ -188,7 +188,7 @@ void QmitkIGITrackerToolGui::OnFiducialRegistrationClicked(void)
       connect(m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget, SIGNAL(AddedTrackingFiducial()), this, SLOT(OnGetTipPosition()) );
     }
 
-    m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget->SetMultiWidget(this->GetStdMultiWidget());
+    //m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget->SetMultiWidget(this->GetStdMultiWidget()); - Matt, no longer valid.
     m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget->SetImageFiducialsNode(tool->GetImageFiducialsNode());
     m_FiducialRegWidgetDialog->m_FiducialRegistrationWidget->SetTrackerFiducialsNode(tool->GetTrackerFiducialsNode());
 

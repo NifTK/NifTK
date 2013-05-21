@@ -12,12 +12,15 @@
 
 =============================================================================*/
 
-#ifndef VTKFUNCTIONS_H
-#define VTKFUNCTIONS_H
+#ifndef vtkFunctions_h
+#define vtkFunctions_h
 
 #include <NifTKConfigure.h>
 #include <niftkVTKWin32ExportHeader.h>
-
+#include <vtkPolyData.h>
+#include <vtkTransform.h>
+#include <vtkRandomSequence.h>
+#include <vtkCellLocator.h>
 
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b);
@@ -58,14 +61,11 @@ extern "C++" NIFTKVTK_WINEXPORT double GetBoundingBoxDiagonalLength(const double
 /** Copies n doubles from a to b, which must be allocated, and at least of length n. */
 extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, double *b);
 
-#include <vtkPolyData.h>
-#include <vtkTransform.h>
-#include <vtkRandomSequence.h>
 /** 
- * \brief Perturbs the points in a polydata object by with random values, using existing random number generator
- * \param the polydata 
- * \param the multipliers for the random number generator in each direction.
- * \param the random number generator
+ * \brief Perturbs the points in a polydata object by random values, using existing random number generator
+ * \param polydata the polydata
+ * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
+ * \param rng the random number generator
  * \return void
  */
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
@@ -73,28 +73,27 @@ extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
 
 /** 
  * \brief Perturbs the points in a polydata object by with random values, intialising and using it's own random number generator 
- * \param the polydata
- * \param the multipliers for the random number generator in each direction.
+ * \param polydata the polydata
+ * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
         double xerr, double yerr, double zerr);
 
 /** 
- * \brief Translates a polydata object using a transform
- * \param The polydata
- * \param The transform
+ * \brief Translates a polydata object using a transform.
+ * \param polydata the polydata
+ * \param transform the transform
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
   (vtkPolyData  * polydata, vtkTransform * transform);
 
 /** 
- * \brief
- * Creates a randomly determined vtktransform, using existing random number geneterator 
- * \param the transform to hold the result
- * \param The multipliers in each of the 6 degrees of freedom
- * \param The random number generator
+ * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
+ * \param transform the transform to hold the result
+ * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
+ * \param rng the random number generator
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
@@ -103,10 +102,9 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   vtkRandomSequence * rng);
 
 /** 
- * \brief
- * Creates a randomly determined vtktransform, using it's own random number generator 
- * \param the transform to hold the result
- * \param The multipliers in each of the 6 degrees of freedom
+ * \brief Creates a randomly determined vtktransform, using it's own random number generator
+ * \param transform the transform to hold the result
+ * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
  * \return void
  * */
 extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
@@ -115,7 +113,7 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
 
 /** 
  * \brief Normalises the values returned by a vtk random sequence to be centred on zero 
- * \param The random number sequence
+ * \param rng the random number sequence
  * \return The normalised value
  * */
 extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
@@ -124,8 +122,56 @@ extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
  * \brief Measures the euclidean distances between the points in two polydata, and sets the 
  * \brief scalars in both polydata to a color map to show the differences, min distance red, 
  * \brief max distance is blue. Mid distance is green
- * \param The two polydata, they need the same number of points
+ * \param source,target the two polydata, they need the same number of points
  * \return true if Ok, false if error
  */
 extern "C++" NIFTKVTK_WINEXPORT bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target );
-#endif
+
+/**
+ * \brief Returns the euclidean distance (in 3D) between a point and the closest point
+ * on a polydata mesh
+ * \param point the point
+ * \param target and the polydata
+ * \return the euclidean distance
+ */
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vtkPolyData * target);
+
+/**
+ * \brief Returns the euclidean distance (in 3D) between a point and the closest point
+ * on a polydata mesh
+ * \param point the point
+ * \param targetLocator a vtkCellLocator, built from the polydata
+ * \param cell  and optionally a vtkGenericCell 
+ * \return the euclidean distance
+ */
+extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
+
+/**
+ * \brief Calculates the euclidean distance (in 3D) between each point in the 
+ * source polydata and the closest point on the target polydata mesh.
+ * The result are stored the distances in the scalar values of the source
+ * \param source,target the source and target polydata.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
+
+/**
+ * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
+ * \param fileName full path of file name
+ * \param matrix a matrix
+ * \param bool true if successful and false otherwise
+ */
+extern "C++" NIFTKVTK_WINEXPORT bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent=false);
+
+/**
+ * \brief Loads the matrix from file, or else creates an Identity matrix, and the caller is responsible for deallocation.
+ * \param fileName
+ */
+extern "C++" NIFTKVTK_WINEXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent=false);
+
+/**
+ * \brief Checks matrices for equality.
+ * \param tolerance absolute difference between corresponding elements must be less than this number.
+ */
+extern "C++" NIFTKVTK_WINEXPORT bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const double& tolerance=0.01);
+
+#endif // vtkFunctions_h

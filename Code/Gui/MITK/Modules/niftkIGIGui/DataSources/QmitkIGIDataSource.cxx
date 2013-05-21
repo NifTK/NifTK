@@ -36,6 +36,13 @@ QmitkIGIDataSource::~QmitkIGIDataSource()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIDataSource::EmitDataSourceStatusUpdatedSignal()
+{
+  emit DataSourceStatusUpdated(this->GetIdentifier());
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSource::SetSavingMessages(bool isSaving)
 {
   // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!

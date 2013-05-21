@@ -902,9 +902,9 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
     flippedAxes[1] = signAP;
     flippedAxes[2] = signSI;
 
-    permutedBoundingBox[0] = geometry->GetExtent(dominantAxisRL);
-    permutedBoundingBox[1] = geometry->GetExtent(dominantAxisAP);
-    permutedBoundingBox[2] = geometry->GetExtent(dominantAxisSI);
+    permutedBoundingBox[0] = static_cast<int>(geometry->GetExtent(dominantAxisRL));
+    permutedBoundingBox[1] = static_cast<int>(geometry->GetExtent(dominantAxisAP));
+    permutedBoundingBox[2] = static_cast<int>(geometry->GetExtent(dominantAxisSI));
 
     permutedSpacing[0] = geometry->GetSpacing()[permutedAxes[0]];
     permutedSpacing[1] = geometry->GetSpacing()[permutedAxes[1]];

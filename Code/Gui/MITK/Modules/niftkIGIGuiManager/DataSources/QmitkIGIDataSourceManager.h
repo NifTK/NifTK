@@ -28,17 +28,18 @@
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
+#include <QmitkIGIDataSource.h>
 
 class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
+class QGridLayout;
 
 /**
  * \class QmitkIGIDataSourceManager
  * \brief Class to manage a list of QmitkIGIDataSources (trackers, ultra-sound machines, video etc).
  *
- * The SurgicalGuidanceView creates this widget to manage its tools. This widget acts like
- * a widget factory, setting up sockets, creating the appropriate widget, and instantiating
+ * This widget acts like a widget factory, setting up sources, instantiating
  * the appropriate GUI, and loading it into the grid layout owned by this widget.
  */
 class NIFTKIGIGUIMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_QmitkIGIDataSourceManager, public itk::Object
@@ -58,8 +59,10 @@ public:
   static const QColor DEFAULT_ERROR_COLOUR;
   static const QColor DEFAULT_WARNING_COLOUR;
   static const QColor DEFAULT_OK_COLOUR;
+  static const QColor DEFAULT_SUSPENDED_COLOUR;
   static const int    DEFAULT_FRAME_RATE;
   static const int    DEFAULT_CLEAR_RATE;
+  static const int    DEFAULT_TIMING_TOLERANCE;
   static const bool   DEFAULT_SAVE_ON_RECEIPT;
   static const bool   DEFAULT_SAVE_IN_BACKGROUND;
 
@@ -68,7 +71,7 @@ public:
    */
   void setupUi(QWidget* parent);
 
-  /*
+  /**
    * \brief Set the Data Storage, and also sets it into any registered tools.
    * \param dataStorage An MITK DataStorage, which is set onto any registered tools.
    */
@@ -92,12 +95,17 @@ public:
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
-  void SetFramesPerSecond(int framesPerSecond);
+  void SetFramesPerSecond(const int& framesPerSecond);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
-  void SetClearDataRate(int numberOfSeconds);
+  void SetClearDataRate(const int& numberOfSeconds);
+
+  /**
+   * \brief Called from the GUI to set the timing tolerance, in milliseconds, which is the time during which data is considered valid.
+   */
+  void SetTimingTolerance(const int& timingTolerance);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -118,6 +126,8 @@ public:
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
   void SetOKColour(QColor &colour);
+
+  void SetSuspendedColour(QColor &colour);
 
   /**
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
@@ -163,8 +173,26 @@ private slots:
 
   /**
    * \brief Updates the whole rendered scene, based on the available messages.
+   *
+   * More specifically, this method is called on a timer, and determines the
+   * effective refresh rate of the data storage, and hence of the screen,
+   * and also the widgets of the QmitkDataSourceManager itself. This method
+   * assumes that all the data sources are instantiated, and the right number
+   * of rows exists in the table.
    */
   void OnUpdateGui();
+
+  /**
+   * \brief Works out the table row, then updates the fields in the GUI.
+   *
+   * In comparison with OnUpdateGui, this method is just for updating the table
+   * of available sources. Importantly, there is a use case where we need to dynamically
+   * add rows. When a tool (typically a networked tool) provides information that
+   * there should be additional related sources, we have to dynamically create them.
+   *
+   * \see OnUpdateGui
+   */
+  void OnUpdateSourceView(const int& sourceIdentifier);
 
   /**
    * \brief Tells each data source to clean data, see mitk::IGIDataSource::CleanData().
@@ -180,7 +208,7 @@ private slots:
    * \brief Adds a data source to the table.
    * \return the added tool's identifier
    */
-  int AddSource(int sourcetype , int portnumber, NiftyLinkSocketObject* socket=NULL);
+  int AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourcetype, int portnumber, NiftyLinkSocketObject* socket=NULL);
 
   /**
    * \brief Removes a data source from the table, and completely destroys it.
@@ -213,14 +241,16 @@ private:
   QmitkStdMultiWidget                      *m_StdMultiWidget;
   QGridLayout                              *m_GridLayoutClientControls;
   QSet<int>                                 m_PortsInUse;
-  std::vector<mitk::IGIDataSource::Pointer> m_Sources;
+  std::vector<QmitkIGIDataSource::Pointer>  m_Sources;
   unsigned int                              m_NextSourceIdentifier;
 
   QColor                                    m_ErrorColour;
   QColor                                    m_WarningColour;
   QColor                                    m_OKColour;
+  QColor                                    m_SuspendedColour;
   int                                       m_FrameRate;
   int                                       m_ClearDataRate;
+  igtlUint64                                m_TimingTolerance;
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
@@ -234,20 +264,25 @@ private:
 
   /**
    * m_Sources is ordered, and MUST correspond to the order in the display QTableWidget,
-   * so this returns the row number or -1 if not found.
+   * so this returns the source number or -1 if not found.
    */
-  int GetRowNumberFromIdentifier(int toolIdentifier);
+  int GetSourceNumberFromIdentifier(int sourceIdentifier);
 
   /**
    * m_Sources is ordered, and MUST correspond to the order in the display QTableWidget,
    * so this returns the identifier or -1 if not found.
    */
-  int GetIdentifierFromRowNumber(int rowNumber);
+  int GetIdentifierFromSourceNumber(int sourceNumber);
 
   /**
-   * \brief Works out the table row, then updates the fields in the GUI.
+   * \brief
    */
-  void UpdateToolDisplay(int toolIdentifier);
+  void UpdateSourceView(const int& sourceIdentifier, bool instantiateRelatedSources);
+
+  /**
+   * \brief Called by UpdateSourceView to actually instantiate the extra rows needed dynamically.
+   */
+  void InstantiateRelatedSources(const int& rowNumber);
 
   /**
    * \brief Adds a message to the QmitkIGIDataSourceManager console.

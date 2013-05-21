@@ -821,10 +821,10 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
           }
           unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
           unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);
-          unsigned int numberOfEdgeSlicesToIgnore = numberOfSlices * 0.05; // ignore first and last 5 percent, as usually junk/blank.
+          unsigned int numberOfEdgeSlicesToIgnore = static_cast<unsigned int>(numberOfSlices * 0.05); // ignore first and last 5 percent, as usually junk/blank.
           unsigned int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
-          float fraction = (float)i/(float)(m_Widgets.size());
-          unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + remainingNumberOfSlices*fraction;
+          float fraction = static_cast<float>(i) / m_Widgets.size();
+          unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + static_cast<unsigned int>(remainingNumberOfSlices * fraction);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i \
               << ", minSlice=" << minSlice \

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINIFTYLINKDATASOURCE_H
-#define QMITKIGINIFTYLINKDATASOURCE_H
+#ifndef QmitkIGINiftyLinkDataSource_h
+#define QmitkIGINiftyLinkDataSource_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSource.h"
@@ -117,4 +117,3 @@ private:
 }; // end class
 
 #endif
-

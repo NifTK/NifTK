@@ -27,7 +27,7 @@
 #include "TrackedImageViewActivator.h"
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedImageCommand.h>
-#include <QmitkFileIOUtils.h>
+#include <mitkFileIOUtils.h>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -127,7 +127,7 @@ void TrackedImageView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedImageView::OnImageToProbeChanged()
 {
-  m_ImageToProbeTransform = Load4x4MatrixFromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath());
+  m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath().toStdString());
 }
 
 

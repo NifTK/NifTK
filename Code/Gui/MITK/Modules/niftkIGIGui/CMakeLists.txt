@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
-  INCLUDE_DIRS Common DataSources
+  INCLUDE_DIRS Common DataSources LaparoscopicSurgery
   DEPENDS MitkExt QmitkExt MitkIGTUI niftkCore niftkIGI
   PACKAGE_DEPENDS QT QVTK CTK
   QT_MODULE 

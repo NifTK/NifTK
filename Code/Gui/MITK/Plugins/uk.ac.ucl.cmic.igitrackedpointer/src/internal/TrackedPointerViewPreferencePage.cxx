@@ -19,17 +19,19 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QMessageBox>
-#include <QPushButton>
+#include <QCheckBox>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
+#include <mitkTrackedPointerCommand.h>
 
 const std::string TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
+const std::string TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME("update view coordinate");
 
 //-----------------------------------------------------------------------------
 TrackedPointerViewPreferencePage::TrackedPointerViewPreferencePage()
 : m_MainControl(0)
-, m_DummyButton(0)
+, m_UpdateViewCoordinate(0)
 , m_Initializing(false)
 , m_TrackedPointerViewPreferencesNode(0)
 {
@@ -72,8 +74,9 @@ void TrackedPointerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
 
-  m_DummyButton = new QPushButton();
-  formLayout->addRow("dummy", m_DummyButton);
+  m_UpdateViewCoordinate = new QCheckBox();
+  m_UpdateViewCoordinate->setChecked(false);
+  formLayout->addRow("update view coordinate", m_UpdateViewCoordinate);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -92,6 +95,7 @@ QWidget* TrackedPointerViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TrackedPointerViewPreferencePage::PerformOk()
 {
+  m_TrackedPointerViewPreferencesNode->PutBool(UPDATE_VIEW_COORDINATE_NAME, m_UpdateViewCoordinate->isChecked());
   return true;
 }
 
@@ -106,4 +110,6 @@ void TrackedPointerViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TrackedPointerViewPreferencePage::Update()
 {
+  bool updateViewCoordinate = m_TrackedPointerViewPreferencesNode->GetBool(UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerCommand::UPDATE_VIEW_COORDINATE_DEFAULT);
+  m_UpdateViewCoordinate->setChecked(updateViewCoordinate);
 }

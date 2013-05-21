@@ -30,6 +30,7 @@ SET(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
 
 # Note: vtkRendering seems to force a dependency on Qt. See below.
 SET(NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
+  niftkVTK
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   ${NIFTK_APPLICATION_LINK_LIBRARIES}
 )
@@ -90,6 +91,8 @@ IF(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
     SET(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
       niftkMakeLapUSProbeModel
+      niftkVTKIterativeClosestPointRegister
+      niftkVTKDistanceToSurface
     )
   
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
@@ -108,7 +111,6 @@ IF(SlicerExecutionModel_FOUND)
     IF(NIFTYREG_FOUND)
       SET(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
         niftkF3DControlGridToVTKPolyData
-        niftkVTKIterativeClosestPointRegister
       )
 
       if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
@@ -127,7 +129,7 @@ IF(SlicerExecutionModel_FOUND)
       SET(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
         ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
         niftkITK
-        niftkVTK
+        niftkVTKNiftyReg
         ${NIFTYREG_LIBRARIES}
       )
       

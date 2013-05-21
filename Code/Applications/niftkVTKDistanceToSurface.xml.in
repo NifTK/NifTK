@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Distance to Polydata</title>
+  <description><![CDATA[Measures the distance of a set of points to a vtk polydata surface.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+    <file>
+      <name>targetPolyData</name>
+      <flag>t</flag>
+      <longflag>target</longflag>
+      <description>Target VTK Poly Data.</description>
+      <label>Target</label>
+      <channel>input</channel>
+    </file>
+    <file>
+      <name>sourcePoints</name>
+      <flag>s</flag>
+      <longflag>source</longflag>
+      <description>Source Point List</description>
+      <label>Source</label>
+      <channel>input</channel>
+    </file>
+    <boolean>
+      <name>noVisualisation</name>
+      <longflag>novisualise</longflag>
+      <description>Turn off visualisation.</description>
+      <label>No Visualisation</label>
+      <channel>input</channel>
+    </boolean>
+  </parameters>
+
+  <parameters>
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+    <file>
+      <name>output</name>
+      <longflag>out</longflag>
+      <description>Write the transformed source to file.</description>
+      <label>Output</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+</executable>

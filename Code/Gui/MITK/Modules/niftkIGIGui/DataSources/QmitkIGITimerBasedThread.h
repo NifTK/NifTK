@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGITIMERBASEDTHREAD_H
-#define QMITKIGITIMERBASEDTHREAD_H
+#ifndef QmitkIGITimerBasedThread_h
+#define QmitkIGITimerBasedThread_h
 
 #include "niftkIGIGuiExports.h"
 #include <QThread>
@@ -75,4 +75,4 @@ private:
   QTimer *m_Timer;
 };
 
-#endif // QMITKIGITIMERBASEDTHREAD_H
+#endif

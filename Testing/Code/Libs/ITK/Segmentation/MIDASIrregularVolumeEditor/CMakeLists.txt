@@ -19,7 +19,7 @@ SET(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(MIDAS_IRREG_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASIrregularVolumeEditorIntegrationTests)
+SET(MIDAS_IRREG_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASIrregularVolumeEditorUnitTests)
 SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
@@ -42,7 +42,7 @@ ADD_TEST(MIDAS-Irreg-RegionGrowingImageFilter ${MIDAS_IRREG_INTEGRATION_TESTS} i
 #################################################################################
 # Build instructions.
 #################################################################################
-SET( MIDASIrregIntegrationTests_SRCS
+SET( MIDASIrregUnitTests_SRCS
 itkMIDASImageUpdateClearRegionProcessorTest.cxx
 itkMIDASImageUpdateCopyRegionProcessorTest.cxx
 itkMIDASImageUpdatePixelWiseSingleValueProcessorTest.cxx
@@ -54,5 +54,5 @@ itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
 itkMIDASRegionGrowingImageFilterTest2.cxx
 )
 
-ADD_EXECUTABLE(itkMIDASIrregularVolumeEditorIntegrationTests itkMIDASIrregularVolumeEditorIntegrationTests.cxx ${MIDASIrregIntegrationTests_SRCS})
-TARGET_LINK_LIBRARIES(itkMIDASIrregularVolumeEditorIntegrationTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )
+ADD_EXECUTABLE(itkMIDASIrregularVolumeEditorUnitTests itkMIDASIrregularVolumeEditorUnitTests.cxx ${MIDASIrregUnitTests_SRCS})
+TARGET_LINK_LIBRARIES(itkMIDASIrregularVolumeEditorUnitTests ${NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES} )
