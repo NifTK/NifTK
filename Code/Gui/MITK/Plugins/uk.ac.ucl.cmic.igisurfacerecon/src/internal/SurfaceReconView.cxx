@@ -263,13 +263,13 @@ void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer s
   // we'll not ever change the value of an existing property!
 
   // calibration data
-  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::Undistortion::s_CameraCalibrationPropertyName);
 
   // has the image been rectified?
   CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsRectifiedPropertyName);
 
   // has the image been undistorted?
-  CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsUndistortedPropertyName);
+  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsUndistortedPropertyName);
 }
 
 
@@ -318,7 +318,7 @@ void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image:
   }
 
   mitk::CameraIntrinsicsProperty::Pointer   prop = mitk::CameraIntrinsicsProperty::New(cam);
-  img->SetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName, prop);
+  img->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, prop);
 }
 
 

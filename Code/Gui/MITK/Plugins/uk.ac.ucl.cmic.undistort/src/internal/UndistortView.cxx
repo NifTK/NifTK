@@ -24,6 +24,9 @@
 #include <service/event/ctkEvent.h>
 #include <QMessageBox>
 #include <QTableWidgetItem>
+#include <QFileDialog>
+#include <Undistortion.h>
+#include <boost/typeof/typeof.hpp>
 
 
 const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.undistort";
@@ -84,12 +87,20 @@ void UndistortView::UpdateNodeTable()
       QTableWidgetItem* item = m_NodeTable->item(i, 0);
       if (item != 0)
       {
-        QString itemName = item->text();
+        std::string itemName = item->text().toStdString();
 
-        std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName.toStdString());
+        std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName);
         if (ni == nodeNamesLeftToAdd.end())
         {
+          // drop it off table
           m_NodeTable->removeRow(i);
+          // drop if off the cache
+          BOOST_AUTO(ci, m_UndistortionMap.find(itemName));
+          if (ci != m_UndistortionMap.end())
+          {
+            m_UndistortionMap.erase(ci);
+          }
+
           wasModified = true;
         }
         else
@@ -129,16 +140,103 @@ void UndistortView::UpdateNodeTable()
 
 
 //-----------------------------------------------------------------------------
+void UndistortView::OnGoButtonClick()
+{
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+
+  for (int i = 0; i < m_NodeTable->rowCount(); ++i)
+  {
+    QTableWidgetItem* nameitem = m_NodeTable->item(i, 0);
+    // we should always have an item in the node-name column...
+    assert(nameitem != 0);
+
+    if (nameitem->checkState() == Qt::Checked)
+    {
+      // ...but the name might be empty
+      std::string   nodename = nameitem->text().toStdString();
+      if (!nodename.empty())
+      {
+        mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(nodename);
+        // FIXME: is this a hard error? i'm a bit undecided...
+        assert(inputNode.IsNotNull());
+
+        // as long as we have an Undistortion object it will take care of validating itself
+        BOOST_AUTO(ci, m_UndistortionMap.find(nodename));
+        if (ci == m_UndistortionMap.end())
+        {
+          niftk::Undistortion*  undist = new niftk::Undistortion(inputNode);
+          // store the new Undistortion object in our cache
+          // note: insert() returns an iterator to the new insertion location
+          ci = m_UndistortionMap.insert(std::make_pair(nodename, undist)).first;
+        }
+
+        // FIXME: output node?
+        ci->second->Run();
+      }
+      else
+      {
+        std::cerr << "Undistortion: skipping node with empty name." << std::endl;
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::OnCellDoubleClicked(int row, int column)
+{
+  QTableWidgetItem* nameitem = m_NodeTable->item(row, 0);
+  if (nameitem != 0)
+  {
+    QString   nodename = nameitem->text();
+
+    switch (column)
+    {
+      // clicked on name
+      case 0:
+        break;
+      // clicked on param
+      case 1:
+      {
+        QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+        if (!file.isEmpty())
+        {
+          QTableWidgetItem*   filenameitem = new QTableWidgetItem;
+          filenameitem->setText(file);
+          filenameitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+          m_NodeTable->setItem(row, column, filenameitem);
+        }
+        break;
+      }
+      // clicked on output
+      case 2:
+        break;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::DataStorageEventListener(const mitk::DataNode* node)
+{
+  UpdateNodeTable();
+}
+
+
+//-----------------------------------------------------------------------------
 void UndistortView::CreateQtPartControl(QWidget* parent)
 {
   setupUi(parent);
   m_NodeTable->clear();
 
+  connect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
+  connect(m_DoItNowButton, SIGNAL(clicked()), this, SLOT(OnGoButtonClick()));
+
   // void QTableWidget::setCellWidget ( int row, int column, QWidget * widget )
 
   RetrievePreferenceValues();
 
-
+  // this thing fires off events when the data inside the node has been modified
   ctkServiceReference ref = mitk::uk_ac_ucl_cmic_undistort_Activator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
   {
@@ -146,6 +244,14 @@ void UndistortView::CreateQtPartControl(QWidget* parent)
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+  }
+
+  // FIXME: this doesnt work for some reason...
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  if (storage.IsNotNull())
+  {
+    storage->AddNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
+    storage->RemoveNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
   }
 
   UpdateNodeTable();

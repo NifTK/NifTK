@@ -19,6 +19,15 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_UndistortViewControls.h"
+#include <map>
+#include <string>
+
+
+// forward-decl
+namespace niftk
+{
+class Undistortion;
+}
 
 
 class UndistortView : public QmitkBaseView, public Ui::UndistortViewControls
@@ -51,6 +60,11 @@ protected slots:
 
 private slots:
 
+  // called by m_NodeTable
+  void OnCellDoubleClicked(int row, int column);
+
+  void OnGoButtonClick();
+
   /**
    * \brief We can listen to the event bus to trigger updates.
    */
@@ -58,9 +72,13 @@ private slots:
 
 private:
 
+  void DataStorageEventListener(const mitk::DataNode* node);
+
   /// \brief Retrieves the preferences, and sets the private member variables accordingly.
   void RetrievePreferenceValues();
 
+
+  std::map<std::string, niftk::Undistortion*>   m_UndistortionMap;
 };
 
 #endif // UndistortView_h
