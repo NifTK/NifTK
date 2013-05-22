@@ -48,6 +48,7 @@ public:
   static void LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node);
   static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
 
+  // FIXME: should undistorting an already undistorted image fail? or silently ignore?
   virtual void Run(mitk::DataNode::Pointer output);
 
 

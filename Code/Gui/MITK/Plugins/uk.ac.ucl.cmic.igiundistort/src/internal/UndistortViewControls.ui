@@ -100,7 +100,7 @@
        <item>
         <widget class="QRadioButton" name="m_AutomaticUpdateRadioButton">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Automatic update</string>

@@ -48,6 +48,11 @@ UndistortView::~UndistortView()
 void UndistortView::OnUpdate(const ctkEvent& event)
 {
   UpdateNodeTable();
+
+  if (m_AutomaticUpdateRadioButton->isChecked())
+  {
+    OnGoButtonClick();
+  }
 }
 
 
@@ -70,13 +75,28 @@ void UndistortView::UpdateNodeTable()
       std::string nodeName = node->GetName();
       if (!nodeName.empty())
       {
-        mitk::BaseData::Pointer data = node->GetData();
-        if (data.IsNotNull())
+        // only list nodes that are not output of our own undistortion
+        bool hasBeenCorrected = false;
+        mitk::BaseProperty::Pointer cbp = node->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName);
+        if (cbp.IsNotNull())
         {
-          mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
-          if (imageInNode.IsNotNull())
+          mitk::BoolProperty::Pointer c = dynamic_cast<mitk::BoolProperty*>(cbp.GetPointer());
+          if (c.IsNotNull())
           {
-            nodeNamesLeftToAdd.insert(nodeName);
+            hasBeenCorrected = c->GetValue();
+          }
+        }
+
+        if (!hasBeenCorrected)
+        {
+          mitk::BaseData::Pointer data = node->GetData();
+          if (data.IsNotNull())
+          {
+            mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
+            if (imageInNode.IsNotNull())
+            {
+              nodeNamesLeftToAdd.insert(nodeName);
+            }
           }
         }
       }
