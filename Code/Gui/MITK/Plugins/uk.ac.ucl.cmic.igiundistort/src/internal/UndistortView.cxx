@@ -18,7 +18,7 @@
 #include <berryIBerryPreferences.h>
 #include "UndistortView.h"
 #include "UndistortViewPreferencesPage.h"
-#include "uk_ac_ucl_cmic_undistort_Activator.h"
+#include "uk_ac_ucl_cmic_igiundistort_Activator.h"
 #include <service/event/ctkEventConstants.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
@@ -29,7 +29,7 @@
 #include <boost/typeof/typeof.hpp>
 
 
-const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.undistort";
+const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
 
 
 //-----------------------------------------------------------------------------
@@ -262,10 +262,10 @@ void UndistortView::CreateQtPartControl(QWidget* parent)
   RetrievePreferenceValues();
 
   // this thing fires off events when the data inside the node has been modified
-  ctkServiceReference ref = mitk::uk_ac_ucl_cmic_undistort_Activator::getContext()->getServiceReference<ctkEventAdmin>();
+  ctkServiceReference ref = mitk::uk_ac_ucl_cmic_igiundistort_Activator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
   {
-    ctkEventAdmin* eventAdmin = mitk::uk_ac_ucl_cmic_undistort_Activator::getContext()->getService<ctkEventAdmin>(ref);
+    ctkEventAdmin* eventAdmin = mitk::uk_ac_ucl_cmic_igiundistort_Activator::getContext()->getService<ctkEventAdmin>(ref);
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);

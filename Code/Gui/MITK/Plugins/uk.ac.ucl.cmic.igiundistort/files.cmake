@@ -17,7 +17,7 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_undistort_Activator.cxx
+  uk_ac_ucl_cmic_igiundistort_Activator.cxx
   UndistortView.cxx
   UndistortViewPreferencesPage.cxx
 )
@@ -27,7 +27,7 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/uk_ac_ucl_cmic_undistort_Activator.h
+  src/internal/uk_ac_ucl_cmic_igiundistort_Activator.h
   src/internal/UndistortView.h
   src/internal/UndistortViewPreferencesPage.h
 )

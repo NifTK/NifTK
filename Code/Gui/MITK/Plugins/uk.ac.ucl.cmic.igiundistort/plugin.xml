@@ -5,7 +5,7 @@
     <category 
       id="org.mitk.views.general" 
       name="MITK General"/>   
-    <view id="uk.ac.ucl.cmic.undistort"
+    <view id="uk.ac.ucl.cmic.igiundistort"
           name="Distortion Correction"
           category="org.mitk.views.general"
           class="UndistortView"
@@ -13,8 +13,8 @@
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.undistortpreferencespage" name="Distortion Correction" class="UndistortViewPreferencesPage">
-      <keywordreference id="uk.ac.ucl.cmic.undistortpreferencespagekeywords"></keywordreference>
+    <page id="uk.ac.ucl.cmic.igiundistortpreferencespage" name="Distortion Correction" class="UndistortViewPreferencesPage">
+      <keywordreference id="uk.ac.ucl.cmic.igiundistortpreferencespagekeywords"></keywordreference>
     </page>
   </extension>
   

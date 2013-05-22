@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_undistort)
+project(uk_ac_ucl_cmic_igiundistort)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE UNDISTORT_EXPORT
+  EXPORT_DIRECTIVE IGIUNDISTORT_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES niftkIGIGui niftkOpenCV
 )

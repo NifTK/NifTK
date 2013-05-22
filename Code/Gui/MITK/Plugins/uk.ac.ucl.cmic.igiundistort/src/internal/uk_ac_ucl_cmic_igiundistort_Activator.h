@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef uk_ac_ucl_cmic_undistort_Activator_h
-#define uk_ac_ucl_cmic_undistort_Activator_h
+#ifndef uk_ac_ucl_cmic_igiundistort_Activator_h
+#define uk_ac_ucl_cmic_igiundistort_Activator_h
 
 #include <ctkPluginActivator.h>
 
 namespace mitk {
 
-class uk_ac_ucl_cmic_undistort_Activator :
+class uk_ac_ucl_cmic_igiundistort_Activator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
@@ -34,8 +34,8 @@ public:
 private:
   static ctkPluginContext* m_PluginContext;
 
-}; // uk_ac_ucl_cmic_undistort_Activator
+}; // uk_ac_ucl_cmic_igiundistort_Activator
 
 }
 
-#endif // uk_ac_ucl_cmic_undistort_Activator_h
+#endif // uk_ac_ucl_cmic_igiundistort_Activator_h
