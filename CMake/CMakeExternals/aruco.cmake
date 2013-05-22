@@ -23,7 +23,7 @@ IF(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
 ENDIF()
 
 SET(proj aruco)
-SET(proj_DEPENDENCIES MITK)
+SET(proj_DEPENDENCIES OpenCV)
 SET(aruco_DEPENDS ${proj})
 
 IF(NOT DEFINED aruco_DIR)
