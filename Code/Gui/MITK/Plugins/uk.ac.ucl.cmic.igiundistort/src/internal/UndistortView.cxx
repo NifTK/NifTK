@@ -125,7 +125,7 @@ void UndistortView::UpdateNodeTable()
       m_NodeTable->setItem(j, 0, nodenameitem);
 
       QTableWidgetItem* outputitem = new QTableWidgetItem;
-      outputitem->setText(s + "-corrected");
+      outputitem->setText(s + "-undistorted");
       outputitem->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       m_NodeTable->setItem(j, 2, outputitem);
 

@@ -25,7 +25,9 @@ namespace niftk
 {
 
 
-// caches distortion maps and node parameters
+// Idea is to create one of these Undistortion objects for a given DataNode,
+// which then does all the magic for computing the undistortion and caches some data.
+// Output, however, is not tied into an instance of the class. Instead it's passed into Run().
 class NIFTKOPENCV_EXPORT Undistortion
 {
 public:
@@ -35,25 +37,29 @@ public:
 
 
 public:
-  // passed-in node has to have right property
+  // node should have Image data attached, at least when Run() is called.
   Undistortion(mitk::DataNode::Pointer node);
   virtual ~Undistortion();
 
 
 public:
+  // loads calibration from a text file (not the opencv xml format!).
+  // if filename is empty then it will dream up some parameters for the given image.
   static void LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node);
   static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
 
-  // FIXME: output node as parameter?
   virtual void Run(mitk::DataNode::Pointer output);
 
 
 protected:
+  // make sure that output node has an image attached with the correct size/etc.
   void PrepareOutput(mitk::DataNode::Pointer output);
+  // check that we have an image to work on, it has the correct depth/channels, etc
   void ValidateInput(bool& recomputeCache);
 
   // FIXME: presumably this is virtual so that we could derive a gpu version.
   //        but then the ipl parameters are no use!
+  // throws exceptions if anything is wrong.
   virtual void Process(const IplImage* input, IplImage* output, bool recomputeCache);
 
 
