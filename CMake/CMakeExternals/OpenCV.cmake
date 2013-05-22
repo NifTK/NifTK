@@ -28,13 +28,11 @@ set(OpenCV_DEPENDS ${proj})
 
 if(NOT DEFINED OpenCV_DIR)
 
-  # same as mitk's
-  set(opencv_url http://mitk.org/download/thirdparty/OpenCV-2.4.2.tar.bz2)
-  set(opencv_url_md5 d5d13c4a65dc96cdfaad54767e428215)
+  niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
   
   ExternalProject_Add(${proj}
-    URL ${opencv_url}
-    URL_MD5 ${opencv_url_md5}
+    URL ${NIFTK_LOCATION_OPENCV}
+    URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
     BINARY_DIR ${proj}-build
     UPDATE_COMMAND  ""
     INSTALL_COMMAND ""
