@@ -481,11 +481,25 @@ mark_as_advanced(CUDA_TOOLKIT_INCLUDE)
 set (CUDA_NVCC_INCLUDE_ARGS_USER "")
 set (CUDA_INCLUDE_DIRS ${CUDA_TOOLKIT_INCLUDE})
 
+# on cuda 5.0 (windows), the library path is something like:
+#  lib/win32/
+#  lib/x64/
+if(MSVC)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_LIB_PATH_FRAGMENT "lib/x64" )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BOOST_LIBRARY "lib/win32" )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+else(MSVC)
+  set(CUDA_LIB_PATH_FRAGMENT "")
+endif(MSVC)
+
 macro(FIND_LIBRARY_LOCAL_FIRST _var _names _doc)
   find_library(${_var}
     NAMES ${_names}
     PATHS "${CUDA_TOOLKIT_ROOT_DIR}/lib64"
           "${CUDA_TOOLKIT_ROOT_DIR}/lib"
+          "${CUDA_TOOLKIT_ROOT_DIR}/${CUDA_LIB_PATH_FRAGMENT}"
     ENV CUDA_LIB_PATH
     DOC ${_doc}
     NO_DEFAULT_PATH
