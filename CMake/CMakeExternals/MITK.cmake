@@ -27,6 +27,9 @@ SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's o
 IF(QT_FOUND)
   SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
 ENDIF(QT_FOUND)
+IF(BUILD_OPENCV)
+  SET(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
+ENDIF(BUILD_OPENCV)
 SET(MITK_DEPENDS ${proj})
 
 IF(NOT DEFINED MITK_DIR)
@@ -457,7 +460,7 @@ IF(NOT DEFINED MITK_DIR)
         -DMITK_USE_Boost:BOOL=ON
         -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
-        -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
+        -DMITK_USE_OpenCV:BOOL=${BUILD_OPENCV}
         -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
         -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}                        # FindBoost expectes BOOST_ROOT  
@@ -468,6 +471,7 @@ IF(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+		-DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )

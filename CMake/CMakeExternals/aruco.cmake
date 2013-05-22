@@ -23,7 +23,7 @@ IF(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
 ENDIF()
 
 SET(proj aruco)
-SET(proj_DEPENDENCIES MITK)
+SET(proj_DEPENDENCIES OpenCV)
 SET(aruco_DEPENDS ${proj})
 
 IF(NOT DEFINED aruco_DIR)
@@ -38,7 +38,7 @@ IF(NOT DEFINED aruco_DIR)
         ${EP_COMMON_ARGS}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
-        -DOpenCV_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/MITK-build/OpenCV-build
+        -DOpenCV_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/OpenCV-build
      DEPENDS ${proj_DEPENDENCIES}
     )
 

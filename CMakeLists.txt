@@ -148,6 +148,7 @@ OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 OPTION(BUILD_TESTING "Build Unit tests." OFF)
 OPTION(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
+OPTION(BUILD_OPENCV "Build and use OpenCV for NifTK and MITK." ON)
 OPTION(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 IF(CMAKE_BUILD_TYPE MATCHES "Debug")
   SET(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -211,6 +212,7 @@ SET(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 SET(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
+SET(NIFTK_VERSION_OPENCV "2.4.2" CACHE STRING "Version of OpenCV" FORCE)
 SET(NIFTK_VERSION_MITK "7596b036f2" CACHE STRING "Version of MITK" FORCE)
 SET(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
 SET(NIFTK_VERSION_NIFTYLINK "670cde1afd" CACHE STRING "Version of NiftyLink" FORCE)
@@ -230,6 +232,7 @@ SET(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-$
 SET(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
 SET(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
 SET(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
+SET(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.bz2" CACHE STRING "Location of OpenCV" FORCE)
 SET(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 SET(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl" FORCE)
 SET(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
@@ -411,6 +414,14 @@ ENDIF(BUILD_GUI)
 IF(BUILD_GUI)
   SET(NIFTK_GENERATE_DOXYGEN_HELP ON)
 ENDIF(BUILD_GUI)
+
+IF(BUILD_IGI)
+  IF(NOT BUILD_OPENCV)
+    MESSAGE(FATAL_ERROR "Need BUILD_OPENCV turned ON for BUILD_IGI.")
+  ENDIF(NOT BUILD_OPENCV)
+  # FIXME: turn this on automatically? or turn of BUILD_IGI?
+  #SET(BUILD_OPENCV ON)
+ENDIF(BUILD_IGI)
 
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
@@ -611,12 +622,26 @@ ENDIF(VTK_FOUND)
 
 
 ######################################################################
+# Find OpenCV.
+######################################################################
+
+# FIXME
+IF(BUILD_OPENCV)
+  FIND_PACKAGE(OpenCV REQUIRED)
+  IF(OpenCV_FOUND)
+    MESSAGE("Found OpenCV")
+  ENDIF(OpenCV_FOUND)
+ENDIF(BUILD_OPENCV)
+
+
+######################################################################
 # Find MITK. Even though MITK can be built without Qt, CTK can't.
 ######################################################################
 SET(MITK_USE_EXT 1)
 SET(MITK_USE_Boost 1)
 SET(MITK_USE_BLUEBERRY ${QT_FOUND})
 SET(MITK_USE_QT ${QT_FOUND})
+SET(MITK_USE_OpenCV ${BUILD_OPENCV})
 
 IF(NIFTK_GENERATE_DOXYGEN_HELP)
   SET(BLUEBERRY_USE_QT_HELP ON) 
