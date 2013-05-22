@@ -125,7 +125,6 @@ BoundaryValueRescaleIntensityImageFilter<TImageType>
     static_cast<RealType>( m_InputMinimum ) * m_Scale;
 
   niftkitkDebugMacro(<<"BeforeThreadedGenerateData():Shift is:" << m_Shift << ", scale is:" << m_Scale);
-  
 }
 
 template <class TImageType>
@@ -156,7 +155,18 @@ BoundaryValueRescaleIntensityImageFilter<TImageType>
           result = ( result > m_OutputMaximum ) ? m_OutputMaximum : result;
           result = ( result < m_OutputMinimum ) ? m_OutputMinimum : result;
 
-          outputIterator.Set((PixelType)result);
+          int resultRoundedDown = static_cast<int>(result);
+          int resultRoundedHalfUp = static_cast<int>(result + 0.5);
+          PixelType resultCasted = static_cast<PixelType>(result);
+
+          if (resultCasted != resultRoundedDown && resultCasted != resultRoundedHalfUp)
+          {
+            outputIterator.Set((PixelType)result);
+          }
+          else
+          {
+            outputIterator.Set((PixelType)resultRoundedHalfUp);
+          }
         }
       else
         {
