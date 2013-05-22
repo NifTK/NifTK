@@ -23,6 +23,7 @@
 #include <mitkGenericProperty.h>
 //#include <opencv2/core/core.hpp>
 #include <itkMatrix.h>
+#include <CameraCalibration/Undistortion.h>
 
 
 // forward-decl
@@ -66,9 +67,7 @@ public:
 
 
   // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
-  static const char*    s_ImageIsUndistortedPropertyName;       // mitk::BoolProperty
   static const char*    s_ImageIsRectifiedPropertyName;         // mitk::BoolProperty
-  static const char*    s_CameraCalibrationPropertyName;        // mitk::CameraIntrinsicsProperty
   static const char*    s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
 
 

@@ -263,62 +263,13 @@ void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer s
   // we'll not ever change the value of an existing property!
 
   // calibration data
-  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::Undistortion::s_CameraCalibrationPropertyName);
 
   // has the image been rectified?
   CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsRectifiedPropertyName);
 
   // has the image been undistorted?
-  CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsUndistortedPropertyName);
-}
-
-
-//-----------------------------------------------------------------------------
-// FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-void SurfaceReconView::LoadCalibration(const std::string& filename, mitk::Image::Pointer img)
-{
-  assert(img.IsNotNull());
-
-  mitk::CameraIntrinsics::Pointer    cam = mitk::CameraIntrinsics::New();
-
-  if (!filename.empty())
-  {
-    // FIXME: we need to try different formats: plain text, opencv's xml
-    std::ifstream   file(filename.c_str());
-    if (!file.good())
-    {
-      throw std::runtime_error("Cannot open calibration file " + filename);
-    }
-    float   values[9 + 4];
-    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
-    {
-      if (!file.good())
-      {
-        throw std::runtime_error("Cannot read enough data from calibration file " + filename);
-      }
-      file >> values[i];
-    }
-    file.close();
-
-    cam->SetFocalLength(values[0], values[4]);
-    cam->SetPrincipalPoint(values[2], values[5]);
-    cam->SetDistorsionCoeffs(values[9], values[10], values[11], values[12]);
-  }
-  else
-  {
-    // invent some stuff based on image dimensions
-    unsigned int w = img->GetDimension(0);
-    unsigned int h = img->GetDimension(1);
-    
-    mitk::Point3D::ValueType  focal[3] = {(float) std::max(w, h), (float) std::max(w, h), 1};
-    mitk::Point3D::ValueType  princ[3] = {(float) w / 2, (float) h / 2, 1};
-    mitk::Point4D::ValueType  disto[4] = {0, 0, 0, 0};
-
-    cam->SetIntrinsics(mitk::Point3D(focal), mitk::Point3D(princ), mitk::Point4D(disto));
-  }
-
-  mitk::CameraIntrinsicsProperty::Pointer   prop = mitk::CameraIntrinsicsProperty::New(cam);
-  img->SetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName, prop);
+  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsUndistortedPropertyName);
 }
 
 
@@ -413,8 +364,8 @@ void SurfaceReconView::DoSurfaceReconstruction()
           }
 
           // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-          LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
-          LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+          niftk::Undistortion::LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
+          niftk::Undistortion::LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
           LoadStereoRig(StereoRigTransformationPathLineEdit->text().toStdString(), rightImage);
 
           CopyImagePropsIfNecessary(leftNode,  leftImage);

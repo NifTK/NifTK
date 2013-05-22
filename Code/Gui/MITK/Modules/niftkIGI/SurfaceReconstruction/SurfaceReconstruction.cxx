@@ -25,9 +25,7 @@ namespace niftk
 {
 
 
-const char*    SurfaceReconstruction::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
 const char*    SurfaceReconstruction::s_ImageIsRectifiedPropertyName        = "niftk.ImageIsRectified";
-const char*    SurfaceReconstruction::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
 const char*    SurfaceReconstruction::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
 
 
@@ -130,8 +128,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
           {
             // it's an error to request point cloud and not have a calibration!
             // FIXME: move this to the top of the method!
-            mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
-            mitk::BaseProperty::Pointer       cam2bp = image2->GetProperty(niftk::SurfaceReconstruction::s_CameraCalibrationPropertyName);
+            mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+            mitk::BaseProperty::Pointer       cam2bp = image2->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
             if (cam1bp.IsNull() || cam2bp.IsNull())
             {
               throw std::runtime_error("Image has to have a calibration for point cloud output");

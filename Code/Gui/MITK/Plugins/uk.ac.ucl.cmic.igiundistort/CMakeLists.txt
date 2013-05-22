@@ -12,13 +12,10 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-SET(MODULE_TESTS
-  mitkIGIDataSourceTest.cxx
-  mitkTrackedImageCommandTest.cxx
-  mitkTrackedPointerCommandTest.cxx
-  QDSCommonTest.cxx
-)
+project(uk_ac_ucl_cmic_igiundistort)
 
-set(MODULE_CUSTOM_TESTS
+MACRO_CREATE_MITK_CTK_PLUGIN(
+  EXPORT_DIRECTIVE IGIUNDISTORT_EXPORT
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDENCIES niftkIGIGui niftkOpenCV
 )

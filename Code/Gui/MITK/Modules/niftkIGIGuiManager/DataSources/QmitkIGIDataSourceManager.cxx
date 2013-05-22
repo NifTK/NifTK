@@ -770,7 +770,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     emit UpdateGuiFinishedFinishedRendering(idNow);
 
     // Try to encourage rest of event loop to process before the timer swamps it.
-    QCoreApplication::processEvents();
+    //QCoreApplication::processEvents();
   }
   emit UpdateGuiEnd(idNow);
 }

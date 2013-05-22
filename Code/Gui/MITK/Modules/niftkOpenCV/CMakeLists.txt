@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
   INCLUDE_DIRS CameraCalibration VideoProcessing Registration Tracking demo
-  DEPENDS mitkOpenCVVideoSupport MitkExt
+  DEPENDS mitkOpenCVVideoSupport MitkExt mitkCameraCalibration
   PACKAGE_DEPENDS OpenCV
 )
 
