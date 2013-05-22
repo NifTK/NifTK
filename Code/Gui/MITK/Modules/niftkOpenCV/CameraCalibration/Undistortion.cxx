@@ -89,7 +89,7 @@ void Undistortion::LoadCalibration(const std::string& filename, mitk::Image::Poi
 
 //-----------------------------------------------------------------------------
 Undistortion::Undistortion(mitk::DataNode::Pointer node)
-  : m_Node(node)
+  : m_Node(node), m_MapX(0), m_MapY(0)
 {
 }
 
@@ -97,12 +97,50 @@ Undistortion::Undistortion(mitk::DataNode::Pointer node)
 //-----------------------------------------------------------------------------
 Undistortion::~Undistortion()
 {
+  if (m_MapX)
+  {
+    cvReleaseImage(&m_MapX);
+  }
+  if (m_MapY)
+  {
+    cvReleaseImage(&m_MapY);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void Undistortion::Process(const IplImage* input, IplImage* output, bool recomputeCache)
 {
+  if (recomputeCache)
+  {
+    if (m_MapX)
+    {
+      cvReleaseImage(&m_MapX);
+    }
+    if (m_MapY)
+    {
+      cvReleaseImage(&m_MapY);
+    }
+  }
+
+  assert(m_Intrinsics.IsNotNull());
+  if (m_MapX == 0)
+  {
+    assert(m_MapY == 0);
+  
+    m_MapX = cvCreateImage(cvSize(input->width, input->height), IPL_DEPTH_32F, 1);
+    m_MapY = cvCreateImage(cvSize(input->width, input->height), IPL_DEPTH_32F, 1);
+
+    // the old-style CvMat will reference the memory in the new-style cv::Mat.
+    // that's why we keep these in separate variables.
+    cv::Mat   cammat  = m_Intrinsics->GetCameraMatrix();
+    cv::Mat   distmat = m_Intrinsics->GetDistorsionCoeffs();
+    CvMat cam  = cammat;
+    CvMat dist = distmat;
+    cvInitUndistortMap(&cam, &dist, m_MapX, m_MapY);
+  }
+
+  cvRemap(input, output, m_MapX, m_MapY, CV_INTER_LINEAR /*+CV_WARP_FILL_OUTLIERS*/, cvScalarAll(0));
 }
 
 
@@ -205,10 +243,17 @@ void Undistortion::ValidateInput(bool& recomputeCache)
   if (m_Intrinsics.IsNotNull())
   {
     recomputeCache = !m_Intrinsics->Equals(nodeIntrinsic.GetPointer());
+    if (recomputeCache)
+    {
+      // we need to copy it because somebody could modify that instance of CameraIntrinsics
+      m_Intrinsics = nodeIntrinsic->Clone();
+    }
+  }
+  else
+  {
     // we need to copy it because somebody could modify that instance of CameraIntrinsics
     m_Intrinsics = nodeIntrinsic->Clone();
   }
-
 
 
 
@@ -278,8 +323,10 @@ void Undistortion::Run(mitk::DataNode::Pointer output)
 
   Process(&inipl, &outipl, recomputeCache);
 
+  // copy relevant props to output node
   output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
   output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
+  output->Modified();
 }
 
 

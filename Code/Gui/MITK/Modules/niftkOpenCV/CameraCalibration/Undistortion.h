@@ -52,6 +52,8 @@ protected:
   void PrepareOutput(mitk::DataNode::Pointer output);
   void ValidateInput(bool& recomputeCache);
 
+  // FIXME: presumably this is virtual so that we could derive a gpu version.
+  //        but then the ipl parameters are no use!
   virtual void Process(const IplImage* input, IplImage* output, bool recomputeCache);
 
 
@@ -62,6 +64,10 @@ protected:
   mitk::Image::Pointer        m_Image;
   // the intrinsic parameters belonging to the image
   mitk::CameraIntrinsics::Pointer     m_Intrinsics;
+
+  // cached for repeated use in Process()
+  IplImage*        m_MapX;
+  IplImage*        m_MapY;
 };
 
 
