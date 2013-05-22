@@ -284,8 +284,6 @@ void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
 
   if (outputImage.IsNull())
   {
-    // FIXME: copy geometry from input image
-
     // this is pretty disgusting stuff
     IplImage* temp = cvCreateImage(cvSize(m_Image->GetDimension(0), m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
     outputImage = CreateMitkImage(temp);
@@ -294,6 +292,10 @@ void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
     output->SetData(outputImage);
   }
 
+  mitk::Geometry3D::Pointer   geomp = m_Image->GetGeometry();
+  // FIXME: should clone it!
+  //mitk::Geometry3D* geom = dynamic_cast<mitk::Geometry3D*>(geomp->Clone().GetPointer());
+  outputImage->SetGeometry(geomp);
 }
 
 
