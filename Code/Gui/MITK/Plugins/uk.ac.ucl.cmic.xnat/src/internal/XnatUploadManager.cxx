@@ -12,8 +12,9 @@ extern "C"
 }
 
 #include <ctkXnatException.h>
+#include <ctkXnatSettings.h>
+
 #include "XnatModel.h"
-#include "XnatSettings.h"
 #include "XnatTreeView.h"
 #include "XnatUploadDialog.h"
 
@@ -24,7 +25,7 @@ public:
   XnatTreeView* xnatTreeView;
   XnatUploadDialog* uploadDialog;
 
-  XnatSettings* settings;
+  ctkXnatSettings* settings;
 
   QString currDir;
   QStringList userFilePaths;
@@ -46,7 +47,7 @@ XnatUploadManager::~XnatUploadManager()
 {
 }
 
-void XnatUploadManager::setSettings(XnatSettings* settings)
+void XnatUploadManager::setSettings(ctkXnatSettings* settings)
 {
   Q_D(XnatUploadManager);
   d->settings = settings;

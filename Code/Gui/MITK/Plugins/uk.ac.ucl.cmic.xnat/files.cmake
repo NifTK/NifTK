@@ -20,14 +20,11 @@ set(INTERNAL_CPP_FILES
   XnatBrowserWidget.cxx
   XnatDownloadDialog.cxx
   XnatDownloadManager.cxx
-  XnatLoginDialog.cxx
-  XnatLoginProfile.cxx
   XnatModel.cxx
   XnatNameDialog.cxx
   XnatPluginActivator.cxx
   XnatPluginPreferencePage.cxx
   XnatPluginSettings.cxx
-  XnatSettings.cxx
   XnatTreeView.cxx
   XnatUploadDialog.cxx
   XnatUploadManager.cxx
@@ -36,7 +33,6 @@ set(INTERNAL_CPP_FILES
 set(UI_FILES
   src/internal/XnatBrowserView.ui
   src/internal/XnatBrowserWidget.ui
-  src/internal/XnatLoginDialog.ui
   src/internal/XnatPluginPreferencePage.ui
 )
 
@@ -45,7 +41,6 @@ set(MOC_H_FILES
   src/internal/XnatBrowserWidget.h
   src/internal/XnatDownloadDialog.h
   src/internal/XnatDownloadManager.h
-  src/internal/XnatLoginDialog.h
   src/internal/XnatModel.h
   src/internal/XnatNameDialog.h
   src/internal/XnatPluginActivator.h

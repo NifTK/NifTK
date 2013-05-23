@@ -14,9 +14,15 @@
 
 project(uk_ac_ucl_cmic_xnat)
 
-FIND_PACKAGE(Qt4 4.6.2 COMPONENTS QtScript REQUIRED)
+find_package(Qt4 4.6.2 COMPONENTS QtScript REQUIRED)
+
+#find_package(qRestAPI REQUIRED)
+#include(${qRestAPI_USE_FILE})                   # Call include_directories
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
+
+#link_directories(${CMAKE_PROJECT_BINARY_DIR}/qRestAPI-build)
+#message(link_directories(${CMAKE_PROJECT_BINARY_DIR}/qRestAPI-build))
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE XNAT_EXPORTS

@@ -18,11 +18,11 @@
 #include <QObject>
 #include <QScopedPointer>
 
+class ctkXnatSettings;
 class QString;
 class QWidget;
 class XnatDownloadDialog;
 class XnatDownloadManagerPrivate;
-class XnatSettings;
 class XnatTreeView;
 
 class XnatDownloadManager : public QObject
@@ -33,7 +33,7 @@ public:
   XnatDownloadManager(XnatTreeView* xnatTreeView);
   virtual ~XnatDownloadManager();
 
-  void setSettings(XnatSettings* settings);
+  void setSettings(ctkXnatSettings* settings);
 
   void silentlyDownloadFile(const QString& fname, const QString& dir);
   void silentlyDownloadAllFiles(const QString& dir);

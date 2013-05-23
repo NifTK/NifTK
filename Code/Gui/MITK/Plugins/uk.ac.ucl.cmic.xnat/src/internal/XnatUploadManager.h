@@ -18,7 +18,7 @@
 #include <QObject>
 #include <QString>
 
-class XnatSettings;
+class ctkXnatSettings;
 class XnatTreeView;
 class XnatUploadDialog;
 class XnatUploadManagerPrivate;
@@ -31,7 +31,7 @@ public:
   XnatUploadManager(XnatTreeView* xnatTreeView);
   virtual ~XnatUploadManager();
 
-  void setSettings(XnatSettings* settings);
+  void setSettings(ctkXnatSettings* settings);
 
   void uploadSavedData(const QString& dir);
 

@@ -23,9 +23,9 @@
 
 #include <mitkDataStorage.h>
 
+class ctkXnatSettings;
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
-class XnatSettings;
 class XnatObject;
 
 class XnatBrowserWidget : public QWidget
@@ -39,8 +39,8 @@ public:
   mitk::DataStorage::Pointer dataStorage() const;
   void setDataStorage(mitk::DataStorage::Pointer dataStorage);
 
-  XnatSettings* settings() const;
-  void setSettings(XnatSettings* settings);
+  ctkXnatSettings* settings() const;
+  void setSettings(ctkXnatSettings* settings);
 
 private slots:
   void loginXnat();

@@ -14,16 +14,16 @@
 
 #include "XnatBrowserWidget.h"
 
-// XnatRestWidgets module includes
 #include <ctkXnatConnection.h>
-#include <XnatDownloadManager.h>
-#include <XnatLoginDialog.h>
-#include <XnatModel.h>
-#include <XnatNameDialog.h>
+#include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
-#include <XnatSettings.h>
-#include <XnatTreeView.h>
-#include <XnatUploadManager.h>
+#include <ctkXnatSettings.h>
+
+#include "XnatDownloadManager.h"
+#include "XnatModel.h"
+#include "XnatNameDialog.h"
+#include "XnatTreeView.h"
+#include "XnatUploadManager.h"
 
 // Qt includes
 #include <QAction>
@@ -39,7 +39,7 @@
 class XnatBrowserWidgetPrivate
 {
 public:
-  XnatSettings* settings;
+  ctkXnatSettings* settings;
 
   ctkXnatConnection* connection;
   XnatDownloadManager* downloadManager;
@@ -94,7 +94,7 @@ XnatBrowserWidget::XnatBrowserWidget(QWidget* parent, Qt::WindowFlags flags)
     ui->saveAndUploadButton->setVisible(false);
     ui->createButton->setVisible(false);
     ui->deleteButton->setVisible(false);
-	  
+
     // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
     createConnections();
   }
@@ -119,14 +119,14 @@ XnatBrowserWidget::~XnatBrowserWidget()
   }
 }
 
-XnatSettings* XnatBrowserWidget::settings() const
+ctkXnatSettings* XnatBrowserWidget::settings() const
 {
   Q_D(const XnatBrowserWidget);
 
   return d->settings;
 }
 
-void XnatBrowserWidget::setSettings(XnatSettings* settings)
+void XnatBrowserWidget::setSettings(ctkXnatSettings* settings)
 {
   Q_D(XnatBrowserWidget);
   d->settings = settings;
@@ -193,7 +193,7 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-  XnatLoginDialog* loginDialog = new XnatLoginDialog(ctkXnatConnectionFactory::instance(), this);
+  ctkXnatLoginDialog* loginDialog = new ctkXnatLoginDialog(ctkXnatConnectionFactory::instance(), this);
   loginDialog->setSettings(d->settings);
   if (loginDialog->exec())
   {

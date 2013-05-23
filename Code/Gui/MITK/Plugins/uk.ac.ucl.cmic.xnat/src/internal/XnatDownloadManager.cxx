@@ -13,10 +13,11 @@ extern "C"
 #include "XnatRest.h"
 }
 
-#include "XnatDownloadDialog.h"
 #include <ctkXnatException.h>
+#include <ctkXnatSettings.h>
+
+#include "XnatDownloadDialog.h"
 #include "XnatModel.h"
-#include "XnatSettings.h"
 #include "XnatTreeView.h"
 
 class XnatDownloadManagerPrivate
@@ -25,7 +26,7 @@ public:
   XnatTreeView* xnatTreeView;
   XnatDownloadDialog* downloadDialog;
 
-  XnatSettings* settings;
+  ctkXnatSettings* settings;
 
   QString currDir;
   QString zipFilename;
@@ -50,7 +51,7 @@ XnatDownloadManager::~XnatDownloadManager()
 {
 }
 
-void XnatDownloadManager::setSettings(XnatSettings* settings)
+void XnatDownloadManager::setSettings(ctkXnatSettings* settings)
 {
   Q_D(XnatDownloadManager);
   d->settings = settings;
