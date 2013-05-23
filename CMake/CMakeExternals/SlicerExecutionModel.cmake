@@ -18,15 +18,15 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
-  MESSAGE(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
-ENDIF()
+if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
+  message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory \"${SlicerExecutionModel_DIR}\".")
+endif()
 
-SET(proj SlicerExecutionModel)
-SET(proj_DEPENDENCIES ITK)
-SET(SlicerExecutionModel_DEPENDS ${proj})
+set(proj SlicerExecutionModel)
+set(proj_DEPENDENCIES ITK)
+set(SlicerExecutionModel_DEPENDS ${proj})
 
-IF(NOT DEFINED SlicerExecutionModel_DIR)
+if(NOT DEFINED SlicerExecutionModel_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_SEM ${NIFTK_LOCATION_SEM})
 
@@ -47,11 +47,11 @@ IF(NOT DEFINED SlicerExecutionModel_DIR)
      DEPENDS ${proj_DEPENDENCIES}
   )
  
-  SET(SlicerExecutionModel_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  MESSAGE("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
+  set(SlicerExecutionModel_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 
-ELSE(NOT DEFINED SlicerExecutionModel_DIR)
+else(NOT DEFINED SlicerExecutionModel_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF(NOT DEFINED SlicerExecutionModel_DIR)
+endif(NOT DEFINED SlicerExecutionModel_DIR)

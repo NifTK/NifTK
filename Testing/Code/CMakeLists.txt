@@ -12,6 +12,6 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Libs)
-ADD_SUBDIRECTORY(Applications)
+add_subdirectory(Libs)
+add_subdirectory(Applications)
 

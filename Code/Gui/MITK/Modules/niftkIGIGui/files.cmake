@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   Common/QmitkIGIUtils.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
@@ -36,7 +36,7 @@ SET(CPP_FILES
   DataSources/QmitkIGIOpenCVDataSourceGui.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   DataSources/TrackerControlsWidget.h
   DataSources/QmitkIGITimerBasedThread.h
   DataSources/QmitkFiducialRegistrationWidgetDialog.h
@@ -55,7 +55,7 @@ SET(MOC_H_FILES
   DataSources/QmitkIGIOpenCVDataSourceGui.h
 )
 
-SET(UI_FILES
+set(UI_FILES
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
   DataSources/QmitkIGITrackerToolGui.ui
@@ -63,6 +63,6 @@ SET(UI_FILES
   DataSources/QmitkIGIUltrasonixToolGui.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   #Resources/niftkIGIGui.qrc
 )

@@ -12,8 +12,8 @@
 #
 #============================================================================*/
 
-IF(NOT WIN32)
-  SET(scripts
+if(NOT WIN32)
+  set(scripts
     fsImport.sh
     _fsInclude.sh
     _fsRunCleanup.sh
@@ -38,8 +38,8 @@ IF(NOT WIN32)
     _fsRunLongitudinalAllTimepoints.sh
     fsShowT1.sh
   )
-  FOREACH(script ${scripts})
-    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+  foreach(script ${scripts})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
     MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
-  ENDFOREACH()
-ENDIF()
+  endforeach()
+endif()

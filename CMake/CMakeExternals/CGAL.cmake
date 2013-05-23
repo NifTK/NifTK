@@ -16,27 +16,27 @@
 # CGAL
 #-----------------------------------------------------------------------------
 
-SET(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8.tar.gz")
+set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8.tar.gz")
 
-IF(BUILD_MESHING)
+if(BUILD_MESHING)
 
-  SET(proj CGAL)
-  SET(proj_DEPENDENCIES BOOST)
-  SET(CGAL_DEPENDS ${proj})
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj})
+  set(proj CGAL)
+  set(proj_DEPENDENCIES BOOST)
+  set(CGAL_DEPENDS ${proj})
+  set(proj_INSTALL ${EP_BASE}/Install/${proj})
 
-  IF(NOT DEFINED CGAL_DIR)    
+  if(NOT DEFINED CGAL_DIR)    
     ######################################################################
     # Configure the CGAL Superbuild, to decide which plugins we want.
     ######################################################################
 
-    IF (WIN32)
-      SET(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-vc90-mt-gd-1_46_1.lib")
-      SET(BUILD_SHARED OFF)
-    ELSE (WIN32)
-      SET(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-mt.a")
-      SET(BUILD_SHARED ON)
-    ENDIF (WIN32)
+    if (WIN32)
+      set(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-vc90-mt-gd-1_46_1.lib")
+      set(BUILD_SHARED OFF)
+    else (WIN32)
+      set(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-mt.a")
+      set(BUILD_SHARED ON)
+    endif (WIN32)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CGAL ${NIFTK_LOCATION_CGAL})
 
@@ -58,14 +58,14 @@ IF(BUILD_MESHING)
         -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
       DEPENDS ${proj_DEPENDENCIES}
       )
-    SET(CGAL_DIR "${EP_BASE}/Install/${proj}/lib/CGAL")
-    SET(CGAL_INCLUDE_DIRS "${EP_BASE}/Install/${proj}/include") 
-  ELSE()
+    set(CGAL_DIR "${EP_BASE}/Install/${proj}/lib/CGAL")
+    set(CGAL_INCLUDE_DIRS "${EP_BASE}/Install/${proj}/include") 
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF()
+  endif()
 
-  MESSAGE("SuperBuild loading CGAL from ${CGAL_DIR}")
+  message("SuperBuild loading CGAL from ${CGAL_DIR}")
 
-ENDIF(BUILD_MESHING)
+endif(BUILD_MESHING)

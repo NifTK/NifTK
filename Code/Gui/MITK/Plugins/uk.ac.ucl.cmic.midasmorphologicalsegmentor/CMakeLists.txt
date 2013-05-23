@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_midasmorphologicalsegmentor)
+project(uk_ac_ucl_cmic_midasmorphologicalsegmentor)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE MIDASMORPHOLOGICALSEGMENTOR_EXPORTS

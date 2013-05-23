@@ -12,20 +12,20 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   DataSources/QmitkIGIDataSourceManager.cxx
   DataSources/QmitkIGIDataSourceManagerClearDownThread.cxx
   DataSources/QmitkIGIDataSourceManagerGuiUpdateThread.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   DataSources/QmitkIGIDataSourceManager.h
 )
 
-SET(UI_FILES
+set(UI_FILES
   DataSources/QmitkIGIDataSourceManager.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   Resources/niftkIGIGuiManager.qrc
 )

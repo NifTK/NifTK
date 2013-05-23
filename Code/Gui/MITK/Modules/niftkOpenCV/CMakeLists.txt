@@ -19,9 +19,9 @@ MITK_CREATE_MODULE(niftkOpenCV
   PACKAGE_DEPENDS OpenCV
 )
 
-TARGET_LINK_LIBRARIES(niftkOpenCV
+target_link_libraries(niftkOpenCV
   niftkcommon
   ${aruco_LIBS}
   )
     
-ADD_SUBDIRECTORY(Testing)
+add_subdirectory(Testing)

@@ -12,40 +12,40 @@
 #
 #============================================================================*/
 
-INCLUDE(ExternalProject)
+include(ExternalProject)
 
-SET(EP_BASE "${CMAKE_BINARY_DIR}/CMakeExternals")
-SET_PROPERTY(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
+set(EP_BASE "${CMAKE_BINARY_DIR}/CMakeExternals")
+set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 
 # For external projects like ITK, VTK we always want to turn their testing targets off.
-SET(EP_BUILD_TESTING OFF)
-SET(EP_BUILD_EXAMPLES OFF)
-SET(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+set(EP_BUILD_TESTING OFF)
+set(EP_BUILD_EXAMPLES OFF)
+set(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
-IF(MSVC90 OR MSVC10)
-  SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
-  SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
+if(MSVC90 OR MSVC10)
+  set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
+  set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
   # we want symbols, even for release builds!
-  SET(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /debug")
-  SET(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /debug")
-  SET(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
-  SET(CMAKE_CXX_WARNING_LEVEL 0)
-ELSE()
-  IF(${BUILD_SHARED_LIBS})
-    SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -DLINUX_EXTRA")
-    SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX_EXTRA")
-  ELSE()
-    SET(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DLINUX_EXTRA")
-    SET(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DLINUX_EXTRA")
-  ENDIF()
+  set(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /debug")
+  set(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /debug")
+  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
+  set(CMAKE_CXX_WARNING_LEVEL 0)
+else()
+  if(${BUILD_SHARED_LIBS})
+    set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -DLINUX_EXTRA")
+    set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX_EXTRA")
+  else()
+    set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -DLINUX_EXTRA")
+    set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DLINUX_EXTRA")
+  endif()
   # These are not relevant for linux but we set them anyway to keep
   # the variable bits below symmetric.
-  SET(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-  SET(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
-  SET(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")  
-ENDIF()
+  set(EP_COMMON_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+  set(EP_COMMON_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
+  set(EP_COMMON_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")  
+endif()
 
-SET(EP_COMMON_ARGS
+set(EP_COMMON_ARGS
   -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
   -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
   -DDESIRED_QT_VERSION:STRING=4
@@ -70,37 +70,37 @@ SET(EP_COMMON_ARGS
   -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
 )
 
-SET(NIFTK_APP_OPTIONS)
-FOREACH(NIFTK_APP ${NIFTK_APPS})
+set(NIFTK_APP_OPTIONS)
+foreach(NIFTK_APP ${NIFTK_APPS})
 
   # extract option_name
-  STRING(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
-  SET(target_info_list ${target_info})
-  LIST(GET target_info_list 1 option_name)
-  LIST(GET target_info_list 0 app_name)
+  string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  set(target_info_list ${target_info})
+  list(GET target_info_list 1 option_name)
+  list(GET target_info_list 0 app_name)
   
   # Set flag.
-  SET(option_string)
-  IF(${option_name})
-    SET(option_string "-D${option_name}:BOOL=ON")
-  ELSE()
-    SET(option_string "-D${option_name}:BOOL=OFF")  
-  ENDIF()
+  set(option_string)
+  if(${option_name})
+    set(option_string "-D${option_name}:BOOL=ON")
+  else()
+    set(option_string "-D${option_name}:BOOL=OFF")  
+  endif()
   
-  SET(NIFTK_APP_OPTIONS
+  set(NIFTK_APP_OPTIONS
     ${NIFTK_APP_OPTIONS}
     ${option_string}
   )    
   
   # Add to list.
-ENDFOREACH()
+endforeach()
 
 # Compute -G arg for configuring external projects with the same CMake generator:
-IF(CMAKE_EXTRA_GENERATOR)
-  SET(GEN "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
-ELSE()
-  SET(GEN "${CMAKE_GENERATOR}")
-ENDIF()
+if(CMAKE_EXTRA_GENERATOR)
+  set(GEN "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
+else()
+  set(GEN "${CMAKE_GENERATOR}")
+endif()
 
 ######################################################################
 # Include NifTK macro for md5 checking
@@ -112,7 +112,7 @@ include(niftkMacroGetChecksum)
 # Loop round for each external project, compiling it
 ######################################################################
 
-SET(EXTERNAL_PROJECTS
+set(EXTERNAL_PROJECTS
   BOOST
   VTK
   GDCM
@@ -132,59 +132,59 @@ SET(EXTERNAL_PROJECTS
   NifTKData
 )
 
-IF(BUILD_OPENCV)
-  LIST(FIND EXTERNAL_PROJECTS MITK MITK_POSITION_IN_EXTERNAL_PROJECTS)
-  LIST(INSERT EXTERNAL_PROJECTS ${MITK_POSITION_IN_EXTERNAL_PROJECTS} OpenCV)
-ENDIF(BUILD_OPENCV)
+if(BUILD_OPENCV)
+  list(FIND EXTERNAL_PROJECTS MITK MITK_POSITION_IN_EXTERNAL_PROJECTS)
+  list(INSERT EXTERNAL_PROJECTS ${MITK_POSITION_IN_EXTERNAL_PROJECTS} OpenCV)
+endif(BUILD_OPENCV)
 
-IF(BUILD_IGI)
+if(BUILD_IGI)
   # aruco depends on opencv. our root CMakeLists.txt should have taken care of validating BUILD_OPENCV.
-  LIST(APPEND EXTERNAL_PROJECTS aruco)
-ENDIF()
+  list(APPEND EXTERNAL_PROJECTS aruco)
+endif()
 
-FOREACH(p ${EXTERNAL_PROJECTS})
-  INCLUDE("CMake/CMakeExternals/${p}.cmake")
-ENDFOREACH()
+foreach(p ${EXTERNAL_PROJECTS})
+  include("CMake/CMakeExternals/${p}.cmake")
+endforeach()
 
 ######################################################################
 # Now compile NifTK, using the packages we just provided.
 ######################################################################
-IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
+if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
 
-  SET(proj NIFTK)
-  SET(proj_DEPENDENCIES ${BOOST_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
+  set(proj NIFTK)
+  set(proj_DEPENDENCIES ${BOOST_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
 
-  IF(BUILD_OPENCV)
-    LIST(APPEND proj_DEPENDENCIES ${OPENCV_DEPENDS})
-  ENDIF(BUILD_OPENCV)
+  if(BUILD_OPENCV)
+    list(APPEND proj_DEPENDENCIES ${OPENCV_DEPENDS})
+  endif(BUILD_OPENCV)
   
-  IF(BUILD_GUI)
-    LIST(APPEND proj_DEPENDENCIES curl)
-  ENDIF(BUILD_GUI)
+  if(BUILD_GUI)
+    list(APPEND proj_DEPENDENCIES curl)
+  endif(BUILD_GUI)
 
-  IF(BUILD_TESTING)
-    LIST(APPEND proj_DEPENDENCIES ${NifTKData_DEPENDS})
-  ENDIF(BUILD_TESTING)
+  if(BUILD_TESTING)
+    list(APPEND proj_DEPENDENCIES ${NifTKData_DEPENDS})
+  endif(BUILD_TESTING)
 
-  IF(BUILD_IGI)
-    LIST(APPEND proj_DEPENDENCIES ${NIFTYLINK_DEPENDS} ${aruco_DEPENDS})
-  ENDIF(BUILD_IGI)
+  if(BUILD_IGI)
+    list(APPEND proj_DEPENDENCIES ${NIFTYLINK_DEPENDS} ${aruco_DEPENDS})
+  endif(BUILD_IGI)
 
-  IF(BUILD_NIFTYREG)
-    LIST(APPEND proj_DEPENDENCIES ${NIFTYREG_DEPENDS})
-  ENDIF(BUILD_NIFTYREG)
+  if(BUILD_NIFTYREG)
+    list(APPEND proj_DEPENDENCIES ${NIFTYREG_DEPENDS})
+  endif(BUILD_NIFTYREG)
 
-  IF(BUILD_NIFTYSEG)
-    LIST(APPEND proj_DEPENDENCIES ${NIFTYSEG_DEPENDS})
-  ENDIF(BUILD_NIFTYSEG)
+  if(BUILD_NIFTYSEG)
+    list(APPEND proj_DEPENDENCIES ${NIFTYSEG_DEPENDS})
+  endif(BUILD_NIFTYSEG)
 
-  IF(BUILD_NIFTYSIM)
-    LIST(APPEND proj_DEPENDENCIES ${NIFTYSIM_DEPENDS})
-  ENDIF(BUILD_NIFTYSIM)
+  if(BUILD_NIFTYSIM)
+    list(APPEND proj_DEPENDENCIES ${NIFTYSIM_DEPENDS})
+  endif(BUILD_NIFTYSIM)
 
-  IF(BUILD_NIFTYREC)
-    LIST(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
-  ENDIF(BUILD_NIFTYREC)
+  if(BUILD_NIFTYREC)
+    list(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
+  endif(BUILD_NIFTYREC)
 
   ExternalProject_Add(${proj}
     DOWNLOAD_COMMAND ""
@@ -270,4 +270,4 @@ IF(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       DEPENDS ${proj_DEPENDENCIES}
   )
 
-ENDIF()
+endif()

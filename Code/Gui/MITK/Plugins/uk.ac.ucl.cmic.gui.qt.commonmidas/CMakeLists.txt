@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_gui_qt_commonmidas)
+project(uk_ac_ucl_cmic_gui_qt_commonmidas)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE CMIC_QT_COMMONMIDAS

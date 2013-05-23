@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(niftkITK_SRCS
+set(niftkITK_SRCS
 Common/itkConversionUtils.cxx
 Common/itkCommandLineHelper.cxx
 Common/itkFilenameUtils.cxx
@@ -35,15 +35,15 @@ IO/itkNIFTKTransformIO.cxx
 Segmentation/itkMIDASHelper.cxx
 )
 
-ADD_LIBRARY(niftkITK ${niftkITK_SRCS})
+add_library(niftkITK ${niftkITK_SRCS})
 
-IF(BUILD_SHARED_LIBS)
-  IF(WIN32)
-    ADD_DEFINITIONS(-DNIFTKITK_WINDOWS_EXPORT)
-  ENDIF(WIN32)
-ENDIF(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    add_definitions(-DNIFTKITK_WINDOWS_EXPORT)
+  endif(WIN32)
+endif(BUILD_SHARED_LIBS)
 
-TARGET_LINK_LIBRARIES(niftkITK  
+target_link_libraries(niftkITK  
   niftkcommon
   ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}  

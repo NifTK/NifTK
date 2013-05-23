@@ -12,21 +12,21 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Common)
+add_subdirectory(Common)
 
-IF(ITK_FOUND)
-  ADD_SUBDIRECTORY(ITK)
-ENDIF(ITK_FOUND)
+if(ITK_FOUND)
+  add_subdirectory(ITK)
+endif(ITK_FOUND)
 
-IF(VTK_FOUND)
-  ADD_SUBDIRECTORY(VTK)
+if(VTK_FOUND)
+  add_subdirectory(VTK)
 
-  IF(NIFTYREG_FOUND)
-    ADD_SUBDIRECTORY(VTKNiftyReg)
-  ENDIF(NIFTYREG_FOUND)
+  if(NIFTYREG_FOUND)
+    add_subdirectory(VTKNiftyReg)
+  endif(NIFTYREG_FOUND)
 
-ENDIF(VTK_FOUND)
+endif(VTK_FOUND)
 
-IF(NVAPI_FOUND)
-  ADD_SUBDIRECTORY(NVAPI)
-ENDIF(NVAPI_FOUND)
+if(NVAPI_FOUND)
+  add_subdirectory(NVAPI)
+endif(NVAPI_FOUND)

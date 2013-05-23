@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES 
+set(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES 
   niftkcommon 
   niftkITK 
   ITKCommon 
@@ -21,32 +21,32 @@ SET(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES
   )
 
 # This is the name of the actual executable that gets run.  
-SET(BASIC_FILTERS_INTEGRATION_TESTS ${CXX_TEST_PATH}/BasicFiltersUnitTests)
-SET(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
+set(BASIC_FILTERS_INTEGRATION_TESTS ${CXX_TEST_PATH}/BasicFiltersUnitTests)
+set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
 #----------------------------------
-# Dont forget its:  ADD_TEST(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
+# Dont forget its:  add_test(<test name (unique to this file) > <exe name> <test name from C++ file> <argument1> <argument2>
 #--------------------------------------------------------------------------------------
 
 #################################################################################
 # First we test the transformations, as this is purely coordinate/geometry based.
 #################################################################################
 
-ADD_TEST(BF-BRescale ${BASIC_FILTERS_INTEGRATION_TESTS} BoundaryValueRescaleIntensityImageFilterTest )
-ADD_TEST(BF-CPosition ${BASIC_FILTERS_INTEGRATION_TESTS} SetOutputVectorToCurrentPositionFilterTest )
-ADD_TEST(BF-VecMag ${BASIC_FILTERS_INTEGRATION_TESTS} VectorMagnitudeImageFilterTest )
-ADD_TEST(BF-VPlusLambdaU ${BASIC_FILTERS_INTEGRATION_TESTS} VectorVPlusLambdaUImageFilterTest )
-ADD_TEST(BF-SBATest ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/sba.png ${TEMPORARY_OUTPUT}/sba.png ShapeBasedAveragingImageFilterTest ${INPUT_DATA}/sba_seg1.png ${INPUT_DATA}/sba_seg2.png  ${TEMPORARY_OUTPUT}/sba.png)
-ADD_TEST(BF-ExtractEdgeImage ${BASIC_FILTERS_INTEGRATION_TESTS} ExtractEdgeImageTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img ${TEMPORARY_OUTPUT}/extract_edge.nii)
-#ADD_TEST(BF-MeanCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MeanCurvature_out.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii MeanCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii 5 10 10 0.5)
-#ADD_TEST(BF-GaussianCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} GaussianCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-GaussianCurvature_out.nii)
-ADD_TEST(BF-Seg-ExcludeImageFilter ${BASIC_FILTERS_INTEGRATION_TESTS} itkExcludeImageFilterTest)
-ADD_TEST(BF-LargestConnected ${BASIC_FILTERS_INTEGRATION_TESTS} itkLargestConnectedComponentFilterTest)
+add_test(BF-BRescale ${BASIC_FILTERS_INTEGRATION_TESTS} BoundaryValueRescaleIntensityImageFilterTest )
+add_test(BF-CPosition ${BASIC_FILTERS_INTEGRATION_TESTS} SetOutputVectorToCurrentPositionFilterTest )
+add_test(BF-VecMag ${BASIC_FILTERS_INTEGRATION_TESTS} VectorMagnitudeImageFilterTest )
+add_test(BF-VPlusLambdaU ${BASIC_FILTERS_INTEGRATION_TESTS} VectorVPlusLambdaUImageFilterTest )
+add_test(BF-SBATest ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/sba.png ${TEMPORARY_OUTPUT}/sba.png ShapeBasedAveragingImageFilterTest ${INPUT_DATA}/sba_seg1.png ${INPUT_DATA}/sba_seg2.png  ${TEMPORARY_OUTPUT}/sba.png)
+add_test(BF-ExtractEdgeImage ${BASIC_FILTERS_INTEGRATION_TESTS} ExtractEdgeImageTest ${INPUT_DATA}/ADNI-AD-098_S_0149-M12-01728.img ${TEMPORARY_OUTPUT}/extract_edge.nii)
+#add_test(BF-MeanCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} --compare ${BASELINE}/BF-MeanCurvature_out.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii MeanCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-MeanCurvature_out.nii 5 10 10 0.5)
+#add_test(BF-GaussianCurvature ${BASIC_FILTERS_INTEGRATION_TESTS} GaussianCurvatureImageFilterTest ${INPUT_DATA}/sphere_20_x_20_x_20.nii ${TEMPORARY_OUTPUT}/BF-GaussianCurvature_out.nii)
+add_test(BF-Seg-ExcludeImageFilter ${BASIC_FILTERS_INTEGRATION_TESTS} itkExcludeImageFilterTest)
+add_test(BF-LargestConnected ${BASIC_FILTERS_INTEGRATION_TESTS} itkLargestConnectedComponentFilterTest)
 
 #################################################################################
 # Build instructions.
 #################################################################################
-SET( BasicFiltersUnitTests_SRCS
+set( BasicFiltersUnitTests_SRCS
 BoundaryValueRescaleIntensityImageFilterTest.cxx
 SetOutputVectorToCurrentPositionFilterTest.cxx
 VectorMagnitudeImageFilterTest.cxx
@@ -59,5 +59,5 @@ itkExcludeImageFilterTest.cxx
 itkLargestConnectedComponentFilterTest.cxx
 )
 
-ADD_EXECUTABLE(BasicFiltersUnitTests BasicFiltersUnitTests.cxx ${BasicFiltersUnitTests_SRCS})
-TARGET_LINK_LIBRARIES(BasicFiltersUnitTests ${NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES} )
+add_executable(BasicFiltersUnitTests BasicFiltersUnitTests.cxx ${BasicFiltersUnitTests_SRCS})
+target_link_libraries(BasicFiltersUnitTests ${NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES} )

@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(ITK)
+add_subdirectory(Common)
+add_subdirectory(ITK)
 
-IF(VTK_FOUND)
-  ADD_SUBDIRECTORY(VTK)
-ENDIF(VTK_FOUND)
+if(VTK_FOUND)
+  add_subdirectory(VTK)
+endif(VTK_FOUND)
 

@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(MODULE_DIRS
+set(MODULE_DIRS
   niftkCore
   niftkCoreGui
   niftkMIDAS
@@ -21,30 +21,30 @@ SET(MODULE_DIRS
   XnatRestWidgets
 )
 
-IF(BUILD_IGI)
+if(BUILD_IGI)
 
-  SET(MODULE_DIRS
+  set(MODULE_DIRS
     ${MODULE_DIRS}
     niftkOpenCV
     niftkIGI
     niftkIGIGui
   )
 
-  IF(NVAPI_FOUND)  
-    SET(MODULE_DIRS
+  if(NVAPI_FOUND)  
+    set(MODULE_DIRS
       ${MODULE_DIRS}
       niftkNVidia
       niftkNVidiaGui
     )
-  ENDIF()
+  endif()
 
-  SET(MODULE_DIRS
+  set(MODULE_DIRS
     ${MODULE_DIRS}
     niftkIGIGuiManager    
   )
   
-ENDIF()
+endif()
 
-FOREACH(MODULE_DIR ${MODULE_DIRS})
-  ADD_SUBDIRECTORY(${MODULE_DIR})
-ENDFOREACH()
+foreach(MODULE_DIR ${MODULE_DIRS})
+  add_subdirectory(${MODULE_DIR})
+endforeach()

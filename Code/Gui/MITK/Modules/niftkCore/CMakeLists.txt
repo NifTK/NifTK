@@ -19,12 +19,12 @@ MITK_CREATE_MODULE(niftkCore
   PACKAGE_DEPENDS ITK VTK
 )
 
-TARGET_LINK_LIBRARIES(niftkCore
+target_link_libraries(niftkCore
   niftkcommon
   niftkITK
   niftkVTK
   )
   
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

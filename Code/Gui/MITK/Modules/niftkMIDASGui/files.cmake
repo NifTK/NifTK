@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   Dialogs/QmitkMIDASNewSegmentationDialog.cxx
   QmitkMIDASToolSelectorWidget.cxx
   QmitkMIDASImageAndSegmentationSelectorWidget.cxx
@@ -31,7 +31,7 @@ SET(CPP_FILES
   vtkSideAnnotation.cxx
 )
 
-SET(MOC_H_FILES 
+set(MOC_H_FILES 
   Dialogs/QmitkMIDASNewSegmentationDialog.h
   QmitkMIDASToolSelectorWidget.h
   QmitkMIDASImageAndSegmentationSelectorWidget.h
@@ -46,7 +46,7 @@ SET(MOC_H_FILES
   QmitkThumbnailRenderWindow.h
 )
 
-SET(UI_FILES
+set(UI_FILES
   Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
   Resources/UI/QmitkMIDASToolSelector.ui
   Resources/UI/QmitkMIDASBindWidget.ui
@@ -54,5 +54,5 @@ SET(UI_FILES
   Resources/UI/QmitkMIDASSlidersWidget.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
 )

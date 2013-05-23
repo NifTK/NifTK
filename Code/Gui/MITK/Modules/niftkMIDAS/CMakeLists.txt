@@ -19,11 +19,11 @@ MITK_CREATE_MODULE(niftkMIDAS
   PACKAGE_DEPENDS ITK
 )
 
-TARGET_LINK_LIBRARIES(niftkMIDAS
+target_link_libraries(niftkMIDAS
   niftkcommon
   niftkITK
   )
   
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-PROJECT(NiftyMIDAS)
-SET(MY_APP_NAME NiftyMIDAS)
+project(NiftyMIDAS)
+set(MY_APP_NAME NiftyMIDAS)
 
-SET(_exclude_plugins
+set(_exclude_plugins
   org.mitk.gui.qt.pointsetinteraction
   org.mitk.gui.qt.stdmultiwidgeteditor
   it.unito.cim.intensityprofile 

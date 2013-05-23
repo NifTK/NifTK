@@ -18,55 +18,55 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NiftyLink_DIR AND NOT EXISTS ${NiftyLink_DIR})
-  MESSAGE(FATAL_ERROR "NiftyLink_DIR variable is defined but corresponds to non-existing directory \"${NIFTYLINK_DIR}\".")
-ENDIF()
+if(DEFINED NiftyLink_DIR AND NOT EXISTS ${NiftyLink_DIR})
+  message(FATAL_ERROR "NiftyLink_DIR variable is defined but corresponds to non-existing directory \"${NIFTYLINK_DIR}\".")
+endif()
 
-IF(BUILD_IGI)
+if(BUILD_IGI)
 
-  SET(proj NiftyLink)
-  SET(proj_DEPENDENCIES)
-  SET(NIFTYLINK_DEPENDS ${proj})
+  set(proj NiftyLink)
+  set(proj_DEPENDENCIES)
+  set(NIFTYLINK_DEPENDS ${proj})
 
-  IF(NOT DEFINED NiftyLink_DIR)
+  if(NOT DEFINED NiftyLink_DIR)
 
-    SET(revision_tag development)
+    set(revision_tag development)
 
-    IF (NIFTK_NIFTYLINK_DEV)
-      SET(NiftyLink_location_options
+    if (NIFTK_NIFTYLINK_DEV)
+      set(NiftyLink_location_options
         GIT_REPOSITORY ${NIFTK_LOCATION_NIFTYLINK_REPOSITORY}
         GIT_TAG ${revision_tag}
       )
-    ELSE ()
+    else ()
       niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYLINK ${NIFTK_LOCATION_NIFTYLINK_TARBALL})
-      SET(NiftyLink_location_options
+      set(NiftyLink_location_options
         URL ${NIFTK_LOCATION_NIFTYLINK_TARBALL}
         URL_MD5 ${NIFTK_CHECKSUM_NIFTYLINK}
       )
-    ENDIF ()
+    endif ()
 
-    IF(DEFINED NIFTYLINK_OIGTLINK_DEV)
-      SET(NiftyLink_options
+    if(DEFINED NIFTYLINK_OIGTLINK_DEV)
+      set(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTYLINK_OIGTLINK_DEV}
       )
-    ELSE()
-      SET(NiftyLink_options
+    else()
+      set(NiftyLink_options
         -DNIFTYLINK_OIGTLINK_DEV:BOOL=${NIFTK_NIFTYLINK_DEV}
       )
-    ENDIF()
+    endif()
 
-    IF(NIFTYLINK_OPENIGTLINK_VERSION)
-      LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_VERSION=${NIFTYLINK_OPENIGTLINK_VERSION} )
-    ENDIF()
-    IF(NIFTYLINK_OPENIGTLINK_MD5)
-      LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_MD5=${NIFTYLINK_OPENIGTLINK_MD5} )
-    ENDIF()
-    IF(NIFTYLINK_OPENIGTLINK_LOCATION)
-      LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION=${NIFTYLINK_OPENIGTLINK_LOCATION} )
-    ENDIF()
-    IF(NIFTYLINK_OPENIGTLINK_LOCATION_DEV)
-      LIST(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION_DEV=${NIFTYLINK_OPENIGTLINK_LOCATION_DEV} )
-    ENDIF()
+    if(NIFTYLINK_OPENIGTLINK_VERSION)
+      list(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_VERSION=${NIFTYLINK_OPENIGTLINK_VERSION} )
+    endif()
+    if(NIFTYLINK_OPENIGTLINK_MD5)
+      list(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_MD5=${NIFTYLINK_OPENIGTLINK_MD5} )
+    endif()
+    if(NIFTYLINK_OPENIGTLINK_LOCATION)
+      list(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION=${NIFTYLINK_OPENIGTLINK_LOCATION} )
+    endif()
+    if(NIFTYLINK_OPENIGTLINK_LOCATION_DEV)
+      list(APPEND NiftyLink_options -DNIFTYLINK_OPENIGTLINK_LOCATION_DEV=${NIFTYLINK_OPENIGTLINK_LOCATION_DEV} )
+    endif()
 
     ExternalProject_Add(${proj}
       ${NiftyLink_location_options}
@@ -83,17 +83,17 @@ IF(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    SET(NiftyLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
-    SET(NiftyLink_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NiftyLink)
-    SET(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
+    set(NiftyLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
+    set(NiftyLink_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NiftyLink)
+    set(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
 
-    MESSAGE("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
-    MESSAGE("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
+    message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
+    message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
 
-  ELSE(NOT DEFINED NiftyLink_DIR)
+  else(NOT DEFINED NiftyLink_DIR)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NiftyLink_DIR)
+  endif(NOT DEFINED NiftyLink_DIR)
 
-ENDIF(BUILD_IGI)
+endif(BUILD_IGI)

@@ -49,8 +49,8 @@ if(NOT DEFINED OpenCV_DIR)
     -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
-  SET(OpenCV_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  MESSAGE("SuperBuild loading OpenCV from ${OpenCV_DIR}")
+  set(OpenCV_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 
 else()
 

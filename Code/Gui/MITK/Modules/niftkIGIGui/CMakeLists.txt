@@ -20,6 +20,6 @@ MITK_CREATE_MODULE(niftkIGIGui
   QT_MODULE 
 )
 
-IF(BUILD_TESTING)  
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+if(BUILD_TESTING)  
+  add_subdirectory(Testing)
+endif()
