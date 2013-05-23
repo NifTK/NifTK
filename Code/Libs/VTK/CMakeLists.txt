@@ -12,22 +12,22 @@
 #
 #============================================================================*/
 
-SET(niftkVTK_SRCS
+set(niftkVTK_SRCS
   Common/vtkFunctions.cxx
   niftkVTKIterativeClosestPoint.cxx
   niftkvtk4PointsReader.cxx
 )
 
-ADD_LIBRARY(niftkVTK ${niftkVTK_SRCS})
+add_library(niftkVTK ${niftkVTK_SRCS})
 
-TARGET_LINK_LIBRARIES(niftkVTK
+target_link_libraries(niftkVTK
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   )
 
-IF(BUILD_SHARED_LIBS)
-  IF(WIN32)
-    ADD_DEFINITIONS(-DNIFTKVTK_WINDOWS_EXPORT)
-  ENDIF(WIN32)
-ENDIF(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    add_definitions(-DNIFTKVTK_WINDOWS_EXPORT)
+  endif(WIN32)
+endif(BUILD_SHARED_LIBS)
 
 MITK_INSTALL(TARGETS niftkVTK)

@@ -12,12 +12,12 @@
 #
 #============================================================================*/
   
-SET(NVAPI_FOUND 0)
+set(NVAPI_FOUND 0)
 
 # Note: This is ONLY valid On Windows
-IF(WIN32)
+if(WIN32)
 
-  SET(NVAPI_POSSIBLE_INCLUDE_PATHS 
+  set(NVAPI_POSSIBLE_INCLUDE_PATHS 
     "C:/Program Files/nvapi/"
     "C:/Program Files/R304-developer/"
     "E:/build/nvapi/"
@@ -27,32 +27,32 @@ IF(WIN32)
     ${CMAKE_SOURCE_DIR}/../nvapi/
   )
 
-  FIND_PATH(NVAPI_INCLUDE_DIR
+  find_path(NVAPI_INCLUDE_DIR
     NAMES nvapi.h
     PATHS ${NVAPI_POSSIBLE_INCLUDE_PATHS}
   )
 
-  IF("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
-    SET(NVAPI_ARCH_DIR amd64)
-    SET(NVAPI_LIBRARY_NAME nvapi64)
-  ELSE()
-    SET(NVAPI_ARCH_DIR x86)
-    SET(NVAPI_LIBRARY_NAME nvapi)
-  ENDIF()
+  if("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
+    set(NVAPI_ARCH_DIR amd64)
+    set(NVAPI_LIBRARY_NAME nvapi64)
+  else()
+    set(NVAPI_ARCH_DIR x86)
+    set(NVAPI_LIBRARY_NAME nvapi)
+  endif()
 
-  SET(NVAPI_POSSIBLE_LIBRARY_PATHS
+  set(NVAPI_POSSIBLE_LIBRARY_PATHS
     ${NVAPI_INCLUDE_DIR}/${NVAPI_ARCH_DIR}
   )
 
-  FIND_LIBRARY(NVAPI_LIBRARY
+  find_library(NVAPI_LIBRARY
     NAMES ${NVAPI_LIBRARY_NAME}
     HINTS ${NVAPI_POSSIBLE_LIBRARY_PATHS} 
   )
 
-  IF(NVAPI_INCLUDE_DIR AND NVAPI_LIBRARY)
-    SET(NVAPI_FOUND 1)
-  ENDIF()
+  if(NVAPI_INCLUDE_DIR AND NVAPI_LIBRARY)
+    set(NVAPI_FOUND 1)
+  endif()
 
 # Note: This is ONLY valid On Windows
-ENDIF(WIN32)
+endif(WIN32)
 

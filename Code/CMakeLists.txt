@@ -12,17 +12,17 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Libs)
+add_subdirectory(Libs)
 
-IF(BUILD_COMMAND_LINE_PROGRAMS)
-  ADD_SUBDIRECTORY(Applications)
-ENDIF()
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  add_subdirectory(Applications)
+endif()
 
-IF(BUILD_COMMAND_LINE_SCRIPTS)
-  ADD_SUBDIRECTORY(Scripts)
-ENDIF()
+if(BUILD_COMMAND_LINE_SCRIPTS)
+  add_subdirectory(Scripts)
+endif()
 
-IF(BUILD_GUI)
-  ADD_SUBDIRECTORY(Gui)
-ENDIF(BUILD_GUI)
+if(BUILD_GUI)
+  add_subdirectory(Gui)
+endif(BUILD_GUI)
 

@@ -18,21 +18,21 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
-  MESSAGE(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
-ENDIF()
+if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
+  message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
+endif()
 
-SET(proj MITK)
-SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
-IF(QT_FOUND)
-  SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
-ENDIF(QT_FOUND)
-IF(BUILD_OPENCV)
-  SET(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
-ENDIF(BUILD_OPENCV)
-SET(MITK_DEPENDS ${proj})
+set(proj MITK)
+set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
+if(QT_FOUND)
+  set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
+endif(QT_FOUND)
+if(BUILD_OPENCV)
+  set(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
+endif(BUILD_OPENCV)
+set(MITK_DEPENDS ${proj})
 
-IF(NOT DEFINED MITK_DIR)
+if(NOT DEFINED MITK_DIR)
 
     ######################################################################
     # Configure the MITK Superbuild, to decide which plugins we want.
@@ -475,11 +475,11 @@ IF(NOT DEFINED MITK_DIR)
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )
-    SET(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
-    MESSAGE("SuperBuild loading MITK from ${MITK_DIR}")
+    set(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
+    message("SuperBuild loading MITK from ${MITK_DIR}")
 
-ELSE()
+else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF()
+endif()

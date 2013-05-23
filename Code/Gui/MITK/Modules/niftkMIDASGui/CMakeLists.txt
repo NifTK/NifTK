@@ -20,6 +20,6 @@ MITK_CREATE_MODULE(niftkMIDASGui
   QT_MODULE 
 )
 
-TARGET_LINK_LIBRARIES(niftkMIDASGui
+target_link_libraries(niftkMIDASGui
   niftkITK
   )

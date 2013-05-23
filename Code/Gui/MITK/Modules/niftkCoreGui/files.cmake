@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   LookupTables/LookupTableContainer.cxx
   LookupTables/LookupTableSaxHandler.cxx
   LookupTables/LookupTableManager.cxx
@@ -22,7 +22,7 @@ SET(CPP_FILES
   QmitkBitmapOverlay.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   Events/QmitkPaintEventEater.h
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
@@ -30,10 +30,10 @@ SET(MOC_H_FILES
   QmitkSingleWidget.h
 )
 
-SET(UI_FILES
+set(UI_FILES
   Resources/UI/QmitkHelpAboutDialog.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   Resources/niftkCoreGui.qrc
 )

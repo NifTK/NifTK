@@ -20,11 +20,11 @@ MITK_CREATE_MODULE(niftkCoreGui
   QT_MODULE 
 )
 
-TARGET_LINK_LIBRARIES(niftkCoreGui
+target_link_libraries(niftkCoreGui
   niftkITK
   niftkVTK
   )
 
-IF(BUILD_TESTING)
-  #ADD_SUBDIRECTORY(Testing)
-ENDIF(BUILD_TESTING)
+if(BUILD_TESTING)
+  #add_subdirectory(Testing)
+endif(BUILD_TESTING)

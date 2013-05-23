@@ -12,44 +12,44 @@
 #
 #============================================================================*/
 
-MACRO(NIFTK_CREATE_APPLICATION)
+macro(NIFTK_CREATE_APPLICATION)
   MACRO_PARSE_ARGUMENTS(_APP
                         "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
                         ""
                         ${ARGN}
                         )
 
-  IF(NOT _APP_NAME)
-    MESSAGE(FATAL_ERROR "NAME argument cannot be empty.")
-  ENDIF()
+  if(NOT _APP_NAME)
+    message(FATAL_ERROR "NAME argument cannot be empty.")
+  endif()
                         
-  SET(MY_APP_NAME ${_APP_NAME})
+  set(MY_APP_NAME ${_APP_NAME})
 
   # The MITK_USE_MODULE sets up the include path for compile time...
   MITK_USE_MODULE(niftkCore)
   MITK_USE_MODULE(qtsingleapplication)
-  INCLUDE_DIRECTORIES(${ALL_INCLUDE_DIRECTORIES})
+  include_directories(${ALL_INCLUDE_DIRECTORIES})
   
   # ... and here we are specifying additional link time dependencies.
-  SET(_link_libraries
+  set(_link_libraries
     niftkCore
     qtsingleapplication
   )
 
-  SET(_app_options)
-  IF(${NIFTK_SHOW_CONSOLE_WINDOW})
-    LIST(APPEND _app_options SHOW_CONSOLE)
-  ENDIF()
+  set(_app_options)
+  if(${NIFTK_SHOW_CONSOLE_WINDOW})
+    list(APPEND _app_options SHOW_CONSOLE)
+  endif()
 
-  SET(_include_plugins
+  set(_include_plugins
     ${_APP_INCLUDE_PLUGINS}
   )
-  SET(_exclude_plugins
+  set(_exclude_plugins
     ${_APP_EXCLUDE_PLUGINS}
   )
   
   # NOTE: Check CMake/PackageDepends for any additional dependencies.
-  SET(_library_dirs
+  set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
     ${curl_LIBRARY_DIR}
     ${Boost_LIBRARY_DIRS}
@@ -73,10 +73,10 @@ MACRO(NIFTK_CREATE_APPLICATION)
   # of this macro.
   #############################################################################
   
-  IF(APPLE)
-    SET(TMP_MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES})
-    SET(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
-  ENDIF()
+  if(APPLE)
+    set(TMP_MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES})
+    set(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
+  endif()
   
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
@@ -91,12 +91,12 @@ MACRO(NIFTK_CREATE_APPLICATION)
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.
   #############################################################################
-  IF(APPLE)
-    SET(MACOSX_BUNDLE_NAMES ${TMP_MACOSX_BUNDLE_NAMES})
-    SET_TARGET_PROPERTIES(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${MY_APP_NAME})
-    SET_TARGET_PROPERTIES(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_LONG_VERSION_STRING "${NIFTK_VERSION_STRING}_${NIFTK_REVISION_SHORTID}_${NIFTK_DATE_TIME}")
-    SET_TARGET_PROPERTIES(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${NIFTK_VERSION_STRING})
-    SET_TARGET_PROPERTIES(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT ${NIFTK_COPYRIGHT})
-  ENDIF()
+  if(APPLE)
+    set(MACOSX_BUNDLE_NAMES ${TMP_MACOSX_BUNDLE_NAMES})
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER ${MY_APP_NAME})
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_LONG_VERSION_STRING "${NIFTK_VERSION_STRING}_${NIFTK_REVISION_SHORTID}_${NIFTK_DATE_TIME}")
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${NIFTK_VERSION_STRING})
+    set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT ${NIFTK_COPYRIGHT})
+  endif()
   
-ENDMACRO(NIFTK_CREATE_APPLICATION)
+endmacro(NIFTK_CREATE_APPLICATION)

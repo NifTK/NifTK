@@ -18,24 +18,24 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
-  MESSAGE(FATAL_ERROR "NIFTYSIM_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYSIM_ROOT}\".")
-ENDIF()
+if(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
+  message(FATAL_ERROR "NIFTYSIM_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYSIM_ROOT}\".")
+endif()
 
-IF(BUILD_NIFTYSIM)
+if(BUILD_NIFTYSIM)
 
-  SET(proj NIFTYSIM)
-  SET(proj_DEPENDENCIES VTK )
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj} )
-  SET(NIFTYSIM_DEPENDS ${proj})
+  set(proj NIFTYSIM)
+  set(proj_DEPENDENCIES VTK )
+  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(NIFTYSIM_DEPENDS ${proj})
 
-  IF(NOT DEFINED NIFTYSIM_ROOT)
+  if(NOT DEFINED NIFTYSIM_ROOT)
 
-    IF(DEFINED VTK_DIR)
-      SET(USE_VTK ON)
-    ELSE(DEFINED VTK_DIR)
-      SET(USE_VTK OFF)
-    ENDIF(DEFINED VTK_DIR)
+    if(DEFINED VTK_DIR)
+      set(USE_VTK ON)
+    else(DEFINED VTK_DIR)
+      set(USE_VTK OFF)
+    endif(DEFINED VTK_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
 
@@ -54,16 +54,16 @@ IF(BUILD_NIFTYSIM)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    SET(NIFTYSIM_ROOT ${proj_INSTALL})
-    SET(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
-    SET(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
+    set(NIFTYSIM_ROOT ${proj_INSTALL})
+    set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
+    set(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
 
-    MESSAGE("SuperBuild loading NIFTYSIM from ${NIFTYSIM_ROOT}")
+    message("SuperBuild loading NIFTYSIM from ${NIFTYSIM_ROOT}")
 
-  ELSE(NOT DEFINED NIFTYSIM_ROOT)
+  else(NOT DEFINED NIFTYSIM_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NIFTYSIM_ROOT)
+  endif(NOT DEFINED NIFTYSIM_ROOT)
 
-ENDIF(BUILD_NIFTYSIM)
+endif(BUILD_NIFTYSIM)

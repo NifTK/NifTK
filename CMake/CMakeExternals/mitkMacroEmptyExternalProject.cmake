@@ -39,7 +39,7 @@
 # using for example <proj>_DIR. 
 # Doing so allows to keep the external project dependency system happy.
 #
-MACRO(mitkMacroEmptyExternalProject proj dependencies)
+macro(mitkMacroEmptyExternalProject proj dependencies)
 
   ExternalProject_Add(${proj}
     DOWNLOAD_COMMAND ""
@@ -49,4 +49,4 @@ MACRO(mitkMacroEmptyExternalProject proj dependencies)
     DEPENDS 
       ${dependencies}
     )
-ENDMACRO()
+endmacro()

@@ -13,34 +13,34 @@
 #============================================================================*/
 
   
-SET(FFTW_FOUND 0)
+set(FFTW_FOUND 0)
 
-SET(NIFTK_FFTWINSTALL ${NIFTK_INSTALL_PREFIX})
+set(NIFTK_FFTWINSTALL ${NIFTK_INSTALL_PREFIX})
 
-MESSAGE(${NIFTK_FFTWINSTALL})
+message(${NIFTK_FFTWINSTALL})
 
-FIND_PATH(FFTW_INCLUDE_DIR
+find_path(FFTW_INCLUDE_DIR
   fftw3.h
   ${NIFTK_FFTWINSTALL}/include
   /usr/local/include
   /usr/include
   )
 
-FIND_LIBRARY(FFTW_LIBRARIES
+find_library(FFTW_LIBRARIES
   fftw3f       
   ${NIFTK_FFTWINSTALL}/lib
   /usr/local/lib
   /usr/lib
   )
   
-FIND_LIBRARY(FFTW_THREAD_LIBRARIES
+find_library(FFTW_THREAD_LIBRARIES
   fftw3f_threads       
   ${NIFTK_FFTWINSTALL}/lib
   /usr/local/lib
   /usr/lib
   )
   
-FIND_LIBRARY(FFTW_OMP_LIBRARIES
+find_library(FFTW_OMP_LIBRARIES
   fftw3f_omp  
   ${NIFTK_FFTWINSTALL}/lib
   /usr/local/lib
@@ -48,6 +48,6 @@ FIND_LIBRARY(FFTW_OMP_LIBRARIES
   )
 
 
-IF(FFTW_LIBRARIES AND FFTW_INCLUDE_DIR)
-  SET(FFTW_FOUND 1)
-ENDIF(FFTW_LIBRARIES AND FFTW_INCLUDE_DIR)
+if(FFTW_LIBRARIES AND FFTW_INCLUDE_DIR)
+  set(FFTW_FOUND 1)
+endif(FFTW_LIBRARIES AND FFTW_INCLUDE_DIR)

@@ -12,5 +12,5 @@
 #
 #============================================================================*/
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/anonymise.sh ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh @ONLY )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/anonymise.sh ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh @ONLY )
 MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh)

@@ -18,24 +18,24 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
-  MESSAGE(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
-ENDIF()
+if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
+  message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
+endif()
 
-SET(proj VTK)
-SET(proj_DEPENDENCIES )
-SET(VTK_DEPENDS ${proj})
+set(proj VTK)
+set(proj_DEPENDENCIES )
+set(VTK_DEPENDS ${proj})
 
-IF(NOT DEFINED VTK_DIR)
+if(NOT DEFINED VTK_DIR)
 
-  SET(additional_cmake_args )
-  IF(MINGW)
-    SET(additional_cmake_args
+  set(additional_cmake_args )
+  if(MINGW)
+    set(additional_cmake_args
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF
         -DVTK_USE_VIDEO4WINDOWS:BOOL=OFF # no header files provided by MinGW
         )
-  ENDIF(MINGW)
+  endif(MINGW)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
@@ -66,11 +66,11 @@ IF(NOT DEFINED VTK_DIR)
      DEPENDS ${proj_DEPENDENCIES}
     )
 
-  SET(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  MESSAGE("SuperBuild loading VTK from ${VTK_DIR}")
+  set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  message("SuperBuild loading VTK from ${VTK_DIR}")
 
-ELSE(NOT DEFINED VTK_DIR)
+else(NOT DEFINED VTK_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF(NOT DEFINED VTK_DIR)
+endif(NOT DEFINED VTK_DIR)

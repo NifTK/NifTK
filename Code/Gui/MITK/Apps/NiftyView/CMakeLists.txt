@@ -12,10 +12,10 @@
 #
 #============================================================================*/
 
-PROJECT(NiftyView)
-SET(MY_APP_NAME NiftyView)
+project(NiftyView)
+set(MY_APP_NAME NiftyView)
 
-SET(_exclude_plugins
+set(_exclude_plugins
   uk.ac.ucl.cmic.breastsegmentation
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.gui.qt.niftymidas

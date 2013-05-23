@@ -19,6 +19,6 @@ MITK_CREATE_MODULE(niftkIGI
   PACKAGE_DEPENDS ITK NiftyLink
 )
 
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()  
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()  

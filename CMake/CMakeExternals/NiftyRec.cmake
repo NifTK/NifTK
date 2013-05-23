@@ -18,18 +18,18 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYREC_ROOT AND NOT EXISTS ${NIFTYREC_ROOT})
-  MESSAGE(FATAL_ERROR "NIFTYREC_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYREC_ROOT}\".")
-ENDIF()
+if(DEFINED NIFTYREC_ROOT AND NOT EXISTS ${NIFTYREC_ROOT})
+  message(FATAL_ERROR "NIFTYREC_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYREC_ROOT}\".")
+endif()
 
-IF(BUILD_NIFTYREC)
+if(BUILD_NIFTYREC)
 
-  SET(proj NIFTYREC)
-  SET(proj_DEPENDENCIES NIFTYREG )
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj} )
-  SET(NIFTYREC_DEPENDS ${proj})
+  set(proj NIFTYREC)
+  set(proj_DEPENDENCIES NIFTYREG )
+  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(NIFTYREC_DEPENDS ${proj})
 
-  IF(NOT DEFINED NIFTYREC_ROOT)
+  if(NOT DEFINED NIFTYREC_ROOT)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREC ${NIFTK_LOCATION_NIFTYREC})
 
@@ -46,16 +46,16 @@ IF(BUILD_NIFTYREC)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    SET(NIFTYREC_ROOT ${proj_INSTALL})
-    SET(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
-    SET(NIFTYREC_LIBRARY_DIR "${NIFTYREC_ROOT}/lib")
+    set(NIFTYREC_ROOT ${proj_INSTALL})
+    set(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
+    set(NIFTYREC_LIBRARY_DIR "${NIFTYREC_ROOT}/lib")
 
-    MESSAGE("SuperBuild loading NIFTYREC from ${NIFTYREC_ROOT}")
+    message("SuperBuild loading NIFTYREC from ${NIFTYREC_ROOT}")
 
-  ELSE(NOT DEFINED NIFTYREC_ROOT)
+  else(NOT DEFINED NIFTYREC_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NIFTYREC_ROOT)
+  endif(NOT DEFINED NIFTYREC_ROOT)
 
-ENDIF(BUILD_NIFTYREC)
+endif(BUILD_NIFTYREC)

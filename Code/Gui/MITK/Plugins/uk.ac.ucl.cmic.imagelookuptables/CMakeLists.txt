@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_imagelookuptables)
+project(uk_ac_ucl_cmic_imagelookuptables)
 
 set(QT_USE_QTXML TRUE)
 

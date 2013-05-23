@@ -12,9 +12,9 @@
 #
 #============================================================================*/
 
-FILE(GLOB DOXIN_FILES *.dox.in)
+file(GLOB DOXIN_FILES *.dox.in)
 
-FOREACH(doxin ${DOXIN_FILES})
-  GET_FILENAME_COMPONENT(basename ${doxin} NAME_WE)
-  CONFIGURE_FILE(${doxin} ${CMAKE_BINARY_DIR}/Doxygen/${basename}.dox @ONLY)
-ENDFOREACH()
+foreach(doxin ${DOXIN_FILES})
+  get_filename_component(basename ${doxin} NAME_WE)
+  configure_file(${doxin} ${CMAKE_BINARY_DIR}/Doxygen/${basename}.dox @ONLY)
+endforeach()
