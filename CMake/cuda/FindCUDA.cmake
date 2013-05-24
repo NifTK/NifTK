@@ -544,7 +544,10 @@ if (MSVC)
   
   set(CUDA_DLL_SUFFIX "${CUDA_DLL_SUFFIX}_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}_*.dll")
   file(GLOB CUDA_CUDART_DLL ${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart${CUDA_DLL_SUFFIX})
+  
+  get_filename_component(CUDA_CUDART_DLL_NAME ${CUDA_CUDART_DLL} NAME)
   # message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
+  # message("CUDA_CUDART_DLL_NAME=${CUDA_CUDART_DLL_NAME}")
 endif (MSVC)
 
 #######################
