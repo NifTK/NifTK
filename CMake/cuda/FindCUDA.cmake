@@ -435,8 +435,8 @@ find_program(CUDA_NVCC_EXECUTABLE
 find_program(CUDA_NVCC_EXECUTABLE nvcc)
 mark_as_advanced(CUDA_NVCC_EXECUTABLE)
 
-if(CUDA_NVCC_EXECUTABLE AND NOT CUDA_VERSION)
-  # Compute the version.
+if(CUDA_NVCC_EXECUTABLE)
+  # (re-)compute the version.
   exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
   string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" CUDA_VERSION_MAJOR ${NVCC_OUT})
   string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" CUDA_VERSION_MINOR ${NVCC_OUT})
@@ -492,7 +492,7 @@ if(MSVC)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CUDA_LIB_PATH_FRAGMENT "lib/x64" )
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BOOST_LIBRARY "lib/win32" )
+    set(CUDA_LIB_PATH_FRAGMENT "lib/win32" )
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 else(MSVC)
   set(CUDA_LIB_PATH_FRAGMENT "")
@@ -529,6 +529,23 @@ mark_as_advanced(
   CUDA_CUDA_LIBRARY
   CUDA_CUDART_LIBRARY
   )
+  
+  
+# we want to know dll filenames on windows.
+# this allows us to delay-load cuda, i.e. proceed at load time and only fail at runtime.
+if (MSVC)
+   # cudart64_50_35.dll
+   # cudart32_50_35.dll
+   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_DLL_SUFFIX "64" )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_DLL_SUFFIX "32" )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  
+  set(CUDA_DLL_SUFFIX "${CUDA_DLL_SUFFIX}_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}_*.dll")
+  file(GLOB CUDA_CUDART_DLL ${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart${CUDA_DLL_SUFFIX})
+  # message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
+endif (MSVC)
 
 #######################
 # Look for some of the toolkit helper libraries
