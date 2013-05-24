@@ -391,12 +391,15 @@ endif()
 if(NOT CUDA_TOOLKIT_ROOT_DIR)
 
   # Search in the CUDA_BIN_PATH first.
+  # for cuda 5 on windows, the env var CUDA_BIN_PATH does not exist.
+  # instead it's CUDA_PATH
   find_path(CUDA_TOOLKIT_ROOT_DIR
     NAMES nvcc nvcc.exe
     PATHS ENV CUDA_BIN_PATH
     DOC "Toolkit location."
     NO_DEFAULT_PATH
     )
+
   # Now search default paths
   find_path(CUDA_TOOLKIT_ROOT_DIR
     NAMES nvcc nvcc.exe
