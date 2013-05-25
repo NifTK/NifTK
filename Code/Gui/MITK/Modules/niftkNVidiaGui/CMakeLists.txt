@@ -31,8 +31,19 @@ target_link_libraries(niftkNVidiaGui
   niftknvapi
   mitkOpenCVVideoSupport
   Winmm.lib
+  ${CUDA_CUDA_LIBRARY}
+  ${CUDA_CUDART_LIBRARY}
   )
-  
-if(BUILD_TESTING)  
+
+
+if(MSVC)
+  # all of the nvidia-driver/cuda dependencies should be delay-loaded
+  #  so this library would at least load on a machine that doesnt have nv hardware
+  set_target_properties(niftkNVidiaGui PROPERTIES LINK_FLAGS 
+    "/DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
+endif(MSVC)
+
+
+if(BUILD_TESTING)
   add_subdirectory(Testing)
 endif()
