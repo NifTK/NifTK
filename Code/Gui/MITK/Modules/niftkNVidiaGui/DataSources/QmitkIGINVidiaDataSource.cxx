@@ -36,7 +36,7 @@ const char*    QmitkIGINVidiaDataSource::s_SDIFieldModePropertyName           = 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
-, m_Pimpl(new QmitkIGINVidiaDataSourceImpl), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
+, m_Pimpl(0), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
 , m_WasSavingMessagesPreviously(false)
 {
   this->SetName("QmitkIGINVidiaDataSource");
@@ -44,18 +44,28 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
   this->SetDescription("NVidia SDI");
   this->SetStatus("Initialising...");
 
-  // pre-create any number of datastorage nodes to avoid threading issues
-  for (int i = 0; i < 4; ++i)
+  try
   {
-    std::ostringstream  nodename;
-    nodename << s_NODE_NAME << i;
+    m_Pimpl = new QmitkIGINVidiaDataSourceImpl;
 
-    mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+    // pre-create any number of datastorage nodes to avoid threading issues
+    for (int i = 0; i < 4; ++i)
+    {
+      std::ostringstream  nodename;
+      nodename << s_NODE_NAME << i;
+
+      mitk::DataNode::Pointer node = this->GetDataNode(nodename.str());
+    }
+
+    // needs to match GUI combobox's default!
+    m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) STACK_FIELDS);
+    StartCapturing();
   }
-
-  // needs to match GUI combobox's default!
-  m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) STACK_FIELDS);
-  StartCapturing();
+  catch (const std::exception& e)
+  {
+    // FIXME: should we rethrow this?
+    this->SetStatus(e.what());
+  }
 }
 
 
@@ -91,6 +101,8 @@ void QmitkIGINVidiaDataSource::SetFieldMode(InterlacedBehaviour b)
     throw std::runtime_error("Cannot change capture parameter while capture is in progress");
   }
 
+  // until i've figured out suitable error handling lets just assert
+  assert(m_Pimpl);
   m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) b);
 }
 
@@ -136,6 +148,8 @@ void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
 void QmitkIGINVidiaDataSource::StartCapturing()
 {
   m_MostRecentSequenceNumber = 1;
+  // until i've figured out suitable error handling lets just assert
+  assert(m_Pimpl);
   m_Pimpl->start();
   this->InitializeAndRunGrabbingThread(20);
 }
@@ -147,14 +161,22 @@ void QmitkIGINVidiaDataSource::StopCapturing()
   // grabbing thread needs to stop before we can stop sdi thread
   // otherwise it could still be sending signals to the not-anymore-existing sdi thread.
   StopGrabbingThread();
-  m_Pimpl->ForciblyStop();
+
+  if (m_Pimpl)
+  {
+    m_Pimpl->ForciblyStop();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::IsCapturing()
 {
-  bool result = m_Pimpl->isRunning();
+  bool result = m_Pimpl != 0;
+  if (result)
+  {
+    result = m_Pimpl->isRunning();
+  }
   return result;
 }
 
@@ -206,6 +228,9 @@ void QmitkIGINVidiaDataSource::GrabData()
 //-----------------------------------------------------------------------------
 bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
 {
+  // until i've figured out suitable error handling lets just assert
+  assert(m_Pimpl);
+
   bool result = true;
 
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);

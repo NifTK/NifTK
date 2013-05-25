@@ -69,27 +69,27 @@ QmitkIGINVidiaDataSource* QmitkIGINVidiaDataSourceGui::GetQmitkIGINVidiaDataSour
 void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
 {
   setupUi(this);
-  connect(FieldModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFieldModeChange(int)));
 
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
     if (m_OglWin == 0)
     {
-      // query for ogl context, etc
-      // this should never fail, even if there's no sdi hardware
       QGLWidget* capturecontext = source->GetCaptureContext();
-      assert(capturecontext != 0);
+      if (capturecontext != 0)
+      {
+        // one preview window for all channels
+        m_OglWin = new QmitkVideoPreviewWidget(PreviewGroupBox, capturecontext);
+        PreviewGroupBox->layout()->addWidget(m_OglWin);
+        m_OglWin->show();
 
-      // one preview window for all channels
-      m_OglWin = new QmitkVideoPreviewWidget(PreviewGroupBox, capturecontext);
-      PreviewGroupBox->layout()->addWidget(m_OglWin);
-      m_OglWin->show();
+        connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
+        // connect gui controls only if everything else is fine
+        connect(FieldModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFieldModeChange(int)));
 
-      connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
-
-      // explicitly update at least once
-      OnUpdateDisplay();
+        // explicitly update at least once
+        OnUpdateDisplay();
+      }
     }
   }
   else
