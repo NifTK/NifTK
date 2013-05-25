@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.14 *****
+@echo ***** NifTK Automated Build Script - v.15 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -184,6 +184,8 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 ) else (
   @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
 )
+
+@if defined CUDA_PATH PATH=%PATH%;%CUDA_PATH%\bin
 
 @echo.
 @echo The current system path:
