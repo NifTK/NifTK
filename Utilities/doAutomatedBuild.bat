@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.13 *****
+@echo ***** NifTK Automated Build Script - v.14 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -46,6 +46,10 @@
 @echo CMake generator:        %CMAKE_GENERATOR%
 @echo Date Stamp:             %DATESTAMP%
 @echo.
+
+@rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
+@rem http://stackoverflow.com/questions/12174877/visual-studio-2012-rtm-has-msbuild-exe-in-memory-after-close
+@set MSBUILDDISABLENODEREUSE=1
 
 @if ["%BTYPE%"] == ["x64"] (
   @REM *****  Setting environmental variables for x64  *****
