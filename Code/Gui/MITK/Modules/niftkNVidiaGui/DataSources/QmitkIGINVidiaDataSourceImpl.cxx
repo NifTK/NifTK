@@ -701,7 +701,21 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
     // when we get a new compressor we want to start counting from zero again
     m_NumFramesCompressed = 0;
 
-    compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
+    // it's unlikely that we'll ever catch an exception here.
+    // all the other bits around the sdi data source would start failing earlier
+    // if there's something wrong and we'd never even get here.
+    try
+    {
+      compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
+    }
+    catch (...)
+    {
+      // die straight away
+      CUcontext ctx;
+      cuCtxPopCurrent(&ctx);
+      *frameindex = 0;
+      return;
+    }
   }
   else
   {
