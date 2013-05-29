@@ -38,9 +38,11 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 , m_BackCamera(NULL)
 , m_FrontCamera(NULL)
 , m_DataStorage(NULL)
+, m_ImageDataNode(NULL)
 , m_IsEnabled(false)
 , m_Opacity(0.5)
-, m_ImageDataNode(NULL)
+, m_AutoSelectNodes(false)
+, m_FlipViewUp(false)
 , m_ImageData(NULL)
 , m_UsingNVIDIA(false)
 , m_ImageInNode(NULL)
@@ -56,6 +58,9 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 //-----------------------------------------------------------------------------
 QmitkBitmapOverlay::~QmitkBitmapOverlay()
 {
+
+  this->DeRegisterDataStorageListeners();
+
   if ( m_RenderWindow != NULL )
   {
     if ( this->IsEnabled() )
@@ -97,9 +102,56 @@ QmitkBitmapOverlay::~QmitkBitmapOverlay()
 
 
 //-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::DeRegisterDataStorageListeners()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->AddNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+      (this, &QmitkBitmapOverlay::NodeAdded ) );
+
+    m_DataStorage->RemoveNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+       (this, &QmitkBitmapOverlay::NodeRemoved ) );
+
+    if (m_ImageDataNode.IsNotNull())
+    {
+      m_DataStorage->ChangedNodeEvent.RemoveListener
+        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+        (this, &QmitkBitmapOverlay::NodeChanged ) );
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 {
+  if (m_DataStorage.IsNotNull() && m_DataStorage != dataStorage)
+  {
+    this->DeRegisterDataStorageListeners();
+  }
+
   m_DataStorage = dataStorage;
+
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->AddNodeEvent.AddListener
+      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+       (this, &QmitkBitmapOverlay::NodeAdded ) );
+
+    m_DataStorage->RemoveNodeEvent.AddListener
+      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+       (this, &QmitkBitmapOverlay::NodeRemoved ) );
+
+    if (m_ImageDataNode.IsNotNull() && m_DataStorage->Exists(m_ImageDataNode))
+    {
+      m_DataStorage->ChangedNodeEvent.AddListener
+        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+        (this, &QmitkBitmapOverlay::NodeChanged ) );
+    }
+  }
+
   this->Modified();
 }
 
@@ -129,64 +181,11 @@ bool QmitkBitmapOverlay::IsEnabled()
 //-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::Enable()
 {
-  if(m_IsEnabled)
-    return;
-
- if(m_RenderWindow != NULL)
+  if ( !this->IsEnabled() )
   {
-    //check the data storage for a suitable target
-    //if (!  m_ImageDataNode.IsNull() )
-    if ( ! m_DataStorage.IsNull() )
-    {
-      m_ImageDataNode = m_DataStorage->GetNamedNode("NVIDIA SDI stream 0");
-      if ( m_ImageDataNode.IsNotNull() )
-      {
-        m_UsingNVIDIA=true;
-      }
-      else
-      {
-        m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
-        m_UsingNVIDIA=false;
-      }
-      if ( ! m_ImageDataNode.IsNull() )
-      {
-        m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
-    
-        if ( ! m_ImageInNode.IsNull() )
-        {
-          m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
-          m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
-
-
-          m_BackActor->SetOpacity(1.0);
-          m_FrontActor->SetOpacity(m_Opacity);
-
-          m_BackRenderer->AddActor( m_BackActor );
-          m_FrontRenderer->AddActor( m_FrontActor );
-          m_BackRenderer->InteractiveOff();
-          m_FrontRenderer->InteractiveOff();
-
-          SetupCamera();
-
-         // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-          mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
-
-          m_IsEnabled = true;
-          m_DataStorage->ChangedNodeEvent.AddListener 
-            (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-            (this, &QmitkBitmapOverlay::NodeChanged ) );
-        }
-      }
-
-      m_DataStorage->AddNodeEvent.AddListener 
-        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-         (this, &QmitkBitmapOverlay::NodeAdded ) );
-
-      m_DataStorage->RemoveNodeEvent.AddListener 
-        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-         (this, &QmitkBitmapOverlay::NodeRemoved ) );
-    }
-
+    // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
+    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+    m_IsEnabled = true;
   }
 }
 
@@ -196,10 +195,113 @@ void QmitkBitmapOverlay::Disable()
 {
   if ( this->IsEnabled() )
   {
-   // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
+    // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
     m_IsEnabled = false;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::NodeAdded (const mitk::DataNode * node)
+{
+  if (this->GetAutoSelectNodes()
+    && node != NULL
+    )
+  {
+    // ToDo: These strings hard coded, as this widget in niftkCoreGui rather than niftkIGIGui.
+    if (node->GetName() == "NVIDIA SDI stream 0")
+    {
+      this->SetFlipViewUp(true);
+      this->SetNode(node);
+    }
+    else if (node->GetName() == "OpenCV image")
+    {
+      this->SetFlipViewUp(false);
+      this->SetNode(node);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::NodeRemoved (const mitk::DataNode * node )
+{
+  if ( node == m_ImageDataNode )
+  {
+    m_DataStorage->ChangedNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+      (this, &QmitkBitmapOverlay::NodeChanged ) );
+
+    this->Disable();
+    m_ImageDataNode = NULL;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
+{
+  if ( node == m_ImageDataNode )
+  {
+    // Do some kind of update?
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
+{
+  bool wasSuccessful = false;
+
+  if (node == NULL)
+  {
+    MITK_ERROR << "QmitkBitmapOverlay::SetNode: Error, node is NULL" << std::endl;
+    return wasSuccessful;
+  }
+
+  if (m_DataStorage.IsNull())
+  {
+    MITK_ERROR << "QmitkBitmapOverlay::SetNode: Error, DataStorage is NULL" << std::endl;
+    return wasSuccessful;
+  }
+
+  if(this->IsEnabled())
+  {
+    this->Disable();
+  }
+
+  if(m_RenderWindow != NULL)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
+    if (image != NULL)
+    {
+      m_FrontActor->SetInput(image->GetVtkImageData());
+      m_BackActor->SetInput(image->GetVtkImageData());
+
+      m_BackActor->SetOpacity(1.0);
+      m_FrontActor->SetOpacity(m_Opacity);
+
+      m_BackRenderer->AddActor( m_BackActor );
+      m_FrontRenderer->AddActor( m_FrontActor );
+      m_BackRenderer->InteractiveOff();
+      m_FrontRenderer->InteractiveOff();
+
+      SetupCamera();
+
+      m_DataStorage->ChangedNodeEvent.AddListener
+        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+        (this, &QmitkBitmapOverlay::NodeChanged ) );
+
+      m_ImageDataNode = const_cast<mitk::DataNode*>(node);
+
+      this->Enable();
+
+      wasSuccessful = true;
+    } // end if valid image
+  } // end if valid render window.
+
+ return wasSuccessful;
 }
 
 
@@ -265,111 +367,8 @@ void QmitkBitmapOverlay::SetupCamera()
 }
 
 
-//-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
-{
-  if ( node == m_ImageDataNode ) 
-  {
-    if ( ! m_ImageInNode.IsNull() )
-    {
-      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
-      if ( ! m_ImageInNode.IsNull() )
-      {
-        m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
-        m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
-      }
-      m_ImageInNode->GetVtkImageData()->Modified();
-    }
-    else 
-    {
-      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
-      if ( ! m_ImageInNode.IsNull() )
-      {
-         m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
-         m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
-
-         m_BackActor->SetOpacity(1.0);
-         m_FrontActor->SetOpacity(m_Opacity);
-
-         m_BackRenderer->AddActor( m_BackActor );
-         m_FrontRenderer->AddActor( m_FrontActor );
-         m_BackRenderer->InteractiveOff();
-         m_FrontRenderer->InteractiveOff();
-
-         SetupCamera();
-
-        // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
-
-         m_IsEnabled = true;
-      }
-    }
-  }
-}
 
 
-//-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeAdded (const mitk::DataNode * node)
-{
-  if ( m_ImageDataNode.IsNull() )
-  {
-    m_ImageDataNode = m_DataStorage->GetNamedNode("NVIDIA SDI stream 0");
-    if ( m_ImageDataNode.IsNotNull() )
-    {
-      m_UsingNVIDIA=true;
-    }
-    else
-    {
-      m_UsingNVIDIA=false;
-      m_ImageDataNode = m_DataStorage->GetNamedNode("OpenCV image");
-    }
-    if ( ! m_ImageDataNode.IsNull() )
-    {
-      mitk::Image::Pointer imageInNode; 
-      m_ImageInNode = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());  
-    
-      if ( ! m_ImageInNode.IsNull() )
-      {
-         m_FrontActor->SetInput(m_ImageInNode->GetVtkImageData());
-         m_BackActor->SetInput(m_ImageInNode->GetVtkImageData());
-
-         m_BackActor->SetOpacity(1.0);
-         m_FrontActor->SetOpacity(m_Opacity);
-
-         m_BackRenderer->AddActor( m_BackActor );
-         m_FrontRenderer->AddActor( m_FrontActor );
-         m_BackRenderer->InteractiveOff();
-         m_FrontRenderer->InteractiveOff();
-
-         SetupCamera();
-
-       //  mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-         mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
-
-         m_IsEnabled = true;
-       }
-
-      m_DataStorage->ChangedNodeEvent.AddListener 
-        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-        (this, &QmitkBitmapOverlay::NodeChanged ) );
-     }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeRemoved (const mitk::DataNode * node )
-{
-  if ( node == m_ImageDataNode )
-  {
-    m_DataStorage->ChangedNodeEvent.RemoveListener 
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-      (this, &QmitkBitmapOverlay::NodeChanged ) );
-   // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
-    mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
-    m_ImageDataNode = NULL; 
-  }
-}
 
 
 

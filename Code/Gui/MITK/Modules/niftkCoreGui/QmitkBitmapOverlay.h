@@ -60,10 +60,22 @@ public:
   itkGetMacro(RenderWindow, vtkRenderWindow*);
 
   /**
-   * \brief Setter and Getter for opacity.
+   * \brief Setter and Getter for Opacity.
    */
   itkSetMacro(Opacity, double);
   itkGetMacro(Opacity, double);
+
+  /**
+   * \brief Setter and Getter for AutoSelectNodes, which if true will try and select relevant nodes ("NVIDIA SDI stream 0", "OpenCV image") by name.
+   */
+  itkSetMacro(AutoSelectNodes, bool);
+  itkGetMacro(AutoSelectNodes, bool);
+
+  /**
+   * \brief Setter and Getter for whether to flip the view up vector of the VTK camera, which is necessary for NVidia and not necessary for OpenCV.
+   */
+  itkSetMacro(FlipViewUp, bool);
+  itkGetMacro(FlipViewUp, bool);
 
   /**
    * \brief Checks if the image is currently enabled (visible)
@@ -82,6 +94,12 @@ public:
    */
   virtual void Disable();
 
+  /**
+   * \brief Set the current data node to display as an overlay.
+   * This method will check that the input is indeed an image.
+   * \return true if successful and false otherwise.
+   */
+  virtual bool SetNode(const mitk::DataNode* node);
 
 protected:
 
@@ -94,17 +112,17 @@ protected:
 private:
 
   /**
-   * \brief Called when a DataStorage Change Event was emmitted.
+   * \brief Called when a DataStorage Change Event was emitted.
    */
   void NodeChanged(const mitk::DataNode* node);
 
   /**
-   * \brief Called when a DataStorage Node Added Event was emmitted.
+   * \brief Called when a DataStorage Node Added Event was emitted.
    */
   void NodeAdded(const mitk::DataNode* node);
 
   /**
-   * \brief Called when a DataStorage Node Removed Event was emmitted.
+   * \brief Called when a DataStorage Node Removed Event was emitted.
    */
   void NodeRemoved(const mitk::DataNode* node);
 
@@ -113,6 +131,12 @@ private:
    */
   void SetupCamera();
 
+  /**
+   * \brief Utility method to deregister data storage listeners.
+   */
+  void DeRegisterDataStorageListeners();
+
+  // We don't own this, so neither do we delete this.
   vtkRenderWindow*            m_RenderWindow;
 
   vtkRenderer*                m_BackRenderer;
@@ -124,10 +148,13 @@ private:
   vtkCamera*                  m_FrontCamera;
 
   mitk::DataStorage::Pointer  m_DataStorage;
+  mitk::DataNode::Pointer     m_ImageDataNode;
   bool                        m_IsEnabled;
   double                      m_Opacity;
+  bool                        m_AutoSelectNodes;
+  bool                        m_FlipViewUp;
 
-  mitk::DataNode::Pointer     m_ImageDataNode;
+
   char *                      m_ImageData;
   bool                        m_UsingNVIDIA;
   mitk::Image::Pointer        m_ImageInNode;
