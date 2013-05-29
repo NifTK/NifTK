@@ -1,156 +1,120 @@
-/*===================================================================
+/*=============================================================================
 
-The Medical Imaging Interaction Toolkit (MITK)
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) German Cancer Research Center,
-Division of Medical and Biological Informatics.
-All rights reserved.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-See LICENSE.txt or http://www.mitk.org for details.
+  See LICENSE.txt in the top level directory for details.
 
-===================================================================*/
+=============================================================================*/
 
-#ifndef _vtk_BitmapOverlay_h_
-#define _vtk_BitmapOverlay_h_
+#ifndef QmitkBitmapOverlay_h
+#define QmitkBitmapOverlay_h
 
-
+#include "niftkCoreGuiExports.h"
 #include <mitkBaseData.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
+
 class vtkRenderer;
 class vtkRenderWindow;
 class vtkMapper;
 class vtkCamera;
 class vtkImageActor;
 class vtkImageMapper;
-class vtkLookupTable;
-class vtkPolyData;
-class vtkPNGReader;
-class vtkImageImport;
 
-
-class RenderWindow;
 /**
- * Renders a company logo in the foreground
- * of a vtkRenderWindow.
-
+ * \class QmitkBitmapOverlay
+ * \brief Used to draw a 2D image into the background of a VTK Render Window.
  */
-class BitmapOverlay : public mitk::BaseData
+class NIFTKCOREGUI_EXPORT QmitkBitmapOverlay : public itk::Object
 {
 public:
 
-  mitkClassMacro( BitmapOverlay, BaseData );
-
+  mitkClassMacro( QmitkBitmapOverlay, itk::Object );
   itkNewMacro( Self );
 
   /**
-   * Sets the renderwindow, in which the logo
-   * will be shown. Make sure, you have called this function
-   * before calling Enable()
+   * \brief Set a pointer to the mitk::DataStorage containing the image data for the overlay.
+   */
+  void SetDataStorage (mitk::DataStorage::Pointer);
+
+  /**
+   * \brief Returns the vtkRenderer responsible for rendering the image into the vtkRenderWindow.
+   */
+  virtual vtkRenderer* GetVtkRenderer();
+
+  /**
+   * \brief Sets the vtkRenderWindow in which the image will be shown.
+   * Make sure, you have called this function before calling Enable()
    */
   virtual void SetRenderWindow( vtkRenderWindow* renderWindow );
 
   /**
-   * Sets the opacity level of the logo.
+   * \brief Returns the vtkRenderWindow, which is used for displaying the image.
    */
-  virtual void SetOpacity(double opacity);
+  itkGetMacro(RenderWindow, vtkRenderWindow*);
 
   /**
-   * Enables drawing of the logo.
+   * \brief Setter and Getter for opacity.
+   */
+  itkSetMacro(Opacity, double);
+  itkGetMacro(Opacity, double);
+
+  /**
+   * \brief Checks if the image is currently enabled (visible)
+   */
+  virtual bool IsEnabled();
+
+  /**
+   * \brief Enables drawing of the image.
    * If you want to disable it, call the Disable() function.
    */
   virtual void Enable();
 
   /**
-   * Disables drawing of the logo.
+   * \brief Disables drawing of the image.
    * If you want to enable it, call the Enable() function.
    */
   virtual void Disable();
 
-  /**
-   * Checks, if the logo is currently
-   * enabled (visible)
-   */
-  virtual bool IsEnabled();
+
+protected:
+
+  QmitkBitmapOverlay(); // Purposefully hidden.
+  virtual ~QmitkBitmapOverlay(); // Purposefully hidden.
+
+  QmitkBitmapOverlay(const QmitkBitmapOverlay&); // Purposefully not implemented.
+  QmitkBitmapOverlay& operator=(const QmitkBitmapOverlay&); // Purposefully not implemented.
+
+private:
 
   /**
-   * Empty implementation, since the BitmapOverlay doesn't
-   * support the requested region concept
+   * \brief Called when a DataStorage Change Event was emmitted.
    */
-  virtual void SetRequestedRegionToLargestPossibleRegion();
-
-  /**
-   * Empty implementation, since the BitmapOverlay doesn't
-   * support the requested region concept
-   */
-  virtual bool RequestedRegionIsOutsideOfTheBufferedRegion();
-
-  /**
-   * Empty implementation, since the BitmapOverlay doesn't
-   * support the requested region concept
-   */
-  virtual bool VerifyRequestedRegion();
-
-  /**
-   * Empty implementation, since the BitmapOverlay doesn't
-   * support the requested region concept
-   */
-  virtual void SetRequestedRegion(itk::DataObject*);
-
-  /**
-   * Returns the vtkRenderWindow, which is used
-   * for displaying the logo
-   */
-  virtual vtkRenderWindow* GetRenderWindow();
-
-  /**
-   * Returns the renderer responsible for
-   * rendering the logo into the
-   * vtkRenderWindow
-   */
-  virtual vtkRenderer* GetVtkRenderer();
-
-  /**
-   * Returns the actor associated with the logo
-   */
-  virtual vtkImageActor* GetActor();
-
-  /**
-   * Returns the mapper associated with the logo
-   */
-  virtual vtkImageMapper* GetMapper();
-
-  /**
-   * Set a pointer to a data storage  for the overlay
-   */
-  void SetDataStorage (mitk::DataStorage::Pointer);
-
- /// \brief Called when a DataStorage Change Event was emmitted.
   void NodeChanged(const mitk::DataNode* node);
 
- /// \brief Called when a DataStorage Node Added Event was emmitted.
+  /**
+   * \brief Called when a DataStorage Node Added Event was emmitted.
+   */
   void NodeAdded(const mitk::DataNode* node);
- /// \brief Called when a DataStorage Node Added Event was emmitted.
+
+  /**
+   * \brief Called when a DataStorage Node Removed Event was emmitted.
+   */
   void NodeRemoved(const mitk::DataNode* node);
-protected:
-protected:
+
+  /**
+   * \brief Private method to ...
+   */
   void SetupCamera();
 
-  /**
-   * Constructor
-   */
-  BitmapOverlay();
-
-  /**
-   * Destructor
-   */
-  ~BitmapOverlay();
-
   vtkRenderWindow*            m_RenderWindow;
+
   vtkRenderer*                m_BackRenderer;
   vtkRenderer*                m_FrontRenderer;
   vtkImageActor*              m_BackActor;
@@ -159,16 +123,14 @@ protected:
   vtkCamera*                  m_BackCamera;
   vtkCamera*                  m_FrontCamera;
 
+  mitk::DataStorage::Pointer  m_DataStorage;
   bool                        m_IsEnabled;
-
   double                      m_Opacity;
 
-  char *                      m_ImageData;
-
   mitk::DataNode::Pointer     m_ImageDataNode;
-  mitk::DataStorage::Pointer  m_DataStorage;
-  mitk::Image::Pointer        m_ImageInNode;
+  char *                      m_ImageData;
   bool                        m_UsingNVIDIA;
+  mitk::Image::Pointer        m_ImageInNode;
 
 };
 

@@ -267,7 +267,7 @@ protected:
 
  // mitk::ManufacturerLogo::Pointer m_LogoRendering1;
   CMICLogo::Pointer m_LogoRendering1;
-  BitmapOverlay::Pointer m_BitmapOverlay1;
+  QmitkBitmapOverlay::Pointer m_BitmapOverlay1;
 
   mitk::GradientBackground::Pointer m_GradientBackground1;
   bool m_GradientBackgroundFlag;

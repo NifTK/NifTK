@@ -245,7 +245,7 @@ void QmitkSingleWidget::InitializeWidget()
     mitkWidget1->GetRenderWindow() );
   m_LogoRendering1->Disable();
 
-  m_BitmapOverlay1 = BitmapOverlay::New();
+  m_BitmapOverlay1 = QmitkBitmapOverlay::New();
   m_BitmapOverlay1->SetRenderWindow(
     mitkWidget1->GetRenderWindow() );
 
