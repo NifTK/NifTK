@@ -153,12 +153,6 @@ private:
   double                      m_Opacity;
   bool                        m_AutoSelectNodes;
   bool                        m_FlipViewUp;
-
-
-  char *                      m_ImageData;
-  bool                        m_UsingNVIDIA;
-  mitk::Image::Pointer        m_ImageInNode;
-
 };
 
 #endif

@@ -43,9 +43,6 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 , m_Opacity(0.5)
 , m_AutoSelectNodes(false)
 , m_FlipViewUp(false)
-, m_ImageData(NULL)
-, m_UsingNVIDIA(false)
-, m_ImageInNode(NULL)
 {
   m_BackRenderer        = vtkRenderer::New();
   m_FrontRenderer       = vtkRenderer::New();
@@ -92,11 +89,6 @@ QmitkBitmapOverlay::~QmitkBitmapOverlay()
   if ( m_FrontRenderer != NULL )
   {
     m_FrontRenderer->Delete();
-  }
-
-  if ( m_ImageData != NULL)
-  {
-    delete[] m_ImageData;
   }
 }
 
@@ -233,7 +225,8 @@ void QmitkBitmapOverlay::NodeRemoved (const mitk::DataNode * node )
       (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
       (this, &QmitkBitmapOverlay::NodeChanged ) );
 
-    this->Disable();
+    this->SetNode(NULL);
+
     m_ImageDataNode = NULL;
   }
 }
@@ -244,6 +237,8 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
 {
   if ( node == m_ImageDataNode )
   {
+    std::cerr << "Matt, QmitkBitmapOverlay::NodeChanged" << std::endl;
+
     // Do some kind of update?
   }
 }
@@ -253,12 +248,6 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
 bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 {
   bool wasSuccessful = false;
-
-  if (node == NULL)
-  {
-    MITK_ERROR << "QmitkBitmapOverlay::SetNode: Error, node is NULL" << std::endl;
-    return wasSuccessful;
-  }
 
   if (m_DataStorage.IsNull())
   {
@@ -273,32 +262,43 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 
   if(m_RenderWindow != NULL)
   {
-    mitk::Image* image = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
-    if (image != NULL)
+    if (node == NULL)
     {
-      m_FrontActor->SetInput(image->GetVtkImageData());
-      m_BackActor->SetInput(image->GetVtkImageData());
-
-      m_BackActor->SetOpacity(1.0);
-      m_FrontActor->SetOpacity(m_Opacity);
-
-      m_BackRenderer->AddActor( m_BackActor );
-      m_FrontRenderer->AddActor( m_FrontActor );
-      m_BackRenderer->InteractiveOff();
-      m_FrontRenderer->InteractiveOff();
-
-      SetupCamera();
-
-      m_DataStorage->ChangedNodeEvent.AddListener
-        (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-        (this, &QmitkBitmapOverlay::NodeChanged ) );
-
-      m_ImageDataNode = const_cast<mitk::DataNode*>(node);
-
-      this->Enable();
-
+      m_FrontActor->SetInput(NULL);
+      m_BackActor->SetInput(NULL);
       wasSuccessful = true;
-    } // end if valid image
+    }
+    else
+    {
+      mitk::Image* image = dynamic_cast<mitk::Image*>(m_ImageDataNode->GetData());
+      if (image != NULL)
+      {
+        m_FrontActor->SetInput(image->GetVtkImageData());
+        m_BackActor->SetInput(image->GetVtkImageData());
+
+        m_BackActor->SetOpacity(1.0);
+        m_FrontActor->SetOpacity(m_Opacity);
+
+        m_BackRenderer->AddActor( m_BackActor );
+        m_FrontRenderer->AddActor( m_FrontActor );
+
+        m_BackRenderer->InteractiveOff();
+        m_FrontRenderer->InteractiveOff();
+
+        SetupCamera();
+
+        m_DataStorage->ChangedNodeEvent.AddListener
+          (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
+          (this, &QmitkBitmapOverlay::NodeChanged ) );
+
+        m_ImageDataNode = const_cast<mitk::DataNode*>(node);
+
+        this->Enable();
+
+        wasSuccessful = true;
+
+      } // end if valid image
+    }
   } // end if valid render window.
 
  return wasSuccessful;
@@ -338,17 +338,17 @@ void QmitkBitmapOverlay::SetupCamera()
 
   int idx = 2;
   const double distanceToFocalPoint = 1000;
-  if ( m_UsingNVIDIA )
-  {
-    m_BackCamera->SetViewUp (0,1,0);
-    m_FrontCamera->SetViewUp (0,1,0);
-    position[idx] = distanceToFocalPoint;
-  }
-  else
+  if ( m_FlipViewUp )
   {
     m_BackCamera->SetViewUp (0,-1,0);
     m_FrontCamera->SetViewUp (0,-1,0);
     position[idx] = -distanceToFocalPoint;
+  }
+  else
+  {
+    m_BackCamera->SetViewUp (0,1,0);
+    m_FrontCamera->SetViewUp (0,1,0);
+    position[idx] = distanceToFocalPoint;
   }
   m_BackCamera->ParallelProjectionOn();
   m_BackCamera->SetPosition (position);
