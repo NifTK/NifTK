@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "QmitkSingleWidgetEditorPreferencePage.h"
-#include <QmitkSingleWidgetEditor.h>
+#include "IGIOverlayEditorPreferencePage.h"
+#include <IGIOverlayEditor.h>
 
 #include <QLabel>
 #include <QPushButton>
@@ -24,51 +24,54 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-QmitkSingleWidgetEditorPreferencePage::QmitkSingleWidgetEditorPreferencePage()
+
+//-----------------------------------------------------------------------------
+IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
 : m_MainControl(0)
+, m_ColorButton1(NULL)
+, m_ColorButton2(NULL)
 {
-
 }
 
-void QmitkSingleWidgetEditorPreferencePage::Init(berry::IWorkbench::Pointer )
-{
 
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
+{
 }
 
-void QmitkSingleWidgetEditorPreferencePage::CreateQtControl(QWidget* parent)
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
     .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
 
-  m_SingleWidgetEditorPreferencesNode = prefService->GetSystemPreferences()->Node(QmitkSingleWidgetEditor::EDITOR_ID);
+  m_IGIOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIOverlayEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);
-  m_EnableFlexibleZooming = new QCheckBox;
-  m_ShowLevelWindowWidget = new QCheckBox;
-  m_PACSLikeMouseMode = new QCheckBox;
 
   QFormLayout *formLayout = new QFormLayout;
-  formLayout->addRow("&Use constrained zooming and padding", m_EnableFlexibleZooming);
-  formLayout->addRow("&Show level/window widget", m_ShowLevelWindowWidget);
-  formLayout->addRow("&PACS like mouse interactions (select left mouse button action)", m_PACSLikeMouseMode);
 
   // gradient background
   QLabel* gBName = new QLabel;
-  gBName->setText("Gradient background");
+  gBName->setText("gradient background");
   formLayout->addRow(gBName);
 
   // color
   m_ColorButton1 = new QPushButton;
   m_ColorButton1->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+
   m_ColorButton2 = new QPushButton;
   m_ColorButton2->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+
   QPushButton* resetButton = new QPushButton;
   resetButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-  resetButton->setText("Reset");
+  resetButton->setText("reset");
 
   QLabel* colorLabel1 = new QLabel("first color : ");
   colorLabel1->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
+
   QLabel* colorLabel2 = new QLabel("second color: ");
   colorLabel2->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
 
@@ -83,7 +86,7 @@ void QmitkSingleWidgetEditorPreferencePage::CreateQtControl(QWidget* parent)
   QWidget* colorWidget = new QWidget;
   colorWidget->setLayout(colorWidgetLayout);
 
-  //spacer
+  // spacer
   QSpacerItem *spacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
   QVBoxLayout* vBoxLayout = new QVBoxLayout;
   vBoxLayout->addLayout(formLayout);
@@ -104,60 +107,62 @@ void QmitkSingleWidgetEditorPreferencePage::CreateQtControl(QWidget* parent)
   this->Update();
 }
 
-QWidget* QmitkSingleWidgetEditorPreferencePage::GetQtControl() const
+
+//-----------------------------------------------------------------------------
+QWidget* IGIOverlayEditorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
-bool QmitkSingleWidgetEditorPreferencePage::PerformOk()
-{
-  m_SingleWidgetEditorPreferencesNode->Put("first background color style sheet", m_FirstColorStyleSheet.toStdString());
-  m_SingleWidgetEditorPreferencesNode->Put("second background color style sheet", m_SecondColorStyleSheet.toStdString());
-  m_SingleWidgetEditorPreferencesNode->PutByteArray("first background color", m_FirstColor);
-  m_SingleWidgetEditorPreferencesNode->PutByteArray("second background color", m_SecondColor);
-  m_SingleWidgetEditorPreferencesNode->PutBool("Use constrained zooming and padding"
-                                        , m_EnableFlexibleZooming->isChecked());
-  m_SingleWidgetEditorPreferencesNode->PutBool("Show level/window widget", m_ShowLevelWindowWidget->isChecked());
-  m_SingleWidgetEditorPreferencesNode->PutBool("PACS like mouse interaction", m_PACSLikeMouseMode->isChecked());
 
+//-----------------------------------------------------------------------------
+bool IGIOverlayEditorPreferencePage::PerformOk()
+{
+  m_IGIOverlayEditorPreferencesNode->Put("first background color style sheet", m_FirstColorStyleSheet.toStdString());
+  m_IGIOverlayEditorPreferencesNode->Put("second background color style sheet", m_SecondColorStyleSheet.toStdString());
+  m_IGIOverlayEditorPreferencesNode->PutByteArray("first background color", m_FirstColor);
+  m_IGIOverlayEditorPreferencesNode->PutByteArray("second background color", m_SecondColor);
   return true;
 }
 
-void QmitkSingleWidgetEditorPreferencePage::PerformCancel()
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::PerformCancel()
 {
 
 }
 
-void QmitkSingleWidgetEditorPreferencePage::Update()
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::Update()
 {
-  m_EnableFlexibleZooming->setChecked(m_SingleWidgetEditorPreferencesNode->GetBool("Use constrained zooming and padding", true));
-  m_ShowLevelWindowWidget->setChecked(m_SingleWidgetEditorPreferencesNode->GetBool("Show level/window widget", true));
-  m_PACSLikeMouseMode->setChecked(m_SingleWidgetEditorPreferencesNode->GetBool("PACS like mouse interaction", false));
-  m_FirstColorStyleSheet = QString::fromStdString(m_SingleWidgetEditorPreferencesNode->Get("first background color style sheet", ""));
-  m_SecondColorStyleSheet = QString::fromStdString(m_SingleWidgetEditorPreferencesNode->Get("second background color style sheet", ""));
-  m_FirstColor = m_SingleWidgetEditorPreferencesNode->GetByteArray("first background color", "");
-  m_SecondColor = m_SingleWidgetEditorPreferencesNode->GetByteArray("second background color", "");
+  m_FirstColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get("first background color style sheet", ""));
+  m_SecondColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get("second background color style sheet", ""));
+  m_FirstColor = m_IGIOverlayEditorPreferencesNode->GetByteArray("first background color", "");
+  m_SecondColor = m_IGIOverlayEditorPreferencesNode->GetByteArray("second background color", "");
   if (m_FirstColorStyleSheet=="")
   {
-    m_FirstColorStyleSheet = "background-color:rgb(25,25,25)";
+    m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
   }
   if (m_SecondColorStyleSheet=="")
   {
-    m_SecondColorStyleSheet = "background-color:rgb(127,127,127)";
+    m_SecondColorStyleSheet = "background-color:rgb(0,0,0)";
   }
   if (m_FirstColor=="")
   {
-    m_FirstColor = "#191919";
+    m_FirstColor = "#000000";
   }
   if (m_SecondColor=="")
   {
-    m_SecondColor = "#7F7F7F";
+    m_SecondColor = "#000000";
   }
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
 }
 
-void QmitkSingleWidgetEditorPreferencePage::FirstColorChanged()
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::FirstColorChanged()
 {
   QColor color = QColorDialog::getColor();
   m_ColorButton1->setAutoFillBackground(true);
@@ -177,7 +182,9 @@ void QmitkSingleWidgetEditorPreferencePage::FirstColorChanged()
   m_FirstColor = firstColor.replaceInStrings(";","\\;").join(";").toStdString();
  }
 
-void QmitkSingleWidgetEditorPreferencePage::SecondColorChanged()
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::SecondColorChanged()
 {
   QColor color = QColorDialog::getColor();
   m_ColorButton2->setAutoFillBackground(true);
@@ -197,23 +204,15 @@ void QmitkSingleWidgetEditorPreferencePage::SecondColorChanged()
   m_SecondColor = secondColor.replaceInStrings(";","\\;").join(";").toStdString();
  }
 
-void QmitkSingleWidgetEditorPreferencePage::ResetColors()
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditorPreferencePage::ResetColors()
 {
-  m_FirstColorStyleSheet = "background-color:rgb(25,25,25)";
-  m_SecondColorStyleSheet = "background-color:rgb(127,127,127)";
-  m_FirstColor = "#191919";
-  m_SecondColor = "#7F7F7F";
+  m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
+  m_SecondColorStyleSheet = "background-color:rgb(0,0,0)";
+  m_FirstColor = "#000000";
+  m_SecondColor = "#000000";
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
-}
-
-void QmitkSingleWidgetEditorPreferencePage::UseGradientBackgroundSelected()
-{
-
-}
-
-void QmitkSingleWidgetEditorPreferencePage::ColorActionChanged()
-{
-
 }
 

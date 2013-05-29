@@ -12,47 +12,37 @@
 
 =============================================================================*/
 
-#ifndef QMITKSINGLEWIDGETEDITOR_H_
-#define QMITKSINGLEWIDGETEDITOR_H_
+#ifndef IGIOverlayEditor_h
+#define IGIOverlayEditor_h
 
 #include <QmitkAbstractRenderEditor.h>
-
 #include <mitkILinkedRenderWindowPart.h>
 
-#include <uk_ac_ucl_cmic_singlewidgeteditor_Export.h>
+#include <uk_ac_ucl_cmic_igioverlayeditor_Export.h>
 
 class QmitkSingleWidget;
-class QmitkMouseModeSwitcher;
-class QmitkSingleWidgetEditorPrivate;
+class IGIOverlayEditorPrivate;
 
 /**
- * \ingroup uk_ac_ucl_cmic_singlewidgeteditor
+ * \class IGIOverlayEditor
+ * \brief Simple editor that delegates all functionality to a QmitkSingleWidget.
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor
  */
-class UK_AC_UCL_CMIC_SINGLEWIDGETEDITOR QmitkSingleWidgetEditor
+class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR IGIOverlayEditor
     : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(QmitkSingleWidgetEditor)
-
   static const std::string EDITOR_ID;
 
-  QmitkSingleWidgetEditor();
-  ~QmitkSingleWidgetEditor();
+  berryObjectMacro(IGIOverlayEditor)
+
+  IGIOverlayEditor();
+  ~IGIOverlayEditor();
 
   QmitkSingleWidget* GetSingleWidget();
-
-  /**
-   * Request the QmitkRenderWindowMenus to be either off, or whatever was the last known state, which is
-   * useful when responding to the PartOpened, PartClosed, PartHidden methods.
-   *
-   * \param on If <code>true</code> will request the QmitkSingelWidget to set the QmitkRenderWindowMenu to
-   *           whatever was the last known state, and if <code>false</code> will turn the QmitkRenderWindowMenu off.
-   *
-   */
-  void RequestActivateMenuWidget(bool on);
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -98,27 +88,46 @@ public:
 
   // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
 
+  /**
+   * \see mitk::ILinkedRenderWindowPart::GetSlicesRotator()
+   */
   mitk::SlicesRotator* GetSlicesRotator() const;
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::GetSlicesSwiveller()
+   */
   mitk::SlicesSwiveller* GetSlicesSwiveller() const;
 
+  /**
+   * \see mitk::ILinkedRenderWindowPart::EnableSlicingPlanes()
+   */
   void EnableSlicingPlanes(bool enable);
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::IsSlicingPlanesEnabled()
+   */
   bool IsSlicingPlanesEnabled() const;
 
+  /**
+   * \see mitk::ILinkedRenderWindowPart::EnableLinkedNavigation()
+   */
   void EnableLinkedNavigation(bool enable);
+
+  /**
+   * \see mitk::ILinkedRenderWindowPart::IsLinkedNavigationEnabled()
+   */
   bool IsLinkedNavigationEnabled() const;
 
 protected:
 
   void SetFocus();
-
   void OnPreferencesChanged(const berry::IBerryPreferences*);
-
   void CreateQtPartControl(QWidget* parent);
 
 private:
 
-  const QScopedPointer<QmitkSingleWidgetEditorPrivate> d;
+  const QScopedPointer<IGIOverlayEditorPrivate> d;
 
 };
 
-#endif /*QMITKSINGLEWIDGETEDITOR_H_*/
+#endif /*IGIOverlayEditor_h */

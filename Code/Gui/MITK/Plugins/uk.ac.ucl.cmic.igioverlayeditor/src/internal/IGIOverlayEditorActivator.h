@@ -12,15 +12,19 @@
 
 =============================================================================*/
 
-#ifndef uk_ac_ucl_cmic_singlewidgeteditor_Activator_H_
-#define uk_ac_ucl_cmic_singlewidgeteditor_Activator_H_
+#ifndef IGIOverlayEditorActivator_h
+#define IGIOverlayEditorActivator_h
 
 #include <ctkPluginActivator.h>
 
+namespace mitk {
+
 /**
- * \ingroup uk_ac_ucl_cmic_singlewidgeteditor
+ * \class IGIOverlayEditorActivator
+ * \brief Activator class for the IGIOverlayEditor.
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor
  */
-class uk_ac_ucl_cmic_singlewidgeteditor_Activator : public QObject, public ctkPluginActivator
+class IGIOverlayEditorActivator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -32,5 +36,7 @@ public:
 
 };
 
-#endif /* uk_ac_ucl_cmic_singlewidgeteditor_Activator_H_ */
+} // end namespace
+
+#endif /* IGIOverlayEditorActivator_h */
 

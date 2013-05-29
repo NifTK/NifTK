@@ -12,11 +12,10 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_singlewidgeteditor)
+project(uk_ac_ucl_cmic_igioverlayeditor)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
-	EXPORT_DIRECTIVE UK_AC_UCL_CMIC_SINGLEWIDGETEDITOR
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIOVERLAYEDITOR
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES Qmitk niftkCoreGui
-  SUBPROJECTS MITK-CoreUI
   )

@@ -13,19 +13,18 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkSingleWidgetEditor.cxx
+  IGIOverlayEditor.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  uk_ac_ucl_cmic_singlewidgeteditor_Activator.cxx
-  QmitkSingleWidgetEditorPreferencePage.cxx
+  IGIOverlayEditorActivator.cxx
+  IGIOverlayEditorPreferencePage.cxx
 )
 
 set(MOC_H_FILES
-  src/QmitkSingleWidgetEditor.h
-  
-  src/internal/uk_ac_ucl_cmic_singlewidgeteditor_Activator.h
-  src/internal/QmitkSingleWidgetEditorPreferencePage.h
+  src/IGIOverlayEditor.h
+  src/internal/IGIOverlayEditorActivator.h
+  src/internal/IGIOverlayEditorPreferencePage.h
 )
 
 set(UI_FILES

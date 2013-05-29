@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKSINGLEWIDGETEDITORPREFERENCEPAGE_H_
-#define QMITKSINGLEWIDGETEDITORPREFERENCEPAGE_H_
+#ifndef IGIOverlayEditorPreferencePage_h
+#define IGIOverlayEditorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -23,60 +23,56 @@ class QCheckBox;
 class QPushButton;
 class QWidgetAction;
 
-struct QmitkSingleWidgetEditorPreferencePage : public QObject, public berry::IQtPreferencePage
+/**
+ * \class IGIOverlayEditorPreferencePage
+ * \brief Preference page for IGIOverlayEditor, currently setting the gradient background.
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor
+ */
+struct IGIOverlayEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  QmitkSingleWidgetEditorPreferencePage();
+  IGIOverlayEditorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
-
   void CreateQtControl(QWidget* widget);
 
   QWidget* GetQtControl() const;
 
-  ///
-  /// \see IPreferencePage::PerformOk()
-  ///
+  /**
+   * \see IPreferencePage::PerformOk()
+   */
   virtual bool PerformOk();
 
-  ///
-  /// \see IPreferencePage::PerformCancel()
-  ///
+  /**
+   * \see IPreferencePage::PerformCancel()
+   */
   virtual void PerformCancel();
 
-  ///
-  /// \see IPreferencePage::Update()
-  ///
+  /**
+   * \see IPreferencePage::Update()
+   */
   virtual void Update();
 
 public slots:
+
   void FirstColorChanged();
-
   void SecondColorChanged();
-
-  void UseGradientBackgroundSelected();
-
-  void ColorActionChanged();
-
   void ResetColors();
 
 protected:
-  QWidget* m_MainControl;
-  QCheckBox* m_EnableFlexibleZooming;
-  QCheckBox* m_ShowLevelWindowWidget;
-  QCheckBox* m_UseGradientBackground;
-  QCheckBox* m_ChangeBackgroundColors;
-  QCheckBox* m_PACSLikeMouseMode;
+
+  QWidget*   m_MainControl;
   QPushButton* m_ColorButton1;
   QPushButton* m_ColorButton2;
   std::string m_FirstColor;
   std::string m_SecondColor;
   QString m_FirstColorStyleSheet;
   QString m_SecondColorStyleSheet;
-  berry::IPreferences::Pointer m_SingleWidgetEditorPreferencesNode;
+
+  berry::IPreferences::Pointer m_IGIOverlayEditorPreferencesNode;
 };
 
-#endif /* QMITKDATAMANAGERPREFERENCEPAGE_H_ */
+#endif /* IGIOverlayEditorPreferencePage_h */
