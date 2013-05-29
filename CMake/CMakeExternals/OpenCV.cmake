@@ -44,6 +44,7 @@ if(NOT DEFINED OpenCV_DIR)
     -DBUILD_opencv_features2d:BOOL=ON
     -DBUILD_opencv_imgproc:BOOL=ON
     -DBUILD_opencv_video:BOOL=ON
+    -DBUILD_opencv_python:BOOL=OFF
     -DBUILD_DOCS:BOOL=OFF
     -DBUILD_TESTS:BOOL=OFF
     -DBUILD_EXAMPLES:BOOL=OFF
