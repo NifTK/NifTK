@@ -65,10 +65,13 @@ public:
 
   //-------------- End of methods required by IGIOverlayEditor --------------
 
-public slots:
+private slots:
 
   void OnOverlayCheckBoxChecked(bool);
   void On3DViewerCheckBoxChecked(bool);
+  void OnOpacitySliderMoved(int);
+  void OnImageSelected(const mitk::DataNode* node);
+  void OnTransformSelected(const mitk::DataNode* node);
 
 private:
 

@@ -148,6 +148,28 @@ m_CrosshairNavigationEnabled(false)
   this->ActivateMenuWidget( false );
 }
 
+float QmitkSingleWidget::GetOpacity() const
+{
+  return static_cast<float>(m_BitmapOverlay1->GetOpacity());
+}
+
+void QmitkSingleWidget::SetOpacity(const float& value)
+{
+  m_BitmapOverlay1->SetOpacity(value);
+}
+
+
+void QmitkSingleWidget::SetImageNode(const mitk::DataNode* node)
+{
+  m_BitmapOverlay1->SetNode(node);
+}
+
+
+void QmitkSingleWidget::SetTransformNode(const mitk::DataNode* node)
+{
+
+}
+
 void QmitkSingleWidget::InitializeWidget()
 {
   m_PositionTracker = NULL;

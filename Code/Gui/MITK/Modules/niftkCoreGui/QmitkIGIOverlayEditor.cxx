@@ -18,11 +18,18 @@
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
 #include <mitkTimeSlicedGeometry.h>
+#include <mitkCoordinateAxesData.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
 {
   this->setupUi(this);
+
+  m_OpacitySlider->setMinimum(0);
+  m_OpacitySlider->setMaximum(100);
+  m_OpacitySlider->setSingleStep(1);
+  m_OpacitySlider->setPageStep(10);
+  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
   m_OverlayViewer->GetRenderWindow1()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
@@ -38,6 +45,8 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
 
   connect(m_OverlayCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnOverlayCheckBoxChecked(bool)));
   connect(m_3DViewerCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
+  connect(m_ImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnImageSelected(const mitk::DataNode*)));
+  connect(m_TransformCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)));
 
   int width = m_Splitter->width();
   QList<int> sizes;
@@ -84,13 +93,39 @@ void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::OnOpacitySliderMoved(int value)
+{
+  m_OverlayViewer->SetOpacity(value / 100.0);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
+{
+  m_OverlayViewer->SetImageNode(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
+{
+ m_OverlayViewer->SetTransformNode(node);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 {
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-  m_NodeSelectCombo->SetPredicate(isImage);
-  m_NodeSelectCombo->SetAutoSelectNewItems(false);
+  m_ImageCombo->SetPredicate(isImage);
+  m_ImageCombo->SetAutoSelectNewItems(false);
 
-  m_NodeSelectCombo->SetDataStorage(storage);
+  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  m_TransformCombo->SetPredicate(isTransform);
+  m_TransformCombo->SetAutoSelectNewItems(false);
+
+  m_ImageCombo->SetDataStorage(storage);
+  m_TransformCombo->SetDataStorage(storage);
   m_3DViewer->GetRenderer()->SetDataStorage(storage);
   m_OverlayViewer->SetDataStorage(storage);
 

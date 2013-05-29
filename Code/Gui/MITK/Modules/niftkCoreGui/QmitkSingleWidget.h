@@ -59,6 +59,12 @@ public:
   QmitkSingleWidget(QWidget* parent = 0, Qt::WindowFlags f = 0, mitk::RenderingManager* renderingManager = 0);
   virtual ~QmitkSingleWidget();
 
+  float GetOpacity() const;
+  void SetOpacity(const float& value);
+
+  void SetImageNode(const mitk::DataNode* node);
+  void SetTransformNode(const mitk::DataNode* node);
+
   mitk::SliceNavigationController*
   GetTimeNavigationController();
 
