@@ -42,25 +42,15 @@ public:
   void SetDataStorage(mitk::DataStorage* storage);
 
   QmitkRenderWindow* GetActiveQmitkRenderWindow() const;
-
   QHash<QString, QmitkRenderWindow *> GetQmitkRenderWindows() const;
-
   QmitkRenderWindow* GetQmitkRenderWindow(const QString &id) const;
 
-  mitk::Point3D GetSelectedPosition(const QString &id) const;
-
-  void SetSelectedPosition(const mitk::Point3D &pos, const QString &id);
-
   void SetDepartmentLogoPath(const std::string path);
-
   void EnableDepartmentLogo();
-
   void DisableDepartmentLogo();
 
   void SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2);
-
   void EnableGradientBackground();
-
   void DisableGradientBackground();
 
   //-------------- End of methods required by IGIOverlayEditor --------------

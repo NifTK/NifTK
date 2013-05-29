@@ -168,14 +168,19 @@ QmitkRenderWindow *IGIOverlayEditor::GetQmitkRenderWindow(const QString &id) con
 //-----------------------------------------------------------------------------
 mitk::Point3D IGIOverlayEditor::GetSelectedPosition(const QString & id) const
 {
-  return d->m_IGIOverlayEditor->GetSelectedPosition(id);
+  // Not implemented.
+  mitk::Point3D point;
+  point[0] = 0;
+  point[1] = 0;
+  point[2] = 0;
+  return point;
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
-  d->m_IGIOverlayEditor->SetSelectedPosition(pos, id);
+  // Not implemented.
 }
 
 

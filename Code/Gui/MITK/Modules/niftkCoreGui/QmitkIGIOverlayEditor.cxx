@@ -32,10 +32,10 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
   m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
-  m_OverlayViewer->GetRenderWindow1()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
+  m_OverlayViewer->GetRenderWindow()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
 
   mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetVtkRenderWindow());
-  mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow1()->GetVtkRenderWindow());
+  mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
 
   m_OverlayViewer->setVisible(true);
   m_3DViewer->setVisible(true);
@@ -138,7 +138,7 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 QmitkRenderWindow* QmitkIGIOverlayEditor::GetActiveQmitkRenderWindow() const
 {
   // Default implementation for now. Maybe check focus manager to see which one is focussed?
-  QmitkRenderWindow *result = m_OverlayViewer->GetRenderWindow1();
+  QmitkRenderWindow *result = m_OverlayViewer->GetRenderWindow();
   return result;
 }
 
@@ -147,7 +147,7 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetActiveQmitkRenderWindow() const
 QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor::GetQmitkRenderWindows() const
 {
   QHash<QString, QmitkRenderWindow *> result;
-  result.insert("overlay", m_OverlayViewer->GetRenderWindow1());
+  result.insert("overlay", m_OverlayViewer->GetRenderWindow());
   result.insert("3d", m_3DViewer);
   return result;
 }
@@ -163,23 +163,9 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetQmitkRenderWindow(const QString &id
   }
   else if (id == "overlay")
   {
-    result =  m_OverlayViewer->GetRenderWindow1();
+    result =  m_OverlayViewer->GetRenderWindow();
   }
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Point3D QmitkIGIOverlayEditor::GetSelectedPosition(const QString &/*id*/) const
-{
-  return m_OverlayViewer->GetCrossPosition();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &/*id*/)
-{
-  m_OverlayViewer->MoveCrossToPosition(pos);
 }
 
 
