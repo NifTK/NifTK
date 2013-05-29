@@ -29,7 +29,7 @@
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
-#include <QmitkSingleWidget.h>
+#include <QmitkIGIOverlayEditor.h>
 
 const std::string IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
 
@@ -40,15 +40,14 @@ public:
   IGIOverlayEditorPrivate();
   ~IGIOverlayEditorPrivate();
 
-  QmitkSingleWidget* m_SingleWidget;
+  QmitkIGIOverlayEditor* m_IGIOverlayEditor;
   std::string m_FirstBackgroundColor;
   std::string m_SecondBackgroundColor;
   berry::IPartListener::Pointer m_PartListener;
-  QHash<QString, QmitkRenderWindow*> m_RenderWindows;
 };
 
 /**
- * \class QmitkSingleWidgetPartListener
+ * \class IGIOverlayWidgetPartListener
  * \brief Used to handle interaction with the contained overlay editor widget when this IGIOverlayEditor is opened/closed etc.
  */
 struct IGIOverlayWidgetPartListener : public berry::IPartListener
@@ -72,7 +71,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
     {
       IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_SingleWidget == editor->GetSingleWidget())
+      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
       {
         // Call editor to turn things off as the widget is being closed.
       }
@@ -85,7 +84,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
     {
       IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_SingleWidget == editor->GetSingleWidget())
+      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
       {
         // Call editor to turn things off as the widget is being hidden.
       }
@@ -98,7 +97,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
     {
       IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_SingleWidget == editor->GetSingleWidget())
+      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
       {
         // Call editor to turn things on as the widget is being made visible.
       }
@@ -114,7 +113,7 @@ private:
 
 //-----------------------------------------------------------------------------
 IGIOverlayEditorPrivate::IGIOverlayEditorPrivate()
-  : m_SingleWidget(0)
+  : m_IGIOverlayEditor(0)
   , m_PartListener(new IGIOverlayWidgetPartListener(this))
 {}
 
@@ -139,64 +138,44 @@ IGIOverlayEditor::~IGIOverlayEditor()
 
 
 //-----------------------------------------------------------------------------
-QmitkSingleWidget* IGIOverlayEditor::GetSingleWidget()
+QmitkIGIOverlayEditor* IGIOverlayEditor::GetIGIOverlayEditor()
 {
-  return d->m_SingleWidget;
+  return d->m_IGIOverlayEditor;
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow *IGIOverlayEditor::GetActiveQmitkRenderWindow() const
 {
-  if (d->m_SingleWidget)
-  {
-    return d->m_SingleWidget->GetRenderWindow1();
-  }
-  else
-  {
-    return 0;
-  }
+  return d->m_IGIOverlayEditor->GetActiveQmitkRenderWindow();
 }
 
 
 //-----------------------------------------------------------------------------
 QHash<QString, QmitkRenderWindow *> IGIOverlayEditor::GetQmitkRenderWindows() const
 {
-  return d->m_RenderWindows;
+  return d->m_IGIOverlayEditor->GetQmitkRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkRenderWindow *IGIOverlayEditor::GetQmitkRenderWindow(const QString &id) const
 {
-  static bool alreadyWarned = false;
-
-  if(!alreadyWarned)
-  {
-    MITK_WARN(id == "transversal") << "QmitkSingleWidgetEditor::GetRenderWindow(\"transversal\") is deprecated. Use \"axial\" instead.";
-    alreadyWarned = true;
-  }
-
-  if (d->m_RenderWindows.contains(id))
-  {
-    return d->m_RenderWindows[id];
-  }
-
-  return 0;
+  return d->m_IGIOverlayEditor->GetQmitkRenderWindow(id);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D IGIOverlayEditor::GetSelectedPosition(const QString & /*id*/) const
+mitk::Point3D IGIOverlayEditor::GetSelectedPosition(const QString & id) const
 {
-  return d->m_SingleWidget->GetCrossPosition();
+  return d->m_IGIOverlayEditor->GetSelectedPosition(id);
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &/*id*/)
+void IGIOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
-  d->m_SingleWidget->MoveCrossToPosition(pos);
+  d->m_IGIOverlayEditor->SetSelectedPosition(pos, id);
 }
 
 
@@ -264,20 +243,16 @@ bool IGIOverlayEditor::IsLinkedNavigationEnabled() const
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_SingleWidget == 0)
+  if (d->m_IGIOverlayEditor == 0)
   {
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
 
-    d->m_SingleWidget = new QmitkSingleWidget(parent);
-    d->m_RenderWindows.insert("3d", d->m_SingleWidget->GetRenderWindow1());
-    
-    layout->addWidget(d->m_SingleWidget);
+    d->m_IGIOverlayEditor = new QmitkIGIOverlayEditor(parent);
+    layout->addWidget(d->m_IGIOverlayEditor);
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
-    d->m_SingleWidget->SetDataStorage(ds);
-
-    d->m_SingleWidget->GetRenderWindow1()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
+    d->m_IGIOverlayEditor->SetDataStorage(ds);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
 
@@ -305,12 +280,12 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
 
       if (departmentLogoLocation.empty())
       {
-        d->m_SingleWidget->DisableDepartmentLogo();
+        d->m_IGIOverlayEditor->DisableDepartmentLogo();
       }
       else
       {
-        d->m_SingleWidget->SetDepartmentLogoPath(departmentLogoLocation.c_str());
-        d->m_SingleWidget->EnableDepartmentLogo();
+        d->m_IGIOverlayEditor->SetDepartmentLogoPath(departmentLogoLocation);
+        d->m_IGIOverlayEditor->EnableDepartmentLogo();
       }
       break;
     }
@@ -349,16 +324,16 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
     lower[1] = secondColor.green() / color;
     lower[2] = secondColor.blue() / color;
   }
-  d->m_SingleWidget->SetGradientBackgroundColors(upper, lower);
-  d->m_SingleWidget->EnableGradientBackground();
+  d->m_IGIOverlayEditor->SetGradientBackgroundColors(upper, lower);
+  d->m_IGIOverlayEditor->EnableGradientBackground();
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIOverlayEditor::SetFocus()
 {
-  if (d->m_SingleWidget != 0)
+  if (d->m_IGIOverlayEditor != 0)
   {
-    d->m_SingleWidget->setFocus();
+    d->m_IGIOverlayEditor->setFocus();
   }
 }

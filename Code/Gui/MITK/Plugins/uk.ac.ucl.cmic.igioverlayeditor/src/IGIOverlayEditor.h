@@ -20,12 +20,12 @@
 
 #include <uk_ac_ucl_cmic_igioverlayeditor_Export.h>
 
-class QmitkSingleWidget;
+class QmitkIGIOverlayEditor;
 class IGIOverlayEditorPrivate;
 
 /**
  * \class IGIOverlayEditor
- * \brief Simple editor that delegates all functionality to a QmitkSingleWidget.
+ * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor.
  * \ingroup uk_ac_ucl_cmic_igioverlayeditor
  */
 class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR IGIOverlayEditor
@@ -42,7 +42,7 @@ public:
   IGIOverlayEditor();
   ~IGIOverlayEditor();
 
-  QmitkSingleWidget* GetSingleWidget();
+  QmitkIGIOverlayEditor* GetIGIOverlayEditor();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
