@@ -16,13 +16,18 @@
 #define QmitkIGIOverlayEditor_h
 
 #include "ui_QmitkIGIOverlayEditor.h"
+#include "niftkCoreGuiExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
 
 class QmitkRenderWindow;
 
-class QmitkIGIOverlayEditor : public QWidget, public Ui_QmitkIGIOverlayEditor
+/**
+ * \class QmitkIGIOverlayEditor
+ * \brief Implements an Editor containing an overlay widget, and a 3D rendering widget, and controls.
+ */
+class NIFTKCOREGUI_EXPORT QmitkIGIOverlayEditor : public QWidget, public Ui_QmitkIGIOverlayEditor
 {
 
   Q_OBJECT
