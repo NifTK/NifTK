@@ -34,7 +34,7 @@ public:
 
   //-------------- Start of methods required by IGIOverlayEditor --------------
 
-  void SetDataStorage(const mitk::DataStorage* storage);
+  void SetDataStorage(mitk::DataStorage* storage);
 
   QmitkRenderWindow* GetActiveQmitkRenderWindow() const;
 
@@ -59,6 +59,11 @@ public:
   void DisableGradientBackground();
 
   //-------------- End of methods required by IGIOverlayEditor --------------
+
+public slots:
+
+  void OnOverlayCheckBoxChecked(bool);
+  void On3DViewerCheckBoxChecked(bool);
 
 private:
 

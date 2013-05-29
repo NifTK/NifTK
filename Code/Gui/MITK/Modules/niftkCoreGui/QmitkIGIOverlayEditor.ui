@@ -19,6 +19,13 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
+        <widget class="QLabel" name="m_NodeSelectLabel">
+         <property name="text">
+          <string>Select image:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QmitkDataStorageComboBox" name="m_NodeSelectCombo"/>
        </item>
        <item>
@@ -35,14 +42,20 @@
         </spacer>
        </item>
        <item>
-        <widget class="QRadioButton" name="m_OverlayRadio">
+        <widget class="QCheckBox" name="m_OverlayCheckBox">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
          <property name="text">
           <string>overlay</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="m_3DViewerRadio">
+        <widget class="QCheckBox" name="m_3DViewerCheckBox">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
          <property name="text">
           <string>3D viewer</string>
          </property>
@@ -51,14 +64,27 @@
       </layout>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QmitkSingleWidget" name="m_OverlayViewer" native="true"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QmitkRenderWindow" name="m_3DViewer" native="true"/>
-       </item>
-      </layout>
+      <widget class="QSplitter" name="m_Splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QmitkSingleWidget" name="m_OverlayViewer" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+       <widget class="QmitkRenderWindow" name="m_3DViewer" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </widget>
      </item>
     </layout>
    </item>
