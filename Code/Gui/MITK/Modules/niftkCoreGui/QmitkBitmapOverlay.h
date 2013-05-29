@@ -132,6 +132,11 @@ private:
   void SetupCamera();
 
   /**
+   * \brief Checks if a node is a valid image to be auto-selected.
+   */
+  void AutoSelectDataNode(const mitk::DataNode* node);
+
+  /**
    * \brief Utility method to deregister data storage listeners.
    */
   void DeRegisterDataStorageListeners();
