@@ -208,7 +208,7 @@ set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
+set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
@@ -447,8 +447,7 @@ if(BUILD_GUI)
       set(VTK_QT_ARGS
         -DDESIRED_QT_VERSION:STRING=4
         -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=ON
-        -DVTK_USE_QVTK:BOOL=ON
+        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
         -DVTK_USE_QT:BOOL=ON
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
        )
