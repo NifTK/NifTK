@@ -97,6 +97,7 @@ void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
 void QmitkIGIOverlayEditor::OnOpacitySliderMoved(int value)
 {
   m_OverlayViewer->SetOpacity(value / 100.0);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -117,6 +118,9 @@ void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 {
+  mitk::TimeSlicedGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
+  mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
+
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
   m_ImageCombo->SetPredicate(isImage);
   m_ImageCombo->SetAutoSelectNewItems(false);
@@ -125,13 +129,10 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
   m_TransformCombo->SetPredicate(isTransform);
   m_TransformCombo->SetAutoSelectNewItems(false);
 
-  m_ImageCombo->SetDataStorage(storage);
-  m_TransformCombo->SetDataStorage(storage);
   m_3DViewer->GetRenderer()->SetDataStorage(storage);
   m_OverlayViewer->SetDataStorage(storage);
-
-  mitk::TimeSlicedGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
-  mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
+  m_ImageCombo->SetDataStorage(storage);
+  m_TransformCombo->SetDataStorage(storage);
 }
 
 

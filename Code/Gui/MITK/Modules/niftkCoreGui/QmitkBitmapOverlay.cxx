@@ -194,6 +194,7 @@ void QmitkBitmapOverlay::SetOpacity(const double& opacity)
   m_Opacity = opacity;
   m_BackActor->SetOpacity(1.0);
   m_FrontActor->SetOpacity(m_Opacity);
+
   this->Modified();
 }
 
@@ -290,10 +291,10 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
         m_FrontActor->SetInput(image->GetVtkImageData());
         m_BackActor->SetInput(image->GetVtkImageData());
 
-        this->SetOpacity(m_Opacity);
-
         m_BackRenderer->AddActor( m_BackActor );
         m_FrontRenderer->AddActor( m_FrontActor );
+
+        this->SetOpacity(m_Opacity);
 
         m_BackRenderer->InteractiveOff();
         m_FrontRenderer->InteractiveOff();
