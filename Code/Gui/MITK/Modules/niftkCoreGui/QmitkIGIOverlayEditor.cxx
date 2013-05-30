@@ -33,6 +33,7 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
   m_OverlayViewer->GetRenderWindow()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
+  m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow()->GetInteractor()->Disable();
 
   mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetVtkRenderWindow());
   mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());

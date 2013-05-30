@@ -241,6 +241,7 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
       m_FrontActor->SetInput(image->GetVtkImageData());
       m_BackActor->SetInput(image->GetVtkImageData());
       image->GetVtkImageData()->Modified();
+
       this->Modified();
     }
   }
