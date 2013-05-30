@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKHELPABOUTDIALOG_H
-#define QMITKHELPABOUTDIALOG_H
+#ifndef QmitkHelpAboutDialog_h
+#define QmitkHelpAboutDialog_h
 
 #include "niftkCoreGuiExports.h"
 #include "ui_QmitkHelpAboutDialog.h"
@@ -29,11 +29,15 @@ class NIFTKCOREGUI_EXPORT QmitkHelpAboutDialog : public QDialog, public Ui_Qmitk
 
 public:
 
-	/// \brief Constructor with additional name parameter.
+  /**
+   * \brief Constructor with additional name parameter.
+   */
 	QmitkHelpAboutDialog(QWidget *parent, QString applicationName);
 
-	/// \brief destructor.
-	~QmitkHelpAboutDialog();
+  /**
+   * \brief Destructor.
+   */
+  virtual ~QmitkHelpAboutDialog();
 
 private:
 
