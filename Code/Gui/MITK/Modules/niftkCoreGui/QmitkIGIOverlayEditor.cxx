@@ -173,6 +173,13 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetQmitkRenderWindow(const QString &id
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
+{
+  m_OverlayViewer->SetCalibrationFileName(fileName);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const std::string path)
 {
   m_OverlayViewer->SetDepartmentLogoPath(path.c_str());

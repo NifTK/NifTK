@@ -25,6 +25,8 @@
 #include <QFrame>
 #include <QResizeEvent>
 #include <QmitkRenderWindow.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 class QGridLayout;
 class QmitkRenderWindow;
@@ -121,6 +123,11 @@ public:
   void SetDepartmentLogoPath( const char * path );
 
   /**
+   * \brief Sets the Calibration file name, which causes a re-loading of the calibration matrix.
+   */
+  void SetCalibrationFileName(const std::string& fileName);
+
+  /**
    * \brief Method responsible for making sure the Display Geometry can view
    * the currently visible data in the DataStorage.
    *
@@ -143,6 +150,8 @@ protected:
   mitk::GradientBackground::Pointer  m_GradientBackground;
   CMICLogo::Pointer                  m_LogoRendering;
   QmitkBitmapOverlay::Pointer        m_BitmapOverlay;
+  std::string                        m_CalibrationFileName;
+  vtkSmartPointer<vtkMatrix4x4>      m_CalibrationTransform;
 
 };
 #endif /* QmitkSingle3DView */

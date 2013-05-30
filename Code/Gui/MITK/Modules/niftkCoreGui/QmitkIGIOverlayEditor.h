@@ -96,6 +96,11 @@ public:
    */
   void DisableGradientBackground();
 
+  /**
+   * \brief Sets the calibration file (e.g. hand-eye transform for a laparoscope).
+   */
+  void SetCalibrationFileName(const std::string& fileName);
+
   //-------------- End of methods required by IGIOverlayEditor --------------
 
 private slots:

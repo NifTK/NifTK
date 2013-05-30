@@ -22,7 +22,7 @@ namespace mitk {
 /**
  * \class IGIOverlayEditorActivator
  * \brief Activator class for the IGIOverlayEditor.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor_internal
  */
 class IGIOverlayEditorActivator : public QObject, public ctkPluginActivator
 {

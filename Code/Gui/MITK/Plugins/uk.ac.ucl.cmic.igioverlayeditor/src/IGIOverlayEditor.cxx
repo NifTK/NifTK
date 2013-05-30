@@ -30,6 +30,7 @@
 #include <mitkIDataStorageService.h>
 
 #include <QmitkIGIOverlayEditor.h>
+#include <internal/IGIOverlayEditorPreferencePage.h>
 
 const std::string IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
 
@@ -305,7 +306,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
  
   // Preferences for gradient background
   float color = 255.0;
-  QString firstColorName = QString::fromStdString (prefs->GetByteArray("first background color", ""));
+  QString firstColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, ""));
   QColor firstColor(firstColorName);
   mitk::Color upper;
   if (firstColorName=="") // default values
@@ -321,7 +322,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
     upper[2] = firstColor.blue() / color;
   }
 
-  QString secondColorName = QString::fromStdString (prefs->GetByteArray("second background color", ""));
+  QString secondColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, ""));
   QColor secondColor(secondColorName);
   mitk::Color lower;
   if (secondColorName=="") // default values
@@ -338,6 +339,9 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
   }
   d->m_IGIOverlayEditor->SetGradientBackgroundColors(upper, lower);
   d->m_IGIOverlayEditor->EnableGradientBackground();
+
+  std::string calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
+  d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
 }
 
 

@@ -14,6 +14,7 @@
 
 #include "QmitkSingle3DView.h"
 #include <QGridLayout>
+#include <mitkDataStorageUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
@@ -26,6 +27,8 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_GradientBackground(NULL)
 , m_LogoRendering(NULL)
 , m_BitmapOverlay(NULL)
+, m_CalibrationFileName("")
+, m_CalibrationTransform(NULL)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -61,6 +64,9 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
   m_RenderWindowFrame = mitk::RenderWindowFrame::New();
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(1.0,0.0,0.0);
+
+  m_CalibrationTransform = vtkMatrix4x4::New();
+  m_CalibrationTransform->Identity();
 }
 
 
@@ -169,6 +175,17 @@ void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 {
   m_BitmapOverlay->SetupCamera();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::SetCalibrationFileName(const std::string& fileName)
+{
+  if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != this->m_CalibrationFileName)
+  {
+    LoadMatrixOrCreateDefault(fileName, "niftk.ov.cal", true /* helper object */, m_DataStorage);
+    m_CalibrationFileName = fileName;
+  }
 }
 
 

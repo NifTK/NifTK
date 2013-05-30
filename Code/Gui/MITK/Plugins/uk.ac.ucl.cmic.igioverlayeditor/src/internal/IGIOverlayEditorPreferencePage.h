@@ -27,7 +27,7 @@ class ctkPathLineEdit;
 /**
  * \class IGIOverlayEditorPreferencePage
  * \brief Preference page for IGIOverlayEditor, currently setting the gradient background.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor
+ * \ingroup uk_ac_ucl_cmic_igioverlayeditor_internal
  */
 struct IGIOverlayEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
