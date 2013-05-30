@@ -22,6 +22,7 @@ class QWidget;
 class QCheckBox;
 class QPushButton;
 class QWidgetAction;
+class ctkPathLineEdit;
 
 /**
  * \class IGIOverlayEditorPreferencePage
@@ -56,6 +57,31 @@ public:
    */
   virtual void Update();
 
+  /**
+   * \brief Stores the name of the preference node that contains the stylesheet of the first background colour.
+   */
+  static const std::string FIRST_BACKGROUND_STYLE_SHEET;
+
+  /**
+   * \brief Stores the name of the preference node that contains the stylesheet of the second background colour.
+   */
+  static const std::string SECOND_BACKGROUND_STYLE_SHEET;
+
+  /**
+   * \brief Stores the name of the preference node that contains the first background colour.
+   */
+  static const std::string FIRST_BACKGROUND_COLOUR;
+
+  /**
+   * \brief Stores the name of the preference node that contains the second background colour.
+   */
+  static const std::string SECOND_BACKGROUND_COLOUR;
+
+  /**
+   * \brief Stores the name of the preference node containing the filename of the calibration (eg. hand-eye for a laparoscope).
+   */
+  static const std::string CALIBRATION_FILE_NAME;
+
 public slots:
 
   void FirstColorChanged();
@@ -67,6 +93,7 @@ protected:
   QWidget*   m_MainControl;
   QPushButton* m_ColorButton1;
   QPushButton* m_ColorButton2;
+  ctkPathLineEdit *m_CalibrationFileName;
   std::string m_FirstColor;
   std::string m_SecondColor;
   QString m_FirstColorStyleSheet;

@@ -20,10 +20,15 @@
 #include <QFormLayout>
 #include <QCheckBox>
 #include <QColorDialog>
-
+#include <ctkPathLineEdit.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
+const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
+const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
+const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
+const std::string IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 
 //-----------------------------------------------------------------------------
 IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
@@ -52,6 +57,9 @@ void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
 
   QFormLayout *formLayout = new QFormLayout;
+
+  m_CalibrationFileName = new ctkPathLineEdit();
+  formLayout->addRow("calibration transform", m_CalibrationFileName);
 
   // gradient background
   QLabel* gBName = new QLabel;
@@ -118,10 +126,11 @@ QWidget* IGIOverlayEditorPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool IGIOverlayEditorPreferencePage::PerformOk()
 {
-  m_IGIOverlayEditorPreferencesNode->Put("first background color style sheet", m_FirstColorStyleSheet.toStdString());
-  m_IGIOverlayEditorPreferencesNode->Put("second background color style sheet", m_SecondColorStyleSheet.toStdString());
-  m_IGIOverlayEditorPreferencesNode->PutByteArray("first background color", m_FirstColor);
-  m_IGIOverlayEditorPreferencesNode->PutByteArray("second background color", m_SecondColor);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet.toStdString());
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet.toStdString());
+  m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
+  m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
   return true;
 }
 
@@ -136,10 +145,10 @@ void IGIOverlayEditorPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void IGIOverlayEditorPreferencePage::Update()
 {
-  m_FirstColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get("first background color style sheet", ""));
-  m_SecondColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get("second background color style sheet", ""));
-  m_FirstColor = m_IGIOverlayEditorPreferencesNode->GetByteArray("first background color", "");
-  m_SecondColor = m_IGIOverlayEditorPreferencesNode->GetByteArray("second background color", "");
+  m_FirstColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, ""));
+  m_SecondColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, ""));
+  m_FirstColor = m_IGIOverlayEditorPreferencesNode->GetByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
+  m_SecondColor = m_IGIOverlayEditorPreferencesNode->GetByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
   if (m_FirstColorStyleSheet=="")
   {
     m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
@@ -158,6 +167,7 @@ void IGIOverlayEditorPreferencePage::Update()
   }
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
+  m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
 }
 
 
