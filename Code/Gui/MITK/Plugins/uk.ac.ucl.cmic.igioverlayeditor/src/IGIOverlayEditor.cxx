@@ -33,6 +33,11 @@
 
 const std::string IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
 
+
+/**
+ * \class IGIOverlayEditorPrivate
+ * \brief PIMPL pattern implementation of IGIOverlayEditor.
+ */
 class IGIOverlayEditorPrivate
 {
 public:
@@ -46,9 +51,11 @@ public:
   berry::IPartListener::Pointer m_PartListener;
 };
 
+
 /**
  * \class IGIOverlayWidgetPartListener
- * \brief Used to handle interaction with the contained overlay editor widget when this IGIOverlayEditor is opened/closed etc.
+ * \brief Used to handle interaction with the contained overlay
+ * editor widget when this IGIOverlayEditor is opened/closed etc.
  */
 struct IGIOverlayWidgetPartListener : public berry::IPartListener
 {

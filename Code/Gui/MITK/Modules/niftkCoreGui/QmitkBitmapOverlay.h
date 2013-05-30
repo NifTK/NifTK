@@ -23,7 +23,6 @@
 class vtkRenderer;
 class vtkRenderWindow;
 class vtkMapper;
-class vtkCamera;
 class vtkImageActor;
 class vtkImageMapper;
 
@@ -62,7 +61,7 @@ public:
   /**
    * \brief Setter and Getter for Opacity.
    */
-  itkSetMacro(Opacity, double);
+  void SetOpacity(const double& opacity);
   itkGetMacro(Opacity, double);
 
   /**
@@ -101,6 +100,12 @@ public:
    */
   virtual bool SetNode(const mitk::DataNode* node);
 
+  /**
+   * \brief For both foreground and background vtkRenderers, sets the
+   * vtkCamera position so that the whole of the image is visible.
+   */
+  void SetupCamera();
+
 protected:
 
   QmitkBitmapOverlay(); // Purposefully hidden.
@@ -127,11 +132,6 @@ private:
   void NodeRemoved(const mitk::DataNode* node);
 
   /**
-   * \brief Private method to ...
-   */
-  void SetupCamera();
-
-  /**
    * \brief Checks if a node is a valid image to be auto-selected.
    */
   void AutoSelectDataNode(const mitk::DataNode* node);
@@ -149,8 +149,6 @@ private:
   vtkImageActor*              m_BackActor;
   vtkImageActor*              m_FrontActor;
   vtkImageMapper*             m_Mapper;
-  vtkCamera*                  m_BackCamera;
-  vtkCamera*                  m_FrontCamera;
 
   mitk::DataStorage::Pointer  m_DataStorage;
   mitk::DataNode::Pointer     m_ImageDataNode;

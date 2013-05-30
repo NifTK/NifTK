@@ -25,7 +25,9 @@ class IGIOverlayEditorPrivate;
 
 /**
  * \class IGIOverlayEditor
- * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor.
+ * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor,
+ * and most methods are dummy or do-nothing implementations, as the widget is for
+ * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
  * \ingroup uk_ac_ucl_cmic_igioverlayeditor
  */
 class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR IGIOverlayEditor

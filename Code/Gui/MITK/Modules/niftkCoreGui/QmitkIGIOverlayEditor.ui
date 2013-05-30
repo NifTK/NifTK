@@ -54,7 +54,7 @@
        <item>
         <widget class="QLabel" name="m_OpacityLabel">
          <property name="text">
-          <string>opacity</string>
+          <string>overlay opacity</string>
          </property>
         </widget>
        </item>
@@ -105,7 +105,7 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="QmitkSingleWidget" name="m_OverlayViewer" native="true">
+       <widget class="QmitkSingle3DView" name="m_OverlayViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -134,15 +134,15 @@
    <header>QmitkDataStorageComboBox.h</header>
   </customwidget>
   <customwidget>
-   <class>QmitkSingleWidget</class>
-   <extends>QWidget</extends>
-   <header>QmitkSingleWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QmitkRenderWindow</class>
    <extends>QWidget</extends>
    <header>QmitkRenderWindow.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkSingle3DView</class>
+   <extends>QWidget</extends>
+   <header>QmitkSingle3DView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "QmitkSingleWidget.h"
+#include "QmitkSingle3DView.h"
 #include <QGridLayout>
 
 //-----------------------------------------------------------------------------
-QmitkSingleWidget::QmitkSingleWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
+QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
 : QWidget(parent, f)
 , m_DataStorage(NULL)
 , m_RenderWindow(NULL)
@@ -65,13 +65,13 @@ QmitkSingleWidget::QmitkSingleWidget(QWidget* parent, Qt::WindowFlags f, mitk::R
 
 
 //-----------------------------------------------------------------------------
-QmitkSingleWidget::~QmitkSingleWidget()
+QmitkSingle3DView::~QmitkSingle3DView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
+void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* ds )
 {
   m_DataStorage = ds;
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetDataStorage(ds);
@@ -85,83 +85,95 @@ void QmitkSingleWidget::SetDataStorage( mitk::DataStorage* ds )
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkSingleWidget::GetRenderWindow() const
+QmitkRenderWindow* QmitkSingle3DView::GetRenderWindow() const
 {
   return m_RenderWindow;
 }
 
 
 //-----------------------------------------------------------------------------
-float QmitkSingleWidget::GetOpacity() const
+float QmitkSingle3DView::GetOpacity() const
 {
   return static_cast<float>(m_BitmapOverlay->GetOpacity());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetOpacity(const float& value)
+void QmitkSingle3DView::SetOpacity(const float& value)
 {
   m_BitmapOverlay->SetOpacity(value);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetImageNode(const mitk::DataNode* node)
+void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
 {
   m_BitmapOverlay->SetNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetTransformNode(const mitk::DataNode* node)
+void QmitkSingle3DView::SetTransformNode(const mitk::DataNode* node)
 {
+  if (node != NULL)
+  {
+    // Todo: Do something sensible.
+    std::cerr << "QmitkSingle3DView::SetTransformNode node=" << node << ", name=" << node->GetName() << std::endl;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::EnableGradientBackground()
+void QmitkSingle3DView::EnableGradientBackground()
 {
   m_GradientBackground->Enable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::DisableGradientBackground()
+void QmitkSingle3DView::DisableGradientBackground()
 {
   m_GradientBackground->Disable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower )
+void QmitkSingle3DView::SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower )
 {
   m_GradientBackground->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::EnableDepartmentLogo()
+void QmitkSingle3DView::EnableDepartmentLogo()
 {
    m_LogoRendering->Enable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::DisableDepartmentLogo()
+void QmitkSingle3DView::DisableDepartmentLogo()
 {
    m_LogoRendering->Disable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::SetDepartmentLogoPath( const char * path )
+void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 {
   m_LogoRendering->SetLogoSource(path);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingleWidget::Fit()
+void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
+{
+  m_BitmapOverlay->SetupCamera();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::Fit()
 {
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->GetDisplayGeometry()->Fit();
 

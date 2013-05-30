@@ -35,8 +35,6 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 , m_BackActor(NULL)
 , m_FrontActor(NULL)
 , m_Mapper(NULL)
-, m_BackCamera(NULL)
-, m_FrontCamera(NULL)
 , m_DataStorage(NULL)
 , m_ImageDataNode(NULL)
 , m_IsEnabled(false)
@@ -172,6 +170,7 @@ void QmitkBitmapOverlay::Enable()
     // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
     m_IsEnabled = true;
+    this->Modified();
   }
 }
 
@@ -184,7 +183,18 @@ void QmitkBitmapOverlay::Disable()
     // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
     m_IsEnabled = false;
+    this->Modified();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::SetOpacity(const double& opacity)
+{
+  m_Opacity = opacity;
+  m_BackActor->SetOpacity(1.0);
+  m_FrontActor->SetOpacity(m_Opacity);
+  this->Modified();
 }
 
 
@@ -230,6 +240,7 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
       m_FrontActor->SetInput(image->GetVtkImageData());
       m_BackActor->SetInput(image->GetVtkImageData());
       image->GetVtkImageData()->Modified();
+      this->Modified();
     }
   }
 }
@@ -279,8 +290,7 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
         m_FrontActor->SetInput(image->GetVtkImageData());
         m_BackActor->SetInput(image->GetVtkImageData());
 
-        m_BackActor->SetOpacity(1.0);
-        m_FrontActor->SetOpacity(m_Opacity);
+        this->SetOpacity(m_Opacity);
 
         m_BackRenderer->AddActor( m_BackActor );
         m_FrontRenderer->AddActor( m_FrontActor );
@@ -300,27 +310,41 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
     }
   } // end if valid render window.
 
- return wasSuccessful;
+  if (wasSuccessful)
+  {
+    this->Modified();
+  }
+  return wasSuccessful;
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::SetupCamera()
 {
-  // set the vtk camera in way that stretches the logo all over the renderwindow
- // m_RenderWindow->Render();
-  vtkImageData * image = m_BackActor->GetInput();
-  m_BackCamera = m_BackRenderer->GetActiveCamera();
-  m_FrontCamera = m_FrontRenderer->GetActiveCamera();
-  m_BackCamera->SetClippingRange(1,100000);
-  m_FrontCamera->SetClippingRange(1,100000);
+  vtkCamera* backCamera = m_BackRenderer->GetActiveCamera();
+  vtkCamera* frontCamera = m_FrontRenderer->GetActiveCamera();
 
-  if ( !image )
+  backCamera->SetClippingRange(1,100000);
+  frontCamera->SetClippingRange(1,100000);
+
+  vtkImageData *image = m_BackActor->GetInput();
+
+  if (image == NULL)
+  {
+    // This is ok, as we may get a resize event, and hence
+    // this method is called before we have an image set up.
     return;
+  }
+
+  if (m_RenderWindow == NULL)
+  {
+    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the vtkRenderWindow is NULL" << std::endl;
+    return;
+  }
 
   double spacing[3];
   double origin[3];
-  int   dimensions[3];
+  int    dimensions[3];
 
   image->GetSpacing(spacing);
   image->GetOrigin(origin);
@@ -329,40 +353,58 @@ void QmitkBitmapOverlay::SetupCamera()
   double focalPoint[3];
   double position[3];
 
-  for ( unsigned int cc = 0; cc < 3; cc++)
+  for ( unsigned int cc = 0; cc < 3; ++cc)
   {
-    focalPoint[cc] = origin[cc] + ( spacing[cc] * dimensions[cc] ) / 2.0;
+    focalPoint[cc] = origin[cc] + ( spacing[cc] * (dimensions[cc] - 1) ) / 2.0;
     position[cc]   = focalPoint[cc];
   }
 
   int idx = 2;
   const double distanceToFocalPoint = 1000;
+
   if ( m_FlipViewUp )
   {
-    m_BackCamera->SetViewUp (0,-1,0);
-    m_FrontCamera->SetViewUp (0,-1,0);
+    backCamera->SetViewUp (0,-1,0);
+    frontCamera->SetViewUp (0,-1,0);
     position[idx] = -distanceToFocalPoint;
   }
   else
   {
-    m_BackCamera->SetViewUp (0,1,0);
-    m_FrontCamera->SetViewUp (0,1,0);
+    backCamera->SetViewUp (0,1,0);
+    frontCamera->SetViewUp (0,1,0);
     position[idx] = distanceToFocalPoint;
   }
-  m_BackCamera->ParallelProjectionOn();
-  m_BackCamera->SetPosition (position);
-  m_BackCamera->SetFocalPoint (focalPoint);
-  m_FrontCamera->ParallelProjectionOn();
-  m_FrontCamera->SetPosition (position);
-  m_FrontCamera->SetFocalPoint (focalPoint);
 
-  int d1 = (idx + 1) % 3;
-  int d2 = (idx + 2) % 3;
+  backCamera->ParallelProjectionOn();
+  backCamera->SetPosition (position);
+  backCamera->SetFocalPoint (focalPoint);
 
-  double max = std::max(dimensions[d1],dimensions[d2]);
-  std::cerr << "Max = " << max << std::endl;
-  m_BackCamera->SetParallelScale( max / 2 );
-  m_FrontCamera->SetParallelScale( max / 2 );
+  frontCamera->ParallelProjectionOn();
+  frontCamera->SetPosition (position);
+  frontCamera->SetFocalPoint (focalPoint);
+
+  int windowWidth = m_RenderWindow->GetSize()[0];
+  int windowHeight = m_RenderWindow->GetSize()[1];
+
+  double imageWidth = dimensions[0]*spacing[0];
+  double imageHeight = dimensions[1]*spacing[1];
+
+  double widthRatio = imageWidth / windowWidth;
+  double heightRatio = imageHeight / windowHeight;
+
+  double scale = 1;
+  if (widthRatio > heightRatio)
+  {
+    scale = 0.5*imageWidth*((double)windowHeight/(double)windowWidth);
+  }
+  else
+  {
+    scale = 0.5*imageHeight;
+  }
+
+  backCamera->SetParallelScale( scale );
+  frontCamera->SetParallelScale( scale );
+  this->Modified();
 }
 
 

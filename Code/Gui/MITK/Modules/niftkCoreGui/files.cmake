@@ -19,6 +19,7 @@ set(CPP_FILES
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
   QmitkBitmapOverlay.cxx
+  QmitkSingle3DView.cxx
   QmitkIGIOverlayEditor.cxx
 )
 
@@ -27,6 +28,7 @@ set(MOC_H_FILES
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
   QmitkHelpAboutDialog.h
+  QmitkSingle3DView.h
   QmitkIGIOverlayEditor.h
 )
 
