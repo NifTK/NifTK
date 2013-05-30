@@ -294,15 +294,13 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
         m_BackRenderer->AddActor( m_BackActor );
         m_FrontRenderer->AddActor( m_FrontActor );
 
-        this->SetOpacity(m_Opacity);
-
         m_BackRenderer->InteractiveOff();
         m_FrontRenderer->InteractiveOff();
 
-        SetupCamera();
-
         m_ImageDataNode = const_cast<mitk::DataNode*>(node);
 
+        this->SetOpacity(m_Opacity);
+        this->SetupCamera();
         this->Enable();
 
         wasSuccessful = true;
