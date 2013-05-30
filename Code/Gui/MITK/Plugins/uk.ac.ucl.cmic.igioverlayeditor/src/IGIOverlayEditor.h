@@ -17,7 +17,7 @@
 
 #include <QmitkAbstractRenderEditor.h>
 #include <mitkILinkedRenderWindowPart.h>
-
+#include <service/event/ctkEvent.h>
 #include <uk_ac_ucl_cmic_igioverlayeditor_Export.h>
 
 class QmitkIGIOverlayEditor;
@@ -125,6 +125,13 @@ protected:
   void SetFocus();
   void OnPreferencesChanged(const berry::IBerryPreferences*);
   void CreateQtPartControl(QWidget* parent);
+
+private slots:
+
+  /**
+   * \brief We can listen to the event bus to trigger updates.
+   */
+  void OnUpdate(const ctkEvent& event);
 
 private:
 

@@ -18,6 +18,11 @@
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
 #include <berryIPartListener.h>
+#include <ctkPluginContext.h>
+#include <ctkServiceReference.h>
+#include <service/event/ctkEventConstants.h>
+#include <service/event/ctkEventAdmin.h>
+#include <service/event/ctkEvent.h>
 
 #include <QWidget>
 
@@ -31,6 +36,7 @@
 
 #include <QmitkIGIOverlayEditor.h>
 #include <internal/IGIOverlayEditorPreferencePage.h>
+#include <internal/IGIOverlayEditorActivator.h>
 
 const std::string IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
 
@@ -273,6 +279,16 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
     this->OnPreferencesChanged(dynamic_cast<berry::IBerryPreferences*>(prefs.GetPointer()));
 
     this->RequestUpdate();
+
+    // Finally: Listen to update pulse coming off of event bus. This pulse comes from the data manager updating.
+    ctkServiceReference ref = mitk::IGIOverlayEditorActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkDictionary properties;
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    }
   }
 }
 
@@ -352,4 +368,11 @@ void IGIOverlayEditor::SetFocus()
   {
     d->m_IGIOverlayEditor->setFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::OnUpdate(const ctkEvent& event)
+{
+  d->m_IGIOverlayEditor->Update();
 }

@@ -29,6 +29,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_BitmapOverlay(NULL)
 , m_CalibrationFileName("")
 , m_CalibrationTransform(NULL)
+, m_TransformNode(NULL)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -123,8 +124,7 @@ void QmitkSingle3DView::SetTransformNode(const mitk::DataNode* node)
 {
   if (node != NULL)
   {
-    // Todo: Do something sensible.
-    std::cerr << "QmitkSingle3DView::SetTransformNode node=" << node << ", name=" << node->GetName() << std::endl;
+    m_TransformNode = const_cast<mitk::DataNode*>(node);
   }
 }
 
@@ -204,6 +204,13 @@ void QmitkSingle3DView::Fit()
   }
 
   vtkObject::SetGlobalWarningDisplay(w);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::Update()
+{
+  std::cerr << "Matt, QmitkSingle3DView::Update node=" << m_TransformNode << std::endl;
 }
 
 

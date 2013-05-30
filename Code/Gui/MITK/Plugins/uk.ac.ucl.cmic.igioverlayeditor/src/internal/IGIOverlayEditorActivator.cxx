@@ -19,13 +19,14 @@
 
 namespace mitk {
 
+ctkPluginContext* IGIOverlayEditorActivator::m_PluginContext = 0;
+
 //-----------------------------------------------------------------------------
 void IGIOverlayEditorActivator::start(ctkPluginContext* context)
 {
-  Q_UNUSED(context)
-
   BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor, context)
   BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditorPreferencePage, context)
+  m_PluginContext = context;
 }
 
 
@@ -33,8 +34,15 @@ void IGIOverlayEditorActivator::start(ctkPluginContext* context)
 void IGIOverlayEditorActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
+  m_PluginContext = NULL;
 }
 
+
+//-----------------------------------------------------------------------------
+ctkPluginContext* IGIOverlayEditorActivator::getContext()
+{
+  return m_PluginContext;
+}
 
 //-----------------------------------------------------------------------------
 } // end namespace

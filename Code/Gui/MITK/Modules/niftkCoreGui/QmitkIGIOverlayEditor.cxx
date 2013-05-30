@@ -219,3 +219,10 @@ void QmitkIGIOverlayEditor::DisableGradientBackground()
 {
   m_OverlayViewer->DisableGradientBackground();
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::Update()
+{
+  m_OverlayViewer->Update();
+}

@@ -135,6 +135,11 @@ public:
    */
   void Fit();
 
+  /**
+   * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
+   */
+  void Update();
+
 protected:
 
   /**
@@ -152,6 +157,7 @@ protected:
   QmitkBitmapOverlay::Pointer        m_BitmapOverlay;
   std::string                        m_CalibrationFileName;
   vtkSmartPointer<vtkMatrix4x4>      m_CalibrationTransform;
+  mitk::DataNode::Pointer            m_TransformNode;
 
 };
 #endif /* QmitkSingle3DView */
