@@ -40,7 +40,7 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 , m_IsEnabled(false)
 , m_Opacity(0.5)
 , m_AutoSelectNodes(true)
-, m_FlipViewUp(false)
+, m_FlipViewUp(true)
 {
   m_BackRenderer        = vtkRenderer::New();
   m_FrontRenderer       = vtkRenderer::New();
