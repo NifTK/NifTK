@@ -15,6 +15,8 @@
 #include "QmitkSingle3DView.h"
 #include <QGridLayout>
 #include <mitkDataStorageUtils.h>
+#include <mitkCoordinateAxesData.h>
+#include <vtkCamera.h>
 
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
@@ -210,7 +212,42 @@ void QmitkSingle3DView::Fit()
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  std::cerr << "Matt, QmitkSingle3DView::Update node=" << m_TransformNode << std::endl;
+  // Aim here is to move VTK camera to correct position,
+  // as if it was following/mimicing the tracked object.
+
+  if (m_TransformNode.IsNotNull() && m_CalibrationTransform != NULL)
+  {
+    mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
+    if (trackingTransform.IsNotNull())
+    {
+      vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkMatrix4x4::New();
+      trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
+
+      vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
+      vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_CalibrationTransform, combinedTransform);
+
+      double origin[4] = {0, 0, 0, 1};
+      double focalPoint[4] = {0, 0, -2000, 1};
+      double viewUp[4] = {0, 1.0e9, 0, 1};
+
+      double transformedOrigin[4] = {0, 0, 0, 1};
+      double transformedFocalPoint[4] = {0, 0, 0, 1};
+      double transformedViewUp[4] = {0, 0, 0, 1};
+
+      combinedTransform->MultiplyPoint(origin, transformedOrigin);
+      combinedTransform->MultiplyPoint(focalPoint, transformedFocalPoint);
+      combinedTransform->MultiplyPoint(viewUp, transformedViewUp);
+
+      vtkCamera* camera = this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
+      if (camera != NULL)
+      {
+        camera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
+        camera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
+        camera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
+        camera->SetClippingRange(1,1000000);
+      }
+    }
+  }
 }
 
 
