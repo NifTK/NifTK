@@ -13,5 +13,8 @@
 #============================================================================*/
 
 add_subdirectory(Libs)
-add_subdirectory(Applications)
+
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  add_subdirectory(Applications)
+endif()
 
