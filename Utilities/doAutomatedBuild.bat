@@ -190,11 +190,11 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 
 @REM *****  Run CTEST  *****
 @echo Running CTest....
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyStart >%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyConfigure >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyBuild >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyTest >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlySubmit >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyStart >%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyConfigure >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyBuild >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyTest >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlySubmit >>%BUILD_LOCATION%\log_ctest.txt
 @echo.
 
 @REM *****  Package the installer *****
