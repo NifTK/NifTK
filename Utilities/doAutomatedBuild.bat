@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.15 *****
+@echo ***** NifTK Automated Build Script - v.16 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -179,11 +179,7 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @set PATHSTRING=%var1:/=\%
 @set PATHSTRING=%PATHSTRING:PATH=%
 @set PATHSTRING=%PATHSTRING:~1,-2%
-@if ["%BTYPE%"] == ["x64"] (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\SysWOW64;%SystemRoot%\SysWOW64\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
-) else (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
-)
+@PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
 
 @if defined CUDA_PATH PATH=%PATH%;%CUDA_PATH%\bin
 
