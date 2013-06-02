@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.16 *****
+@echo ***** NifTK Automated Build Script - v.17 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -142,7 +142,7 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @REM *****  Run CMAKE  *****
 @echo Running CMake....
 @cd %BUILDPATH%
-@call "%CMAKE_LOCATION%\cmake.exe" -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_LOCATION%\NIFTK" >"%BUILD_LOCATION%\log_cmake.txt"
+@call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_LOCATION%\NIFTK" >"%BUILD_LOCATION%\log_cmake.txt"
 @echo. 
 
 @REM pause
