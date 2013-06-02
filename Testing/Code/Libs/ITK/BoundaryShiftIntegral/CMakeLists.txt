@@ -51,7 +51,7 @@ add_test(BSI-itkSimpleKMeansClusteringImageFilterTest ${LOCAL_TESTS} itkSimpleKM
 #         137.589 327.561 459.516
 #         50.1285 42.9707 40.3896)
          
-if(NOT WIN32)         
+if(NOT WIN32 AND BUILD_COMMAND_LINE_PROGRAMS)         
   add_test(BSI-itkKN-BSITest1  ${itkBSITesting_SOURCE_DIR}/itkKN-BSITests.sh
          ${CXX_TEST_PATH}/niftkKMeansWindowWithLinearRegressionNormalisationBSI
          ${INPUTDATA}/56970125-005-1.hdr
@@ -71,7 +71,7 @@ if(NOT WIN32)
   add_test(BSI-itkKN-BSITest2 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/kn-bsi-test-output.txt ${TEMPORARY_OUTPUT}/kn-bsi-test-output.txt)
   add_test(BSI-itkKN-BSITest3 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.img ${TEMPORARY_OUTPUT}/repeat-normalised.img)
   #add_test(itkKN-BSITest4 ${CMAKE_COMMAND} -E compare_files ${INPUTDATA}/repeat-normalised.hdr ${TEMPORARY_OUTPUT}/repeat-normalised.hdr)
-endif(NOT WIN32)
+endif()
 
 add_test(BSI-itkBoundaryShiftIntegralTest0 ${LOCAL_TESTS} itkBoundaryShiftIntegralTest 
          ${INPUTDATA}/56970125-005-1.hdr
