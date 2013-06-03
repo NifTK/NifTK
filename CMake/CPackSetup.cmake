@@ -52,7 +52,7 @@ endif(NOT CPACK_GENERATOR)
 # should apply only to windows.
 # note however, that the debug crt is non-redistributable! a debug-package cannot be made available to the public.
 # it's for internal testing only!
-if("Debug" STREQUAL "Debug")
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_INSTALL_DEBUG_LIBRARIES ON)
 endif()
 include(InstallRequiredSystemLibraries)
