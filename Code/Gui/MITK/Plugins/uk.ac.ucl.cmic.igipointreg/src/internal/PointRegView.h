@@ -73,6 +73,10 @@ protected:
 
 private slots:
   
+  void OnCalculateButtonPressed();
+  void OnComposeWithDataButtonPressed();
+  void OnSaveToFileButtonPressed();
+
 private:
 
   /**
@@ -89,7 +93,7 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::PointRegView *m_Controls;
-
+  vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 };
 
 #endif // PointRegView_h

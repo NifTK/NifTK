@@ -19,6 +19,7 @@
 #include <mitkDataStorage.h>
 #include <vtkMatrix4x4.h>
 #include <mitkPointSet.h>
+#include <mitkDataNode.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
@@ -40,10 +41,28 @@ public:
    * \param[In] fixedPointSet a point set
    * \param[In] movingPointSet a point set
    * \param[In,Out] the transformation to transform the moving point set into the coordinate system of the fixed point set.
+   * \return Returns the SSD of the error
    */
-  void Update(const mitk::PointSet::Pointer fixedPointSet,
+  double Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
-              vtkMatrix4x4& outputTransform);
+              vtkMatrix4x4& outputTransform) const;
+
+  /**
+   * \brief Saves the given transformation to file.
+   * \param[In] fileName the full absolute path of the file to be saved to, which if it already exists will be silently over-written.
+   * \param[In] transform transformation matrix.
+   * \return bool true if successful and false otherwise.
+   */
+  bool SaveToFile(const std::string& fileName, const vtkMatrix4x4& transform) const;
+
+  /**
+   * \brief Applies the given transformation to the given node.
+   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transfor anything.
+   * \param[In] transform the VTK transformation
+   * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
+   * \return bool true if successful and false otherwise.
+   */
+  bool ApplyToNode(const mitk::DataNode::Pointer& node, vtkMatrix4x4& transform, const bool& makeUndoAble) const;
 
 protected:
 
