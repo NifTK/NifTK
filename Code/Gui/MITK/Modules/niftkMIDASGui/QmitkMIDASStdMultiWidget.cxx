@@ -816,11 +816,17 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
   {
     m_Geometry = geometry;
 
+    m_LongestSideOfVoxels = 0;
+
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
     for (int i = 0; i < 3; ++i)
     {
       m_MmPerVx[i] = m_Geometry->GetExtentInMM(i) / m_Geometry->GetExtent(i);
+      if (m_MmPerVx[i] > m_MmPerVx[m_LongestSideOfVoxels])
+      {
+        m_LongestSideOfVoxels = i;
+      }
     }
 
     // Add these annotations the first time we have a real geometry.
@@ -1510,9 +1516,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
         QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
         if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
         {
-          // TODO: instead of using the scale factor of the first axis,
-          // we should probable use the one with the smallest mm/vx ratio.
-          this->SetScaleFactor(otherRenderWindow, scaleFactors[0]);
+          this->SetScaleFactor(otherRenderWindow, scaleFactors[m_LongestSideOfVoxels]);
         }
       }
 
@@ -1832,10 +1836,7 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
     QmitkRenderWindow* renderWindow = m_RenderWindows[i];
     if (renderWindow->isVisible())
     {
-      // TODO: Anisotropic voxel size not handled correctly.
-      // Instead of using the scale factor of the first axis,
-      // we should probable use the one with the smallest mm/vx ratio.
-      this->SetScaleFactor(renderWindow, scaleFactors[0]);
+      this->SetScaleFactor(renderWindow, scaleFactors[m_LongestSideOfVoxels]);
     }
   }
 
