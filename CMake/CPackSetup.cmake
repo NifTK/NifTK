@@ -47,8 +47,14 @@ if(NOT CPACK_GENERATOR)
 endif(NOT CPACK_GENERATOR)
 
 ############################################################################
-# This bit came from MITK (http://www.mitk.org). Don't know if we need it.
+# This bit came from MITK (http://www.mitk.org). Don't know if we need it. Yes we do.
 ############################################################################
+# should apply only to windows.
+# note however, that the debug crt is non-redistributable! a debug-package cannot be made available to the public.
+# it's for internal testing only!
+if("Debug" STREQUAL "Debug")
+  set(CMAKE_INSTALL_DEBUG_LIBRARIES ON)
+endif()
 include(InstallRequiredSystemLibraries)
 
 ############################################################################
