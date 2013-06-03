@@ -13,6 +13,7 @@
 #============================================================================*/
 
 find_package(CUDA REQUIRED)
+find_package(OpenGL REQUIRED)
  
 set(niftknvapi_SRCS
   niftkNVAPICommon.cxx
