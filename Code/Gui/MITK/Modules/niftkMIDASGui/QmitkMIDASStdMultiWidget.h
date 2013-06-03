@@ -69,6 +69,10 @@ class SliceNavigationController;
  * etc.
  * </pre>
  *
+ * In contrast with the original MIDAS, in NiftyMIDAS the zooming is continuous, so
+ * the rule above is extended to real numbers as well. If the image has anisotropic pixels then
+ * the size of the longest side of the voxels is used for the calculation.
+ *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
  * \sa QmitkMIDASMultiViewWidget
@@ -388,6 +392,9 @@ private:
 
   /// \brief Voxel size in millimetres.
   mitk::Vector3D        m_MmPerVx;
+
+  /// The axis along which the dimension of the voxel is the biggest.
+  int                   m_LongestSideOfVoxels;
 
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
