@@ -37,7 +37,6 @@
 #include <mitkMIDASEnums.h>
 #include "QmitkMIDASMultiViewWidget.h"
 #include <QmitkMIDASMultiViewVisibilityManager.h>
-#include <mitkMIDASViewKeyPressStateMachine.h>
 
 namespace mitk {
   class DataNode;

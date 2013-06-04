@@ -24,6 +24,7 @@
 
 #include <mitkBaseProperty.h>
 #include <mitkMIDASViewKeyPressResponder.h>
+#include <mitkMIDASViewKeyPressStateMachine.h>
 #include <mitkRenderingManager.h>
 #include <mitkMIDASEnums.h>
 
@@ -439,6 +440,8 @@ private:
   double                                         m_PreviousMagnification;
   MIDASView                                      m_SingleWindowLayout;
   MIDASView                                      m_MultiWindowLayout;
+
+  mitk::MIDASViewKeyPressStateMachine::Pointer   m_ViewKeyPressStateMachine;
 };
 
 #endif
