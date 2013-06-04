@@ -20,7 +20,7 @@
 #include <QString>
 
 class QWidget;
-class QPushButton;
+class QCheckBox;
 
 /**
  * \class PointRegViewPreferencePage
@@ -35,8 +35,15 @@ class PointRegViewPreferencePage : public QObject, public berry::IQtPreferencePa
 
 public:
 
-  /// \brief Stores the name of the preferences node.
+  /**
+   * \brief Stores the name of the preferences node.
+   */
   static const std::string PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the value of the Use ICP preference.
+   */
+  static const std::string USE_ICP_INITIALISATION;
 
   PointRegViewPreferencePage();
   PointRegViewPreferencePage(const PointRegViewPreferencePage& other);
@@ -68,7 +75,7 @@ private slots:
 private:
 
   QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
+  QCheckBox      *m_UseICPInitialisation;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_PointRegViewPreferencesNode;

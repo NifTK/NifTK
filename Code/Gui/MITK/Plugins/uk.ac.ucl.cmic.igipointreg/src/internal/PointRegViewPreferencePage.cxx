@@ -23,13 +23,15 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
+#include <mitkPointBasedRegistration.h>
 
 const std::string PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
+const std::string PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
 
 //-----------------------------------------------------------------------------
 PointRegViewPreferencePage::PointRegViewPreferencePage()
 : m_MainControl(0)
-, m_DummyButton(0)
+, m_UseICPInitialisation(0)
 , m_Initializing(false)
 , m_PointRegViewPreferencesNode(0)
 {
@@ -72,8 +74,8 @@ void PointRegViewPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
 
-  m_DummyButton = new QPushButton();
-  formLayout->addRow("dummy", m_DummyButton);
+  m_UseICPInitialisation = new QCheckBox();
+  formLayout->addRow("use ICP initialisation", m_UseICPInitialisation);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -92,6 +94,7 @@ QWidget* PointRegViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool PointRegViewPreferencePage::PerformOk()
 {
+  m_PointRegViewPreferencesNode->PutBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, m_UseICPInitialisation->isChecked());
   return true;
 }
 
@@ -106,4 +109,5 @@ void PointRegViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void PointRegViewPreferencePage::Update()
 {
+  m_UseICPInitialisation->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION));
 }
