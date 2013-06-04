@@ -27,6 +27,7 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_TimeStampTolerance(1000000000)
 , m_DataStorage(storage)
 , m_ShouldCallUpdate(true)
+, m_IsPlayingBack(false)
 , m_Mutex(itk::FastMutexLock::New())
 , m_Identifier(-1)
 , m_SourceType(SOURCE_TYPE_UNKNOWN)
@@ -186,6 +187,15 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
 
+  if (GetIsPlayingBack())
+  {
+    // no recording playback data
+    assert(m_SavingMessages == false);
+
+    // this should stuff the packet into the buffer via AddData()
+    PlaybackData(requestedTimeStamp);
+  }
+
   if (m_Buffer.size() == 0)
   {
     SetTimeInNanoSeconds(m_ActualTimeStamp, 0);
@@ -202,7 +212,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
             && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(m_RequestedTimeStamp)
-           )
+            )
       {
         m_BufferIterator++;
       }
@@ -400,6 +410,42 @@ void IGIDataSource::StopRecording()
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = 0;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = 0;
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopPlayback()
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::IGIDataType* IGIDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
   assert(data);
@@ -495,6 +541,11 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
         MITK_ERROR << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                    << ", received error:Unknown exception" << std::endl;
       }
+    }
+    else
+    if (m_IsPlayingBack && m_ShouldCallUpdate)
+    {
+      result = this->Update(data);
     }
     else
     {
