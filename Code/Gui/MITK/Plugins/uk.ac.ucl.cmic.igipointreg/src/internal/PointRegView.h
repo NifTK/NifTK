@@ -94,6 +94,7 @@ private:
    */
   Ui::PointRegView *m_Controls;
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
+  bool m_UseICPInitialisation;
 };
 
 #endif // PointRegView_h

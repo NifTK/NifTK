@@ -37,14 +37,24 @@ public:
   itkNewMacro(PointBasedRegistration);
 
   /**
+   * \brief Stores the default value of whether to use ICP initialisation = false.
+   */
+  static const bool DEFAULT_USE_ICP_INITIALISATION;
+
+  /**
    * \brief Main method to calculate the point based registration.
    * \param[In] fixedPointSet a point set
    * \param[In] movingPointSet a point set
+   * \param[In,Out] useICPInitialisation if true, will compute closest point pairs, so the
+   * number of points in each data set can be different, but does require at least 6 points in
+   * each data set, and if false will assume that the point sets are ordered, of equal size,
+   * and with points corresponding.
    * \param[In,Out] the transformation to transform the moving point set into the coordinate system of the fixed point set.
-   * \return Returns the SSD of the error
+   * \return Returns the Fiducial Registration Error
    */
   double Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
+              const bool& useICPInitialisation,
               vtkMatrix4x4& outputTransform) const;
 
   /**

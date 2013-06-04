@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "PointRegView.h"
+#include "PointRegViewPreferencePage.h"
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -27,6 +28,8 @@ const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
 //-----------------------------------------------------------------------------
 PointRegView::PointRegView()
 : m_Controls(NULL)
+, m_Matrix(NULL)
+, m_UseICPInitialisation(false)
 {
   m_Matrix = vtkMatrix4x4::New();
   m_Matrix->Identity();
@@ -99,7 +102,7 @@ void PointRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-
+    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION);
   }
 }
 
@@ -145,9 +148,47 @@ void PointRegView::OnCalculateButtonPressed()
     return;
   }
 
+  if (m_UseICPInitialisation)
+  {
+    if (fixedPoints->GetSize() < 6 || movingPoints->GetSize() < 6)
+    {
+      QMessageBox msgBox;
+      msgBox.setText("The point sets must have at least 6 points.");
+      msgBox.setInformativeText("Please select more points.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+      return;
+    }
+  }
+  else
+  {
+    if (fixedPoints->GetSize() < 3 || movingPoints->GetSize() < 3)
+    {
+      QMessageBox msgBox;
+      msgBox.setText("The point sets must have at least 3 points.");
+      msgBox.setInformativeText("Please select more points.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+      return;
+    }
+    if (fixedPoints->GetSize() != movingPoints->GetSize())
+    {
+      QMessageBox msgBox;
+      msgBox.setText("The point sets must have the same number of points.");
+      msgBox.setInformativeText("Please select ordered and corresponding points.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+      return;
+    }
+  }
+
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
   double error = registration->Update(fixedPoints,
                                       movingPoints,
+                                      m_UseICPInitialisation,
                                       *m_Matrix
                                       );
 
@@ -159,7 +200,7 @@ void PointRegView::OnCalculateButtonPressed()
     }
   }
   QString formattedDouble = QString::number(error);
-  m_Controls->m_RMSError->setText(QString("rms error = ") + formattedDouble);
+  m_Controls->m_RMSError->setText(QString("FRE = ") + formattedDouble);
 }
 
 
