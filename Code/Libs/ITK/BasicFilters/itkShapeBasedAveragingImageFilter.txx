@@ -36,11 +36,22 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   typedef SignedMaurerDistanceMapImageFilter<IntImageType, FloatImageType> SignedMaurerDistanceMapImageFilterType;
   typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType; 
   typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType; 
-  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType; 
+  typedef ImageRegionIteratorWithIndex<FloatImageType> VariabilityMapIteratorType;
+  typedef ImageRegionIteratorWithIndex<FloatImageType> ProbabilityMapIteratorType;
+  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType;
   typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType; 
   typedef std::map<typename TInputImage::PixelType, int> LabelMapType; 
   unsigned short numberOfLabels = 0; 
   const unsigned int numberOfInputs = this->GetNumberOfInputs();
+  typename TInputImage::SpacingType spacing = this->GetInput(0)->GetSpacing();
+  double averageSpacing = 0.;
+
+  for (int i = 0; i < TInputImage::ImageDimension; i++)
+  {
+    averageSpacing += spacing[i];
+  }
+  averageSpacing /= 2.*static_cast<double>(TInputImage::ImageDimension);
+  std::cout << "averageSpacing=" << averageSpacing << std::endl;
   
   std::cout << "Mean mode:" << this->m_MeanMode << std::endl; 
   // Forcing mean mode to simple mean if the number of input is less than 4. 
@@ -73,18 +84,36 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   // Allocate space for the output merged image. 
   this->SetNumberOfOutputs(1); 
   this->AllocateOutputs(); 
-  
+
   // Allocate space for the average distance map and initialise it to max.   
-  typename FloatImageType::Pointer averageDistanceMap = FloatImageType::New();
-  averageDistanceMap->SetOrigin(this->GetInput(0)->GetOrigin()); 
-  averageDistanceMap->SetSpacing(this->GetInput(0)->GetSpacing()); 
-  averageDistanceMap->SetRegions(this->GetInput(0)->GetLargestPossibleRegion()); 
-  averageDistanceMap->Allocate(); 
-  AverageDistanceMapIteratorType it(averageDistanceMap, averageDistanceMap->GetLargestPossibleRegion()); 
+  std::cerr << "Allocating space for average distance map..." << std::endl;
+  m_AverageDistanceMap = FloatImageType::New();
+  m_AverageDistanceMap->SetOrigin(this->GetInput(0)->GetOrigin());
+  m_AverageDistanceMap->SetSpacing(this->GetInput(0)->GetSpacing());
+  m_AverageDistanceMap->SetDirection(this->GetInput(0)->GetDirection());
+  m_AverageDistanceMap->SetRegions(this->GetInput(0)->GetLargestPossibleRegion());
+  m_AverageDistanceMap->Allocate();
+  std::cerr << "Initilising average distance map..." << std::endl;
+  AverageDistanceMapIteratorType it(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it)
   {
     it.Set(std::numeric_limits<float>::max()); 
   }
+  // Allocate space for the variability map.
+  std::cerr << "Allocating space for variability map..." << std::endl;
+  m_VariabilityMap = FloatImageType::New();
+  m_VariabilityMap->SetOrigin(this->GetInput(0)->GetOrigin());
+  m_VariabilityMap->SetSpacing(this->GetInput(0)->GetSpacing());
+  m_VariabilityMap->SetDirection(this->GetInput(0)->GetDirection());
+  m_VariabilityMap->SetRegions(this->GetInput(0)->GetLargestPossibleRegion());
+  m_VariabilityMap->Allocate();
+  // Allocate space for the probability map.
+  m_ProbabilityMap = FloatImageType::New();
+  m_ProbabilityMap->SetOrigin(this->GetInput(0)->GetOrigin());
+  m_ProbabilityMap->SetSpacing(this->GetInput(0)->GetSpacing());
+  m_ProbabilityMap->SetDirection(this->GetInput(0)->GetDirection());
+  m_ProbabilityMap->SetRegions(this->GetInput(0)->GetLargestPossibleRegion());
+  m_ProbabilityMap->Allocate();
 
   typename SignedMaurerDistanceMapImageFilterType::Pointer *distanceMapFilter = new typename SignedMaurerDistanceMapImageFilterType::Pointer[numberOfInputs];
   typename CastImageFilterType::Pointer *castImageFilter = new typename CastImageFilterType::Pointer[numberOfInputs]; 
@@ -93,16 +122,18 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   for (typename LabelMapType::iterator labelMapIt = labelMap.begin(); labelMapIt != labelMap.end(); ++labelMapIt)
   {
     typename TInputImage::PixelType label = labelMapIt->first;
-        
+
     // Loop over all input images to calculate the distance transform.  
     for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
     {
+      std::cerr << "Distance transform: " << imageIndex << std::endl;
       castImageFilter[imageIndex] = CastImageFilterType::New();
       castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex)); 
       
       distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New(); 
       distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput()); 
       distanceMapFilter[imageIndex]->SetUseImageSpacing(true); 
+      distanceMapFilter[imageIndex]->SetSquaredDistance(false);
       
       // Filter only allows background value for the distance transform
       // therefore - have to set the background to the label and set the sign to be +ve inside
@@ -113,27 +144,34 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     }
       
     // Loop over all voxels. 
-    AverageDistanceMapIteratorType averageDistanceMapIt(averageDistanceMap, averageDistanceMap->GetLargestPossibleRegion()); 
+    AverageDistanceMapIteratorType averageDistanceMapIt(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion());
     OutputImageIteratorType outputImageIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion()); 
+    VariabilityMapIteratorType variabilityMaptIt(m_VariabilityMap, m_VariabilityMap->GetLargestPossibleRegion());
+    ProbabilityMapIteratorType probabilityMaptIt(m_ProbabilityMap, m_ProbabilityMap->GetLargestPossibleRegion());
     
-    for (averageDistanceMapIt.GoToBegin(), outputImageIt.GoToBegin();
+    for (averageDistanceMapIt.GoToBegin(), outputImageIt.GoToBegin(), variabilityMaptIt.GoToBegin(), probabilityMaptIt.GoToBegin();
         !averageDistanceMapIt.IsAtEnd();
-        ++averageDistanceMapIt, ++outputImageIt)
+        ++averageDistanceMapIt, ++outputImageIt, ++variabilityMaptIt, ++probabilityMaptIt)
     {
       // Compuate the average distance. 
-      double averageDistance = 0; 
+      double averageDistance = 0.;
+      double sumOfSquare = 0.;
+      double number = static_cast<double>(numberOfInputs);
+      double variability = 0.;
       std::vector<double> allDistances; 
       for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
       {
-        averageDistance += distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()); 
-        //allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex())/this->m_SegmentationReliability[imageIndex]);
-        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));  
+        double distance = distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex());
+        averageDistance += distance;
+        sumOfSquare += distance*distance;
+        allDistances.push_back(distance);
       }
       switch (m_MeanMode)
       {
         case MEAN:
-          averageDistance /= static_cast<double>(numberOfInputs); 
-          break; 
+          averageDistance /= static_cast<double>(numberOfInputs);
+          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
+          break;
           
         case MEDIAN: 
           sort(allDistances.begin(), allDistances.end()); 
@@ -142,7 +180,8 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
             averageDistance = (*(allDistances.begin()+allDistances.size()/2) + *(allDistances.begin()+allDistances.size()/2-1))/2;
           else
             averageDistance = *(allDistances.begin()+allDistances.size()/2);
-          break; 
+          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
+          break;
           
         case INTERQUARTILE_MEAN: 
         {
@@ -150,11 +189,41 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
           int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1; 
           
           sort(allDistances.begin(), allDistances.end()); 
-          averageDistance = 0.0; 
+          double correctAverageDistance = 0.;
+          averageDistance = 0.0;
+          sumOfSquare = 0.;
           for (int i = start; i <= end; i++)
-            averageDistance = *(allDistances.begin()+i); 
-          averageDistance /= static_cast<double>(end-start+1); 
-          break; 
+          {
+            double distance = *(allDistances.begin()+i);
+            averageDistance = distance;
+            correctAverageDistance += distance;
+            sumOfSquare += distance*distance;
+          }
+          // averageDistance /= static_cast<double>(end-start+1);
+          number = static_cast<double>(end-start+1);
+          correctAverageDistance /= number;
+          variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
+          break;
+        }
+
+        case CORRECT_INTERQUARTILE_MEAN:
+        {
+          int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0));
+          int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1;
+
+          sort(allDistances.begin(), allDistances.end());
+          averageDistance = 0.;
+          sumOfSquare = 0.;
+          for (int i = start; i <= end; i++)
+          {
+            double distance = *(allDistances.begin()+i);
+            averageDistance += distance;
+            sumOfSquare += distance*distance;
+          }
+          averageDistance /= static_cast<double>(end-start+1);
+          number = static_cast<double>(end-start+1);
+          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
+          break;
         }
           
         default: 
@@ -179,6 +248,13 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
           outputImageIt.Set(this->m_LabelForUndecidedPixels); 
         }
       }
+
+      variabilityMaptIt.Set(static_cast<float>(variability));
+
+      double prob = 1./(1.+ exp((averageDistance+averageSpacing+3.*variability)/(10.*variability+1.)));
+      //double prob = 1./(1.+ exp(averageDistance));
+      probabilityMaptIt.Set(static_cast<float>(prob));
+
     }
         
     //std::cout << "totalVariance=" << CalculateVariance(averageDistanceMap) << std::endl; 
@@ -189,6 +265,82 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     delete [] castImageFilter;
   
 }
+
+
+template<class TInputImage, class TOutputImage>
+void
+ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
+::ComputeMRF(FloatImageType* probabilityMap, double mrf, int numberOfIterations)
+{
+  typename FloatImageType::SizeType radius;
+  radius.Fill(1);
+  double sameClassInteractionStrength = log(0.95);
+  double differentClassInteractionStrength = log(0.05);
+
+  typename FloatImageType::Pointer nextEstimate = FloatImageType::New();
+  nextEstimate->SetOrigin(probabilityMap->GetOrigin());
+  nextEstimate->SetSpacing(probabilityMap->GetSpacing());
+  nextEstimate->SetDirection(probabilityMap->GetDirection());
+  nextEstimate->SetRegions(probabilityMap->GetLargestPossibleRegion());
+  nextEstimate->Allocate();
+
+  typename FloatImageType::Pointer currentEstimate = probabilityMap;
+
+  for (int i = 0; i < numberOfIterations; i++)
+  {
+
+    ImageRegionIterator<FloatImageType> nextIt(nextEstimate, nextEstimate->GetLargestPossibleRegion());
+    NeighborhoodIterator<FloatImageType> it(radius, currentEstimate, currentEstimate->GetLargestPossibleRegion());
+
+    for (it.GoToBegin(), nextIt.GoToBegin(); !it.IsAtEnd(); ++it, ++nextIt)
+    {
+      double pw = it.GetPrevious(0);
+      double pe = it.GetNext(0);
+      double pn = it.GetPrevious(1);
+      double ps = it.GetNext(1);
+      double pb = it.GetPrevious(2);
+      double pf = it.GetNext(2);
+      double pc = it.GetCenterPixel();
+
+      double foregroundInteraction = pw*sameClassInteractionStrength + (1.-pw)*(differentClassInteractionStrength) +
+                                     pe*sameClassInteractionStrength + (1.-pe)*(differentClassInteractionStrength) +
+                                     pn*sameClassInteractionStrength + (1.-pn)*(differentClassInteractionStrength) +
+                                     ps*sameClassInteractionStrength + (1.-ps)*(differentClassInteractionStrength) +
+                                     pb*sameClassInteractionStrength + (1.-pb)*(differentClassInteractionStrength) +
+                                     pf*sameClassInteractionStrength + (1.-pf)*(differentClassInteractionStrength);
+
+      double backgroundInteraction = pw*differentClassInteractionStrength + (1.-pw)*(sameClassInteractionStrength) +
+                                     pe*differentClassInteractionStrength + (1.-pe)*(sameClassInteractionStrength) +
+                                     pn*differentClassInteractionStrength + (1.-pn)*(sameClassInteractionStrength) +
+                                     ps*differentClassInteractionStrength + (1.-ps)*(sameClassInteractionStrength) +
+                                     pb*differentClassInteractionStrength + (1.-pb)*(sameClassInteractionStrength) +
+                                     pf*differentClassInteractionStrength + (1.-pf)*(sameClassInteractionStrength);
+
+     double foreground = foregroundInteraction*mrf + log(pc);
+     double background = backgroundInteraction*mrf + log(1.-pc);
+
+     double value = exp(foreground)/(exp(foreground)+exp(background));
+     nextIt.Set(value);
+    }
+
+    typename FloatImageType::Pointer temp = currentEstimate;
+    currentEstimate = nextEstimate;
+    nextEstimate = temp;
+  }
+
+
+  ImageRegionIterator<FloatImageType> it(probabilityMap, probabilityMap->GetLargestPossibleRegion());
+  ImageRegionIterator<FloatImageType> nextIt(currentEstimate, currentEstimate->GetLargestPossibleRegion());
+
+  for (it.GoToBegin(), nextIt.GoToBegin(); !it.IsAtEnd(); ++it, ++nextIt)
+  {
+    it.Set(nextIt.Get());
+  }
+
+}
+
+
+
 
 
 #if 0

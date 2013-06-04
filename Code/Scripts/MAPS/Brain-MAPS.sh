@@ -717,7 +717,7 @@ function brain-delineation-using-staple()
   local output_hippo_staple_mf_region=${output_left_dir}/delineate/${output_study_id}-staple-mrf
   local output_hippo_staple_mf_seg=${output_hippo_staple_mf_region}.img
   local output_hippo_staple_weights_thresholded=${output_left_dir}/delineate/${output_study_id}-weights-thresholded.nrrd
-  
+
   if [ 1 == 0 ] 
   then 
   ${crlSTAPLE} --outputImage ${output_hippo_staple_weights} ${staple_command_line_nreg_thresholded} 
@@ -781,10 +781,18 @@ function brain-delineation-using-staple()
   local output_hippo_staple_nreg_thresholded_sba_img=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}.img
   local output_hippo_staple_nreg_thresholded_sba_region=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}
   local output_hippo_staple_nreg_thresholded_sba_region_dilated=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}-dilated  
-  ${combine} SBA 0 2 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
+  local output_hippo_staple_nreg_thresholded_sba_mrf_img=${output_hippo_staple_nreg_thresholded_region}-sba-mean-mrf-${staple_count}.img
+  local output_hippo_staple_nreg_thresholded_sba_mrf_region=${output_hippo_staple_nreg_thresholded_region}-sba-mean-mrf-${staple_count}
+
+  ${combine} SBA 0 2 -1 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
   niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img} img -largest
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region} -alt 0
   rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
+
+  ${combine} SBA 0 2 0.01 ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${staple_command_line_nreg_thresholded}
+  niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${output_hippo_staple_nreg_thresholded_sba_mrf_img%.img} img -largest
+  makeroi -img ${output_hippo_staple_nreg_thresholded_sba_mrf_img} -out ${output_hippo_staple_nreg_thresholded_sba_mrf_region} -alt 0
+  rm -f ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${output_hippo_staple_nreg_thresholded_sba_mrf_img%.img}.hdr
   
   makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_hippo_staple_nreg_thresholded_sba_img} -d 2
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region_dilated} -alt 0
