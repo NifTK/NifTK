@@ -245,17 +245,23 @@ public:
   /// \brief Set the current magnification factor.
   void SetMagnification(double magnification);
 
-  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
 
-  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
+  /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
-  void SetDisplayInteractionEnabled(bool enabled);
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
-  bool IsDisplayInteractionEnabled() const;
+  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
+
+  /// \brief Sets the flag that controls whether the display interactions are bound between the render windows.
+  void SetDisplayInteractionsBound(bool bound);
+
+  /// \brief Gets the flag that controls whether the display interactors are bound between the render windows.
+  bool AreDisplayInteractionsBound() const;
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();

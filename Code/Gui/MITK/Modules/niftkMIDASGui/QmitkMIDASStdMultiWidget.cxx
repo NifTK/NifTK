@@ -112,6 +112,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
+, m_DisplayInteractionsBound(false)
 {
   m_RenderWindows[0] = this->GetRenderWindow1();
   m_RenderWindows[1] = this->GetRenderWindow2();
@@ -249,7 +250,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 {
   // Release the display interactor.
-  this->SetDisplayInteractionEnabled(false);
+  this->SetDisplayInteractionsEnabled(false);
 
   if (mitkWidget1 != NULL && m_AxialSliceTag != 0)
   {
@@ -1980,9 +1981,9 @@ int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
+void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
-  if (enabled == this->IsDisplayInteractionEnabled())
+  if (enabled == this->AreDisplayInteractionsEnabled())
   {
     // Already enabled/disabled.
     return;
@@ -2022,7 +2023,26 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsDisplayInteractionEnabled() const
+bool QmitkMIDASStdMultiWidget::AreDisplayInteractionsEnabled() const
 {
   return m_DisplayInteractor.IsNotNull();
+}
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetDisplayInteractionsBound(bool bound)
+{
+  if (bound == this->AreDisplayInteractionsBound())
+  {
+    // Already enabled/disabled.
+    return;
+  }
+
+  m_DisplayInteractionsBound = bound;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::AreDisplayInteractionsBound() const
+{
+  return m_DisplayInteractionsBound;
 }

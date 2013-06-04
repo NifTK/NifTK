@@ -271,11 +271,17 @@ public:
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
-  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
-  void SetDisplayInteractionEnabled(bool enabled);
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
-  bool IsDisplayInteractionEnabled() const;
+  /// \brief Gets the flag controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
+
+  /// \brief Sets the flag that controls whether the display interactions are bound between the render windows.
+  void SetDisplayInteractionsBound(bool bound);
+
+  /// \brief Gets the flag controls whether the display interactions are bound between the render windows.
+  bool AreDisplayInteractionsBound() const;
 
 signals:
 
@@ -401,6 +407,8 @@ private:
 
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
+
+  bool m_DisplayInteractionsBound;
 
   friend class DisplayGeometryModificationCommand;
 

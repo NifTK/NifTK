@@ -64,7 +64,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
-  m_ViewerWidget->SetDisplayInteractionEnabled(true);
+  m_ViewerWidget->SetDisplayInteractionsEnabled(true);
+  m_ViewerWidget->SetDisplayInteractionsBound(false);
 
   connect(m_TwoViewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnTwoViewStateChanged(int)));
   connect(m_VerticalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnVerticalLayoutStateChanged(int)));

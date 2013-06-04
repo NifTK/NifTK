@@ -449,16 +449,30 @@ bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDisplayInteractionEnabled(bool enabled)
+void QmitkMIDASSingleViewWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
-  m_MultiWidget->SetDisplayInteractionEnabled(enabled);
+  m_MultiWidget->SetDisplayInteractionsEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsDisplayInteractionEnabled() const
+bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsEnabled() const
 {
-  return m_MultiWidget->IsDisplayInteractionEnabled();
+  return m_MultiWidget->AreDisplayInteractionsEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSingleViewWidget::SetDisplayInteractionsBound(bool bound)
+{
+  m_MultiWidget->SetDisplayInteractionsBound(bound);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsBound() const
+{
+  return m_MultiWidget->AreDisplayInteractionsEnabled();
 }
 
 
