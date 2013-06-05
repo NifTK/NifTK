@@ -257,11 +257,17 @@ public:
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Sets the flag that controls whether the display interactions are bound between the render windows.
-  void SetDisplayInteractionsBound(bool bound);
+  /// \brief Sets the flag that controls whether the panning is bound between the render windows.
+  void SetPanningBound(bool bound);
 
-  /// \brief Gets the flag that controls whether the display interactors are bound between the render windows.
-  bool AreDisplayInteractionsBound() const;
+  /// \brief Gets the flag that controls whether the panning is bound between the render windows.
+  bool IsPanningBound() const;
+
+  /// \brief Sets the flag that controls whether the zooming is bound between the render windows.
+  void SetZoomingBound(bool bound);
+
+  /// \brief Gets the flag that controls whether the zooming is bound between the render windows.
+  bool IsZoomingBound() const;
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();

@@ -277,11 +277,17 @@ public:
   /// \brief Gets the flag controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Sets the flag that controls whether the display interactions are bound between the render windows.
-  void SetDisplayInteractionsBound(bool bound);
+  /// \brief Sets the flag that controls whether the panning is bound between the 2D render windows.
+  void SetPanningBound(bool bound);
 
-  /// \brief Gets the flag controls whether the display interactions are bound between the render windows.
-  bool AreDisplayInteractionsBound() const;
+  /// \brief Gets the flag controls whether the panning is bound between the 2D render windows.
+  bool IsPanningBound() const;
+
+  /// \brief Sets the flag that controls whether the zooming is bound between the 2D render windows.
+  void SetZoomingBound(bool bound);
+
+  /// \brief Gets the flag controls whether the zooming is bound between the 2D render windows.
+  bool IsZoomingBound() const;
 
 signals:
 
@@ -408,7 +414,8 @@ private:
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
 
-  bool m_DisplayInteractionsBound;
+  bool m_PanningBound;
+  bool m_ZoomingBound;
 
   friend class DisplayGeometryModificationCommand;
 

@@ -463,16 +463,30 @@ bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDisplayInteractionsBound(bool bound)
+void QmitkMIDASSingleViewWidget::SetPanningBound(bool bound)
 {
-  m_MultiWidget->SetDisplayInteractionsBound(bound);
+  m_MultiWidget->SetPanningBound(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsBound() const
+bool QmitkMIDASSingleViewWidget::IsPanningBound() const
 {
-  return m_MultiWidget->AreDisplayInteractionsEnabled();
+  return m_MultiWidget->IsPanningBound();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSingleViewWidget::SetZoomingBound(bool bound)
+{
+  m_MultiWidget->SetZoomingBound(bound);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASSingleViewWidget::IsZoomingBound() const
+{
+  return m_MultiWidget->IsZoomingBound();
 }
 
 

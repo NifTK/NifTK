@@ -44,13 +44,14 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
 , m_VisibilityTracker(NULL)
 {
   this->setupUi(parent);
+
   m_ViewerWidget->SetRememberViewSettingsPerOrientation(false);
   m_ViewerWidget->SetSelected(false);
   m_TwoViewCheckBox->setChecked(false);
   m_VerticalCheckBox->setChecked(false);
   m_VerticalCheckBox->setEnabled(false);
   m_AxialRadioButton->setChecked(true);
-  ChangeLayout(true);
+  this->ChangeLayout(true);
 
   std::vector<mitk::BaseRenderer*> renderers;
   renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
@@ -65,7 +66,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
-  m_ViewerWidget->SetDisplayInteractionsBound(false);
+  m_ViewerWidget->SetPanningBound(false);
+  m_ViewerWidget->SetZoomingBound(true);
 
   connect(m_TwoViewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnTwoViewStateChanged(int)));
   connect(m_VerticalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnVerticalLayoutStateChanged(int)));
@@ -121,6 +123,7 @@ void QmitkMIDASSegmentationViewWidget::Activated()
     // you don't get the first OnFocusChanged as the window has already been clicked on, and then the
     // geometry is initialised incorrectly.
     this->OnFocusChanged();
+    m_ViewerWidget->SetSelected(false);
   }
 }
 
@@ -372,6 +375,9 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   // If the newly focused window is this widget, nothing to update. Stop early.
   if (this->IsCurrentlyFocusedWindowInThisWidget())
   {
+    mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
+    QmitkRenderWindow* renderWindow = m_ViewerWidget->GetRenderWindow(focusedRenderer->GetRenderWindow());
+    m_ViewerWidget->SetSelectedRenderWindow(renderWindow);
     return;
   }
 
@@ -445,10 +451,10 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       }
 
       std::vector<mitk::DataNode*> crossHairs = m_ViewerWidget->GetWidgetPlanes();
-      std::vector<mitk::BaseRenderer*> windowsToTrack;
-      windowsToTrack.push_back(mitk::BaseRenderer::GetInstance(mainWindowAxial->GetVtkRenderWindow()));
+      std::vector<mitk::BaseRenderer*> renderersToTrack;
+      renderersToTrack.push_back(mainWindowAxial->GetRenderer());
 
-      m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+      m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
       m_VisibilityTracker->SetNodesToIgnore(crossHairs);
       m_VisibilityTracker->OnPropertyChanged(); // force update
 

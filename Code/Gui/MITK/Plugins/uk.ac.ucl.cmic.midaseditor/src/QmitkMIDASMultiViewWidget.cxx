@@ -385,7 +385,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
   widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
   widget->SetDisplayInteractionsEnabled(true);
-  widget->SetDisplayInteractionsBound(true);
+  widget->SetPanningBound(true);
+  widget->SetZoomingBound(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
