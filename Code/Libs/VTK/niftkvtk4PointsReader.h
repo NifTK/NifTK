@@ -29,7 +29,6 @@
 #define __niftkvtk4PointsReader_h
 
 #include <NifTKConfigure.h>
-#include <niftkCommonWin32ExportHeader.h>
 #include "niftkVTKWin32ExportHeader.h"
 
 #include <vtkPolyDataAlgorithm.h>
