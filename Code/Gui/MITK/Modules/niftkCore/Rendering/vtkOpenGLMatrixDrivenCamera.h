@@ -80,7 +80,10 @@ private:
   int m_ImageHeight;
   int m_WindowWidth;
   int m_WindowHeight;
-
+  double m_Fx;
+  double m_Fy;
+  double m_Cx;
+  double m_Cy;
 };
 
 #endif

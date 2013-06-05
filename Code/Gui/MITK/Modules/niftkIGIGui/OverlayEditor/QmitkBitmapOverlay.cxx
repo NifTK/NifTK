@@ -404,6 +404,7 @@ void QmitkBitmapOverlay::SetupCamera()
 
   backCamera->SetParallelScale( scale );
   frontCamera->SetParallelScale( scale );
+
   this->Modified();
 }
 

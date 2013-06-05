@@ -34,6 +34,10 @@ vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 , m_ImageHeight(256)
 , m_WindowWidth(256)
 , m_WindowHeight(256)
+, m_Fx(1)
+, m_Fy(1)
+, m_Cx(0)
+, m_Cy(0)
 {
   m_IntrinsicMatrix = vtkMatrix4x4::New();
   m_IntrinsicMatrix->Identity();
@@ -63,30 +67,10 @@ void vtkOpenGLMatrixDrivenCamera::SetIntrinsicParameters(const double& fx, const
                                                          const double &cx, const double& cy
                                                         )
 {
-
-  double clippingRange[2];
-  this->GetClippingRange(clippingRange);
-  double near = clippingRange[0];
-  double far = clippingRange[1];
-
-  // Inspired by: http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/
-  /*
-   [2*K00/width, -2*K01/width,    (width - 2*K02 + 2*x0)/width,                            0]
-   [          0, 2*K11/height, (-height + 2*K12 + 2*y0)/height,                            0]
-   [          0,            0,  (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
-   [          0,            0,                              -1,                            0]
-   */
-
-  m_IntrinsicMatrix->Zero();
-  m_IntrinsicMatrix->SetElement(0, 0, 2*fx/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(0, 1, -2*0/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidth - 2*cx)/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(1, 1, 2*fy/m_ImageHeight);
-  m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeight + 2*cy)/m_ImageHeight);
-  m_IntrinsicMatrix->SetElement(2, 2, (-far-near)/(far-near));
-  m_IntrinsicMatrix->SetElement(2, 3, -2*far*near/(far-near));
-  m_IntrinsicMatrix->SetElement(3, 2, -1);
-
+  m_Fx = fx;
+  m_Fy = fy;
+  m_Cx = cx;
+  m_Cy = cy;
   this->Modified();
 }
 
@@ -115,11 +99,36 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
     glReadBuffer(static_cast<GLenum>(win->GetFrontBuffer()));
   }
 
+  double clippingRange[2];
+  this->GetClippingRange(clippingRange);
+
+  double near = clippingRange[0];
+  double far = clippingRange[1];
+
+  // Inspired by: http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/
+  /*
+   [2*K00/width, -2*K01/width,    (width - 2*K02 + 2*x0)/width,                            0]
+   [          0, 2*K11/height, (-height + 2*K12 + 2*y0)/height,                            0]
+   [          0,            0,  (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
+   [          0,            0,                              -1,                            0]
+   */
+
+  m_IntrinsicMatrix->Zero();
+  m_IntrinsicMatrix->SetElement(0, 0, 2*m_Fx/m_ImageWidth);
+  m_IntrinsicMatrix->SetElement(0, 1, -2*0/m_ImageWidth);
+  m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidth - 2*m_Cx)/m_ImageWidth);
+  m_IntrinsicMatrix->SetElement(1, 1, 2*m_Fy/m_ImageHeight);
+  m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeight + 2*m_Cy)/m_ImageHeight);
+  m_IntrinsicMatrix->SetElement(2, 2, (-far-near)/(far-near));
+  m_IntrinsicMatrix->SetElement(2, 3, -2*far*near/(far-near));
+  m_IntrinsicMatrix->SetElement(3, 2, -1);
+
   double widthScale  = (double) m_WindowWidth  / (double) m_ImageWidth;
   double heightScale  = (double) m_WindowHeight  / (double) m_ImageHeight;
 
   int vpw = m_WindowWidth;
   int vph = m_WindowHeight;
+
   if (widthScale < heightScale)
   {
     vph = (int) ((double) m_ImageHeight * widthScale);

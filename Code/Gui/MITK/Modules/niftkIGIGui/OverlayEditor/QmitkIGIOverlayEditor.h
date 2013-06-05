@@ -16,7 +16,7 @@
 #define QmitkIGIOverlayEditor_h
 
 #include "ui_QmitkIGIOverlayEditor.h"
-#include "niftkCoreGuiExports.h"
+#include "niftkIGIGuiExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
@@ -28,11 +28,11 @@ class QmitkRenderWindow;
  * \brief A widget that contains our QmitkSingle3DView, and a QmitkRenderWindow,
  * (both set to render 3D mode), and several widgets for some basic controls.
  * This class implements all the functionality for IGIOverlayEditor. An
- * additional feature might be to reduce the standalone QmitkRenderWindow in
+ * additional feature might be to remove the standalone QmitkRenderWindow in
  * the QmitkIGIOverlayEditor.ui and provide a QmitkStdMultiWidget?
  * \see IGIOverlayEditor
  */
-class NIFTKCOREGUI_EXPORT QmitkIGIOverlayEditor : public QWidget, public Ui_QmitkIGIOverlayEditor
+class NIFTKIGIGUI_EXPORT QmitkIGIOverlayEditor : public QWidget, public Ui_QmitkIGIOverlayEditor
 {
 
   Q_OBJECT
