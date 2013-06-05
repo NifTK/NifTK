@@ -112,6 +112,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
+, m_PanningBound(true)
+, m_ZoomingBound(true)
 {
   m_RenderWindows[0] = this->GetRenderWindow1();
   m_RenderWindows[1] = this->GetRenderWindow2();
@@ -249,7 +251,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 QmitkMIDASStdMultiWidget::~QmitkMIDASStdMultiWidget()
 {
   // Release the display interactor.
-  this->SetDisplayInteractionEnabled(false);
+  this->SetDisplayInteractionsEnabled(false);
 
   if (mitkWidget1 != NULL && m_AxialSliceTag != 0)
   {
@@ -1462,7 +1464,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, 
       m_CursorPosition[2] = cursorPosition[1];
     }
 
-    if (beingPanned)
+    if (beingPanned && this->IsPanningBound())
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1505,18 +1507,21 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
 {
   if (!m_BlockDisplayGeometryEvents)
   {
-    double magnification = ComputeMagnification(renderWindow);
+    double magnification = this->ComputeMagnification(renderWindow);
     if (magnification != m_Magnification)
     {
       mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
-      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-      for (int i = 0; i < 3; ++i)
+      if (this->IsZoomingBound())
       {
-        QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
-        if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+        // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+        for (int i = 0; i < 3; ++i)
         {
-          this->SetScaleFactor(otherRenderWindow, scaleFactors[m_LongestSideOfVoxels]);
+          QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+          if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
+          {
+            this->SetScaleFactor(otherRenderWindow, scaleFactors[m_LongestSideOfVoxels]);
+          }
         }
       }
 
@@ -1750,11 +1755,23 @@ void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPos
 
   m_CursorPosition = cursorPosition;
 
-  // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-  for (int i = 0; i < 3; ++i)
+  if (this->IsPanningBound())
   {
-    QmitkRenderWindow* renderWindow = m_RenderWindows[i];
-    if (renderWindow->isVisible())
+    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+    for (int i = 0; i < 3; ++i)
+    {
+      QmitkRenderWindow* renderWindow = m_RenderWindows[i];
+      if (renderWindow->isVisible())
+      {
+        mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
+        this->SetOrigin(renderWindow, origin);
+      }
+    }
+  }
+  else
+  {
+    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
+    if (renderWindow->isVisible() && renderWindow != m_RenderWindows[3])
     {
       mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
       this->SetOrigin(renderWindow, origin);
@@ -1830,10 +1847,21 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 
   mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
-  // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-  for (int i = 0; i < 3; ++i)
+  if (this->IsZoomingBound())
   {
-    QmitkRenderWindow* renderWindow = m_RenderWindows[i];
+    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+    for (int i = 0; i < 3; ++i)
+    {
+      QmitkRenderWindow* renderWindow = m_RenderWindows[i];
+      if (renderWindow->isVisible())
+      {
+        this->SetScaleFactor(renderWindow, scaleFactors[m_LongestSideOfVoxels]);
+      }
+    }
+  }
+  else
+  {
+    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
     if (renderWindow->isVisible())
     {
       this->SetScaleFactor(renderWindow, scaleFactors[m_LongestSideOfVoxels]);
@@ -1980,9 +2008,9 @@ int QmitkMIDASStdMultiWidget::GetSliceUpDirection(MIDASOrientation orientation) 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
+void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
-  if (enabled == this->IsDisplayInteractionEnabled())
+  if (enabled == this->AreDisplayInteractionsEnabled())
   {
     // Already enabled/disabled.
     return;
@@ -2022,7 +2050,57 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsDisplayInteractionEnabled() const
+bool QmitkMIDASStdMultiWidget::AreDisplayInteractionsEnabled() const
 {
   return m_DisplayInteractor.IsNotNull();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetPanningBound(bool bound)
+{
+  if (bound == this->IsPanningBound())
+  {
+    // Already bound/unbound.
+    return;
+  }
+
+  m_PanningBound = bound;
+
+  if (bound)
+  {
+    this->SetCursorPosition(this->GetCursorPosition());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::IsPanningBound() const
+{
+  return m_PanningBound;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetZoomingBound(bool bound)
+{
+  if (bound == this->IsZoomingBound())
+  {
+    // Already bound/unbound.
+    return;
+  }
+
+  m_ZoomingBound = bound;
+
+  if (bound)
+  {
+    this->SetMagnification(this->GetMagnification());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::IsZoomingBound() const
+{
+  return m_ZoomingBound;
 }

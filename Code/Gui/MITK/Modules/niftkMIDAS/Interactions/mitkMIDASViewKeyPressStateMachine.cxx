@@ -15,23 +15,70 @@
 #include "mitkMIDASViewKeyPressStateMachine.h"
 #include <mitkWheelEvent.h>
 #include <mitkStateEvent.h>
+#include <mitkBaseRenderer.h>
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char * stateMachinePattern, MIDASViewKeyPressResponder* responder)
+MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char* stateMachinePattern, MIDASViewKeyPressResponder* responder)
 : StateMachine(stateMachinePattern)
 {
   assert(responder);
   m_Responder = responder;
 
-  CONNECT_ACTION( 350001, MoveAnterior );
-  CONNECT_ACTION( 350002, MovePosterior );
-  CONNECT_ACTION( 350003, SwitchToAxial );
-  CONNECT_ACTION( 350004, SwitchToSagittal );
-  CONNECT_ACTION( 350005, SwitchToCoronal );
-  CONNECT_ACTION( 350013, ToggleMultiWindowLayout );
+  CONNECT_ACTION(350001, MoveAnterior);
+  CONNECT_ACTION(350002, MovePosterior);
+  CONNECT_ACTION(350003, SwitchToAxial);
+  CONNECT_ACTION(350004, SwitchToSagittal);
+  CONNECT_ACTION(350005, SwitchToCoronal);
+  CONNECT_ACTION(350013, ToggleMultiWindowLayout);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MIDASViewKeyPressStateMachine::HandleEvent(StateEvent const* stateEvent)
+{
+  mitk::BaseRenderer* sender = stateEvent->GetEvent()->GetSender();
+  if (!this->HasRenderer(sender))
+  {
+    return false;
+  }
+  return mitk::StateMachine::HandleEvent(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MIDASViewKeyPressStateMachine::HasRenderer(const mitk::BaseRenderer* renderer) const
+{
+  std::vector<const mitk::BaseRenderer*>::const_iterator begin = m_Renderers.begin();
+  std::vector<const mitk::BaseRenderer*>::const_iterator end = m_Renderers.end();
+
+  return std::find(begin, end, renderer) != end;
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASViewKeyPressStateMachine::AddRenderer(const mitk::BaseRenderer* renderer)
+{
+  if (!this->HasRenderer(renderer))
+  {
+    m_Renderers.push_back(renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASViewKeyPressStateMachine::RemoveRenderer(const mitk::BaseRenderer* renderer)
+{
+  std::vector<const mitk::BaseRenderer*>::iterator begin = m_Renderers.begin();
+  std::vector<const mitk::BaseRenderer*>::iterator end = m_Renderers.end();
+
+  std::vector<const mitk::BaseRenderer*>::iterator foundRenderer = std::find(begin, end, renderer);
+  if (foundRenderer != end)
+  {
+    m_Renderers.erase(foundRenderer);
+  }
 }
 
 
@@ -50,12 +97,10 @@ float MIDASViewKeyPressStateMachine::CanHandleEvent(const StateEvent *event) con
           )
       )
   {
-    return 1;
+    return 1.0f;
   }
-  else
-  {
-    return mitk::StateMachine::CanHandleEvent(event);
-  }
+
+  return mitk::StateMachine::CanHandleEvent(event);
 }
 
 
