@@ -223,7 +223,7 @@ public:
   virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
   virtual void StopPlayback();
   // RequestData() would be a candidate to fold this into. but it's currently not suitable.
-  virtual mitk::IGIDataType* PlaybackData(igtlUint64 requestedTimeStamp);
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
   /**
    * \brief Returns the first time stamp, or 0 if the buffer is empty.
@@ -357,9 +357,16 @@ private:
   bool                                            m_SavingMessages;
   bool                                            m_SaveOnReceipt;
   bool                                            m_SaveInBackground;
-  std::list<mitk::IGIDataType::Pointer>           m_Buffer;
-  std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;
-  std::list<mitk::IGIDataType::Pointer>::iterator m_FrameRateBufferIterator;
+
+  struct TimeStampComparator
+  {
+    bool operator()(const mitk::IGIDataType::Pointer& a, const mitk::IGIDataType::Pointer& b);
+  };
+  typedef std::set<mitk::IGIDataType::Pointer, TimeStampComparator>    BufferType;
+  BufferType              m_Buffer;
+  BufferType::iterator    m_BufferIterator;
+  BufferType::iterator    m_FrameRateBufferIterator;
+
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;

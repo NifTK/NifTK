@@ -321,6 +321,7 @@ bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUi
 void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
 {
   StopGrabbingThread();
+  ClearBuffer();
 
   // needs to match what SaveData() does below
   QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
@@ -344,6 +345,7 @@ void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64
 void QmitkIGIOpenCVDataSource::StopPlayback()
 {
   m_PlaybackIndex.clear();
+  ClearBuffer();
 
   SetIsPlayingBack(false);
 
@@ -352,11 +354,11 @@ void QmitkIGIOpenCVDataSource::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-mitk::IGIDataType* QmitkIGIOpenCVDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+void QmitkIGIOpenCVDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 {
   assert(GetIsPlayingBack());
 
-  std::set<igtlUint64>::const_iterator i = m_PlaybackIndex.lower_bound(requestedTimeStamp);
+  std::set<igtlUint64>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
   if (i != m_PlaybackIndex.end())
   {
     std::ostringstream  filename;
@@ -375,8 +377,6 @@ mitk::IGIDataType* QmitkIGIOpenCVDataSource::PlaybackData(igtlUint64 requestedTi
       cvReleaseImage(&img);
     }
   }
-
-  return 0;
 }
 
 
