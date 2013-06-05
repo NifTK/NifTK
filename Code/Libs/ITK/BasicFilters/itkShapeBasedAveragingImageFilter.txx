@@ -51,6 +51,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     averageSpacing += spacing[i];
   }
   averageSpacing /= 2.*static_cast<double>(TInputImage::ImageDimension);
+  averageSpacing *= averageSpacing;
   std::cout << "averageSpacing=" << averageSpacing << std::endl;
   
   std::cout << "Mean mode:" << this->m_MeanMode << std::endl; 
@@ -133,7 +134,6 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New(); 
       distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput()); 
       distanceMapFilter[imageIndex]->SetUseImageSpacing(true); 
-      distanceMapFilter[imageIndex]->SetSquaredDistance(false);
       
       // Filter only allows background value for the distance transform
       // therefore - have to set the background to the label and set the sign to be +ve inside
@@ -158,7 +158,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       double sumOfSquare = 0.;
       double number = static_cast<double>(numberOfInputs);
       double variability = 0.;
-      std::vector<double> allDistances; 
+      std::vector<double> allDistances;
       for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
       {
         double distance = distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex());
@@ -199,10 +199,12 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
             correctAverageDistance += distance;
             sumOfSquare += distance*distance;
           }
-          // averageDistance /= static_cast<double>(end-start+1);
+          averageDistance /= static_cast<double>(end-start+1);
           number = static_cast<double>(end-start+1);
           correctAverageDistance /= number;
           variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
+          variability /= number;
+          averageSpacing /= number;
           break;
         }
 
@@ -234,6 +236,20 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       {
         outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label)); 
         averageDistanceMapIt.Set(static_cast<float>(averageDistance)); 
+
+        double prob = 0.;
+        //double prob = 1./(1.+ exp(averageDistance));
+
+        if (label == 0)
+        {
+          prob = 1./(1.+ exp((-averageDistance+3.*variability)/(50.*variability+1.)));
+        }
+        else
+        {
+          prob = 1./(1.+ exp((averageDistance+3.*variability)/(50.*variability+1.)));
+        }
+        probabilityMaptIt.Set(static_cast<float>(prob));
+
       }
       else if (averageDistance == averageDistanceMapIt.Get())
       {
@@ -250,11 +266,6 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       }
 
       variabilityMaptIt.Set(static_cast<float>(variability));
-
-      double prob = 1./(1.+ exp((averageDistance+averageSpacing+3.*variability)/(10.*variability+1.)));
-      //double prob = 1./(1.+ exp(averageDistance));
-      probabilityMaptIt.Set(static_cast<float>(prob));
-
     }
         
     //std::cout << "totalVariance=" << CalculateVariance(averageDistanceMap) << std::endl; 
