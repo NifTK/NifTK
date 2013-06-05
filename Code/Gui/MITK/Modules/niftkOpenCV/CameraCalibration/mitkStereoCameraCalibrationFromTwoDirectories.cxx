@@ -96,12 +96,12 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   int numberOfSuccessfulViews = successfullImagesLeft.size();
 
   CvMat *intrinsicMatrixLeft = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffsLeft = cvCreateMat(5, 1, CV_32FC1);
+  CvMat *distortionCoeffsLeft = cvCreateMat(4, 1, CV_32FC1);
   CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
   CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
   CvMat *intrinsicMatrixRight = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffsRight = cvCreateMat(5, 1, CV_32FC1);
+  CvMat *distortionCoeffsRight = cvCreateMat(4, 1, CV_32FC1);
   CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
   CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
