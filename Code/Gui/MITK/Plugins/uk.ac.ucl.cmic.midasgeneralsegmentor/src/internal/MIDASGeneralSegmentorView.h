@@ -344,6 +344,11 @@ protected:
   /// see class introduction.
   virtual void NodeChanged(const mitk::DataNode* node);
 
+  /// \brief This view registers with the mitk::DataStorage and listens for removing
+  /// data, so this method cancels the operation and frees the resources if the
+  /// segmentation node is removed.
+  virtual void NodeRemoved(const mitk::DataNode* node);
+
   /// \brief Called from the slice navigation controller to indicate a different slice,
   /// which in MIDAS terms means automatically accepting the currently segmented slice
   /// and moving to the next one.

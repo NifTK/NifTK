@@ -129,6 +129,9 @@ protected:
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
 
+  /// \brief Called when a node is removed.
+  virtual void NodeRemoved(const mitk::DataNode* node);
+
   /// \brief Returns the name of the preferences node to look up.
   virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
