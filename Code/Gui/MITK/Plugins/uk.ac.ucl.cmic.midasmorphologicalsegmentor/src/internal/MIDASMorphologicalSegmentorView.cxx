@@ -524,6 +524,27 @@ void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
+void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+{
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
+  {
+    this->OnToolSelected(-1);
+    this->EnableSegmentationWidgets(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
+    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_PipelineManager->RemoveWorkingData();
+    m_PipelineManager->DestroyPipeline();
+//    this->GetDataStorage()->Remove(segmentationNode);
+    this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(part, nodes);

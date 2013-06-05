@@ -2748,6 +2748,30 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+{
+  if (!this->HaveInitialisedWorkingData())
+  {
+    return;
+  }
+
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(0);
+  assert(segmentationNode);
+
+  if (segmentationNode.GetPointer() == removedNode)
+  {
+    this->DestroyPipeline();
+    this->RemoveWorkingData();
+//    this->GetDataStorage()->Remove(segmentationNode);
+    this->EnableSegmentationWidgets(false);
+    this->SetReferenceImageSelected();
+    this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::OnContoursChanged()
 {
   this->UpdateRegionGrowing();
