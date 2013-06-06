@@ -17,6 +17,7 @@
 
 #include <QmitkBaseView.h>
 #include "ui_SurfaceRegView.h"
+#include <vtkSmartPointer.h>
 
 class vtkMatrix4x4;
 
@@ -87,6 +88,7 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::SurfaceRegView *m_Controls;
+  vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 
 };
 

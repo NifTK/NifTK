@@ -15,7 +15,7 @@
 // Qmitk
 #include "SurfaceRegView.h"
 #include <mitkNodePredicateDataType.h>
-#include <mitkPointSet.h>
+#include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkFileIOUtils.h>
@@ -25,7 +25,10 @@ const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 //-----------------------------------------------------------------------------
 SurfaceRegView::SurfaceRegView()
 : m_Controls(NULL)
+, m_Matrix(NULL)
 {
+  m_Matrix = vtkMatrix4x4::New();
+  m_Matrix->Identity();
 }
 
 
@@ -56,6 +59,21 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
+
+    mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = 
+      mitk::TNodePredicateDataType<mitk::Surface>::New();
+
+    m_Controls->m_FixedSurfaceComboBox->SetPredicate(isSurface);
+    m_Controls->m_FixedSurfaceComboBox->SetAutoSelectNewItems(false);
+
+    m_Controls->m_MovingSurfaceComboBox->SetPredicate(isSurface);
+    m_Controls->m_MovingSurfaceComboBox->SetAutoSelectNewItems(false);
+
+    m_Controls->m_FixedSurfaceComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_MovingSurfaceComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
+
+    m_Controls->m_MatrixWidget->setEditable(false);
 
     RetrievePreferenceValues();
   }
