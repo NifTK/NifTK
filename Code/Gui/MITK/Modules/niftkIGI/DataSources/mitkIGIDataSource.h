@@ -263,6 +263,7 @@ public:
    */
   std::list<std::string> GetRelatedSources();
 
+
 protected:
 
   IGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.

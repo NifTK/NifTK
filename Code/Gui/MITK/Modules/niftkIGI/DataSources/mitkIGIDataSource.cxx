@@ -633,6 +633,5 @@ bool IGIDataSource::TimeStampComparator::operator()(const mitk::IGIDataType::Poi
   return a->GetTimeStampInNanoSeconds() < b->GetTimeStampInNanoSeconds();
 }
 
-
 //-----------------------------------------------------------------------------
 } // end namespace

@@ -52,6 +52,9 @@ public:
    */
   void EmitDataSourceStatusUpdatedSignal();
 
+
+  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& extension);
+
 signals:
 
   /**

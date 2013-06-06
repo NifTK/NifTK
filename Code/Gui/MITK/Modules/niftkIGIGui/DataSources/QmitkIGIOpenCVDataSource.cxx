@@ -228,63 +228,6 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
 
 
 //-----------------------------------------------------------------------------
-static bool TimeStampFileNameSortComparator(const QString& a, const QString& b)
-{
-  // our comparison needs to be able to handle timestamps
-  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<igtlUint64>::max());
-  
-  // FIXME: we shouldnt be messing with strings here, simply numeric timestamps instead!
-  bool  ok = false;
-  qulonglong av = a.split('.').front().toULongLong(&ok);
-  // we should have filtered out non-number files before
-  assert(ok);
-
-  qulonglong bv = b.split('.').front().toULongLong(&ok);
-  assert(ok);
-
-  return av < bv;
-}
-
-
-static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& extension)
-{
-  // this should be a static assert...
-  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<igtlUint64>::max());
-
-  std::set<igtlUint64>  result;
-
-  QStringList filters;
-  filters << QString("*." + extension);
-  path.setNameFilters(filters);
-  path.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
-
-  QStringList files = path.entryList();
-  if (!files.empty())
-  {
-    foreach (QString file, files)
-    {
-      std::cout << file.toStdString() << std::endl;
-
-      QStringList parts = file.split('.');
-      if (parts.size() == 2)
-      {
-        if (parts[1] == extension)
-        {
-          bool  ok = false;
-          qulonglong value = parts[0].toULongLong(&ok);
-          if (ok)
-          {
-            result.insert(value);
-          }
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-//-----------------------------------------------------------------------------
 bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
 {
   // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.

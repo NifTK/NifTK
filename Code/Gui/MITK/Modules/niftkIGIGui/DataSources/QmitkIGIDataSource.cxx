@@ -60,3 +60,44 @@ void QmitkIGIDataSource::SetSavingInterval(int seconds)
   m_SaveThread->SetInterval(seconds*1000);
   this->Modified();
 }
+
+
+//-----------------------------------------------------------------------------
+std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QString& extension)
+{
+  // this should be a static assert...
+  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<igtlUint64>::max());
+
+  std::set<igtlUint64>  result;
+
+  QStringList filters;
+  filters << QString("*." + extension);
+  path.setNameFilters(filters);
+  path.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
+
+  QStringList files = path.entryList();
+  if (!files.empty())
+  {
+    foreach (QString file, files)
+    {
+      //std::cout << file.toStdString() << std::endl;
+
+      QStringList parts = file.split('.');
+      if (parts.size() == 2)
+      {
+        if (parts[1] == extension)
+        {
+          bool  ok = false;
+          qulonglong value = parts[0].toULongLong(&ok);
+          if (ok)
+          {
+            result.insert(value);
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
