@@ -239,6 +239,8 @@ void QmitkSingle3DView::Update()
 {
   double widthOfCurrentWindow = this->width();
   double heightOfCurrentWindow = this->height();
+  double near = 0.01;
+  double far = 1001;
 
   // So we set the window size on each update so that the OpenGL viewport is always up to date.
   m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
@@ -252,7 +254,7 @@ void QmitkSingle3DView::Update()
   m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
   m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
   m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
-  m_MatrixDrivenCamera->SetClippingRange(0.01, 1001);
+  m_MatrixDrivenCamera->SetClippingRange(near, far);
 
   // If we have a calibration and tracking matrix, we can move camera accordingly.
   if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
@@ -287,6 +289,7 @@ void QmitkSingle3DView::Update()
       m_MatrixDrivenCamera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
       m_MatrixDrivenCamera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
       m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
+      m_MatrixDrivenCamera->SetClippingRange(near, far);
     }
   }
 }
