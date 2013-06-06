@@ -16,6 +16,7 @@ set(CPP_FILES
   LookupTables/LookupTableContainer.cxx
   LookupTables/LookupTableSaxHandler.cxx
   LookupTables/LookupTableManager.cxx
+  QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
 )
@@ -24,6 +25,7 @@ set(MOC_H_FILES
   Events/QmitkPaintEventEater.h
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
+  QmitkDataStorageCheckableComboBox.h
   QmitkHelpAboutDialog.h
 )
 
