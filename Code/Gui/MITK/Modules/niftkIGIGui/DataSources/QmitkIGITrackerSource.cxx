@@ -412,7 +412,14 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
 
   for (BOOST_AUTO(t, m_PlaybackIndex.begin()); t != m_PlaybackIndex.end(); ++t)
   {
+    // this will find us the timestamp right after the requested one
     BOOST_AUTO(i, t->second.upper_bound(requestedTimeStamp));
+    // so we need to pick the previous
+    // FIXME: not sure if the non-existing-else here ever applies!
+    if (i != t->second.begin())
+    {
+      --i;
+    }
     if (i != t->second.end())
     {
       igtl::Matrix4x4 matrix;

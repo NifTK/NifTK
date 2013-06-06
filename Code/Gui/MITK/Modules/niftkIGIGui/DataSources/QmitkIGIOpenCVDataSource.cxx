@@ -301,7 +301,14 @@ void QmitkIGIOpenCVDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 {
   assert(GetIsPlayingBack());
 
+  // this will find us the timestamp right after the requested one
   std::set<igtlUint64>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
+  // so we need to pick the previous
+  // FIXME: not sure if the non-existing-else here ever applies!
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
   if (i != m_PlaybackIndex.end())
   {
     std::ostringstream  filename;

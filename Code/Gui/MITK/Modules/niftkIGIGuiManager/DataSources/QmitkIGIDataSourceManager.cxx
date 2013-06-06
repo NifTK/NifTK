@@ -724,6 +724,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = GetTimeInNanoSeconds(timeNow);
   }
 
+  m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
+
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
 
@@ -945,6 +947,8 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         // for now, cannot start recording directly from playback mode.
         // could be possible: leave this enabled and simply stop all playback when user clicks on record.
         m_RecordPushButton->setEnabled(false);
+
+        m_TimeStampEdit->setReadOnly(false);
       }
       else
       {
@@ -961,6 +965,7 @@ void QmitkIGIDataSourceManager::OnPlayStart()
 
     m_StopPushButton->setEnabled(false);
     m_RecordPushButton->setEnabled(true);
+    m_TimeStampEdit->setReadOnly(true);
   }
 }
 
