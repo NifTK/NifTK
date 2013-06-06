@@ -15,7 +15,7 @@
 #ifndef QmitkBitmapOverlay_h
 #define QmitkBitmapOverlay_h
 
-#include "niftkCoreGuiExports.h"
+#include "niftkIGIGuiExports.h"
 #include <mitkBaseData.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
@@ -30,7 +30,7 @@ class vtkImageMapper;
  * \class QmitkBitmapOverlay
  * \brief Used to draw a 2D image into the background of a VTK Render Window.
  */
-class NIFTKCOREGUI_EXPORT QmitkBitmapOverlay : public itk::Object
+class NIFTKIGIGUI_EXPORT QmitkBitmapOverlay : public itk::Object
 {
 public:
 

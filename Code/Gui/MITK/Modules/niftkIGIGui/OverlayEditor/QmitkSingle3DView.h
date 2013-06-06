@@ -15,18 +15,19 @@
 #ifndef QmitkSingle3DView_h
 #define QmitkSingle3DView_h
 
-#include "niftkCoreGuiExports.h"
+#include "niftkIGIGuiExports.h"
+#include "QmitkBitmapOverlay.h"
+#include <QmitkCmicLogo.h>
 #include <mitkRenderWindowFrame.h>
 #include <mitkGradientBackground.h>
 #include <mitkDataStorage.h>
-#include "QmitkCmicLogo.h"
-#include "QmitkBitmapOverlay.h"
 #include <QWidget>
 #include <QFrame>
 #include <QResizeEvent>
 #include <QmitkRenderWindow.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <vtkOpenGLMatrixDrivenCamera.h>
 
 class QGridLayout;
 class QmitkRenderWindow;
@@ -43,8 +44,14 @@ namespace mitk {
  *
  * This class was originally a stripped down QmitkStdMultiWidget, but
  * now it has been tidied up, it really is no longer a QmitkStdMultiWidget.
+ *
+ * This class can perform rendering, as if through a calibrated camera,
+ * such as may be obtained view an OpenCV (Zhang 2000) camera model. If
+ * the camera intrinsic parameters are found as a data node on the specified
+ * image, then the camera switches to a calibrated camera, and otherwise
+ * will assume the default VTK behaviour implemented in vtkOpenGLCamera.
  */
-class NIFTKCOREGUI_EXPORT QmitkSingle3DView : public QWidget
+class NIFTKIGIGUI_EXPORT QmitkSingle3DView : public QWidget
 {
   Q_OBJECT
 
@@ -123,17 +130,9 @@ public:
   void SetDepartmentLogoPath( const char * path );
 
   /**
-   * \brief Sets the Calibration file name, which causes a re-loading of the calibration matrix.
+   * \brief Sets the Tracking Calibration file name, which causes a re-loading of the tracking calibration matrix.
    */
-  void SetCalibrationFileName(const std::string& fileName);
-
-  /**
-   * \brief Method responsible for making sure the Display Geometry can view
-   * the currently visible data in the DataStorage.
-   *
-   * This is not the method used to adjust the camera position for the QmitkBitmapOverlay.
-   */
-  void Fit();
+  void SetTrackingCalibrationFileName(const std::string& fileName);
 
   /**
    * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
@@ -147,17 +146,17 @@ protected:
    */
   virtual void resizeEvent(QResizeEvent* event);
 
-  mitk::DataStorage::Pointer         m_DataStorage;
-  QmitkRenderWindow                 *m_RenderWindow;
-  QGridLayout                       *m_Layout;
-  mitk::RenderingManager            *m_RenderingManager;
-  mitk::RenderWindowFrame::Pointer   m_RenderWindowFrame;
-  mitk::GradientBackground::Pointer  m_GradientBackground;
-  CMICLogo::Pointer                  m_LogoRendering;
-  QmitkBitmapOverlay::Pointer        m_BitmapOverlay;
-  std::string                        m_CalibrationFileName;
-  vtkSmartPointer<vtkMatrix4x4>      m_CalibrationTransform;
-  mitk::DataNode::Pointer            m_TransformNode;
-
+  mitk::DataStorage::Pointer                    m_DataStorage;
+  QmitkRenderWindow                            *m_RenderWindow;
+  QGridLayout                                  *m_Layout;
+  mitk::RenderingManager                       *m_RenderingManager;
+  mitk::RenderWindowFrame::Pointer              m_RenderWindowFrame;
+  mitk::GradientBackground::Pointer             m_GradientBackground;
+  CMICLogo::Pointer                             m_LogoRendering;
+  QmitkBitmapOverlay::Pointer                   m_BitmapOverlay;
+  std::string                                   m_TrackingCalibrationFileName;
+  vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
+  mitk::DataNode::Pointer                       m_TransformNode;
+  vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
 };
 #endif /* QmitkSingle3DView */

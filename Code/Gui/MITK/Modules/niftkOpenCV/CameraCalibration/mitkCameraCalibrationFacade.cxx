@@ -631,8 +631,8 @@ void OutputCalibrationData(
   os << CV_MAT_ELEM(intrinsicMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 2) << std::endl;
   os << CV_MAT_ELEM(intrinsicMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 2) << std::endl;
 
-  os << "Distortion vector (k1, k2, p1, p2, k3)" << std::endl;
-  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 4, 0) << std::endl;
+  os << "Distortion vector (k1, k2, p1, p2)" << std::endl;
+  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
 
   os << "projection error:" << projectionError << std::endl;
   os << "image size:" << sizeX << " " << sizeY << std::endl;

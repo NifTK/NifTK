@@ -17,6 +17,10 @@
 #include <mitkDataStorageUtils.h>
 #include <mitkCoordinateAxesData.h>
 #include <vtkCamera.h>
+#include <vtkTransform.h>
+#include <mitkCameraIntrinsics.h>
+#include <mitkCameraIntrinsicsProperty.h>
+#include <Undistortion.h>
 
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
@@ -29,9 +33,10 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_GradientBackground(NULL)
 , m_LogoRendering(NULL)
 , m_BitmapOverlay(NULL)
-, m_CalibrationFileName("")
-, m_CalibrationTransform(NULL)
+, m_TrackingCalibrationFileName("")
+, m_TrackingCalibrationTransform(NULL)
 , m_TransformNode(NULL)
+, m_MatrixDrivenCamera(NULL)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -68,8 +73,11 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(1.0,0.0,0.0);
 
-  m_CalibrationTransform = vtkMatrix4x4::New();
-  m_CalibrationTransform->Identity();
+  m_TrackingCalibrationTransform = vtkMatrix4x4::New();
+  m_TrackingCalibrationTransform->Identity();
+
+  m_MatrixDrivenCamera = vtkOpenGLMatrixDrivenCamera::New();
+  this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
 }
 
 
@@ -118,6 +126,40 @@ void QmitkSingle3DView::SetOpacity(const float& value)
 void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
 {
   m_BitmapOverlay->SetNode(node);
+
+  bool useDefaultVTKCameraBehaviour = true;
+
+  if (node != NULL)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image != NULL)
+    {
+      int width = image->GetDimension(0);
+      int height = image->GetDimension(1);
+      m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
+
+      // Check for property that determines if we are doing a calibrated model or not.
+      mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
+          = dynamic_cast<mitk::CameraIntrinsicsProperty*>(node->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
+
+      if (intrinsicsProperty.IsNotNull())
+      {
+        mitk::CameraIntrinsics::Pointer intrinsics;
+        intrinsics = intrinsicsProperty->GetValue();
+
+        m_MatrixDrivenCamera->SetIntrinsicParameters
+            (intrinsics->GetFocalLengthX(),
+             intrinsics->GetFocalLengthY(),
+             intrinsics->GetPrincipalPointX(),
+             intrinsics->GetPrincipalPointY()
+            );
+
+        useDefaultVTKCameraBehaviour = false;
+      }
+    }
+  }
+
+  m_MatrixDrivenCamera->SetDefaultBehaviour(useDefaultVTKCameraBehaviour);
 }
 
 
@@ -177,75 +219,77 @@ void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 {
   m_BitmapOverlay->SetupCamera();
+  this->Update();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetCalibrationFileName(const std::string& fileName)
+void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileName)
 {
-  if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != this->m_CalibrationFileName)
+  if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != this->m_TrackingCalibrationFileName)
   {
     LoadMatrixOrCreateDefault(fileName, "niftk.ov.cal", true /* helper object */, m_DataStorage);
-    m_CalibrationFileName = fileName;
+    m_TrackingCalibrationFileName = fileName;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSingle3DView::Fit()
-{
-  mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->GetDisplayGeometry()->Fit();
-
-  int w = vtkObject::GetGlobalWarningDisplay();
-  vtkObject::GlobalWarningDisplayOff();
-
-  vtkRenderer *vtkRenderer = mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->GetVtkRenderer();
-  if ( vtkRenderer!= NULL )
-  {
-    vtkRenderer->ResetCamera();
-  }
-
-  vtkObject::SetGlobalWarningDisplay(w);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  // Aim here is to move VTK camera to correct position,
-  // as if it was following/mimicing the tracked object.
+  double widthOfCurrentWindow = this->width();
+  double heightOfCurrentWindow = this->height();
+  double near = 0.01;
+  double far = 1001;
 
-  if (m_TransformNode.IsNotNull() && m_CalibrationTransform != NULL)
+  // So we set the window size on each update so that the OpenGL viewport is always up to date.
+  m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
+
+  // This implies a right handed coordinate system.
+  double origin[4]     = {0, 0,     0,    1};
+  double focalPoint[4] = {0, 0,     2000, 1};
+  double viewUp[4]     = {0, -1.0e9, 0,    1};
+
+  // By default, looking down the world z-axis.
+  m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
+  m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
+  m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
+  m_MatrixDrivenCamera->SetClippingRange(near, far);
+
+  // If we have a calibration and tracking matrix, we can move camera accordingly.
+  if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
   {
     mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
     if (trackingTransform.IsNotNull())
     {
+      // And now do the extrinsics. We basically need to move the camera to the right
+      // position, and set focal point and view up in world (tracker coordinates).
+
+      // This is achieved by taking the default camera position, focal point and
+      // view up specified above and multiply by the calibration (eye to hand transform)
+      // matrix, and then by the tracker matrix, which transforms from the hand to
+      // tracker coordinates. If the "calibration" is a hand-eye rather than an eye-hand
+      // then the calibration matrix may well need inverting. I haven't been able to test this
+      // as the moment, as the test machine is broken.
+
       vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkMatrix4x4::New();
       trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
 
       vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
-      vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_CalibrationTransform, combinedTransform);
+      vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_TrackingCalibrationTransform, combinedTransform);
 
-      double origin[4] = {0, 0, 0, 1};
-      double focalPoint[4] = {0, 0, -2000, 1};
-      double viewUp[4] = {0, 1.0e9, 0, 1};
-
-      double transformedOrigin[4] = {0, 0, 0, 1};
+      double transformedOrigin[4]     = {0, 0, 0, 1};
       double transformedFocalPoint[4] = {0, 0, 0, 1};
-      double transformedViewUp[4] = {0, 0, 0, 1};
+      double transformedViewUp[4]     = {0, 0, 0, 1};
 
       combinedTransform->MultiplyPoint(origin, transformedOrigin);
       combinedTransform->MultiplyPoint(focalPoint, transformedFocalPoint);
       combinedTransform->MultiplyPoint(viewUp, transformedViewUp);
 
-      vtkCamera* camera = this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->GetActiveCamera();
-      if (camera != NULL)
-      {
-        camera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
-        camera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
-        camera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
-        camera->SetClippingRange(1,1000000);
-      }
+      m_MatrixDrivenCamera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
+      m_MatrixDrivenCamera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
+      m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
+      m_MatrixDrivenCamera->SetClippingRange(near, far);
     }
   }
 }

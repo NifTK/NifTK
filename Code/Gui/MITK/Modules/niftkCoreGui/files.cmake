@@ -18,9 +18,6 @@ set(CPP_FILES
   LookupTables/LookupTableManager.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
-  QmitkBitmapOverlay.cxx
-  QmitkSingle3DView.cxx
-  QmitkIGIOverlayEditor.cxx
 )
 
 set(MOC_H_FILES
@@ -28,14 +25,10 @@ set(MOC_H_FILES
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
   QmitkHelpAboutDialog.h
-  QmitkSingle3DView.h
-  QmitkIGIOverlayEditor.h
 )
 
 set(UI_FILES
   QmitkHelpAboutDialog.ui
-  QmitkIGIOverlayEditor.ui
-
 )
 
 set(QRC_FILES

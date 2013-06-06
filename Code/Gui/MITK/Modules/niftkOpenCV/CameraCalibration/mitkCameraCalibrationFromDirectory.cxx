@@ -62,7 +62,7 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *pointCounts = NULL;
 
   CvMat *intrinsicMatrix = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffs = cvCreateMat(5, 1, CV_32FC1);
+  CvMat *distortionCoeffs = cvCreateMat(4, 1, CV_32FC1);
 
   LoadChessBoardsFromDirectory(fullDirectoryName, images, fileNames);
 
