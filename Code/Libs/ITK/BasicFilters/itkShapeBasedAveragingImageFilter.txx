@@ -36,23 +36,13 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   typedef SignedMaurerDistanceMapImageFilter<IntImageType, FloatImageType> SignedMaurerDistanceMapImageFilterType;
   typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType; 
   typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType; 
-  typedef ImageRegionIteratorWithIndex<FloatImageType> VariabilityMapIteratorType;
-  typedef ImageRegionIteratorWithIndex<FloatImageType> ProbabilityMapIteratorType;
-  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType;
+  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType; 
   typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType; 
   typedef std::map<typename TInputImage::PixelType, int> LabelMapType; 
   unsigned short numberOfLabels = 0; 
   const unsigned int numberOfInputs = this->GetNumberOfInputs();
-  typename TInputImage::SpacingType spacing = this->GetInput(0)->GetSpacing();
-  double averageSpacing = 0.;
-
-  for (int i = 0; i < TInputImage::ImageDimension; i++)
-  {
-    averageSpacing += spacing[i];
-  }
-  averageSpacing /= 2.*static_cast<double>(TInputImage::ImageDimension);
-  averageSpacing *= averageSpacing;
-  std::cout << "averageSpacing=" << averageSpacing << std::endl;
+  typedef ImageRegionIteratorWithIndex<FloatImageType> VariabilityMapIteratorType;
+  typedef ImageRegionIteratorWithIndex<FloatImageType> ProbabilityMapIteratorType;
   
   std::cout << "Mean mode:" << this->m_MeanMode << std::endl; 
   // Forcing mean mode to simple mean if the number of input is less than 4. 
@@ -85,9 +75,8 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   // Allocate space for the output merged image. 
   this->SetNumberOfOutputs(1); 
   this->AllocateOutputs(); 
-
+  
   // Allocate space for the average distance map and initialise it to max.   
-  std::cerr << "Allocating space for average distance map..." << std::endl;
   m_AverageDistanceMap = FloatImageType::New();
   m_AverageDistanceMap->SetOrigin(this->GetInput(0)->GetOrigin());
   m_AverageDistanceMap->SetSpacing(this->GetInput(0)->GetSpacing());
@@ -123,11 +112,10 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   for (typename LabelMapType::iterator labelMapIt = labelMap.begin(); labelMapIt != labelMap.end(); ++labelMapIt)
   {
     typename TInputImage::PixelType label = labelMapIt->first;
-
+        
     // Loop over all input images to calculate the distance transform.  
     for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
     {
-      std::cerr << "Distance transform: " << imageIndex << std::endl;
       castImageFilter[imageIndex] = CastImageFilterType::New();
       castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex)); 
       
@@ -144,34 +132,37 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     }
       
     // Loop over all voxels. 
-    AverageDistanceMapIteratorType averageDistanceMapIt(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion());
+    AverageDistanceMapIteratorType averageDistanceMapIt(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion()); 
     OutputImageIteratorType outputImageIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion()); 
     VariabilityMapIteratorType variabilityMaptIt(m_VariabilityMap, m_VariabilityMap->GetLargestPossibleRegion());
     ProbabilityMapIteratorType probabilityMaptIt(m_ProbabilityMap, m_ProbabilityMap->GetLargestPossibleRegion());
     
+    //for (averageDistanceMapIt.GoToBegin(), outputImageIt.GoToBegin();
+    //    !averageDistanceMapIt.IsAtEnd();
+    //    ++averageDistanceMapIt, ++outputImageIt)
     for (averageDistanceMapIt.GoToBegin(), outputImageIt.GoToBegin(), variabilityMaptIt.GoToBegin(), probabilityMaptIt.GoToBegin();
         !averageDistanceMapIt.IsAtEnd();
         ++averageDistanceMapIt, ++outputImageIt, ++variabilityMaptIt, ++probabilityMaptIt)
     {
       // Compuate the average distance. 
-      double averageDistance = 0.;
+      double averageDistance = 0.; 
+      std::vector<double> allDistances; 
+
       double sumOfSquare = 0.;
       double number = static_cast<double>(numberOfInputs);
       double variability = 0.;
-      std::vector<double> allDistances;
+
       for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
       {
-        double distance = distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex());
-        averageDistance += distance;
-        sumOfSquare += distance*distance;
-        allDistances.push_back(distance);
+        averageDistance += distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()); 
+        //allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex())/this->m_SegmentationReliability[imageIndex]);
+        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));  
       }
       switch (m_MeanMode)
       {
         case MEAN:
-          averageDistance /= static_cast<double>(numberOfInputs);
-          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
-          break;
+          averageDistance /= static_cast<double>(numberOfInputs); 
+          break; 
           
         case MEDIAN: 
           sort(allDistances.begin(), allDistances.end()); 
@@ -180,52 +171,34 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
             averageDistance = (*(allDistances.begin()+allDistances.size()/2) + *(allDistances.begin()+allDistances.size()/2-1))/2;
           else
             averageDistance = *(allDistances.begin()+allDistances.size()/2);
-          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
-          break;
+          break; 
           
         case INTERQUARTILE_MEAN: 
         {
           int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0)); 
           int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1; 
-          
-          sort(allDistances.begin(), allDistances.end()); 
+
           double correctAverageDistance = 0.;
-          averageDistance = 0.0;
-          sumOfSquare = 0.;
-          for (int i = start; i <= end; i++)
+          sumOfSquare = 0.0;
+
+          sort(allDistances.begin(), allDistances.end()); 
+          averageDistance = 0.0; 
+          for (int i = start; i <= end; i++) 
           {
+            averageDistance = *(allDistances.begin()+i); 
+
             double distance = *(allDistances.begin()+i);
-            averageDistance = distance;
             correctAverageDistance += distance;
             sumOfSquare += distance*distance;
           }
-          averageDistance /= static_cast<double>(end-start+1);
+          averageDistance /= static_cast<double>(end-start+1); 
+
           number = static_cast<double>(end-start+1);
           correctAverageDistance /= number;
           variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
           variability /= number;
-          averageSpacing /= number;
-          break;
-        }
-
-        case CORRECT_INTERQUARTILE_MEAN:
-        {
-          int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0));
-          int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1;
-
-          sort(allDistances.begin(), allDistances.end());
-          averageDistance = 0.;
-          sumOfSquare = 0.;
-          for (int i = start; i <= end; i++)
-          {
-            double distance = *(allDistances.begin()+i);
-            averageDistance += distance;
-            sumOfSquare += distance*distance;
-          }
-          averageDistance /= static_cast<double>(end-start+1);
-          number = static_cast<double>(end-start+1);
-          variability = sqrt((sumOfSquare - number*averageDistance*averageDistance)/number) / (fabs(averageDistance)+1.);
-          break;
+          //averageSpacing /= number;
+          break; 
         }
           
         default: 
@@ -242,11 +215,11 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 
         if (label == 0)
         {
-          prob = 1./(1.+ exp((-averageDistance+3.*variability)/(50.*variability+1.)));
+          prob = 1./(1.+ exp((-averageDistance+variability)/(10.*variability+1.)));
         }
         else
         {
-          prob = 1./(1.+ exp((averageDistance+3.*variability)/(50.*variability+1.)));
+          prob = 1./(1.+ exp((averageDistance+variability)/(10.*variability+1.)));
         }
         probabilityMaptIt.Set(static_cast<float>(prob));
 
@@ -276,6 +249,8 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     delete [] castImageFilter;
   
 }
+
+
 
 
 template<class TInputImage, class TOutputImage>

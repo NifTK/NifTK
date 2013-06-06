@@ -53,11 +53,9 @@ public:
     MEAN = 0, 
     // Median. 
     MEDIAN = 1, 
-    // Interquartile mean - more robust. There is a mistake in this mode - it is actually taking distance at the 75% quartile.
-    INTERQUARTILE_MEAN = 2,
-    // Interquartile mean.
-    CORRECT_INTERQUARTILE_MEAN = 3
-  } MeanModeType;
+    // Interquartile mean - more robust. 
+    INTERQUARTILE_MEAN = 2
+  } MeanModeType; 
   /** 
    * Method for creation through the object factory. 
    */
@@ -80,8 +78,12 @@ public:
     this->m_LabelForUndecidedPixels = value; 
   }
   /**
-   * Get the average distance map.
+   * Set mean mode. 
    */
+  itkSetMacro(MeanMode, MeanModeType); 
+  /**
+   * Get the average distance map.
+  */
   const FloatImageType* GetAverageDistanceMap() const
   {
     return this->m_AverageDistanceMap;
@@ -94,8 +96,8 @@ public:
     return this->m_VariabilityMap;
   }
   /**
-   * Get the probability map.
-   */
+    * Get the probability map.
+    */
   const FloatImageType* GetProbabilityMap() const
   {
     return this->m_ProbabilityMap;
@@ -105,14 +107,9 @@ public:
     return this->m_ProbabilityMap;
   }
   /**
-   *
+   * Compute MRF.
    */
   void ComputeMRF(FloatImageType* probabilityMap, double mrf, int numberOfIterations);
-  /**
-   * Set mean mode. 
-   */
-  itkSetMacro(MeanMode, MeanModeType); 
-  
       
 protected:
   /**
@@ -157,9 +154,9 @@ protected:
    */
   std::vector<double> m_SegmentationReliability; 
   /**
-   * The average distance and minimum distance map.
-   */
-  typename FloatImageType::Pointer m_AverageDistanceMap;
+    * The average distance and minimum distance map.
+    */
+  typename FloatImageType::Pointer m_AverageDistanceMap;  
   /**
    * The variability of the distance.
    */
@@ -168,6 +165,7 @@ protected:
    * The unnormalised probability map.
    */
   typename FloatImageType::Pointer m_ProbabilityMap;
+
 
 private:
   /**
