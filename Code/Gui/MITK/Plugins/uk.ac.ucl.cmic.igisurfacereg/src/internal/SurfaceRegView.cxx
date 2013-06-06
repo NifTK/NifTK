@@ -75,6 +75,9 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
 
     m_Controls->m_MatrixWidget->setEditable(false);
 
+    connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
+    connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
+
     RetrievePreferenceValues();
   }
 }

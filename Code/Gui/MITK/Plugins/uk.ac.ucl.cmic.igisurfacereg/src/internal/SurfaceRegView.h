@@ -71,6 +71,10 @@ protected slots:
 protected:
 
 private slots:
+
+  void OnCalculateButtonPressed();
+  void OnComposeWithDataButtonPressed();
+  void OnSaveToFileButtonPressed();
   
 private:
 
