@@ -102,7 +102,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ComposeWithDataNode"/>
+        <widget class="QmitkDataStorageCheckableComboBox" name="m_ComposeWithDataNode"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="m_SaveToFileLabel">
@@ -138,6 +138,11 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageCheckableComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageCheckableComboBox.h</header>
   </customwidget>
   <customwidget>
    <class>ctkPathLineEdit</class>
