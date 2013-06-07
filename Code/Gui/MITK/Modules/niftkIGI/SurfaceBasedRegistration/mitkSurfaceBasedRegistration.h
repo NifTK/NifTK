@@ -52,7 +52,7 @@ public:
   enum Method 
   {
     VTK_ICP, //VTK's ICP algorithm, point to surface
-    NIFTYSIM //A hypothetical non rigid point to surface algorithm
+    DEFORM //A hypothetical non rigid point to surface algorithm
   };
 
   itkSetMacro (MaximumIterations, int);
@@ -75,7 +75,7 @@ private:
 
   void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
 
-  void Update(vtkPolyData* fixedPoly,
+  void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,
            vtkMatrix4x4* transformMovingToFixed);
 }; // end class

@@ -37,29 +37,26 @@ void SurfaceBasedRegistration::Update(const mitk::Surface::Pointer fixedNode,
 {
   if ( m_Method == VTK_ICP ) 
   {
-    Update(fixedNode->GetVtkPolyData() , movingNode->GetVtkPolyData(), transformMovingToFixed);
+    RunVTKICP(fixedNode->GetVtkPolyData() , movingNode->GetVtkPolyData(), transformMovingToFixed);
   }
-  if ( m_Method == NIFTYSIM ) 
+  if ( m_Method == DEFORM ) 
   {
     //Not Implemented
   }
 }
 
-void SurfaceBasedRegistration::Update(vtkPolyData* fixedPoly,
+void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
                                       vtkPolyData* movingPoly,
                                       vtkMatrix4x4 * transformMovingToFixed)
 {
-  if ( m_Method == VTK_ICP ) 
-  {
-    niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
-    icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
-    icp->SetMaxIterations(m_MaximumIterations);
-    icp->SetSource(movingPoly);
-    icp->SetTarget(fixedPoly);
+  niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
+  icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
+  icp->SetMaxIterations(m_MaximumIterations);
+  icp->SetSource(movingPoly);
+  icp->SetTarget(fixedPoly);
 
-    icp->Run();
-    transformMovingToFixed = icp->GetTransform();
-  }
+  icp->Run();
+  transformMovingToFixed = icp->GetTransform();
 }
 
 
@@ -67,13 +64,22 @@ void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
                                       const mitk::Surface::Pointer movingNode,
                                       vtkMatrix4x4 * transformMovingToFixed)
 {
-  vtkPolyData * fixedPoly = vtkPolyData::New();
-  PointSetToPolyData ( fixedNode, fixedPoly );
-  Update ( fixedPoly, movingNode->GetVtkPolyData(), transformMovingToFixed );
+  if ( m_Method == VTK_ICP )
+  {
+    
+    vtkPolyData * fixedPoly = vtkPolyData::New();
+    PointSetToPolyData ( fixedNode, fixedPoly );
+    RunVTKICP ( fixedPoly, movingNode->GetVtkPolyData(), transformMovingToFixed );
+  }
+  if ( m_Method == DEFORM )
+  {
+    //Not Implenented
+   }
 }
 
 void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
-{}
+{
+}
 
 } // end namespace
 
