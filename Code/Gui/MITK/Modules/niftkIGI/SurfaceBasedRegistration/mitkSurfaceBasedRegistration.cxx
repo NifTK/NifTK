@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkSurfaceBasedRegistration.h"
+#include "niftkVTKIterativeClosestPoint.h"
 
 namespace mitk
 {
@@ -34,6 +35,22 @@ void SurfaceBasedRegistration::Update(const mitk::Surface::Pointer fixedNode,
                                       const mitk::Surface::Pointer movingNode,
                                       vtkMatrix4x4* transformMovingToFixed)
 {
+
+  if ( m_Method == VTK_ICP ) 
+  {
+    niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
+    icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
+    icp->SetMaxIterations(m_MaximumIterations);
+    icp->SetSource(movingNode->GetVtkPolyData());
+    icp->SetTarget(fixedNode->GetVtkPolyData());
+
+    icp->Run();
+    transformMovingToFixed = icp->GetTransform();
+  }
+  if ( m_Method == NIFTYSIM ) 
+  {
+    //Not Implemented
+  }
 
 }
 

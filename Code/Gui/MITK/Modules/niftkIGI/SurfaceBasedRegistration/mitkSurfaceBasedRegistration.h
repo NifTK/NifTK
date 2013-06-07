@@ -22,7 +22,6 @@
 #include <mitkSurface.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
-#include <niftkVTKIterativeClosestPoint.h>
 
 namespace mitk {
 
