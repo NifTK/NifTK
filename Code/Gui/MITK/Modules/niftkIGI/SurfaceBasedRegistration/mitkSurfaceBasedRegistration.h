@@ -22,6 +22,7 @@
 #include <mitkSurface.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <niftkVTKIterativeClosestPoint.h>
 
 namespace mitk {
 
@@ -43,6 +44,16 @@ public:
            const mitk::Surface::Pointer movingNode,
            vtkMatrix4x4* transformMovingToFixed);
 
+  enum Method 
+  {
+    VTK_ICP, //VTK's ICP algorithm, point to surface
+    NIFTYSIM //A hypothetical non rigid point to surface algorithm
+  };
+
+  itkSetMacro (MaximumIterations, int);
+  itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
+  itkSetMacro (Method, Method);
+
 protected:
 
   SurfaceBasedRegistration(); // Purposefully hidden.
@@ -52,6 +63,10 @@ protected:
   SurfaceBasedRegistration& operator=(const SurfaceBasedRegistration&); // Purposefully not implemented.
 
 private:
+
+  int m_MaximumIterations;
+  int m_MaximumNumberOfLandmarkPointsToUse;
+  Method m_Method;
 
 }; // end class
 
