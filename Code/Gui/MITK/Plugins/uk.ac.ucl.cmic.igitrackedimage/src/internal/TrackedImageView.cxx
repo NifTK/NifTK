@@ -127,16 +127,23 @@ void TrackedImageView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedImageView::OnUpdate(const ctkEvent& event)
 {
+  Q_UNUSED(event);
+
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
-  mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
-  command->Update(dataStorage,
-                  imageNode,
-                  surfaceNode,
-                  probeToWorldTransform,
-                  m_ImageToProbeTransform
-                  );
+  if (m_ImageToProbeTransform != NULL
+      && probeToWorldTransform.IsNotNull()
+     )
+  {
+    mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+    command->Update(dataStorage,
+                    imageNode,
+                    surfaceNode,
+                    probeToWorldTransform,
+                    m_ImageToProbeTransform
+                    );
+  }
 }
