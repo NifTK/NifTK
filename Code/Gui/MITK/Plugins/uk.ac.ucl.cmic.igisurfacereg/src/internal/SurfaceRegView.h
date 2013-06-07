@@ -18,6 +18,7 @@
 #include <QmitkBaseView.h>
 #include "ui_SurfaceRegView.h"
 #include <vtkSmartPointer.h>
+#include <mitkSurfaceBasedRegistration.h>
 
 class vtkMatrix4x4;
 
@@ -93,6 +94,10 @@ private:
    */
   Ui::SurfaceRegView *m_Controls;
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
+
+  int m_MaxIterations;
+  int m_MaxPoints;
+  mitk::SurfaceBasedRegistration::Method m_Method;
 
 };
 
