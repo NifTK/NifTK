@@ -19,6 +19,8 @@
 #include <mitkRenderingManager.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkCoordinateAxesData.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkFocusManager.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
@@ -32,11 +34,6 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
   m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
-  m_OverlayViewer->GetRenderWindow()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
-  m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow()->GetInteractor()->Disable();
-
-  mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetVtkRenderWindow());
-  mitk::RenderingManager::GetInstance()->AddRenderWindow(m_OverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
 
   m_OverlayViewer->setVisible(true);
   m_3DViewer->setVisible(true);
@@ -112,7 +109,7 @@ void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 {
- m_OverlayViewer->SetTransformNode(node);
+  m_OverlayViewer->SetTransformNode(node);
 }
 
 
@@ -140,8 +137,21 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkIGIOverlayEditor::GetActiveQmitkRenderWindow() const
 {
-  // Default implementation for now. Maybe check focus manager to see which one is focussed?
-  QmitkRenderWindow *result = m_OverlayViewer->GetRenderWindow();
+  QmitkRenderWindow *result = NULL;
+
+  mitk::FocusManager *focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL)
+  {
+    mitk::BaseRenderer *renderer = focusManager->GetFocused();
+    if (m_OverlayViewer->GetRenderWindow()->GetRenderer() == renderer)
+    {
+      result = m_OverlayViewer->GetRenderWindow();
+    }
+    else if (m_3DViewer->GetRenderer() == renderer)
+    {
+      result = m_3DViewer;
+    }
+  }
   return result;
 }
 

@@ -46,16 +46,21 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
     m_RenderingManager = mitk::RenderingManager::GetInstance();
   }
 
-  m_RenderWindow = new QmitkRenderWindow(NULL, "single.widget1", NULL, m_RenderingManager);
+  m_RenderWindow = new QmitkRenderWindow(this, "single.widget1", NULL, m_RenderingManager);
   m_RenderWindow->setMaximumSize(2000,2000);
   m_RenderWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
 
   m_Layout = new QGridLayout(this);
   m_Layout->setContentsMargins(0, 0, 0, 0);
   m_Layout->addWidget(m_RenderWindow);
 
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard3D);
+
+  m_BitmapOverlay = QmitkBitmapOverlay::New();
+  m_BitmapOverlay->SetRenderWindow(m_RenderWindow->GetRenderWindow());
+
+  m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
+  m_RenderWindow->GetVtkRenderWindow()->GetInteractor()->Disable();
 
   m_GradientBackground = mitk::GradientBackground::New();
   m_GradientBackground->SetRenderWindow(m_RenderWindow->GetRenderWindow());
@@ -66,9 +71,6 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
   m_LogoRendering->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_LogoRendering->Disable();
 
-  m_BitmapOverlay = QmitkBitmapOverlay::New();
-  m_BitmapOverlay->SetRenderWindow(m_RenderWindow->GetRenderWindow());
-
   m_RenderWindowFrame = mitk::RenderWindowFrame::New();
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(1.0,0.0,0.0);
@@ -78,6 +80,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 
   m_MatrixDrivenCamera = vtkOpenGLMatrixDrivenCamera::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
+
 }
 
 
@@ -218,8 +221,11 @@ void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 {
-  m_BitmapOverlay->SetupCamera();
-  this->Update();
+  if (this->isVisible())
+  {
+    m_BitmapOverlay->SetupCamera();
+    this->Update();
+  }
 }
 
 
@@ -237,10 +243,10 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  double widthOfCurrentWindow = this->width();
-  double heightOfCurrentWindow = this->height();
-  double near = 0.01;
-  double far = 1001;
+  int widthOfCurrentWindow = this->width();
+  int heightOfCurrentWindow = this->height();
+  double znear = 0.01;
+  double zfar = 1001;
 
   // So we set the window size on each update so that the OpenGL viewport is always up to date.
   m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
@@ -254,7 +260,7 @@ void QmitkSingle3DView::Update()
   m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
   m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
   m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
-  m_MatrixDrivenCamera->SetClippingRange(near, far);
+  m_MatrixDrivenCamera->SetClippingRange(znear, zfar);
 
   // If we have a calibration and tracking matrix, we can move camera accordingly.
   if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
@@ -289,7 +295,7 @@ void QmitkSingle3DView::Update()
       m_MatrixDrivenCamera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
       m_MatrixDrivenCamera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
       m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
-      m_MatrixDrivenCamera->SetClippingRange(near, far);
+      m_MatrixDrivenCamera->SetClippingRange(znear, zfar);
     }
   }
 }

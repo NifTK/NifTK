@@ -57,26 +57,23 @@ void TrackedPointerCommand::Update(
     return;
   }
 
-  mitk::Surface::Pointer surface = dynamic_cast<mitk::Surface*>(surfaceNode->GetData());
-  if (surface.IsNull())
-  {
-    MITK_ERROR << "TrackedPointerCommand::Update, invalid surfaceNode";
-    return;
-  }
-
   vtkSmartPointer<vtkMatrix4x4> pointerToWorldTransform = vtkMatrix4x4::New();
   pointerToWorld->GetVtkMatrix(*pointerToWorldTransform);
 
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
   combinedTransform->Identity();
 
-  combinedTransform->Multiply4x4(tipToPointerTransform, pointerToWorldTransform, combinedTransform);
+  combinedTransform->Multiply4x4(pointerToWorldTransform, tipToPointerTransform, combinedTransform);
 
-  mitk::Geometry3D::Pointer geometry = surface->GetGeometry();
-  if (geometry.IsNotNull())
+  mitk::Surface::Pointer surface = dynamic_cast<mitk::Surface*>(surfaceNode->GetData());
+  if (surface.IsNotNull())
   {
-    geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
-    geometry->Modified();
+    mitk::Geometry3D::Pointer geometry = surface->GetGeometry();
+    if (geometry.IsNotNull())
+    {
+      geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+      geometry->Modified();
+    }
   }
 
   double coordinateIn[4] = {0, 0, 0, 1};

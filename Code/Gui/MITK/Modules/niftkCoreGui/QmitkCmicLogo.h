@@ -17,8 +17,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef _vtk_Logo_Rendering_h_
 #define _vtk_Logo_Rendering_h_
 
-
 #include <mitkBaseData.h>
+#include "niftkCoreGuiExports.h"
 
 class vtkRenderer;
 class vtkRenderWindow;
@@ -39,7 +39,7 @@ class RenderWindow;
  * of a vtkRenderWindow.
  
  */
-class  CMICLogo : public mitk::BaseData
+class NIFTKCOREGUI_EXPORT CMICLogo : public mitk::BaseData
 {
 public:
 

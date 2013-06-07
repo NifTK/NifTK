@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "TrackedPointerView.h"
+#include "TrackedPointerViewPreferencePage.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -90,8 +91,6 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MapsToSpinBoxes->setDecimals(2);
     m_Controls->m_MapsToSpinBoxes->setCoordinates(0,0,0);
 
-    connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
-
     RetrievePreferenceValues();
 
     ctkServiceReference ref = mitk::TrackedPointerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
@@ -119,6 +118,9 @@ void TrackedPointerView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
+    m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
+
     m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerCommand::UPDATE_VIEW_COORDINATE_DEFAULT);
   }
 }
@@ -127,15 +129,7 @@ void TrackedPointerView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::SetFocus()
 {
-  m_Controls->m_TipToProbeCalibrationFile->setFocus();
-}
-
-
-//-----------------------------------------------------------------------------
-void TrackedPointerView::OnTipToProbeChanged()
-{
-  m_TipToProbeFileName = m_Controls->m_TipToProbeCalibrationFile->currentPath().toStdString();
-  m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
+  m_Controls->m_ProbeSurfaceNode->setFocus();
 }
 
 
@@ -149,7 +143,6 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
   if (m_TipToProbeTransform != NULL
-      && surfaceNode.IsNotNull()
       && probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)
   {

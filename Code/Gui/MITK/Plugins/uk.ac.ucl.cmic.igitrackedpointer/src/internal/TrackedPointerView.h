@@ -73,11 +73,6 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
-  /**
-   * \brief When the user selects a new tip to probe matrix, we update the internal transform.
-   */
-  void OnTipToProbeChanged();
-
 private:
 
   /**
