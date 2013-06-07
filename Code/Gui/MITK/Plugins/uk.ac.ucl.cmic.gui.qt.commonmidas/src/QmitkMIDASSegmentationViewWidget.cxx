@@ -426,21 +426,18 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && m_View == MIDAS_VIEW_UNKNOWN))
   {
-    mitk::SliceNavigationController::Pointer snc = mainWindowAxial->GetSliceNavigationController();
-    assert(snc);
-
-    mitk::Geometry3D::ConstPointer worldGeom = snc->GetInputWorldGeometry();
-    if (worldGeom.IsNotNull())
+    const mitk::Geometry3D* worldGeometry = mainWindowAxial->GetRenderer()->GetWorldGeometry();
+    if (worldGeometry)
     {
-      mitk::Geometry3D::Pointer geom = const_cast<mitk::Geometry3D*>(worldGeom.GetPointer());
-      assert(geom);
+      mitk::Geometry3D::Pointer geometry = const_cast<mitk::Geometry3D*>(worldGeometry);
+      assert(geometry);
 
       m_MainWindowAxial = mainWindowAxial;
       m_MainWindowSagittal = mainWindowSagittal;
       m_MainWindowCoronal = mainWindowCoronal;
       m_MainWindow3d = mainWindow3d;
 
-      m_ViewerWidget->SetGeometry(geom);
+      m_ViewerWidget->SetGeometry(geometry);
       m_ViewerWidget->SetBoundGeometryActive(false);
       m_ViewerWidget->SetNavigationControllerEventListening(true);
       m_ViewerWidget->SetDisplay2DCursorsLocally(true);
