@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "TrackedImageView.h"
+#include "TrackedImageViewPreferencePage.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -83,8 +84,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
-    connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
-
     RetrievePreferenceValues();
 
     ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
@@ -112,7 +111,8 @@ void TrackedImageView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-
+    m_ImageToProbeFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToProbeFileName);
   }
 }
 
@@ -125,25 +125,23 @@ void TrackedImageView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::OnImageToProbeChanged()
-{
-  m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath().toStdString());
-}
-
-
-//-----------------------------------------------------------------------------
 void TrackedImageView::OnUpdate(const ctkEvent& event)
 {
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  Q_UNUSED(event);
+
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
   mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
 
-  mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
-  command->Update(dataStorage,
-                  imageNode,
-                  surfaceNode,
-                  probeToWorldTransform,
-                  m_ImageToProbeTransform
-                  );
+  if (m_ImageToProbeTransform != NULL
+      && probeToWorldTransform.IsNotNull()
+     )
+  {
+    mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
+    command->Update(imageNode,
+                    surfaceNode,
+                    probeToWorldTransform,
+                    m_ImageToProbeTransform
+                    );
+  }
 }
