@@ -83,7 +83,7 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
-    connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
+    //connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
 
     RetrievePreferenceValues();
 
@@ -127,7 +127,7 @@ void TrackedImageView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedImageView::OnImageToProbeChanged()
 {
-  m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath().toStdString());
+  //m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath().toStdString());
 }
 
 

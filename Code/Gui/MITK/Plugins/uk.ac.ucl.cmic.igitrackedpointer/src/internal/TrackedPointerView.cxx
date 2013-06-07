@@ -90,7 +90,7 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MapsToSpinBoxes->setDecimals(2);
     m_Controls->m_MapsToSpinBoxes->setCoordinates(0,0,0);
 
-    connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
+    //connect(m_Controls->m_TipToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnTipToProbeChanged()));
 
     RetrievePreferenceValues();
 
@@ -127,14 +127,14 @@ void TrackedPointerView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::SetFocus()
 {
-  m_Controls->m_TipToProbeCalibrationFile->setFocus();
+  m_Controls->m_ProbeSurfaceNode->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnTipToProbeChanged()
 {
-  m_TipToProbeFileName = m_Controls->m_TipToProbeCalibrationFile->currentPath().toStdString();
+  //m_TipToProbeFileName = m_Controls->m_TipToProbeCalibrationFile->currentPath().toStdString();
   m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 }
 

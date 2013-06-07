@@ -32,25 +32,9 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ImageNode" native="true"/>
+        <widget class="QmitkDataStorageComboBox" name="m_ImageNode"/>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="m_ImageToProbeLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>image to probe</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="ctkPathLineEdit" name="m_ImageToProbeCalibrationFile" native="true"/>
-       </item>
-       <item row="2" column="0">
         <widget class="QLabel" name="m_ProbeLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -63,10 +47,10 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode" native="true"/>
+       <item row="1" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode"/>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="m_ProbeToWorldLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -79,8 +63,8 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode" native="true"/>
+       <item row="2" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode"/>
        </item>
       </layout>
      </item>
@@ -104,14 +88,8 @@
  <customwidgets>
   <customwidget>
    <class>QmitkDataStorageComboBox</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkPathLineEdit</class>
-   <extends>QWidget</extends>
-   <header>ctkPathLineEdit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
