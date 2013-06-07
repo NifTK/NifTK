@@ -557,6 +557,7 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::Geometry3D::Pointer geometry)
 {
   assert(geometry);
   m_UnBoundGeometry = geometry;
+  m_MultiWidget->SetGeometry(geometry);
 
   this->ResetRememberedPositions();
   this->ResetCurrentPosition();
@@ -576,6 +577,7 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::Geometry3D::Pointer geom
 {
   assert(geometry);
   m_BoundGeometry = geometry;
+  m_MultiWidget->SetGeometry(geometry);
 
   this->ResetRememberedPositions();
   this->ResetCurrentPosition();
