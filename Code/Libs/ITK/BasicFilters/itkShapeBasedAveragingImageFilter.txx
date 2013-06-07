@@ -205,8 +205,35 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
           variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
           variability /= number;
           averageSpacing /= number;
-          break; 
         }
+          break;
+
+        case 3:
+        {
+          int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0));
+          int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1;
+
+          double correctAverageDistance = 0.;
+          sumOfSquare = 0.0;
+
+          sort(allDistances.begin(), allDistances.end());
+          averageDistance = 0.0;
+          for (int i = start; i <= end; i++)
+          {
+            averageDistance += *(allDistances.begin()+i);
+
+            double distance = *(allDistances.begin()+i);
+            correctAverageDistance += distance;
+            sumOfSquare += distance*distance;
+          }
+          averageDistance /= static_cast<double>(end-start+1);
+
+          number = static_cast<double>(end-start+1);
+          correctAverageDistance /= number;
+          variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
+        }
+          break;
+
           
         default: 
           assert(false); 

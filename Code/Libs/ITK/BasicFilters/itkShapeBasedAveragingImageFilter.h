@@ -55,7 +55,7 @@ public:
     MEDIAN = 1, 
     // Interquartile mean - more robust. 
     INTERQUARTILE_MEAN = 2
-  } MeanModeType; 
+  } MeanModeType;
   /** 
    * Method for creation through the object factory. 
    */
