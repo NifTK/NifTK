@@ -15,6 +15,7 @@
 // Qmitk
 #include "SurfaceRegView.h"
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateOr.h>
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
@@ -64,6 +65,12 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
 
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = 
       mitk::TNodePredicateDataType<mitk::Surface>::New();
+
+    mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = 
+      mitk::TNodePredicateDataType<mitk::PointSet>::New();
+
+    mitk::NodePredicateOr::Pointer isSurfaceOrPoints = 
+      mitk::NodePredicateOr::New(isSurface,isPointSet);
 
     m_Controls->m_FixedSurfaceComboBox->SetPredicate(isSurface);
     m_Controls->m_FixedSurfaceComboBox->SetAutoSelectNewItems(false);
