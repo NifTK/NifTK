@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "TrackedImageView.h"
+#include "TrackedImageViewPreferencePage.h"
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -83,8 +84,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
-    //connect(m_Controls->m_ImageToProbeCalibrationFile, SIGNAL(currentPathChanged(QString)), this, SLOT(OnImageToProbeChanged()));
-
     RetrievePreferenceValues();
 
     ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
@@ -112,7 +111,8 @@ void TrackedImageView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-
+    m_ImageToProbeFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToProbeFileName);
   }
 }
 
@@ -121,13 +121,6 @@ void TrackedImageView::RetrievePreferenceValues()
 void TrackedImageView::SetFocus()
 {
   m_Controls->m_ImageNode->setFocus();
-}
-
-
-//-----------------------------------------------------------------------------
-void TrackedImageView::OnImageToProbeChanged()
-{
-  //m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_Controls->m_ImageToProbeCalibrationFile->currentPath().toStdString());
 }
 
 

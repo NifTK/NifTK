@@ -73,11 +73,6 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
-  /**
-   * \brief When the user selects a new image to probe matrix, we load the transformation.
-   */
-  void OnImageToProbeChanged();
-
 private:
 
   /**
