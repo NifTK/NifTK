@@ -43,6 +43,10 @@ public:
     VTK_ICP, //VTK's ICP algorithm, point to surface
     DEFORM //A hypothetical non rigid point to surface algorithm
   };
+
+  static const int DEFAULT_MAX_ITERATIONS;
+  static const int DEFAULT_MAX_POINTS;
+  static const bool DEFAULT_USE_DEFORMABLE;
   /**
    * \brief Write My Documentation
    */
