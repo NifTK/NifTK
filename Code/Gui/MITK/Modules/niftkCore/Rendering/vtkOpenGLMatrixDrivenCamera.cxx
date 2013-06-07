@@ -102,8 +102,8 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
   double clippingRange[2];
   this->GetClippingRange(clippingRange);
 
-  double near = clippingRange[0];
-  double far = clippingRange[1];
+  double znear = clippingRange[0];
+  double zfar = clippingRange[1];
 
   // Inspired by: http://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/
   /*
@@ -119,8 +119,8 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
   m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidth - 2*m_Cx)/m_ImageWidth);
   m_IntrinsicMatrix->SetElement(1, 1, 2*m_Fy/m_ImageHeight);
   m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeight + 2*m_Cy)/m_ImageHeight);
-  m_IntrinsicMatrix->SetElement(2, 2, (-far-near)/(far-near));
-  m_IntrinsicMatrix->SetElement(2, 3, -2*far*near/(far-near));
+  m_IntrinsicMatrix->SetElement(2, 2, (-zfar-znear)/(zfar-znear));
+  m_IntrinsicMatrix->SetElement(2, 3, -2*zfar*znear/(zfar-znear));
   m_IntrinsicMatrix->SetElement(3, 2, -1);
 
   double widthScale  = (double) m_WindowWidth  / (double) m_ImageWidth;
