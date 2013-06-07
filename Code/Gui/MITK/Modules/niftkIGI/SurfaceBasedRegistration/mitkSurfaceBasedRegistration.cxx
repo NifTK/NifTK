@@ -16,6 +16,7 @@
 #include <niftkVTKIterativeClosestPoint.h>
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
+#include <mitkFileIOUtils.h>
 
 namespace mitk
 {
@@ -47,6 +48,7 @@ void SurfaceBasedRegistration::Update(const mitk::Surface::Pointer fixedNode,
   }
 }
 
+//-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
                                       vtkPolyData* movingPoly,
                                       vtkMatrix4x4 * transformMovingToFixed)
@@ -62,6 +64,7 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
 }
 
 
+//-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
                                       const mitk::Surface::Pointer movingNode,
                                       vtkMatrix4x4 * transformMovingToFixed)
@@ -79,6 +82,7 @@ void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
   }
 }
 
+//-----------------------------------------------------------------------------
 void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -93,6 +97,30 @@ void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* P
   PolyOut->SetPoints(points);
   PolyOut->SetVerts(verts);
 }
+//-----------------------------------------------------------------------------
+bool SurfaceBasedRegistration::SaveToFile(const std::string& fileName, const vtkMatrix4x4& transform) const
+{
+  bool isSuccessful = false;
+  if (fileName.length() > 0)
+  {
+    isSuccessful = mitk::SaveVtkMatrix4x4ToFile(fileName, transform);
+  }
+  return isSuccessful;
+}
+//-----------------------------------------------------------------------------
+bool SurfaceBasedRegistration::ApplyToNode(
+  const mitk::DataNode::Pointer& node,
+  vtkMatrix4x4& transform,
+  const bool& makeUndoAble) const
+{
+  bool isSuccessful = false;
+
+  // Possiby should put the implementation of this method in something more generic like mitk::DataStorageUtils.h
+  // Maybe ignore makeUndoAble for now, and just get the apply to node bit working.
+
+  return isSuccessful;
+}
+
 
 } // end namespace
 
