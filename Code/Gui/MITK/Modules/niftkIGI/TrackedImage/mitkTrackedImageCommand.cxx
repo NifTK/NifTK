@@ -72,7 +72,7 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     }
   }
 
-  mitk::Surface::Pointer image = dynamic_cast<mitk::Surface*>(imageNode->GetData());
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
   if (image.IsNotNull())
   {
     mitk::Geometry3D::Pointer geometry = image->GetGeometry();
@@ -80,6 +80,7 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     {
       geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
       geometry->Modified();
+      imageNode->Modified();
     }
   }
 }
