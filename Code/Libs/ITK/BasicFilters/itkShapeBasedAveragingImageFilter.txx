@@ -51,6 +51,12 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     m_MeanMode = MEAN; 
     std::cerr << "Warning: forcing to simple mean mode when the number of input is less than 4." << std::endl; 
   }
+
+  typename TInputImage::SpacingType spacing = this->GetInput(0)->GetSpacing();
+  double averageSpacingLinear = 0.;
+  for (int i = 0; i < TInputImage::ImageDimension; i++)
+    averageSpacingLinear += spacing[i]/2.;
+  averageSpacingLinear /= static_cast<double>(TInputImage::ImageDimension);
   
   // this->m_SegmentationReliability.resize(numberOfInputs, 1.0); 
   
@@ -147,6 +153,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       // Compuate the average distance. 
       double averageDistance = 0.; 
       std::vector<double> allDistances; 
+      double averageSpacing = averageSpacingLinear*averageSpacingLinear;
 
       double sumOfSquare = 0.;
       double number = static_cast<double>(numberOfInputs);
@@ -197,7 +204,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
           correctAverageDistance /= number;
           variability = sqrt((sumOfSquare - number*correctAverageDistance*correctAverageDistance)/number) / (fabs(correctAverageDistance)+1.);
           variability /= number;
-          //averageSpacing /= number;
+          averageSpacing /= number;
           break; 
         }
           
@@ -210,18 +217,28 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
         outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label)); 
         averageDistanceMapIt.Set(static_cast<float>(averageDistance)); 
 
-        double prob = 0.;
-        //double prob = 1./(1.+ exp(averageDistance));
-
+        double adjustedDistance = 0.;
         if (label == 0)
         {
-          prob = 1./(1.+ exp((-averageDistance+variability)/(10.*variability+1.)));
+          adjustedDistance = -averageDistance;
         }
         else
         {
-          prob = 1./(1.+ exp((averageDistance+variability)/(10.*variability+1.)));
+          adjustedDistance = averageDistance;
         }
+        adjustedDistance = (adjustedDistance+averageSpacing+2*variability)/(10.*variability+1.);
+        if (adjustedDistance < 0)
+        {
+          adjustedDistance = -sqrt(-adjustedDistance);
+        }
+        else
+        {
+          adjustedDistance = sqrt(adjustedDistance);
+        }
+        double prob = 1./(1.+ exp(adjustedDistance));
+
         probabilityMaptIt.Set(static_cast<float>(prob));
+        variabilityMaptIt.Set(static_cast<float>(variability));
 
       }
       else if (averageDistance == averageDistanceMapIt.Get())
@@ -238,7 +255,6 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
         }
       }
 
-      variabilityMaptIt.Set(static_cast<float>(variability));
     }
         
     //std::cout << "totalVariance=" << CalculateVariance(averageDistanceMap) << std::endl; 
