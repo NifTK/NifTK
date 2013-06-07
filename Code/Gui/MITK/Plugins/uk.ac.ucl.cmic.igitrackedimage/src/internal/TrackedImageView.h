@@ -99,7 +99,8 @@ private:
    * \brief Member variables for keeping state between button clicks.
    */
   vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
-  std::string m_ImageToProbeFileName;
+  std::string                   m_ImageToProbeFileName;
+  mitk::DataNode::Pointer       m_PlaneNode;
 };
 
 #endif // TrackedImageView_h

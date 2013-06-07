@@ -30,6 +30,7 @@
 #include <mitkTrackedImageCommand.h>
 #include <mitkFileIOUtils.h>
 #include <mitkRenderingManager.h>
+#include <mitkGeometry2DDataMapper2D.h>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -38,6 +39,7 @@ TrackedImageView::TrackedImageView()
 : m_Controls(NULL)
 , m_ImageToProbeTransform(NULL)
 , m_ImageToProbeFileName("")
+, m_PlaneNode(NULL)
 {
 }
 
@@ -45,6 +47,12 @@ TrackedImageView::TrackedImageView()
 //-----------------------------------------------------------------------------
 TrackedImageView::~TrackedImageView()
 {
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+  if (dataStorage != NULL && m_PlaneNode.IsNotNull() && dataStorage->Exists(m_PlaneNode))
+  {
+    dataStorage->Remove(m_PlaneNode);
+  }
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -144,6 +152,25 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
     if (image != NULL && image->GetGeometry() != NULL)
     {
       mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+
+      float white[3] = {1.0f,1.0f,1.0f};
+      mitk::Geometry2DDataMapper2D::Pointer mapper(NULL);
+
+      m_PlaneNode = (mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
+      m_PlaneNode->SetColor(white, mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()));
+      m_PlaneNode->SetProperty("visible", mitk::BoolProperty::New(true));
+      m_PlaneNode->SetProperty("name", mitk::StringProperty::New("TrackedImageViewPlane1"));
+      m_PlaneNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
+      m_PlaneNode->SetProperty("helper object", mitk::BoolProperty::New(true));
+
+      mapper = mitk::Geometry2DDataMapper2D::New();
+      m_PlaneNode->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
+
+      mitk::DataStorage* dataStorage = this->GetDataStorage();
+      if (!dataStorage->Exists(m_PlaneNode))
+      {
+        dataStorage->Add(m_PlaneNode);
+      }
     }
   }
 }
