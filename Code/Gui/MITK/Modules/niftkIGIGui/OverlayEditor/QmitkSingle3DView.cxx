@@ -46,16 +46,21 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
     m_RenderingManager = mitk::RenderingManager::GetInstance();
   }
 
-  m_RenderWindow = new QmitkRenderWindow(NULL, "single.widget1", NULL, m_RenderingManager);
+  m_RenderWindow = new QmitkRenderWindow(this, "single.widget1", NULL, m_RenderingManager);
   m_RenderWindow->setMaximumSize(2000,2000);
   m_RenderWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
 
   m_Layout = new QGridLayout(this);
   m_Layout->setContentsMargins(0, 0, 0, 0);
   m_Layout->addWidget(m_RenderWindow);
 
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard3D);
+
+  m_BitmapOverlay = QmitkBitmapOverlay::New();
+  m_BitmapOverlay->SetRenderWindow(m_RenderWindow->GetRenderWindow());
+
+  m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
+  m_RenderWindow->GetVtkRenderWindow()->GetInteractor()->Disable();
 
   m_GradientBackground = mitk::GradientBackground::New();
   m_GradientBackground->SetRenderWindow(m_RenderWindow->GetRenderWindow());
@@ -66,9 +71,6 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
   m_LogoRendering->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_LogoRendering->Disable();
 
-  m_BitmapOverlay = QmitkBitmapOverlay::New();
-  m_BitmapOverlay->SetRenderWindow(m_RenderWindow->GetRenderWindow());
-
   m_RenderWindowFrame = mitk::RenderWindowFrame::New();
   m_RenderWindowFrame->SetRenderWindow(m_RenderWindow->GetRenderWindow());
   m_RenderWindowFrame->Enable(1.0,0.0,0.0);
@@ -78,6 +80,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 
   m_MatrixDrivenCamera = vtkOpenGLMatrixDrivenCamera::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
+
 }
 
 
@@ -218,8 +221,11 @@ void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 {
-  m_BitmapOverlay->SetupCamera();
-  this->Update();
+  if (this->isVisible())
+  {
+    m_BitmapOverlay->SetupCamera();
+    this->Update();
+  }
 }
 
 
