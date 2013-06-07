@@ -23,6 +23,9 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
+:m_MaximumIterations(50)
+,m_MaximumNumberOfLandmarkPointsToUse(200)
+,m_Method(VTK_ICP)
 {
 }
 
@@ -60,7 +63,9 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetTarget(fixedPoly);
 
   icp->Run();
-  transformMovingToFixed = icp->GetTransform();
+  vtkMatrix4x4 * temp;
+  temp = icp->GetTransform();
+  transformMovingToFixed->DeepCopy(temp);
 }
 
 
