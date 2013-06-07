@@ -72,7 +72,7 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     mitk::NodePredicateOr::Pointer isSurfaceOrPoints = 
       mitk::NodePredicateOr::New(isSurface,isPointSet);
 
-    m_Controls->m_FixedSurfaceComboBox->SetPredicate(isSurface);
+    m_Controls->m_FixedSurfaceComboBox->SetPredicate(isSurfaceOrPoints);
     m_Controls->m_FixedSurfaceComboBox->SetAutoSelectNewItems(false);
 
     m_Controls->m_MovingSurfaceComboBox->SetPredicate(isSurface);
@@ -112,18 +112,20 @@ void SurfaceRegView::RetrievePreferenceValues()
 void SurfaceRegView::OnCalculateButtonPressed()
 {
   mitk::Surface::Pointer fixedSurface = NULL;
+  mitk::PointSet::Pointer fixedPoints = NULL;
   mitk::DataNode* node = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
 
   if ( node != NULL )
   {
     fixedSurface = dynamic_cast<mitk::Surface*>(node->GetData());
+    fixedPoints = dynamic_cast<mitk::PointSet*>(node->GetData());
   }
 
-  if (fixedSurface.IsNull())
+  if ( fixedSurface.IsNull() == fixedPoints.IsNull() )
   {
     QMessageBox msgBox;
-    msgBox.setText("The fixed surface set is non-existent, or not-selected.");
-    msgBox.setInformativeText("Please select a fixed surface.");
+    msgBox.setText("The fixed surface or point set is non-existent, or not-selected.");
+    msgBox.setInformativeText("Please select a fixed surface or point set.");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
@@ -141,7 +143,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   if (movingSurface.IsNull())
   {
     QMessageBox msgBox;
-    msgBox.setText("The moving surface set is non-existent, or not-selected.");
+    msgBox.setText("The moving surface is non-existent, or not-selected.");
     msgBox.setInformativeText("Please select a moving surface.");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
@@ -150,7 +152,13 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
 
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();;
-  registration->Update(fixedSurface, movingSurface, m_Matrix);
+  if ( fixedSurface.IsNull() ) 
+  {
+    registration->Update(fixedPoints, movingSurface, m_Matrix);
+  }
+  {
+    registration->Update(fixedSurface, movingSurface, m_Matrix);
+  }
 
   for (int i = 0; i < 4; i++)
   {
