@@ -29,6 +29,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedImageCommand.h>
 #include <mitkFileIOUtils.h>
+#include <mitkRenderingManager.h>
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -84,6 +85,14 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
 
+    // Set up the Render Window.
+    // This currently has to be a 2D view, to generate the 2D plane geometry to render
+    // which is then used to drive the moving 2D plane we see in 3D. This is how
+    // the axial/sagittal/coronal slices work in the QmitkStdMultiWidget.
+
+    m_Controls->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
+    mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
+
     RetrievePreferenceValues();
 
     ctkServiceReference ref = mitk::TrackedImageViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
@@ -94,6 +103,8 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
+
+    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
   }
 }
 
@@ -125,6 +136,20 @@ void TrackedImageView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
+void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
+{
+  if (node != NULL)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image != NULL && image->GetGeometry() != NULL)
+    {
+      mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void TrackedImageView::OnUpdate(const ctkEvent& event)
 {
   Q_UNUSED(event);
@@ -143,5 +168,7 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
                     probeToWorldTransform,
                     m_ImageToProbeTransform
                     );
+
+    m_Controls->m_RenderWindow->GetRenderer()->GetDisplayGeometry()->Fit();
   }
 }
