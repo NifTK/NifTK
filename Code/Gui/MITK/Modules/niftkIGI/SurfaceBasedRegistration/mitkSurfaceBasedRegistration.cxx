@@ -35,24 +35,45 @@ void SurfaceBasedRegistration::Update(const mitk::Surface::Pointer fixedNode,
                                       const mitk::Surface::Pointer movingNode,
                                       vtkMatrix4x4* transformMovingToFixed)
 {
-
   if ( m_Method == VTK_ICP ) 
   {
-    niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
-    icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
-    icp->SetMaxIterations(m_MaximumIterations);
-    icp->SetSource(movingNode->GetVtkPolyData());
-    icp->SetTarget(fixedNode->GetVtkPolyData());
-
-    icp->Run();
-    transformMovingToFixed = icp->GetTransform();
+    Update(fixedNode->GetVtkPolyData() , movingNode->GetVtkPolyData(), transformMovingToFixed);
   }
   if ( m_Method == NIFTYSIM ) 
   {
     //Not Implemented
   }
-
 }
+
+void SurfaceBasedRegistration::Update(vtkPolyData* fixedPoly,
+                                      vtkPolyData* movingPoly,
+                                      vtkMatrix4x4 * transformMovingToFixed)
+{
+  if ( m_Method == VTK_ICP ) 
+  {
+    niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
+    icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
+    icp->SetMaxIterations(m_MaximumIterations);
+    icp->SetSource(movingPoly);
+    icp->SetTarget(fixedPoly);
+
+    icp->Run();
+    transformMovingToFixed = icp->GetTransform();
+  }
+}
+
+
+void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
+                                      const mitk::Surface::Pointer movingNode,
+                                      vtkMatrix4x4 * transformMovingToFixed)
+{
+  vtkPolyData * fixedPoly = vtkPolyData::New();
+  PointSetToPolyData ( fixedNode, fixedPoly );
+  Update ( fixedPoly, movingNode->GetVtkPolyData(), transformMovingToFixed );
+}
+
+void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
+{}
 
 } // end namespace
 

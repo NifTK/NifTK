@@ -20,8 +20,10 @@
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
+#include <mitkPointSet.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <vtkPolyData.h>
 
 namespace mitk {
 
@@ -42,6 +44,10 @@ public:
   void Update(const mitk::Surface::Pointer fixedNode,
            const mitk::Surface::Pointer movingNode,
            vtkMatrix4x4* transformMovingToFixed);
+  void Update(const mitk::PointSet::Pointer fixedNode,
+           const mitk::Surface::Pointer movingNode,
+           vtkMatrix4x4* transformMovingToFixed);
+
 
   enum Method 
   {
@@ -67,6 +73,11 @@ private:
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
 
+  void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+
+  void Update(vtkPolyData* fixedPoly,
+           vtkPolyData* movingPoly,
+           vtkMatrix4x4* transformMovingToFixed);
 }; // end class
 
 } // end namespace
