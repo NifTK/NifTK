@@ -19,6 +19,7 @@
 #include <mitkDataStorage.h>
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
+#include <mitkSurface.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
@@ -38,8 +39,8 @@ public:
   /**
    * \brief Write My Documentation
    */
-  void Update(const mitk::DataNode::Pointer fixedNode,
-           const mitk::DataNode::Pointer movingNode,
+  void Update(const mitk::Surface::Pointer fixedNode,
+           const mitk::Surface::Pointer movingNode,
            vtkMatrix4x4* transformMovingToFixed);
 
 protected:

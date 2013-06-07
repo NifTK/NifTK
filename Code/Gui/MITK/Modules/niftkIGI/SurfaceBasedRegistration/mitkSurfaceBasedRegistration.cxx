@@ -30,8 +30,8 @@ SurfaceBasedRegistration::~SurfaceBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
-                                      const mitk::DataNode::Pointer movingNode,
+void SurfaceBasedRegistration::Update(const mitk::Surface::Pointer fixedNode,
+                                      const mitk::Surface::Pointer movingNode,
                                       vtkMatrix4x4* transformMovingToFixed)
 {
 

@@ -19,6 +19,7 @@
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkFileIOUtils.h>
+#include <QMessageBox>
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
@@ -100,6 +101,57 @@ void SurfaceRegView::RetrievePreferenceValues()
   }
 }
 
+void SurfaceRegView::OnCalculateButtonPressed()
+{
+  mitk::Surface::Pointer fixedSurface = NULL;
+  mitk::DataNode* node = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
+
+  if ( node != NULL )
+  {
+    fixedSurface = dynamic_cast<mitk::Surface*>(node->GetData());
+  }
+
+  if (fixedSurface.IsNull())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("The fixed surface set is non-existent, or not-selected.");
+    msgBox.setInformativeText("Please select a fixed surface.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+  
+  mitk::Surface::Pointer movingSurface = NULL;
+  node = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
+
+  if ( node != NULL )
+  {
+    movingSurface = dynamic_cast<mitk::Surface*>(node->GetData());
+  }
+
+  if (movingSurface.IsNull())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("The moving surface set is non-existent, or not-selected.");
+    msgBox.setInformativeText("Please select a moving surface.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();;
+  registration->Update(fixedSurface, movingSurface, m_Matrix);
+
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      m_Controls->m_MatrixWidget->setValue(i, j, m_Matrix->GetElement(i, j));
+    }
+  }
+}
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::SetFocus()
