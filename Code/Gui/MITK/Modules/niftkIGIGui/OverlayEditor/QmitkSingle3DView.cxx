@@ -237,8 +237,8 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  double widthOfCurrentWindow = this->width();
-  double heightOfCurrentWindow = this->height();
+  int widthOfCurrentWindow = this->width();
+  int heightOfCurrentWindow = this->height();
   double near = 0.01;
   double far = 1001;
 
