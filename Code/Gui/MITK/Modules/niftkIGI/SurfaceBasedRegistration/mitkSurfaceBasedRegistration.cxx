@@ -13,7 +13,9 @@
 =============================================================================*/
 
 #include "mitkSurfaceBasedRegistration.h"
-#include "niftkVTKIterativeClosestPoint.h"
+#include <niftkVTKIterativeClosestPoint.h>
+#include <vtkCellArray.h>
+#include <vtkPoints.h>
 
 namespace mitk
 {
@@ -74,11 +76,22 @@ void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
   if ( m_Method == DEFORM )
   {
     //Not Implenented
-   }
+  }
 }
 
 void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
 {
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> verts = vtkSmartPointer<vtkCellArray>::New();
+  int numberOfPoints = PointsIn->GetSize();
+  for ( int i = 0 ; i < numberOfPoints ; i++ )
+  {
+    mitk::Point3D point = PointsIn->GetPoint(i);
+    vtkIdType id = points->InsertNextPoint(point[0],point[1],point[2]);
+    verts->InsertNextCell(1,&id);
+  }
+  PolyOut->SetPoints(points);
+  PolyOut->SetVerts(verts);
 }
 
 } // end namespace
