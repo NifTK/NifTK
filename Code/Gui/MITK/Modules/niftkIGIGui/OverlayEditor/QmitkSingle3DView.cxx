@@ -243,10 +243,11 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  int widthOfCurrentWindow = this->width();
-  int heightOfCurrentWindow = this->height();
   double znear = 0.01;
   double zfar = 1001;
+
+  int widthOfCurrentWindow = this->width();
+  int heightOfCurrentWindow = this->height();
 
   // So we set the window size on each update so that the OpenGL viewport is always up to date.
   m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
