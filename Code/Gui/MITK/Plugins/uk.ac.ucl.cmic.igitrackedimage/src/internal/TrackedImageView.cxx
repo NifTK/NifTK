@@ -76,6 +76,8 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::TrackedImageView();
     m_Controls->setupUi(parent);
 
+    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
+
     mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
     m_RenderingManager->AddRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
 
@@ -115,8 +117,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
-
-    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
   }
 }
 
