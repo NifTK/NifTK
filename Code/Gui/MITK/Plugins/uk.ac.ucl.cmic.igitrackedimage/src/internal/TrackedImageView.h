@@ -19,6 +19,7 @@
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedImageView.h"
 #include <vtkSmartPointer.h>
+#include <mitkRenderingManager.h>
 
 class vtkMatrix4x4;
 
@@ -98,9 +99,10 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
-  std::string                   m_ImageToProbeFileName;
-  mitk::DataNode::Pointer       m_PlaneNode;
+  vtkSmartPointer<vtkMatrix4x4>   m_ImageToProbeTransform;
+  std::string                     m_ImageToProbeFileName;
+  mitk::DataNode::Pointer         m_PlaneNode;
+  mitk::RenderingManager::Pointer m_RenderingManager;
 };
 
 #endif // TrackedImageView_h

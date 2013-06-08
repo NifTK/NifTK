@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-// Qmitk
 #include "TrackedImageView.h"
 #include "TrackedImageViewPreferencePage.h"
 #include <ctkDictionary.h>
@@ -40,7 +39,9 @@ TrackedImageView::TrackedImageView()
 , m_ImageToProbeTransform(NULL)
 , m_ImageToProbeFileName("")
 , m_PlaneNode(NULL)
+, m_RenderingManager(NULL)
 {
+  m_RenderingManager = mitk::RenderingManager::New();
 }
 
 
@@ -74,6 +75,9 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
   {
     m_Controls = new Ui::TrackedImageView();
     m_Controls->setupUi(parent);
+
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
+    m_RenderingManager->AddRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
@@ -151,7 +155,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL && image->GetGeometry() != NULL)
     {
-      mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      m_RenderingManager->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
 
       float white[3] = {1.0f,1.0f,1.0f};
       mitk::Geometry2DDataMapper2D::Pointer mapper(NULL);
@@ -171,6 +175,8 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       {
         dataStorage->Add(m_PlaneNode);
       }
+
+      m_RenderingManager->RequestUpdateAll();
     }
   }
 }
