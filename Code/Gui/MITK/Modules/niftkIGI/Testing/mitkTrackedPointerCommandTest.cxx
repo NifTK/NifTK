@@ -38,7 +38,7 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   vtkSmartPointer<vtkMatrix4x4> tipToPointerTransform = vtkMatrix4x4::New();
   tipToPointerTransform->DeepCopy(tipToPointerArray);
 
-  double expectedMatrixArray[16] = {278, 332, 386, 460, 338, 404, 470, 560, 398, 476, 554, 660, 0, 0, 0, 1};
+  double expectedMatrixArray[16] = {134, 140, 146, 156, 386, 404, 422, 448, 638, 668, 698, 740, 0, 0, 0, 1};
   vtkSmartPointer<vtkMatrix4x4> expectdMatrix = vtkMatrix4x4::New();
   expectdMatrix->DeepCopy(expectedMatrixArray);
 
@@ -67,9 +67,9 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
       );
 
   mitk::Point3D expectedTip;
-  expectedTip[0] = 1564;
-  expectedTip[1] = 1904;
-  expectedTip[2] = 2244;
+  expectedTip[0] = 588;
+  expectedTip[1] = 1696;
+  expectedTip[2] = 2804;
 
   // Check that the point came out in the right place.
   MITK_TEST_CONDITION_REQUIRED(tip[0] == expectedTip[0], ".. Testing x=" << expectedTip[0] << ", but got " << tip[0]);
