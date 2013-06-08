@@ -76,6 +76,8 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::TrackedImageView();
     m_Controls->setupUi(parent);
 
+    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
+
     mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
     m_RenderingManager->AddRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
 
@@ -115,8 +117,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
-
-    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
   }
 }
 
@@ -163,7 +163,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       m_PlaneNode = (mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
       m_PlaneNode->SetColor(white, mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()));
       m_PlaneNode->SetProperty("visible", mitk::BoolProperty::New(true));
-      m_PlaneNode->SetProperty("name", mitk::StringProperty::New("TrackedImageViewPlane1"));
+      m_PlaneNode->SetProperty("name", mitk::StringProperty::New(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME));
       m_PlaneNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
       m_PlaneNode->SetProperty("helper object", mitk::BoolProperty::New(true));
 

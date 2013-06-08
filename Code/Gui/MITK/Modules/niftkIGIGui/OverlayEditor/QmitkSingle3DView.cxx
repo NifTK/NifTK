@@ -16,10 +16,11 @@
 #include <QGridLayout>
 #include <mitkDataStorageUtils.h>
 #include <mitkCoordinateAxesData.h>
-#include <vtkCamera.h>
-#include <vtkTransform.h>
+#include <mitkTrackedImageCommand.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
+#include <vtkCamera.h>
+#include <vtkTransform.h>
 #include <Undistortion.h>
 
 //-----------------------------------------------------------------------------
@@ -241,10 +242,26 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingle3DView::RemoveTrackedImageView()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    mitk::DataNode* trackedImage = m_DataStorage->GetNamedNode(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME);
+    if (trackedImage != NULL)
+    {
+      trackedImage->SetVisibility(false, m_RenderWindow->GetRenderer());
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
   double znear = 0.01;
   double zfar = 1001;
+
+  this->RemoveTrackedImageView();
 
   int widthOfCurrentWindow = this->width();
   int heightOfCurrentWindow = this->height();

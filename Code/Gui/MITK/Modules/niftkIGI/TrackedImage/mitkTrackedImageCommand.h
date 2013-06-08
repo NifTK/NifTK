@@ -36,6 +36,11 @@ public:
   itkNewMacro(TrackedImageCommand);
 
   /**
+   * \brief Stores the name of the plane node representing the tracked image.
+   */
+  static const std::string TRACKED_IMAGE_NODE_NAME;
+
+  /**
    * \brief Write My Documentation
    */
   void Update(const mitk::DataNode::Pointer imageNode,
