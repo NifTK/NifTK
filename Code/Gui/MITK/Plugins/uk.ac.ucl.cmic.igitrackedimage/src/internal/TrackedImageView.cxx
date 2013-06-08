@@ -163,7 +163,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       m_PlaneNode = (mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()))->GetCurrentWorldGeometry2DNode();
       m_PlaneNode->SetColor(white, mitk::BaseRenderer::GetInstance(m_Controls->m_RenderWindow->GetRenderWindow()));
       m_PlaneNode->SetProperty("visible", mitk::BoolProperty::New(true));
-      m_PlaneNode->SetProperty("name", mitk::StringProperty::New("TrackedImageViewPlane1"));
+      m_PlaneNode->SetProperty("name", mitk::StringProperty::New(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME));
       m_PlaneNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
       m_PlaneNode->SetProperty("helper object", mitk::BoolProperty::New(true));
 

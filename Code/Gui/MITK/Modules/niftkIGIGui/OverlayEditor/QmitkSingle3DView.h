@@ -146,6 +146,14 @@ protected:
    */
   virtual void resizeEvent(QResizeEvent* event);
 
+private:
+
+  /**
+   * \brief To make sure we don't display the tracked image view.
+   * ToDo: Need to design this bit better.
+   */
+  void RemoveTrackedImageView();
+
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
   QGridLayout                                  *m_Layout;
