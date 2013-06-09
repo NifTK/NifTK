@@ -30,7 +30,7 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *parent)
+QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* parent)
 : m_ContainingFunctionality(NULL)
 , m_FocusManagerObserverTag(0)
 , m_View(MIDAS_VIEW_UNKNOWN)
@@ -47,11 +47,16 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
 
   m_ViewerWidget->SetRememberViewSettingsPerOrientation(false);
   m_ViewerWidget->SetSelected(false);
-  m_TwoViewCheckBox->setChecked(false);
-  m_VerticalCheckBox->setChecked(false);
-  m_VerticalCheckBox->setEnabled(false);
-  m_AxialRadioButton->setChecked(true);
+
+  m_MultiWindowComboBox->addItem("2H");
+  m_MultiWindowComboBox->addItem("2V");
+  m_MultiWindowComboBox->addItem("2x2");
+
+  m_AxialWindowRadioButton->setChecked(true);
+
   this->ChangeLayout(true);
+
+  this->SetEnabled(false);
 
   std::vector<mitk::BaseRenderer*> renderers;
   renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
@@ -69,12 +74,11 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget *pare
   m_ViewerWidget->SetPanningBound(false);
   m_ViewerWidget->SetZoomingBound(true);
 
-  connect(m_TwoViewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnTwoViewStateChanged(int)));
-  connect(m_VerticalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnVerticalLayoutStateChanged(int)));
-  connect(m_AxialRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialToggled(bool)));
-  connect(m_SagittalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalToggled(bool)));
-  connect(m_CoronalRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalToggled(bool)));
-  connect(m_OrthoRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnOrthoToggled(bool)));
+  connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
+  connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
+  connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
+  connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
+  connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 }
 
 
@@ -141,14 +145,13 @@ void QmitkMIDASSegmentationViewWidget::Deactivated()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool block)
+void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool blocked)
 {
-  m_AxialRadioButton->blockSignals(block);
-  m_SagittalRadioButton->blockSignals(block);
-  m_CoronalRadioButton->blockSignals(block);
-  m_OrthoRadioButton->blockSignals(block);
-  m_TwoViewCheckBox->blockSignals(block);
-  m_VerticalCheckBox->blockSignals(block);
+  m_AxialWindowRadioButton->blockSignals(blocked);
+  m_SagittalWindowRadioButton->blockSignals(blocked);
+  m_CoronalWindowRadioButton->blockSignals(blocked);
+  m_MultiWindowRadioButton->blockSignals(blocked);
+  m_MultiWindowComboBox->blockSignals(blocked);
 }
 
 
@@ -156,74 +159,36 @@ void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool block)
 void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
 {
   this->EnableOrientationWidgets(enabled);
-  m_TwoViewCheckBox->setEnabled(enabled);
-  m_VerticalCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::EnableOrientationWidgets(bool enabled)
 {
-  m_AxialRadioButton->setEnabled(enabled);
-  m_SagittalRadioButton->setEnabled(enabled);
-  m_CoronalRadioButton->setEnabled(enabled);
-  m_OrthoRadioButton->setEnabled(enabled);
+  m_AxialWindowRadioButton->setEnabled(enabled);
+  m_SagittalWindowRadioButton->setEnabled(enabled);
+  m_CoronalWindowRadioButton->setEnabled(enabled);
+  m_MultiWindowRadioButton->setEnabled(enabled);
+  m_MultiWindowComboBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnTwoViewStateChanged(int state)
+void QmitkMIDASSegmentationViewWidget::OnLayoutRadioButtonToggled(bool checked)
 {
+  if (checked)
+  {
+    this->ChangeLayout();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnMultiWindowComboBoxIndexChanged()
+{
+  m_MultiWindowRadioButton->setChecked(true);
   this->ChangeLayout();
 }
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnVerticalLayoutStateChanged(int state)
-{
-  this->ChangeLayout();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnAxialToggled(bool)
-{
-  if (m_AxialRadioButton->isChecked())
-  {
-    this->ChangeLayout();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnCoronalToggled(bool)
-{
-  if (m_CoronalRadioButton->isChecked())
-  {
-    this->ChangeLayout();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnSagittalToggled(bool)
-{
-  if (m_SagittalRadioButton->isChecked())
-  {
-    this->ChangeLayout();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnOrthoToggled(bool)
-{
-  if (m_OrthoRadioButton->isChecked())
-  {
-    this->ChangeLayout();
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
@@ -232,24 +197,10 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 
   this->SetBlockSignals(true);
 
-  if (m_TwoViewCheckBox->isChecked())
-  {    
-    if (m_VerticalCheckBox->isChecked())
-    {
-      if (m_MainWindowView == MIDAS_VIEW_AXIAL)
-      {
-        nextView = MIDAS_VIEW_COR_SAG_V;
-      }
-      else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
-      {
-        nextView = MIDAS_VIEW_COR_AX_V;
-      }
-      else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
-      {
-        nextView = MIDAS_VIEW_SAG_AX_V;
-      }
-    }
-    else
+  if (m_MultiWindowRadioButton->isChecked())
+  {
+    // 2H
+    if (m_MultiWindowComboBox->currentIndex() == 0)
     {
       if (m_MainWindowView == MIDAS_VIEW_AXIAL)
       {
@@ -264,55 +215,64 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
         nextView = MIDAS_VIEW_SAG_AX_H;
       }
     }
+    // 2V
+    else if (m_MultiWindowComboBox->currentIndex() == 1)
+    {
+      if (m_MainWindowView == MIDAS_VIEW_AXIAL)
+      {
+        nextView = MIDAS_VIEW_COR_SAG_V;
+      }
+      else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
+      {
+        nextView = MIDAS_VIEW_COR_AX_V;
+      }
+      else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
+      {
+        nextView = MIDAS_VIEW_SAG_AX_V;
+      }
+    }
+    // 2x2
+    else if (m_MultiWindowComboBox->currentIndex() == 2)
+    {
+      nextView = MIDAS_VIEW_ORTHO;
+    }
   }
   else
   {
     if (m_MainWindowView == MIDAS_VIEW_AXIAL)
     {
-      if (m_SagittalRadioButton->isChecked())
+      if (m_SagittalWindowRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_SAGITTAL;
-      }
-      else if (m_OrthoRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_CORONAL;
-        m_CoronalRadioButton->setChecked(true);
+        m_CoronalWindowRadioButton->setChecked(true);
       }
     }
     else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
     {
-      if (m_AxialRadioButton->isChecked())
+      if (m_AxialWindowRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_AXIAL;
-      }
-      else if (m_OrthoRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_CORONAL;
-        m_CoronalRadioButton->setChecked(true);
+        m_CoronalWindowRadioButton->setChecked(true);
       }
     }
     else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
     {
-      if (m_SagittalRadioButton->isChecked())
+      if (m_SagittalWindowRadioButton->isChecked())
       {
         nextView = MIDAS_VIEW_SAGITTAL;
-      }
-      else if (m_OrthoRadioButton->isChecked())
-      {
-        nextView = MIDAS_VIEW_ORTHO;
       }
       else
       {
         nextView = MIDAS_VIEW_AXIAL;
-        m_AxialRadioButton->setChecked(true);
+        m_AxialWindowRadioButton->setChecked(true);
       }
     }
   }
@@ -339,31 +299,25 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::EnableWidgets()
 {
-  if (m_TwoViewCheckBox->isChecked())
+  if (!m_MultiWindowRadioButton->isChecked())
   {
-    m_VerticalCheckBox->setEnabled(true);
-    this->EnableOrientationWidgets(false);
-  }
-  else
-  {
-    m_VerticalCheckBox->setEnabled(false);
     this->EnableOrientationWidgets(true);
 
     if (m_MainWindowView == MIDAS_VIEW_AXIAL)
     {
-      m_AxialRadioButton->setEnabled(false);
+      m_AxialWindowRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
     {
-      m_SagittalRadioButton->setEnabled(false);
+      m_SagittalWindowRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
     {
-      m_CoronalRadioButton->setEnabled(false);
+      m_CoronalWindowRadioButton->setEnabled(false);
     }
     else if (m_MainWindowView == MIDAS_VIEW_ORTHO)
     {
-      m_OrthoRadioButton->setEnabled(false);
+      m_MultiWindowRadioButton->setEnabled(false);
     }
   }
 }
@@ -382,10 +336,10 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
-  QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
-  QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
-  QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
-  QmitkRenderWindow *mainWindow3d = m_ContainingFunctionality->GetRenderWindow("3d");
+  QmitkRenderWindow* mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
+  QmitkRenderWindow* mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
+  QmitkRenderWindow* mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
+  QmitkRenderWindow* mainWindow3d = m_ContainingFunctionality->GetRenderWindow("3d");
 
   // Main windows could be NULL if main window not initialised,
   // or no valid QmitkRenderer returned from mitkIRenderWindowPart.
@@ -515,9 +469,9 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
   {
     vtkRenderWindow* focusedWindowRenderWindow = focusedRenderer->GetRenderWindow();
 
-    QmitkRenderWindow *mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
-    QmitkRenderWindow *mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
-    QmitkRenderWindow *mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
+    QmitkRenderWindow* mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
+    QmitkRenderWindow* mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
+    QmitkRenderWindow* mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 
     if (focusedWindowRenderWindow != NULL
         && mainWindowAxial != NULL

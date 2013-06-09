@@ -56,7 +56,7 @@ class CMIC_QT_COMMONMIDAS QmitkMIDASSegmentationViewWidget :
 
 public:
 
-  QmitkMIDASSegmentationViewWidget(QWidget *parent = 0);
+  QmitkMIDASSegmentationViewWidget(QWidget* parent = 0);
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
@@ -80,10 +80,10 @@ public:
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
 
   /**
-   * \brief Calls setBlockSignals(block) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
+   * \brief Calls setBlockSignals(blocked) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
    * \param block if true will block signals, and if false will unblock them.
    */
-  void SetBlockSignals(bool block);
+  void SetBlockSignals(bool blocked);
 
   /**
    * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
@@ -112,12 +112,11 @@ signals:
 
 protected slots:
 
-  void OnTwoViewStateChanged(int);
-  void OnVerticalLayoutStateChanged(int);
-  void OnAxialToggled(bool);
-  void OnCoronalToggled(bool);
-  void OnSagittalToggled(bool);
-  void OnOrthoToggled(bool);
+  /// \brief Called when any of the layout radio buttons is toggled.
+  void OnLayoutRadioButtonToggled(bool checked);
+
+  /// \brief Called when the window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged();
 
 protected:
 
@@ -147,15 +146,20 @@ private:
   /// \brief Returns the currently focused window.
   mitk::BaseRenderer* GetCurrentlyFocusedRenderer() const;
 
-  QmitkMIDASBaseSegmentationFunctionality *m_ContainingFunctionality;
+  QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
+
+  /// \brief Stores the currently selected window layout.
   MIDASView m_View;
+
   MIDASView m_MainWindowView;
+
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
   QmitkRenderWindow* m_MainWindowCoronal;
   QmitkRenderWindow* m_MainWindow3d;
   mitk::BaseRenderer* m_CurrentRenderer;
+
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 };
