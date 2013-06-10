@@ -53,6 +53,16 @@ double GetLength(const double *a)
 
 
 //-----------------------------------------------------------------------------
+void ScaleVector(const double& scaleFactor, const double* a, double* b)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    b[i] = a[i] * scaleFactor;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void SubtractTwo3DPoints(const double *a, const double *b, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -491,4 +501,81 @@ bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const doub
   }
 
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void SetCameraParallelTo2DImage(
+    const int *imageSize,
+    const int *windowSize,
+    const double *origin,
+    const double *spacing,
+    const double *xAxis,
+    const double *yAxis,
+    const double *clippingRange,
+    const bool& flipYAxis,
+    vtkCamera& camera
+    )
+{
+  double focalPoint[3] = {0, 0, 1};
+  double position[3] = {0, 0, 0};
+  double viewUp[3] = {0, 1, 0};
+  double xAxisUnitVector[3] = {1, 0, 0};
+  double yAxisUnitVector[3] = {0, 1, 0};
+  double zAxisUnitVector[3] = {0, 0, 1};
+  double distanceAlongX = 1;
+  double distanceAlongY = 1;
+  double vectorAlongX[3] = {1, 0, 0};
+  double vectorAlongY[3] = {0, 1, 0};
+  double vectorAlongZ[3] = {0, 0, 1};
+
+  double distanceToFocalPoint = 1000;
+  double viewUpScaleFactor = 1.0e9;
+  if ( flipYAxis )
+  {
+    distanceToFocalPoint *= -1;
+    viewUpScaleFactor *= -1;
+  }
+
+  NormaliseToUnitLength(xAxis, xAxisUnitVector);
+  NormaliseToUnitLength(yAxis, yAxisUnitVector);
+  CrossProductTwo3DVectors(xAxisUnitVector, yAxisUnitVector, zAxisUnitVector);
+
+  distanceAlongX = ( spacing[0] * (imageSize[0] - 1) ) / 2.0;
+  distanceAlongY = ( spacing[1] * (imageSize[1] - 1) ) / 2.0;
+
+  ScaleVector(distanceAlongX,       xAxisUnitVector, vectorAlongX);
+  ScaleVector(distanceAlongY,       yAxisUnitVector, vectorAlongY);
+  ScaleVector(distanceToFocalPoint, zAxisUnitVector, vectorAlongZ);
+
+  for ( unsigned int i = 0; i < 3; ++i)
+  {
+    focalPoint[i] = origin[i] + vectorAlongX[i] + vectorAlongY[i];
+  }
+
+  AddTwo3DPoints(focalPoint, vectorAlongZ, position);
+  ScaleVector(viewUpScaleFactor, vectorAlongY, viewUp);
+
+  double imageWidth = imageSize[0]*spacing[0];
+  double imageHeight = imageSize[1]*spacing[1];
+
+  double widthRatio = imageWidth / windowSize[0];
+  double heightRatio = imageHeight / windowSize[1];
+
+  double scale = 1;
+  if (widthRatio > heightRatio)
+  {
+    scale = 0.5*imageWidth*((double)windowSize[1]/(double)windowSize[0]);
+  }
+  else
+  {
+    scale = 0.5*imageHeight;
+  }
+
+  camera.SetPosition(position);
+  camera.SetFocalPoint(focalPoint);
+  camera.SetViewUp(viewUp);
+  camera.SetParallelProjection(true);
+  camera.SetParallelScale(scale);
+  camera.SetClippingRange(clippingRange);
 }

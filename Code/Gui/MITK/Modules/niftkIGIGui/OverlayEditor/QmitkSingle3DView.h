@@ -196,6 +196,7 @@ private:
   std::string                                   m_TrackingCalibrationFileName;
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
+  mitk::Image::Pointer                          m_Image;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsPerspective;
   bool                                          m_IsCalibrated;

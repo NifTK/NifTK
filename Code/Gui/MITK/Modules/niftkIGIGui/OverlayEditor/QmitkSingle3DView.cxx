@@ -37,6 +37,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_TrackingCalibrationFileName("")
 , m_TrackingCalibrationTransform(NULL)
 , m_TransformNode(NULL)
+, m_Image(NULL)
 , m_MatrixDrivenCamera(NULL)
 , m_IsPerspective(true)
 , m_IsCalibrated(false)
@@ -254,6 +255,7 @@ void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
             );
 
         m_IsCalibrated = true;
+        m_Image = image;
       }
     }
   }
@@ -346,7 +348,14 @@ void QmitkSingle3DView::UpdatePerspectiveMode()
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::UpdateParallelMode()
 {
+  if (m_Image.IsNotNull())
+  {
+    int widthOfCurrentWindow = this->width();
+    int heightOfCurrentWindow = this->height();
 
+    int widthOfImage = m_Image->GetDimension(0);
+    int heightOfImage = m_Image->GetDimension(1);
+  }
 }
 
 
