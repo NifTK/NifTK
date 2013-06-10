@@ -102,6 +102,11 @@ public:
   void SetCalibrationFileName(const std::string& fileName);
 
   /**
+   * \brief Sets whether or not we are doing perspective mode.
+   */
+  void SetPerspectiveMode(const bool& isPerspective);
+
+  /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
    */
   void Update();

@@ -135,6 +135,21 @@ public:
   void SetTrackingCalibrationFileName(const std::string& fileName);
 
   /**
+   * \brief Sets whether or not we are doing perspective mode.
+   *
+   * For Video work, we set this to true, and the video image in expected
+   * to have the camera intrinsics attached as a property. In addition, the camera
+   * position is transformed using the combo box. The end result is that the
+   * VTK objects should overlay the displayed video image according to a calibrated
+   * perspective projection.
+   *
+   * For ultrasound work, we set this to false. In this mode, the image is simply
+   * presented, and a parallel projection mode is used to render the VTK objects
+   * on top of the model.
+   */
+  void SetPerspectiveMode(const bool& isPerspective);
+
+  /**
    * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
    */
   void Update();
@@ -154,6 +169,22 @@ private:
    */
   void RemoveTrackedImageView();
 
+  /**
+   * \brief Used to model a calibrated perspective pinhole, as you might have for a video image.
+   *
+   * In this case we have 2 sub-modes, one that is properly calibrated as the video image
+   * contains the calibrated camera parameters, and one that is not properly calibrated
+   * so we try to do an approximate fit.
+   */
+  void UpdatePerspectiveMode();
+
+  /**
+   * \brief Used to model a parallel projection, as you might have for an ultrasound image.
+   *
+   * In this case, we work out from the image size, and effective parallel projection.
+   */
+  void UpdateParallelMode();
+
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
   QGridLayout                                  *m_Layout;
@@ -166,5 +197,9 @@ private:
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
+  bool                                          m_IsPerspective;
+  bool                                          m_IsCalibrated;
+  double                                        m_ZNear;
+  double                                        m_ZFar;
 };
 #endif /* QmitkSingle3DView */

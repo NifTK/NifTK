@@ -358,6 +358,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
 
   std::string calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
   d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
+  d->m_IGIOverlayEditor->SetPerspectiveMode(prefs->GetBool(IGIOverlayEditorPreferencePage::PERSPECTIVE_MODE, true));
 }
 
 

@@ -38,6 +38,10 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_TrackingCalibrationTransform(NULL)
 , m_TransformNode(NULL)
 , m_MatrixDrivenCamera(NULL)
+, m_IsPerspective(true)
+, m_IsCalibrated(false)
+, m_ZNear(0.01)
+, m_ZFar(1001)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -81,7 +85,6 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 
   m_MatrixDrivenCamera = vtkOpenGLMatrixDrivenCamera::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
-
 }
 
 
@@ -123,47 +126,6 @@ float QmitkSingle3DView::GetOpacity() const
 void QmitkSingle3DView::SetOpacity(const float& value)
 {
   m_BitmapOverlay->SetOpacity(value);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
-{
-  m_BitmapOverlay->SetNode(node);
-
-  bool useDefaultVTKCameraBehaviour = true;
-
-  if (node != NULL)
-  {
-    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-    if (image != NULL)
-    {
-      int width = image->GetDimension(0);
-      int height = image->GetDimension(1);
-      m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
-
-      // Check for property that determines if we are doing a calibrated model or not.
-      mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
-          = dynamic_cast<mitk::CameraIntrinsicsProperty*>(node->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
-
-      if (intrinsicsProperty.IsNotNull())
-      {
-        mitk::CameraIntrinsics::Pointer intrinsics;
-        intrinsics = intrinsicsProperty->GetValue();
-
-        m_MatrixDrivenCamera->SetIntrinsicParameters
-            (intrinsics->GetFocalLengthX(),
-             intrinsics->GetFocalLengthY(),
-             intrinsics->GetPrincipalPointX(),
-             intrinsics->GetPrincipalPointY()
-            );
-
-        useDefaultVTKCameraBehaviour = false;
-      }
-    }
-  }
-
-  m_MatrixDrivenCamera->SetDefaultBehaviour(useDefaultVTKCameraBehaviour);
 }
 
 
@@ -222,11 +184,8 @@ void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
 //-----------------------------------------------------------------------------
 void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 {
-  if (this->isVisible())
-  {
-    m_BitmapOverlay->SetupCamera();
-    this->Update();
-  }
+  m_BitmapOverlay->SetupCamera();
+  this->Update();
 }
 
 
@@ -256,17 +215,82 @@ void QmitkSingle3DView::RemoveTrackedImageView()
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingle3DView::SetPerspectiveMode(const bool& isPerspective)
+{
+  m_IsPerspective = isPerspective;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
+{
+  m_IsCalibrated = false;
+
+  m_BitmapOverlay->SetNode(node);
+
+  if (node != NULL)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image != NULL)
+    {
+      int width = image->GetDimension(0);
+      int height = image->GetDimension(1);
+      m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
+
+      // Check for property that determines if we are doing a calibrated model or not.
+      mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
+          = dynamic_cast<mitk::CameraIntrinsicsProperty*>(node->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
+
+      if (intrinsicsProperty.IsNotNull())
+      {
+        mitk::CameraIntrinsics::Pointer intrinsics;
+        intrinsics = intrinsicsProperty->GetValue();
+
+        m_MatrixDrivenCamera->SetIntrinsicParameters
+            (intrinsics->GetFocalLengthX(),
+             intrinsics->GetFocalLengthY(),
+             intrinsics->GetPrincipalPointX(),
+             intrinsics->GetPrincipalPointY()
+            );
+
+        m_IsCalibrated = true;
+      }
+    }
+  }
+
+  m_MatrixDrivenCamera->SetUseCalibratedCamera(m_IsCalibrated);
+  this->Update();
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::Update()
 {
-  double znear = 0.01;
-  double zfar = 1001;
+  // Early exit if the widget itself is not yet on-screen.
+  if (!this->isVisible())
+  {
+    return;
+  }
 
+  // ToDo: Rework this. We just forcibly turn off the TrackedImageViewPlane.
   this->RemoveTrackedImageView();
 
+  if (m_IsPerspective)
+  {
+    this->UpdatePerspectiveMode();
+  }
+  else
+  {
+    this->UpdateParallelMode();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::UpdatePerspectiveMode()
+{
   int widthOfCurrentWindow = this->width();
   int heightOfCurrentWindow = this->height();
-
-  // So we set the window size on each update so that the OpenGL viewport is always up to date.
   m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
 
   // This implies a right handed coordinate system.
@@ -278,7 +302,7 @@ void QmitkSingle3DView::Update()
   m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
   m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
   m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
-  m_MatrixDrivenCamera->SetClippingRange(znear, zfar);
+  m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
 
   // If we have a calibration and tracking matrix, we can move camera accordingly.
   if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
@@ -313,10 +337,16 @@ void QmitkSingle3DView::Update()
       m_MatrixDrivenCamera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
       m_MatrixDrivenCamera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
       m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
-      m_MatrixDrivenCamera->SetClippingRange(znear, zfar);
+      m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
     }
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::UpdateParallelMode()
+{
+
+}
 
 

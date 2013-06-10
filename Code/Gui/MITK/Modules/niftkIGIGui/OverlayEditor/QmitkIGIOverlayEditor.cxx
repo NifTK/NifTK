@@ -190,6 +190,15 @@ void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::SetPerspectiveMode(const bool& isPerspective)
+{
+  m_OverlayViewer->SetPerspectiveMode(isPerspective);
+  m_TransformCombo->setVisible(isPerspective);
+  m_TransformLabel->setVisible(isPerspective);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const std::string path)
 {
   m_OverlayViewer->SetDepartmentLogoPath(path.c_str());
