@@ -40,6 +40,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_TrackingCalibrationTransform(NULL)
 , m_TransformNode(NULL)
 , m_Image(NULL)
+, m_ImageNode(NULL)
 , m_MatrixDrivenCamera(NULL)
 , m_IsCameraTracking(true)
 , m_IsCalibrated(false)
@@ -94,19 +95,54 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::~QmitkSingle3DView()
 {
+  this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* ds )
+void QmitkSingle3DView::DeRegisterDataStorageListeners()
 {
-  m_DataStorage = ds;
-  mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetDataStorage(ds);
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->RemoveNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
+       (this, &QmitkSingle3DView::NodeRemoved ) );
+  }
+}
 
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* dataStorage )
+{
+  if (m_DataStorage.IsNotNull() && m_DataStorage != dataStorage)
+  {
+    this->DeRegisterDataStorageListeners();
+  }
+
+  m_DataStorage = dataStorage;
+
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->RemoveNodeEvent.AddListener
+      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
+       (this, &QmitkSingle3DView::NodeRemoved ) );
+  }
+
+  mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetDataStorage(dataStorage);
   if (m_DataStorage.IsNotNull())
   {
     m_BitmapOverlay->SetDataStorage (m_DataStorage);
     m_BitmapOverlay->Enable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::NodeRemoved (const mitk::DataNode * node )
+{
+  if ( node == m_ImageNode )
+  {
+    this->SetImageNode(NULL);
   }
 }
 
@@ -231,12 +267,19 @@ void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
 
   m_BitmapOverlay->SetNode(node);
 
-  if (node != NULL)
+  // Remember node can be NULL, as we have to respond to NodeRemoved events.
+  if (node == NULL)
+  {
+    m_Image = NULL;
+    m_ImageNode = NULL;
+  }
+  else
   {
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL)
     {
       m_Image = image;
+      m_ImageNode = const_cast<mitk::DataNode*>(node);
 
       int width = image->GetDimension(0);
       int height = image->GetDimension(1);

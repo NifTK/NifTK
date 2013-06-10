@@ -187,6 +187,16 @@ private:
    */
   void UpdateCameraToTrackImage();
 
+  /**
+   * \brief Utility method to deregister data storage listeners.
+   */
+  void DeRegisterDataStorageListeners();
+
+  /**
+   * \brief Called when a DataStorage Node Removed Event was emitted.
+   */
+  void NodeRemoved(const mitk::DataNode* node);
+
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
   QGridLayout                                  *m_Layout;
@@ -199,6 +209,7 @@ private:
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
   mitk::Image::Pointer                          m_Image;
+  mitk::DataNode::Pointer                       m_ImageNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsCameraTracking;
   bool                                          m_IsCalibrated;
