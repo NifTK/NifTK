@@ -65,7 +65,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_MagnificationSpinBox->setMinimum(minMagnification);
   m_MagnificationSpinBox->setMaximum(maxMagnification);
 
-  this->SetEnabled(false);
+  m_ControlsWidget->setEnabled(false);
 
   std::vector<mitk::BaseRenderer*> renderers;
   renderers.push_back(m_ViewerWidget->GetAxialWindow()->GetRenderer());
@@ -268,7 +268,13 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     }
   }
 
-  this->EnableWidgets();
+  if (!m_MultiWindowRadioButton->isChecked())
+  {
+    m_ControlsWidget->setEnabled(true);
+    m_AxialWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_AXIAL);
+    m_SagittalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_SAGITTAL);
+    m_CoronalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_CORONAL);
+  }
 
   m_LayoutWidget->blockSignals(wasBlocked);
 
@@ -284,33 +290,6 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     m_MagnificationSpinBox->blockSignals(wasBlocked);
 
     emit LayoutChanged(m_View);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::EnableWidgets()
-{
-  if (!m_MultiWindowRadioButton->isChecked())
-  {
-    this->SetEnabled(true);
-
-    if (m_MainWindowView == MIDAS_VIEW_AXIAL)
-    {
-      m_AxialWindowRadioButton->setEnabled(false);
-    }
-    else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
-    {
-      m_SagittalWindowRadioButton->setEnabled(false);
-    }
-    else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
-    {
-      m_CoronalWindowRadioButton->setEnabled(false);
-    }
-    else if (m_MainWindowView == MIDAS_VIEW_ORTHO)
-    {
-      m_MultiWindowRadioButton->setEnabled(false);
-    }
   }
 }
 
