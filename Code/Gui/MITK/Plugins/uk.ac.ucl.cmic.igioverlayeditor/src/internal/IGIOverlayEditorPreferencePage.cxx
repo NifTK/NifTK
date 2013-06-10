@@ -29,10 +29,12 @@ const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET(
 const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
 const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
 const std::string IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
+const std::string IGIOverlayEditorPreferencePage::PERSPECTIVE_MODE("perspective mode");
 
 //-----------------------------------------------------------------------------
 IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
 : m_MainControl(0)
+, m_PerspectiveMode(NULL)
 , m_ColorButton1(NULL)
 , m_ColorButton2(NULL)
 {
@@ -57,6 +59,9 @@ void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
 
   QFormLayout *formLayout = new QFormLayout;
+
+  m_PerspectiveMode = new QCheckBox();
+  formLayout->addRow("perspective mode", m_PerspectiveMode);
 
   m_CalibrationFileName = new ctkPathLineEdit();
   formLayout->addRow("calibration transform", m_CalibrationFileName);
@@ -131,6 +136,7 @@ bool IGIOverlayEditorPreferencePage::PerformOk()
   m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
   m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
   m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
+  m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::PERSPECTIVE_MODE, m_PerspectiveMode->isChecked());
   return true;
 }
 
@@ -168,6 +174,7 @@ void IGIOverlayEditorPreferencePage::Update()
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
   m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
+  m_PerspectiveMode->setChecked(m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::PERSPECTIVE_MODE, true));
 }
 
 

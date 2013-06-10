@@ -82,6 +82,11 @@ public:
    */
   static const std::string CALIBRATION_FILE_NAME;
 
+  /**
+   * \brief Stores the name of the preference node containing whether we are doing a perspective projection (for video images) or not (for ultrasound).
+   */
+  static const std::string PERSPECTIVE_MODE;
+
 public slots:
 
   void FirstColorChanged();
@@ -90,14 +95,15 @@ public slots:
 
 protected:
 
-  QWidget*   m_MainControl;
-  QPushButton* m_ColorButton1;
-  QPushButton* m_ColorButton2;
+  QWidget         *m_MainControl;
+  QCheckBox       *m_PerspectiveMode;
+  QPushButton     *m_ColorButton1;
+  QPushButton     *m_ColorButton2;
   ctkPathLineEdit *m_CalibrationFileName;
-  std::string m_FirstColor;
-  std::string m_SecondColor;
-  QString m_FirstColorStyleSheet;
-  QString m_SecondColorStyleSheet;
+  std::string      m_FirstColor;
+  std::string      m_SecondColor;
+  QString          m_FirstColorStyleSheet;
+  QString          m_SecondColorStyleSheet;
 
   berry::IPreferences::Pointer m_IGIOverlayEditorPreferencesNode;
 };
