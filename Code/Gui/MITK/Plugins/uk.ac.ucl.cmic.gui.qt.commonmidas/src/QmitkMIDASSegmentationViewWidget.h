@@ -125,9 +125,6 @@ private:
   /// \brief Method that actually changes the view to axial, sagittal, coronal etc.
   void ChangeLayout(bool isInitialising = false);
 
-  /// \brief Enables all widgets according to which view we are in.
-  void EnableWidgets();
-
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
