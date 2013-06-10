@@ -26,7 +26,7 @@
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedPointerCommand.h>
+#include <mitkTrackedPointerManager.h>
 #include <mitkFileIOUtils.h>
 #include "TrackedPointerViewActivator.h"
 #include "TrackedPointerViewPreferencePage.h"
@@ -38,6 +38,7 @@ TrackedPointerView::TrackedPointerView()
 : m_Controls(NULL)
 , m_UpdateViewCoordinate(false)
 {
+  m_TrackedPointerManager = mitk::TrackedPointerManager::New();
 }
 
 
@@ -101,6 +102,9 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
+
+    connect(this->m_Controls->m_GrabPointsButton, SIGNAL(pressed()), this, SLOT(OnGrabPoints()));
+    connect(this->m_Controls->m_ClearPointsButton, SIGNAL(pressed()), this, SLOT(OnClearPoints()));
   }
 }
 
@@ -121,7 +125,7 @@ void TrackedPointerView::RetrievePreferenceValues()
     m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
-    m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerCommand::UPDATE_VIEW_COORDINATE_DEFAULT);
+    m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT);
   }
 }
 
@@ -130,6 +134,20 @@ void TrackedPointerView::RetrievePreferenceValues()
 void TrackedPointerView::SetFocus()
 {
   m_Controls->m_ProbeSurfaceNode->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerView::OnGrabPoints()
+{
+  m_TrackedPointerManager->OnGrabPoints();
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerView::OnClearPoints()
+{
+  m_TrackedPointerManager->OnClearPoints();
 }
 
 
@@ -152,12 +170,11 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
     tipCoordinate[1] = currentCoordinateInModelCoordinates[1];
     tipCoordinate[2] = currentCoordinateInModelCoordinates[2];
 
-    mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
-    command->Update(m_TipToProbeTransform,
-                    probeToWorldTransform,
-                    surfaceNode,             // The Geometry on this gets updated.
-                    tipCoordinate            // This gets updated.
-                    );
+    m_TrackedPointerManager->Update(m_TipToProbeTransform,
+                                    probeToWorldTransform,
+                                    surfaceNode,             // The Geometry on this gets updated.
+                                    tipCoordinate            // This gets updated.
+                                   );
 
     m_Controls->m_MapsToSpinBoxes->setCoordinates(tipCoordinate[0], tipCoordinate[1], tipCoordinate[2]);
     if (m_UpdateViewCoordinate)

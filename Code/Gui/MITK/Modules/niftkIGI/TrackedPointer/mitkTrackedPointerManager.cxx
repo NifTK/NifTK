@@ -12,32 +12,53 @@
 
 =============================================================================*/
 
-#include "mitkTrackedPointerCommand.h"
+#include "mitkTrackedPointerManager.h"
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkSurface.h>
 
-const bool mitk::TrackedPointerCommand::UPDATE_VIEW_COORDINATE_DEFAULT(false);
+const bool mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT(false);
+const std::string mitk::TrackedPointerManager::TRACKED_POINTER_POINTSET_NAME("TrackedPointerManagerPointSet");
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-TrackedPointerCommand::TrackedPointerCommand()
+TrackedPointerManager::TrackedPointerManager()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TrackedPointerCommand::~TrackedPointerCommand()
+TrackedPointerManager::~TrackedPointerManager()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerCommand::Update(
+void TrackedPointerManager::SetDataStorage(const mitk::DataStorage::Pointer& storage)
+{
+  m_DataStorage = storage;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerManager::OnGrabPoints()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerManager::OnClearPoints()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerManager::Update(
          const vtkMatrix4x4* tipToPointerTransform,
          const mitk::DataNode::Pointer pointerToWorldNode,
          const mitk::DataNode::Pointer surfaceNode,
@@ -46,14 +67,14 @@ void TrackedPointerCommand::Update(
 {
   if (tipToPointerTransform == NULL)
   {
-    MITK_ERROR << "TrackedPointerCommand::Update, invalid tipToPointerTransform";
+    MITK_ERROR << "TrackedPointerManager::Update, invalid tipToPointerTransform";
     return;
   }
 
   mitk::CoordinateAxesData::Pointer pointerToWorld = dynamic_cast<mitk::CoordinateAxesData*>(pointerToWorldNode->GetData());
   if (pointerToWorld.IsNull())
   {
-    MITK_ERROR << "TrackedPointerCommand::Update, invalid pointerToWorldNode";
+    MITK_ERROR << "TrackedPointerManager::Update, invalid pointerToWorldNode";
     return;
   }
 
