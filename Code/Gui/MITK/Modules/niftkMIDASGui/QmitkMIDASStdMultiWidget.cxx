@@ -1754,6 +1754,8 @@ void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPos
 
   m_CursorPosition = cursorPosition;
 
+  bool hasChanged = false;
+
   if (this->IsPanningBound())
   {
     // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
@@ -1764,21 +1766,26 @@ void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPos
       {
         mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
         this->SetOrigin(renderWindow, origin);
+        hasChanged = true;
       }
     }
   }
   else
   {
     QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-    if (renderWindow->isVisible() && renderWindow != m_RenderWindows[3])
+    if (renderWindow && renderWindow->isVisible() && renderWindow != m_RenderWindows[3])
     {
       mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
       this->SetOrigin(renderWindow, origin);
+      hasChanged = true;
     }
   }
 
-  this->RequestUpdate();
-//  emit CursorPositionChanged();
+  if (hasChanged)
+  {
+    this->RequestUpdate();
+//    emit CursorPositionChanged();
+  }
 }
 
 
