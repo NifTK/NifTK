@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <mitkTrackedPointerCommand.h>
+#include <mitkTrackedPointerManager.h>
 #include <vtkMatrix4x4.h>
 #include <vtkLinearTransform.h>
 #include <vtkTransform.h>
@@ -24,10 +24,10 @@
 #include <mitkCoordinateAxesData.h>
 
 /**
- * \file mitkTrackedPointerCommandTest.cxx.
- * \brief Tests for mitk::TrackedPointerCommand.
+ * \file mitkTrackedPointerManagerTest.cxx.
+ * \brief Tests for mitk::TrackedPointerManager.
  */
-int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
+int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 {
 
   double trackingMatrixArray[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0, 0, 1};
@@ -58,8 +58,8 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   tip[1] = 1;
   tip[2] = 2;
 
-  mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
-  command->Update(
+  mitk::TrackedPointerManager::Pointer manager = mitk::TrackedPointerManager::New();
+  manager->Update(
       tipToPointerTransform,
       pointerToWorldNode,
       surfaceNode,
