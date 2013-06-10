@@ -19,9 +19,15 @@
 #include <mitkSurface.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkRenderingManager.h>
+#include <mitkPointSetUpdate.h>
+#include <mitkPointUtils.h>
+#include <mitkUndoController.h>
+#include <mitkOperation.h>
+#include <mitkOperationActor.h>
 
 const bool mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT(false);
 const std::string mitk::TrackedPointerManager::TRACKED_POINTER_POINTSET_NAME("TrackedPointerManagerPointSet");
+const mitk::OperationType mitk::TrackedPointerManager::OP_UPDATE_POINTSET(9034657);
 
 namespace mitk
 {
@@ -35,6 +41,13 @@ TrackedPointerManager::TrackedPointerManager()
 //-----------------------------------------------------------------------------
 TrackedPointerManager::~TrackedPointerManager()
 {
+  assert(m_DataStorage);
+
+  mitk::DataNode::Pointer pointSetNode = m_DataStorage->GetNamedNode(TRACKED_POINTER_POINTSET_NAME);
+  if (pointSetNode.IsNull())
+  {
+    m_DataStorage->Remove(pointSetNode);
+  }
 }
 
 
@@ -74,22 +87,53 @@ mitk::PointSet::Pointer TrackedPointerManager::RetrievePointSet()
 //-----------------------------------------------------------------------------
 void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
 {
-  mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
+  mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
 
-  int currentSize = pointSet->GetSize();
-  pointSet->InsertPoint(currentSize, point);
+  mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  doOp->AppendPoint(point);
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  mitk::PointSetUpdate* undoOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  mitk::OperationEvent *operationEvent = new mitk::OperationEvent(this, doOp, undoOp, "Update PointSet");
+  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+
+  this->ExecuteOperation(doOp);
 }
 
 
 //-----------------------------------------------------------------------------
 void TrackedPointerManager::OnClearPoints()
 {
-  mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
-  pointSet->Clear();
+  mitk::PointSet::Pointer currentPointSet = this->RetrievePointSet();
 
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+  mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, NULL);
+  mitk::PointSetUpdate* undoOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  mitk::OperationEvent *operationEvent = new mitk::OperationEvent(this, doOp, undoOp, "Update PointSet");
+  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+
+  this->ExecuteOperation(doOp);
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerManager::ExecuteOperation(mitk::Operation* operation)
+{
+  assert(m_DataStorage);
+  assert(operation);
+
+  switch (operation->GetOperationType())
+  {
+    case OP_UPDATE_POINTSET:
+
+      mitk::PointSetUpdate* op = static_cast<mitk::PointSetUpdate*>(operation);
+      mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
+      const mitk::PointSet *newPointSet = op->GetPointSet();
+
+      mitk::CopyPointSets(*newPointSet,  *pointSet);
+
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
+    break;
+  }
 }
 
 

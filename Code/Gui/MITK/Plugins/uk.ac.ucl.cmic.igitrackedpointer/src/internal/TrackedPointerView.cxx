@@ -16,7 +16,6 @@
 #include "TrackedPointerView.h"
 #include "TrackedPointerViewPreferencePage.h"
 #include "TrackedPointerViewActivator.h"
-#include <QMessageBox>
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -156,17 +155,6 @@ void TrackedPointerView::OnGrabPoints()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnClearPoints()
 {
-  QMessageBox msgBox;
-  msgBox.setText("This operation cannot be un-done.");
-  msgBox.setInformativeText("Are you sure you want to erase the point-set?");
-  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-  msgBox.setDefaultButton(QMessageBox::No);
-  int returnValue = msgBox.exec();
-  if (returnValue == QMessageBox::No)
-  {
-    return;
-  }
-
   m_TrackedPointerManager->OnClearPoints();
 }
 
