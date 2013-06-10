@@ -32,6 +32,7 @@
 #include <mitkSegTool2D.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkPointSet.h>
+#include <mitkPointUtils.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkTool.h>
 #include <mitkNodePredicateDataType.h>
@@ -640,11 +641,7 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints)
 {
-  outputPoints.Clear();
-  for (int i = 0; i < inputPoints.GetSize(); i++)
-  {
-    outputPoints.InsertPoint(i, inputPoints.GetPoint(i));
-  }
+  mitk::CopyPointSets(inputPoints, outputPoints);
 }
 
 
