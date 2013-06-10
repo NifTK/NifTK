@@ -663,13 +663,6 @@ MIDASView QmitkMIDASSingleViewWidget::GetView() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SwitchView(MIDASView view)
-{
-  m_MultiWidget->SetMIDASView(view, true);
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
 {
   if (view != MIDAS_VIEW_UNKNOWN)
@@ -690,12 +683,15 @@ void QmitkMIDASSingleViewWidget::SetView(MIDASView view, bool fitToDisplay)
     mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
-    m_MultiWidget->SetGeometry(m_ActiveGeometry); // Sets geometry on all 4 MITK views.
-    m_MultiWidget->SetMIDASView(view, true);            // True to always rebuild layout.
-    m_MultiWidget->update();                            // Call Qt update to try and make sure we are painted at the right size.
+
+    m_MultiWidget->SetGeometry(m_ActiveGeometry);
+    m_MultiWidget->SetMIDASView(view);
+    // Call Qt update to try and make sure we are painted at the right size.
+    m_MultiWidget->update();
     if (fitToDisplay)
     {
-      m_MultiWidget->Fit();                             // Fits the MITK DisplayGeometry to the current widget size.
+      // Fits the display geometry to the current widget size.
+      m_MultiWidget->Fit();
     }
 
     // Restore the selected position if it was set before.
@@ -808,7 +804,7 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D * geometry )
+void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D * geometry)
 {
   m_MultiWidget->InitializeStandardViews(geometry);
 }

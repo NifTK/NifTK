@@ -121,18 +121,12 @@ public:
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
   bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief Set the view (layout), as the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  ///
-  /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
+  /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
-
-  /// \brief Called by the other SetMIDASView method to actually switch QmitkRenderWindows, and in a Qt sense, rebuild the Qt layouts.
-  void SetMIDASView(MIDASView view, bool rebuildLayout);
-
-  /// \brief Called by SetMIDASView(MIDASView view, mitk::Geometry3D* geometry) to actually initialise the Geometry in the QmitkStdMultiWidget base class.
   void SetGeometry(mitk::Geometry3D* geometry);
+
+  /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
+  void SetMIDASView(MIDASView view);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
