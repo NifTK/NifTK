@@ -98,6 +98,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_PreviousMagnification(0.0)
 , m_SingleWindowLayout(MIDAS_VIEW_CORONAL)
 , m_MultiWindowLayout(MIDAS_VIEW_ORTHO)
 , m_ViewKeyPressStateMachine(0)

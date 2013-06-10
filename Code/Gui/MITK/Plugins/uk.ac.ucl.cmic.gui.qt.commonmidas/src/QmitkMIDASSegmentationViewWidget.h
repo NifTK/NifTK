@@ -80,12 +80,6 @@ public:
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
 
   /**
-   * \brief Calls setBlockSignals(blocked) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
-   * \param block if true will block signals, and if false will unblock them.
-   */
-  void SetBlockSignals(bool blocked);
-
-  /**
    * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
@@ -108,7 +102,7 @@ signals:
    * two view windows, in vertical or horizontal mode. (see MIDASView enum for a complete list),
    * and emit this signal when the displayed view of this window changes.
    */
-  void ViewChanged(MIDASView);
+  void LayoutChanged(MIDASView);
 
 protected slots:
 
@@ -117,6 +111,12 @@ protected slots:
 
   /// \brief Called when the window layout is selected in the the combo box.
   void OnMultiWindowComboBoxIndexChanged();
+
+  /// \brief Called when the magnification is changed by the spin box.
+  void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the magnification is changed by zooming in a renderer window.
+  void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
 protected:
 
@@ -127,9 +127,6 @@ private:
 
   /// \brief Enables all widgets according to which view we are in.
   void EnableWidgets();
-
-  /// \brief Separate method to just enable/disable the axial, sagittal, coronal radio buttons.
-  void EnableOrientationWidgets(bool enabled);
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
@@ -162,6 +159,8 @@ private:
 
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+
+  double m_PreviousMagnification;
 };
 
 #endif

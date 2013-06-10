@@ -224,9 +224,6 @@ public:
   /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
   void SetView(MIDASView view, bool fitToDisplay);
 
-  /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
-  void SwitchView(MIDASView view);
-
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
 

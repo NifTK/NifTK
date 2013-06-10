@@ -42,10 +42,10 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 , m_CurrentRenderer(NULL)
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
+, m_PreviousMagnification(0.0)
 {
   this->setupUi(parent);
 
-  m_ViewerWidget->SetRememberViewSettingsPerOrientation(false);
   m_ViewerWidget->SetSelected(false);
 
   m_MultiWindowComboBox->addItem("2H");
@@ -55,6 +55,15 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_AxialWindowRadioButton->setChecked(true);
 
   this->ChangeLayout(true);
+
+  m_MagnificationSpinBox->setDecimals(2);
+  m_MagnificationSpinBox->setSingleStep(1.0);
+
+  double minMagnification = std::ceil(m_ViewerWidget->GetMinMagnification());
+  double maxMagnification = std::floor(m_ViewerWidget->GetMaxMagnification());
+
+  m_MagnificationSpinBox->setMinimum(minMagnification);
+  m_MagnificationSpinBox->setMaximum(maxMagnification);
 
   this->SetEnabled(false);
 
@@ -70,6 +79,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
+  m_ViewerWidget->SetRememberViewSettingsPerOrientation(true);
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
   m_ViewerWidget->SetPanningBound(false);
   m_ViewerWidget->SetZoomingBound(true);
@@ -79,6 +89,9 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
   connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
   connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
+
+  connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnMagnificationChanged(double)));
+  connect(m_ViewerWidget, SIGNAL(MagnificationChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationChanged(QmitkMIDASSingleViewWidget*, double)));
 }
 
 
@@ -145,31 +158,9 @@ void QmitkMIDASSegmentationViewWidget::Deactivated()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::SetBlockSignals(bool blocked)
-{
-  m_AxialWindowRadioButton->blockSignals(blocked);
-  m_SagittalWindowRadioButton->blockSignals(blocked);
-  m_CoronalWindowRadioButton->blockSignals(blocked);
-  m_MultiWindowRadioButton->blockSignals(blocked);
-  m_MultiWindowComboBox->blockSignals(blocked);
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
 {
-  this->EnableOrientationWidgets(enabled);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::EnableOrientationWidgets(bool enabled)
-{
-  m_AxialWindowRadioButton->setEnabled(enabled);
-  m_SagittalWindowRadioButton->setEnabled(enabled);
-  m_CoronalWindowRadioButton->setEnabled(enabled);
-  m_MultiWindowRadioButton->setEnabled(enabled);
-  m_MultiWindowComboBox->setEnabled(enabled);
+  m_ControlsWidget->setEnabled(enabled);
 }
 
 
@@ -195,7 +186,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 {
   MIDASView nextView = MIDAS_VIEW_UNKNOWN;
 
-  this->SetBlockSignals(true);
+  bool wasBlocked = m_LayoutWidget->blockSignals(true);
 
   if (m_MultiWindowRadioButton->isChecked())
   {
@@ -278,20 +269,21 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
   }
 
   this->EnableWidgets();
-  this->SetBlockSignals(false);
+
+  m_LayoutWidget->blockSignals(wasBlocked);
 
   if (nextView != MIDAS_VIEW_UNKNOWN && nextView != m_View)
   {
     m_View = nextView;
-    if (isInitialising)
-    {
-      m_ViewerWidget->SetView(m_View, false);
-    }
-    else
-    {
-      m_ViewerWidget->SwitchView(m_View);
-    }
-    emit ViewChanged(m_View);
+    m_ViewerWidget->SetView(m_View, isInitialising);
+
+    double magnification = m_ViewerWidget->GetMagnification();
+
+    bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+    m_MagnificationSpinBox->setValue(magnification);
+    m_MagnificationSpinBox->blockSignals(wasBlocked);
+
+    emit LayoutChanged(m_View);
   }
 }
 
@@ -301,7 +293,7 @@ void QmitkMIDASSegmentationViewWidget::EnableWidgets()
 {
   if (!m_MultiWindowRadioButton->isChecked())
   {
-    this->EnableOrientationWidgets(true);
+    this->SetEnabled(true);
 
     if (m_MainWindowView == MIDAS_VIEW_AXIAL)
     {
@@ -332,6 +324,14 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
     QmitkRenderWindow* renderWindow = m_ViewerWidget->GetRenderWindow(focusedRenderer->GetRenderWindow());
     m_ViewerWidget->SetSelectedRenderWindow(renderWindow);
+
+    double magnification = m_ViewerWidget->GetMagnification();
+    m_PreviousMagnification = magnification;
+
+    bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+    m_MagnificationSpinBox->setValue(magnification);
+    m_MagnificationSpinBox->blockSignals(wasBlocked);
+
     return;
   }
 
@@ -369,10 +369,10 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   // This should always be true at this point due to early exit above.
   MIDASView mainWindowView = this->GetCurrentMainWindowView();
 
-  bool mainWindowViewChanged = false;
+  bool mainWindowLayoutChanged = false;
   if (mainWindowView != MIDAS_VIEW_UNKNOWN && mainWindowView != m_MainWindowView)
   {
-    mainWindowViewChanged = true;
+    mainWindowLayoutChanged = true;
     m_MainWindowView = mainWindowView;
   }
 
@@ -413,11 +413,13 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       this->ChangeLayout(true);
     }
   }
-  else if (mainWindowViewChanged)
+  else if (mainWindowLayoutChanged)
   {
     this->ChangeLayout(false);
   }
+
   m_CurrentRenderer = currentlyFocusedRenderer;
+
   m_ViewerWidget->RequestUpdate();
 }
 
@@ -444,14 +446,13 @@ bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocusedWindowInThisWidget()
   mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
   if (focusedRenderer != NULL)
   {
-    vtkRenderWindow* focusedVtkRenderWindow = focusedRenderer->GetRenderWindow();
-
     std::vector<QmitkRenderWindow*> renderWindows = m_ViewerWidget->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
-      if (renderWindows[i]->GetVtkRenderWindow() == focusedVtkRenderWindow)
+      if (renderWindows[i]->GetRenderer() == focusedRenderer)
       {
         result = true;
+        break;
       }
     }
   }
@@ -467,29 +468,21 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
   mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
   if (focusedRenderer != NULL)
   {
-    vtkRenderWindow* focusedWindowRenderWindow = focusedRenderer->GetRenderWindow();
-
     QmitkRenderWindow* mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");
     QmitkRenderWindow* mainWindowSagittal = m_ContainingFunctionality->GetRenderWindow("sagittal");
     QmitkRenderWindow* mainWindowCoronal = m_ContainingFunctionality->GetRenderWindow("coronal");
 
-    if (focusedWindowRenderWindow != NULL
-        && mainWindowAxial != NULL
-        && mainWindowSagittal != NULL
-        && mainWindowCoronal != NULL
-        )
+    if (mainWindowAxial && mainWindowSagittal && mainWindowCoronal)
     {
-      if (focusedWindowRenderWindow == mainWindowAxial->GetVtkRenderWindow())
+      if (focusedRenderer == mainWindowAxial->GetRenderer())
       {
         orientation = MIDAS_ORIENTATION_AXIAL;
       }
-      else
-      if (focusedWindowRenderWindow == mainWindowSagittal->GetVtkRenderWindow())
+      else if (focusedRenderer == mainWindowSagittal->GetRenderer())
       {
         orientation = MIDAS_ORIENTATION_SAGITTAL;
       }
-      else
-      if (focusedWindowRenderWindow == mainWindowCoronal->GetVtkRenderWindow())
+      else if (focusedRenderer == mainWindowCoronal->GetRenderer())
       {
         orientation = MIDAS_ORIENTATION_CORONAL;
       }
@@ -518,4 +511,40 @@ MIDASView QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowView()
     mainWindowView = MIDAS_VIEW_CORONAL;
   }
   return mainWindowView;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(QmitkMIDASSingleViewWidget*, double magnification)
+{
+  bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
+  m_MagnificationSpinBox->setValue(magnification);
+  m_MagnificationSpinBox->blockSignals(wasBlocked);
+
+  m_PreviousMagnification = magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnification)
+{
+  double roundedMagnification = std::floor(magnification);
+
+  // If we are between two integers, we raise a new event:
+  if (magnification != roundedMagnification)
+  {
+    double newMagnification = roundedMagnification;
+    // If the value has decreased, we have to increase the rounded value.
+    if (magnification < m_PreviousMagnification)
+    {
+      newMagnification += 1.0;
+    }
+
+    m_MagnificationSpinBox->setValue(newMagnification);
+  }
+  else
+  {
+    m_ViewerWidget->SetMagnification(magnification);
+    m_PreviousMagnification = magnification;
+  }
 }
