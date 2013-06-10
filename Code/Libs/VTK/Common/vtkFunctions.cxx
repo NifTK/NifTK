@@ -529,11 +529,10 @@ void SetCameraParallelTo2DImage(
   double vectorAlongY[3] = {0, 1, 0};
   double vectorAlongZ[3] = {0, 0, 1};
 
-  double distanceToFocalPoint = 1000;
+  double distanceToFocalPoint = -1000;
   double viewUpScaleFactor = 1.0e9;
   if ( flipYAxis )
   {
-    distanceToFocalPoint *= -1;
     viewUpScaleFactor *= -1;
   }
 

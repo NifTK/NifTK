@@ -190,11 +190,11 @@ void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetPerspectiveMode(const bool& isPerspective)
+void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
 {
-  m_OverlayViewer->SetPerspectiveMode(isPerspective);
-  m_TransformCombo->setVisible(isPerspective);
-  m_TransformLabel->setVisible(isPerspective);
+  m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
+  m_TransformCombo->setVisible(isCameraTracking);
+  m_TransformLabel->setVisible(isCameraTracking);
 }
 
 

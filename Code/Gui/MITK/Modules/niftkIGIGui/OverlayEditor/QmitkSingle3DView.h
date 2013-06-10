@@ -135,19 +135,19 @@ public:
   void SetTrackingCalibrationFileName(const std::string& fileName);
 
   /**
-   * \brief Sets whether or not we are doing perspective mode.
+   * \brief Sets whether or not we are doing camera tracking mode.
    *
    * For Video work, we set this to true, and the video image in expected
    * to have the camera intrinsics attached as a property. In addition, the camera
    * position is transformed using the combo box. The end result is that the
    * VTK objects should overlay the displayed video image according to a calibrated
-   * perspective projection.
+   * camera projection.
    *
    * For ultrasound work, we set this to false. In this mode, the image is simply
    * presented, and a parallel projection mode is used to render the VTK objects
-   * on top of the model.
+   * on top of the image.
    */
-  void SetPerspectiveMode(const bool& isPerspective);
+  void SetCameraTrackingMode(const bool& isCameraTracking);
 
   /**
    * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
@@ -170,20 +170,22 @@ private:
   void RemoveTrackedImageView();
 
   /**
-   * \brief Used to model a calibrated perspective pinhole, as you might have for a video image.
+   * \brief Used to move the camera based on a tracking transformation.
    *
-   * In this case we have 2 sub-modes, one that is properly calibrated as the video image
-   * contains the calibrated camera parameters, and one that is not properly calibrated
-   * so we try to do an approximate fit.
+   * In addition, we also have a fallback position. If the camera calibration
+   * information is not found, we switch the camera to be a parallel projection,
+   * based on the size of the image, but still move the camera when a tracking
+   * transformation and calibration transformation are available.
    */
-  void UpdatePerspectiveMode();
+  void UpdateCameraViaTrackingTransformation();
 
   /**
-   * \brief Used to model a parallel projection, as you might have for an ultrasound image.
+   * \brief Used to move the camera based on an image position and orientation,
+   * such as might occur if you were using a tracked ultrasound image.
    *
    * In this case, we work out from the image size, and effective parallel projection.
    */
-  void UpdateParallelMode();
+  void UpdateCameraToTrackImage();
 
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
@@ -198,7 +200,7 @@ private:
   mitk::DataNode::Pointer                       m_TransformNode;
   mitk::Image::Pointer                          m_Image;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
-  bool                                          m_IsPerspective;
+  bool                                          m_IsCameraTracking;
   bool                                          m_IsCalibrated;
   double                                        m_ZNear;
   double                                        m_ZFar;
