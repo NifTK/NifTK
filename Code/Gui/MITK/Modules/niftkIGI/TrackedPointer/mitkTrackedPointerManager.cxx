@@ -41,12 +41,13 @@ TrackedPointerManager::TrackedPointerManager()
 //-----------------------------------------------------------------------------
 TrackedPointerManager::~TrackedPointerManager()
 {
-  assert(m_DataStorage);
-
-  mitk::DataNode::Pointer pointSetNode = m_DataStorage->GetNamedNode(TRACKED_POINTER_POINTSET_NAME);
-  if (pointSetNode.IsNull())
+  if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->Remove(pointSetNode);
+    mitk::DataNode::Pointer pointSetNode = m_DataStorage->GetNamedNode(TRACKED_POINTER_POINTSET_NAME);
+    if (pointSetNode.IsNull())
+    {
+      m_DataStorage->Remove(pointSetNode);
+    }
   }
 }
 
