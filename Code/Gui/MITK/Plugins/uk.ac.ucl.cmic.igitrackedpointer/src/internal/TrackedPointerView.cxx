@@ -15,6 +15,8 @@
 // Qmitk
 #include "TrackedPointerView.h"
 #include "TrackedPointerViewPreferencePage.h"
+#include "TrackedPointerViewActivator.h"
+#include <QMessageBox>
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -28,8 +30,6 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedPointerManager.h>
 #include <mitkFileIOUtils.h>
-#include "TrackedPointerViewActivator.h"
-#include "TrackedPointerViewPreferencePage.h"
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -71,6 +71,8 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     assert(dataStorage);
 
     m_DataStorage = dataStorage;
+
+    m_TrackedPointerManager->SetDataStorage(dataStorage);
 
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
     m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurface);
@@ -140,13 +142,31 @@ void TrackedPointerView::SetFocus()
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnGrabPoints()
 {
-  m_TrackedPointerManager->OnGrabPoints();
+  const double *currentTipCoordinate = m_Controls->m_MapsToSpinBoxes->coordinates();
+  mitk::Point3D tipCoordinate;
+
+  tipCoordinate[0] = currentTipCoordinate[0];
+  tipCoordinate[1] = currentTipCoordinate[1];
+  tipCoordinate[2] = currentTipCoordinate[2];
+
+  m_TrackedPointerManager->OnGrabPoint(tipCoordinate);
 }
 
 
 //-----------------------------------------------------------------------------
 void TrackedPointerView::OnClearPoints()
 {
+  QMessageBox msgBox;
+  msgBox.setText("This operation cannot be un-done.");
+  msgBox.setInformativeText("Are you sure you want to erase the point-set?");
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  msgBox.setDefaultButton(QMessageBox::No);
+  int returnValue = msgBox.exec();
+  if (returnValue == QMessageBox::No)
+  {
+    return;
+  }
+
   m_TrackedPointerManager->OnClearPoints();
 }
 

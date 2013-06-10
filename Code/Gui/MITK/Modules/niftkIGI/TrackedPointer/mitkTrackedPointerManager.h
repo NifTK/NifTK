@@ -21,6 +21,7 @@
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkPointSet.h>
+#include <mitkVector.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
@@ -65,7 +66,7 @@ public:
   /**
    * \brief If the point set is not created, will create it, and then add a new point to it.
    */
-  void OnGrabPoints();
+  void OnGrabPoint(const mitk::Point3D& point);
 
   /**
    * \brief Clears the point set.
@@ -81,6 +82,12 @@ protected:
   TrackedPointerManager& operator=(const TrackedPointerManager&); // Purposefully not implemented.
 
 private:
+
+  /**
+   * \brief Returns the point set from data storage, creating one if it can't be found.
+   */
+  mitk::PointSet::Pointer RetrievePointSet();
+
   mitk::DataStorage::Pointer m_DataStorage;
 
 }; // end class

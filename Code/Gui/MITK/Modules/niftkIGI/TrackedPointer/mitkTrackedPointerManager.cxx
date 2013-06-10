@@ -16,8 +16,9 @@
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkSurface.h>
+#include <mitkTimeSlicedGeometry.h>
+#include <mitkRenderingManager.h>
 
 const bool mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT(false);
 const std::string mitk::TrackedPointerManager::TRACKED_POINTER_POINTSET_NAME("TrackedPointerManagerPointSet");
@@ -46,14 +47,49 @@ void TrackedPointerManager::SetDataStorage(const mitk::DataStorage::Pointer& sto
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerManager::OnGrabPoints()
+mitk::PointSet::Pointer TrackedPointerManager::RetrievePointSet()
 {
+  assert(m_DataStorage);
+  mitk::PointSet::Pointer result = NULL;
+
+  mitk::DataNode::Pointer pointSetNode = m_DataStorage->GetNamedNode(TRACKED_POINTER_POINTSET_NAME);
+  if (pointSetNode.IsNull())
+  {
+    result = mitk::PointSet::New();
+
+    pointSetNode = mitk::DataNode::New();
+    pointSetNode->SetData(result);
+    pointSetNode->SetName(TRACKED_POINTER_POINTSET_NAME);
+    m_DataStorage->Add(pointSetNode);
+  }
+  else
+  {
+    result = dynamic_cast<mitk::PointSet*>(pointSetNode->GetData());
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void TrackedPointerManager::OnGrabPoint(const mitk::Point3D& point)
+{
+  mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
+
+  int currentSize = pointSet->GetSize();
+  pointSet->InsertPoint(currentSize, point);
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
 //-----------------------------------------------------------------------------
 void TrackedPointerManager::OnClearPoints()
 {
+  mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
+  pointSet->Clear();
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
