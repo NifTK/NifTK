@@ -45,8 +45,8 @@ public:
 
   void Render(vtkRenderer *ren);
 
-  vtkSetMacro(DefaultBehaviour, bool);
-  vtkGetMacro(DefaultBehaviour, bool);
+  vtkSetMacro(UseCalibratedCamera, bool);
+  vtkGetMacro(UseCalibratedCamera, bool);
 
   /**
    * \brief Set the size of the image in pixels that was used while calibrating the camera model.
@@ -75,7 +75,7 @@ private:
   void operator=(const vtkOpenGLMatrixDrivenCamera&);  // Purposefully not implemented.
 
   vtkSmartPointer<vtkMatrix4x4> m_IntrinsicMatrix;
-  bool DefaultBehaviour;
+  bool UseCalibratedCamera;
   int m_ImageWidth;
   int m_ImageHeight;
   int m_WindowWidth;
