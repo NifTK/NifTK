@@ -82,6 +82,11 @@ public:
    */
   static const std::string CALIBRATION_FILE_NAME;
 
+  /**
+   * \brief Stores the name of the preference node containing whether we are doing a camera tracking mode (for video), or the alternative is image tracking (e.g. for ultrasound).
+   */
+  static const std::string CAMERA_TRACKING_MODE;
+
 public slots:
 
   void FirstColorChanged();
@@ -90,14 +95,15 @@ public slots:
 
 protected:
 
-  QWidget*   m_MainControl;
-  QPushButton* m_ColorButton1;
-  QPushButton* m_ColorButton2;
+  QWidget         *m_MainControl;
+  QCheckBox       *m_CameraTrackingMode;
+  QPushButton     *m_ColorButton1;
+  QPushButton     *m_ColorButton2;
   ctkPathLineEdit *m_CalibrationFileName;
-  std::string m_FirstColor;
-  std::string m_SecondColor;
-  QString m_FirstColorStyleSheet;
-  QString m_SecondColorStyleSheet;
+  std::string      m_FirstColor;
+  std::string      m_SecondColor;
+  QString          m_FirstColorStyleSheet;
+  QString          m_SecondColorStyleSheet;
 
   berry::IPreferences::Pointer m_IGIOverlayEditorPreferencesNode;
 };

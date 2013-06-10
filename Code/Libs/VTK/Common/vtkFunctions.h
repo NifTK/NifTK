@@ -21,12 +21,21 @@
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
 #include <vtkCellLocator.h>
+#include <vtkCamera.h>
+
+/**
+ * \file vtkFunctions.h
+ * \brief Various VTK functions that need sorting into a more sensible arrangement.
+ */
 
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b);
 
 /** Returns the length of a 3D vector, so a must be an array of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetLength(const double *a);
+
+/** Scales the unit vector a by scaleFactor, and writes to b, so a and be must be an array of length 3. */
+extern "C++" NIFTKVTK_WINEXPORT void ScaleVector(const double& scaleFactor, const double* a, double* b);
 
 /** Subtracts two 3D points, so a, b and output must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT void SubtractTwo3DPoints(const double *a, const double *b, double *output);
@@ -173,5 +182,28 @@ extern "C++" NIFTKVTK_WINEXPORT vtkMatrix4x4* LoadMatrix4x4FromFile(const std::s
  * \param tolerance absolute difference between corresponding elements must be less than this number.
  */
 extern "C++" NIFTKVTK_WINEXPORT bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const double& tolerance=0.01);
+
+/**
+ * \brief Used to set a vtkCamera to track a 2D image, and sets the camera to parallel projection mode.
+ * \param imageSize array of 2 integers containing imageSize[0]=number of pixels in x, imageSize[1]=number of pixels in y of the image
+ * \param windowSize array of 2 integers containing width and height of the current window.
+ * \param origin array of 3 doubles containing the x,y,z coordinates in 3D space of the origin of the image, presumed to be the centre of the first (0,0) voxel.
+ * \param spacing array of 2 doubles containing the x and y spacing in mm.
+ * \param xAxis array of 3 doubles containing the x,y,z direction vector describing the x-axis.
+ * \param yAxis array of 3 doubles containing the x,y,z direction vector describing the y-axis.
+ * \param clippingRange array of 2 doubles containing the near and far clipping range.
+ * \param flipYAxis if true we flip the y-axis.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
+    const int *imageSize,
+    const int *windowSize,
+    const double *origin,
+    const double *spacing,
+    const double *xAxis,
+    const double *yAxis,
+    const double *clippingRange,
+    const bool& flipYAxis,
+    vtkCamera& camera
+    );
 
 #endif // vtkFunctions_h
