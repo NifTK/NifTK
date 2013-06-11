@@ -102,7 +102,7 @@ signals:
    * two view windows, in vertical or horizontal mode. (see MIDASView enum for a complete list),
    * and emit this signal when the displayed view of this window changes.
    */
-  void LayoutChanged(MIDASView);
+  void LayoutChanged(MIDASLayout);
 
 protected slots:
 
@@ -132,7 +132,7 @@ private:
   MIDASOrientation GetCurrentMainWindowOrientation();
 
   /// \brief Works out the MIDASView of the currently focused window.
-  MIDASView GetCurrentMainWindowView();
+  MIDASLayout GetCurrentMainWindowView();
 
   /// \brief Returns true if the currently focused window is in this widget.
   bool IsCurrentlyFocusedWindowInThisWidget();
@@ -144,9 +144,9 @@ private:
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
-  MIDASView m_View;
+  MIDASLayout m_View;
 
-  MIDASView m_MainWindowView;
+  MIDASLayout m_MainWindowView;
 
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;

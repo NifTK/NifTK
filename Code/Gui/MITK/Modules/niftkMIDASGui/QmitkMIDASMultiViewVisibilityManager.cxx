@@ -579,11 +579,11 @@ QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
 
 
 //-----------------------------------------------------------------------------
-MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNode*> nodes)
+MIDASLayout QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNode*> nodes)
 {
 
-  MIDASView view = m_DefaultView;
-  if (view == MIDAS_VIEW_AS_ACQUIRED)
+  MIDASLayout view = m_DefaultView;
+  if (view == MIDAS_LAYOUT_AS_ACQUIRED)
   {
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
@@ -616,15 +616,15 @@ MIDASView QmitkMIDASMultiViewVisibilityManager::GetView(std::vector<mitk::DataNo
 
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      view = MIDAS_VIEW_AXIAL;
+      view = MIDAS_LAYOUT_AXIAL;
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      view = MIDAS_VIEW_SAGITTAL;
+      view = MIDAS_LAYOUT_SAGITTAL;
     }
     else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      view = MIDAS_VIEW_CORONAL;
+      view = MIDAS_LAYOUT_CORONAL;
     }
     else
     {
@@ -640,7 +640,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 {
 
   int windowIndex = this->GetIndexFromWindow(window);
-  MIDASView view = this->GetView(nodes);
+  MIDASLayout view = this->GetView(nodes);
 
   if (m_DataStorage.IsNotNull() && windowIndex != -1)
   {
@@ -759,18 +759,18 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
       switch(view)
       {
-      case MIDAS_VIEW_AXIAL:
+      case MIDAS_LAYOUT_AXIAL:
         orientation = MIDAS_ORIENTATION_AXIAL;
         break;
-      case MIDAS_VIEW_SAGITTAL:
+      case MIDAS_LAYOUT_SAGITTAL:
         orientation = MIDAS_ORIENTATION_SAGITTAL;
         break;
-      case MIDAS_VIEW_CORONAL:
+      case MIDAS_LAYOUT_CORONAL:
         orientation = MIDAS_ORIENTATION_CORONAL;
         break;
       default:
         orientation = MIDAS_ORIENTATION_AXIAL;
-        view = MIDAS_VIEW_AXIAL;
+        view = MIDAS_LAYOUT_AXIAL;
         break;
       }
 

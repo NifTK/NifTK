@@ -33,8 +33,8 @@
 QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* parent)
 : m_ContainingFunctionality(NULL)
 , m_FocusManagerObserverTag(0)
-, m_View(MIDAS_VIEW_UNKNOWN)
-, m_MainWindowView(MIDAS_VIEW_UNKNOWN)
+, m_View(MIDAS_LAYOUT_UNKNOWN)
+, m_MainWindowView(MIDAS_LAYOUT_UNKNOWN)
 , m_MainWindowAxial(NULL)
 , m_MainWindowSagittal(NULL)
 , m_MainWindowCoronal(NULL)
@@ -184,7 +184,7 @@ void QmitkMIDASSegmentationViewWidget::OnMultiWindowComboBoxIndexChanged()
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 {
-  MIDASView nextView = MIDAS_VIEW_UNKNOWN;
+  MIDASLayout nextView = MIDAS_LAYOUT_UNKNOWN;
 
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
 
@@ -193,76 +193,76 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
     // 2H
     if (m_MultiWindowComboBox->currentIndex() == 0)
     {
-      if (m_MainWindowView == MIDAS_VIEW_AXIAL)
+      if (m_MainWindowView == MIDAS_LAYOUT_AXIAL)
       {
-        nextView = MIDAS_VIEW_COR_SAG_H;
+        nextView = MIDAS_LAYOUT_COR_SAG_H;
       }
-      else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
+      else if (m_MainWindowView == MIDAS_LAYOUT_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_COR_AX_H;
+        nextView = MIDAS_LAYOUT_COR_AX_H;
       }
-      else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
+      else if (m_MainWindowView == MIDAS_LAYOUT_CORONAL)
       {
-        nextView = MIDAS_VIEW_SAG_AX_H;
+        nextView = MIDAS_LAYOUT_SAG_AX_H;
       }
     }
     // 2V
     else if (m_MultiWindowComboBox->currentIndex() == 1)
     {
-      if (m_MainWindowView == MIDAS_VIEW_AXIAL)
+      if (m_MainWindowView == MIDAS_LAYOUT_AXIAL)
       {
-        nextView = MIDAS_VIEW_COR_SAG_V;
+        nextView = MIDAS_LAYOUT_COR_SAG_V;
       }
-      else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
+      else if (m_MainWindowView == MIDAS_LAYOUT_SAGITTAL)
       {
-        nextView = MIDAS_VIEW_COR_AX_V;
+        nextView = MIDAS_LAYOUT_COR_AX_V;
       }
-      else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
+      else if (m_MainWindowView == MIDAS_LAYOUT_CORONAL)
       {
-        nextView = MIDAS_VIEW_SAG_AX_V;
+        nextView = MIDAS_LAYOUT_SAG_AX_V;
       }
     }
     // 2x2
     else if (m_MultiWindowComboBox->currentIndex() == 2)
     {
-      nextView = MIDAS_VIEW_ORTHO;
+      nextView = MIDAS_LAYOUT_ORTHO;
     }
   }
   else
   {
-    if (m_MainWindowView == MIDAS_VIEW_AXIAL)
+    if (m_MainWindowView == MIDAS_LAYOUT_AXIAL)
     {
       if (m_SagittalWindowRadioButton->isChecked())
       {
-        nextView = MIDAS_VIEW_SAGITTAL;
+        nextView = MIDAS_LAYOUT_SAGITTAL;
       }
       else
       {
-        nextView = MIDAS_VIEW_CORONAL;
+        nextView = MIDAS_LAYOUT_CORONAL;
         m_CoronalWindowRadioButton->setChecked(true);
       }
     }
-    else if (m_MainWindowView == MIDAS_VIEW_SAGITTAL)
+    else if (m_MainWindowView == MIDAS_LAYOUT_SAGITTAL)
     {
       if (m_AxialWindowRadioButton->isChecked())
       {
-        nextView = MIDAS_VIEW_AXIAL;
+        nextView = MIDAS_LAYOUT_AXIAL;
       }
       else
       {
-        nextView = MIDAS_VIEW_CORONAL;
+        nextView = MIDAS_LAYOUT_CORONAL;
         m_CoronalWindowRadioButton->setChecked(true);
       }
     }
-    else if (m_MainWindowView == MIDAS_VIEW_CORONAL)
+    else if (m_MainWindowView == MIDAS_LAYOUT_CORONAL)
     {
       if (m_SagittalWindowRadioButton->isChecked())
       {
-        nextView = MIDAS_VIEW_SAGITTAL;
+        nextView = MIDAS_LAYOUT_SAGITTAL;
       }
       else
       {
-        nextView = MIDAS_VIEW_AXIAL;
+        nextView = MIDAS_LAYOUT_AXIAL;
         m_AxialWindowRadioButton->setChecked(true);
       }
     }
@@ -271,14 +271,14 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
   if (!m_MultiWindowRadioButton->isChecked())
   {
     m_ControlsWidget->setEnabled(true);
-    m_AxialWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_AXIAL);
-    m_SagittalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_SAGITTAL);
-    m_CoronalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_VIEW_CORONAL);
+    m_AxialWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_LAYOUT_AXIAL);
+    m_SagittalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_LAYOUT_SAGITTAL);
+    m_CoronalWindowRadioButton->setEnabled(m_MainWindowView != MIDAS_LAYOUT_CORONAL);
   }
 
   m_LayoutWidget->blockSignals(wasBlocked);
 
-  if (nextView != MIDAS_VIEW_UNKNOWN && nextView != m_View)
+  if (nextView != MIDAS_LAYOUT_UNKNOWN && nextView != m_View)
   {
     m_View = nextView;
     m_ViewerWidget->SetView(m_View, isInitialising);
@@ -346,10 +346,10 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   // This will only be valid if we are not currently focused on THIS widget.
   // This should always be true at this point due to early exit above.
-  MIDASView mainWindowView = this->GetCurrentMainWindowView();
+  MIDASLayout mainWindowView = this->GetCurrentMainWindowView();
 
   bool mainWindowLayoutChanged = false;
-  if (mainWindowView != MIDAS_VIEW_UNKNOWN && mainWindowView != m_MainWindowView)
+  if (mainWindowView != MIDAS_LAYOUT_UNKNOWN && mainWindowView != m_MainWindowView)
   {
     mainWindowLayoutChanged = true;
     m_MainWindowView = mainWindowView;
@@ -357,7 +357,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   mitk::BaseRenderer* currentlyFocusedRenderer = this->GetCurrentlyFocusedRenderer();
 
-  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_VIEW_UNKNOWN && m_View == MIDAS_VIEW_UNKNOWN))
+  if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowView != MIDAS_LAYOUT_UNKNOWN && m_View == MIDAS_LAYOUT_UNKNOWN))
   {
     const mitk::Geometry3D* worldGeometry = mainWindowAxial->GetRenderer()->GetWorldGeometry();
     if (worldGeometry)
@@ -472,22 +472,22 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
 
 
 //-----------------------------------------------------------------------------
-MIDASView QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowView()
+MIDASLayout QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowView()
 {
-  MIDASView mainWindowView = MIDAS_VIEW_UNKNOWN;
+  MIDASLayout mainWindowView = MIDAS_LAYOUT_UNKNOWN;
   MIDASOrientation mainWindowOrientation = this->GetCurrentMainWindowOrientation();
 
   if (mainWindowOrientation == MIDAS_ORIENTATION_AXIAL)
   {
-    mainWindowView = MIDAS_VIEW_AXIAL;
+    mainWindowView = MIDAS_LAYOUT_AXIAL;
   }
   else if (mainWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
   {
-    mainWindowView = MIDAS_VIEW_SAGITTAL;
+    mainWindowView = MIDAS_LAYOUT_SAGITTAL;
   }
   else if (mainWindowOrientation == MIDAS_ORIENTATION_CORONAL)
   {
-    mainWindowView = MIDAS_VIEW_CORONAL;
+    mainWindowView = MIDAS_LAYOUT_CORONAL;
   }
   return mainWindowView;
 }

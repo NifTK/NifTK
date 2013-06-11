@@ -106,13 +106,13 @@ public:
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
 
   /// \brief Sets the default view (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultViewType(MIDASView midasView);
+  void SetDefaultViewType(MIDASLayout midasView);
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASView midasView);
+  void SetDefaultSingleWindowLayout(MIDASLayout midasView);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASView midasView);
+  void SetDefaultMultiWindowLayout(MIDASLayout midasView);
 
   /// \brief Sets the default drop type checkbox.
   void SetDropTypeWidget(MIDASDropType dropType);
@@ -272,7 +272,7 @@ protected slots:
   void On2x2ButtonPressed();
   void OnRowsSliderValueChanged(int);
   void OnColumnsSliderValueChanged(int);
-  void OnOrientationSelected(MIDASView midasView);
+  void OnLayoutChanged(MIDASLayout layout);
   void OnShow2DCursorsCheckBoxToggled(bool);
   void OnDropSingleRadioButtonToggled(bool);
   void OnDropMultipleRadioButtonToggled(bool);
@@ -320,13 +320,13 @@ private:
  int GetIndexFromRowAndColumn(int r, int c) const;
 
   /// \brief Will look at the default view type, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  MIDASView GetDefaultOrientationForSegmentation() const;
+  MIDASLayout GetDefaultOrientationForSegmentation() const;
 
   /// \brief Main method to change the number of views.
   void SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the view.
-  void SwitchMIDASView(MIDASView midasView);
+  void SwitchMIDASView(MIDASLayout midasView);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
   void SetSelectedViewIndex(int i);
@@ -438,8 +438,8 @@ private:
   bool m_IsMIDASSegmentationMode;
   bool m_NavigationControllerEventListening;
   double m_PreviousMagnification;
-  MIDASView m_SingleWindowLayout;
-  MIDASView m_MultiWindowLayout;
+  MIDASLayout m_SingleWindowLayout;
+  MIDASLayout m_MultiWindowLayout;
 
   mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };

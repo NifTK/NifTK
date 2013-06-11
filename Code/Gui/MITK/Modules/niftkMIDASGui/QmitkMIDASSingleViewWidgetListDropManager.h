@@ -57,10 +57,10 @@ public:
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Sets the default view.
-  void SetDefaultView(const MIDASView& view);
+  void SetDefaultView(const MIDASLayout& view);
 
   /// \brief Gets the default view.
-  MIDASView GetDefaultView() const;
+  MIDASLayout GetDefaultView() const;
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single widget.
   void SetDropType(const MIDASDropType& dropType);
@@ -78,7 +78,7 @@ protected:
 
 private:
 
-  MIDASView m_DefaultView;
+  MIDASLayout m_DefaultView;
   MIDASDropType m_DropType;
   bool m_AccumulateWhenDropped;
   mitk::DataStorage::Pointer m_DataStorage;

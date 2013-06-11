@@ -219,10 +219,10 @@ public:
   void SetTime(unsigned int timeSlice);
 
   /// \brief Get the view ID.
-  MIDASView GetView() const;
+  MIDASLayout GetView() const;
 
   /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetView(MIDASView view, bool fitToDisplay);
+  void SetView(MIDASLayout view, bool fitToDisplay);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -332,14 +332,14 @@ private:
   double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  MIDASView                            m_View;
+  MIDASLayout                            m_View;
   MIDASOrientation                     m_Orientation;
 
   int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  mitk::Vector3D                       m_CursorPositions[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
-  double                               m_Magnifications[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
-  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
+  mitk::Vector3D                       m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
+  double                               m_Magnifications[MIDAS_LAYOUT_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
+  bool                                 m_ViewInitialised[MIDAS_LAYOUT_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
 
   bool                                 m_NavigationControllerEventListening;
   bool                                 m_RememberViewSettingsPerOrientation;

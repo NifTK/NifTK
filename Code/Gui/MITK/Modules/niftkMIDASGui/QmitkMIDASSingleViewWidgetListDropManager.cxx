@@ -22,7 +22,7 @@
 
 //-----------------------------------------------------------------------------
 QmitkMIDASSingleViewWidgetListDropManager::QmitkMIDASSingleViewWidgetListDropManager()
-: m_DefaultView(MIDAS_VIEW_CORONAL)
+: m_DefaultView(MIDAS_LAYOUT_CORONAL)
 , m_DropType(MIDAS_DROP_TYPE_SINGLE)
 , m_DataStorage(NULL)
 , m_VisibilityManager(NULL)
@@ -52,14 +52,14 @@ void QmitkMIDASSingleViewWidgetListDropManager::SetDataStorage(mitk::DataStorage
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetDefaultView(const MIDASView& view)
+void QmitkMIDASSingleViewWidgetListDropManager::SetDefaultView(const MIDASLayout& view)
 {
   m_DefaultView = view;
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASView QmitkMIDASSingleViewWidgetListDropManager::GetDefaultView() const
+MIDASLayout QmitkMIDASSingleViewWidgetListDropManager::GetDefaultView() const
 {
   return m_DefaultView;
 }
@@ -113,8 +113,8 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
     MITK_ERROR << "Calling QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped with an invalid window. Surely a bug?" << std::endl;
   }
 
-  MIDASView defaultView = MIDAS_VIEW_CORONAL;
-  MIDASView view = GetAsAcquiredView(defaultView, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
+  MIDASLayout defaultView = MIDAS_LAYOUT_CORONAL;
+  MIDASLayout view = GetAsAcquiredView(defaultView, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
 
   for (unsigned int i = 0; i < nodes.size(); i++)
   {
@@ -231,18 +231,18 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
     MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
     switch(view)
     {
-    case MIDAS_VIEW_AXIAL:
+    case MIDAS_LAYOUT_AXIAL:
       orientation = MIDAS_ORIENTATION_AXIAL;
       break;
-    case MIDAS_VIEW_SAGITTAL:
+    case MIDAS_LAYOUT_SAGITTAL:
       orientation = MIDAS_ORIENTATION_SAGITTAL;
       break;
-    case MIDAS_VIEW_CORONAL:
+    case MIDAS_LAYOUT_CORONAL:
       orientation = MIDAS_ORIENTATION_CORONAL;
       break;
     default:
       orientation = MIDAS_ORIENTATION_AXIAL;
-      view = MIDAS_VIEW_AXIAL;
+      view = MIDAS_LAYOUT_AXIAL;
       break;
     }
 

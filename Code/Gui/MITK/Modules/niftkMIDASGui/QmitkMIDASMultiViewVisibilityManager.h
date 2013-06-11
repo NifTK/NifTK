@@ -91,10 +91,10 @@ public:
   MIDASDefaultInterpolationType GetDefaultInterpolationType() const { return m_DefaultInterpolation; }
 
   /// \brief Sets the default view for when images are dropped into a render window.
-  void SetDefaultViewType(MIDASView view) { m_DefaultView = view; }
+  void SetDefaultViewType(MIDASLayout view) { m_DefaultView = view; }
 
   /// \brief Returns the default view for when images are dropped into a render window.
-  MIDASView GetDefaultViewType() const { return m_DefaultView; }
+  MIDASLayout GetDefaultViewType() const { return m_DefaultView; }
 
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
@@ -152,7 +152,7 @@ private:
   void SetInitialNodeProperties(mitk::DataNode* node);
 
   /// \brief Works out the correct view from the data, and from the preferences.
-  MIDASView GetView(std::vector<mitk::DataNode*> nodes);
+  MIDASLayout GetView(std::vector<mitk::DataNode*> nodes);
 
   /// \brief ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
   template<typename TPixel, unsigned int VImageDimension>
@@ -192,7 +192,7 @@ private:
   MIDASDropType m_DropType;
 
   // Keeps track of the default view, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
-  MIDASView m_DefaultView;
+  MIDASLayout m_DefaultView;
 
   // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   MIDASDefaultInterpolationType m_DefaultInterpolation;

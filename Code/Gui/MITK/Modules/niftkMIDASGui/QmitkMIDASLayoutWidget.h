@@ -46,16 +46,16 @@ public:
   /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
-  /// \brief Gets the current view.
-  MIDASView GetView() const;
+  /// \brief Gets the current layout.
+  MIDASLayout GetLayout() const;
 
-  /// \brief Sets the widget controls to match the supplied view.
-  void SetView(MIDASView view);
+  /// \brief Sets the widget controls to match the supplied layout.
+  void SetLayout(MIDASLayout layout);
 
 signals:
 
-  /// \brief Indicates when the view has changed.
-  void ViewChanged(MIDASView view);
+  /// \brief Indicates when the layout has changed.
+  void LayoutChanged(MIDASLayout layout);
 
 protected slots:
 
@@ -80,11 +80,11 @@ protected slots:
 private:
 
   /// \brief Stores the currently selected window layout.
-  MIDASView m_View;
+  MIDASLayout m_Layout;
 
   /// \brief Stores the multiple window layouts in the same order as the combo box.
-  static MIDASView s_MultiWindowViews[];
-  static int const s_MultiWindowViewNumber;
+  static MIDASLayout s_MultiWindowLayouts[];
+  static int const s_MultiWindowLayoutNumber;
 };
 
 #endif
