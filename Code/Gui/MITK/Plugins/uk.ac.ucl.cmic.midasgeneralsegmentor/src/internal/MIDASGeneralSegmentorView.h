@@ -275,10 +275,6 @@ protected slots:
   /// reference data so you can continue segmenting.
   void OnResetButtonPressed();
 
-  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
-  /// data (seeds, contours, region growing image), and also destroys the current segmentation.
-  void OnCancelButtonPressed();
-
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
   /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
   /// described in this class intro.
@@ -354,6 +350,16 @@ protected:
   virtual void OnContoursChanged();
 
 private:
+  /// \brief Called when the view is closed or the segmentation node is removed from the data
+  /// manager and destroys all working data (seeds, contours, region growing image), and also
+  /// destroys the current segmentation.
+  void DiscardSegmentation();
+
+  /// \brief Stores the initial state of the segmentation so that the Reset button can restore it.
+  void StoreInitialSegmentation();
+
+  /// \brief Restores the initial state of the segmentation after the Reset button was pressed.
+  void RestoreInitialSegmentation();
 
   // Operation constants, used in Undo/Redo framework
   static const mitk::OperationType OP_CHANGE_SLICE;
@@ -431,9 +437,6 @@ private:
       int projectedSliceNumber,
       mitk::ContourSet::Pointer outputContourSet
       );
-
-  /// \brief Clears both images of the working data.
-  void ClearWorkingData();
 
   /// \brief Completely removes the current pipeline.
   void DestroyPipeline();
@@ -888,6 +891,5 @@ private:
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
-
 };
 #endif
