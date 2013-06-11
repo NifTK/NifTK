@@ -94,16 +94,14 @@ void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
 void SurfaceBasedRegistration::PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkCellArray> verts = vtkSmartPointer<vtkCellArray>::New();
   int numberOfPoints = PointsIn->GetSize();
   for ( int i = 0 ; i < numberOfPoints ; i++ )
   {
     mitk::Point3D point = PointsIn->GetPoint(i);
-    vtkIdType id = points->InsertNextPoint(point[0],point[1],point[2]);
-    verts->InsertNextCell(1,&id);
+    points->InsertNextPoint(point[0],point[1],point[2]);
   }
   PolyOut->SetPoints(points);
-  PolyOut->SetVerts(verts);
+
 }
 
 } // end namespace
