@@ -49,6 +49,11 @@ if (BUILD_MESHING)
     )
 endif (BUILD_MESHING)
 
+set(INSTALL_LIBS OFF)
+if(NOT BUILD_GUI)
+  set(INSTALL_LIBS ON)
+endif()
+
 ###############################################################
 # These programs use the new SlicerExecutionModel where
 # we generate the command line parsing using TCLAP
@@ -77,9 +82,12 @@ if(SlicerExecutionModel_FOUND)
 
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
   
-  foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})    
-    NIFTK_CONFIGURE_AND_BUILD_CLI(
-      NAME ${APP} 
+  foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
+    NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+      NAME ${APP}
+      SLICER ON
+      SCRIPT ON
+      INSTALL_LIBS ${INSTALL_LIBS}
       TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
     )
   endforeach()
@@ -98,8 +106,11 @@ if(SlicerExecutionModel_FOUND)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     
     foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
-      NIFTK_CONFIGURE_AND_BUILD_CLI(
-        NAME ${APP} 
+      NIFTK_CREATE_COMMAND_LINE_APPLICATION(      
+        NAME ${APP}
+        SLICER ON
+        SCRIPT ON
+        INSTALL_LIBS ${INSTALL_LIBS}
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
     endforeach()
@@ -134,8 +145,11 @@ if(SlicerExecutionModel_FOUND)
       )
       
       foreach(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
-        NIFTK_CONFIGURE_AND_BUILD_CLI(
-          NAME ${APP} 
+        NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+          NAME ${APP}
+          SLICER ON
+          SCRIPT ON
+          INSTALL_LIBS ${INSTALL_LIBS}
           TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
         )
       endforeach()
@@ -156,15 +170,13 @@ set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
   )
 
 foreach(APP ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
-  
-  if(WIN32) 
-    configure_file(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat @ONLY )
-    NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.bat)
-  else(WIN32)
-    configure_file(${CMAKE_SOURCE_DIR}/CMake/CLI.sh.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh @ONLY )
-    NIFTK_INSTALL_CLI(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${APP}.sh)
-  endif(WIN32)
- 
+  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+    NAME ${APP}
+    SLICER OFF
+    SCRIPT ON
+    INSTALL_LIBS ${INSTALL_LIBS}
+    TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
+  )
 endforeach()
 
 
@@ -272,9 +284,13 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
 )
 
 foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
-  add_executable(${APP} ${APP}.cxx )
-  target_link_libraries(${APP} ${NIFTK_APPLICATION_LINK_LIBRARIES} )
-  MITK_INSTALL(TARGETS ${APP})
+  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+    NAME ${APP}
+    SLICER OFF
+    SCRIPT OFF
+    INSTALL_LIBS ${INSTALL_LIBS}
+    TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
+  )
 endforeach()
   
 ##############################################################
@@ -299,18 +315,26 @@ if(VTK_FOUND)
   )
 
   foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
-    add_executable(${APP} ${APP}.cxx )
-    target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} )
-    MITK_INSTALL(TARGETS ${APP})
+    NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+      NAME ${APP}
+      SLICER OFF
+      SCRIPT OFF
+      INSTALL_LIBS ${INSTALL_LIBS}
+      TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
+    )
   endforeach()
 
   if (BUILD_MESHING) 
     if (NOT WIN32) 
       set(CMAKE_CXX_FLAGS "-L${CGAL_DIR}/..")
     endif (NOT WIN32) 
-    add_executable(niftkMeshFromLabels niftkMeshFromLabels.cxx)
-    target_link_libraries(niftkMeshFromLabels ${NIFTK_MESHING_APPLICATION_LIBRARIES})
-    MITK_INSTALL(TARGETS niftkMeshFromLabels)
+    NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+      NAME niftkMeshFromLabels
+      SLICER OFF
+      SCRIPT OFF
+      INSTALL_LIBS ${INSTALL_LIBS}
+      TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
+    )
   endif (BUILD_MESHING) 
 
 endif()
@@ -330,9 +354,13 @@ if(VTK_FOUND)
     )
 
     foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
-      add_executable(${APP} ${APP}.cxx )
-      target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES} )
-      MITK_INSTALL(TARGETS ${APP})
+      NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+        NAME ${APP}
+        SLICER OFF
+        SCRIPT OFF
+        INSTALL_LIBS ${INSTALL_LIBS}
+        TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES}
+      )
     endforeach()
   
   endif(QT_FOUND)

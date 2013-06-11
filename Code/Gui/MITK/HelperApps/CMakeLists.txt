@@ -85,9 +85,12 @@ if(SlicerExecutionModel_FOUND)
     )
   endif()  
 
-  foreach(APP ${SLICER_HELPER_APPS})    
-    NIFTK_CONFIGURE_AND_BUILD_CLI(
-      NAME ${APP} 
+  foreach(APP ${SLICER_HELPER_APPS})
+    NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+      NAME ${APP}
+      SLICER ON
+      SCRIPT ON
+      INSTALL_LIBS OFF
       TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
     )
   endforeach()
