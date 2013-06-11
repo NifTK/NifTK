@@ -98,8 +98,10 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_PreviousMagnification(0.0)
 , m_SingleWindowLayout(MIDAS_VIEW_CORONAL)
 , m_MultiWindowLayout(MIDAS_VIEW_ORTHO)
+, m_ViewKeyPressStateMachine(0)
 {
   assert(visibilityManager);
 
@@ -311,6 +313,10 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
    * Now initialise stuff.
    ************************************/
 
+  // Create/Connect the state machine
+  m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
+  mitk::GlobalInteraction::GetInstance()->AddListener(m_ViewKeyPressStateMachine);
+
   // Default to dropping into single window.
   m_DropSingleRadioButton->setChecked(true);
   m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
@@ -379,7 +385,9 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetBackgroundColor(m_BackgroundColour);
   widget->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
   widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
-  widget->SetDisplayInteractionEnabled(true);
+  widget->SetDisplayInteractionsEnabled(true);
+  widget->SetPanningBound(true);
+  widget->SetZoomingBound(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
@@ -725,6 +733,11 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
       QmitkMIDASSingleViewWidget *view = this->CreateSingleViewWidget();
       view->hide();
 
+      std::vector<QmitkRenderWindow*> renderWindows = view->GetRenderWindows();
+      for (unsigned j = 0; j < renderWindows.size(); ++j)
+      {
+        m_ViewKeyPressStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
+      }
       m_SingleViewWidgets.push_back(view);
       m_VisibilityManager->RegisterWidget(view);
       m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfViews + i, false);
@@ -737,6 +750,11 @@ void QmitkMIDASMultiViewWidget::SetLayoutSize(int numberOfRows, int numberOfColu
 
     for (int i = requiredNumberOfViews; i < m_SingleViewWidgets.size(); i++)
     {
+      std::vector<QmitkRenderWindow*> renderWindows = m_SingleViewWidgets[i]->GetRenderWindows();
+      for (unsigned j = 0; j < renderWindows.size(); ++j)
+      {
+        m_ViewKeyPressStateMachine->RemoveRenderer(renderWindows[j]->GetRenderer());
+      }
       delete m_SingleViewWidgets[i];
     }
 
@@ -1125,15 +1143,15 @@ void QmitkMIDASMultiViewWidget::SetFocus()
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer::ConstPointer baseRenderer = focusManager->GetFocused();
+  mitk::BaseRenderer* renderer = focusManager->GetFocused();
 
   int selectedViewIndex = -1;
   vtkRenderWindow* focusedVtkRenderWindow = NULL;
   QmitkRenderWindow* focusedRenderWindow = NULL;
 
-  if (baseRenderer.IsNotNull())
+  if (renderer)
   {
-    focusedVtkRenderWindow = baseRenderer->GetRenderWindow();
+    focusedVtkRenderWindow = renderer->GetRenderWindow();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       QmitkRenderWindow* renderWindow = m_SingleViewWidgets[i]->GetRenderWindow(focusedVtkRenderWindow);

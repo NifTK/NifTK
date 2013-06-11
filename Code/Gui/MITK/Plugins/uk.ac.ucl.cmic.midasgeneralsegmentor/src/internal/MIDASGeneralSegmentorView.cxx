@@ -32,6 +32,7 @@
 #include <mitkSegTool2D.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkPointSet.h>
+#include <mitkPointUtils.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkTool.h>
 #include <mitkNodePredicateDataType.h>
@@ -640,11 +641,7 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints)
 {
-  outputPoints.Clear();
-  for (int i = 0; i < inputPoints.GetSize(); i++)
-  {
-    outputPoints.InsertPoint(i, inputPoints.GetPoint(i));
-  }
+  mitk::CopyPointSets(inputPoints, outputPoints);
 }
 
 
@@ -2743,6 +2740,30 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
         }
       }
     }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+{
+  if (!this->HaveInitialisedWorkingData())
+  {
+    return;
+  }
+
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(0);
+  assert(segmentationNode);
+
+  if (segmentationNode.GetPointer() == removedNode)
+  {
+    this->DestroyPipeline();
+    this->RemoveWorkingData();
+//    this->GetDataStorage()->Remove(segmentationNode);
+    this->EnableSegmentationWidgets(false);
+    this->SetReferenceImageSelected();
+    this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
 }
 

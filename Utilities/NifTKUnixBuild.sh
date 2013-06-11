@@ -17,6 +17,9 @@
 # If the NIFTK_INSTALL_PREFIX variable is defined then a 'make install'
 # command is executed as well.
 
+# If the NIFTK_CTEST_TYPE variable is defined then it determines the type of test
+# to run. Valid values are "Nightly", "Continuous" and "Experimental".
+
 function run_command()
 {
   echo "Running \"$1\""
@@ -85,20 +88,27 @@ if [ "${GCC4}" = "gcc44" ]; then
   GCC4_ARG="-DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44"
 fi
 
-if [ "${MEMCHECK}" = "val" ]; then
-  BUILD_COMMAND="make clean ; ctest -D NightlyStart ; ctest -D NightlyUpdate ; ctest -D NightlyConfigure ; ctest -D NightlyBuild ; ctest -D NightlyTest ; ctest -D NightlyCoverage ; ctest -D NightlyMemCheck ; ctest -D NightlySubmit"
+if [ ! -z "${NIFTK_CTEST_TYPE}" ]
+then
+  CTestType=${NIFTK_CTEST_TYPE}
 else
-  BUILD_COMMAND="make clean ; ctest -D Nightly"
-fi  
+  CTestType="Nightly"
+fi
 
-if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
+if [ "${MEMCHECK}" = "val" ]; then
+  BUILD_COMMAND="make clean ; ctest -D ${CTestType}Start ; ctest -D ${CTestType}Update ; ctest -D ${CTestType}Configure ; ctest -D ${CTestType}Build ; ctest -D ${CTestType}Test ; ctest -D ${CTestType}Coverage ; ctest -D ${CTestType}MemCheck ; ctest -D ${CTestType}Submit"
+else
+  BUILD_COMMAND="make clean ; ctest -D ${CTestType}"
+fi
+
+if [ ! -z "${NIFTK_INSTALL_PREFIX}" ]
 then
   NIFTK_INSTALL_OPTIONS="-DCMAKE_INSTALL_PREFIX=${NIFTK_INSTALL_PREFIX}"
 fi
 
 run_command "git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK ${SOURCE_DIR}"
 run_command "cd ${SOURCE_DIR}"
-run_command "git checkout -b ${BRANCH} origin/${BRANCH}"
+run_command "git checkout ${BRANCH}"
 run_command "cd .."
 run_command "mkdir ${BINARY_DIR}"
 run_command "cd ${BINARY_DIR}"
@@ -111,7 +121,7 @@ if [ "${TYPE}" = "Release" ]; then
   run_command "make package"
 fi
 
-if [ ! -z ${NIFTK_INSTALL_PREFIX} ]
+if [ ! -z "${NIFTK_INSTALL_PREFIX}" ]
 then
   run_command "make install"
 fi

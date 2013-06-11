@@ -1,7 +1,7 @@
 /**
 \bundlemainpage{uk.ac.ucl.cmic.imagestatistics} The Image Statistics View
 
-\image html ImageStatisticsIcon.png "The Icon for Image Statistics View"
+\image html UndistortIcon.png "The Icon for Image Statistics View"
 
 \addindex Statistics - Mean (average) of intensity
 \addindex Statistics - Minimum intensity

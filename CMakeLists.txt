@@ -18,7 +18,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 06 CACHE STRING "Month version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
 
@@ -208,7 +208,7 @@ set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_VERSION_VTK "5.8.0" CACHE STRING "Version of VTK" FORCE)
+set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
@@ -283,6 +283,7 @@ mark_as_advanced(NIFTK_VERSION_DCMTK)
 mark_as_advanced(NIFTK_VERSION_ITK)
 mark_as_advanced(NIFTK_VERSION_VTK)
 mark_as_advanced(NIFTK_VERSION_CTK)
+mark_as_advanced(NIFTK_VERSION_OPENCV)
 mark_as_advanced(NIFTK_VERSION_MITK)
 mark_as_advanced(NIFTK_VERSION_curl)
 mark_as_advanced(NIFTK_VERSION_NIFTYLINK)
@@ -302,6 +303,7 @@ mark_as_advanced(NIFTK_LOCATION_DCMTK)
 mark_as_advanced(NIFTK_LOCATION_ITK)
 mark_as_advanced(NIFTK_LOCATION_VTK)
 mark_as_advanced(NIFTK_LOCATION_CTK)
+mark_as_advanced(NIFTK_LOCATION_OPENCV)
 mark_as_advanced(NIFTK_LOCATION_MITK)
 mark_as_advanced(NIFTK_LOCATION_curl)
 mark_as_advanced(NIFTK_LOCATION_NIFTYLINK_TARBALL)
@@ -389,10 +391,23 @@ endif()
 # Set these compiler flags early, so it can be applied to all dependencies.
 ###########################################################################
 
-set(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags")
+set(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for NifTK only")
 mark_as_advanced(NIFTK_ADDITIONAL_C_FLAGS)
-set(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags")
+set(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for NifTK only")
 mark_as_advanced(NIFTK_ADDITIONAL_CXX_FLAGS)
+
+set(MITK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for MITK only")
+mark_as_advanced(MITK_ADDITIONAL_C_FLAGS)
+set(MITK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for MITK only")
+mark_as_advanced(MITK_ADDITIONAL_CXX_FLAGS)
+set(CTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for CTK only")
+mark_as_advanced(CTK_ADDITIONAL_C_FLAGS)
+set(CTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for CTK only")
+mark_as_advanced(CTK_ADDITIONAL_CXX_FLAGS)
+set(OPENCV_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for OpenCV only")
+mark_as_advanced(OPENCV_ADDITIONAL_C_FLAGS)
+set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV only")
+mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -447,8 +462,7 @@ if(BUILD_GUI)
       set(VTK_QT_ARGS
         -DDESIRED_QT_VERSION:STRING=4
         -DVTK_USE_GUISUPPORT:BOOL=ON
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=ON
-        -DVTK_USE_QVTK:BOOL=ON
+        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
         -DVTK_USE_QT:BOOL=ON
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
        )

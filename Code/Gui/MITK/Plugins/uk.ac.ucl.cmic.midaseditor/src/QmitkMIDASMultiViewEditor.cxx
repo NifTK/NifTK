@@ -38,7 +38,7 @@ class QmitkMIDASMultiViewEditorPrivate
 public:
   QmitkMIDASMultiViewEditorPrivate();
   ~QmitkMIDASMultiViewEditorPrivate();
-  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
+
   QmitkMIDASMultiViewWidget* m_MIDASMultiViewWidget;
   QmitkMIDASMultiViewVisibilityManager* m_MidasMultiViewVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
@@ -120,8 +120,7 @@ private:
 
 //-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPrivate::QmitkMIDASMultiViewEditorPrivate()
-: m_ViewKeyPressStateMachine(0)
-, m_MIDASMultiViewWidget(0)
+: m_MIDASMultiViewWidget(0)
 , m_MidasMultiViewVisibilityManager(0)
 , m_RenderingManager(0)
 , m_PartListener(new QmitkMIDASMultiViewEditorPartListener(this))
@@ -231,10 +230,6 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 
     prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkMIDASMultiViewEditor, const berry::IBerryPreferences*>( this, &QmitkMIDASMultiViewEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
-
-    // Create/Connect the state machine
-    d->m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", d->m_MIDASMultiViewWidget);
-    mitk::GlobalInteraction::GetInstance()->AddListener( d->m_ViewKeyPressStateMachine );
   }
 }
 

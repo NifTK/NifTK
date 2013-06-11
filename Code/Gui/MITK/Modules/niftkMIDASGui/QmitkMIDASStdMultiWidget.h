@@ -69,6 +69,10 @@ class SliceNavigationController;
  * etc.
  * </pre>
  *
+ * In contrast with the original MIDAS, in NiftyMIDAS the zooming is continuous, so
+ * the rule above is extended to real numbers as well. If the image has anisotropic pixels then
+ * the size of the longest side of the voxels is used for the calculation.
+ *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
  * \sa QmitkMIDASMultiViewWidget
@@ -117,18 +121,12 @@ public:
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
   bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief Set the view (layout), as the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  ///
-  /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
+  /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
-
-  /// \brief Called by the other SetMIDASView method to actually switch QmitkRenderWindows, and in a Qt sense, rebuild the Qt layouts.
-  void SetMIDASView(MIDASView view, bool rebuildLayout);
-
-  /// \brief Called by SetMIDASView(MIDASView view, mitk::Geometry3D* geometry) to actually initialise the Geometry in the QmitkStdMultiWidget base class.
   void SetGeometry(mitk::Geometry3D* geometry);
+
+  /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
+  void SetMIDASView(MIDASView view);
 
   /// \brief Get the view (layout), where the MIDAS functionality is only interested in
   /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
@@ -267,11 +265,23 @@ public:
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
-  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
-  void SetDisplayInteractionEnabled(bool enabled);
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
-  bool IsDisplayInteractionEnabled() const;
+  /// \brief Gets the flag controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
+
+  /// \brief Sets the flag that controls whether the panning is bound between the 2D render windows.
+  void SetPanningBound(bool bound);
+
+  /// \brief Gets the flag controls whether the panning is bound between the 2D render windows.
+  bool IsPanningBound() const;
+
+  /// \brief Sets the flag that controls whether the zooming is bound between the 2D render windows.
+  void SetZoomingBound(bool bound);
+
+  /// \brief Gets the flag controls whether the zooming is bound between the 2D render windows.
+  bool IsZoomingBound() const;
 
 signals:
 
@@ -389,11 +399,17 @@ private:
   /// \brief Voxel size in millimetres.
   mitk::Vector3D        m_MmPerVx;
 
+  /// The axis along which the dimension of the voxel is the biggest.
+  int                   m_LongestSideOfVoxels;
+
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
 
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
+
+  bool m_PanningBound;
+  bool m_ZoomingBound;
 
   friend class DisplayGeometryModificationCommand;
 

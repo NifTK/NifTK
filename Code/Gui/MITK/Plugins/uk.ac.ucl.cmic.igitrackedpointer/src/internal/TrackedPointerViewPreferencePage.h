@@ -21,6 +21,7 @@
 
 class QWidget;
 class QCheckBox;
+class ctkPathLineEdit;
 
 /**
  * \class TrackedPointerViewPreferencePage
@@ -39,6 +40,11 @@ public:
    * \brief Stores the name of the preferences node.
    */
   static const std::string PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the calibration file.
+   */
+  static const std::string CALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that stores the boolean of whether to update the ortho-view focus point.
@@ -74,9 +80,10 @@ private slots:
 
 private:
 
-  QWidget        *m_MainControl;
-  QCheckBox      *m_UpdateViewCoordinate;
-  bool            m_Initializing;
+  QWidget         *m_MainControl;
+  ctkPathLineEdit *m_CalibrationFileName;
+  QCheckBox       *m_UpdateViewCoordinate;
+  bool             m_Initializing;
 
   berry::IPreferences::Pointer m_TrackedPointerViewPreferencesNode;
 };

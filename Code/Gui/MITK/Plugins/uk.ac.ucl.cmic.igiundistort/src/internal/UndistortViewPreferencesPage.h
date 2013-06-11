@@ -17,13 +17,14 @@
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
+#include "ui_UndistortViewPreferencePage.h"
 
 class QWidget;
 class QCheckBox;
 class QSpinBox;
 
 
-class UndistortViewPreferencesPage : public QObject, public berry::IQtPreferencePage
+class UndistortViewPreferencesPage : public QObject, public berry::IQtPreferencePage, public Ui::UndistortViewPreferencePageForm
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)

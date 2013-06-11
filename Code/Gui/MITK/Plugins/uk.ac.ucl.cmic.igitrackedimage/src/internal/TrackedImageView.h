@@ -19,6 +19,7 @@
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedImageView.h"
 #include <vtkSmartPointer.h>
+#include <mitkRenderingManager.h>
 
 class vtkMatrix4x4;
 
@@ -74,9 +75,9 @@ private slots:
   void OnUpdate(const ctkEvent& event);
 
   /**
-   * \brief When the user selects a new image to probe matrix, we load the transformation.
+   * \brief When the image selection is changed, we re-init the views for the tracked image.
    */
-  void OnImageToProbeChanged();
+  void OnSelectionChanged(const mitk::DataNode*);
 
 private:
 
@@ -98,8 +99,10 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
-  std::string m_ImageToProbeFileName;
+  vtkSmartPointer<vtkMatrix4x4>   m_ImageToProbeTransform;
+  std::string                     m_ImageToProbeFileName;
+  mitk::DataNode::Pointer         m_PlaneNode;
+  mitk::RenderingManager::Pointer m_RenderingManager;
 };
 
 #endif // TrackedImageView_h

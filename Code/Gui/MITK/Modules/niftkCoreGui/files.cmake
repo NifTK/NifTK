@@ -16,22 +16,21 @@ set(CPP_FILES
   LookupTables/LookupTableContainer.cxx
   LookupTables/LookupTableSaxHandler.cxx
   LookupTables/LookupTableManager.cxx
-  Dialogs/QmitkHelpAboutDialog.cxx
-  QmitkSingleWidget.cxx
+  QmitkDataStorageCheckableComboBox.cxx
+  QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
-  QmitkBitmapOverlay.cxx
 )
 
 set(MOC_H_FILES
   Events/QmitkPaintEventEater.h
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
-  Dialogs/QmitkHelpAboutDialog.h
-  QmitkSingleWidget.h
+  QmitkDataStorageCheckableComboBox.h
+  QmitkHelpAboutDialog.h
 )
 
 set(UI_FILES
-  Resources/UI/QmitkHelpAboutDialog.ui
+  QmitkHelpAboutDialog.ui
 )
 
 set(QRC_FILES

@@ -23,14 +23,15 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.gui.qt.niftyview
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.niftyseg
-  uk.ac.ucl.cmic.singlewidgeteditor
   uk.ac.ucl.cmic.igidatasources
+  uk.ac.ucl.cmic.igioverlayeditor
   uk.ac.ucl.cmic.igipointreg
   uk.ac.ucl.cmic.igisurfacerecon
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igitagtracker
   uk.ac.ucl.cmic.igitrackedimage
   uk.ac.ucl.cmic.igitrackedpointer
+  uk.ac.ucl.cmic.igiundistort
 )
 
 NIFTK_CREATE_APPLICATION(
