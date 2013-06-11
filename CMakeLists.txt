@@ -344,12 +344,12 @@ set(CMAKE_MODULE_PATH
 ######################################################################
 include(mitkMacroEmptyExternalProject)
 include(mitkFunctionGetVersion)
-include(niftkMacroCreateApplication)
-include(niftkMacroBuildCLI)
-include(niftkMacroInstallCLI)
-include(niftkMacroConfigureAndBuildCLI)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroGetGitBranch)
+include(niftkMacroBuildCLI)
+include(niftkMacroInstallCLIScript)
+include(niftkMacroCreateCommandLineApplication)
+include(niftkMacroCreateGuiApplication)
 
 ######################################################################
 # Test for some required system information. This came from old
