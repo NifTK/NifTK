@@ -952,6 +952,36 @@ set(NIFTK_INSTALL_MATLAB_DIR "matlab")
 set(NIFTK_INSTALL_DOC_DIR "doc")
 set(NIFTK_INSTALL_LIB_DIR "bin")
 
+
+######################################################################
+# Setting build name based on local system details
+######################################################################
+
+if(CMAKE_GENERATOR MATCHES Make AND NOT (CMAKE_GENERATOR MATCHES NMake) )
+
+  find_program(UNAME NAMES uname)
+  macro(getuname name flag)
+    exec_program("${UNAME}" ARGS "${flag}" OUTPUT_VARIABLE "${name}")
+  endmacro(getuname)
+
+  getuname(osname -s)
+  getuname(cpu    -m)
+
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+
+  set(CTBN "${osname}-${cpu}-gcc-${GCC_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+
+else()
+
+  set(CTBN "${CMAKE_GENERATOR}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+
+endif()
+
+string(REPLACE "\n" "" CTBN ${CTBN})
+message(STATUS "Buildname: ${CTBN}")
+set(BUILDNAME ${CTBN} CACHE STRING "${CTBN}")
+set(CTEST_BUILD_NAME ${CTBN} CACHE STRING "${CTBN}")
+
 ######################################################################
 # Configure files that need variables substituting. Note that
 # we 'Configure' them, which copies them to the CMAKE_BINARY_DIR
