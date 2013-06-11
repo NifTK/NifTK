@@ -227,14 +227,14 @@ protected slots:
   virtual void OnToolSelected(int id);
 
   /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
-  void OnSeePriorCheckBoxToggled(bool b);
+  void OnSeePriorCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
-  void OnSeeNextCheckBoxToggled(bool b);
+  void OnSeeNextCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called from the "view" checkbox so that when b=true, we just
-  /// see the image, when b=false, we additionally see all the contours and reference data.
-  void OnSeeImageCheckBoxPressed(bool b);
+  /// \brief Qt slot called from the "view" checkbox so that when the checkbox is checked, we just
+  /// see the image, when it is not, we additionally see all the contours and reference data.
+  void OnSeeImageCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
@@ -286,15 +286,11 @@ protected slots:
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
   /// the thresholding widget section on and calls MIDASGeneralSegmentorView::UpdateRegionGrowing.
-  void OnThresholdCheckBoxToggled(bool b);
+  void OnThresholdingCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called when the lower slider is moved, calls
+  /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
   /// MIDASGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
-  void OnLowerThresholdValueChanged(double d);
-
-  /// \brief Qt slot called when the upper slider is moved and calls
-  /// MIDASGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
-  void OnUpperThresholdValueChanged(double d);
+  void OnThresholdValueChanged();
 
   /// \brief Qt slot called to effect a change of slice, which means accepting
   /// the current segmentation, and moving to the prior/next slice, see class intro.
@@ -319,7 +315,7 @@ protected:
   virtual void CreateConnections();
 
   /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
-  virtual void EnableSegmentationWidgets(bool b);
+  virtual void EnableSegmentationWidgets(bool checked);
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
   /// scale parent, and several children as described in the class introduction.
@@ -369,7 +365,7 @@ private:
   static const mitk::OperationType OP_RETAIN_MARKS;
 
   /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
-  bool HaveInitialisedWorkingData();
+  bool HasInitialisedWorkingData();
 
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
