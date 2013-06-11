@@ -20,14 +20,11 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <property name="horizontalSpacing">
-    <number>3</number>
-   </property>
-   <property name="verticalSpacing">
-    <number>6</number>
-   </property>
    <property name="margin">
     <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>5</number>
    </property>
    <item row="1" column="1">
     <widget class="QLabel" name="m_SegmentationImageNameLabel">
