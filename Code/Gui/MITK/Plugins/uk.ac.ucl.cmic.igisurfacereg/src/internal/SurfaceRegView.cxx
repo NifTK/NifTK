@@ -156,6 +156,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   {
     registration->Update(fixedPoints, movingSurface, m_Matrix);
   }
+  else
   {
     registration->Update(fixedSurface, movingSurface, m_Matrix);
   }
