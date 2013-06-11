@@ -29,7 +29,7 @@ vtkStandardNewMacro(vtkOpenGLMatrixDrivenCamera);
 //----------------------------------------------------------------------------
 vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 : m_IntrinsicMatrix(NULL)
-, DefaultBehaviour(true)
+, UseCalibratedCamera(false)
 , m_ImageWidth(256)
 , m_ImageHeight(256)
 , m_WindowWidth(256)
@@ -79,7 +79,7 @@ void vtkOpenGLMatrixDrivenCamera::SetIntrinsicParameters(const double& fx, const
 void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
 {
   // By default we do behaviour in base class.
-  if (this->DefaultBehaviour)
+  if (!this->UseCalibratedCamera)
   {
     vtkOpenGLCamera::Render(ren);
     return;
@@ -172,7 +172,7 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
 void vtkOpenGLMatrixDrivenCamera::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
-  os << indent << "vtkOpenGLMatrixDrivenCamera:DefaultBehaviour=" << DefaultBehaviour << std::endl;
+  os << indent << "vtkOpenGLMatrixDrivenCamera:UseCalibratedCamera=" << UseCalibratedCamera << std::endl;
   os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageWidth=" << m_ImageWidth << std::endl;
   os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageHeight=" << m_ImageHeight << std::endl;
   os << indent << "vtkOpenGLMatrixDrivenCamera:m_WindowWidth=" << m_WindowWidth << std::endl;

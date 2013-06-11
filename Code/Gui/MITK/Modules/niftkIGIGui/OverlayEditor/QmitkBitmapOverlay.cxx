@@ -26,6 +26,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkImageMapper.h>
 #include <vtkCamera.h>
 #include <vtkImageData.h>
+#include <vtkFunctions.h>
 
 //-----------------------------------------------------------------------------
 QmitkBitmapOverlay::QmitkBitmapOverlay()
@@ -321,14 +322,7 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::SetupCamera()
 {
-  vtkCamera* backCamera = m_BackRenderer->GetActiveCamera();
-  vtkCamera* frontCamera = m_FrontRenderer->GetActiveCamera();
-
-  backCamera->SetClippingRange(1,100000);
-  frontCamera->SetClippingRange(1,100000);
-
   vtkImageData *image = m_BackActor->GetInput();
-
   if (image == NULL)
   {
     // This is ok, as we may get a resize event, and hence
@@ -342,68 +336,40 @@ void QmitkBitmapOverlay::SetupCamera()
     return;
   }
 
+  vtkCamera* backCamera = m_BackRenderer->GetActiveCamera();
+  if (backCamera == NULL)
+  {
+    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the backCamera is NULL" << std::endl;
+    return;
+  }
+
+  vtkCamera* frontCamera = m_FrontRenderer->GetActiveCamera();
+  if (frontCamera == NULL)
+  {
+    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the frontCamera is NULL" << std::endl;
+    return;
+  }
+
+  int    windowSize[2];
+  int    imageSize[3];
   double spacing[3];
   double origin[3];
-  int    dimensions[3];
+  double clippingRange[2];
+  double xAxis[3] = {1, 0, 0};
+  double yAxis[3] = {0, 1, 0};
 
-  image->GetSpacing(spacing);
+  clippingRange[0] = 1;
+  clippingRange[1] = 100000;
+
+  image->GetDimensions(imageSize);
   image->GetOrigin(origin);
-  image->GetDimensions(dimensions);
+  image->GetSpacing(spacing);
 
-  double focalPoint[3];
-  double position[3];
+  windowSize[0] = m_RenderWindow->GetSize()[0];
+  windowSize[1] = m_RenderWindow->GetSize()[1];
 
-  for ( unsigned int cc = 0; cc < 3; ++cc)
-  {
-    focalPoint[cc] = origin[cc] + ( spacing[cc] * (dimensions[cc] - 1) ) / 2.0;
-    position[cc]   = focalPoint[cc];
-  }
-
-  int idx = 2;
-  const double distanceToFocalPoint = 1000;
-
-  if ( m_FlipViewUp )
-  {
-    backCamera->SetViewUp (0,-1,0);
-    frontCamera->SetViewUp (0,-1,0);
-    position[idx] = -distanceToFocalPoint;
-  }
-  else
-  {
-    backCamera->SetViewUp (0,1,0);
-    frontCamera->SetViewUp (0,1,0);
-    position[idx] = distanceToFocalPoint;
-  }
-
-  backCamera->ParallelProjectionOn();
-  backCamera->SetPosition (position);
-  backCamera->SetFocalPoint (focalPoint);
-
-  frontCamera->ParallelProjectionOn();
-  frontCamera->SetPosition (position);
-  frontCamera->SetFocalPoint (focalPoint);
-
-  int windowWidth = m_RenderWindow->GetSize()[0];
-  int windowHeight = m_RenderWindow->GetSize()[1];
-
-  double imageWidth = dimensions[0]*spacing[0];
-  double imageHeight = dimensions[1]*spacing[1];
-
-  double widthRatio = imageWidth / windowWidth;
-  double heightRatio = imageHeight / windowHeight;
-
-  double scale = 1;
-  if (widthRatio > heightRatio)
-  {
-    scale = 0.5*imageWidth*((double)windowHeight/(double)windowWidth);
-  }
-  else
-  {
-    scale = 0.5*imageHeight;
-  }
-
-  backCamera->SetParallelScale( scale );
-  frontCamera->SetParallelScale( scale );
+  SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *backCamera);
+  SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *frontCamera);
 
   this->Modified();
 }

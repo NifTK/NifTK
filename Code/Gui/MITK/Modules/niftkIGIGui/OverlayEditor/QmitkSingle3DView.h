@@ -135,6 +135,21 @@ public:
   void SetTrackingCalibrationFileName(const std::string& fileName);
 
   /**
+   * \brief Sets whether or not we are doing camera tracking mode.
+   *
+   * For Video work, we set this to true, and the video image in expected
+   * to have the camera intrinsics attached as a property. In addition, the camera
+   * position is transformed using the combo box. The end result is that the
+   * VTK objects should overlay the displayed video image according to a calibrated
+   * camera projection.
+   *
+   * For ultrasound work, we set this to false. In this mode, the image is simply
+   * presented, and a parallel projection mode is used to render the VTK objects
+   * on top of the image.
+   */
+  void SetCameraTrackingMode(const bool& isCameraTracking);
+
+  /**
    * \brief Called from QmitkIGIOverlayEditor to indicate that transformations should all be updated.
    */
   void Update();
@@ -145,6 +160,42 @@ protected:
    * \brief Re-implemented so we can tell QmitkBitmapOverlay the display size has changed.
    */
   virtual void resizeEvent(QResizeEvent* event);
+
+private:
+
+  /**
+   * \brief To make sure we don't display the tracked image view.
+   * ToDo: Need to design this bit better.
+   */
+  void RemoveTrackedImageView();
+
+  /**
+   * \brief Used to move the camera based on a tracking transformation.
+   *
+   * In addition, we also have a fallback position. If the camera calibration
+   * information is not found, we switch the camera to be a parallel projection,
+   * based on the size of the image, but still move the camera when a tracking
+   * transformation and calibration transformation are available.
+   */
+  void UpdateCameraViaTrackingTransformation();
+
+  /**
+   * \brief Used to move the camera based on an image position and orientation,
+   * such as might occur if you were using a tracked ultrasound image.
+   *
+   * In this case, we work out from the image size, and effective parallel projection.
+   */
+  void UpdateCameraToTrackImage();
+
+  /**
+   * \brief Utility method to deregister data storage listeners.
+   */
+  void DeRegisterDataStorageListeners();
+
+  /**
+   * \brief Called when a DataStorage Node Removed Event was emitted.
+   */
+  void NodeRemoved(const mitk::DataNode* node);
 
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
@@ -157,6 +208,12 @@ protected:
   std::string                                   m_TrackingCalibrationFileName;
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
+  mitk::Image::Pointer                          m_Image;
+  mitk::DataNode::Pointer                       m_ImageNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
+  bool                                          m_IsCameraTracking;
+  bool                                          m_IsCalibrated;
+  double                                        m_ZNear;
+  double                                        m_ZFar;
 };
 #endif /* QmitkSingle3DView */

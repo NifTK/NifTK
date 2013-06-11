@@ -20,7 +20,7 @@
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QSpinBox>
-
+#include "ui_UndistortViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
@@ -62,6 +62,7 @@ void UndistortViewPreferencesPage::Init(berry::IWorkbench::Pointer )
 
 void UndistortViewPreferencesPage::CreateQtControl(QWidget* parent)
 {
+  setupUi(parent);
 #if 0
   berry::IPreferencesService::Pointer prefService
     = berry::Platform::GetServiceRegistry()
@@ -93,7 +94,7 @@ void UndistortViewPreferencesPage::CreateQtControl(QWidget* parent)
 
 QWidget* UndistortViewPreferencesPage::GetQtControl() const
 {
-  return 0;//m_MainControl;
+  return UndistortViewPreferencePageWidget;
 }
 
 bool UndistortViewPreferencesPage::PerformOk()

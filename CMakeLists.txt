@@ -391,10 +391,23 @@ endif()
 # Set these compiler flags early, so it can be applied to all dependencies.
 ###########################################################################
 
-set(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags")
+set(NIFTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for NifTK only")
 mark_as_advanced(NIFTK_ADDITIONAL_C_FLAGS)
-set(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags")
+set(NIFTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for NifTK only")
 mark_as_advanced(NIFTK_ADDITIONAL_CXX_FLAGS)
+
+set(MITK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for MITK only")
+mark_as_advanced(MITK_ADDITIONAL_C_FLAGS)
+set(MITK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for MITK only")
+mark_as_advanced(MITK_ADDITIONAL_CXX_FLAGS)
+set(CTK_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for CTK only")
+mark_as_advanced(CTK_ADDITIONAL_C_FLAGS)
+set(CTK_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for CTK only")
+mark_as_advanced(CTK_ADDITIONAL_CXX_FLAGS)
+set(OPENCV_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for OpenCV only")
+mark_as_advanced(OPENCV_ADDITIONAL_C_FLAGS)
+set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV only")
+mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.

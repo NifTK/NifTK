@@ -56,7 +56,7 @@ class CMIC_QT_COMMONMIDAS QmitkMIDASSegmentationViewWidget :
 
 public:
 
-  QmitkMIDASSegmentationViewWidget(QWidget *parent = 0);
+  QmitkMIDASSegmentationViewWidget(QWidget* parent = 0);
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
@@ -78,12 +78,6 @@ public:
    * \see QmitkAbstractView
    */
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
-
-  /**
-   * \brief Calls setBlockSignals(block) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
-   * \param block if true will block signals, and if false will unblock them.
-   */
-  void SetBlockSignals(bool block);
 
   /**
    * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
@@ -108,16 +102,21 @@ signals:
    * two view windows, in vertical or horizontal mode. (see MIDASView enum for a complete list),
    * and emit this signal when the displayed view of this window changes.
    */
-  void ViewChanged(MIDASView);
+  void LayoutChanged(MIDASView);
 
 protected slots:
 
-  void OnTwoViewStateChanged(int);
-  void OnVerticalLayoutStateChanged(int);
-  void OnAxialToggled(bool);
-  void OnCoronalToggled(bool);
-  void OnSagittalToggled(bool);
-  void OnOrthoToggled(bool);
+  /// \brief Called when any of the layout radio buttons is toggled.
+  void OnLayoutRadioButtonToggled(bool checked);
+
+  /// \brief Called when the window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged();
+
+  /// \brief Called when the magnification is changed by the spin box.
+  void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the magnification is changed by zooming in a renderer window.
+  void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
 protected:
 
@@ -125,12 +124,6 @@ private:
 
   /// \brief Method that actually changes the view to axial, sagittal, coronal etc.
   void ChangeLayout(bool isInitialising = false);
-
-  /// \brief Enables all widgets according to which view we are in.
-  void EnableWidgets();
-
-  /// \brief Separate method to just enable/disable the axial, sagittal, coronal radio buttons.
-  void EnableOrientationWidgets(bool enabled);
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
@@ -147,17 +140,24 @@ private:
   /// \brief Returns the currently focused window.
   mitk::BaseRenderer* GetCurrentlyFocusedRenderer() const;
 
-  QmitkMIDASBaseSegmentationFunctionality *m_ContainingFunctionality;
+  QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
+
+  /// \brief Stores the currently selected window layout.
   MIDASView m_View;
+
   MIDASView m_MainWindowView;
+
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
   QmitkRenderWindow* m_MainWindowCoronal;
   QmitkRenderWindow* m_MainWindow3d;
   mitk::BaseRenderer* m_CurrentRenderer;
+
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+
+  double m_PreviousMagnification;
 };
 
 #endif

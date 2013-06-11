@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <mitkTrackedPointerCommand.h>
+#include <mitkTrackedPointerManager.h>
 #include <vtkMatrix4x4.h>
 #include <vtkLinearTransform.h>
 #include <vtkTransform.h>
@@ -24,10 +24,10 @@
 #include <mitkCoordinateAxesData.h>
 
 /**
- * \file mitkTrackedPointerCommandTest.cxx.
- * \brief Tests for mitk::TrackedPointerCommand.
+ * \file mitkTrackedPointerManagerTest.cxx.
+ * \brief Tests for mitk::TrackedPointerManager.
  */
-int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
+int mitkTrackedPointerManagerTest(int /*argc*/, char* /*argv*/[])
 {
 
   double trackingMatrixArray[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0, 0, 1};
@@ -38,7 +38,7 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   vtkSmartPointer<vtkMatrix4x4> tipToPointerTransform = vtkMatrix4x4::New();
   tipToPointerTransform->DeepCopy(tipToPointerArray);
 
-  double expectedMatrixArray[16] = {278, 332, 386, 460, 338, 404, 470, 560, 398, 476, 554, 660, 0, 0, 0, 1};
+  double expectedMatrixArray[16] = {134, 140, 146, 156, 386, 404, 422, 448, 638, 668, 698, 740, 0, 0, 0, 1};
   vtkSmartPointer<vtkMatrix4x4> expectdMatrix = vtkMatrix4x4::New();
   expectdMatrix->DeepCopy(expectedMatrixArray);
 
@@ -58,8 +58,8 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
   tip[1] = 1;
   tip[2] = 2;
 
-  mitk::TrackedPointerCommand::Pointer command = mitk::TrackedPointerCommand::New();
-  command->Update(
+  mitk::TrackedPointerManager::Pointer manager = mitk::TrackedPointerManager::New();
+  manager->Update(
       tipToPointerTransform,
       pointerToWorldNode,
       surfaceNode,
@@ -67,9 +67,9 @@ int mitkTrackedPointerCommandTest(int /*argc*/, char* /*argv*/[])
       );
 
   mitk::Point3D expectedTip;
-  expectedTip[0] = 1564;
-  expectedTip[1] = 1904;
-  expectedTip[2] = 2244;
+  expectedTip[0] = 588;
+  expectedTip[1] = 1696;
+  expectedTip[2] = 2804;
 
   // Check that the point came out in the right place.
   MITK_TEST_CONDITION_REQUIRED(tip[0] == expectedTip[0], ".. Testing x=" << expectedTip[0] << ", but got " << tip[0]);

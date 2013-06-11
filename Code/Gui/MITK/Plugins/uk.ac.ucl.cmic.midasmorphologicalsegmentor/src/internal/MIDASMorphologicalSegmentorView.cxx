@@ -397,17 +397,17 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
 }
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
+void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
   if (!m_MorphologicalControls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(0,0,0,0);
+    m_Layout->setContentsMargins(0, 0, 0, 0);
     m_Layout->setSpacing(0);
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 10);
+    m_Layout->setRowStretch(1, 1);
     m_Layout->setRowStretch(2, 0);
     m_Layout->setRowStretch(3, 0);
 
@@ -418,13 +418,13 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
-    m_Layout->setMargin(9);
-    m_Layout->setSpacing(6);
+    m_Layout->setMargin(5);
+    m_Layout->setSpacing(5);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
+    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget, 2, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 

@@ -18,6 +18,7 @@
 #include "niftkCoreExports.h"
 #include <mitkVector.h>
 #include <mitkPositionEvent.h>
+#include <mitkPointSet.h>
 
 /**
  * \file mitkPointUtils.h
@@ -54,6 +55,11 @@ NIFTKCORE_EXPORT double Length(mitk::Point3D& vector);
  * \brief Given a vector, will normalise it to unit length.
  */
 NIFTKCORE_EXPORT void Normalise(mitk::Point3D& vector);
+
+/**
+ * \brief Copies input to output, i.e. the output is erased, and re-populated.
+ */
+NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);
 
 } // end namespace mitk
 

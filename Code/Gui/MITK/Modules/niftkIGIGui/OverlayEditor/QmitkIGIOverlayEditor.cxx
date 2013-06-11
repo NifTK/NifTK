@@ -190,6 +190,15 @@ void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
+{
+  m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
+  m_TransformCombo->setVisible(isCameraTracking);
+  m_TransformLabel->setVisible(isCameraTracking);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const std::string path)
 {
   m_OverlayViewer->SetDepartmentLogoPath(path.c_str());

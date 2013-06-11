@@ -98,6 +98,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
+, m_PreviousMagnification(0.0)
 , m_SingleWindowLayout(MIDAS_VIEW_CORONAL)
 , m_MultiWindowLayout(MIDAS_VIEW_ORTHO)
 , m_ViewKeyPressStateMachine(0)
@@ -1142,15 +1143,15 @@ void QmitkMIDASMultiViewWidget::SetFocus()
 void QmitkMIDASMultiViewWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer::ConstPointer baseRenderer = focusManager->GetFocused();
+  mitk::BaseRenderer* renderer = focusManager->GetFocused();
 
   int selectedViewIndex = -1;
   vtkRenderWindow* focusedVtkRenderWindow = NULL;
   QmitkRenderWindow* focusedRenderWindow = NULL;
 
-  if (baseRenderer.IsNotNull())
+  if (renderer)
   {
-    focusedVtkRenderWindow = baseRenderer->GetRenderWindow();
+    focusedVtkRenderWindow = renderer->GetRenderWindow();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       QmitkRenderWindow* renderWindow = m_SingleViewWidgets[i]->GetRenderWindow(focusedVtkRenderWindow);
