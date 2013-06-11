@@ -995,12 +995,12 @@ void MIDASGeneralSegmentorView::ClosePart()
     return;
   }
 
-  this->OnCancelButtonPressed();
+  this->DiscardSegmentation();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCancelButtonPressed()
+void MIDASGeneralSegmentorView::DiscardSegmentation()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -2801,17 +2801,10 @@ void MIDASGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
   }
 
   mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(0);
-  assert(segmentationNode);
 
   if (segmentationNode.GetPointer() == removedNode)
   {
-    this->DestroyPipeline();
-    this->RemoveWorkingData();
-//    this->GetDataStorage()->Remove(segmentationNode);
-    this->EnableSegmentationWidgets(false);
-    this->SetReferenceImageSelected();
-    this->RequestRenderWindowUpdate();
-    mitk::UndoController::GetCurrentUndoModel()->Clear();
+    this->DiscardSegmentation();
   }
 }
 

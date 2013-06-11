@@ -275,10 +275,6 @@ protected slots:
   /// reference data so you can continue segmenting.
   void OnResetButtonPressed();
 
-  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
-  /// data (seeds, contours, region growing image), and also destroys the current segmentation.
-  void OnCancelButtonPressed();
-
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
   /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
   /// described in this class intro.
@@ -354,6 +350,11 @@ protected:
   virtual void OnContoursChanged();
 
 private:
+  /// \brief Called when the view is closed or the segmentation node is removed from the data
+  /// manager and destroys all working data (seeds, contours, region growing image), and also
+  /// destroys the current segmentation.
+  void DiscardSegmentation();
+
   /// \brief Stores the initial state of the segmentation so that the Reset button can restore it.
   void StoreInitialSegmentation();
 
