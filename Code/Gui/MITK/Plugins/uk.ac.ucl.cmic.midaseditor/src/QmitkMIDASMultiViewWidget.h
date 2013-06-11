@@ -30,7 +30,7 @@
 
 #include <QmitkMIDASSingleViewWidget.h>
 #include <QmitkMIDASMultiViewVisibilityManager.h>
-#include <QmitkMIDASOrientationWidget.h>
+#include <QmitkMIDASLayoutWidget.h>
 #include <QmitkMIDASBindWidget.h>
 #include <QmitkMIDASSlidersWidget.h>
 
@@ -376,72 +376,72 @@ private:
   bool MoveAnteriorPosterior(int slices);
 
   // Layouts
-  QHBoxLayout                                   *m_TopLevelLayout;
-  QGridLayout                                   *m_LayoutToPutControlsOnTopOfWindows;
-  QHBoxLayout                                   *m_LayoutForGroupingControls;
-  QGridLayout                                   *m_LayoutForTopControls;
-  QGridLayout                                   *m_LayoutForLayoutWidgets;
-  QVBoxLayout                                   *m_LayoutForDropWidgets;
-  QGridLayout                                   *m_LayoutForRenderWindows;
+  QHBoxLayout* m_TopLevelLayout;
+  QGridLayout* m_LayoutToPutControlsOnTopOfWindows;
+  QHBoxLayout* m_LayoutForGroupingControls;
+  QGridLayout* m_LayoutForTopControls;
+  QGridLayout* m_LayoutForLayoutWidgets;
+  QVBoxLayout* m_LayoutForDropWidgets;
+  QGridLayout* m_LayoutForRenderWindows;
 
   // Widgets
-  QmitkMIDASOrientationWidget                   *m_MIDASOrientationWidget;
-  QCheckBox                                     *m_Show2DCursorsCheckBox;
-  QmitkMIDASSlidersWidget                       *m_MIDASSlidersWidget;
-  QmitkMIDASBindWidget                          *m_MIDASBindWidget;
-  QPushButton                                   *m_1x1LayoutButton;
-  QPushButton                                   *m_1x2LayoutButton;
-  QPushButton                                   *m_1x3LayoutButton;
-  QPushButton                                   *m_2x2LayoutButton;
-  QSpinBox                                      *m_RowsSpinBox;
-  QLabel                                        *m_RowsLabel;
-  QSpinBox                                      *m_ColumnsSpinBox;
-  QLabel                                        *m_ColumnsLabel;
-  QRadioButton                                  *m_DropSingleRadioButton;
-  QRadioButton                                  *m_DropMultipleRadioButton;
-  QRadioButton                                  *m_DropThumbnailRadioButton;
-  QButtonGroup                                  *m_DropButtonGroup;
-  QCheckBox                                     *m_DropAccumulateCheckBox;
-  QToolButton                                   *m_PinButton;
-  QWidget                                       *m_ControlWidget;
-  QVBoxLayout                                   *m_ControlWidgetLayout;
-  ctkPopupWidget                                *m_PopupWidget;
-  QFrame                                        *m_ControlsContainerWidget;
+  QmitkMIDASLayoutWidget* m_MIDASLayoutWidget;
+  QCheckBox* m_Show2DCursorsCheckBox;
+  QmitkMIDASSlidersWidget* m_MIDASSlidersWidget;
+  QmitkMIDASBindWidget* m_MIDASBindWidget;
+  QPushButton* m_1x1LayoutButton;
+  QPushButton* m_1x2LayoutButton;
+  QPushButton* m_1x3LayoutButton;
+  QPushButton* m_2x2LayoutButton;
+  QSpinBox* m_RowsSpinBox;
+  QLabel* m_RowsLabel;
+  QSpinBox* m_ColumnsSpinBox;
+  QLabel* m_ColumnsLabel;
+  QRadioButton* m_DropSingleRadioButton;
+  QRadioButton* m_DropMultipleRadioButton;
+  QRadioButton* m_DropThumbnailRadioButton;
+  QButtonGroup* m_DropButtonGroup;
+  QCheckBox* m_DropAccumulateCheckBox;
+  QToolButton* m_PinButton;
+  QWidget* m_ControlWidget;
+  QVBoxLayout* m_ControlWidgetLayout;
+  ctkPopupWidget* m_PopupWidget;
+  QFrame* m_ControlsContainerWidget;
 
   // This determines the maximum number of QmitkMIDASSingleViewWidget windows.
   static const int m_MaxRows = 5;
   static const int m_MaxCols = 5;
 
   // All the viewer windows.
-  QList<QmitkMIDASSingleViewWidget*>             m_SingleViewWidgets;
+  QList<QmitkMIDASSingleViewWidget*> m_SingleViewWidgets;
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
-  QmitkMIDASMultiViewVisibilityManager          *m_VisibilityManager;
-  mitk::DataStorage                             *m_DataStorage;
-  mitk::RenderingManager                        *m_RenderingManager;
+  QmitkMIDASMultiViewVisibilityManager* m_VisibilityManager;
+  mitk::DataStorage* m_DataStorage;
+  mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.
-  unsigned long                                  m_FocusManagerObserverTag;
-  int                                            m_SelectedViewIndex;
-  int                                            m_DefaultNumberOfRows;
-  int                                            m_DefaultNumberOfColumns;
-  int                                            m_NumberOfRowsInNonThumbnailMode;
-  int                                            m_NumberOfColumnsInNonThumbnailMode;
-  int                                            m_NumberOfRowsBeforeSegmentationMode;
-  int                                            m_NumberOfColumnsBeforeSegmentationMode;
-  bool                                           m_Show2DCursors;
-  bool                                           m_Show3DWindowInOrthoView;
-  QColor                                         m_BackgroundColour;
-  bool                                           m_RememberViewSettingsPerOrientation;
-  bool                                           m_IsThumbnailMode;
-  bool                                           m_IsMIDASSegmentationMode;
-  bool                                           m_NavigationControllerEventListening;
-  double                                         m_PreviousMagnification;
-  MIDASView                                      m_SingleWindowLayout;
-  MIDASView                                      m_MultiWindowLayout;
+  unsigned long m_FocusManagerObserverTag;
+  int m_SelectedViewIndex;
+  int m_DefaultNumberOfRows;
+  int m_DefaultNumberOfColumns;
+  int m_NumberOfRowsInNonThumbnailMode;
+  int m_NumberOfColumnsInNonThumbnailMode;
+  int m_NumberOfRowsBeforeSegmentationMode;
+  int m_NumberOfColumnsBeforeSegmentationMode;
+  bool m_Show2DCursors;
+  bool m_Show3DWindowInOrthoView;
+  QColor m_BackgroundColour;
+  bool m_RememberViewSettingsPerOrientation;
+  bool m_IsThumbnailMode;
+  bool m_IsMIDASSegmentationMode;
+  bool m_NavigationControllerEventListening;
+  double m_PreviousMagnification;
+  MIDASView m_SingleWindowLayout;
+  MIDASView m_MultiWindowLayout;
 
-  mitk::MIDASViewKeyPressStateMachine::Pointer   m_ViewKeyPressStateMachine;
+  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };
 
 #endif
