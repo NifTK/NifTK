@@ -389,7 +389,7 @@ else()
 endif()
 
 string(REPLACE "\n" "" CTBN ${CTBN})
-set(BUILDNAME ${CTBN} CACHE STRING "${CTBN}")
+set(BUILDNAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
 set(CTEST_BUILD_NAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
 mark_as_advanced(BUILDNAME)
 mark_as_advanced(CTEST_BUILD_NAME)
