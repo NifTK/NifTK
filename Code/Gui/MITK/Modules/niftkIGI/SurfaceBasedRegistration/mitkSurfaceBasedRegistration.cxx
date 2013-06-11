@@ -91,7 +91,7 @@ void SurfaceBasedRegistration::Update(const mitk::PointSet::Pointer fixedNode,
 }
 
 //-----------------------------------------------------------------------------
-void PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
+void SurfaceBasedRegistration::PointSetToPolyData (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkCellArray> verts = vtkSmartPointer<vtkCellArray>::New();
