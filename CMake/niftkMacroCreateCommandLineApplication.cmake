@@ -24,8 +24,8 @@
 ###############################################################################
 
 macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
-  set(options SLICER SCRIPT INSTALL_LIBS)
-  set(oneValueArgs NAME)
+  set(options BUILD_SLICER BUILD_CLI INSTALL_SCRIPT )
+  set(oneValueArgs NAME INSTALL_LIBS)
   set(multiValueArgs TARGET_LIBRARIES)
   cmake_parse_arguments(_APP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -34,9 +34,10 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
   endif()
 
   set(MY_APP_NAME ${_APP_NAME})
-  message(STATUS "(SLICER=${_APP_SLICER}, SCRIPT=${SCRIPT}, INSTALL_LIBS=${INSTALL_LIBS}): Creating command line application ${MY_APP_NAME}")
+  #message(STATUS "Creating command line application ${MY_APP_NAME}")
 
-  if(_APP_SLICER)
+  if(_APP_BUILD_SLICER)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${_APP_NAME}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${_APP_NAME}.xml @ONLY )
     SEMMacroBuildNifTKCLI(
       NAME ${_APP_NAME}
       EXECUTABLE_ONLY
@@ -45,7 +46,13 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
     )
   endif()
 
-  if(_APP_SCRIPT)
+  if(_APP_BUILD_CLI)
+    add_executable(${_APP_NAME} ${_APP_NAME}.cxx )
+    target_link_libraries(${_APP_NAME} ${_APP_TARGET_LIBRARIES} )
+    MITK_INSTALL(TARGETS ${_APP_NAME})
+  endif()
+
+  if(_APP_INSTALL_SCRIPT)
     if(WIN32)
       configure_file(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.bat @ONLY )
       NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.bat)
@@ -101,8 +108,7 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
     endif()
 
     list(REMOVE_DUPLICATES _library_dirs)
-    message(STATUS "Matt, _library_dirs=${_library_dirs}")
-
+    
   endif()
 
 endmacro()

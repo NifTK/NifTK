@@ -62,12 +62,15 @@ endif()
 
 # Then foreach app, we just build against libraries (modules).
 foreach(APP ${HELPER_APPS})
-  add_executable(${APP} ${APP}.cxx )
-  target_link_libraries(${APP} ${HELPER_APP_LIBRARIES} )
-  MITK_INSTALL(TARGETS ${APP})
+  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+    NAME ${APP}
+    BUILD_CLI
+    INSTALL_LIBS OFF
+    TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
+  )
 endforeach()
 
-# Repeat the same process for slices apps.
+# Repeat the same process for slicer apps.
 if(SlicerExecutionModel_FOUND)
   set(SLICER_HELPER_APPS
     # Add Slicer apps that DO NOT depend on BUILD_IGI here.
@@ -88,8 +91,8 @@ if(SlicerExecutionModel_FOUND)
   foreach(APP ${SLICER_HELPER_APPS})
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME ${APP}
-      SLICER ON
-      SCRIPT ON
+      BUILD_SLICER
+      INSTALL_SCRIPT
       INSTALL_LIBS OFF
       TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
     )
