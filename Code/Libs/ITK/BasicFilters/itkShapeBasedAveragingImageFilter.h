@@ -55,7 +55,7 @@ public:
     MEDIAN = 1, 
     // Interquartile mean - more robust. 
     INTERQUARTILE_MEAN = 2
-  } MeanModeType; 
+  } MeanModeType;
   /** 
    * Method for creation through the object factory. 
    */
@@ -81,7 +81,35 @@ public:
    * Set mean mode. 
    */
   itkSetMacro(MeanMode, MeanModeType); 
-  
+  /**
+   * Get the average distance map.
+  */
+  const FloatImageType* GetAverageDistanceMap() const
+  {
+    return this->m_AverageDistanceMap;
+  }
+  /**
+   * Get the variability map.
+   */
+  const FloatImageType* GetVariabilityMap() const
+  {
+    return this->m_VariabilityMap;
+  }
+  /**
+    * Get the probability map.
+    */
+  const FloatImageType* GetProbabilityMap() const
+  {
+    return this->m_ProbabilityMap;
+  }
+  FloatImageType* GetProbabilityMap()
+  {
+    return this->m_ProbabilityMap;
+  }
+  /**
+   * Compute MRF.
+   */
+  void ComputeMRF(FloatImageType* probabilityMap, double mrf, int numberOfIterations);
       
 protected:
   /**
@@ -125,7 +153,20 @@ protected:
    * Input segmentation reliability. 
    */
   std::vector<double> m_SegmentationReliability; 
-  
+  /**
+    * The average distance and minimum distance map.
+    */
+  typename FloatImageType::Pointer m_AverageDistanceMap;  
+  /**
+   * The variability of the distance.
+   */
+  typename FloatImageType::Pointer m_VariabilityMap;
+  /**
+   * The unnormalised probability map.
+   */
+  typename FloatImageType::Pointer m_ProbabilityMap;
+
+
 private:
   /**
    * Prohibited copy and assingment. 

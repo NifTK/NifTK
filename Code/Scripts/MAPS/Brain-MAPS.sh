@@ -757,7 +757,7 @@ function brain-delineation-using-staple()
   # VOTE
   local output_hippo_staple_nreg_thresholded_vote_img=${output_hippo_staple_nreg_thresholded_region}-vote-${staple_count}.img
   local output_hippo_staple_nreg_thresholded_vote_region=${output_hippo_staple_nreg_thresholded_region}-vote-${staple_count}
-  ${combine} VOTE 0 1 ${output_hippo_staple_nreg_thresholded_vote_img} ${staple_command_line_nreg_thresholded}
+  ${combine} VOTE 0 1 -1 ${output_hippo_staple_nreg_thresholded_vote_img} ${staple_command_line_nreg_thresholded}
   niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_vote_img} ${output_hippo_staple_nreg_thresholded_vote_img%.img} img -largest
   makeroi -img ${output_hippo_staple_nreg_thresholded_vote_img} -out ${output_hippo_staple_nreg_thresholded_vote_region} -alt 0
   rm -f ${output_hippo_staple_nreg_thresholded_vote_img} ${output_hippo_staple_nreg_thresholded_vote_img%.img}.hdr
@@ -771,7 +771,7 @@ function brain-delineation-using-staple()
     # SBA - median
     local output_hippo_staple_nreg_thresholded_sba_img=${output_hippo_staple_nreg_thresholded_region}-sba-median-${staple_count}.img
     local output_hippo_staple_nreg_thresholded_sba_region=${output_hippo_staple_nreg_thresholded_region}-sba-median-${staple_count}
-    ${combine} SBA 0 1 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
+    ${combine} SBA 0 1 -1 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
     niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img} img -largest
     makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region} -alt 0
     rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
@@ -781,10 +781,25 @@ function brain-delineation-using-staple()
   local output_hippo_staple_nreg_thresholded_sba_img=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}.img
   local output_hippo_staple_nreg_thresholded_sba_region=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}
   local output_hippo_staple_nreg_thresholded_sba_region_dilated=${output_hippo_staple_nreg_thresholded_region}-sba-mean-${staple_count}-dilated  
-  ${combine} SBA 0 2 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
+  local output_hippo_staple_nreg_thresholded_sba_mrf_img=${output_hippo_staple_nreg_thresholded_region}-sba-mean-mrf-${staple_count}.img
+  local output_hippo_staple_nreg_thresholded_sba_mrf_region=${output_hippo_staple_nreg_thresholded_region}-sba-mean-mrf-${staple_count}
+
+  ${combine} SBA 0 2 -1 ${output_hippo_staple_nreg_thresholded_sba_img} ${staple_command_line_nreg_thresholded}
   niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img} img -largest
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region} -alt 0
   rm -f ${output_hippo_staple_nreg_thresholded_sba_img} ${output_hippo_staple_nreg_thresholded_sba_img%.img}.hdr
+
+  local output_hippo_staple_nreg_thresholded_iq_sba_img=${output_hippo_staple_nreg_thresholded_region}-sba-iq-mean-${staple_count}.img
+  local output_hippo_staple_nreg_thresholded_iq_sba_region=${output_hippo_staple_nreg_thresholded_region}-sba-iq-mean-${staple_count}
+  ${combine} SBA 0 3 -1 ${output_hippo_staple_nreg_thresholded_iq_sba_img} ${staple_command_line_nreg_thresholded}
+  niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_iq_sba_img} ${output_hippo_staple_nreg_thresholded_iq_sba_img%.img} img -largest
+  makeroi -img ${output_hippo_staple_nreg_thresholded_iq_sba_img} -out ${output_hippo_staple_nreg_thresholded_iq_sba_region} -alt 0
+  rm -f ${output_hippo_staple_nreg_thresholded_iq_sba_img} ${output_hippo_staple_nreg_thresholded_iq_sba_img%.img}.hdr
+
+  ${combine} SBA 0 3 0.01 ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${staple_command_line_nreg_thresholded}
+  niftkConnectedComponents ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${output_hippo_staple_nreg_thresholded_sba_mrf_img%.img} img -largest
+  makeroi -img ${output_hippo_staple_nreg_thresholded_sba_mrf_img} -out ${output_hippo_staple_nreg_thresholded_sba_mrf_region} -alt 0
+  rm -f ${output_hippo_staple_nreg_thresholded_sba_mrf_img} ${output_hippo_staple_nreg_thresholded_sba_mrf_img%.img}.hdr
   
   makemask ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${output_hippo_staple_nreg_thresholded_sba_img} -d 2
   makeroi -img ${output_hippo_staple_nreg_thresholded_sba_img} -out ${output_hippo_staple_nreg_thresholded_sba_region_dilated} -alt 0
@@ -793,13 +808,15 @@ function brain-delineation-using-staple()
   then 
     reorient_region ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region} ${original_subject_image} ${output_hippo_staple_nreg_thresholded_sba_region}
     reorient_region ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_region_dilated} ${original_subject_image} ${output_hippo_staple_nreg_thresholded_sba_region_dilated}
-  fi 
+    reorient_region ${subject_image} ${output_hippo_staple_nreg_thresholded_sba_mrf_region} ${original_subject_image} ${output_hippo_staple_nreg_thresholded_sba_mrf_region}
+    reorient_region ${subject_image} ${output_hippo_staple_nreg_thresholded_iq_sba_region} ${original_subject_image} ${output_hippo_staple_nreg_thresholded_iq_sba_region}
+  fi
   
   if [ "${vents_or_not}" == "yes" ]
   then 
     local output_brain_with_vents_sba_img=${output_hippo_staple_nreg_thresholded_region}-brain-with-vents-sba-mean-${staple_count}.img
     local output_brain_with_vents_sba_region=${output_hippo_staple_nreg_thresholded_region}-brain-with-vents-sba-mean-${staple_count}
-    ${combine} SBA 0 2 ${output_brain_with_vents_sba_img} ${staple_command_line_brain_with_vents}
+    ${combine} SBA 0 2 -1 ${output_brain_with_vents_sba_img} ${staple_command_line_brain_with_vents}
     niftkConnectedComponents ${output_brain_with_vents_sba_img} ${output_brain_with_vents_sba_img%.img} img -largest
     makeroi -img ${output_brain_with_vents_sba_img} -out ${output_brain_with_vents_sba_region} -alt 0
     rm -f ${output_brain_with_vents_sba_img} ${output_brain_with_vents_sba_img%.img}.hdr
