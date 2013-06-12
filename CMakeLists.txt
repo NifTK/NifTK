@@ -171,9 +171,7 @@ include (CheckIncludeFiles)
 CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
 if (NIFTK_MESHING_CAN_BUILD) 
   option(BUILD_MESHING "Build meshing?" OFF)
-else (NIFTK_MESHING_CAN_BUILD) 
-  message("BUILD_MESHING option disabled")
-endif (NIFTK_MESHING_CAN_BUILD) 
+endif()
 
 ######################################################################
 # Variables that get compiled into C++ code. 
@@ -323,6 +321,14 @@ mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
 
 ######################################################################
+# Make sure Git is available.
+######################################################################
+find_package(Git REQUIRED)
+if (WIN32)
+  set(GITCOMMAND ${GIT_EXECUTABLE})
+endif()
+
+######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
 ######################################################################
 set(CMAKE_MODULE_PATH 
@@ -337,10 +343,13 @@ set(CMAKE_MODULE_PATH
 # Add in any functions/macros. 
 ######################################################################
 include(mitkMacroEmptyExternalProject)
+include(mitkFunctionGetVersion)
 include(niftkMacroCreateApplication)
 include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLI)
 include(niftkMacroConfigureAndBuildCLI)
+include(niftkMacroGetGitDateTime)
+include(niftkMacroGetGitBranch)
 
 ######################################################################
 # Test for some required system information. This came from old
@@ -350,12 +359,45 @@ include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
 ######################################################################
-# Set GIT protocol, as dependencies need it. (Obselete???)
+# Setting build name based on local system details
 ######################################################################
-find_package(Git REQUIRED)
-if (WIN32)
-  set(GITCOMMAND ${GIT_EXECUTABLE})
+
+mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
+niftkMacroGetGitDateTime(${CMAKE_SOURCE_DIR} NIFTK)
+niftkMacroGetGitBranch(${CMAKE_SOURCE_DIR} NIFTK)
+
+if(CMAKE_GENERATOR MATCHES Make AND NOT (CMAKE_GENERATOR MATCHES NMake) )
+
+  find_program(UNAME NAMES uname)
+  mark_as_advanced(UNAME)
+
+  macro(getuname name flag)
+    exec_program("${UNAME}" ARGS "${flag}" OUTPUT_VARIABLE "${name}")
+  endmacro(getuname)
+
+  getuname(osname -s)
+  getuname(cpu    -m)
+
+  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+
+  set(CTBN "${osname}-${cpu}-gcc-${GCC_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+
+else()
+
+  set(CTBN "${CMAKE_GENERATOR}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+
 endif()
+
+string(REPLACE "\n" "" CTBN ${CTBN})
+set(BUILDNAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
+set(CTEST_BUILD_NAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
+mark_as_advanced(BUILDNAME)
+mark_as_advanced(CTEST_BUILD_NAME)
+
+message("NifTK branch=${NIFTK_BRANCH_NAME}")
+message("NifTK version=${NIFTK_REVISION_SHORTID}")
+message("NifTK date=${NIFTK_DATE_TIME}")
+message("NifTK build=${CTEST_BUILD_NAME}")
 
 ######################################################################
 # Configure Dart testing support.  This should be done before any

@@ -227,14 +227,14 @@ protected slots:
   virtual void OnToolSelected(int id);
 
   /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
-  void OnSeePriorCheckBoxToggled(bool b);
+  void OnSeePriorCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
-  void OnSeeNextCheckBoxToggled(bool b);
+  void OnSeeNextCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called from the "view" checkbox so that when b=true, we just
-  /// see the image, when b=false, we additionally see all the contours and reference data.
-  void OnSeeImageCheckBoxPressed(bool b);
+  /// \brief Qt slot called from the "view" checkbox so that when the checkbox is checked, we just
+  /// see the image, when it is not, we additionally see all the contours and reference data.
+  void OnSeeImageCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
@@ -275,10 +275,6 @@ protected slots:
   /// reference data so you can continue segmenting.
   void OnResetButtonPressed();
 
-  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
-  /// data (seeds, contours, region growing image), and also destroys the current segmentation.
-  void OnCancelButtonPressed();
-
   /// \brief Qt slot called when the Apply button is pressed and used to accept the
   /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
   /// described in this class intro.
@@ -286,15 +282,11 @@ protected slots:
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
   /// the thresholding widget section on and calls MIDASGeneralSegmentorView::UpdateRegionGrowing.
-  void OnThresholdCheckBoxToggled(bool b);
+  void OnThresholdingCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called when the lower slider is moved, calls
+  /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
   /// MIDASGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
-  void OnLowerThresholdValueChanged(double d);
-
-  /// \brief Qt slot called when the upper slider is moved and calls
-  /// MIDASGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
-  void OnUpperThresholdValueChanged(double d);
+  void OnThresholdValueChanged();
 
   /// \brief Qt slot called to effect a change of slice, which means accepting
   /// the current segmentation, and moving to the prior/next slice, see class intro.
@@ -319,7 +311,7 @@ protected:
   virtual void CreateConnections();
 
   /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
-  virtual void EnableSegmentationWidgets(bool b);
+  virtual void EnableSegmentationWidgets(bool checked);
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
   /// scale parent, and several children as described in the class introduction.
@@ -358,6 +350,16 @@ protected:
   virtual void OnContoursChanged();
 
 private:
+  /// \brief Called when the view is closed or the segmentation node is removed from the data
+  /// manager and destroys all working data (seeds, contours, region growing image), and also
+  /// destroys the current segmentation.
+  void DiscardSegmentation();
+
+  /// \brief Stores the initial state of the segmentation so that the Reset button can restore it.
+  void StoreInitialSegmentation();
+
+  /// \brief Restores the initial state of the segmentation after the Reset button was pressed.
+  void RestoreInitialSegmentation();
 
   // Operation constants, used in Undo/Redo framework
   static const mitk::OperationType OP_CHANGE_SLICE;
@@ -369,7 +371,7 @@ private:
   static const mitk::OperationType OP_RETAIN_MARKS;
 
   /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
-  bool HaveInitialisedWorkingData();
+  bool HasInitialisedWorkingData();
 
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
@@ -435,9 +437,6 @@ private:
       int projectedSliceNumber,
       mitk::ContourSet::Pointer outputContourSet
       );
-
-  /// \brief Clears both images of the working data.
-  void ClearWorkingData();
 
   /// \brief Completely removes the current pipeline.
   void DestroyPipeline();
@@ -892,6 +891,5 @@ private:
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
-
 };
 #endif

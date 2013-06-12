@@ -42,7 +42,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestAsAcquired...");
 
-    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASView
+    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASLayout
     MITK_TEST_OUTPUT(<< "TestAsAcquired...argv[1]=" << argv[1] << ", argv[2]=" << argv[2] << ", argv[3]=" << argv[3]);
 
     std::string fileName = argv[1];
@@ -65,11 +65,11 @@ public:
     bool isImage = mitk::IsImage(node);
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(isImage, true),".. Testing IsImage=true");
 
-    MIDASView view = mitk::GetAsAcquiredView(MIDASView(defaultView), dynamic_cast<mitk::Image*>(node->GetData()));
-    MITK_TEST_OUTPUT(<< "MIDASView default=" << defaultView);
-    MITK_TEST_OUTPUT(<< "MIDASView output=" << view);
-    MITK_TEST_OUTPUT(<< "MIDASView expected=" << expectedView);
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(view, (MIDASView)expectedView),".. Testing expected view");
+    MIDASLayout view = mitk::GetAsAcquiredView(MIDASLayout(defaultView), dynamic_cast<mitk::Image*>(node->GetData()));
+    MITK_TEST_OUTPUT(<< "MIDASLayout default=" << defaultView);
+    MITK_TEST_OUTPUT(<< "MIDASLayout output=" << view);
+    MITK_TEST_OUTPUT(<< "MIDASLayout expected=" << expectedView);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(view, (MIDASLayout)expectedView),".. Testing expected view");
 
     MITK_TEST_OUTPUT(<< "Finished TestAsAcquired...");
   }
