@@ -173,7 +173,7 @@ int main(int argc, char** argv)
   int dilations = 0;
   int opt=1;
   int constraint=1;
-  double spacing[Dimension];
+  double spacing[3];    // don't use Dimension here, further down there's a command line param to write into the 3rd slot
   spacing[0] = 5.0;
   spacing[1] = 5.0;
   if (Dimension > 2)
