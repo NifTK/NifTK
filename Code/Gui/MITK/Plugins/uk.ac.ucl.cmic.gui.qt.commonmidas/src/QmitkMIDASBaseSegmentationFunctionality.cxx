@@ -315,9 +315,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToo
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::DataNode::Pointer node = toolManager->GetReferenceData(0);
-
-  return node;
+  return toolManager->GetReferenceData(0);
 }
 
 
@@ -653,7 +651,10 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
 void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 {
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  this->SetCurrentSelection(referenceImageNode);
+  if (referenceImageNode.IsNotNull())
+  {
+    this->SetCurrentSelection(referenceImageNode);
+  }
 }
 
 
