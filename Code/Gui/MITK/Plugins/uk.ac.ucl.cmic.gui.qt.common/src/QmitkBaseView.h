@@ -86,7 +86,7 @@ public:
    * of changing the data manager selection, the "selected" property of the
    * previously selected nodes will be cleared.
    */
-  void SetCurrentSelection(mitk::DataNode* dataNode);
+  void SetCurrentSelection(mitk::DataNode::Pointer dataNode);
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
