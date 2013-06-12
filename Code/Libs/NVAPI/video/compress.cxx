@@ -229,7 +229,7 @@ public:
             fps.frametype = pefi->nPicType;
         }
 
-        unsigned int    histindex = std::log(std::max(this_->currentnalsize, 1024u) / 1024.0) / std::log(2.0);
+        unsigned int    histindex = (unsigned int) (std::log(std::max(this_->currentnalsize, 1024u) / 1024.0) / std::log(2.0));
         unsigned int    maxindex = (sizeof(this_->nalsizehistogram) / sizeof(this_->nalsizehistogram[0])) - 1;
         ++(this_->nalsizehistogram[std::min(histindex, maxindex)]);
     }
@@ -387,7 +387,7 @@ public:
             // guestimate is: 100kB per frame for 1080p
             // roughly 0.06 bytes per pixel
             // for example: 1920 * 1080 * 0.0625 * 25 * 8 = 26 Mbs
-            int     avgbw = BITRATEESTIMATER_BITSPERPIXEL * width * height * ((float) mfps / 1000.0f);
+            int     avgbw = (int) (BITRATEESTIMATER_BITSPERPIXEL * width * height * ((float) mfps / 1000.0f));
             hr = NVSetParamValue(encoder, NVVE_AVG_BITRATE, &avgbw);
             if (hr != S_OK)
                 throw CompressorFailedException("Cannot set average bitrate", hr);
