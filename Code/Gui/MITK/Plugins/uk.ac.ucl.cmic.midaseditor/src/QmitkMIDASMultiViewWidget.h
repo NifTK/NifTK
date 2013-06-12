@@ -159,15 +159,6 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes magnification.
   void SetSelectedWindowMagnification(double magnification);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches to axial.
-  void SetSelectedWindowToAxial();
-
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches to coronal.
-  void SetSelectedWindowToSagittal();
-
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches sagittal.
-  void SetSelectedWindowToCoronal();
-
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
 
@@ -281,16 +272,16 @@ protected slots:
   void OnBindTypeChanged();
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(QmitkRenderWindow* window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow* window, int sliceNumber);
+  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* widget, QmitkRenderWindow* window, int sliceNumber);
 
   /// \brief Called when the cursor position is changed on a render window because of panning.
-  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
+  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* widget, const mitk::Vector3D& cursorPosition);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationChanged(QmitkMIDASSingleViewWidget *view, double magnification);
+  void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
@@ -323,10 +314,10 @@ private:
   MIDASLayout GetDefaultLayoutForSegmentation() const;
 
   /// \brief Main method to change the number of views.
-  void SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
+  void SetViewNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the layout.
-  void SwitchLayout(MIDASLayout layout);
+  void SetLayout(MIDASLayout layout);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
   void SetSelectedViewIndex(int i);
@@ -364,7 +355,8 @@ private:
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
   void UpdateBoundMagnification();
 
-  void SwitchWindows(int selectedViewIndex, QmitkRenderWindow *selectedWindow);
+  /// \brief Selects the render window of the given view.
+  void SetSelectedRenderWindow(int selectedViewIndex, QmitkRenderWindow* selectedRenderWindow);
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -389,14 +381,14 @@ private:
   QCheckBox* m_Show2DCursorsCheckBox;
   QmitkMIDASSlidersWidget* m_MIDASSlidersWidget;
   QmitkMIDASBindWidget* m_MIDASBindWidget;
-  QPushButton* m_1x1LayoutButton;
-  QPushButton* m_1x2LayoutButton;
-  QPushButton* m_1x3LayoutButton;
-  QPushButton* m_2x2LayoutButton;
-  QSpinBox* m_RowsSpinBox;
-  QLabel* m_RowsLabel;
-  QSpinBox* m_ColumnsSpinBox;
-  QLabel* m_ColumnsLabel;
+  QPushButton* m_1x1ViewButton;
+  QPushButton* m_1x2ViewsButton;
+  QPushButton* m_1x3ViewsButton;
+  QPushButton* m_2x2ViewsButton;
+  QLabel* m_ViewRowsLabel;
+  QSpinBox* m_ViewRowsSpinBox;
+  QLabel* m_ViewColumnsLabel;
+  QSpinBox* m_ViewColumnsSpinBox;
   QRadioButton* m_DropSingleRadioButton;
   QRadioButton* m_DropMultipleRadioButton;
   QRadioButton* m_DropThumbnailRadioButton;
