@@ -18,7 +18,7 @@
 #include <NifTKConfigure.h>
 
 #if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
-  #ifdef NIFTKVTKNIFTYREGWINDOWS_EXPORT
+  #ifdef NIFTKVTKNIFTYREG_WINDOWS_EXPORT
     #define NIFTKVTKNIFTYREG_WINEXPORT __declspec(dllexport)
   #else
     #define NIFTKVTKNIFTYREG_WINEXPORT __declspec(dllimport)

@@ -26,8 +26,8 @@
 #include <berryPlatform.h>
 
 const std::string TagTrackerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitagtracker");
-const float TagTrackerViewPreferencePage::MIN_SIZE = 0.01;
-const float TagTrackerViewPreferencePage::MAX_SIZE = 0.125;
+const float TagTrackerViewPreferencePage::MIN_SIZE = 0.01f;
+const float TagTrackerViewPreferencePage::MAX_SIZE = 0.125f;
 const bool TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS(true);
 const std::string TagTrackerViewPreferencePage::MIN_SIZE_NAME("min size");
 const std::string TagTrackerViewPreferencePage::MAX_SIZE_NAME("max size");
