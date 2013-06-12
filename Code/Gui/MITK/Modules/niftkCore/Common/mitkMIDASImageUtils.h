@@ -49,7 +49,7 @@ namespace mitk
    * \param image An image to check.
    * \return MIDASView the As Acquired view, or the defaultView.
    */
-  NIFTKCORE_EXPORT MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::Image* image);
+  NIFTKCORE_EXPORT MIDASLayout GetAsAcquiredView(const MIDASLayout& defaultView, const mitk::Image* image);
 
 
   /**

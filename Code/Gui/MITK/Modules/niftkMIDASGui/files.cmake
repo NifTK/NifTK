@@ -20,7 +20,7 @@ set(CPP_FILES
   QmitkMIDASPaintbrushToolGUI.cxx
   QmitkMIDASBindWidget.cxx
   QmitkMIDASSlidersWidget.cxx
-  QmitkMIDASOrientationWidget.cxx
+  QmitkMIDASLayoutWidget.cxx
   QmitkMIDASStdMultiWidget.cxx
   QmitkMIDASMultiViewVisibilityManager.cxx
   QmitkMIDASSingleViewWidget.cxx
@@ -39,7 +39,7 @@ set(MOC_H_FILES
   QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASBindWidget.h
   QmitkMIDASSlidersWidget.h
-  QmitkMIDASOrientationWidget.h
+  QmitkMIDASLayoutWidget.h
   QmitkMIDASStdMultiWidget.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
@@ -50,7 +50,7 @@ set(UI_FILES
   Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
   Resources/UI/QmitkMIDASToolSelector.ui
   Resources/UI/QmitkMIDASBindWidget.ui
-  Resources/UI/QmitkMIDASOrientationWidget.ui
+  Resources/UI/QmitkMIDASLayoutWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui
 )
 

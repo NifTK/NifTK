@@ -93,9 +93,6 @@ public:
   /// \brief Destructor.
   virtual ~QmitkMIDASStdMultiWidget();
 
-  /// \brief Returns true if the current view is axial, coronal or sagittal and false otherwise.
-  bool IsSingle2DView() const;
-
   /// \brief There are several things we turn off/on depending on whether the widget is
   /// visible or considered active, so we group them all under this Enabled(true/false) flag.
   void SetEnabled(bool b);
@@ -126,13 +123,14 @@ public:
   void SetGeometry(mitk::Geometry3D* geometry);
 
   /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
-  void SetMIDASView(MIDASView view);
+  void SetLayout(MIDASLayout layout);
 
-  /// \brief Get the view (layout), where the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  MIDASView GetMIDASView() const;
+  /// \brief Gets the layout, i.e. the set and the arrangement of the render windows.
+  /// The MIDAS functionality is only interested in those orientations given by this enum,
+  /// currently ax, sag, cor, ortho, 3D, 3H, 3V.
+  MIDASLayout GetLayout() const;
 
-  /// \brief Works out the orientation of the current view, which is different to the MIDASView.
+  /// \brief Works out the orientation of the current layout, which is different to the MIDASLayout.
   MIDASOrientation GetOrientation();
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
@@ -313,7 +311,7 @@ private:
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
-  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
+  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one render window (i.e. either axial, coronal, sagittal).
   mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
@@ -389,7 +387,7 @@ private:
   bool                  m_Display2DCursorsLocally;
   bool                  m_Display2DCursorsGlobally;
   bool                  m_Show3DWindowInOrthoView;
-  MIDASView             m_View;
+  MIDASLayout           m_Layout;
   mitk::Point3D         m_SelectedPosition;
   mitk::Vector3D        m_CursorPosition;
   double                m_Magnification;

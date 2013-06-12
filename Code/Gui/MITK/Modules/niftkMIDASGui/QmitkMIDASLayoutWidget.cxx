@@ -12,42 +12,42 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASOrientationWidget.h"
+#include "QmitkMIDASLayoutWidget.h"
 
-MIDASView QmitkMIDASOrientationWidget::s_MultiWindowViews[] = {
-  MIDAS_VIEW_ORTHO,
-  MIDAS_VIEW_3H,
-  MIDAS_VIEW_3V,
-  MIDAS_VIEW_COR_SAG_H,
-  MIDAS_VIEW_COR_SAG_V,
-  MIDAS_VIEW_COR_AX_H,
-  MIDAS_VIEW_COR_AX_V,
-  MIDAS_VIEW_SAG_AX_H,
-  MIDAS_VIEW_SAG_AX_V
+MIDASLayout QmitkMIDASLayoutWidget::s_MultiWindowLayouts[] = {
+  MIDAS_LAYOUT_ORTHO,
+  MIDAS_LAYOUT_3H,
+  MIDAS_LAYOUT_3V,
+  MIDAS_LAYOUT_COR_SAG_H,
+  MIDAS_LAYOUT_COR_SAG_V,
+  MIDAS_LAYOUT_COR_AX_H,
+  MIDAS_LAYOUT_COR_AX_V,
+  MIDAS_LAYOUT_SAG_AX_H,
+  MIDAS_LAYOUT_SAG_AX_V
 };
 
-int const QmitkMIDASOrientationWidget::s_MultiWindowViewNumber = sizeof(s_MultiWindowViews) / sizeof(MIDASView);
+int const QmitkMIDASLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(MIDASLayout);
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASOrientationWidget::QmitkMIDASOrientationWidget(QWidget *parent)
-: m_View(MIDAS_VIEW_UNKNOWN)
+QmitkMIDASLayoutWidget::QmitkMIDASLayoutWidget(QWidget *parent)
+: m_Layout(MIDAS_LAYOUT_UNKNOWN)
 {
   setupUi(this);
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASOrientationWidget::~QmitkMIDASOrientationWidget()
+QmitkMIDASLayoutWidget::~QmitkMIDASLayoutWidget()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
+void QmitkMIDASLayoutWidget::setupUi(QWidget* parent)
 {
-  Ui_QmitkMIDASOrientationWidget::setupUi(parent);
+  Ui_QmitkMIDASLayoutWidget::setupUi(parent);
 
   m_MultiWindowComboBox->addItem("2x2");
   m_MultiWindowComboBox->addItem("3H");
@@ -71,16 +71,16 @@ void QmitkMIDASOrientationWidget::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-MIDASView QmitkMIDASOrientationWidget::GetView() const
+MIDASLayout QmitkMIDASLayoutWidget::GetLayout() const
 {
-  return m_View;
+  return m_Layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::SetView(MIDASView view)
+void QmitkMIDASLayoutWidget::SetLayout(MIDASLayout layout)
 {
-  if (view == m_View)
+  if (layout == m_Layout)
   {
     // Nothing to do.
     return;
@@ -88,35 +88,35 @@ void QmitkMIDASOrientationWidget::SetView(MIDASView view)
 
   bool wasBlocked;
 
-  switch(view)
+  switch(layout)
   {
-  case MIDAS_VIEW_AXIAL:
+  case MIDAS_LAYOUT_AXIAL:
     wasBlocked = m_AxialWindowRadioButton->blockSignals(true);
     m_AxialWindowRadioButton->setChecked(true);
     m_AxialWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_VIEW_SAGITTAL:
+  case MIDAS_LAYOUT_SAGITTAL:
     wasBlocked = m_SagittalWindowRadioButton->blockSignals(true);
     m_SagittalWindowRadioButton->setChecked(true);
     m_SagittalWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_VIEW_CORONAL:
+  case MIDAS_LAYOUT_CORONAL:
     wasBlocked = m_CoronalWindowRadioButton->blockSignals(true);
     m_CoronalWindowRadioButton->setChecked(true);
     m_CoronalWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_VIEW_3D:
+  case MIDAS_LAYOUT_3D:
     wasBlocked = m_3DWindowRadioButton->blockSignals(true);
     m_3DWindowRadioButton->setChecked(true);
     m_3DWindowRadioButton->blockSignals(wasBlocked);
     break;
   default:
-    int viewIndex = 0;
-    while (viewIndex < s_MultiWindowViewNumber && view != s_MultiWindowViews[viewIndex])
+    int layoutIndex = 0;
+    while (layoutIndex < s_MultiWindowLayoutNumber && layout != s_MultiWindowLayouts[layoutIndex])
     {
-      ++viewIndex;
+      ++layoutIndex;
     }
-    if (viewIndex == s_MultiWindowViewNumber)
+    if (layoutIndex == s_MultiWindowLayoutNumber)
     {
       // Should not happen.
       return;
@@ -127,69 +127,69 @@ void QmitkMIDASOrientationWidget::SetView(MIDASView view)
     m_MultiWindowRadioButton->blockSignals(wasBlocked);
 
     wasBlocked = m_MultiWindowComboBox->blockSignals(true);
-    m_MultiWindowComboBox->setCurrentIndex(viewIndex);
+    m_MultiWindowComboBox->setCurrentIndex(layoutIndex);
     m_MultiWindowComboBox->blockSignals(wasBlocked);
     break;
   }
 
-  m_View = view;
-  emit ViewChanged(view);
+  m_Layout = layout;
+  emit LayoutChanged(layout);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::OnAxialWindowRadioButtonToggled(bool checked)
+void QmitkMIDASLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetView(MIDAS_VIEW_AXIAL);
+    this->SetLayout(MIDAS_LAYOUT_AXIAL);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::OnSagittalWindowRadioButtonToggled(bool checked)
+void QmitkMIDASLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetView(MIDAS_VIEW_SAGITTAL);
+    this->SetLayout(MIDAS_LAYOUT_SAGITTAL);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::OnCoronalWindowRadioButtonToggled(bool checked)
+void QmitkMIDASLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetView(MIDAS_VIEW_CORONAL);
+    this->SetLayout(MIDAS_LAYOUT_CORONAL);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::On3DWindowRadioButtonToggled(bool checked)
+void QmitkMIDASLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetView(MIDAS_VIEW_3D);
+    this->SetLayout(MIDAS_LAYOUT_3D);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::OnMultiWindowRadioButtonToggled(bool checked)
+void QmitkMIDASLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetView(s_MultiWindowViews[m_MultiWindowComboBox->currentIndex()]);
+    this->SetLayout(s_MultiWindowLayouts[m_MultiWindowComboBox->currentIndex()]);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASOrientationWidget::OnMultiWindowComboBoxIndexChanged(int index)
+void QmitkMIDASLayoutWidget::OnMultiWindowComboBoxIndexChanged(int index)
 {
   m_MultiWindowRadioButton->setChecked(true);
-  this->SetView(s_MultiWindowViews[index]);
+  this->SetLayout(s_MultiWindowLayouts[index]);
 }

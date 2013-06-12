@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASOrientationWidget_h
-#define QmitkMIDASOrientationWidget_h
+#ifndef QmitkMIDASLayoutWidget_h
+#define QmitkMIDASLayoutWidget_h
 
 #include <niftkMIDASGuiExports.h>
-#include "ui_QmitkMIDASOrientationWidget.h"
+#include "ui_QmitkMIDASLayoutWidget.h"
 #include <mitkMIDASEnums.h>
 
 class QButtonGroup;
 
 /**
- * \class QmitkMIDASOrientationWidget
+ * \class QmitkMIDASLayoutWidget
  * \brief Qt Widget class to contain four radio buttons for single window layouts (axial,
  * sagittal, coronal and 3D) and a fifth radio button and a combo box to switch to multiple
  * window layout and select it.
@@ -31,31 +31,31 @@ class QButtonGroup;
  * for any number of layouts, and still keep a reasonably compact screen layout.
  *
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASOrientationWidget : public QWidget, public Ui_QmitkMIDASOrientationWidget
+class NIFTKMIDASGUI_EXPORT QmitkMIDASLayoutWidget : public QWidget, public Ui_QmitkMIDASLayoutWidget
 {
   Q_OBJECT
 
 public:
 
-  /// \brief Constructs a QmitkMIDASOrientationWidget object.
-  QmitkMIDASOrientationWidget(QWidget *parent = 0);
+  /// \brief Constructs a QmitkMIDASLayoutWidget object.
+  QmitkMIDASLayoutWidget(QWidget *parent = 0);
 
-  /// \brief Destructs a QmitkMIDASOrientationWidget object.
-  virtual ~QmitkMIDASOrientationWidget();
+  /// \brief Destructs a QmitkMIDASLayoutWidget object.
+  virtual ~QmitkMIDASLayoutWidget();
 
   /// \brief Creates the GUI, called from within constructor.
   void setupUi(QWidget*);
 
-  /// \brief Gets the current view.
-  MIDASView GetView() const;
+  /// \brief Gets the current layout.
+  MIDASLayout GetLayout() const;
 
-  /// \brief Sets the widget controls to match the supplied view.
-  void SetView(MIDASView view);
+  /// \brief Sets the widget controls to match the supplied layout.
+  void SetLayout(MIDASLayout layout);
 
 signals:
 
-  /// \brief Indicates when the view has changed.
-  void ViewChanged(MIDASView view);
+  /// \brief Indicates when the layout has changed.
+  void LayoutChanged(MIDASLayout layout);
 
 protected slots:
 
@@ -80,11 +80,11 @@ protected slots:
 private:
 
   /// \brief Stores the currently selected window layout.
-  MIDASView m_View;
+  MIDASLayout m_Layout;
 
   /// \brief Stores the multiple window layouts in the same order as the combo box.
-  static MIDASView s_MultiWindowViews[];
-  static int const s_MultiWindowViewNumber;
+  static MIDASLayout s_MultiWindowLayouts[];
+  static int const s_MultiWindowLayoutNumber;
 };
 
 #endif

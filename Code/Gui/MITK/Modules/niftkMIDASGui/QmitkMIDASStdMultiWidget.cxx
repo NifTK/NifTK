@@ -108,7 +108,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
 , m_Show3DWindowInOrthoView(false)
-, m_View(MIDAS_VIEW_ORTHO)
+, m_Layout(MIDAS_LAYOUT_ORTHO)
 , m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
@@ -189,7 +189,7 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   m_DirectionAnnotations[2]->SetColour(3, sagittalColour);
 
   // Set default layout. This must be ORTHO.
-  this->SetMIDASView(MIDAS_VIEW_ORTHO);
+  this->SetLayout(MIDAS_LAYOUT_ORTHO);
 
   // Default to unselected, so borders are off.
   this->SetSelected(false);
@@ -419,7 +419,7 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   // When we "Select", the selection is at the level of the QmitkMIDASStdMultiWidget
   // so the whole of this widget is selected. However, we may have clicked in
   // a specific view, so it still helps to highlight the most recently clicked on view.
-  // Also, if you are displaying orthoview then you actually have 4 windows present,
+  // Also, if you are displaying ortho layout (2x2) then you actually have 4 windows present,
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
@@ -501,50 +501,50 @@ void QmitkMIDASStdMultiWidget::RequestUpdate()
 
   if (this->isVisible())
   {
-    switch(m_View)
+    switch(m_Layout)
     {
-    case MIDAS_VIEW_AXIAL:
+    case MIDAS_LAYOUT_AXIAL:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       break;
-    case MIDAS_VIEW_SAGITTAL:
+    case MIDAS_LAYOUT_SAGITTAL:
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
       break;
-    case MIDAS_VIEW_CORONAL:
+    case MIDAS_LAYOUT_CORONAL:
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       break;
-    case MIDAS_VIEW_ORTHO:
+    case MIDAS_LAYOUT_ORTHO:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
-    case MIDAS_VIEW_3H:
-    case MIDAS_VIEW_3V:
+    case MIDAS_LAYOUT_3H:
+    case MIDAS_LAYOUT_3V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       break;
-    case MIDAS_VIEW_3D:
+    case MIDAS_LAYOUT_3D:
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
-    case MIDAS_VIEW_COR_SAG_H:
-    case MIDAS_VIEW_COR_SAG_V:
+    case MIDAS_LAYOUT_COR_SAG_H:
+    case MIDAS_LAYOUT_COR_SAG_V:
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
     break;
-    case MIDAS_VIEW_COR_AX_H:
-    case MIDAS_VIEW_COR_AX_V:
+    case MIDAS_LAYOUT_COR_AX_H:
+    case MIDAS_LAYOUT_COR_AX_V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
     break;
-    case MIDAS_VIEW_SAG_AX_H:
-    case MIDAS_VIEW_SAG_AX_V:
+    case MIDAS_LAYOUT_SAG_AX_H:
+    case MIDAS_LAYOUT_SAG_AX_V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget2->GetRenderWindow());
     break;
     default:
       // die, this should never happen
-      assert((m_View >= 0 && m_View <= 6) || (m_View >= 9 && m_View <= 14));
+      assert((m_Layout >= 0 && m_Layout <= 6) || (m_Layout >= 9 && m_Layout <= 14));
       break;
     }
   }
@@ -652,16 +652,16 @@ void QmitkMIDASStdMultiWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((m_View == MIDAS_VIEW_ORTHO && m_Show3DWindowInOrthoView)
-          || m_View == MIDAS_VIEW_3D)
+      if ((m_Layout == MIDAS_LAYOUT_ORTHO && m_Show3DWindowInOrthoView)
+          || m_Layout == MIDAS_LAYOUT_3D)
       {
         visibleIn3DWindow = true;
       }
 
-      bool visibleInAxialView = false;
-      if (it->Value()->GetBoolProperty("visible", visibleInAxialView, axialRenderer))
+      bool visibleInAxialWindow = false;
+      if (it->Value()->GetBoolProperty("visible", visibleInAxialWindow, axialRenderer))
       {
-        if (!visibleInAxialView)
+        if (!visibleInAxialWindow)
         {
           visibleIn3DWindow = false;
         }
@@ -757,27 +757,27 @@ std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetRenderWindows() con
 MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation()
 {
   MIDASOrientation result = MIDAS_ORIENTATION_UNKNOWN;
-  if (m_View == MIDAS_VIEW_AXIAL)
+  if (m_Layout == MIDAS_LAYOUT_AXIAL)
   {
     result = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (m_View == MIDAS_VIEW_SAGITTAL)
+  else if (m_Layout == MIDAS_LAYOUT_SAGITTAL)
   {
     result = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (m_View == MIDAS_VIEW_CORONAL)
+  else if (m_Layout == MIDAS_LAYOUT_CORONAL)
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }
-  else if (m_View == MIDAS_VIEW_ORTHO
-           || m_View == MIDAS_VIEW_3H
-           || m_View == MIDAS_VIEW_3V
-           || m_View == MIDAS_VIEW_COR_SAG_H
-           || m_View == MIDAS_VIEW_COR_SAG_V
-           || m_View == MIDAS_VIEW_COR_AX_H
-           || m_View == MIDAS_VIEW_COR_AX_V
-           || m_View == MIDAS_VIEW_SAG_AX_H
-           || m_View == MIDAS_VIEW_SAG_AX_V
+  else if (m_Layout == MIDAS_LAYOUT_ORTHO
+           || m_Layout == MIDAS_LAYOUT_3H
+           || m_Layout == MIDAS_LAYOUT_3V
+           || m_Layout == MIDAS_LAYOUT_COR_SAG_H
+           || m_Layout == MIDAS_LAYOUT_COR_SAG_V
+           || m_Layout == MIDAS_LAYOUT_COR_AX_H
+           || m_Layout == MIDAS_LAYOUT_COR_AX_V
+           || m_Layout == MIDAS_LAYOUT_SAG_AX_H
+           || m_Layout == MIDAS_LAYOUT_SAG_AX_V
            )
   {
     if (m_RectangleRendering1->IsEnabled())
@@ -970,17 +970,17 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
       if (i < 3)
       {
 
-        mitk::Point3D    originInVx;
-        mitk::Point3D    originInMm;
-        mitk::Point3D    originOfSlice;
-        mitk::VnlVector  rightDV(3);
-        mitk::VnlVector  bottomDV(3);
-        mitk::VnlVector  normal(3);
-        int              width = 1;
-        int              height = 1;
+        mitk::Point3D originInVx;
+        mitk::Point3D originInMm;
+        mitk::Point3D originOfSlice;
+        mitk::VnlVector rightDV(3);
+        mitk::VnlVector bottomDV(3);
+        mitk::VnlVector normal(3);
+        int width = 1;
+        int height = 1;
         mitk::ScalarType viewSpacing = 1;
-        unsigned int     slices = 1;
-        bool             isFlipped;
+        unsigned int slices = 1;
+        bool isFlipped;
 
         float voxelOffset = 0;
         if(geometry->GetImageGeometry())
@@ -1013,7 +1013,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
         MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
 
         // Setting up the width, height, axis orientation.
-        switch(viewDirection)
+        switch (viewDirection)
         {
         case mitk::SliceNavigationController::Sagittal:
           width  = permutedBoundingBox[1];
@@ -1173,7 +1173,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view)
+void QmitkMIDASStdMultiWidget::SetLayout(MIDASLayout layout)
 {
   m_BlockDisplayGeometryEvents = true;
 
@@ -1195,56 +1195,56 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view)
   QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
   QmitkStdMultiWidgetLayout->setSpacing(0);
 
-  if (view == MIDAS_VIEW_3H)
+  if (layout == MIDAS_LAYOUT_3H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 2);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_3V)
+  else if (layout == MIDAS_LAYOUT_3V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 2, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_COR_SAG_H)
+  else if (layout == MIDAS_LAYOUT_COR_SAG_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    off
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_COR_SAG_V)
+  else if (layout == MIDAS_LAYOUT_COR_SAG_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    off
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_COR_AX_H)
+  else if (layout == MIDAS_LAYOUT_COR_AX_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_COR_AX_V)
+  else if (layout == MIDAS_LAYOUT_COR_AX_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_SAG_AX_H)
+  else if (layout == MIDAS_LAYOUT_SAG_AX_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (view == MIDAS_VIEW_SAG_AX_V)
+  else if (layout == MIDAS_LAYOUT_SAG_AX_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
@@ -1261,69 +1261,69 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  switch(view)
+  switch(layout)
   {
-  case MIDAS_VIEW_AXIAL:
+  case MIDAS_LAYOUT_AXIAL:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
-  case MIDAS_VIEW_SAGITTAL:
+  case MIDAS_LAYOUT_SAGITTAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
     this->mitkWidget2->setFocus();
     break;
-  case MIDAS_VIEW_CORONAL:
+  case MIDAS_LAYOUT_CORONAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget3->setFocus();
     break;
-  case MIDAS_VIEW_ORTHO:
+  case MIDAS_LAYOUT_ORTHO:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->show();
     this->mitkWidget1->setFocus();
     break;
-  case MIDAS_VIEW_3H:
-  case MIDAS_VIEW_3V:
+  case MIDAS_LAYOUT_3H:
+  case MIDAS_LAYOUT_3V:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
-  case MIDAS_VIEW_3D:
+  case MIDAS_LAYOUT_3D:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->show();
     this->mitkWidget4->setFocus();
     break;
-  case MIDAS_VIEW_COR_SAG_H:
-  case MIDAS_VIEW_COR_SAG_V:
+  case MIDAS_LAYOUT_COR_SAG_H:
+  case MIDAS_LAYOUT_COR_SAG_V:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget2->setFocus();
     break;
-  case MIDAS_VIEW_COR_AX_H:
-  case MIDAS_VIEW_COR_AX_V:
+  case MIDAS_LAYOUT_COR_AX_H:
+  case MIDAS_LAYOUT_COR_AX_V:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
     this->mitkWidget1->setFocus();
     break;
-  case MIDAS_VIEW_SAG_AX_H:
-  case MIDAS_VIEW_SAG_AX_V:
+  case MIDAS_LAYOUT_SAG_AX_H:
+  case MIDAS_LAYOUT_SAG_AX_V:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
@@ -1332,11 +1332,11 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view)
     break;
   default:
     // die, this should never happen
-    assert((m_View >= 0 && m_View <= 6) || (m_View >= 9 && m_View <= 14));
+    assert((m_Layout >= 0 && m_Layout <= 6) || (m_Layout >= 9 && m_Layout <= 14));
     break;
   }
 
-  m_View = view;
+  m_Layout = layout;
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
@@ -1346,21 +1346,9 @@ void QmitkMIDASStdMultiWidget::SetMIDASView(MIDASView view)
 
 
 //-----------------------------------------------------------------------------
-MIDASView QmitkMIDASStdMultiWidget::GetMIDASView() const
+MIDASLayout QmitkMIDASStdMultiWidget::GetLayout() const
 {
-  return m_View;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsSingle2DView() const
-{
-  bool result = false;
-  if (m_View == MIDAS_VIEW_AXIAL || m_View == MIDAS_VIEW_SAGITTAL || m_View == MIDAS_VIEW_CORONAL)
-  {
-    result = true;
-  }
-  return result;
+  return m_Layout;
 }
 
 
@@ -1941,8 +1929,8 @@ double QmitkMIDASStdMultiWidget::FitMagnification()
   MIDASOrientation orientation = this->GetOrientation();
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    // Note, that this method should only be called for MIDAS purposes, when the view is a 2D
-    // view, so it will either be Axial, Coronal, Sagittal, and not 3D or OthoView.
+    // Note, that this method should only be called for MIDAS purposes, when the layout is a 2D
+    // layout, so it will either be Axial, Coronal, Sagittal, and not 3D or ortho layout.
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(orientation);
 
     // Given the above comment, this means, we MUST have a window from this choice of 3.

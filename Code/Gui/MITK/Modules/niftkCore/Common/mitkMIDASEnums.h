@@ -26,7 +26,7 @@
  * \enum MIDASOrientation
  * \brief Describes the different types of orientation, axial, sagittal, coronal,
  * that can be achieved in the MIDAS style Display window. This is different from
- * the MIDASView. The orientation might be used to refer to the axis of an image,
+ * the MIDASLayout. The orientation might be used to refer to the axis of an image,
  * so an image can ONLY be sampled in AXIAL, SAGITTAL and CORONAL direction.
  */
 enum MIDASOrientation
@@ -43,57 +43,57 @@ enum MIDASOrientation
 const int MIDAS_ORIENTATION_NUMBER = 4;
 
 /*!
- * \enum MIDASView
+ * \enum MIDASLayout
  * \brief Describes the different window layouts that can be achieved in
- * the MIDAS style Display window. So one MIDASView could have
+ * the MIDAS style Display window. So one MIDASLayout could have
  * multiple MIDASOrientations, but most often will contain either Axial,
- * Coronal or Sagittal. This is different to the MIDASView as a view
+ * Coronal or Sagittal. This is different to the MIDASLayout as a layout
  * can contain multiple orientations.
  */
-enum MIDASView
+enum MIDASLayout
 {
-  MIDAS_VIEW_AXIAL = 0,
-  MIDAS_VIEW_SAGITTAL = 1,
-  MIDAS_VIEW_CORONAL = 2,
-  MIDAS_VIEW_ORTHO = 3,
-  MIDAS_VIEW_3D = 4,
-  MIDAS_VIEW_3H = 5,
-  MIDAS_VIEW_3V = 6,
-  MIDAS_VIEW_AS_ACQUIRED = 7,
-  MIDAS_VIEW_UNKNOWN = 8,
-  MIDAS_VIEW_COR_SAG_H = 9,
-  MIDAS_VIEW_COR_SAG_V = 10,
-  MIDAS_VIEW_COR_AX_H = 11,
-  MIDAS_VIEW_COR_AX_V = 12,
-  MIDAS_VIEW_SAG_AX_H = 13,
-  MIDAS_VIEW_SAG_AX_V = 14
+  MIDAS_LAYOUT_AXIAL = 0,
+  MIDAS_LAYOUT_SAGITTAL = 1,
+  MIDAS_LAYOUT_CORONAL = 2,
+  MIDAS_LAYOUT_ORTHO = 3,
+  MIDAS_LAYOUT_3D = 4,
+  MIDAS_LAYOUT_3H = 5,
+  MIDAS_LAYOUT_3V = 6,
+  MIDAS_LAYOUT_AS_ACQUIRED = 7,
+  MIDAS_LAYOUT_UNKNOWN = 8,
+  MIDAS_LAYOUT_COR_SAG_H = 9,
+  MIDAS_LAYOUT_COR_SAG_V = 10,
+  MIDAS_LAYOUT_COR_AX_H = 11,
+  MIDAS_LAYOUT_COR_AX_V = 12,
+  MIDAS_LAYOUT_SAG_AX_H = 13,
+  MIDAS_LAYOUT_SAG_AX_V = 14
 };
 
 
 /*!
- * \brief Returns true if the view contains only one window, otherwise false.
+ * \brief Returns true if the layout contains only one window, otherwise false.
  */
-inline bool IsSingleWindowLayout(MIDASView midasView)
+inline bool IsSingleWindowLayout(MIDASLayout layout)
 {
-  return midasView == MIDAS_VIEW_AXIAL ||
-      midasView == MIDAS_VIEW_SAGITTAL ||
-      midasView == MIDAS_VIEW_CORONAL ||
-      midasView == MIDAS_VIEW_3D;
+  return layout == MIDAS_LAYOUT_AXIAL
+      || layout == MIDAS_LAYOUT_SAGITTAL
+      || layout == MIDAS_LAYOUT_CORONAL
+      || layout == MIDAS_LAYOUT_3D;
 }
 
 
 /*!
- * \brief Returns true if the view contains multiple windows, otherwise false.
+ * \brief Returns true if the layout contains multiple windows, otherwise false.
  */
-inline bool IsMultiWindowLayout(MIDASView midasView)
+inline bool IsMultiWindowLayout(MIDASLayout layout)
 {
-  return !IsSingleWindowLayout(midasView);
+  return !IsSingleWindowLayout(layout);
 }
 
 /*!
- * \brief The number of the possible views.
+ * \brief The number of the possible layouts.
  */
-const int MIDAS_VIEW_NUMBER = 15;
+const int MIDAS_LAYOUT_NUMBER = 15;
 
 /*!
  * \enum MIDASDropType

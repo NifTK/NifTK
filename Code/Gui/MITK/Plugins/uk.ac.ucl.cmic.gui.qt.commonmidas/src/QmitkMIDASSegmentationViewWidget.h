@@ -98,11 +98,11 @@ public:
 signals:
 
   /**
-   * \brief At the moment we support axial, coronal, or sagittal views, or combinations of
-   * two view windows, in vertical or horizontal mode. (see MIDASView enum for a complete list),
-   * and emit this signal when the displayed view of this window changes.
+   * \brief At the moment we support single axial, coronal, or sagittal render windows, or combinations of
+   * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
+   * and emit this signal when the displayed layout of this window changes.
    */
-  void LayoutChanged(MIDASView);
+  void LayoutChanged(MIDASLayout);
 
 protected slots:
 
@@ -122,7 +122,7 @@ protected:
 
 private:
 
-  /// \brief Method that actually changes the view to axial, sagittal, coronal etc.
+  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
   void ChangeLayout(bool isInitialising = false);
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
@@ -131,8 +131,8 @@ private:
   /// \brief Works out the MIDASOrientation of the currently focused window.
   MIDASOrientation GetCurrentMainWindowOrientation();
 
-  /// \brief Works out the MIDASView of the currently focused window.
-  MIDASView GetCurrentMainWindowView();
+  /// \brief Works out the MIDASLayout of the currently focused window.
+  MIDASLayout GetCurrentMainWindowLayout();
 
   /// \brief Returns true if the currently focused window is in this widget.
   bool IsCurrentlyFocusedWindowInThisWidget();
@@ -144,9 +144,9 @@ private:
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
-  MIDASView m_View;
+  MIDASLayout m_Layout;
 
-  MIDASView m_MainWindowView;
+  MIDASLayout m_MainWindowLayout;
 
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
