@@ -1495,6 +1495,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
     double magnification = this->ComputeMagnification(renderWindow);
+
     if (magnification != m_Magnification)
     {
       mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
@@ -1908,7 +1909,7 @@ double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderW
   // Note that we take the scale factor from the first axis always, consequently.
   // Other strategies could be followed as well, e.g. taking the axes with the smallest
   // voxel size.
-  double scaleFactorPxPerVx = scaleFactorsPxPerVx[0];
+  double scaleFactorPxPerVx = scaleFactorsPxPerVx[m_LongestSideOfVoxels];
 
   // Finally, we calculate the magnification from the scale factor.
   double magnification = scaleFactorPxPerVx - 1.0;
