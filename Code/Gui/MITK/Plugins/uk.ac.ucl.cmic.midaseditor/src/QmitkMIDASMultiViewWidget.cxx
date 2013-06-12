@@ -94,7 +94,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_DefaultNumberOfColumns(defaultNumberOfColumns)
 , m_Show2DCursors(false)
 , m_Show3DWindowInOrthoView(false)
-, m_RememberViewSettingsPerOrientation(false)
+, m_RememberSettingsPerLayout(false)
 , m_IsThumbnailMode(false)
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
@@ -384,7 +384,7 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 
   widget->SetBackgroundColor(m_BackgroundColour);
   widget->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
-  widget->SetRememberViewSettingsPerOrientation(m_RememberViewSettingsPerOrientation);
+  widget->SetRememberSettingsPerLayout(m_RememberSettingsPerLayout);
   widget->SetDisplayInteractionsEnabled(true);
   widget->SetPanningBound(true);
   widget->SetZoomingBound(true);
@@ -421,31 +421,31 @@ void QmitkMIDASMultiViewWidget::SetDefaultInterpolationType(MIDASDefaultInterpol
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetDefaultViewType(MIDASLayout midasView)
+void QmitkMIDASMultiViewWidget::SetDefaultLayout(MIDASLayout layout)
 {
-  m_VisibilityManager->SetDefaultViewType(midasView);
-  if (::IsSingleWindowLayout(midasView))
+  m_VisibilityManager->SetDefaultLayout(layout);
+  if (::IsSingleWindowLayout(layout))
   {
-    this->SetDefaultSingleWindowLayout(midasView);
+    this->SetDefaultSingleWindowLayout(layout);
   }
   else
   {
-    this->SetDefaultMultiWindowLayout(midasView);
+    this->SetDefaultMultiWindowLayout(layout);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetDefaultSingleWindowLayout(MIDASLayout midasView)
+void QmitkMIDASMultiViewWidget::SetDefaultSingleWindowLayout(MIDASLayout layout)
 {
-  m_SingleWindowLayout = midasView;
+  m_SingleWindowLayout = layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetDefaultMultiWindowLayout(MIDASLayout midasView)
+void QmitkMIDASMultiViewWidget::SetDefaultMultiWindowLayout(MIDASLayout layout)
 {
-  m_MultiWindowLayout = midasView;
+  m_MultiWindowLayout = layout;
 }
 
 
@@ -538,12 +538,12 @@ void QmitkMIDASMultiViewWidget::SetShow3DWindowInOrthoView(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetRememberViewSettingsPerOrientation(bool rememberViewSettingsPerOrientation)
+void QmitkMIDASMultiViewWidget::SetRememberSettingsPerLayout(bool rememberSettingsPerLayout)
 {
-  m_RememberViewSettingsPerOrientation = rememberViewSettingsPerOrientation;
+  m_RememberSettingsPerLayout = rememberSettingsPerLayout;
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    m_SingleViewWidgets[i]->SetRememberViewSettingsPerOrientation(rememberViewSettingsPerOrientation);
+    m_SingleViewWidgets[i]->SetRememberSettingsPerLayout(rememberSettingsPerLayout);
   }
 }
 
@@ -672,21 +672,21 @@ bool QmitkMIDASMultiViewWidget::GetMIDASSegmentationMode() const
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASMultiViewWidget::GetDefaultOrientationForSegmentation() const
+MIDASLayout QmitkMIDASMultiViewWidget::GetDefaultLayoutForSegmentation() const
 {
   assert(m_VisibilityManager);
 
-  MIDASLayout viewForSegmentation = m_VisibilityManager->GetDefaultViewType();
+  MIDASLayout layout = m_VisibilityManager->GetDefaultLayout();
 
-  if (   viewForSegmentation != MIDAS_LAYOUT_AXIAL
-      && viewForSegmentation != MIDAS_LAYOUT_SAGITTAL
-      && viewForSegmentation != MIDAS_LAYOUT_CORONAL
+  if (   layout != MIDAS_LAYOUT_AXIAL
+      && layout != MIDAS_LAYOUT_SAGITTAL
+      && layout != MIDAS_LAYOUT_CORONAL
      )
   {
-    viewForSegmentation = MIDAS_LAYOUT_CORONAL;
+    layout = MIDAS_LAYOUT_CORONAL;
   }
 
-  return viewForSegmentation;
+  return layout;
 }
 
 
@@ -1044,7 +1044,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, 
 
   m_MIDASSlidersWidget->m_MagnificationWidget->setValue(magnification);
 
-  MIDASLayout layout = selectedView->GetView();
+  MIDASLayout layout = selectedView->GetLayout();
   m_MIDASLayoutWidget->SetLayout(layout);
 
   this->Update2DCursorVisibility();
@@ -1076,7 +1076,7 @@ void QmitkMIDASMultiViewWidget::SwitchWindows(int selectedViewIndex, QmitkRender
     // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
     /////////////////////////////////////////////////////////////////////////////////////////////
     MIDASOrientation orientation = selectedView->GetOrientation();
-    MIDASLayout layout = selectedView->GetView();
+    MIDASLayout layout = selectedView->GetLayout();
 
     bool slidersWidgetWasBlocked = m_MIDASSlidersWidget->BlockSignals(true);
     bool orientationWidgetWasBlocked = m_MIDASLayoutWidget->blockSignals(true);
@@ -1374,7 +1374,7 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(MIDASLayout layout)
 {
   if (layout != MIDAS_LAYOUT_UNKNOWN)
   {
-    this->SwitchMIDASView(layout);
+    this->SwitchLayout(layout);
 
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).
@@ -1419,7 +1419,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToAxial()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToAxial()
 {
-  this->SwitchMIDASView(MIDAS_LAYOUT_AXIAL);
+  this->SwitchLayout(MIDAS_LAYOUT_AXIAL);
 }
 
 
@@ -1439,7 +1439,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToSagittal()
 {
-  this->SwitchMIDASView(MIDAS_LAYOUT_SAGITTAL);
+  this->SwitchLayout(MIDAS_LAYOUT_SAGITTAL);
 }
 
 
@@ -1459,7 +1459,7 @@ bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowToCoronal()
 {
-  this->SwitchMIDASView(MIDAS_LAYOUT_CORONAL);
+  this->SwitchLayout(MIDAS_LAYOUT_CORONAL);
 }
 
 
@@ -1479,7 +1479,7 @@ bool QmitkMIDASMultiViewWidget::SwitchTo3D()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedWindowTo3D()
 {
-  this->SwitchMIDASView(MIDAS_LAYOUT_3D);
+  this->SwitchLayout(MIDAS_LAYOUT_3D);
 }
 
 
@@ -1487,44 +1487,44 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowTo3D()
 bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
 {
   QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[this->GetSelectedViewIndex()];
-  MIDASLayout currentMidasView = selectedView->GetView();
-  MIDASLayout nextMidasView;
+  MIDASLayout currentLayout = selectedView->GetLayout();
+  MIDASLayout nextLayout;
 
-  if (::IsSingleWindowLayout(currentMidasView))
+  if (::IsSingleWindowLayout(currentLayout))
   {
-    nextMidasView = m_MultiWindowLayout;
+    nextLayout = m_MultiWindowLayout;
   }
   else
   {
     switch (selectedView->GetOrientation())
     {
     case MIDAS_ORIENTATION_AXIAL:
-      nextMidasView = MIDAS_LAYOUT_AXIAL;
+      nextLayout = MIDAS_LAYOUT_AXIAL;
       break;
     case MIDAS_ORIENTATION_SAGITTAL:
-      nextMidasView = MIDAS_LAYOUT_SAGITTAL;
+      nextLayout = MIDAS_LAYOUT_SAGITTAL;
       break;
     case MIDAS_ORIENTATION_CORONAL:
-      nextMidasView = MIDAS_LAYOUT_CORONAL;
+      nextLayout = MIDAS_LAYOUT_CORONAL;
       break;
     case MIDAS_ORIENTATION_UNKNOWN:
-      nextMidasView = MIDAS_LAYOUT_3D;
+      nextLayout = MIDAS_LAYOUT_3D;
       break;
     default:
-      nextMidasView = MIDAS_LAYOUT_CORONAL;
+      nextLayout = MIDAS_LAYOUT_CORONAL;
     }
   }
 
-  // Note that we do not block the signals here, so this->SwitchMIDASView(nextMidasView) will
+  // Note that we do not block the signals here, so this->SwitchLayout(nextLayout) will
   // be called.
-  m_MIDASLayoutWidget->SetLayout(nextMidasView);
+  m_MIDASLayoutWidget->SetLayout(nextLayout);
 
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASLayout midasView)
+void QmitkMIDASMultiViewWidget::SwitchLayout(MIDASLayout layout)
 {
   int selectedViewIndex = this->GetSelectedViewIndex();
 
@@ -1533,32 +1533,32 @@ void QmitkMIDASMultiViewWidget::SwitchMIDASView(MIDASLayout midasView)
   {
     int viewIndexToUpdate = viewIndexesToUpdate[i];
     QmitkMIDASSingleViewWidget* viewToUpdate = m_SingleViewWidgets[viewIndexToUpdate];
-    viewToUpdate->SetView(midasView, false);
+    viewToUpdate->SetLayout(layout, false);
 
     if (viewIndexToUpdate == selectedViewIndex)
     {
-      if (midasView == MIDAS_LAYOUT_AXIAL)
+      if (layout == MIDAS_LAYOUT_AXIAL)
       {
         viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetAxialWindow());
       }
-      else if (midasView == MIDAS_LAYOUT_SAGITTAL)
+      else if (layout == MIDAS_LAYOUT_SAGITTAL)
       {
         viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetSagittalWindow());
       }
-      else if (midasView == MIDAS_LAYOUT_CORONAL)
+      else if (layout == MIDAS_LAYOUT_CORONAL)
       {
         viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
       }
     }
   }
 
-  if (::IsSingleWindowLayout(midasView))
+  if (::IsSingleWindowLayout(layout))
   {
-    m_SingleWindowLayout = midasView;
+    m_SingleWindowLayout = layout;
   }
   else
   {
-    m_MultiWindowLayout = midasView;
+    m_MultiWindowLayout = layout;
   }
 }
 
@@ -1900,12 +1900,12 @@ void QmitkMIDASMultiViewWidget::OnBindTypeChanged()
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
-    MIDASLayout midasView = selectedView->GetView();
+    MIDASLayout layout = selectedView->GetLayout();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
-        m_SingleViewWidgets[i]->SetView(midasView, false);
+        m_SingleViewWidgets[i]->SetLayout(layout, false);
       }
     }
   }

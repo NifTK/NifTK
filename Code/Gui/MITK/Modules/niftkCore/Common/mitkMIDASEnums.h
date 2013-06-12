@@ -75,10 +75,10 @@ enum MIDASLayout
  */
 inline bool IsSingleWindowLayout(MIDASLayout layout)
 {
-  return layout == MIDAS_LAYOUT_AXIAL ||
-      layout == MIDAS_LAYOUT_SAGITTAL ||
-      layout == MIDAS_LAYOUT_CORONAL ||
-      layout == MIDAS_LAYOUT_3D;
+  return layout == MIDAS_LAYOUT_AXIAL
+      || layout == MIDAS_LAYOUT_SAGITTAL
+      || layout == MIDAS_LAYOUT_CORONAL
+      || layout == MIDAS_LAYOUT_3D;
 }
 
 

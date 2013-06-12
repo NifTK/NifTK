@@ -30,8 +30,8 @@ class QGridLayout;
 /**
  * \class QmitkMIDASSingleViewWidget
  * \brief A widget to wrap a single QmitkMIDASStdMultiWidget view,
- * providing methods for switching the view mode, remembering the last slice,
- * magnification and in the future camera position.
+ * providing methods for switching the render window layout, remembering
+ * the last slice, magnification and cursor position.
  *
  * IMPORTANT: This class acts as a wrapper for QmitkMIDASStdMultiWidget.
  * Do not expose QmitkMIDASStdMultiWidget, or any member variables, or any
@@ -71,19 +71,16 @@ public:
 
   friend class QmitkMIDASSegmentationViewWidget;
 
-  QmitkMIDASSingleViewWidget(QWidget *parent);
+  QmitkMIDASSingleViewWidget(QWidget* parent);
 
   QmitkMIDASSingleViewWidget(QString windowName,
                              double minimumMagnification,
                              double maximumMagnification,
-                             QWidget *parent = 0,
+                             QWidget* parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0
                              );
   ~QmitkMIDASSingleViewWidget();
-
-  /// \brief Returns true if the view is axial, coronal or sagittal and false otherwise (e.g. if ortho-view or 3D view).
-  bool IsSingle2DView() const;
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -137,17 +134,17 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets a flag to determin if we remember the view settings such as slice, cursor position, magnification, time step when we switch between views axial, coronal, sagittal.
-  void SetRememberViewSettingsPerOrientation(bool remember);
+  /// \brief Sets a flag to determine if we remember the view settings (slice, timestep, magnification) when we switch the render window layout
+  void SetRememberSettingsPerLayout(bool remember);
 
-  /// \brief Get the flag to determin if we remember the view settings such as slice, cursor position, magnification, time step when we switch between views axial, coronal, sagittal.
-  bool GetRememberViewSettingsPerOrientation() const;
+  /// \brief Sets a flag to determine if we remember the view settings (slice, timestep, magnification) when we switch the render window layout
+  bool GetRememberSettingsPerLayout() const;
 
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
@@ -161,10 +158,10 @@ public:
   /// \brief Returns the maximum allowed slice number for a given orientation.
   unsigned int GetMaxSlice(MIDASOrientation orientation) const;
 
-  /// \brief Gets the minimum time step, or -1 if the widget is currently showing multiple views.
+  /// \brief Gets the minimum time step, or -1 if the widget is currently showing multiple windows.
   unsigned int GetMinTime() const;
 
-  /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple views.
+  /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple windows.
   unsigned int GetMaxTime() const;
 
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
@@ -218,11 +215,11 @@ public:
   /// \brief Set the current time step number.
   void SetTime(unsigned int timeSlice);
 
-  /// \brief Get the view ID.
-  MIDASLayout GetView() const;
+  /// \brief Gets the render window layout.
+  MIDASLayout GetLayout() const;
 
-  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetView(MIDASLayout view, bool fitToDisplay);
+  /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
+  void SetLayout(MIDASLayout layout, bool fitToDisplay);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -285,9 +282,9 @@ signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, int sliceNumber);
-  void CursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
-  void MagnificationChanged(QmitkMIDASSingleViewWidget *widget, double magnification);
+  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceNumber);
+  void CursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
+  void MagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
 protected slots:
 
@@ -318,31 +315,31 @@ private:
   void ResetCurrentPosition();
   void ResetRememberedPositions();
 
-  mitk::DataStorage::Pointer           m_DataStorage;
-  mitk::RenderingManager::Pointer      m_RenderingManager;
+  mitk::DataStorage::Pointer m_DataStorage;
+  mitk::RenderingManager::Pointer m_RenderingManager;
 
-  QGridLayout                         *m_Layout;
-  QmitkMIDASStdMultiWidget            *m_MultiWidget;
+  QGridLayout* m_GridLayout;
+  QmitkMIDASStdMultiWidget* m_MultiWidget;
 
-  bool                                 m_IsBound;
-  mitk::Geometry3D::Pointer            m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer            m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::Geometry3D::Pointer            m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
+  bool m_IsBound;
+  mitk::Geometry3D::Pointer m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::Geometry3D::Pointer m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
 
-  double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
-  double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  MIDASLayout                            m_View;
-  MIDASOrientation                     m_Orientation;
+  MIDASLayout m_Layout;
+  MIDASOrientation m_Orientation;
 
-  int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
-  int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  mitk::Vector3D                       m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
-  double                               m_Magnifications[MIDAS_LAYOUT_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
-  bool                                 m_ViewInitialised[MIDAS_LAYOUT_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
+  int m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
+  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
+  double m_Magnifications[MIDAS_LAYOUT_NUMBER * 2];     // Two each for layout. Unbound, then bound, alternatingly.
+  bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
-  bool                                 m_NavigationControllerEventListening;
-  bool                                 m_RememberViewSettingsPerOrientation;
+  bool m_NavigationControllerEventListening;
+  bool m_RememberSettingsPerLayout;
 };
 
 #endif

@@ -105,14 +105,14 @@ public:
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
 
-  /// \brief Sets the default view (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultViewType(MIDASLayout midasView);
+  /// \brief Sets the default layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultLayout(MIDASLayout layout);
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASLayout midasView);
+  void SetDefaultSingleWindowLayout(MIDASLayout layout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASLayout midasView);
+  void SetDefaultMultiWindowLayout(MIDASLayout layout);
 
   /// \brief Sets the default drop type checkbox.
   void SetDropTypeWidget(MIDASDropType dropType);
@@ -138,8 +138,8 @@ public:
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
 
-  /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch orientation between axial, coronal, sagittal.
-  void SetRememberViewSettingsPerOrientation(bool rememberViewSettingsPerOrientation);
+  /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch the render window layout
+  void SetRememberSettingsPerLayout(bool rememberSettingsPerLayout);
 
   /// \brief Sets the slice select slider to be tracking.
   void SetSliceSelectTracking(bool isTracking);
@@ -319,14 +319,14 @@ private:
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
  int GetIndexFromRowAndColumn(int r, int c) const;
 
-  /// \brief Will look at the default view type, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  MIDASLayout GetDefaultOrientationForSegmentation() const;
+  /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
+  MIDASLayout GetDefaultLayoutForSegmentation() const;
 
   /// \brief Main method to change the number of views.
   void SetLayoutSize(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
-  // Called from the QRadioButtons to set the view.
-  void SwitchMIDASView(MIDASLayout midasView);
+  // Called from the QRadioButtons to set the layout.
+  void SwitchLayout(MIDASLayout layout);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
   void SetSelectedViewIndex(int i);
@@ -433,7 +433,7 @@ private:
   bool m_Show2DCursors;
   bool m_Show3DWindowInOrthoView;
   QColor m_BackgroundColour;
-  bool m_RememberViewSettingsPerOrientation;
+  bool m_RememberSettingsPerLayout;
   bool m_IsThumbnailMode;
   bool m_IsMIDASSegmentationMode;
   bool m_NavigationControllerEventListening;
