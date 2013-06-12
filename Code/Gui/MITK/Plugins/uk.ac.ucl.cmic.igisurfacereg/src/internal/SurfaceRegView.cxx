@@ -22,6 +22,8 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkFileIOUtils.h>
 #include <QMessageBox>
+#include <mitkCoordinateAxesData.h>
+#include <mitkAffineTransformDataNodeProperty.h>
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
@@ -168,6 +170,36 @@ void SurfaceRegView::OnCalculateButtonPressed()
       m_Controls->m_MatrixWidget->setValue(i, j, m_Matrix->GetElement(i, j));
     }
   }
+
+  mitk::CoordinateAxesData* transform = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+
+  if (transform != NULL)
+  {
+    mitk::AffineTransformDataNodeProperty::Pointer property = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty("niftk.transform"));
+    if (property.IsNull())
+    {
+      MITK_ERROR << "LiverSurgeryManager::SetTransformation the node " << node->GetName() << " does not contain the niftk.transform property" << std::endl;
+      return;
+    }
+
+    transform->SetVtkMatrix(*m_Matrix);
+    transform->Modified();
+
+    property->SetTransform(*m_Matrix);
+    property->Modified();
+
+  }
+  else
+  {
+    mitk::Geometry3D::Pointer geometry = node->GetData()->GetGeometry();
+    if (geometry.IsNotNull())
+    {
+     // geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&m_Matrix));
+      geometry->SetIndexToWorldTransformByVtkMatrix(m_Matrix);
+      geometry->Modified();
+    }
+  }
+
 }
 
 //--------------------------------------------------------------------------------
