@@ -395,7 +395,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
           if (!camNodeName.empty())
           {
             // is ok if node doesnt exist, SurfaceReconstruction will deal with that.
-            camNode = storage->GetNamedNode(leftText);
+            camNode = storage->GetNamedNode(camNodeName);
           }
 
           try
