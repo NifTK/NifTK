@@ -28,26 +28,11 @@
 #!                     BUILD_SLICER and BUILD_CLI are mutually exclusive.
 #! \param INSTALL_SCRIPT Will generate a script that goes into the cli-modules
 #!                       folder.
-#! \param INSTALL_LIBS If true will install all the dependent libraries.
-#!                     If BUILD_GUI is on, then you can leave this off, as
-#!                     there are only 3 GUI apps, but 120+ command line apps,
-#!                     and if the GUIs run, and all the libraries have been
-#!                     resolved and verified, then in all likelihood, so will
-#!                     the command line apps. If however, BUILD_GUI is off,
-#!                     you must specify this as true, and tolerate a long
-#!                     long wait for 'make install' to complete.
-#!
-#!                     This ONLY works on LINUX.
-#!
-#!                     On Windows/Mac you are expected to distribute packages
-#!                     with at least one GUI application. This parameter is
-#!                     primarily just so we can create a cluster build of
-#!                     all command line apps, with NO GUI.
 ###############################################################################
 
 macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
-  set(options BUILD_SLICER BUILD_CLI INSTALL_SCRIPT )
-  set(oneValueArgs NAME INSTALL_LIBS)
+  set(options BUILD_SLICER BUILD_CLI INSTALL_SCRIPT)
+  set(oneValueArgs NAME)
   set(multiValueArgs TARGET_LIBRARIES)
   cmake_parse_arguments(_APP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -87,58 +72,5 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
         NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.sh)
       endif()
     endif(WIN32)
-  endif()
-
-  ################
-  # Only For Linux
-  ################
-  if(NOT WIN32 AND NOT APPLE)
-    if(_APP_INSTALL_LIBS)
-
-      # This part is based on that in niftkCreateGuiApplication.cmake.
-      set(_library_dirs
-        ${NiftyLink_LIBRARY_DIRS}
-        ${curl_LIBRARY_DIR}
-        ${zlib_LIBRARY_DIR}
-        ${Boost_LIBRARY_DIRS}
-      )
-      if (${aruco_DIR})
-        list(APPEND _library_dirs ${aruco_DIR}/lib)
-      endif()
-
-
-      # This part is based on that in mitkMacroInstallTargets.cmake
-      set(intermediate_dir)
-      if(WIN32 AND NOT MINGW)
-        set(intermediate_dir ${CMAKE_BUILD_TYPE})
-      endif()
-
-      list(APPEND _library_dirs ${MITK_VTK_LIBRARY_DIRS}/${intermediate_dir})
-      list(APPEND _library_dirs ${MITK_ITK_LIBRARY_DIRS}/${intermediate_dir})
-      list(APPEND _library_dirs ${MITK_BINARY_DIR}/bin/${intermediate_dir})
-      list(APPEND _library_dirs ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${intermediate_dir})
-
-      if(_APP_BUILD_GUI)
-        list(APPEND _library_dirs ${QT_LIBRARY_DIR})
-        list(APPEND _library_dirs ${QT_LIBRARY_DIR}/../bin)
-      endif()
-
-      if(GDCM_DIR)
-        list(APPEND _library_dirs ${GDCM_DIR}/bin/${intermediate_dir})
-      endif()
-      if(OpenCV_DIR)
-        list(APPEND _library_dirs ${OpenCV_DIR}/bin/${intermediate_dir})
-      endif()
-      if(SOFA_DIR)
-        list(APPEND _library_dirs ${SOFA_DIR}/bin/${intermediate_dir})
-      endif()
-
-      list(REMOVE_DUPLICATES _library_dirs)
-
-      install(CODE "
-        include(BundleUtilities)
-        fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/${_APP_NAME}\"   \"\"   \"${_library_dirs}\")
-        " COMPONENT Runtime)
-    endif()
   endif()
 endmacro()

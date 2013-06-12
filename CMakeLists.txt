@@ -350,6 +350,7 @@ include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLIScript)
 include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateGuiApplication)
+include(niftkMacroFixupCommandLineApps)
 
 ######################################################################
 # Test for some required system information. This came from old

@@ -49,10 +49,7 @@ if (BUILD_MESHING)
     )
 endif (BUILD_MESHING)
 
-set(INSTALL_LIBS OFF)
-if(NOT BUILD_GUI)
-  set(INSTALL_LIBS ON)
-endif()
+set(_all_command_line_apps "")
 
 ###############################################################
 # These programs use the new SlicerExecutionModel where
@@ -79,6 +76,7 @@ if(SlicerExecutionModel_FOUND)
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
+  list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
 
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
   
@@ -87,7 +85,6 @@ if(SlicerExecutionModel_FOUND)
       NAME ${APP}
       BUILD_SLICER
       INSTALL_SCRIPT
-      INSTALL_LIBS ${INSTALL_LIBS}
       TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
     )
   endforeach()
@@ -102,7 +99,8 @@ if(SlicerExecutionModel_FOUND)
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )
-  
+    list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
+
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     
     foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
@@ -110,7 +108,6 @@ if(SlicerExecutionModel_FOUND)
         NAME ${APP}
         BUILD_SLICER
         INSTALL_SCRIPT
-        INSTALL_LIBS ${INSTALL_LIBS}
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
       )
     endforeach()
@@ -123,6 +120,7 @@ if(SlicerExecutionModel_FOUND)
       set(VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES
         niftkF3DControlGridToVTKPolyData
       )
+      list(APPEND _all_command_line_apps ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
 
       if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         # OpenMP is disabled when the compiler is based on Clang
@@ -149,7 +147,6 @@ if(SlicerExecutionModel_FOUND)
           NAME ${APP}
           BUILD_SLICER
           INSTALL_SCRIPT
-          INSTALL_LIBS ${INSTALL_LIBS}
           TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
         )
       endforeach()
@@ -169,12 +166,12 @@ set(ADDITIONAL_SLICER_EXECUTION_MODEL_APPS
   niftkBreastMaskSegmentationFromMRI
   niftkVesselExtractor
   )
+list(APPEND _all_command_line_apps ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
 
 foreach(APP ${ADDITIONAL_SLICER_EXECUTION_MODEL_APPS})
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME ${APP}
     INSTALL_SCRIPT
-    INSTALL_LIBS ${INSTALL_LIBS}
     TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
   )
 endforeach()
@@ -282,12 +279,12 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
 )
+list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
 
 foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME ${APP}
     BUILD_CLI
-    INSTALL_LIBS ${INSTALL_LIBS}
     TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
   )
 endforeach()
@@ -312,12 +309,12 @@ if(VTK_FOUND)
     niftkSmoothPolyData
     niftkTransformPolyData
   )
+  list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
 
   foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES})
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME ${APP}
       BUILD_CLI
-      INSTALL_LIBS ${INSTALL_LIBS}
       TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
     )
   endforeach()
@@ -329,7 +326,6 @@ if(VTK_FOUND)
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME niftkMeshFromLabels
       BUILD_CLI
-      INSTALL_LIBS ${INSTALL_LIBS}
       TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
     )
   endif (BUILD_MESHING) 
@@ -349,12 +345,12 @@ if(VTK_FOUND)
     set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
       niftkCreateBreastMesh
     )
+    list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
 
     foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES})
       NIFTK_CREATE_COMMAND_LINE_APPLICATION(
         NAME ${APP}
         BUILD_CLI
-        INSTALL_LIBS ${INSTALL_LIBS}
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES}
       )
     endforeach()
@@ -384,3 +380,12 @@ if(CUDA_FOUND)
   #endforeach()
   
 endif(CUDA_FOUND)
+
+##############################################################
+# If no GUI, we still need to make sure we have all the
+# necessary libraries for the command line apps to work.
+##############################################################
+if(NOT BUILD_GUI)
+  NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_all_command_line_apps})
+endif()
+

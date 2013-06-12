@@ -65,7 +65,6 @@ foreach(APP ${HELPER_APPS})
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME ${APP}
     BUILD_CLI
-    INSTALL_LIBS OFF
     TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
   )
 endforeach()
@@ -93,7 +92,6 @@ if(SlicerExecutionModel_FOUND)
       NAME ${APP}
       BUILD_SLICER
       INSTALL_SCRIPT
-      INSTALL_LIBS OFF
       TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
     )
   endforeach()
