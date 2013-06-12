@@ -24,6 +24,8 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkNodePredicateDataType.h>
 #include <QFileDialog>
+#include <mitkCoordinateAxesData.h>
+
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
@@ -104,12 +106,16 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
   this->RetrievePreferenceValues();
   this->LeftChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   this->RightChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
+  CameraNodeComboBox->SetDataStorage(GetDataStorage());
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
   this->LeftChannelNodeNameComboBox->SetAutoSelectNewItems(false);
   this->LeftChannelNodeNameComboBox->SetPredicate(isImage);
   this->RightChannelNodeNameComboBox->SetAutoSelectNewItems(false);
   this->RightChannelNodeNameComboBox->SetPredicate(isImage);
+  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  CameraNodeComboBox->SetAutoSelectNewItems(false);
+  CameraNodeComboBox->SetPredicate(isCoords);
 
   UpdateNodeNameComboBox();
 }
@@ -383,11 +389,20 @@ void SurfaceReconView::DoSurfaceReconstruction()
             outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
           }
 
+          // where to place the point cloud in 3d space
+          mitk::DataNode::Pointer camNode;
+          std::string             camNodeName  = CameraNodeComboBox->currentText().toStdString();
+          if (!camNodeName.empty())
+          {
+            // is ok if node doesnt exist, SurfaceReconstruction will deal with that.
+            camNode = storage->GetNamedNode(leftText);
+          }
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
             m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, 
-                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, outputtype);
+                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, outputtype, camNode);
           }
           catch (const std::exception& e)
           {
