@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>795</width>
-    <height>626</height>
+    <height>1264</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -80,7 +80,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <widget class="QGroupBox" name="calibrationgroupbox">
         <property name="title">
          <string>Show &amp;camera calibration options</string>
@@ -124,7 +124,15 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="RightIntrinsicPathLineEdit"/>
+               <widget class="QLineEdit" name="RightIntrinsicPathLineEdit">
+                <property name="toolTip">
+                 <string>Intrinsic calibration is in the form of a 3x3 matrix
+(fx, 0, px, 
+0, fy, py, 
+0, 0, 1), 
+followed by 4 distortion coefficients.</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="RightIntrinsicBrowseButton">
@@ -133,6 +141,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
                 </property>
                 <property name="text">
                  <string>...</string>
@@ -147,7 +161,15 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="LeftIntrinsicPathLineEdit"/>
+               <widget class="QLineEdit" name="LeftIntrinsicPathLineEdit">
+                <property name="toolTip">
+                 <string>Intrinsic calibration is in the form of a 3x3 matrix
+(fx, 0, px, 
+0, fy, py, 
+0, 0, 1), 
+followed by 4 distortion coefficients.</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="LeftIntrinsicBrowseButton">
@@ -161,6 +183,12 @@
                  <size>
                   <width>0</width>
                   <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
                  </size>
                 </property>
                 <property name="text">
@@ -186,7 +214,11 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="StereoRigTransformationPathLineEdit"/>
+               <widget class="QLineEdit" name="StereoRigTransformationPathLineEdit">
+                <property name="toolTip">
+                 <string>Left-right transformation is a 3x3 rotation matrix, followed by translation vector.</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="StereoRigTransformBrowseButton">
@@ -195,6 +227,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
                 </property>
                 <property name="text">
                  <string>...</string>
@@ -206,7 +244,7 @@
             <item row="6" column="0" colspan="2">
              <widget class="QLabel" name="label_11">
               <property name="text">
-               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up. Intrinsic calibration is in the form of a 3x3 matrix (fx, 0, px, 0, fy, py, 0, 0, 1), followed by 4 distortion coefficients. Left-right transformation is a 3x3 rotation matrix, followed by translation vector.</string>
+               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up.</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -217,6 +255,23 @@
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Camera position:</string>
+        </property>
+        <property name="buddy">
+         <cstring>CameraNodeComboBox</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QmitkDataStorageComboBox" name="CameraNodeComboBox">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -243,31 +298,21 @@
       </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="OutputNodeNameLineEdit">
+        <property name="toolTip">
+         <string>Type a name for the result node. 
+If it does not exist it is created. 
+If it exists a point cloud or image is attached to it. 
+If you leave it empty a suitable name will be generated.</string>
+        </property>
         <property name="text">
          <string>stereo matching output</string>
         </property>
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_7">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Type a name for the result node. If it does not exist it is created. If it exists a point cloud is attached to it. If you leave it empty a suitable name will be generated.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
        <widget class="QGroupBox" name="outputoptionsgroupbox">
         <property name="title">
-         <string>Show o&amp;ptions</string>
+         <string>Show output o&amp;ptions</string>
         </property>
         <property name="flat">
          <bool>true</bool>

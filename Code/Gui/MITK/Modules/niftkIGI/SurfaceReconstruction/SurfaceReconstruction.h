@@ -83,8 +83,9 @@ public:
            mitk::DataNode::Pointer outputNode,
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
-           Method method = SEQUENTIAL_CPU,
-           OutputType outputtype = POINT_CLOUD);
+           Method method,
+           OutputType outputtype,
+           mitk::DataNode::Pointer camnode);
 
 protected:
 

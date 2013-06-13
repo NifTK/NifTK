@@ -19,6 +19,7 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include "../Conversion/ImageConversion.h"
 #include <mitkPointSet.h>
+#include <mitkCoordinateAxesData.h>
 
 
 namespace niftk 
@@ -50,7 +51,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                 const mitk::Image::Pointer image1,
                                 const mitk::Image::Pointer image2,
                                 Method method,
-                                OutputType outputtype)
+                                OutputType outputtype,
+                                mitk::DataNode::Pointer camnode)
 {
   // sanity check
   assert(dataStorage.IsNotNull());
@@ -181,6 +183,23 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
               }
             }
             outputNode->SetData(points);
+
+            // if our camnode has mitk::CoordinateAxesData::Pointer then we use that.
+            // otherwise we copy its geometry.
+            if (camnode.IsNotNull())
+            {
+              mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
+              if (camnodebasedata.IsNotNull())
+              {
+                // it's actually irrelevant what type the data is
+                const mitk::Geometry3D::Pointer geom = camnodebasedata->GetGeometry();
+                // is there no usable clone???
+                points->GetGeometry()->SetSpacing(geom->GetSpacing());
+                points->GetGeometry()->SetOrigin(geom->GetOrigin());
+                points->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
+                points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
+              }
+            }
             break;
           }
 
