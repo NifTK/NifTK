@@ -213,7 +213,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   {
     if (m_Pimpl->GetCookie() == dataType->GetCookie())
     {
-      // one massive image, with all streams stacked in
+      // one massive image, with all streams stacked in.
+      // note: we own the image now, we can do with it whatever we want.
       std::pair<IplImage*, int> frame = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
       if (frame.first)
@@ -239,6 +240,12 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           IplImage  subimg;
           cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
           cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
+
+          // readback will have dumped data in opengl orientation (origin is at the lower left corner).
+          // and we cannot flip the whole image because that would change channel order.
+          // so do it individually for each channel-subimage.
+          // note: we are free to do this because we own the IplImage returned by readback.
+          cvFlip(&subimg);
 
           // Check if we already have an image on the node.
           // We dont want to create a new one in that case (there is a lot of stuff going on
