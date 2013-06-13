@@ -76,6 +76,8 @@ protected:
     vtkSmartPointer<vtkPolyDataMapper> m_PolyDataMapper;
     vtkSmartPointer<vtkActor>          m_Actor;
 
+    unsigned long int                  m_NumberOfPoints;
+
     itk::TimeStamp m_ShaderTimestampUpdate;
   };
 
@@ -84,9 +86,6 @@ protected:
   virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
   virtual void ResetMapper( mitk::BaseRenderer* renderer );
 
-private:
-
-  unsigned long int m_NumberOfPoints;
 };
 
 } // namespace mitk

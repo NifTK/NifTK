@@ -32,7 +32,6 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 FastPointSetVtkMapper3D::FastPointSetVtkMapper3D()
-: m_NumberOfPoints(0)
 {
 }
 
@@ -52,6 +51,7 @@ FastPointSetVtkMapper3D::LocalStorage::LocalStorage()
 , m_PolyData(NULL)
 , m_PolyDataMapper(NULL)
 , m_Actor(NULL)
+, m_NumberOfPoints(0)
 {
   m_Indicies = vtkIdTypeArray::New();
   m_Array = vtkFloatArray::New();
@@ -178,7 +178,7 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
     unsigned long int numberOfPoints = pointSet->GetSize();
 
     // Only allocate new if the number of points have changed.
-    if (ls->m_Points == NULL || m_NumberOfPoints != numberOfPoints)
+    if (ls->m_NumberOfPoints != numberOfPoints)
     {
       ls->m_Indicies->SetNumberOfComponents(1);
       ls->m_Indicies->SetNumberOfValues(numberOfPoints*2);
@@ -190,7 +190,7 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
       ls->m_PolyData->SetVerts(ls->m_CellArray);
       ls->m_PolyDataMapper->SetInputConnection(0, ls->m_PolyData->GetProducerPort());
       ls->m_Actor->SetMapper(ls->m_PolyDataMapper);
-      m_NumberOfPoints = numberOfPoints;
+      ls->m_NumberOfPoints = numberOfPoints;
     }
 
     unsigned long int pointCounter = 0;
