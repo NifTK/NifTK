@@ -31,6 +31,32 @@ namespace video
 {
 
 
+static bool cuda_delay_load_check()
+{
+    // the cuda dlls are delay-loaded, that means they are only mapped into our process
+    // on demand, i.e. when we try to call an exported function for the first time.
+    // this is what we do here.
+    // if it fails (e.g. dll not found) then the runtime linker will throw a SEH exception.
+    __try
+    {
+        // touch an entry point in nvcuda.dll
+        int   driverversion = 0;
+        CUresult r = cuDriverGetVersion(&driverversion);
+        // touch an entry point in cudart*.dll
+        int   runtimeversion = 0;
+        cudaError_t s = cudaRuntimeGetVersion(&runtimeversion);
+        // touch an entry point in nvcuvenc.dll
+        int t = NVGetHWEncodeCaps();
+        // FIXME: there's no suitable (getter) function in nvcuvid.dll
+
+        return true;
+    }
+    __except(1)
+    {
+        return false;
+    }
+}
+
 static std::string format_error_msg(const std::string& msg, int errorcode)
 {
     std::ostringstream  o;
@@ -261,6 +287,9 @@ public:
             outputfile(INVALID_HANDLE_VALUE), outputoffset(0), currentqueueslot(0),
             formatconversion_started(0), formatconversion_finished(0)
     {
+        if (!cuda_delay_load_check())
+            throw InteropFailedException("CUDA delay-load check failed");
+
         // FIXME: validate dimensions! has to be at least even!
 
         // zero-init a few structures so that we can cleanup properly

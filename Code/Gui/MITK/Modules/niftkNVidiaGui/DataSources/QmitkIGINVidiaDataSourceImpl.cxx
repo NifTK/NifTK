@@ -24,12 +24,49 @@
 
 
 //-----------------------------------------------------------------------------
+static bool CUDADelayLoadCheck()
+{
+  // the cuda dlls are delay-loaded, that means they are only mapped into our process
+  // on demand, i.e. when we try to call an exported function for the first time.
+  // this is what we do here.
+  // if it fails (e.g. dll not found) then the runtime linker will throw a SEH exception.
+  __try
+  {
+    // touch an entry point in nvcuda.dll
+    int   driverversion = 0;
+    CUresult r = cuDriverGetVersion(&driverversion);
+    // touch an entry point in cudart*.dll
+    int   runtimeversion = 0;
+    cudaError_t s = cudaRuntimeGetVersion(&runtimeversion);
+
+    // we dont care about the result.
+    // (actually, it would make sense to check that the driver supports cuda 5).
+
+    return true;
+  }
+  __except(1)
+  {
+    return false;
+  }
+
+  // unreachable
+  assert(false);
+}
+
+
+//-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
     current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
     state_message("Starting up")
 {
+  // check whether cuda dlls are available
+  if (!CUDADelayLoadCheck())
+  {
+    throw std::runtime_error("No suitable CUDA available");
+  }
+
   // helps with debugging
   setObjectName("QmitkIGINVidiaDataSourceImpl");
   // sample interval in milliseconds that a timer will kick in to check for sdi hardware.
@@ -664,7 +701,21 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
     // when we get a new compressor we want to start counting from zero again
     m_NumFramesCompressed = 0;
 
-    compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
+    // it's unlikely that we'll ever catch an exception here.
+    // all the other bits around the sdi data source would start failing earlier
+    // if there's something wrong and we'd never even get here.
+    try
+    {
+      compressor = new video::Compressor(sdiin->get_width(), sdiin->get_height(), format.refreshrate * streamcount, m_CompressionOutputFilename);
+    }
+    catch (...)
+    {
+      // die straight away
+      CUcontext ctx;
+      cuCtxPopCurrent(&ctx);
+      *frameindex = 0;
+      return;
+    }
   }
   else
   {
