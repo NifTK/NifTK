@@ -45,7 +45,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_IsCameraTracking(true)
 , m_IsCalibrated(false)
 , m_ZNear(0.01)
-, m_ZFar(1001)
+, m_ZFar(100000)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -240,14 +240,14 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::RemoveTrackedImageView()
+void QmitkSingle3DView::SetTrackedImageVisibility(const bool& visibility)
 {
   if (m_DataStorage.IsNotNull())
   {
     mitk::DataNode* trackedImage = m_DataStorage->GetNamedNode(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME);
     if (trackedImage != NULL)
     {
-      trackedImage->SetVisibility(false, m_RenderWindow->GetRenderer());
+      trackedImage->SetVisibility(visibility, m_RenderWindow->GetRenderer());
     }
   }
 }
@@ -321,11 +321,12 @@ void QmitkSingle3DView::Update()
 
   if (m_IsCameraTracking)
   {
-    this->RemoveTrackedImageView();
+    this->SetTrackedImageVisibility(false);
     this->UpdateCameraViaTrackingTransformation();
   }
   else
   {
+    this->SetTrackedImageVisibility(true);
     this->UpdateCameraToTrackImage();
   }
 }

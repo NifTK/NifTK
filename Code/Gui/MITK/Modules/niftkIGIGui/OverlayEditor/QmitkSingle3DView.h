@@ -167,7 +167,7 @@ private:
    * \brief To make sure we don't display the tracked image view.
    * ToDo: Need to design this bit better.
    */
-  void RemoveTrackedImageView();
+  void SetTrackedImageVisibility(const bool& visibility);
 
   /**
    * \brief Used to move the camera based on a tracking transformation.
