@@ -39,19 +39,19 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 {
   Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
 
-  this->SetEnableAllWidgets(false);
+  this->SetAllWidgetsEnabled(false);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingCheckbox(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingCheckboxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool enabled)
 {
   m_ThresholdingGroupBox->setEnabled(enabled);
 //  m_ThresholdingGroupBox->setVisible(enabled);
@@ -74,7 +74,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool 
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
   m_ResetButton->setEnabled(enabled);
@@ -82,11 +82,11 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
 {
-  this->SetEnableThresholdingCheckbox(enabled);
-  this->SetEnableThresholdingWidgets(enabled);
-  this->SetEnableOKCancelResetWidgets(enabled);
+  this->SetThresholdingCheckboxEnabled(enabled);
+  this->SetThresholdingWidgetsEnabled(enabled);
+  this->SetOKCancelResetWidgetsEnabled(enabled);
   m_RetainMarksCheckBox->setEnabled(enabled);
   m_SeePriorCheckBox->setEnabled(enabled);
   m_SeeNextCheckBox->setEnabled(enabled);

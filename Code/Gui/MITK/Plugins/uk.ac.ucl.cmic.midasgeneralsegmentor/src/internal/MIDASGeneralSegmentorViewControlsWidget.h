@@ -45,16 +45,16 @@ public:
   void SetSeedMinAndMaxValues(double min, double max);
 
   /// \brief Turns all widgets on/off
-  void SetEnableAllWidgets(bool enabled);
+  void SetAllWidgetsEnabled(bool enabled);
 
   // \brief Enable the checkbox that controls all the thresholding widgets.
-  void SetEnableThresholdingCheckbox(bool enabled);
+  void SetThresholdingCheckboxEnabled(bool enabled);
 
   /// \brief Turns thresholding widgets on/off
-  void SetEnableThresholdingWidgets(bool enabled);
+  void SetThresholdingWidgetsEnabled(bool enabled);
 
   /// \brief Turns the OK, Cancel and reset buttons on/off.
-  void SetEnableOKCancelResetWidgets(bool enabled);
+  void SetOKCancelResetWidgetsEnabled(bool enabled);
 
 protected:
 
