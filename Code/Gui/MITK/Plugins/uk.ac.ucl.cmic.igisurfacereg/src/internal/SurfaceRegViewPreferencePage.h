@@ -20,7 +20,8 @@
 #include <QString>
 
 class QWidget;
-class QPushButton;
+class QCheckBox;
+class QSpinBox;
 
 /**
  * \class SurfaceRegViewPreferencePage
@@ -68,7 +69,9 @@ private slots:
 private:
 
   QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
+  QSpinBox       *m_MaximumIterations;
+  QSpinBox       *m_MaximumPoints;
+  QCheckBox      *m_TryDeformableRegistration;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_SurfaceRegViewPreferencesNode;

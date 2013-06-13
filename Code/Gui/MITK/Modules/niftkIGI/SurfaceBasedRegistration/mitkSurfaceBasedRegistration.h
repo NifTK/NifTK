@@ -19,8 +19,11 @@
 #include <mitkDataStorage.h>
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
+#include <mitkSurface.h>
+#include <mitkPointSet.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <vtkPolyData.h>
 
 namespace mitk {
 
@@ -35,12 +38,28 @@ public:
   mitkClassMacro(SurfaceBasedRegistration, itk::Object);
   itkNewMacro(SurfaceBasedRegistration);
 
+  enum Method 
+  {
+    VTK_ICP, //VTK's ICP algorithm, point to surface
+    DEFORM //A hypothetical non rigid point to surface algorithm
+  };
+
+  static const int DEFAULT_MAX_ITERATIONS;
+  static const int DEFAULT_MAX_POINTS;
+  static const bool DEFAULT_USE_DEFORMABLE;
   /**
    * \brief Write My Documentation
    */
-  void Update(const mitk::DataNode::Pointer fixedNode,
-           const mitk::DataNode::Pointer movingNode,
+  void Update(const mitk::Surface::Pointer fixedNode,
+           const mitk::Surface::Pointer movingNode,
            vtkMatrix4x4* transformMovingToFixed);
+  void Update(const mitk::PointSet::Pointer fixedNode,
+           const mitk::Surface::Pointer movingNode,
+           vtkMatrix4x4* transformMovingToFixed);
+
+  itkSetMacro (MaximumIterations, int);
+  itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
+  itkSetMacro (Method, Method);
 
 protected:
 
@@ -52,6 +71,15 @@ protected:
 
 private:
 
+  int m_MaximumIterations;
+  int m_MaximumNumberOfLandmarkPointsToUse;
+  Method m_Method;
+
+  void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+
+  void RunVTKICP(vtkPolyData* fixedPoly,
+           vtkPolyData* movingPoly,
+           vtkMatrix4x4* transformMovingToFixed);
 }; // end class
 
 } // end namespace

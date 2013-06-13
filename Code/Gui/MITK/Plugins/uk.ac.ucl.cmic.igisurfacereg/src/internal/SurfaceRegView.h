@@ -17,6 +17,8 @@
 
 #include <QmitkBaseView.h>
 #include "ui_SurfaceRegView.h"
+#include <vtkSmartPointer.h>
+#include <mitkSurfaceBasedRegistration.h>
 
 class vtkMatrix4x4;
 
@@ -70,6 +72,10 @@ protected slots:
 protected:
 
 private slots:
+
+  void OnCalculateButtonPressed();
+  void OnComposeWithDataButtonPressed();
+  void OnSaveToFileButtonPressed();
   
 private:
 
@@ -87,6 +93,11 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::SurfaceRegView *m_Controls;
+  vtkSmartPointer<vtkMatrix4x4> m_Matrix;
+
+  int m_MaxIterations;
+  int m_MaxPoints;
+  mitk::SurfaceBasedRegistration::Method m_Method;
 
 };
 
