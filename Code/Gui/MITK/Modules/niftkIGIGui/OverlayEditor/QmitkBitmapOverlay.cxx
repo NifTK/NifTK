@@ -157,6 +157,20 @@ void QmitkBitmapOverlay::SetRenderWindow( vtkRenderWindow* renderWindow )
 
 
 //-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::SetEnabled(const bool& enable)
+{
+  if (enable)
+  {
+    this->Enable();
+  }
+  else
+  {
+    this->Disable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkBitmapOverlay::IsEnabled()
 {
   return  m_IsEnabled;
@@ -270,11 +284,6 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
     return wasSuccessful;
   }
 
-  if(this->IsEnabled())
-  {
-    this->Disable();
-  }
-
   if(m_RenderWindow != NULL)
   {
 
@@ -303,7 +312,6 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 
         this->SetOpacity(m_Opacity);
         this->SetupCamera();
-        this->Enable();
 
         wasSuccessful = true;
 

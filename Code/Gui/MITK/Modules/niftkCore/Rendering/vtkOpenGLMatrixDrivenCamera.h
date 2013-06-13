@@ -50,16 +50,24 @@ public:
 
   /**
    * \brief Set the size of the image in pixels that was used while calibrating the camera model.
+   * \param width in pixels.
+   * \param height in pixels.
    */
   void SetCalibratedImageSize(const int& width, const int& height);
 
   /**
    * \brief Set the window/widget size currently used.
+   * \param width in pixels.
+   * \param height in pixels.
    */
   void SetActualWindowSize(const int& width, const int& height);
 
   /**
    * \brief Set the intrinsic parameters as determined from camera calibration.
+   * \param fx scale factor of combined focal length * effective pixel size in horizontal direction.
+   * \param fy scale factor of combined focal length * effective pixel size in vertical direction.
+   * \param cx centre of projection in x axis.
+   * \param cy centre of projection in y axis.
    */
   void SetIntrinsicParameters(const double& fx, const double& fy,
                               const double &cx, const double& cy
@@ -76,10 +84,10 @@ private:
 
   vtkSmartPointer<vtkMatrix4x4> m_IntrinsicMatrix;
   bool UseCalibratedCamera;
-  int m_ImageWidth;
-  int m_ImageHeight;
-  int m_WindowWidth;
-  int m_WindowHeight;
+  int m_ImageWidthInPixels;
+  int m_ImageHeightInPixels;
+  int m_WindowWidthInPixels;
+  int m_WindowHeightInPixels;
   double m_Fx;
   double m_Fy;
   double m_Cx;

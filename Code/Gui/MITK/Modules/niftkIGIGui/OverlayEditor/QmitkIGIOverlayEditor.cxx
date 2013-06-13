@@ -103,6 +103,7 @@ void QmitkIGIOverlayEditor::OnOpacitySliderMoved(int value)
 void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetImageNode(node);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -110,6 +111,7 @@ void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
 void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetTransformNode(node);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -120,8 +122,8 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-//  m_ImageCombo->SetPredicate(isImage);
-//  m_ImageCombo->SetAutoSelectNewItems(false);
+  m_ImageCombo->SetPredicate(isImage);
+  m_ImageCombo->SetAutoSelectNewItems(false);
 
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_TransformCombo->SetPredicate(isTransform);
