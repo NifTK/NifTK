@@ -27,6 +27,7 @@
 
 
 //-----------------------------------------------------------------------------
+const char* UndistortViewPreferencesPage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igiundistort";
 const char* UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
 
 
@@ -78,7 +79,7 @@ void UndistortViewPreferencesPage::CreateQtControl(QWidget* parent)
   connect(m_DefaultFilePathBrowseButton, SIGNAL(clicked()), this, SLOT(OnDefaultPathBrowseButtonClicked()));
 
   berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
-  m_UndistortPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort");
+  m_UndistortPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
 
   // read prefs and stuff it into controls
   Update();

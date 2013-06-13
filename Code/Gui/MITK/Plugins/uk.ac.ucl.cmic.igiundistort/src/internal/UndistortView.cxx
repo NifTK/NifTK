@@ -243,13 +243,15 @@ void UndistortView::OnCellDoubleClicked(int row, int column)
       // clicked on param
       case 1:
       {
-        QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+        QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration", m_LastFile);
         if (!file.isEmpty())
         {
           QTableWidgetItem*   filenameitem = new QTableWidgetItem;
           filenameitem->setText(file);
           filenameitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
           m_NodeTable->setItem(row, column, filenameitem);
+
+          m_LastFile = file;
         }
         break;
       }
@@ -320,14 +322,11 @@ void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void UndistortView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  assert(prefs);
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
-  assert( prefs );
+  m_LastFile = QString::fromStdString(prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, ""));
 
 #if 0
   m_AutoUpdate = prefs->GetBool(ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME, false);

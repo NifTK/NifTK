@@ -35,6 +35,7 @@ public:
   UndistortViewPreferencesPage(const UndistortViewPreferencesPage& other);
   ~UndistortViewPreferencesPage();
 
+  static const char*      s_PrefsNodeName;
   static const char*      s_DefaultCalibrationFilePathPrefsName;
 
 

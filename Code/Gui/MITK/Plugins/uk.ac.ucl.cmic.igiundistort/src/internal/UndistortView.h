@@ -77,7 +77,7 @@ private:
   /// \brief Retrieves the preferences, and sets the private member variables accordingly.
   void RetrievePreferenceValues();
 
-
+  QString                                       m_LastFile;
   std::map<std::string, niftk::Undistortion*>   m_UndistortionMap;
 };
 
