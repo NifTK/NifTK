@@ -274,12 +274,16 @@ void UndistortView::DataStorageEventListener(const mitk::DataNode* node)
 void UndistortView::CreateQtPartControl(QWidget* parent)
 {
   setupUi(parent);
-  m_NodeTable->clear();
+  m_NodeTable->clearContents();
+  // refit the columns. there's no built-in easy way for this.
+  // ah bugger: this doesnt work, columns are squashed
+  //for (int i = 0; i < m_NodeTable->columnCount(); ++i)
+  //{
+  //  m_NodeTable->setColumnWidth(i, m_NodeTable->width() / m_NodeTable->columnCount());
+  //}
 
   connect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
   connect(m_DoItNowButton, SIGNAL(clicked()), this, SLOT(OnGoButtonClick()));
-
-  // void QTableWidget::setCellWidget ( int row, int column, QWidget * widget )
 
   RetrievePreferenceValues();
 
