@@ -41,14 +41,26 @@ UndistortView::UndistortView()
 //-----------------------------------------------------------------------------
 UndistortView::~UndistortView()
 {
+  bool  ok = false;
+  ok = disconnect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
+  assert(ok);
+  ok = disconnect(m_DoItNowButton, SIGNAL(clicked()), this, SLOT(OnGoButtonClick()));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalDeferredNodeTableUpdate()), this, SLOT(OnDeferredNodeTableUpdate()));
+  assert(ok);
+
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  if (storage.IsNotNull())
+  {
+    storage->AddNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
+    storage->RemoveNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void UndistortView::OnUpdate(const ctkEvent& event)
 {
-  UpdateNodeTable();
-
   if (m_AutomaticUpdateRadioButton->isChecked())
   {
     OnGoButtonClick();
@@ -102,7 +114,7 @@ void UndistortView::UpdateNodeTable()
       }
     }
 
-    for (int i = 0; i < m_NodeTable->rowCount(); ++i)
+    for (int i = 0; i < m_NodeTable->rowCount(); )
     {
       QTableWidgetItem* item = m_NodeTable->item(i, 0);
       if (item != 0)
@@ -112,7 +124,9 @@ void UndistortView::UpdateNodeTable()
         std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName);
         if (ni == nodeNamesLeftToAdd.end())
         {
-          // drop it off table
+          // drop it off table.
+          // note: removing the row will change the index for the next element!
+          // that's why there is no ++i in the top for statement.
           m_NodeTable->removeRow(i);
           // drop if off the cache
           BOOST_AUTO(ci, m_UndistortionMap.find(itemName));
@@ -128,6 +142,8 @@ void UndistortView::UpdateNodeTable()
           // name is still in data-storage
           // so remove it from the to-be-added list
           nodeNamesLeftToAdd.erase(ni);
+          // check next row in the table.
+          ++i;
         }
       }
     }
@@ -266,6 +282,15 @@ void UndistortView::OnCellDoubleClicked(int row, int column)
 //-----------------------------------------------------------------------------
 void UndistortView::DataStorageEventListener(const mitk::DataNode* node)
 {
+  // this callback is called before the node has been removed.
+  // so lets queue a signal-slot callback for later.
+  emit SignalDeferredNodeTableUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::OnDeferredNodeTableUpdate()
+{
   UpdateNodeTable();
 }
 
@@ -282,8 +307,13 @@ void UndistortView::CreateQtPartControl(QWidget* parent)
   //  m_NodeTable->setColumnWidth(i, m_NodeTable->width() / m_NodeTable->columnCount());
   //}
 
-  connect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
-  connect(m_DoItNowButton, SIGNAL(clicked()), this, SLOT(OnGoButtonClick()));
+  bool  ok = false;
+  ok = connect(m_NodeTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)));
+  assert(ok);
+  ok = connect(m_DoItNowButton, SIGNAL(clicked()), this, SLOT(OnGoButtonClick()));
+  assert(ok);
+  ok = connect(this, SIGNAL(SignalDeferredNodeTableUpdate()), this, SLOT(OnDeferredNodeTableUpdate()), Qt::QueuedConnection);
+  assert(ok);
 
   RetrievePreferenceValues();
 
@@ -297,12 +327,11 @@ void UndistortView::CreateQtPartControl(QWidget* parent)
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
 
-  // FIXME: this doesnt work for some reason...
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
-    storage->AddNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
-    storage->RemoveNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
+    storage->AddNodeEvent.AddListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
+    storage->RemoveNodeEvent.AddListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
   }
 
   UpdateNodeTable();
@@ -331,11 +360,4 @@ void UndistortView::RetrievePreferenceValues()
   assert(prefs);
 
   m_LastFile = QString::fromStdString(prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, ""));
-
-#if 0
-  m_AutoUpdate = prefs->GetBool(ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME, false);
-  m_AssumeBinary = prefs->GetBool(ImageStatisticsViewPreferencesPage::ASSUME_BINARY_NAME, true);
-  m_RequireSameSizeImage = prefs->GetBool(ImageStatisticsViewPreferencesPage::REQUIRE_SAME_SIZE_IMAGE_NAME, true);
-  m_BackgroundValue = prefs->GetInt(ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME, 0);
-#endif
 }

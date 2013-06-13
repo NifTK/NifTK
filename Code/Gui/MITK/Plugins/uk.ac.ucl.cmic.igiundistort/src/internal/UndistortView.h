@@ -55,10 +55,11 @@ protected:
   void UpdateNodeTable();
 
 
-protected slots:
-
+signals:
+  void SignalDeferredNodeTableUpdate();
 
 private slots:
+  void OnDeferredNodeTableUpdate();
 
   // called by m_NodeTable
   void OnCellDoubleClicked(int row, int column);
