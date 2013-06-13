@@ -94,6 +94,11 @@ public:
   virtual void Disable();
 
   /**
+   * \brief if enable is true, calls Enable(), otherwise calls Disable().
+   */
+  virtual void SetEnabled(const bool& enable);
+
+  /**
    * \brief Set the current data node to display as an overlay.
    * This method will check that the input is indeed an image.
    * \return true if successful and false otherwise.

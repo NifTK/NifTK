@@ -157,6 +157,20 @@ void QmitkBitmapOverlay::SetRenderWindow( vtkRenderWindow* renderWindow )
 
 
 //-----------------------------------------------------------------------------
+void QmitkBitmapOverlay::SetEnabled(const bool& enable)
+{
+  if (enable)
+  {
+    this->Enable();
+  }
+  else
+  {
+    this->Disable();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkBitmapOverlay::IsEnabled()
 {
   return  m_IsEnabled;

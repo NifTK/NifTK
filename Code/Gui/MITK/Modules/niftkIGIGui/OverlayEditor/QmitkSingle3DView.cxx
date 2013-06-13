@@ -257,6 +257,7 @@ void QmitkSingle3DView::RemoveTrackedImageView()
 void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 {
   m_IsCameraTracking = isCameraTracking;
+  m_BitmapOverlay->SetEnabled(isCameraTracking);
 }
 
 
@@ -318,11 +319,9 @@ void QmitkSingle3DView::Update()
     return;
   }
 
-  // ToDo: Rework this. We just forcibly turn off the TrackedImageViewPlane.
-  this->RemoveTrackedImageView();
-
   if (m_IsCameraTracking)
   {
+    this->RemoveTrackedImageView();
     this->UpdateCameraViaTrackingTransformation();
   }
   else
