@@ -30,10 +30,10 @@ vtkStandardNewMacro(vtkOpenGLMatrixDrivenCamera);
 vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 : m_IntrinsicMatrix(NULL)
 , UseCalibratedCamera(false)
-, m_ImageWidth(256)
-, m_ImageHeight(256)
-, m_WindowWidth(256)
-, m_WindowHeight(256)
+, m_ImageWidthInPixels(256)
+, m_ImageHeightInPixels(256)
+, m_WindowWidthInPixels(256)
+, m_WindowHeightInPixels(256)
 , m_Fx(1)
 , m_Fy(1)
 , m_Cx(0)
@@ -47,8 +47,8 @@ vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 //----------------------------------------------------------------------------
 void vtkOpenGLMatrixDrivenCamera::SetCalibratedImageSize(const int& width, const int& height)
 {
-  m_ImageWidth = width;
-  m_ImageHeight = height;
+  m_ImageWidthInPixels = width;
+  m_ImageHeightInPixels = height;
   this->Modified();
 }
 
@@ -56,8 +56,8 @@ void vtkOpenGLMatrixDrivenCamera::SetCalibratedImageSize(const int& width, const
 //----------------------------------------------------------------------------
 void vtkOpenGLMatrixDrivenCamera::SetActualWindowSize(const int& width, const int& height)
 {
-  m_WindowWidth = width;
-  m_WindowHeight = height;
+  m_WindowWidthInPixels = width;
+  m_WindowHeightInPixels = height;
   this->Modified();
 }
 
@@ -114,32 +114,32 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
    */
 
   m_IntrinsicMatrix->Zero();
-  m_IntrinsicMatrix->SetElement(0, 0, 2*m_Fx/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(0, 1, -2*0/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidth - 2*m_Cx)/m_ImageWidth);
-  m_IntrinsicMatrix->SetElement(1, 1, 2*m_Fy/m_ImageHeight);
-  m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeight + 2*m_Cy)/m_ImageHeight);
+  m_IntrinsicMatrix->SetElement(0, 0, 2*m_Fx/m_ImageWidthInPixels);
+  m_IntrinsicMatrix->SetElement(0, 1, -2*0/m_ImageWidthInPixels);
+  m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidthInPixels - 2*m_Cx)/m_ImageWidthInPixels);
+  m_IntrinsicMatrix->SetElement(1, 1, 2*m_Fy/m_ImageHeightInPixels);
+  m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeightInPixels + 2*m_Cy)/m_ImageHeightInPixels);
   m_IntrinsicMatrix->SetElement(2, 2, (-zfar-znear)/(zfar-znear));
   m_IntrinsicMatrix->SetElement(2, 3, -2*zfar*znear/(zfar-znear));
   m_IntrinsicMatrix->SetElement(3, 2, -1);
 
-  double widthScale  = (double) m_WindowWidth  / (double) m_ImageWidth;
-  double heightScale  = (double) m_WindowHeight  / (double) m_ImageHeight;
+  double widthScale  = (double) m_WindowWidthInPixels  / (double) m_ImageWidthInPixels;
+  double heightScale  = (double) m_WindowHeightInPixels  / (double) m_ImageHeightInPixels;
 
-  int vpw = m_WindowWidth;
-  int vph = m_WindowHeight;
+  int vpw = m_WindowWidthInPixels;
+  int vph = m_WindowHeightInPixels;
 
   if (widthScale < heightScale)
   {
-    vph = (int) ((double) m_ImageHeight * widthScale);
+    vph = (int) ((double) m_ImageHeightInPixels * widthScale);
   }
   else
   {
-    vpw = (int) ((double) m_ImageWidth * heightScale);
+    vpw = (int) ((double) m_ImageWidthInPixels * heightScale);
   }
 
-  int vpx = m_WindowWidth  / 2 - vpw / 2;
-  int vpy = m_WindowHeight / 2 - vph / 2;
+  int vpx = m_WindowWidthInPixels  / 2 - vpw / 2;
+  int vpy = m_WindowHeightInPixels / 2 - vph / 2;
 
   glViewport(vpx, vpy, vpw, vph);
   glEnable( GL_SCISSOR_TEST );
@@ -173,10 +173,10 @@ void vtkOpenGLMatrixDrivenCamera::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
   os << indent << "vtkOpenGLMatrixDrivenCamera:UseCalibratedCamera=" << UseCalibratedCamera << std::endl;
-  os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageWidth=" << m_ImageWidth << std::endl;
-  os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageHeight=" << m_ImageHeight << std::endl;
-  os << indent << "vtkOpenGLMatrixDrivenCamera:m_WindowWidth=" << m_WindowWidth << std::endl;
-  os << indent << "vtkOpenGLMatrixDrivenCamera:m_WindowHeight=" << m_WindowHeight << std::endl;
+  os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageWidthInPixels=" << m_ImageWidthInPixels << std::endl;
+  os << indent << "vtkOpenGLMatrixDrivenCamera:m_ImageHeightInPixels=" << m_ImageHeightInPixels << std::endl;
+  os << indent << "vtkOpenGLMatrixDrivenCamera:m_WindowWidthInPixels=" << m_WindowWidthInPixels << std::endl;
+  os << indent << "vtkOpenGLMatrixDrivenCamera:m_WindowHeightInPixels=" << m_WindowHeightInPixels << std::endl;
   os << indent << "vtkOpenGLMatrixDrivenCamera::m_IntrinsicMatrix" << std::endl;
   m_IntrinsicMatrix->PrintSelf(os, indent);
 }
