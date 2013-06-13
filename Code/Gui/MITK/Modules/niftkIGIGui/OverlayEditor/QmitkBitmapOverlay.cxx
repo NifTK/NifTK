@@ -284,11 +284,6 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
     return wasSuccessful;
   }
 
-  if(this->IsEnabled())
-  {
-    this->Disable();
-  }
-
   if(m_RenderWindow != NULL)
   {
 
@@ -317,7 +312,6 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 
         this->SetOpacity(m_Opacity);
         this->SetupCamera();
-        this->Enable();
 
         wasSuccessful = true;
 
