@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>855</width>
-    <height>455</height>
+    <width>1226</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,26 +26,55 @@
         </widget>
        </item>
        <item>
-        <widget class="QmitkDataStorageComboBox" name="m_ImageCombo"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="m_TransformLabel">
-         <property name="text">
-          <string>transform</string>
+        <widget class="QmitkDataStorageComboBox" name="m_ImageCombo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QmitkDataStorageComboBox" name="m_TransformCombo"/>
+        <widget class="QLabel" name="m_TransformLabel">
+         <property name="text">
+          <string>transform:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QmitkDataStorageComboBox" name="m_TransformCombo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>80</width>
            <height>20</height>
           </size>
          </property>
@@ -60,6 +89,18 @@
        </item>
        <item>
         <widget class="QSlider" name="m_OpacitySlider">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>200</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -70,9 +111,12 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>80</width>
            <height>20</height>
           </size>
          </property>
