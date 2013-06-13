@@ -35,12 +35,9 @@ public:
   UndistortViewPreferencesPage(const UndistortViewPreferencesPage& other);
   ~UndistortViewPreferencesPage();
 
-#if 0
-  static const std::string AUTO_UPDATE_NAME;
-  static const std::string ASSUME_BINARY_NAME;
-  static const std::string REQUIRE_SAME_SIZE_IMAGE_NAME;
-  static const std::string BACKGROUND_VALUE_NAME;
-#endif
+  static const char*      s_PrefsNodeName;
+  static const char*      s_DefaultCalibrationFilePathPrefsName;
+
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -64,17 +61,12 @@ public:
   virtual void Update();
 
 protected slots:
+  void OnDefaultPathBrowseButtonClicked();
 
 protected:
-#if 0
+  berry::IPreferences::Pointer      m_UndistortPreferencesNode;
 
-  QWidget*   m_MainControl;
-  QCheckBox* m_AutoUpdate;
-  QCheckBox* m_AssumeBinary;
-  QCheckBox* m_RequireSameSizeImage;
-  QSpinBox*  m_BackgroundValue;
-  berry::IPreferences::Pointer m_ImageStatisticsPreferencesNode;
-#endif
+  QString                           m_DefaultCalibrationFilePath;
 };
 
 #endif /* UndistortViewPreferencesPage */

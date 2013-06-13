@@ -55,10 +55,11 @@ protected:
   void UpdateNodeTable();
 
 
-protected slots:
-
+signals:
+  void SignalDeferredNodeTableUpdate();
 
 private slots:
+  void OnDeferredNodeTableUpdate();
 
   // called by m_NodeTable
   void OnCellDoubleClicked(int row, int column);
@@ -77,7 +78,7 @@ private:
   /// \brief Retrieves the preferences, and sets the private member variables accordingly.
   void RetrievePreferenceValues();
 
-
+  QString                                       m_LastFile;
   std::map<std::string, niftk::Undistortion*>   m_UndistortionMap;
 };
 
