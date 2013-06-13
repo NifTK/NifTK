@@ -157,8 +157,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_Layout->setRowStretch(2, 0);
     m_Layout->setRowStretch(3, 0);
 
-    m_GeneralControls->SetEnableThresholdingWidgets(false);
-    m_GeneralControls->SetEnableThresholdingCheckbox(false);
+    m_GeneralControls->SetThresholdingCheckboxEnabled(false);
+    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
@@ -496,7 +496,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, mitk::MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
 
     // Create the region growing image.
-    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, mitk::MIDASTool::REGION_GROWING_IMAGE_NAME, true, 94);
+    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, mitk::MIDASTool::REGION_GROWING_IMAGE_NAME, false, 94);
 
     // Create nodes to store the original segmentation and seeds, so that it can be restored if the Reset button is pressed.
     mitk::DataNode::Pointer initialSegmentationNode = mitk::DataNode::New();
@@ -566,13 +566,13 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     this->StoreInitialSegmentation();
 
     // Setup GUI.
-    m_GeneralControls->SetEnableAllWidgets(true);
-    m_GeneralControls->SetEnableThresholdingWidgets(false);
-    m_GeneralControls->SetEnableThresholdingCheckbox(true);
+    m_GeneralControls->SetAllWidgetsEnabled(true);
+    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
+    m_GeneralControls->SetThresholdingCheckboxEnabled(true);
     m_GeneralControls->m_ThresholdingCheckBox->setChecked(false);
-    m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
+    bool wasBlocked = m_GeneralControls->m_SeeImageCheckBox->blockSignals(true);
     m_GeneralControls->m_SeeImageCheckBox->setChecked(false);
-    m_GeneralControls->m_SeeImageCheckBox->blockSignals(false);
+    m_GeneralControls->m_SeeImageCheckBox->blockSignals(wasBlocked);
 
     this->FocusOnCurrentWindow();
     this->OnFocusChanged();
@@ -616,9 +616,9 @@ void MIDASGeneralSegmentorView::StoreInitialSegmentation()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
-  m_GeneralControls->SetEnableAllWidgets(enabled);
+  m_GeneralControls->SetAllWidgetsEnabled(enabled);
   bool thresholdingIsOn = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
-  m_GeneralControls->SetEnableThresholdingWidgets(thresholdingIsOn);
+  m_GeneralControls->SetThresholdingWidgetsEnabled(thresholdingIsOn);
 }
 
 
@@ -1467,19 +1467,24 @@ void MIDASGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
   if (!this->HasInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
-    m_GeneralControls->SetEnableThresholdingWidgets(false);
+    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
     return;
   }
 
   this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
-  m_GeneralControls->SetEnableThresholdingWidgets(checked);
+  m_GeneralControls->SetThresholdingWidgetsEnabled(checked);
 
   if (checked)
   {
     this->UpdateRegionGrowing();
   }
+
+  mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
+  workingNodes[6]->SetVisibility(checked);
+
+  this->RequestRenderWindowUpdate();
 }
 
 
@@ -2989,7 +2994,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         m_GeneralControls->m_ThresholdingCheckBox->blockSignals(true);
         m_GeneralControls->m_ThresholdingCheckBox->setChecked(op->GetThresholdFlag());
         m_GeneralControls->m_ThresholdingCheckBox->blockSignals(false);
-        m_GeneralControls->SetEnableThresholdingWidgets(op->GetThresholdFlag());
+        m_GeneralControls->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
 
         segmentedImage->Modified();
         segmentedNode->Modified();
