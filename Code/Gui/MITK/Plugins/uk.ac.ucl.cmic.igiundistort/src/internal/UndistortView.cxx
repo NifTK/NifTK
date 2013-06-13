@@ -223,7 +223,6 @@ void UndistortView::OnGoButtonClick()
           // we just need to make sure the output node exists
           outputNode = mitk::DataNode::New();
           outputNode->SetName(outputitem->text().toStdString());
-          storage->Add(outputNode, inputNode);
         }
 
         // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
@@ -233,6 +232,10 @@ void UndistortView::OnGoButtonClick()
         }
 
         ci->second->Run(outputNode);
+        if (storage->GetNamedNode(outputitem->text().toStdString()) == NULL)
+        {
+          storage->Add(outputNode, inputNode);
+        }
       }
       else
       {
