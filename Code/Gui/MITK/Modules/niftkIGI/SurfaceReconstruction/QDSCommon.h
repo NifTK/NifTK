@@ -95,6 +95,24 @@ CvPoint3D32f triangulate(
   );
 
 
+/**
+ * Base class for the (CPU-versions of) QDS stereo-matching.
+ */
+class NIFTKIGI_EXPORT QDSInterface
+{
+public:
+  virtual void Process(const IplImage* left, const IplImage* right) = 0;
+
+  virtual int GetWidth() const = 0;
+  virtual int GetHeight() const = 0;
+
+  virtual CvPoint GetMatch(int x, int y) const = 0;
+
+  // caller needs to clean up
+  virtual IplImage* CreateDisparityImage() const = 0;
+};
+
+
 } // namespace
 
 
