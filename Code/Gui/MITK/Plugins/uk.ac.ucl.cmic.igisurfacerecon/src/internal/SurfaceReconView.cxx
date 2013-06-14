@@ -328,6 +328,29 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
 
 
 //-----------------------------------------------------------------------------
+static bool NeedsToLoadCalib(const QString& filename, const mitk::Image::Pointer& image)
+{
+  bool  needs2load = false;
+  // filename overrides any existing properties
+  if (!filename.isEmpty())
+  {
+    needs2load = true;
+  }
+  else
+  {
+    // no filename? check if there's a suitable property.
+    // if not then invent some stuff.
+    mitk::BaseProperty::Pointer  bp = image->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    if (bp.IsNull())
+    {
+      needs2load = true;
+    }
+  }
+  return needs2load;
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -369,9 +392,18 @@ void SurfaceReconView::DoSurfaceReconstruction()
             storage->Add(outputNode, nodeParents);
           }
 
-          // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-          niftk::Undistortion::LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
-          niftk::Undistortion::LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+
+          bool    needToLoadLeftCalib  = NeedsToLoadCalib(LeftIntrinsicPathLineEdit->text(),  leftImage);
+          bool    needToLoadRightCalib = NeedsToLoadCalib(RightIntrinsicPathLineEdit->text(), rightImage);
+
+          if (needToLoadLeftCalib)
+          {
+            niftk::Undistortion::LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
+          }
+          if (needToLoadRightCalib)
+          {
+            niftk::Undistortion::LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+          }
           LoadStereoRig(StereoRigTransformationPathLineEdit->text().toStdString(), rightImage);
 
           CopyImagePropsIfNecessary(leftNode,  leftImage);
