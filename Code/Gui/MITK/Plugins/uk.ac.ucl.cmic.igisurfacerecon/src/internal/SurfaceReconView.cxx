@@ -430,11 +430,12 @@ void SurfaceReconView::DoSurfaceReconstruction()
             camNode = storage->GetNamedNode(camNodeName);
           }
 
+          niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, 
-                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, outputtype, camNode);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode);
           }
           catch (const std::exception& e)
           {
