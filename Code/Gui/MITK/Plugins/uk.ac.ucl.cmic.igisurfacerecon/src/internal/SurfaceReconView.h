@@ -77,6 +77,8 @@ protected slots:
   void RightBrowseButtonClicked();
   void StereoRigBrowseButtonClicked();
 
+  void OnComboBoxIndexChanged(int index);
+
 protected:
 
 private slots:

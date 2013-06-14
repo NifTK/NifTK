@@ -92,6 +92,9 @@
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="QWidget" name="calibrationdummypanel" native="true">
            <layout class="QFormLayout" name="formLayout_7">

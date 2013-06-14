@@ -95,6 +95,9 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
   connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
   connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
 
+  connect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  connect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
   {
@@ -104,6 +107,7 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
   this->RetrievePreferenceValues();
+
   this->LeftChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   this->RightChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   CameraNodeComboBox->SetDataStorage(GetDataStorage());
@@ -151,8 +155,49 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
   // Optional. This gets called everytime the data sources are updated.
   // If the surface reconstruction was as fast as the GUI update, we could trigger it here.
 
-  // not sure if enum'ing the storage here is a good idea
-  // FIXME: we should register a listener on the data-storage instead?
+  // we call this all the time to update the has-calib-property for the node comboboxes.
+  UpdateNodeNameComboBox();
+}
+
+
+//-----------------------------------------------------------------------------
+template <typename T>
+static bool HasCalibProp(const typename T::Pointer& n)
+{
+  mitk::BaseProperty::Pointer  bp = n->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+  if (bp.IsNull())
+  {
+    return false;
+  }
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+static bool NeedsToLoadCalib(const QString& filename, const mitk::Image::Pointer& image)
+{
+  bool  needs2load = false;
+  // filename overrides any existing properties
+  if (!filename.isEmpty())
+  {
+    needs2load = true;
+  }
+  else
+  {
+    // no filename? check if there's a suitable property.
+    // if not then invent some stuff.
+    if (HasCalibProp<mitk::Image>(image))
+    {
+      needs2load = true;
+    }
+  }
+  return needs2load;
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnComboBoxIndexChanged(int index)
+{
   UpdateNodeNameComboBox();
 }
 
@@ -163,78 +208,54 @@ void SurfaceReconView::UpdateNodeNameComboBox()
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
-    // leave the editable string part intact!
-    // it's extremely annoying having that reset all the time while trying to input something.
     QString leftText  = LeftChannelNodeNameComboBox->currentText();
     QString rightText = RightChannelNodeNameComboBox->currentText();
 
-    bool  wasModified = false;
+    mitk::DataNode::Pointer   leftNode  = storage->GetNamedNode(leftText.toStdString());
+    mitk::DataNode::Pointer   rightNode = storage->GetNamedNode(rightText.toStdString());
 
-    std::set<std::string>   nodeNamesLeftToAdd;
-
-    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = storage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator i = allNodes->Begin(); i != allNodes->End(); ++i)
+    // either node or attached image has to have calibration property
+    if (leftNode.IsNotNull())
     {
-      const mitk::DataNode::Pointer node = i->Value();
-      assert(node.IsNotNull());
-
-      std::string nodeName = node->GetName();
-      if (!nodeName.empty())
+      bool    leftHasProp = HasCalibProp<mitk::DataNode>(leftNode);
+      if (!leftHasProp)
       {
-        mitk::BaseData::Pointer data = node->GetData();
-        if (data.IsNotNull())
-        {
-          mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
-          if (imageInNode.IsNotNull())
-          {
-            nodeNamesLeftToAdd.insert(nodeName);
-          }
-        }
+        // note: our comboboxes should have nodes only with image data!
+        mitk::Image::Pointer img = dynamic_cast<mitk::Image*>(leftNode->GetData());
+        assert(img.IsNotNull());
+        leftHasProp = HasCalibProp<mitk::Image>(img);
       }
-    }
 
-    // for all elements that currently are in the combo box
-    // check whether there still is a node with that name.
-    for (int i = 0; i < LeftChannelNodeNameComboBox->count(); ++i)
-    {
-      QString itemName = LeftChannelNodeNameComboBox->itemText(i);
-      // for now, both left and right have to have the same node names.
-      assert(RightChannelNodeNameComboBox->itemText(i) == itemName);
-
-      std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName.toStdString());
-      if (ni == nodeNamesLeftToAdd.end())
+      if (leftHasProp)
       {
-        // the node name currently in the combobox is not in data storage
-        // so we need to drop it from the combobox
-        LeftChannelNodeNameComboBox->removeItem(i);
-        RightChannelNodeNameComboBox->removeItem(i);
-        wasModified = true;
+        LeftChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(200, 255, 200);");
       }
       else
       {
-        // name is still in data-storage
-        // so remove it from the to-be-added list
-        nodeNamesLeftToAdd.erase(ni);
+        LeftChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(255, 200, 200);");
       }
     }
 
-    for (std::set<std::string>::const_iterator i = nodeNamesLeftToAdd.begin(); i != nodeNamesLeftToAdd.end(); ++i)
+    if (rightNode.IsNotNull())
     {
-      QString s = QString::fromStdString(*i);
-      LeftChannelNodeNameComboBox->addItem(s);
-      RightChannelNodeNameComboBox->addItem(s);
-      wasModified = true;
-    }
+      bool    rightHasProp = HasCalibProp<mitk::DataNode>(rightNode);
+      if (!rightNode)
+      {
+        // note: our comboboxes should have nodes only with image data!
+        mitk::Image::Pointer img = dynamic_cast<mitk::Image*>(rightNode->GetData());
+        assert(img.IsNotNull());
+        rightHasProp = HasCalibProp<mitk::Image>(img);
+      }
 
-    // put original text in only if we modified the combobox.
-    // otherwise the edit control is reset all the time.
-    if (wasModified)
-    {
-      LeftChannelNodeNameComboBox->setEditText(leftText);
-      RightChannelNodeNameComboBox->setEditText(rightText);
+      if (rightHasProp)
+      {
+        RightChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(200, 255, 200);");
+      }
+      else
+      {
+        RightChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(255, 200, 200);");
+      }
     }
-
-    assert(LeftChannelNodeNameComboBox->count() == RightChannelNodeNameComboBox->count());
   }
 }
 
@@ -324,29 +345,6 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
 
   niftk::MatrixProperty::Pointer  prop = niftk::MatrixProperty::New(txf);
   img->SetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName, prop);
-}
-
-
-//-----------------------------------------------------------------------------
-static bool NeedsToLoadCalib(const QString& filename, const mitk::Image::Pointer& image)
-{
-  bool  needs2load = false;
-  // filename overrides any existing properties
-  if (!filename.isEmpty())
-  {
-    needs2load = true;
-  }
-  else
-  {
-    // no filename? check if there's a suitable property.
-    // if not then invent some stuff.
-    mitk::BaseProperty::Pointer  bp = image->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
-    if (bp.IsNull())
-    {
-      needs2load = true;
-    }
-  }
-  return needs2load;
 }
 
 
