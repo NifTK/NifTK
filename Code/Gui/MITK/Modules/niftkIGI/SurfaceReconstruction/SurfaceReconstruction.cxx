@@ -209,6 +209,19 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
             mitk::Image::Pointer imgData4Node = CreateMitkImage(dispimg);
             cvReleaseImage(&dispimg);
 
+            // disparity image is in the view of the left eye.
+            // copy the calibration properties to the output so that it's rendered properly with any overlaid geometry.
+            mitk::BaseProperty::Pointer       cam1bp = image1->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+            if (cam1bp.IsNotNull())
+            {
+              imgData4Node->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, cam1bp);
+            }
+            mitk::BaseProperty::Pointer       undist1bp = image1->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName);
+            if (undist1bp.IsNotNull())
+            {
+              imgData4Node->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, undist1bp);
+            }
+
             outputNode->SetData(imgData4Node);
             break;
           }
