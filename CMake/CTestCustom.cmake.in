@@ -166,4 +166,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*CTK-src.*"
   ".*DCMTK-src.*"
   ".*OpenCV-src.*"
+
+  # Trac 2495: Removing warning for Kelvin
+  ".*itkShapeBasedAveragingImageFilter.*"
   )
