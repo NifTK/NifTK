@@ -22,8 +22,6 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkFileIOUtils.h>
 #include <QMessageBox>
-#include <mitkCoordinateAxesData.h>
-#include <mitkAffineTransformDataNodeProperty.h>
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
@@ -113,17 +111,10 @@ void SurfaceRegView::RetrievePreferenceValues()
 
 void SurfaceRegView::OnCalculateButtonPressed()
 {
-  mitk::Surface::Pointer fixedSurface = NULL;
-  mitk::PointSet::Pointer fixedPoints = NULL;
-  mitk::DataNode* node = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode* fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode* movingnode = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
 
-  if ( node != NULL )
-  {
-    fixedSurface = dynamic_cast<mitk::Surface*>(node->GetData());
-    fixedPoints = dynamic_cast<mitk::PointSet*>(node->GetData());
-  }
-
-  if ( fixedSurface.IsNull() == fixedPoints.IsNull() )
+  if ( fixednode == NULL )
   {
     QMessageBox msgBox;
     msgBox.setText("The fixed surface or point set is non-existent, or not-selected.");
@@ -134,15 +125,8 @@ void SurfaceRegView::OnCalculateButtonPressed()
     return;
   }
   
-  mitk::Surface::Pointer movingSurface = NULL;
-  node = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
 
-  if ( node != NULL )
-  {
-    movingSurface = dynamic_cast<mitk::Surface*>(node->GetData());
-  }
-
-  if (movingSurface.IsNull())
+  if ( movingnode == NULL )
   {
     QMessageBox msgBox;
     msgBox.setText("The moving surface is non-existent, or not-selected.");
@@ -152,16 +136,9 @@ void SurfaceRegView::OnCalculateButtonPressed()
     msgBox.exec();
     return;
   }
-
-  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();;
-  if ( fixedSurface.IsNull() ) 
-  {
-    registration->Update(fixedPoints, movingSurface, m_Matrix);
-  }
-  else
-  {
-    registration->Update(fixedSurface, movingSurface, m_Matrix);
-  }
+  
+  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+  registration->Update(fixednode, movingnode, m_Matrix);
 
   for (int i = 0; i < 4; i++)
   {
@@ -171,35 +148,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
     }
   }
 
-  mitk::CoordinateAxesData* transform = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
-
-  if (transform != NULL)
-  {
-    mitk::AffineTransformDataNodeProperty::Pointer property = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty("niftk.transform"));
-    if (property.IsNull())
-    {
-      MITK_ERROR << "LiverSurgeryManager::SetTransformation the node " << node->GetName() << " does not contain the niftk.transform property" << std::endl;
-      return;
-    }
-
-    transform->SetVtkMatrix(*m_Matrix);
-    transform->Modified();
-
-    property->SetTransform(*m_Matrix);
-    property->Modified();
-
-  }
-  else
-  {
-    mitk::Geometry3D::Pointer geometry = node->GetData()->GetGeometry();
-    if (geometry.IsNotNull())
-    {
-     // geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&m_Matrix));
-      geometry->SetIndexToWorldTransformByVtkMatrix(m_Matrix);
-      geometry->Modified();
-    }
-  }
-
+  registration->ApplyTransform(movingnode);
 }
 
 //--------------------------------------------------------------------------------
