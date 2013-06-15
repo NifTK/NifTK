@@ -102,8 +102,8 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
 
   for (int i = 0; i < MIDAS_ORIENTATION_NUMBER * 2; i++)
   {
-    m_SliceNumbers[i] = 0;
-    m_TimeSliceNumbers[i] = 0;
+    m_SliceIndexes[i] = 0;
+    m_TimeSteps[i] = 0;
   }
   for (int i = 0; i < MIDAS_LAYOUT_NUMBER * 2; i++)
   {
@@ -151,9 +151,9 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *window, int sliceNumber)
+void QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *window, int sliceIndex)
 {
-  emit SelectedPositionChanged(this, window, sliceNumber);
+  emit SelectedPositionChanged(this, window, sliceIndex);
 }
 
 
@@ -312,30 +312,16 @@ QColor QmitkMIDASSingleViewWidget::GetBackgroundColor() const
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMinSlice(MIDASOrientation orientation) const
+unsigned int QmitkMIDASSingleViewWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetMinSlice(orientation);
+  return m_MultiWidget->GetMaxSliceIndex(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMaxSlice(MIDASOrientation orientation) const
+unsigned int QmitkMIDASSingleViewWidget::GetMaxTimeStep() const
 {
-  return m_MultiWidget->GetMaxSlice(orientation);
-}
-
-
-//-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMinTime() const
-{
-  return m_MultiWidget->GetMinTime();
-}
-
-
-//-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMaxTime() const
-{
-  return m_MultiWidget->GetMaxTime();
+  return m_MultiWidget->GetMaxTimeStep();
 }
 
 
@@ -496,8 +482,8 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   MIDASLayout layout = m_Layout;
   MIDASOrientation orientation = m_Orientation;
 
-  m_SliceNumbers[Index(orientation)] = this->GetSliceNumber(orientation);
-  m_TimeSliceNumbers[Index(orientation)] = this->GetTime();
+  m_SliceIndexes[Index(orientation)] = this->GetSliceIndex(orientation);
+  m_TimeSteps[Index(orientation)] = this->GetTimeStep();
   m_CursorPositions[Index(layout)] = m_MultiWidget->GetCursorPosition();
   m_Magnifications[Index(layout)] = m_MultiWidget->GetMagnification();
   m_LayoutInitialised[Index(layout)] = true;
@@ -505,8 +491,8 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
       << ", current orientation=" << orientation \
       << ", layout=" << layout \
-      << ", so storing slice=" << this->GetSliceNumber(orientation) \
-      << ", time=" << this->GetTime() \
+      << ", so storing slice=" << this->GetSliceIndex(orientation) \
+      << ", time=" << this->GetTimeStep() \
       << ", magnification=" << m_MultiWidget->GetMagnification() << std::endl;
 }
 
@@ -514,8 +500,8 @@ void QmitkMIDASSingleViewWidget::StorePosition()
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
 {
-  m_SliceNumbers[Index(m_Orientation)] = 0;
-  m_TimeSliceNumbers[Index(m_Orientation)] = 0;
+  m_SliceIndexes[Index(m_Orientation)] = 0;
+  m_TimeSteps[Index(m_Orientation)] = 0;
   for (int j = 0; j < 3; ++j)
   {
     m_CursorPositions[Index(m_Layout)][j] = 0.5;
@@ -530,8 +516,8 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
 {
   for (int i = 0; i < MIDAS_ORIENTATION_NUMBER; i++)
   {
-    m_SliceNumbers[Index(i)] = 0;
-    m_TimeSliceNumbers[Index(i)] = 0;
+    m_SliceIndexes[Index(i)] = 0;
+    m_TimeSteps[Index(i)] = 0;
   }
   for (int i = 0; i < MIDAS_LAYOUT_NUMBER; i++)
   {
@@ -613,37 +599,37 @@ void QmitkMIDASSingleViewWidget::SetActiveGeometry()
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetSliceNumber(MIDASOrientation orientation) const
+unsigned int QmitkMIDASSingleViewWidget::GetSliceIndex(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetSliceNumber(orientation);
+  return m_MultiWidget->GetSliceIndex(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber)
+void QmitkMIDASSingleViewWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
 {
-  m_SliceNumbers[Index(m_Orientation)] = sliceNumber;
+  m_SliceIndexes[Index(m_Orientation)] = sliceIndex;
   if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    m_MultiWidget->SetSliceNumber(orientation, sliceNumber);
+    m_MultiWidget->SetSliceIndex(orientation, sliceIndex);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetTime() const
+unsigned int QmitkMIDASSingleViewWidget::GetTimeStep() const
 {
-  return m_MultiWidget->GetTime();
+  return m_MultiWidget->GetTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetTime(unsigned int timeSliceNumber)
+void QmitkMIDASSingleViewWidget::SetTimeStep(unsigned int timeStep)
 {
-  m_TimeSliceNumbers[Index(m_Orientation)] = timeSliceNumber;
+  m_TimeSteps[Index(m_Orientation)] = timeStep;
   if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    m_MultiWidget->SetTime(timeSliceNumber);
+    m_MultiWidget->SetTimeStep(timeStep);
   }
 }
 
@@ -699,14 +685,14 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
     m_Layout = layout;
 
     // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
-    // we should go back to the same slice, time, cursor position on display, magnification.
+    // we should go back to the same slice index, time step, cursor position on display, magnification.
     bool hasBeenInitialised = m_LayoutInitialised[Index(layout)];
     if (m_RememberSettingsPerLayout && hasBeenInitialised)
     {
       if (orientation != MIDAS_ORIENTATION_UNKNOWN)
       {
-        this->SetSliceNumber(orientation, m_SliceNumbers[Index(orientation)]);
-        this->SetTime(m_TimeSliceNumbers[Index(orientation)]);
+        this->SetSliceIndex(orientation, m_SliceIndexes[Index(orientation)]);
+        this->SetTimeStep(m_TimeSteps[Index(orientation)]);
       }
       this->SetCursorPosition(m_CursorPositions[Index(layout)]);
       this->SetMagnification(m_Magnifications[Index(layout)]);
@@ -718,13 +704,13 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
         orientation = MIDAS_ORIENTATION_AXIAL; // somewhat arbitrary.
       }
 
-      unsigned int sliceNumber = this->GetSliceNumber(orientation);
-      unsigned int timeStep = this->GetTime();
+      unsigned int sliceIndex = this->GetSliceIndex(orientation);
+      unsigned int timeStep = this->GetTimeStep();
       double magnification = m_MultiWidget->FitMagnification();
       const mitk::Vector3D& cursorPosition = m_MultiWidget->GetCursorPosition();
 
-      this->SetSliceNumber(orientation, sliceNumber);
-      this->SetTime(timeStep);
+      this->SetSliceIndex(orientation, sliceIndex);
+      this->SetTimeStep(timeStep);
       this->SetCursorPosition(cursorPosition);
       this->SetMagnification(magnification);
       m_LayoutInitialised[Index(layout)] = true;

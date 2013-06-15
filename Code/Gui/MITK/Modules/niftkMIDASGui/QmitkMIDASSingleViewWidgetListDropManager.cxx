@@ -256,12 +256,11 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
       m_Widgets[0]->SetLayout(layout, true);
     }
 
-    unsigned int minSlice = m_Widgets[0]->GetMinSlice(orientation);
-    unsigned int maxSlice = m_Widgets[0]->GetMaxSlice(orientation);
-    unsigned int numberOfSlices = maxSlice - minSlice + 1;
+    unsigned int maxSliceIndex = m_Widgets[0]->GetMaxSliceIndex(orientation);
+    unsigned int numberOfSlices = maxSliceIndex + 1;
     unsigned int windowsToUse = std::min((unsigned int)numberOfSlices, (unsigned int)m_Widgets.size());
 
-    MITK_DEBUG << "Dropping thumbnail, minSlice=" << minSlice << ", maxSlice=" << maxSlice << ", numberOfSlices=" << numberOfSlices << ", windowsToUse=" << windowsToUse << std::endl;
+    MITK_DEBUG << "Dropping thumbnail, maxSlice=" << maxSliceIndex << ", numberOfSlices=" << numberOfSlices << ", windowsToUse=" << windowsToUse << std::endl;
 
     // Now decide how we calculate which window is showing which slice.
     if (numberOfSlices <= m_Widgets.size())
@@ -275,9 +274,9 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
           m_Widgets[i]->SetLayout(layout, true);
           m_Widgets[i]->SetEnabled(true);
         }
-        m_Widgets[i]->SetSliceNumber(orientation, minSlice + i);
+        m_Widgets[i]->SetSliceIndex(orientation, i);
         m_Widgets[i]->FitToDisplay();
-        MITK_DEBUG << "Dropping thumbnail, i=" << i << ", sliceNumber=" << minSlice + i << std::endl;
+        MITK_DEBUG << "Dropping thumbnail, sliceIndex=" << i << std::endl;
       }
     }
     else
@@ -291,21 +290,19 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
           m_Widgets[i]->SetLayout(layout, true);
           m_Widgets[i]->SetEnabled(true);
         }
-        unsigned int minSlice = m_Widgets[i]->GetMinSlice(orientation);
-        unsigned int maxSlice = m_Widgets[i]->GetMaxSlice(orientation);
+        unsigned int maxSliceIndex = m_Widgets[i]->GetMaxSliceIndex(orientation);
         unsigned int numberOfEdgeSlicesToIgnore = static_cast<unsigned int>(numberOfSlices * 0.05); // ignore first and last 5 percent, as usually junk/blank.
         unsigned int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
         float fraction = static_cast<float>(i) / m_Widgets.size();
         unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + static_cast<unsigned int>(remainingNumberOfSlices * fraction);
 
         MITK_DEBUG << "Dropping thumbnail, i=" << i \
-            << ", minSlice=" << minSlice \
-            << ", maxSlice=" << maxSlice \
+            << ", maxSlice=" << maxSliceIndex \
             << ", numberOfEdgeSlicesToIgnore=" << numberOfEdgeSlicesToIgnore \
             << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
             << ", fraction=" << fraction \
             << ", chosenSlice=" << chosenSlice << std::endl;
-        m_Widgets[i]->SetSliceNumber(orientation, chosenSlice);
+        m_Widgets[i]->SetSliceIndex(orientation, chosenSlice);
         m_Widgets[i]->FitToDisplay();
       }
     } // end if (which method of spreading thumbnails)

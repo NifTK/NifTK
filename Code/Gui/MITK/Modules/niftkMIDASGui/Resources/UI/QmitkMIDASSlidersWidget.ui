@@ -6,26 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>326</width>
-    <height>68</height>
+    <width>200</width>
+    <height>74</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
+  <layout class="QGridLayout" name="gridLayout">
    <property name="margin">
     <number>0</number>
    </property>
-   <item row="0" column="1">
-    <widget class="ctkSliderWidget" name="m_SliceSelectionWidget" native="true">
-     <property name="toolTip">
-      <string>changes the slice number of the currently selected view</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="m_SliceLabel">
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <item row="2" column="0">
+    <widget class="QLabel" name="m_MagnificationLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -33,12 +29,52 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>slice</string>
+      <string>magn.:</string>
+     </property>
+     <property name="indent">
+      <number>0</number>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="m_TimeLabel">
+   <item row="2" column="1">
+    <widget class="ctkSliderWidget" name="m_MagnificationSliderWidget" native="true">
+     <property name="toolTip">
+      <string>changes the magnification of the currently selected view</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="ctkSliderWidget" name="m_SliceIndexSliderWidget" native="true">
+     <property name="toolTip">
+      <string>changes the slice number of the currently selected view</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="m_SliceIndexLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>slice:</string>
+     </property>
+     <property name="indent">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="ctkSliderWidget" name="m_TimeStepSliderWidget" native="true">
+     <property name="toolTip">
+      <string>changes the time step of the currently selected view</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="m_TimeStepLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -49,34 +85,10 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="text">
-      <string>time</string>
+      <string>time:</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="m_MagnificationLabel">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>magn.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="ctkSliderWidget" name="m_TimeSelectionWidget" native="true">
-     <property name="toolTip">
-      <string>changes the time step of the currently selected view</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="ctkSliderWidget" name="m_MagnificationWidget" native="true">
-     <property name="toolTip">
-      <string>changes the magnification of the currently selected view</string>
+     <property name="indent">
+      <number>0</number>
      </property>
     </widget>
    </item>

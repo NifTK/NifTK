@@ -34,7 +34,7 @@ public:
   QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent = 0);
 
   /** Destructor. */
-  ~QmitkMIDASImageAndSegmentationSelectorWidget();
+  virtual ~QmitkMIDASImageAndSegmentationSelectorWidget();
 
 protected:
 

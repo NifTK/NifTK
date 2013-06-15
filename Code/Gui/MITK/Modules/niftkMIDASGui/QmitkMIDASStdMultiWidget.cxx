@@ -1373,14 +1373,7 @@ mitk::SliceNavigationController* QmitkMIDASStdMultiWidget::GetSliceNavigationCon
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetMinSlice(MIDASOrientation orientation) const
-{
-  return 0;
-}
-
-
-//-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetMaxSlice(MIDASOrientation orientation) const
+unsigned int QmitkMIDASStdMultiWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
 {
   unsigned int result = 0;
 
@@ -1399,15 +1392,9 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxSlice(MIDASOrientation orientation)
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetMinTime() const
+unsigned int QmitkMIDASStdMultiWidget::GetMaxTimeStep() const
 {
-  return 0;
-}
-
-
-//-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetMaxTime() const
-{
+  MITK_INFO << "QmitkMIDASStdMultiWidget::GetMaxTimeStep() const" << std::endl;
   unsigned int result = 0;
 
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
@@ -1599,7 +1586,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber)
+void QmitkMIDASStdMultiWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
 {
   const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
@@ -1610,7 +1597,7 @@ void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsi
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    selectedPositionInVx[axis] = sliceNumber;
+    selectedPositionInVx[axis] = sliceIndex;
 
     mitk::Point3D tmp;
     tmp[0] = selectedPositionInVx[0];
@@ -1632,9 +1619,9 @@ void QmitkMIDASStdMultiWidget::SetSliceNumber(MIDASOrientation orientation, unsi
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation orientation) const
+unsigned int QmitkMIDASStdMultiWidget::GetSliceIndex(MIDASOrientation orientation) const
 {
-  int sliceNumber = 0;
+  int sliceIndex = 0;
 
   if (m_Geometry != NULL)
   {
@@ -1644,29 +1631,29 @@ unsigned int QmitkMIDASStdMultiWidget::GetSliceNumber(const MIDASOrientation ori
     m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    sliceNumber = selectedPositionInVx[axis];
+    sliceIndex = selectedPositionInVx[axis];
   }
 
-  return sliceNumber;
+  return sliceIndex;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetTime(unsigned int timeSlice)
+void QmitkMIDASStdMultiWidget::SetTimeStep(unsigned int timeStep)
 {
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  snc->GetTime()->SetPos(timeSlice);
+  snc->GetTime()->SetPos(timeStep);
 
   snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-  snc->GetTime()->SetPos(timeSlice);
+  snc->GetTime()->SetPos(timeStep);
 
   snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
-  snc->GetTime()->SetPos(timeSlice);
+  snc->GetTime()->SetPos(timeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASStdMultiWidget::GetTime() const
+unsigned int QmitkMIDASStdMultiWidget::GetTimeStep() const
 {
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   assert(snc);

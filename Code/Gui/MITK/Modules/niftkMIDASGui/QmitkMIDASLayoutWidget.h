@@ -31,7 +31,7 @@ class QButtonGroup;
  * for any number of layouts, and still keep a reasonably compact screen layout.
  *
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASLayoutWidget : public QWidget, public Ui_QmitkMIDASLayoutWidget
+class NIFTKMIDASGUI_EXPORT QmitkMIDASLayoutWidget : public QWidget, private Ui_QmitkMIDASLayoutWidget
 {
   Q_OBJECT
 
@@ -42,9 +42,6 @@ public:
 
   /// \brief Destructs a QmitkMIDASLayoutWidget object.
   virtual ~QmitkMIDASLayoutWidget();
-
-  /// \brief Creates the GUI, called from within constructor.
-  void setupUi(QWidget*);
 
   /// \brief Gets the current layout.
   MIDASLayout GetLayout() const;

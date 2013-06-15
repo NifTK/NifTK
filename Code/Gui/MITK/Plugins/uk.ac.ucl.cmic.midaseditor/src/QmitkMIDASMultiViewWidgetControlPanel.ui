@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QmitkMIDASMultiViewWidgetControlPanel</class>
+ <widget class="QWidget" name="QmitkMIDASMultiViewWidgetControlPanel">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>561</width>
+    <height>127</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0,0">
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="m_SlidersGroupBox">
+     <property name="title">
+      <string>Slice &amp;&amp; magnification</string>
+     </property>
+     <layout class="QHBoxLayout" name="m_SlidersGroupBoxLayout">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QmitkMIDASSlidersWidget" name="m_SlidersWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_LayoutGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Window layout</string>
+     </property>
+     <layout class="QVBoxLayout" name="m_WindowLayoutGroupBoxLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QmitkMIDASLayoutWidget" name="m_LayoutWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>50</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowPanningCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>bind panning</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowZoomCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>bind magn.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_ShowCursorsCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>show cursor</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="m_ViewerControlsSeparator">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_ViewNumberGroupBox">
+     <property name="title">
+      <string>Viewers</string>
+     </property>
+     <layout class="QGridLayout" name="m_ViewNumberGroupBoxLayout">
+      <property name="horizontalSpacing">
+       <number>2</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item row="3" column="2">
+       <widget class="QSpinBox" name="m_ViewRowsSpinBox">
+        <property name="maximumSize">
+         <size>
+          <width>39</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>click the arrows or type to change the number of rows</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QSpinBox" name="m_ViewColumnsSpinBox">
+        <property name="maximumSize">
+         <size>
+          <width>39</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>click the arrows or type to change the number of columns</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="m_2x2ViewsButton">
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>display 2 rows and 2 columns of image viewers</string>
+        </property>
+        <property name="text">
+         <string>2x2</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="m_1x1ViewButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>display 1 row and 1 column of image viewers</string>
+        </property>
+        <property name="text">
+         <string>1x1</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="m_ViewColumnsLabel">
+        <property name="text">
+         <string>cols:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="m_1x2ViewsButton">
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>display 1 row and 2 columns of image viewers</string>
+        </property>
+        <property name="text">
+         <string>1x2</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="m_1x3ViewsButton">
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>display 1 row and 3 columns of image viewers</string>
+        </property>
+        <property name="text">
+         <string>1x3</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="m_ViewRowsLabel">
+        <property name="text">
+         <string>rows:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>2</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_ViewBindingGroupBox">
+     <property name="title">
+      <string>Bind view.</string>
+     </property>
+     <layout class="QVBoxLayout" name="m_BindViewsGroupBoxLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QmitkMIDASBindWidget" name="m_ViewBindingWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+     <zorder>m_ViewBindingWidget</zorder>
+     <zorder>m_ViewBindingWidget</zorder>
+     <zorder>m_ViewBindingWidget</zorder>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_DropTypeGroupBox">
+     <property name="title">
+      <string>Drop type</string>
+     </property>
+     <layout class="QVBoxLayout" name="m_DropPolicyGroupBoxLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QRadioButton" name="m_DropSingleRadioButton">
+        <property name="toolTip">
+         <string>drop images into a single window</string>
+        </property>
+        <property name="text">
+         <string>single</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="m_DropMultipleRadioButton">
+        <property name="toolTip">
+         <string>drop images into across multiple windows</string>
+        </property>
+        <property name="text">
+         <string>multiple</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="m_DropThumbnailRadioButton">
+        <property name="toolTip">
+         <string>drop multiple images into any window, and the application will spread them across all windows and provide evenly spaced slices through the image</string>
+        </property>
+        <property name="text">
+         <string>all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_DropAccumulateCheckBox">
+        <property name="toolTip">
+         <string>dropped images accumulate, meaning you can repeatedly add more images without resetting the geometry</string>
+        </property>
+        <property name="text">
+         <string>accum.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+  <zorder>m_ViewNumberGroupBox</zorder>
+  <zorder>m_ViewerControlsSeparator</zorder>
+  <zorder>m_SlidersGroupBox</zorder>
+  <zorder>m_ViewBindingGroupBox</zorder>
+  <zorder>m_ViewBindingGroupBox</zorder>
+  <zorder>m_ViewBindingGroupBox</zorder>
+  <zorder>m_DropTypeGroupBox</zorder>
+  <zorder>m_LayoutGroupBox</zorder>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkMIDASSlidersWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QmitkMIDASSlidersWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkMIDASLayoutWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QmitkMIDASLayoutWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkMIDASBindWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QmitkMIDASBindWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -50,6 +50,8 @@ class QButtonGroup;
 class QToolButton;
 class ctkPopupWidget;
 
+class QmitkMIDASMultiViewWidgetControlPanel;
+
 /**
  * \class QmitkMIDASMultiViewWidget
  * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image
@@ -115,13 +117,16 @@ public:
   void SetDefaultMultiWindowLayout(MIDASLayout layout);
 
   /// \brief Sets the default drop type checkbox.
-  void SetDropTypeWidget(MIDASDropType dropType);
+  void SetDropType(MIDASDropType dropType);
 
   /// \brief Sets the visibility flag on the drop type checkboxes.
   void SetShowDropTypeWidgets(bool visible);
 
   /// \brief Sets the visibility flag on the layout buttons.
-  void SetShowLayoutButtons(bool visible);
+  void SetViewNumberControlsVisible(bool visible);
+
+  /// \brief Sets the visibility flag controlling the Magnification Slider.
+  void SetShowMagnificationSlider(bool visible);
 
   /// \brief Returns the flag indicating whether we show 2D cursors.
   bool GetShow2DCursors() const;
@@ -135,26 +140,23 @@ public:
   /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
   void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets the visibility flag controlling the Magnification Slider.
-  void SetShowMagnificationSlider(bool visible);
-
   /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch the render window layout
   void SetRememberSettingsPerLayout(bool rememberSettingsPerLayout);
 
-  /// \brief Sets the slice select slider to be tracking.
-  void SetSliceSelectTracking(bool isTracking);
+  /// \brief Sets the slice index slider to be tracking.
+  void SetSliceIndexTracking(bool tracking);
 
-  /// \brief Sets the magnification select slider to be tracking.
-  void SetMagnificationSelectTracking(bool isTracking);
+  /// \brief Sets the time step slider to be tracking.
+  void SetTimeStepTracking(bool tracking);
 
-  /// \brief Sets the time select slider to be tracking.
-  void SetTimeSelectTracking(bool isTracking);
+  /// \brief Sets the magnification slider to be tracking.
+  void SetMagnificationTracking(bool tracking);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice number.
-  void SetSelectedWindowSliceNumber(int sliceNumber);
+  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice index.
+  void SetSelectedWindowSliceIndex(int sliceIndex);
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes magnification.
   void SetSelectedWindowMagnification(double magnification);
@@ -194,9 +196,6 @@ public:
 
   /// \brief Gets the flag indicating whether this widget is currently in thumnail mode.
   bool GetThumbnailMode() const;
-
-  /// \brief Returns the slice number from the Slice slider.
-  int GetSliceNumber() const;
 
   /// \brief Returns the orientation from the orientation widgets, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. 3D view selected).
   MIDASOrientation GetOrientation() const;
@@ -253,29 +252,38 @@ signals:
 
 protected slots:
 
-  // Qt slots, connected to Qt GUI elements.
-  void OnSliceNumberChanged(double sliceNumber);
+  /// \brief Called when the slice index has been changed through the control panel.
+  void OnSliceIndexChanged(int sliceIndex);
+
+  /// \brief Called when the time step has been changed through the control panel.
+  void OnTimeStepChanged(int timeStep);
+
+  /// \brief Called when the magnification has been changed through the control panel.
   void OnMagnificationChanged(double magnification);
-  void OnTimeChanged(double timeStep);
-  void On1x1ButtonPressed();
-  void On1x2ButtonPressed();
-  void On1x3ButtonPressed();
-  void On2x2ButtonPressed();
-  void OnRowsSliderValueChanged(int);
-  void OnColumnsSliderValueChanged(int);
+
+  /// \brief Called when the window layout has been changed through the control panel.
   void OnLayoutChanged(MIDASLayout layout);
+
+  /// \brief Called when the cursor visibility has been changed through the control panel.
   void OnShow2DCursorsCheckBoxToggled(bool);
-  void OnDropSingleRadioButtonToggled(bool);
-  void OnDropMultipleRadioButtonToggled(bool);
-  void OnDropThumbnailRadioButtonToggled(bool);
-  void OnDropAccumulateStateChanged(int);
-  void OnBindTypeChanged();
+
+  /// \brief Called when the number of views has been changed through the control panel.
+  void OnViewNumberChanged(int rows, int columns);
+
+  /// \brief Called when the view binding type has been changed through the control panel.
+  void OnViewBindingTypeChanged();
+
+  /// \brief Called when the drop type has been changed through the control panel.
+  void OnDropTypeChanged(MIDASDropType dropType);
+
+  /// \brief Called when the drop accumulation has been changed through the control panel.
+  void OnDropAccumulateChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(QmitkRenderWindow* window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* widget, QmitkRenderWindow* window, int sliceNumber);
+  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* widget, QmitkRenderWindow* window, int sliceIndex);
 
   /// \brief Called when the cursor position is changed on a render window because of panning.
   void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* widget, const mitk::Vector3D& cursorPosition);
@@ -322,24 +330,6 @@ private:
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
   void SetSelectedViewIndex(int i);
 
-  /// \brief Method to enable, or disable all widgets, for use when GUI is first started, or the whole screen enabled, disabled.
-  void EnableWidgets(bool enabled);
-
-  /// \brief Enables/Disables drop type widgets.
-  void EnableDropTypeWidgets(bool enabled);
-
-  /// \brief Enables/Disables slider widgets.
-  void EnableSliderWidgets(bool enabled);
-
-  /// \brief Enables/Disables widgets to control layout.
-  void EnableLayoutWidgets(bool enabled);
-
-  /// \brief Enables/Disables widgets to control binding / linking.
-  void EnableBindWidgets(bool enabled);
-
-  /// \brief Enables/Disables widgets to control orientation.
-  void EnableOrientationWidgets(bool enabled);
-
   /// \brief Creates a view widget.
   QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
 
@@ -367,42 +357,19 @@ private:
   /// \brief Used to move either anterior/posterior by a certain number of slices.
   bool MoveAnteriorPosterior(int slices);
 
+  QmitkMIDASMultiViewWidgetControlPanel* CreateControlPanel(QWidget* parent);
+
   // Layouts
-  QHBoxLayout* m_TopLevelLayout;
-  QGridLayout* m_LayoutToPutControlsOnTopOfWindows;
-  QHBoxLayout* m_LayoutForGroupingControls;
-  QGridLayout* m_LayoutForTopControls;
-  QGridLayout* m_LayoutForLayoutWidgets;
-  QVBoxLayout* m_LayoutForDropWidgets;
+  QGridLayout* m_TopLevelLayout;
   QGridLayout* m_LayoutForRenderWindows;
 
   // Widgets
-  QmitkMIDASLayoutWidget* m_MIDASLayoutWidget;
-  QCheckBox* m_Show2DCursorsCheckBox;
-  QmitkMIDASSlidersWidget* m_MIDASSlidersWidget;
-  QmitkMIDASBindWidget* m_MIDASBindWidget;
-  QPushButton* m_1x1ViewButton;
-  QPushButton* m_1x2ViewsButton;
-  QPushButton* m_1x3ViewsButton;
-  QPushButton* m_2x2ViewsButton;
-  QLabel* m_ViewRowsLabel;
-  QSpinBox* m_ViewRowsSpinBox;
-  QLabel* m_ViewColumnsLabel;
-  QSpinBox* m_ViewColumnsSpinBox;
-  QRadioButton* m_DropSingleRadioButton;
-  QRadioButton* m_DropMultipleRadioButton;
-  QRadioButton* m_DropThumbnailRadioButton;
-  QButtonGroup* m_DropButtonGroup;
-  QCheckBox* m_DropAccumulateCheckBox;
   QToolButton* m_PinButton;
-  QWidget* m_ControlWidget;
-  QVBoxLayout* m_ControlWidgetLayout;
   ctkPopupWidget* m_PopupWidget;
-  QFrame* m_ControlsContainerWidget;
 
-  // This determines the maximum number of QmitkMIDASSingleViewWidget windows.
-  static const int m_MaxRows = 5;
-  static const int m_MaxCols = 5;
+  // This determines the maximum number of views.
+  static const int m_MaxViewRows = 5;
+  static const int m_MaxViewColumns = 5;
 
   // All the viewer windows.
   QList<QmitkMIDASSingleViewWidget*> m_SingleViewWidgets;
@@ -416,12 +383,12 @@ private:
   // Member variables for control purposes.
   unsigned long m_FocusManagerObserverTag;
   int m_SelectedViewIndex;
-  int m_DefaultNumberOfRows;
-  int m_DefaultNumberOfColumns;
-  int m_NumberOfRowsInNonThumbnailMode;
-  int m_NumberOfColumnsInNonThumbnailMode;
-  int m_NumberOfRowsBeforeSegmentationMode;
-  int m_NumberOfColumnsBeforeSegmentationMode;
+  int m_DefaultViewRows;
+  int m_DefaultViewColumns;
+  int m_ViewRowsInNonThumbnailMode;
+  int m_ViewColumnsInNonThumbnailMode;
+  int m_ViewRowsBeforeSegmentationMode;
+  int m_ViewColumnsBeforeSegmentationMode;
   bool m_Show2DCursors;
   bool m_Show3DWindowInOrthoView;
   QColor m_BackgroundColour;
@@ -429,9 +396,11 @@ private:
   bool m_IsThumbnailMode;
   bool m_IsMIDASSegmentationMode;
   bool m_NavigationControllerEventListening;
-  double m_PreviousMagnification;
+  double m_Magnification;
   MIDASLayout m_SingleWindowLayout;
   MIDASLayout m_MultiWindowLayout;
+
+  QmitkMIDASMultiViewWidgetControlPanel* m_ControlPanel;
 
   mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };

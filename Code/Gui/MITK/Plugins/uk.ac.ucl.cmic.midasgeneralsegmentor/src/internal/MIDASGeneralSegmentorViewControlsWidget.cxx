@@ -12,9 +12,6 @@
 
 =============================================================================*/
 
-#ifndef MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_CPP
-#define MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_CPP
-
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 
 //-----------------------------------------------------------------------------
@@ -120,4 +117,3 @@ void MIDASGeneralSegmentorViewControlsWidget::SetSeedMinAndMaxValues(double min,
   m_SeedMinValue->setText(minText);
   m_SeedMaxValue->setText(maxText);
 }
-#endif

@@ -140,10 +140,10 @@ public:
   /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, timestep, magnification) when we switch the render window layout
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, magnification) when we switch the render window layout
   void SetRememberSettingsPerLayout(bool remember);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, timestep, magnification) when we switch the render window layout
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, magnification) when we switch the render window layout
   bool GetRememberSettingsPerLayout() const;
 
   /// \brief Sets the background colour.
@@ -152,17 +152,11 @@ public:
   /// \brief Gets the background colour.
   QColor GetBackgroundColor() const;
 
-  /// \brief Returns the minimum allowed slice number for a given orientation.
-  unsigned int GetMinSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed slice index for a given orientation.
+  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed slice number for a given orientation.
-  unsigned int GetMaxSlice(MIDASOrientation orientation) const;
-
-  /// \brief Gets the minimum time step, or -1 if the widget is currently showing multiple windows.
-  unsigned int GetMinTime() const;
-
-  /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple windows.
-  unsigned int GetMaxTime() const;
+  /// \brief Gets the maximum time step.
+  unsigned int GetMaxTimeStep() const;
 
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
@@ -203,17 +197,17 @@ public:
   /// \brief Returns the bound flag.
   bool GetBoundGeometryActive();
 
-  /// \brief Get the current slice number for a given orientation.
-  unsigned int GetSliceNumber(MIDASOrientation orientation) const;
+  /// \brief Get the current slice index for a given orientation.
+  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Set the current slice number for a given orientation.
-  void SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber);
+  /// \brief Set the current slice index for a given orientation.
+  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
 
-  /// \brief Get the current time step number.
-  unsigned int GetTime() const;
+  /// \brief Get the current time step.
+  unsigned int GetTimeStep() const;
 
-  /// \brief Set the current time step number.
-  void SetTime(unsigned int timeSlice);
+  /// \brief Set the current time step.
+  void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the render window layout.
   MIDASLayout GetLayout() const;
@@ -269,7 +263,7 @@ public:
   /// \brief Returns pointers to the widget planes.
   std::vector<mitk::DataNode*> GetWidgetPlanes();
 
-  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice index to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
@@ -282,7 +276,7 @@ signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceNumber);
+  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
   void CursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
   void MagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
@@ -290,7 +284,7 @@ protected slots:
 
   // Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceNumber);
+  virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceIndex);
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
   virtual void OnMagnificationChanged(double magnification);
 
@@ -332,8 +326,8 @@ private:
   MIDASLayout m_Layout;
   MIDASOrientation m_Orientation;
 
-  int m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
-  int m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
   mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
   double m_Magnifications[MIDAS_LAYOUT_NUMBER * 2];     // Two each for layout. Unbound, then bound, alternatingly.
   bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
