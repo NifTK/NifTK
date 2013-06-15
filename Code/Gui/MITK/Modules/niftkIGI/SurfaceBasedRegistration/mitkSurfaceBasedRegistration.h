@@ -50,12 +50,16 @@ public:
   /**
    * \brief Write My Documentation
    */
-  void Update(const mitk::Surface::Pointer fixedNode,
-           const mitk::Surface::Pointer movingNode,
+  void Update(const mitk::DataNode* fixedNode,
+           const mitk::DataNode* movingNode,
            vtkMatrix4x4* transformMovingToFixed);
-  void Update(const mitk::PointSet::Pointer fixedNode,
-           const mitk::Surface::Pointer movingNode,
-           vtkMatrix4x4* transformMovingToFixed);
+
+  /**
+   * \brief apply the transform to a given data node
+   */
+  void ApplyTransform (mitk::DataNode::Pointer node);
+  void ApplyTransform (mitk::DataNode::Pointer node, vtkMatrix4x4* transform);
+  void GetCurrentTransform ( const mitk::DataNode * node , vtkMatrix4x4* matrix );
 
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
@@ -75,7 +79,10 @@ private:
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
 
+  vtkMatrix4x4* m_Matrix;
+
   void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+  void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut);
 
   void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,
