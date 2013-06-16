@@ -275,6 +275,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
+  m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
   connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
   connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
@@ -446,8 +447,8 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
   m_GuiUpdateTimer->stop();
   m_ClearDownTimer->stop();
 
+  // Get a valid row number, or delete the last item in the table.
   int rowIndex = m_TableWidget->currentRow();
-
   if (rowIndex < 0)
   {
     rowIndex = m_TableWidget->rowCount() - 1;
@@ -455,63 +456,75 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
 
   // scoping for source smart pointer
   {
-    QmitkIGIDataSource::Pointer source = m_Sources[rowIndex];
+    std::vector<int> rowsToDelete;
+    rowsToDelete.push_back(rowIndex);
 
-    // Disconnect from signal.
-    disconnect(source, 0, this, 0);
+    QmitkIGIDataSource::Pointer source = m_Sources[rowIndex];
 
     // FIXME: The list of RelatedSources is kept in mitkIGIDataSource, so the idea of having
     // linked sources is not unique to network tools. So we either move the "related sources"
     // down the class hierarchy, so that it only applies to networked tools, or we generalise
     // this to destroy any related data source.
 
-    // If it is a networked tool, removes the port number from our list of "ports in use".
+    // If it is a networked tool, scan for all sources using the same port.
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(source.GetPointer());
     if (niftyLinkSource.IsNotNull())
     {
-
       int portNumber = niftyLinkSource->GetPort();
-
-      // Scan through the other source looking for any others using the same port, and kill them as well
       for ( int i = 0 ; i < m_TableWidget->rowCount() ; i ++ )
       {
-        if ( i != rowIndex ) 
+        if (i != rowIndex)
         {
           QmitkIGIDataSource::Pointer tempSource = m_Sources[i];
           QmitkIGINiftyLinkDataSource::Pointer tempNiftyLinkSource = dynamic_cast<QmitkIGINiftyLinkDataSource*>(tempSource.GetPointer());
-          if ( tempNiftyLinkSource.IsNotNull() ) 
+          if ( tempNiftyLinkSource.IsNotNull() )
           {
             int tempPortNumber = tempNiftyLinkSource->GetPort();
-            if ( tempPortNumber == portNumber ) 
+            if ( tempPortNumber == portNumber )
             {
-              disconnect(tempSource, 0, this, 0);
+              rowsToDelete.push_back(i);
+            }
+          }
+        }
+      } // end for
+      m_PortsInUse.remove(portNumber);
+    }
 
-              m_TableWidget->removeRow(i);
-              m_TableWidget->update();
-              m_Sources.erase(m_Sources.begin() + i);
+    // Now delete all these sources.
+    int numberDeleted = 0;
+    for (unsigned int i = 0; i < rowsToDelete.size(); i++)
+    {
+      int actualRowNumber = rowsToDelete[i] - numberDeleted;
+      source = m_Sources[actualRowNumber];
+      disconnect(source, 0, this, 0);
 
-              if ( i < rowIndex ) 
-              {
-                rowIndex--;
-              }
+      // Only remove current GUI, if the current GUI is connected to
+      // a source that we are trying to delete.
+      if (m_GridLayoutClientControls != NULL)
+      {
+        QLayoutItem *item = m_GridLayoutClientControls->itemAtPosition(0,0);
+        if (item != NULL)
+        {
+          QWidget *widget = item->widget();
+          if (widget != NULL)
+          {
+            QmitkIGIDataSourceGui *gui = dynamic_cast<QmitkIGIDataSourceGui*>(widget);
+            if (gui != NULL && gui->GetSource() == source)
+            {
+              this->DeleteCurrentGuiWidget();
             }
           }
         }
       }
-      m_PortsInUse.remove(portNumber);
+
+      m_Sources.erase(m_Sources.begin() + actualRowNumber);
+
+      m_TableWidget->removeRow(actualRowNumber);
+      m_TableWidget->update();
+
+      numberDeleted++;
     }
-
-    m_TableWidget->removeRow(rowIndex);
-    m_TableWidget->update();
-
-    // FIXME: this should not delete the gui if it doesnt belong to the to-be-removed source!
-    //        but this should be a safe way of cleaning up for now
-    this->DeleteCurrentGuiWidget();
   }
-
-  // This destroys the source. It is up to the source to correctly destroy itself,
-  // as this class has no idea what the source is or what it contains etc.
-  m_Sources.erase(m_Sources.begin() + rowIndex);
 
   // Given we stopped the timers to make sure they don't trigger, we need
   // to restart them, if indeed they were on.
