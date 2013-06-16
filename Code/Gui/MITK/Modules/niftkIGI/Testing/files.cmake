@@ -18,8 +18,8 @@ set(MODULE_TESTS
   mitkTrackedImageCommandTest.cxx
   mitkTrackedPointerManagerTest.cxx
   QDSCommonTest.cxx
-  mitkSurfaceBasedRegistrationTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
+  mitkSurfaceBasedRegistrationTest.cxx
 )

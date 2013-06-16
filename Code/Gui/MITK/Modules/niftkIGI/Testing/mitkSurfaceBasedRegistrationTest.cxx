@@ -40,13 +40,23 @@ protected:
 
 } // end namespace
 
-int mitkSurfaceBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
+int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
 {
+  if (argc != 3)
+  {
+    std::cerr << "Usage: mitkSurfaceBasedRegistrationTest points.vtp surface.vtp" << std::endl;
+    std::cerr << " argc=" << argc << std::endl;
+    for (int i = 0; i < argc; ++i)
+    {
+      std::cerr << " argv[" << i << "]=" << argv[i] << std::endl;
+    }
+    return EXIT_FAILURE;
+  } 
 
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
  // mitk::DataStorage* storage = mitk::DataStorage::New();
   mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
-  PointReader->SetFileName("/home/thompson/phd/NifIGI-Superbuild-Clean/CMakeExternals/Source/NifTKData/Input/maskedliver_points.mps");
+  PointReader->SetFileName(argv[1]);
 //  PointReader->GenerateData();
   mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
   PointReader->Update();
@@ -63,7 +73,7 @@ int mitkSurfaceBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
 
   registration->ApplyTransform ( fixednode , fixedMatrix);
   mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
-  SurfaceReader->SetFileName("/home/thompson/phd/NifIGI-Superbuild-Clean/CMakeExternals/Source/NifTKData/Input/liver.vtk");
+  SurfaceReader->SetFileName(argv[2]);
 //  PointReader->GenerateData();
   mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
   SurfaceReader->Update();

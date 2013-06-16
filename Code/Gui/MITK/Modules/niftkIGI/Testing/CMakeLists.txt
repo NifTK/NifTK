@@ -13,3 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
+
+mitkAddCustomModuleTest(SLS-mitkSurfaceBasedRegistrationTest mitkSurfaceBasedRegistrationTest ${NIFTK_DATA_DIR}/Input/maskedliver_points.mps ${NIFTK_DATA_DIR}/Input/liver.vtk)
+
+
