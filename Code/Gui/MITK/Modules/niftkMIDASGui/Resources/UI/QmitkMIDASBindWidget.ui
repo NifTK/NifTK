@@ -19,6 +19,9 @@
    </property>
    <item>
     <widget class="QCheckBox" name="m_BindLayoutsCheckBox">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the window layout across&lt;br/&gt;multiple image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>layout</string>
      </property>
@@ -27,7 +30,7 @@
    <item>
     <widget class="QCheckBox" name="m_BindCursorsCheckBox">
      <property name="toolTip">
-      <string>bind cursors across multiple views</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the selected point in space and&lt;br/&gt;the cursor position within the windows&lt;br/&gt;across multiple image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>cursor</string>
@@ -37,7 +40,7 @@
    <item>
     <widget class="QCheckBox" name="m_BindMagnificationsCheckBox">
      <property name="toolTip">
-      <string>bind magnification across multiple views</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across&lt;br/&gt;multiple image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>magn.</string>
@@ -47,7 +50,7 @@
    <item>
     <widget class="QCheckBox" name="m_BindGeometriesCheckBox">
      <property name="toolTip">
-      <string>bind magnification across multiple views</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the image geometry across&lt;br/&gt;multiple image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>geom.</string>
