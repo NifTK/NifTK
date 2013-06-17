@@ -490,6 +490,8 @@ void QmitkIGIDataSourceManager::OnRemoveSource()
       m_PortsInUse.remove(portNumber);
     }
 
+    std::sort(rowsToDelete.begin(), rowsToDelete.end(), std::less<int>());
+
     // Now delete all these sources.
     int numberDeleted = 0;
     for (unsigned int i = 0; i < rowsToDelete.size(); i++)
