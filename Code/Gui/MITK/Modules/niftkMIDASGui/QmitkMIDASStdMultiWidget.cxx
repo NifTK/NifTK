@@ -1394,7 +1394,6 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxSliceIndex(MIDASOrientation orienta
 //-----------------------------------------------------------------------------
 unsigned int QmitkMIDASStdMultiWidget::GetMaxTimeStep() const
 {
-  MITK_INFO << "QmitkMIDASStdMultiWidget::GetMaxTimeStep() const" << std::endl;
   unsigned int result = 0;
 
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
@@ -1511,76 +1510,88 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orientation)
 {
-  if (!m_BlockDisplayGeometryEvents)
+  if (m_Geometry != NULL && !m_BlockDisplayGeometryEvents && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    const mitk::Geometry3D* geometry = m_Geometry;
-    if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
+    int sliceIndex = 0;
+    mitk::Index3D selectedPositionInVx;
+    mitk::Point3D selectedPosition = this->GetSelectedPosition();
+    int axis = m_OrientationToAxisMap[orientation];
+
+    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+    sliceIndex = selectedPositionInVx[axis];
+
+    // cursor[0] <-> axial[0] <-> coronal[0]
+    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[2] <-> sagittal[1] <-> coronal[1]
+
+    mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+    mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+    mitk::Vector2D cursorPositionOnCoronalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
+
+    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
+    if (renderWindow == this->mitkWidget1)
     {
-      int sliceIndex = 0;
-      mitk::Index3D selectedPositionInVx;
-      mitk::Point3D selectedPosition = this->GetSelectedPosition();
-      int axis = m_OrientationToAxisMap[orientation];
-
-      geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
-      sliceIndex = selectedPositionInVx[axis];
-
-      // cursor[0] <-> axial[0] <-> coronal[0]
-      // cursor[1] <-> axial[1] <-> -sagittal[0]
-      // cursor[2] <-> sagittal[1] <-> coronal[1]
-
-      mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-      mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-      mitk::Vector2D cursorPositionOnCoronalDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
-
-      QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-      if (renderWindow == this->mitkWidget1)
+      if (orientation == MIDAS_ORIENTATION_AXIAL)
       {
-        if (orientation == MIDAS_ORIENTATION_AXIAL)
-        {
-          m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
-        }
-        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-        {
-          m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
-        }
-        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
-        {
-          m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
-        }
+        m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
       }
-      else if (renderWindow == this->mitkWidget2)
+      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
       {
-        if (orientation == MIDAS_ORIENTATION_AXIAL)
-        {
-          m_CursorPosition[2] = cursorPositionOnSagittalDisplay[1];
-        }
-        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-        {
-          m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
-        }
-        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
-        {
-          m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
-        }
+        m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
       }
-      else// if (renderWindow == this->mitkWidget3)
+      else// if (orientation == MIDAS_ORIENTATION_CORONAL)
       {
-        if (orientation == MIDAS_ORIENTATION_AXIAL)
-        {
-          m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
-        }
-        else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-        {
-          m_CursorPosition[0] = cursorPositionOnCoronalDisplay[0];
-        }
-        else// if (orientation == MIDAS_ORIENTATION_CORONAL)
-        {
-          m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
-        }
+        m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
       }
-
-      emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
     }
+    else if (renderWindow == this->mitkWidget2)
+    {
+      if (orientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        m_CursorPosition[2] = cursorPositionOnSagittalDisplay[1];
+      }
+      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        m_CursorPosition[0] = cursorPositionOnAxialDisplay[0];
+      }
+      else// if (orientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
+      }
+    }
+    else// if (renderWindow == this->mitkWidget3)
+    {
+      if (orientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        m_CursorPosition[2] = cursorPositionOnCoronalDisplay[1];
+      }
+      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        m_CursorPosition[0] = cursorPositionOnCoronalDisplay[0];
+      }
+      else// if (orientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        m_CursorPosition[1] = cursorPositionOnAxialDisplay[1];
+      }
+    }
+
+    if (this->IsPanningBound() && !this->IsZoomingBound())
+    {
+      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+      for (int i = 0; i < 3; ++i)
+      {
+        QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+        if (otherRenderWindow != renderWindow)
+        {
+          mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(otherRenderWindow, m_CursorPosition);
+          this->SetOrigin(otherRenderWindow, origin);
+        }
+      }
+      this->RequestUpdate();
+      emit CursorPositionChanged(m_CursorPosition);
+    }
+
+    emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
   }
 }
 
@@ -1723,11 +1734,6 @@ const mitk::Vector2D QmitkMIDASStdMultiWidget::GetCursorPosition(QmitkRenderWind
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
 {
-  if (m_CursorPosition == cursorPosition)
-  {
-    return;
-  }
-
   m_CursorPosition = cursorPosition;
 
   bool hasChanged = false;
@@ -1822,11 +1828,6 @@ double QmitkMIDASStdMultiWidget::GetMagnification() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 {
-  if (m_Magnification == magnification)
-  {
-    return;
-  }
-
   mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
   bool hasChanged = false;
@@ -2045,6 +2046,13 @@ bool QmitkMIDASStdMultiWidget::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::IsPanningBound() const
+{
+  return m_PanningBound;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetPanningBound(bool bound)
 {
   if (bound == this->IsPanningBound())
@@ -2063,9 +2071,9 @@ void QmitkMIDASStdMultiWidget::SetPanningBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsPanningBound() const
+bool QmitkMIDASStdMultiWidget::IsZoomingBound() const
 {
-  return m_PanningBound;
+  return m_ZoomingBound;
 }
 
 
@@ -2084,11 +2092,4 @@ void QmitkMIDASStdMultiWidget::SetZoomingBound(bool bound)
   {
     this->SetMagnification(this->GetMagnification());
   }
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsZoomingBound() const
-{
-  return m_ZoomingBound;
 }
