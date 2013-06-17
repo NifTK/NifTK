@@ -31,23 +31,10 @@ int const QmitkMIDASLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWind
 
 //-----------------------------------------------------------------------------
 QmitkMIDASLayoutWidget::QmitkMIDASLayoutWidget(QWidget *parent)
-: m_Layout(MIDAS_LAYOUT_UNKNOWN)
+: QWidget(parent)
+, m_Layout(MIDAS_LAYOUT_UNKNOWN)
 {
-  setupUi(this);
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkMIDASLayoutWidget::~QmitkMIDASLayoutWidget()
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::setupUi(QWidget* parent)
-{
-  Ui_QmitkMIDASLayoutWidget::setupUi(parent);
+  this->setupUi(this);
 
   m_MultiWindowComboBox->addItem("2x2");
   m_MultiWindowComboBox->addItem("3H");
@@ -67,6 +54,12 @@ void QmitkMIDASLayoutWidget::setupUi(QWidget* parent)
   connect(m_3DWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(On3DWindowRadioButtonToggled(bool)));
   connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnMultiWindowRadioButtonToggled(bool)));
   connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged(int)));
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkMIDASLayoutWidget::~QmitkMIDASLayoutWidget()
+{
 }
 
 

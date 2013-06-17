@@ -1259,7 +1259,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
       }
     }
   }
-} // end function
+}
 
 
 //-----------------------------------------------------------------------------
@@ -1456,9 +1456,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
       }
     }
   }
-} // end function
-
-
+}
 
 
 //-----------------------------------------------------------------------------
@@ -1608,9 +1606,9 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
       m_IsUpdating = false;
 
-    } // end if working image
-  } // end if reference image
-} // end function
+    }
+  }
+}
 
 
 //-----------------------------------------------------------------------------

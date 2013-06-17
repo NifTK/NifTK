@@ -25,7 +25,7 @@
  * \class QmitkMIDASBindWidget
  * \brief Qt Widget class to contain check boxes for none, cursors, magnification, geometry.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASBindWidget : public QWidget, public Ui_QmitkMIDASBindWidget
+class NIFTKMIDASGUI_EXPORT QmitkMIDASBindWidget : public QWidget, private Ui_QmitkMIDASBindWidget
 {
   Q_OBJECT
 
@@ -37,23 +37,20 @@ public:
   /// \brief Destructs the QmitkMIDASBindWidget object.
   virtual ~QmitkMIDASBindWidget();
 
-  /// \brief Creates the GUI.
-  void setupUi(QWidget*);
-
   /// \brief Method to set the widget check-boxes to match the supplied bind type, without emmitting signals.
-  void SetToBindType(int bindType);
+  void SetBindType(int bindType);
 
-  /// \brief Returns true if the render window layout is bound and false otherwise.
-  bool IsLayoutBound() const;
+  /// \brief Returns true if the render window layout of the views is bound and false otherwise.
+  bool AreLayoutsBound() const;
 
-  /// \brief Returns true if cursors are bound, and false otherwise.
+  /// \brief Returns true if the cursor of the views is bound and false otherwise.
   bool AreCursorsBound() const;
 
-  /// \brief Returns true if the magnification is bound, and false otherwise.
-  bool IsMagnificationBound() const;
+  /// \brief Returns true if the magnification of the views is bound and false otherwise.
+  bool AreMagnificationsBound() const;
 
-  /// \brief Returns true if the geometry is bound and false otherwise.
-  bool IsGeometryBound() const;
+  /// \brief Returns true if the geometry of the views is bound and false otherwise.
+  bool AreGeometriesBound() const;
 
 signals:
 
@@ -63,16 +60,16 @@ signals:
 protected slots:
 
   /// \brief Qt slot called when the "layout" checkbox is toggled.
-  void OnLayoutCheckBoxToggled(bool value);
+  void OnBindLayoutsCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "cursors" checkbox is toggled.
-  void OnCursorsCheckBoxToggled(bool value);
+  void OnBindCursorsCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "magnification" checkbox is toggled.
-  void OnMagnificationCheckBoxToggled(bool value);
+  void OnBindMagnificationsCheckBoxToggled(bool value);
 
   /// \brief Qt slot called when the "geometry" checkbox is toggled.
-  void OnGeometryCheckBoxToggled(bool value);
+  void OnBindGeometriesCheckBoxToggled(bool value);
 
 protected:
 

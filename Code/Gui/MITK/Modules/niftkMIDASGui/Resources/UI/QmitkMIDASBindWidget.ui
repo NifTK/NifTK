@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>112</width>
+    <width>72</width>
     <height>83</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QCheckBox" name="m_BindLayoutCheckBox">
+    <widget class="QCheckBox" name="m_BindLayoutsCheckBox">
      <property name="text">
       <string>layout</string>
      </property>
@@ -30,27 +30,27 @@
       <string>bind cursors across multiple views</string>
      </property>
      <property name="text">
-      <string>cursors</string>
+      <string>cursor</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="m_BindMagnificationCheckBox">
+    <widget class="QCheckBox" name="m_BindMagnificationsCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>magnification</string>
+      <string>magn.</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="m_BindGeometryCheckBox">
+    <widget class="QCheckBox" name="m_BindGeometriesCheckBox">
      <property name="toolTip">
       <string>bind magnification across multiple views</string>
      </property>
      <property name="text">
-      <string>geometry</string>
+      <string>geom.</string>
      </property>
     </widget>
    </item>

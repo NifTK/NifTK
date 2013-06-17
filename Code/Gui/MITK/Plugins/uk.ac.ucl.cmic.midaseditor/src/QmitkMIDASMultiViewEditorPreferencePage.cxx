@@ -51,7 +51,7 @@ QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage
 , m_ImageInterpolationComboBox(NULL)
 , m_DefaultDropType(NULL)
 , m_ShowDropTypeWidgetsCheckBox(NULL)
-, m_ShowLayoutButtonsCheckBox(NULL)
+, m_ShowViewNumberControlsCheckBox(NULL)
 , m_ShowMagnificationSliderCheckBox(NULL)
 , m_Show3DWindowInOrthoViewCheckBox(NULL)
 , m_Show2DCursorsCheckBox(NULL)
@@ -89,7 +89,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
 
   m_MainControl = new QWidget(parent);
 
-  QFormLayout *formLayout = new QFormLayout;
+  QFormLayout* formLayout = new QFormLayout;
 
   m_ImageInterpolationComboBox = new QComboBox(parent);
   m_ImageInterpolationComboBox->insertItem(0, "none");
@@ -125,32 +125,32 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_DefaultDropType->insertItem(1, "multiple");
   m_DefaultDropType->insertItem(2, "all");
 
-  m_ShowDropTypeWidgetsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show drop type check boxes", m_ShowDropTypeWidgetsCheckBox);
-
-  m_ShowLayoutButtonsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show layout buttons", m_ShowLayoutButtonsCheckBox);
-
   m_ShowMagnificationSliderCheckBox = new QCheckBox(parent);
   formLayout->addRow("show magnification slider", m_ShowMagnificationSliderCheckBox);
-
-  m_Show3DWindowInOrthoViewCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 3D view in orthoview", m_Show3DWindowInOrthoViewCheckBox);
-
-  m_Show2DCursorsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
 
   m_SliceSelectTracking = new QCheckBox(parent);
   formLayout->addRow("slice select tracking", m_SliceSelectTracking);
 
-  m_MagnificationSelectTracking = new QCheckBox(parent);
-  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
-
   m_TimeSelectTracking = new QCheckBox(parent);
   formLayout->addRow("time select tracking", m_TimeSelectTracking);
 
+  m_MagnificationSelectTracking = new QCheckBox(parent);
+  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
+
+  m_Show2DCursorsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
+
+  m_Show3DWindowInOrthoViewCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 3D window in 2x2 layout", m_Show3DWindowInOrthoViewCheckBox);
+
   m_RememberEachOrientationsViewSettings = new QCheckBox(parent);
-  formLayout->addRow("remember each orientations view settings", m_RememberEachOrientationsViewSettings);
+  formLayout->addRow("remember settings of each window layout", m_RememberEachOrientationsViewSettings);
+
+  m_ShowViewNumberControlsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show view number controls", m_ShowViewNumberControlsCheckBox);
+
+  m_ShowDropTypeWidgetsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show drop type check boxes", m_ShowDropTypeWidgetsCheckBox);
 
   QPushButton* backgroundColourResetButton = new QPushButton(parent);
   backgroundColourResetButton->setText("reset");
@@ -162,7 +162,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_BackgroundColourButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
   QGridLayout* backgroundColourWidgetLayout = new QGridLayout;
-  backgroundColourWidgetLayout->setContentsMargins(4,4,4,4);
+  backgroundColourWidgetLayout->setContentsMargins(4, 4, 4, 4);
   backgroundColourWidgetLayout->addWidget(m_BackgroundColourButton, 0, 0);
   backgroundColourWidgetLayout->addWidget(backgroundColourResetButton, 0, 1);
   backgroundColourWidgetLayout->addWidget(backgroundColorSpecificallyMIDAS, 0, 2);
@@ -197,7 +197,7 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, m_ImageInterpolationComboBox->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_DROP_TYPE, m_DefaultDropType->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, m_ShowDropTypeWidgetsCheckBox->isChecked());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_LAYOUT_BUTTONS, m_ShowLayoutButtonsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_LAYOUT_BUTTONS, m_ShowViewNumberControlsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, m_Show3DWindowInOrthoViewCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
@@ -236,7 +236,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
-  m_ShowLayoutButtonsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, true));
+  m_ShowViewNumberControlsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, true));
   m_Show3DWindowInOrthoViewCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, false));
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
   m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, true));

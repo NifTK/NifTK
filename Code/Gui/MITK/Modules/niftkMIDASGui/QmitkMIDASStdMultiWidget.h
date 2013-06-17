@@ -169,29 +169,23 @@ public:
   /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
   QmitkRenderWindow* GetRenderWindow(vtkRenderWindow* aVtkRenderWindow) const;
 
-  /// \brief Returns the minimum allowed slice number for a given orientation.
-  unsigned int GetMinSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed slice index for a given orientation.
+  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed slice number for a given orientation.
-  unsigned int GetMaxSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed time step.
+  unsigned int GetMaxTimeStep() const;
 
-  /// \brief Returns the minimum allowed time slice number.
-  unsigned int GetMinTime() const;
+  /// \brief Get the current slice index.
+  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed time slice number.
-  unsigned int GetMaxTime() const;
+  /// \brief Set the current slice index.
+  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
 
-  /// \brief Get the current slice number.
-  unsigned int GetSliceNumber(const MIDASOrientation orientation) const;
+  /// \brief Get the current time step.
+  unsigned int GetTimeStep() const;
 
-  /// \brief Set the current slice number.
-  void SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber);
-
-  /// \brief Get the current time slice number.
-  unsigned int GetTime() const;
-
-  /// \brief Set the current time slice number.
-  void SetTime(unsigned int timeSlice);
+  /// \brief Set the current time step.
+  void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the selected position in the world coordinate system (mm).
   const mitk::Point3D GetSelectedPosition() const;
@@ -285,7 +279,7 @@ signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceNumber);
+  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
   void MagnificationChanged(double magnification);
 

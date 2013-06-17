@@ -113,24 +113,24 @@ private:
 
   QWidget* m_MainControl;
 
-  QString      m_BackgroundColorStyleSheet;
-  std::string  m_BackgroundColor;
+  QString m_BackgroundColorStyleSheet;
+  std::string m_BackgroundColor;
 
-  QSpinBox    *m_DefaultNumberOfRowsSpinBox;
-  QSpinBox    *m_DefaultNumberOfColumnsSpinBox;
-  QComboBox   *m_DefaultViewComboBox;
-  QComboBox   *m_ImageInterpolationComboBox;
-  QComboBox   *m_DefaultDropType;
-  QCheckBox   *m_ShowDropTypeWidgetsCheckBox;
-  QCheckBox   *m_ShowLayoutButtonsCheckBox;
-  QCheckBox   *m_ShowMagnificationSliderCheckBox;
-  QCheckBox   *m_Show3DWindowInOrthoViewCheckBox;
-  QCheckBox   *m_Show2DCursorsCheckBox;
-  QCheckBox   *m_RememberEachOrientationsViewSettings;
+  QSpinBox* m_DefaultNumberOfRowsSpinBox;
+  QSpinBox* m_DefaultNumberOfColumnsSpinBox;
+  QComboBox* m_DefaultViewComboBox;
+  QComboBox* m_ImageInterpolationComboBox;
+  QComboBox* m_DefaultDropType;
+  QCheckBox* m_ShowDropTypeWidgetsCheckBox;
+  QCheckBox* m_ShowViewNumberControlsCheckBox;
+  QCheckBox* m_ShowMagnificationSliderCheckBox;
+  QCheckBox* m_Show3DWindowInOrthoViewCheckBox;
+  QCheckBox* m_Show2DCursorsCheckBox;
+  QCheckBox* m_RememberEachOrientationsViewSettings;
   QPushButton *m_BackgroundColourButton;
-  QCheckBox   *m_SliceSelectTracking;
-  QCheckBox   *m_MagnificationSelectTracking;
-  QCheckBox   *m_TimeSelectTracking;
+  QCheckBox* m_SliceSelectTracking;
+  QCheckBox* m_MagnificationSelectTracking;
+  QCheckBox* m_TimeSelectTracking;
 
   berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;
 };
