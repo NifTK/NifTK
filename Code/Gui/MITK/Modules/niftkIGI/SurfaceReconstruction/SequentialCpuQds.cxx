@@ -21,7 +21,7 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/static_assert.hpp>
 
-#ifdef _OMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 

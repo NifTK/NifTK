@@ -16,7 +16,7 @@
 #include <boost/gil/gil_all.hpp>
 #include <boost/static_assert.hpp>
 
-#ifdef _OMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
@@ -39,7 +39,7 @@ void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gi
 
   // no point running more than 2 threads here, loop is very simple to start with.
   // with more threads we'll just end up with cache thrash, etc.
-#ifdef _OMP
+#ifdef _OPENMP
   #pragma omp parallel for num_threads(2)
 #endif
   for (int y = 1; y < src.height() - 1; ++y)

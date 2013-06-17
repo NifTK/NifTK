@@ -12,12 +12,18 @@
 #
 #============================================================================*/
 
+find_package(OpenMP)
+
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
   INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration
   DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration niftkOpenCV
   PACKAGE_DEPENDS ITK NiftyLink
 )
+
+if(OPENMP_FOUND)
+  set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+endif()
 
 if(BUILD_TESTING)
   add_subdirectory(Testing)
