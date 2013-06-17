@@ -21,8 +21,12 @@ MITK_CREATE_MODULE(niftkIGI
   PACKAGE_DEPENDS ITK NiftyLink
 )
 
-if(OPENMP_FOUND)
-  set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+# only enable openmp on windows, for now.
+# see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2502
+if(MSVC)
+  if(OPENMP_FOUND)
+    set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+  endif()
 endif()
 
 if(BUILD_TESTING)
