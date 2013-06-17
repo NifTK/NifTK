@@ -263,17 +263,17 @@ public:
   /// \brief Gets the flag controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Sets the flag that controls whether the panning is bound between the 2D render windows.
-  void SetPanningBound(bool bound);
-
   /// \brief Gets the flag controls whether the panning is bound between the 2D render windows.
   bool IsPanningBound() const;
 
-  /// \brief Sets the flag that controls whether the zooming is bound between the 2D render windows.
-  void SetZoomingBound(bool bound);
+  /// \brief Sets the flag that controls whether the panning is bound between the 2D render windows.
+  void SetPanningBound(bool bound);
 
   /// \brief Gets the flag controls whether the zooming is bound between the 2D render windows.
   bool IsZoomingBound() const;
+
+  /// \brief Sets the flag that controls whether the zooming is bound between the 2D render windows.
+  void SetZoomingBound(bool bound);
 
 signals:
 

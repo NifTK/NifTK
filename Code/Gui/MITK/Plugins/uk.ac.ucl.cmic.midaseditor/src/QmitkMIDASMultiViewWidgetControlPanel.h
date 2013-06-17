@@ -37,6 +37,9 @@ public:
   /// \brief Shows or hides the magnification controls.
   void SetMagnificationControlsVisible(bool visible);
 
+  /// \brief Shows or hides the window binding controls.
+  void SetWindowBindingControlsVisible(bool visible);
+
   /// \brief Shows or hides the view number controls.
   void SetViewNumberControlsVisible(bool visible);
 
@@ -100,6 +103,18 @@ public:
   /// \brief Sets the render window layout controls to the given layout.
   void SetLayout(MIDASLayout layout);
 
+  /// \brief Returns true if the panning is bound between the windows of a viewer, otherwise false.
+  bool IsWindowPanningBound() const;
+
+  /// \brief Sets the bind panning check box to the given value.
+  void SetWindowPanningBound(bool bound);
+
+  /// \brief Returns true if the zooming is bound between the windows of a viewer, otherwise false.
+  bool IsWindowZoomingBound() const;
+
+  /// \brief Sets the bind zooming check box to the given value.
+  void SetWindowZoomingBound(bool bound);
+
   /// \brief Returns true if the  cursor (aka crosshair) is set to visible, otherwise false.
   bool IsCursorVisible() const;
 
@@ -153,6 +168,8 @@ signals:
 
   void ViewNumberChanged(int rows, int columns);
 
+  void BindWindowPanningChanged(bool bound);
+  void BindWindowZoomingChanged(bool bound);
   void ViewBindingTypeChanged();
 
   void DropTypeChanged(MIDASDropType dropType);

@@ -178,6 +178,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), this, SLOT(OnMagnificationChanged(double)));
 
   connect(m_ControlPanel, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
+  connect(m_ControlPanel, SIGNAL(BindWindowPanningChanged(bool)), this, SLOT(OnBindWindowPanningChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(BindWindowZoomingChanged(bool)), this, SLOT(OnBindWindowZoomingChanged(bool)));
   connect(m_ControlPanel, SIGNAL(CursorVisibilityChanged(bool)), this, SLOT(OnShow2DCursorsCheckBoxToggled(bool)));
 
   connect(m_ControlPanel, SIGNAL(ViewNumberChanged(int, int)), this, SLOT(OnViewNumberChanged(int, int)));
@@ -204,7 +206,11 @@ QmitkMIDASMultiViewWidgetControlPanel* QmitkMIDASMultiViewWidget::CreateControlP
 {
   QmitkMIDASMultiViewWidgetControlPanel* controlPanel = new QmitkMIDASMultiViewWidgetControlPanel(parent);
 
+  controlPanel->SetWindowBindingControlsVisible(true);
   controlPanel->SetMaxViewNumber(m_MaxViewRows, m_MaxViewColumns);
+
+  controlPanel->SetWindowPanningBound(true);
+  controlPanel->SetWindowZoomingBound(true);
 
   QHBoxLayout* controlPanelLayout = new QHBoxLayout(parent);
   controlPanelLayout->setContentsMargins(0, 0, 0, 0);
@@ -1066,6 +1072,32 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(MIDASLayout layout)
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).
     this->UpdateFocusManagerToSelectedView();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnBindWindowPanningChanged(bool bound)
+{
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->SetPanningBound(bound);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnBindWindowZoomingChanged(bool bound)
+{
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    if (m_SingleViewWidgets[i]->isVisible())
+    {
+      m_SingleViewWidgets[i]->SetZoomingBound(bound);
+    }
   }
 }
 

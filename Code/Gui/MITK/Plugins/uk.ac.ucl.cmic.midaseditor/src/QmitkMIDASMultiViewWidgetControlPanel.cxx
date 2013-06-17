@@ -16,14 +16,13 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   // This should disable the view binding and drop type controls.
   this->SetViewNumber(1, 1);
 
-  m_BindWindowPanningCheckBox->setVisible(false);
-  m_BindWindowZoomCheckBox->setVisible(false);
-
   connect(m_SlidersWidget, SIGNAL(SliceIndexChanged(int)), this, SIGNAL(SliceIndexChanged(int)));
   connect(m_SlidersWidget, SIGNAL(TimeStepChanged(int)), this, SIGNAL(TimeStepChanged(int)));
   connect(m_SlidersWidget, SIGNAL(MagnificationChanged(double)), this, SIGNAL(MagnificationChanged(double)));
 
   connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SIGNAL(LayoutChanged(MIDASLayout)));
+  connect(m_BindWindowPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowPanningChanged(bool)));
+  connect(m_BindWindowZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowZoomingChanged(bool)));
   connect(m_ShowCursorsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(CursorVisibilityChanged(bool)));
 
   connect(m_1x1ViewButton, SIGNAL(clicked()), this, SLOT(On1x1ViewButtonClicked()));
@@ -88,6 +87,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationControlsVisible(bool
 {
   m_SlidersWidget->SetMagnificationControlsVisible(visible);
   m_SlidersGroupBox->setTitle(visible ? "Slice && magnification" : "Slice");
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowBindingControlsVisible(bool visible)
+{
+  m_BindWindowPanningCheckBox->setVisible(visible);
+  m_BindWindowZoomingCheckBox->setVisible(visible);
 }
 
 
@@ -237,7 +244,44 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetLayout(MIDASLayout layout)
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
   m_LayoutWidget->SetLayout(layout);
   m_LayoutWidget->blockSignals(wasBlocked);
+
+  bool isMultiWindowLayout = ::IsMultiWindowLayout(layout);
+  m_BindWindowPanningCheckBox->setEnabled(isMultiWindowLayout);
+  m_BindWindowZoomingCheckBox->setEnabled(isMultiWindowLayout);
 }
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::IsWindowPanningBound() const
+{
+  return m_BindWindowPanningCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowPanningBound(bool bound)
+{
+  bool wasBlocked = m_BindWindowPanningCheckBox->blockSignals(true);
+  m_BindWindowPanningCheckBox->setChecked(bound);
+  m_BindWindowPanningCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::IsWindowZoomingBound() const
+{
+  return m_BindWindowZoomingCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowZoomingBound(bool bound)
+{
+  bool wasBlocked = m_BindWindowZoomingCheckBox->blockSignals(true);
+  m_BindWindowZoomingCheckBox->setChecked(bound);
+  m_BindWindowZoomingCheckBox->blockSignals(wasBlocked);
+}
+
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::IsCursorVisible() const

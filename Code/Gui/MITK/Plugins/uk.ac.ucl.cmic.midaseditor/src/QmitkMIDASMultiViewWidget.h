@@ -264,6 +264,12 @@ protected slots:
   /// \brief Called when the window layout has been changed through the control panel.
   void OnLayoutChanged(MIDASLayout layout);
 
+  /// \brief Called when the binding of panning in render windows of a view has been changed through the control panel.
+  void OnBindWindowPanningChanged(bool);
+
+  /// \brief Called when the binding of zooming in render windows of a view has been changed through the control panel.
+  void OnBindWindowZoomingChanged(bool);
+
   /// \brief Called when the cursor visibility has been changed through the control panel.
   void OnShow2DCursorsCheckBoxToggled(bool);
 
