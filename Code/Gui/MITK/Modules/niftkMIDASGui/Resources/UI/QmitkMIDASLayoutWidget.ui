@@ -32,7 +32,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected view to sagittal</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one sagittal window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>sag</string>
@@ -54,7 +54,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch to multiple windows</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to show multiple windows.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string/>
@@ -76,7 +76,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected window to axial</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one axial window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>ax</string>
@@ -98,7 +98,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>switch the currently selected window to coronal</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one coronal window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>cor</string>
@@ -120,7 +120,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>choose from a variety of views</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects a window layout that has multiple windows.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -131,6 +131,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one 3D window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>3D</string>

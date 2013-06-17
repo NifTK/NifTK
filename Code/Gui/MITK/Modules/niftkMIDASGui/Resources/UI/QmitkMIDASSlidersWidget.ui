@@ -39,14 +39,14 @@
    <item row="2" column="1">
     <widget class="ctkSliderWidget" name="m_MagnificationSliderWidget" native="true">
      <property name="toolTip">
-      <string>changes the magnification of the currently selected view</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the magnification in the currently&lt;br/&gt;selected window, and also in other windows&lt;br/&gt;if it is bound between windows or image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
    <item row="0" column="1">
     <widget class="ctkSliderWidget" name="m_SliceIndexSliderWidget" native="true">
      <property name="toolTip">
-      <string>changes the slice number of the currently selected view</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the slice index of the currently selected&lt;br/&gt;window, and also in other image viewers if the&lt;br/&gt;cursor is bound between them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -69,7 +69,7 @@
    <item row="1" column="1">
     <widget class="ctkSliderWidget" name="m_TimeStepSliderWidget" native="true">
      <property name="toolTip">
-      <string>changes the time step of the currently selected view</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the time step of the currently selected&lt;br/&gt;image viewer and also in other image viewers if&lt;br/&gt;the cursor is bound between them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

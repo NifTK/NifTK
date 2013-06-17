@@ -83,32 +83,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="m_BindWindowPanningCheckBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>bind panning</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="m_BindWindowZoomCheckBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>bind magn.</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="m_ShowCursorsCheckBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -116,8 +90,43 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays the cursor.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>show cursor</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowPanningCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor position relative to the window&lt;br/&gt;size, across the windows of the image viewer.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan&lt;br/&gt;the image or select a position then the image will&lt;br/&gt;be shifted in the other windows, so that the cursor&lt;br/&gt;planes are aligned in the adjacent windows.&lt;/p&gt;&lt;p&gt;This option controls only the displayed position&lt;br/&gt;of the cursor, not the selected position in space.&lt;br/&gt;The selected position in space is always linked&lt;br/&gt;across the windows of an image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>bind cursor</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowZoomingCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across the&lt;br/&gt;windows of the image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>bind magn.</string>
         </property>
        </widget>
       </item>
@@ -161,7 +170,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>click the arrows or type to change the number of rows</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects number of rows of image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="minimum">
          <number>1</number>
@@ -180,7 +189,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>click the arrows or type to change the number of columns</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects number of columns of image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="minimum">
          <number>1</number>
@@ -199,7 +208,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>display 2 rows and 2 columns of image viewers</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display four image viewers&lt;br/&gt;in 2 rows and 2 columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>2x2</string>
@@ -224,7 +233,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>display 1 row and 1 column of image viewers</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays one image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>1x1</string>
@@ -250,7 +259,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>display 1 row and 2 columns of image viewers</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays two image viewers&lt;br/&gt;in 1 row and 2 columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>1x2</string>
@@ -269,7 +278,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>display 1 row and 3 columns of image viewers</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays three image viewers&lt;br/&gt;in 1 row and 3 columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>1x3</string>
@@ -328,9 +337,6 @@
        </widget>
       </item>
      </layout>
-     <zorder>m_ViewBindingWidget</zorder>
-     <zorder>m_ViewBindingWidget</zorder>
-     <zorder>m_ViewBindingWidget</zorder>
     </widget>
    </item>
    <item>
@@ -348,7 +354,7 @@
       <item>
        <widget class="QRadioButton" name="m_DropSingleRadioButton">
         <property name="toolTip">
-         <string>drop images into a single window</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Drops each image into the same viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>single</string>
@@ -358,7 +364,7 @@
       <item>
        <widget class="QRadioButton" name="m_DropMultipleRadioButton">
         <property name="toolTip">
-         <string>drop images into across multiple windows</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Drops the dragged images into several&lt;br/&gt;image viewers, each to a next one.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>multiple</string>
@@ -368,7 +374,7 @@
       <item>
        <widget class="QRadioButton" name="m_DropThumbnailRadioButton">
         <property name="toolTip">
-         <string>drop multiple images into any window, and the application will spread them across all windows and provide evenly spaced slices through the image</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Drop multiple images into any window,&lt;br/&gt;and the application will spread them&lt;br/&gt;across all windows and provide evenly&lt;br/&gt;spaced slices through the image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>all</string>
@@ -378,7 +384,7 @@
       <item>
        <widget class="QCheckBox" name="m_DropAccumulateCheckBox">
         <property name="toolTip">
-         <string>dropped images accumulate, meaning you can repeatedly add more images without resetting the geometry</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The dropped images accumulate,&lt;br/&gt;meaning you can repeatedly add&lt;br/&gt;more images without resetting the&lt;br/&gt;geometry.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>accum.</string>
@@ -392,8 +398,6 @@
   <zorder>m_ViewNumberGroupBox</zorder>
   <zorder>m_ViewerControlsSeparator</zorder>
   <zorder>m_SlidersGroupBox</zorder>
-  <zorder>m_ViewBindingGroupBox</zorder>
-  <zorder>m_ViewBindingGroupBox</zorder>
   <zorder>m_ViewBindingGroupBox</zorder>
   <zorder>m_DropTypeGroupBox</zorder>
   <zorder>m_LayoutGroupBox</zorder>
