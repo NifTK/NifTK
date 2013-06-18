@@ -348,7 +348,7 @@ If you leave it empty a suitable name will be generated.</string>
                <string>Generate point cloud</string>
               </property>
               <property name="checked">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -358,9 +358,49 @@ If you leave it empty a suitable name will be generated.</string>
                <string>Generate disparity image</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
+            </item>
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Max triangulation error:</string>
+                </property>
+                <property name="buddy">
+                 <cstring>m_MaxTriangulationErrorThresholdSpinBox</cstring>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="m_MaxTriangulationErrorThresholdSpinBox">
+                <property name="toolTip">
+                 <string>Left-right correspondences above this threshold will be rejected.</string>
+                </property>
+                <property name="singleStep">
+                 <double>0.050000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.100000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

@@ -85,7 +85,8 @@ public:
            const mitk::Image::Pointer image2,
            Method method,
            OutputType outputtype,
-           mitk::DataNode::Pointer camnode);
+           mitk::DataNode::Pointer camnode,
+           float maxTriangulationError);
 
 protected:
 

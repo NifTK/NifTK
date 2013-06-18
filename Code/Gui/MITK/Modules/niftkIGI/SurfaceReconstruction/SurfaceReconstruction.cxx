@@ -52,7 +52,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                 const mitk::Image::Pointer image2,
                                 Method method,
                                 OutputType outputtype,
-                                mitk::DataNode::Pointer camnode)
+                                mitk::DataNode::Pointer camnode,
+                                float maxTriangulationError)
 {
   // sanity check
   assert(dataStorage.IsNotNull());
@@ -200,7 +201,7 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                   r.x, r.y, camIntr2->GetValue(),
                                   stereoRig->GetValue(),
                                   &error);
-              if (error < 0.1)
+              if (error < maxTriangulationError)
               {
                 points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
               }

@@ -168,6 +168,8 @@ void SurfaceReconView::RetrievePreferenceValues()
   berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
   assert(prefs);
 
+  m_MaxTriangulationErrorThresholdSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName, 0.1f));
+
   bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
   if (useUndistortDefaultPath)
   {
@@ -184,6 +186,7 @@ void SurfaceReconView::RetrievePreferenceValues()
   {
     m_LastFile = QString::fromStdString(prefs->Get(SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName, ""));
   }
+
 }
 
 
@@ -474,10 +477,12 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
           niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
 
+          float maxTriError = m_MaxTriangulationErrorThresholdSpinBox->value();
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError);
           }
           catch (const std::exception& e)
           {
