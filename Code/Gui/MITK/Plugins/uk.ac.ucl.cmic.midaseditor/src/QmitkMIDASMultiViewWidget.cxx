@@ -1053,7 +1053,7 @@ void QmitkMIDASMultiViewWidget::OnTimeStepChanged(int timeStep)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
-  bool dropType = m_ControlPanel->GetDropType();
+  MIDASDropType dropType = m_ControlPanel->GetDropType();
   QList<int> viewsToUpdate = this->GetViewIndexesToUpdate(dropType == MIDAS_DROP_TYPE_ALL);
   for (int i = 0; i < viewsToUpdate.size(); i++)
   {
