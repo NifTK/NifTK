@@ -25,9 +25,13 @@
 #include <mitkNodePredicateDataType.h>
 #include <QFileDialog>
 #include <mitkCoordinateAxesData.h>
+#include "SurfaceReconViewPreferencePage.h"
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
 
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
@@ -39,6 +43,21 @@ SurfaceReconView::SurfaceReconView()
 //-----------------------------------------------------------------------------
 SurfaceReconView::~SurfaceReconView()
 {
+  bool ok = false;
+  ok = disconnect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  assert(ok);
+
+  ok = disconnect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
+  assert(ok);
+  ok = disconnect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
+  assert(ok);
+  ok = disconnect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  assert(ok);
+
+  ok = disconnect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
+  assert(ok);
+  ok = disconnect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
+  assert(ok);
 }
 
 
@@ -53,10 +72,11 @@ std::string SurfaceReconView::GetViewID() const
 void SurfaceReconView::LeftBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     LeftIntrinsicPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -65,10 +85,11 @@ void SurfaceReconView::LeftBrowseButtonClicked()
 void SurfaceReconView::RightBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     RightIntrinsicPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -77,10 +98,11 @@ void SurfaceReconView::RightBrowseButtonClicked()
 void SurfaceReconView::StereoRigBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Stereo Rig Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Stereo Rig Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     StereoRigTransformationPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -89,14 +111,21 @@ void SurfaceReconView::StereoRigBrowseButtonClicked()
 void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 {
   setupUi(parent);
-  connect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  bool ok = false;
+  ok = connect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  assert(ok);
 
-  connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
-  connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
-  connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  ok = connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
+  assert(ok);
+  ok = connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
+  assert(ok);
+  ok = connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  assert(ok);
 
-  connect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
-  connect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  ok = connect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  assert(ok);
+  ok = connect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  assert(ok);
 
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -135,10 +164,25 @@ void SurfaceReconView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void SurfaceReconView::RetrievePreferenceValues()
 {
-  berry::IPreferences::Pointer prefs = GetPreferences();
-  if (prefs.IsNotNull())
-  {
+  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  assert(prefs);
 
+  bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
+  if (useUndistortDefaultPath)
+  {
+    // FIXME: hard-coded prefs node names, etc.
+    //        how to access header files in another plugin?
+    //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2505
+    berry::IBerryPreferences::Pointer undistortPrefs = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort")).Cast<berry::IBerryPreferences>();
+    if (undistortPrefs.IsNotNull())
+    {
+      m_LastFile = QString::fromStdString(undistortPrefs->Get("default calib file path", ""));
+    }
+  }
+  else
+  {
+    m_LastFile = QString::fromStdString(prefs->Get(SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName, ""));
   }
 }
 
