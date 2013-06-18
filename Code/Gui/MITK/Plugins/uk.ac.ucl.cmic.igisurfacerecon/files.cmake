@@ -24,6 +24,7 @@ set(INTERNAL_CPP_FILES
 
 set(UI_FILES
   src/internal/SurfaceReconViewWidget.ui
+  src/internal/SurfaceReconViewPreferencePage.ui
 )
 
 set(MOC_H_FILES
