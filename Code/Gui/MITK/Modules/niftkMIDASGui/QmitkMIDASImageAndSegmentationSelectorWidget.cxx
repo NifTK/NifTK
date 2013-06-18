@@ -22,7 +22,7 @@
 QmitkMIDASImageAndSegmentationSelectorWidget::QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
 : QWidget(parent)
 {
-  this->setupUi(this);
+  this->setupUi(parent);
 }
 
 
