@@ -25,9 +25,13 @@
 #include <mitkNodePredicateDataType.h>
 #include <QFileDialog>
 #include <mitkCoordinateAxesData.h>
+#include "SurfaceReconViewPreferencePage.h"
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
 
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
@@ -39,6 +43,21 @@ SurfaceReconView::SurfaceReconView()
 //-----------------------------------------------------------------------------
 SurfaceReconView::~SurfaceReconView()
 {
+  bool ok = false;
+  ok = disconnect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  assert(ok);
+
+  ok = disconnect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
+  assert(ok);
+  ok = disconnect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
+  assert(ok);
+  ok = disconnect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  assert(ok);
+
+  ok = disconnect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
+  assert(ok);
+  ok = disconnect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
+  assert(ok);
 }
 
 
@@ -53,10 +72,11 @@ std::string SurfaceReconView::GetViewID() const
 void SurfaceReconView::LeftBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     LeftIntrinsicPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -65,10 +85,11 @@ void SurfaceReconView::LeftBrowseButtonClicked()
 void SurfaceReconView::RightBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Intrinsic Camera Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     RightIntrinsicPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -77,10 +98,11 @@ void SurfaceReconView::RightBrowseButtonClicked()
 void SurfaceReconView::StereoRigBrowseButtonClicked()
 {
   // FIXME: this blocks timer delivery?
-  QString   file = QFileDialog::getOpenFileName(GetParent(), "Stereo Rig Calibration");
+  QString   file = QFileDialog::getOpenFileName(GetParent(), "Stereo Rig Calibration", m_LastFile);
   if (!file.isEmpty())
   {
     StereoRigTransformationPathLineEdit->setText(file);
+    m_LastFile = file;
   }
 }
 
@@ -89,11 +111,21 @@ void SurfaceReconView::StereoRigBrowseButtonClicked()
 void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 {
   setupUi(parent);
-  connect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  bool ok = false;
+  ok = connect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
+  assert(ok);
 
-  connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
-  connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
-  connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  ok = connect(LeftIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(LeftBrowseButtonClicked()));
+  assert(ok);
+  ok = connect(RightIntrinsicBrowseButton, SIGNAL(clicked()), this, SLOT(RightBrowseButtonClicked()));
+  assert(ok);
+  ok = connect(StereoRigTransformBrowseButton, SIGNAL(clicked()), this, SLOT(StereoRigBrowseButtonClicked()));
+  assert(ok);
+
+  ok = connect(LeftChannelNodeNameComboBox,  SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  assert(ok);
+  ok = connect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)), Qt::QueuedConnection);
+  assert(ok);
 
   ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -104,6 +136,7 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
   this->RetrievePreferenceValues();
+
   this->LeftChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   this->RightChannelNodeNameComboBox->SetDataStorage(this->GetDataStorage());
   CameraNodeComboBox->SetDataStorage(GetDataStorage());
@@ -131,11 +164,29 @@ void SurfaceReconView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void SurfaceReconView::RetrievePreferenceValues()
 {
-  berry::IPreferences::Pointer prefs = GetPreferences();
-  if (prefs.IsNotNull())
-  {
+  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  assert(prefs);
 
+  m_MaxTriangulationErrorThresholdSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName, 0.1f));
+
+  bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
+  if (useUndistortDefaultPath)
+  {
+    // FIXME: hard-coded prefs node names, etc.
+    //        how to access header files in another plugin?
+    //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2505
+    berry::IBerryPreferences::Pointer undistortPrefs = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort")).Cast<berry::IBerryPreferences>();
+    if (undistortPrefs.IsNotNull())
+    {
+      m_LastFile = QString::fromStdString(undistortPrefs->Get("default calib file path", ""));
+    }
   }
+  else
+  {
+    m_LastFile = QString::fromStdString(prefs->Get(SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName, ""));
+  }
+
 }
 
 
@@ -151,8 +202,49 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
   // Optional. This gets called everytime the data sources are updated.
   // If the surface reconstruction was as fast as the GUI update, we could trigger it here.
 
-  // not sure if enum'ing the storage here is a good idea
-  // FIXME: we should register a listener on the data-storage instead?
+  // we call this all the time to update the has-calib-property for the node comboboxes.
+  UpdateNodeNameComboBox();
+}
+
+
+//-----------------------------------------------------------------------------
+template <typename T>
+static bool HasCalibProp(const typename T::Pointer& n)
+{
+  mitk::BaseProperty::Pointer  bp = n->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+  if (bp.IsNull())
+  {
+    return false;
+  }
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+static bool NeedsToLoadCalib(const QString& filename, const mitk::Image::Pointer& image)
+{
+  bool  needs2load = false;
+  // filename overrides any existing properties
+  if (!filename.isEmpty())
+  {
+    needs2load = true;
+  }
+  else
+  {
+    // no filename? check if there's a suitable property.
+    // if not then invent some stuff.
+    if (HasCalibProp<mitk::Image>(image))
+    {
+      needs2load = true;
+    }
+  }
+  return needs2load;
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnComboBoxIndexChanged(int index)
+{
   UpdateNodeNameComboBox();
 }
 
@@ -163,78 +255,54 @@ void SurfaceReconView::UpdateNodeNameComboBox()
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
-    // leave the editable string part intact!
-    // it's extremely annoying having that reset all the time while trying to input something.
     QString leftText  = LeftChannelNodeNameComboBox->currentText();
     QString rightText = RightChannelNodeNameComboBox->currentText();
 
-    bool  wasModified = false;
+    mitk::DataNode::Pointer   leftNode  = storage->GetNamedNode(leftText.toStdString());
+    mitk::DataNode::Pointer   rightNode = storage->GetNamedNode(rightText.toStdString());
 
-    std::set<std::string>   nodeNamesLeftToAdd;
-
-    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = storage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator i = allNodes->Begin(); i != allNodes->End(); ++i)
+    // either node or attached image has to have calibration property
+    if (leftNode.IsNotNull())
     {
-      const mitk::DataNode::Pointer node = i->Value();
-      assert(node.IsNotNull());
-
-      std::string nodeName = node->GetName();
-      if (!nodeName.empty())
+      bool    leftHasProp = HasCalibProp<mitk::DataNode>(leftNode);
+      if (!leftHasProp)
       {
-        mitk::BaseData::Pointer data = node->GetData();
-        if (data.IsNotNull())
-        {
-          mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
-          if (imageInNode.IsNotNull())
-          {
-            nodeNamesLeftToAdd.insert(nodeName);
-          }
-        }
+        // note: our comboboxes should have nodes only with image data!
+        mitk::Image::Pointer img = dynamic_cast<mitk::Image*>(leftNode->GetData());
+        assert(img.IsNotNull());
+        leftHasProp = HasCalibProp<mitk::Image>(img);
       }
-    }
 
-    // for all elements that currently are in the combo box
-    // check whether there still is a node with that name.
-    for (int i = 0; i < LeftChannelNodeNameComboBox->count(); ++i)
-    {
-      QString itemName = LeftChannelNodeNameComboBox->itemText(i);
-      // for now, both left and right have to have the same node names.
-      assert(RightChannelNodeNameComboBox->itemText(i) == itemName);
-
-      std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName.toStdString());
-      if (ni == nodeNamesLeftToAdd.end())
+      if (leftHasProp)
       {
-        // the node name currently in the combobox is not in data storage
-        // so we need to drop it from the combobox
-        LeftChannelNodeNameComboBox->removeItem(i);
-        RightChannelNodeNameComboBox->removeItem(i);
-        wasModified = true;
+        LeftChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(200, 255, 200);");
       }
       else
       {
-        // name is still in data-storage
-        // so remove it from the to-be-added list
-        nodeNamesLeftToAdd.erase(ni);
+        LeftChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(255, 200, 200);");
       }
     }
 
-    for (std::set<std::string>::const_iterator i = nodeNamesLeftToAdd.begin(); i != nodeNamesLeftToAdd.end(); ++i)
+    if (rightNode.IsNotNull())
     {
-      QString s = QString::fromStdString(*i);
-      LeftChannelNodeNameComboBox->addItem(s);
-      RightChannelNodeNameComboBox->addItem(s);
-      wasModified = true;
-    }
+      bool    rightHasProp = HasCalibProp<mitk::DataNode>(rightNode);
+      if (!rightNode)
+      {
+        // note: our comboboxes should have nodes only with image data!
+        mitk::Image::Pointer img = dynamic_cast<mitk::Image*>(rightNode->GetData());
+        assert(img.IsNotNull());
+        rightHasProp = HasCalibProp<mitk::Image>(img);
+      }
 
-    // put original text in only if we modified the combobox.
-    // otherwise the edit control is reset all the time.
-    if (wasModified)
-    {
-      LeftChannelNodeNameComboBox->setEditText(leftText);
-      RightChannelNodeNameComboBox->setEditText(rightText);
+      if (rightHasProp)
+      {
+        RightChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(200, 255, 200);");
+      }
+      else
+      {
+        RightChannelNodeNameComboBox->lineEdit()->setStyleSheet("background-color: rgb(255, 200, 200);");
+      }
     }
-
-    assert(LeftChannelNodeNameComboBox->count() == RightChannelNodeNameComboBox->count());
   }
 }
 
@@ -369,9 +437,18 @@ void SurfaceReconView::DoSurfaceReconstruction()
             storage->Add(outputNode, nodeParents);
           }
 
-          // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-          niftk::Undistortion::LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
-          niftk::Undistortion::LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+
+          bool    needToLoadLeftCalib  = NeedsToLoadCalib(LeftIntrinsicPathLineEdit->text(),  leftImage);
+          bool    needToLoadRightCalib = NeedsToLoadCalib(RightIntrinsicPathLineEdit->text(), rightImage);
+
+          if (needToLoadLeftCalib)
+          {
+            niftk::Undistortion::LoadCalibration(LeftIntrinsicPathLineEdit->text().toStdString(), leftImage);
+          }
+          if (needToLoadRightCalib)
+          {
+            niftk::Undistortion::LoadCalibration(RightIntrinsicPathLineEdit->text().toStdString(), rightImage);
+          }
           LoadStereoRig(StereoRigTransformationPathLineEdit->text().toStdString(), rightImage);
 
           CopyImagePropsIfNecessary(leftNode,  leftImage);
@@ -398,11 +475,14 @@ void SurfaceReconView::DoSurfaceReconstruction()
             camNode = storage->GetNamedNode(camNodeName);
           }
 
+          niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
+
+          float maxTriError = m_MaxTriangulationErrorThresholdSpinBox->value();
+
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, 
-                niftk::SurfaceReconstruction::SEQUENTIAL_CPU, outputtype, camNode);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError);
           }
           catch (const std::exception& e)
           {

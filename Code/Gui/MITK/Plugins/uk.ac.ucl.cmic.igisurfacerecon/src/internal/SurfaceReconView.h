@@ -77,6 +77,8 @@ protected slots:
   void RightBrowseButtonClicked();
   void StereoRigBrowseButtonClicked();
 
+  void OnComboBoxIndexChanged(int index);
+
 protected:
 
 private slots:
@@ -102,6 +104,10 @@ private:
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
   niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+
+  // used to init the calib file chooser.
+  // also read from prefs.
+  QString         m_LastFile;
 };
 
 #endif // SurfaceReconView_h

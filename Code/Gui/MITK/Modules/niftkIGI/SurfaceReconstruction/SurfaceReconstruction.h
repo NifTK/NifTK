@@ -53,8 +53,8 @@ public:
   // or better the other way around: combobox needs to match this order.
   enum Method
   {
-    SEQUENTIAL_CPU,
-    PYRAMID_PARALLEL_CPU,
+    SEQUENTIAL_CPU          = 0,
+    PYRAMID_PARALLEL_CPU    = 1,
     PYRAMID_PARALLEL_CUDA
   };
 
@@ -85,7 +85,8 @@ public:
            const mitk::Image::Pointer image2,
            Method method,
            OutputType outputtype,
-           mitk::DataNode::Pointer camnode);
+           mitk::DataNode::Pointer camnode,
+           float maxTriangulationError);
 
 protected:
 

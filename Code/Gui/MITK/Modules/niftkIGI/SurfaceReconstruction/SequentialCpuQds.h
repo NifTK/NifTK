@@ -80,7 +80,7 @@ struct NIFTKIGI_EXPORT RefPoint
 };
 
 
-class NIFTKIGI_EXPORT SequentialCpuQds
+class NIFTKIGI_EXPORT SequentialCpuQds : public QDSInterface
 {
 
 public:
@@ -90,16 +90,16 @@ public:
 
   // supports greyscale, RGB or RGBA images.
   // input dimensions need to match the width and height passed into constructor.
-  void Process(const IplImage* left, const IplImage* right);
+  virtual void Process(const IplImage* left, const IplImage* right);
 
 
-  int GetWidth() const;
-  int GetHeight() const;
+  virtual int GetWidth() const;
+  virtual int GetHeight() const;
 
   // caller needs to clean up
-  IplImage* CreateDisparityImage() const;
+  virtual IplImage* CreateDisparityImage() const;
 
-  CvPoint GetMatch(int x, int y) const;
+  virtual CvPoint GetMatch(int x, int y) const;
 
 private:
   SequentialCpuQds(const SequentialCpuQds& copyme);
