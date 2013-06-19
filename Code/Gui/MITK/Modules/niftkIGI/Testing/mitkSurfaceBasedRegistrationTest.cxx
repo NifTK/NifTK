@@ -215,12 +215,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   {
     return EXIT_FAILURE;
   }
-  
-  //tests
-  //load fixed PointSet and fixed surface, and moving surface
-  //register for both conditions, 
-  //MITK_TEST_CONDITION_REQUIRED(registerGetTrandform() == 1, ".. Testing point to surface");
-  //MITK_TEST_CONDITION_REQUIRED(registerGetTrandform() == 1, ".. Testing surface to surface");
+  //still need to test
   //Set rigid, non rigid, 
   //Set number of iterations, 
   //Set maximum number of points
@@ -229,12 +224,6 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   //relevant libraries. 
   //The testing here only test the plugin functionality, and the correct functioning 
   //of the indexto world transforms.
-  //Index2World Fixed
-  //Index2World Moving
-  //and transform
-  //If both inputs start off with the same index to world and are aligned then the
-  //end indextoworld should also be the same
-  //Test that the the transform respects data nodes world to data transforms.
 
   return EXIT_SUCCESS;
 }
