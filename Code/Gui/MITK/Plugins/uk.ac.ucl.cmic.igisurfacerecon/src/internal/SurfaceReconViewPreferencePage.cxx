@@ -29,12 +29,12 @@ const char* SurfaceReconViewPreferencePage::s_PrefsNodeName                     
 const char* SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
 const char* SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName   = "use undistort default path";
 const char* SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName    = "default triangulation error";
-
+const char* SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName         = "default min depth range";
+const char* SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName         = "default max depth range";
 
 //-----------------------------------------------------------------------------
 SurfaceReconViewPreferencePage::SurfaceReconViewPreferencePage()
 : m_UseUndistortPluginDefaultPath(false)
-, m_DefaultTriangulationError(0.1f)
 {
 }
 
@@ -132,6 +132,8 @@ bool SurfaceReconViewPreferencePage::PerformOk()
   m_SurfaceReconViewPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultCalibrationLocationLineEdit->text().toStdString());
   m_SurfaceReconViewPreferencesNode->PutBool(s_UseUndistortionDefaultPathPrefsName, m_UseUndistortionDefaultPathRadioButton->isChecked());
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultTriangulationErrorPrefsName, (float) m_DefaultTriangulationErrorThresholdSpinBox->value());
+  m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMinDepthRangePrefsName, (float) m_MinDefaultDepthRangeSpinBox->value());
+  m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMaxDepthRangePrefsName, (float) m_MaxDefaultDepthRangeSpinBox->value());
 
   return true;
 }
@@ -160,6 +162,8 @@ void SurfaceReconViewPreferencePage::Update()
     m_UseOwnLocationRadioButton->click();
   }
 
-  m_DefaultTriangulationError = m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultTriangulationErrorPrefsName, 0.1f);
-  m_DefaultTriangulationErrorThresholdSpinBox->setValue(m_DefaultTriangulationError);
+  m_DefaultTriangulationErrorThresholdSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultTriangulationErrorPrefsName, 0.1f));
+
+  m_MinDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMinDepthRangePrefsName, 1.0f));
+  m_MaxDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMaxDepthRangePrefsName, 1000.0f));
 }

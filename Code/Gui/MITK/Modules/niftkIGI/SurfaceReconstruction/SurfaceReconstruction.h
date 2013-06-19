@@ -86,7 +86,9 @@ public:
            Method method,
            OutputType outputtype,
            mitk::DataNode::Pointer camnode,
-           float maxTriangulationError);
+           float maxTriangulationError,
+           float minDepth,
+           float maxDepth);
 
 protected:
 

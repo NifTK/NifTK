@@ -85,7 +85,7 @@ class NIFTKIGI_EXPORT SequentialCpuQds : public QDSInterface
 
 public:
   SequentialCpuQds(int width, int height);
-  ~SequentialCpuQds();
+  virtual ~SequentialCpuQds();
 
 
   // supports greyscale, RGB or RGBA images.

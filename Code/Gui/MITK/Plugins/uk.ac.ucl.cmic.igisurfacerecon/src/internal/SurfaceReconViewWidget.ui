@@ -314,6 +314,9 @@ If you leave it empty a suitable name will be generated.</string>
       </item>
       <item row="3" column="0" colspan="2">
        <widget class="QGroupBox" name="outputoptionsgroupbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="title">
          <string>Show output o&amp;ptions</string>
         </property>
@@ -339,7 +342,17 @@ If you leave it empty a suitable name will be generated.</string>
             <property name="margin">
              <number>0</number>
             </property>
-            <item row="0" column="0">
+            <item row="1" column="0">
+             <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
+              <property name="text">
+               <string>Generate disparity image</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
              <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
               <property name="enabled">
                <bool>true</bool>
@@ -352,53 +365,104 @@ If you leave it empty a suitable name will be generated.</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
-              <property name="text">
-               <string>Generate disparity image</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
+            <item row="3" column="0" colspan="2">
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QLabel" name="label_7">
-                <property name="text">
-                 <string>Max triangulation error:</string>
-                </property>
-                <property name="buddy">
-                 <cstring>m_MaxTriangulationErrorThresholdSpinBox</cstring>
-                </property>
+               <widget class="QWidget" name="m_PointCloudOptionsWidget" native="true">
+                <layout class="QFormLayout" name="formLayout_8">
+                 <property name="leftMargin">
+                  <number>50</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_7">
+                   <property name="text">
+                    <string>Max triangulation error:</string>
+                   </property>
+                   <property name="buddy">
+                    <cstring>m_MaxTriangulationErrorThresholdSpinBox</cstring>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QDoubleSpinBox" name="m_MaxTriangulationErrorThresholdSpinBox">
+                   <property name="toolTip">
+                    <string>Left-right correspondences above this threshold will be rejected.</string>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.100000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_13">
+                   <property name="text">
+                    <string>Depth range:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <item>
+                    <widget class="QDoubleSpinBox" name="m_MinDepthRangeSpinBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximum">
+                      <double>999.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.500000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>to</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="m_MaxDepthRangeSpinBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximum">
+                      <double>9999.000000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1000.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
                </widget>
-              </item>
-              <item>
-               <widget class="QDoubleSpinBox" name="m_MaxTriangulationErrorThresholdSpinBox">
-                <property name="toolTip">
-                 <string>Left-right correspondences above this threshold will be rejected.</string>
-                </property>
-                <property name="singleStep">
-                 <double>0.050000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.100000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </item>
@@ -490,7 +554,6 @@ If you leave it empty a suitable name will be generated.</string>
   <tabstop>StereoRigTransformBrowseButton</tabstop>
   <tabstop>OutputNodeNameLineEdit</tabstop>
   <tabstop>outputoptionsgroupbox</tabstop>
-  <tabstop>GeneratePointCloudRadioBox</tabstop>
   <tabstop>GenerateDisparityImageRadioBox</tabstop>
   <tabstop>MethodComboBox</tabstop>
   <tabstop>DoItButton</tabstop>
@@ -526,6 +589,38 @@ If you leave it empty a suitable name will be generated.</string>
     <hint type="destinationlabel">
      <x>415</x>
      <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GeneratePointCloudRadioBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>m_PointCloudOptionsWidget</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>174</x>
+     <y>853</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>397</x>
+     <y>921</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GenerateDisparityImageRadioBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>m_PointCloudOptionsWidget</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>195</x>
+     <y>810</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>397</x>
+     <y>921</y>
     </hint>
    </hints>
   </connection>

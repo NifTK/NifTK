@@ -309,4 +309,10 @@ CvPoint3D32f triangulate(
 }
 
 
+//-----------------------------------------------------------------------------
+QDSInterface::~QDSInterface()
+{
+}
+
+
 } // namespace

@@ -53,7 +53,9 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                 Method method,
                                 OutputType outputtype,
                                 mitk::DataNode::Pointer camnode,
-                                float maxTriangulationError)
+                                float maxTriangulationError,
+                                float minDepth,
+                                float maxDepth)
 {
   // sanity check
   assert(dataStorage.IsNotNull());
@@ -205,7 +207,14 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
               p.z = -p.z;
               if (error < maxTriangulationError)
               {
-                points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
+                float   depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
+                if (depth >= minDepth)
+                {
+                  if (depth <= maxDepth)
+                  {
+                    points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
+                  }
+                }
               }
             }
           }
