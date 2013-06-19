@@ -38,6 +38,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_Pimpl(0), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
 , m_WasSavingMessagesPreviously(false)
+, m_ExpectedCookie(0)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
@@ -162,6 +163,7 @@ void QmitkIGINVidiaDataSource::StopCapturing()
   // otherwise it could still be sending signals to the not-anymore-existing sdi thread.
   StopGrabbingThread();
 
+  m_ExpectedCookie = 0;
   if (m_Pimpl)
   {
     m_Pimpl->ForciblyStop();
@@ -189,6 +191,14 @@ void QmitkIGINVidiaDataSource::GrabData()
   // always update status message
   this->SetStatus(m_Pimpl->GetStateMessage());
 
+  // in case we got new sdi bits since last time we need to start counting from the beginning again.
+  unsigned int cookie = m_Pimpl->GetCookie();
+  if (cookie != m_ExpectedCookie)
+  {
+    m_MostRecentSequenceNumber = 1;
+    m_ExpectedCookie = cookie;
+  }
+
   if (m_Pimpl->IsRunning())
   {
     video::FrameInfo  sn = {0};
@@ -196,12 +206,20 @@ void QmitkIGINVidiaDataSource::GrabData()
 
     while (sn.sequence_number != 0)
     {
+      cookie = m_Pimpl->GetCookie();
+      if (cookie != m_ExpectedCookie)
+      {
+        // sdi bits died while we were enumerating sequence numbers.
+        // not much we can do so lets just stop.
+        break;
+      }
+
       sn = m_Pimpl->GetNextSequenceNumber(m_MostRecentSequenceNumber);
       if (sn.sequence_number != 0)
       {
         mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
 
-        wrapper->SetValues(m_Pimpl->GetCookie(), sn.sequence_number, sn.arrival_time);
+        wrapper->SetValues(cookie, sn.sequence_number, sn.arrival_time);
         wrapper->SetTimeStampInNanoSeconds(sn.id);
         wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
         m_MostRecentSequenceNumber = sn.sequence_number;

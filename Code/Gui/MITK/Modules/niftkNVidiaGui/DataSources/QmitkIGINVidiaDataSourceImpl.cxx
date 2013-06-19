@@ -59,6 +59,7 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
     sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
     current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
+    m_Cookie(0),
     state_message("Starting up")
 {
   // check whether cuda dlls are available
@@ -558,40 +559,52 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     if ((timeGetTime() - m_LastSuccessfulFrame) > 1000)
       hasframe = true;
 
-
     if (hasframe)
     {
       // note: capture() will block for a frame to arrive
       // that's why we have hasframe above
       video::FrameInfo fi = sdiin->capture();
-      m_LastSuccessfulFrame = timeGetTime();
-
-      // keep the most recent set of texture ids around
-      // this is mainly for the preview window
-      for (int i = 0; i < 4; ++i)
+      // in case of partial transfers we'll get the zero sequence number.
+      if (fi.sequence_number != 0)
       {
-        textureids[i] = sdiin->get_texture_id(i, -1);
-      }
+        m_LastSuccessfulFrame = timeGetTime();
 
-      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-      fi.id = GetTimeInNanoSeconds(timeCreated);//->GetTimeUint64();
-
-      int newest_slot = sdiin->get_current_ringbuffer_slot();
-      // whatever we had in this slot is now obsolete
-      BOOST_TYPEOF(slot2sn_map)::iterator oldsni = slot2sn_map.find(newest_slot);
-      if (oldsni != slot2sn_map.end())
-      {
-        BOOST_TYPEOF(sn2slot_map)::iterator oldsloti = sn2slot_map.find(oldsni->second);
-        if (oldsloti != sn2slot_map.end())
+        // keep the most recent set of texture ids around
+        // this is mainly for the preview window
+        for (int i = 0; i < 4; ++i)
         {
-          sn2slot_map.erase(oldsloti);
+          textureids[i] = sdiin->get_texture_id(i, -1);
         }
-        slot2sn_map.erase(oldsni);
-      }
-      slot2sn_map[newest_slot] = fi;
-      sn2slot_map[fi] = newest_slot;
 
-      state_message = "Grabbing";
+        igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+        fi.id = GetTimeInNanoSeconds(timeCreated);//->GetTimeUint64();
+
+        int newest_slot = sdiin->get_current_ringbuffer_slot();
+        // whatever we had in this slot is now obsolete
+        BOOST_TYPEOF(slot2sn_map)::iterator oldsni = slot2sn_map.find(newest_slot);
+        if (oldsni != slot2sn_map.end())
+        {
+          BOOST_TYPEOF(sn2slot_map)::iterator oldsloti = sn2slot_map.find(oldsni->second);
+          if (oldsloti != sn2slot_map.end())
+          {
+            sn2slot_map.erase(oldsloti);
+          }
+          slot2sn_map.erase(oldsni);
+        }
+        slot2sn_map[newest_slot] = fi;
+        sn2slot_map[fi] = newest_slot;
+
+        state_message = "Grabbing";
+      }
+      else
+      {
+        // in case of partial captures hasframe will be true but we wont get new sequence numbers.
+        // this is effectively a brown-out. not sure how to handle it actually.
+        // because we'd want the capture bits to recover with the original number of streams. unless of course
+        // there was a genuine change of camera etc.
+        if ((timeGetTime() - m_LastSuccessfulFrame) > 2000)
+          throw "trigger handler below";
+      }
     }
   }
   // capture() might throw if the capture setup has become invalid
@@ -602,6 +615,10 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     current_state = QmitkIGINVidiaDataSourceImpl::HW_ENUM;
     // dont re-setup too quickly
     SetInterval(500);
+    // whatever sequence numbers we had in the ringbuffer are now obsolete.
+    // if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
+    sn2slot_map.clear();
+    slot2sn_map.clear();
     return;
   }
 }
