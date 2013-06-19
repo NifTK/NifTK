@@ -61,18 +61,17 @@ bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix
   {
     for ( int j = 0 ; j < 4 ; j ++ )
     {
-      delta += m1->GetElement(i,j) - m2->GetElement(i,j);
+      delta += fabs(m1->GetElement(i,j) - m2->GetElement(i,j));
     }
   }
-  if ( fabs (delta > 1e-3) ) 
+  if ( delta > 1e-3 ) 
   {
-    std::cerr << "Failed comparing matrices ... " << std::endl;
-    std::cerr << *m1 << "  ... does not equal";
-    std::cerr << *m2;
+    std::cerr << "Failed comparing matrices ... " << std::endl <<*m1 << "  ... does not equal" << std::endl << *m2;
     return false;
   }
   else
   {
+    std::cerr << std::endl << *m1 << "  equals" << std::endl << *m2;
     return true;
   }
 }
@@ -152,29 +151,69 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
 
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
-  RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
+  //second test, moving non id fixed ID
+  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();
-
-  std::cout << *movingMatrix << std::endl;
-  
-  
-  std::cerr << "Result with shifted moving" << std::endl;
-  std::cerr << *resultMatrix;
-  /*registration->ApplyTransform(movingnode);
-  mitk::AffineTransform3D::Pointer affineTransform = movingnode->GetData()->GetGeometry()->GetIndexToWorldTransform(); */
+  fixedMatrix->Identity();
+  if ( registerer->SetIndexToWorld (fixednode, fixedMatrix) && 
+      registerer->SetIndexToWorld (movingnode, movingMatrix ) )
+  {
+    std::cout << "Starting registration test with moving index2world non identity.";
+    registerer->Update(fixednode, movingnode, resultMatrix);
+    registerer->ApplyTransform(movingnode, resultMatrix);
+    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing moving non ID");
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
+   //third test, fixed non id moving ID
+  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
   movingMatrix->Identity();
-  registerer->ApplyTransform ( movingnode , movingMatrix);
-  registerer->ApplyTransform ( fixednode , fixedMatrix);
-  registerer->Update(fixednode, movingnode, resultMatrix);
-  std::cerr << "Result with shifted fixed" << std::endl;
-  std::cerr << *resultMatrix;
-  //std::cerr << *affineTransform;
- 
+  if ( registerer->SetIndexToWorld (fixednode, fixedMatrix) && 
+      registerer->SetIndexToWorld (movingnode, movingMatrix ) )
+  {
+    std::cout << "Starting registration test with fixed index2world non identity.";
+    registerer->Update(fixednode, movingnode, resultMatrix);
+    registerer->ApplyTransform(movingnode, resultMatrix);
+    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing fixed non ID");
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
+    //forth test, both non id.
+  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+
+  StartTrans->GetInverse(fixedMatrix);
+  fixedMatrix->Invert();
+
+  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+
+  StartTrans->GetInverse(movingMatrix);
+  movingMatrix->Invert();
+
+  if ( registerer->SetIndexToWorld (fixednode, fixedMatrix) && 
+      registerer->SetIndexToWorld (movingnode, movingMatrix ) )
+  {
+    std::cout << "Starting registration test with both index2world non identity.";
+    registerer->Update(fixednode, movingnode, resultMatrix);
+    registerer->ApplyTransform(movingnode, resultMatrix);
+    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing both non ID");
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
+  
   //tests
   //load fixed PointSet and fixed surface, and moving surface
   //register for both conditions, 
