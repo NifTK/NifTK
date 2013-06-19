@@ -211,6 +211,10 @@ void QmitkIGINVidiaDataSource::GrabData()
       }
     }
   }
+  else
+  {
+    m_MostRecentSequenceNumber = 1;
+  }
 
 
   // because there's currently no notification when the user clicked stop-record
