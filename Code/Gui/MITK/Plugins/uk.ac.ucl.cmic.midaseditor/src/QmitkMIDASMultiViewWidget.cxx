@@ -206,7 +206,6 @@ QmitkMIDASMultiViewWidgetControlPanel* QmitkMIDASMultiViewWidget::CreateControlP
 {
   QmitkMIDASMultiViewWidgetControlPanel* controlPanel = new QmitkMIDASMultiViewWidgetControlPanel(parent);
 
-  controlPanel->SetWindowBindingControlsVisible(true);
   controlPanel->SetMaxViewNumber(m_MaxViewRows, m_MaxViewColumns);
 
   controlPanel->SetWindowPanningBound(true);
@@ -319,9 +318,16 @@ void QmitkMIDASMultiViewWidget::SetShowDropTypeWidgets(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetViewNumberControlsVisible(bool visible)
+bool QmitkMIDASMultiViewWidget::AreMultiViewControlsVisible() const
 {
-  m_ControlPanel->SetViewNumberControlsVisible(visible);
+  return m_ControlPanel->AreMultiViewControlsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetMultiViewControlsVisible(bool visible)
+{
+  m_ControlPanel->SetMultiViewControlsVisible(visible);
 }
 
 
@@ -400,18 +406,15 @@ void QmitkMIDASMultiViewWidget::SetThumbnailMode(bool enabled)
   {
     m_ViewRowsInNonThumbnailMode = m_ControlPanel->GetViewRows();
     m_ViewColumnsInNonThumbnailMode = m_ControlPanel->GetViewColumns();
-    m_ControlPanel->SetSliceAndMagnificationControlsEnabled(false);
-    m_ControlPanel->SetLayoutControlsEnabled(false);
+    m_ControlPanel->SetSingleViewControlsEnabled(false);
     m_ControlPanel->SetViewNumber(m_MaxViewRows, m_MaxViewColumns);
-    m_ControlPanel->SetViewNumberControlsEnabled(false);
-    m_ControlPanel->SetViewBindingControlsEnabled(false);
+    m_ControlPanel->SetMultiViewControlsEnabled(false);
     this->SetViewNumber(m_MaxViewRows, m_MaxViewColumns, true);
   }
   else
   {
-    m_ControlPanel->SetSliceAndMagnificationControlsEnabled(m_NavigationControllerEventListening);
-    m_ControlPanel->SetLayoutControlsEnabled(m_NavigationControllerEventListening);
-    m_ControlPanel->SetViewNumberControlsEnabled(true);
+    m_ControlPanel->SetSingleViewControlsEnabled(m_NavigationControllerEventListening);
+    m_ControlPanel->SetMultiViewControlsEnabled(true);
     m_ControlPanel->SetViewNumber(m_ViewRowsInNonThumbnailMode, m_ViewColumnsInNonThumbnailMode);
     this->SetViewNumber(m_ViewRowsInNonThumbnailMode, m_ViewColumnsInNonThumbnailMode, false);
   }
@@ -434,16 +437,14 @@ void QmitkMIDASMultiViewWidget::SetMIDASSegmentationMode(bool enabled)
   {
     m_ViewRowsBeforeSegmentationMode = m_ControlPanel->GetViewRows();
     m_ViewColumnsBeforeSegmentationMode = m_ControlPanel->GetViewColumns();
-    m_ControlPanel->SetViewNumberControlsEnabled(false);
-    m_ControlPanel->SetViewBindingControlsEnabled(false);
+    m_ControlPanel->SetMultiViewControlsEnabled(false);
     this->SetViewNumber(1, 1, false);
     this->SetSelectedViewIndex(0);
     this->UpdateFocusManagerToSelectedView();
   }
   else
   {
-    m_ControlPanel->SetViewNumberControlsEnabled(true);
-    m_ControlPanel->SetViewBindingControlsEnabled(true);
+    m_ControlPanel->SetMultiViewControlsEnabled(true);
     this->SetViewNumber(m_ViewRowsBeforeSegmentationMode, m_ViewColumnsBeforeSegmentationMode, false);
   }
 }
@@ -745,8 +746,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, 
   // See also QmitkMIDASMultiViewVisibilityManager::OnNodesDropped which should trigger first.
   if (m_ControlPanel->GetDropType() != MIDAS_DROP_TYPE_ALL)
   {
-    m_ControlPanel->SetSliceAndMagnificationControlsEnabled(true);
-    m_ControlPanel->SetLayoutControlsEnabled(true);
+    m_ControlPanel->SetSingleViewControlsEnabled(true);
   }
 
   QmitkMIDASSingleViewWidget* selectedView = NULL;

@@ -8,10 +8,11 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
 {
   this->setupUi(this);
 
-  // Default all widgets off except view number widgets, until something dropped.
-  this->SetSliceAndMagnificationControlsEnabled(false);
-  this->SetLayoutControlsEnabled(false);
-  this->SetViewNumberControlsEnabled(true);
+  m_ShowDirectionsCheckBox->setVisible(false);
+  m_BindViewPositionCheckBox->setVisible(false);
+
+  // Default all widgets off except viewer number widgets, until something dropped.
+  this->SetSingleViewControlsEnabled(false);
 
   // This should disable the view binding and drop type controls.
   this->SetViewNumber(1, 1);
@@ -20,19 +21,27 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_SlidersWidget, SIGNAL(TimeStepChanged(int)), this, SIGNAL(TimeStepChanged(int)));
   connect(m_SlidersWidget, SIGNAL(MagnificationChanged(double)), this, SIGNAL(MagnificationChanged(double)));
 
-  connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SIGNAL(LayoutChanged(MIDASLayout)));
+  connect(m_ShowCursorCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(CursorVisibilityChanged(bool)));
+  connect(m_ShowDirectionsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(DirectionsVisibilityChanged(bool)));
+  connect(m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(_3DWindowVisibilityChanged(bool)));
+
+  connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
   connect(m_BindWindowPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowPanningChanged(bool)));
   connect(m_BindWindowZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowZoomingChanged(bool)));
-  connect(m_ShowCursorsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(CursorVisibilityChanged(bool)));
 
-  connect(m_1x1ViewButton, SIGNAL(clicked()), this, SLOT(On1x1ViewButtonClicked()));
+  connect(m_1x1ViewsButton, SIGNAL(clicked()), this, SLOT(On1x1ViewsButtonClicked()));
   connect(m_1x2ViewsButton, SIGNAL(clicked()), this, SLOT(On1x2ViewsButtonClicked()));
   connect(m_1x3ViewsButton, SIGNAL(clicked()), this, SLOT(On1x3ViewsButtonClicked()));
   connect(m_2x2ViewsButton, SIGNAL(clicked()), this, SLOT(On2x2ViewsButtonClicked()));
   connect(m_ViewRowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewRowsSpinBoxValueChanged(int)));
   connect(m_ViewColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewColumnsSpinBoxValueChanged(int)));
 
-  connect(m_ViewBindingWidget, SIGNAL(BindTypeChanged()), this, SIGNAL(ViewBindingTypeChanged()));
+//  connect(m_ViewBindingWidget, SIGNAL(BindTypeChanged()), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewLayoutCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+//  connect(m_BindViewPositionCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewGeometryCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
 
   connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropSingleRadioButtonToggled(bool)));
   connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
@@ -48,37 +57,37 @@ QmitkMIDASMultiViewWidgetControlPanel::~QmitkMIDASMultiViewWidgetControlPanel()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetSliceAndMagnificationControlsEnabled(bool enabled)
+bool QmitkMIDASMultiViewWidgetControlPanel::AreSingleViewControlsEnabled() const
 {
-  m_SlidersWidget->setEnabled(enabled);
+  return m_SingleViewControlsGroupBox->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetLayoutControlsEnabled(bool enabled)
+void QmitkMIDASMultiViewWidgetControlPanel::SetSingleViewControlsEnabled(bool enabled)
 {
-  m_LayoutGroupBox->setEnabled(enabled);
+  m_SingleViewControlsGroupBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsEnabled(bool enabled)
+bool QmitkMIDASMultiViewWidgetControlPanel::AreMultiViewControlsEnabled() const
 {
-  m_ViewNumberGroupBox->setEnabled(enabled);
+  return m_MultiViewControlsGroupBox->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewBindingControlsEnabled(bool enabled)
+void QmitkMIDASMultiViewWidgetControlPanel::SetMultiViewControlsEnabled(bool enabled)
 {
-  m_ViewBindingGroupBox->setEnabled(enabled);
+  m_MultiViewControlsGroupBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsEnabled(bool enabled)
+bool QmitkMIDASMultiViewWidgetControlPanel::AreMagnificationControlsVisible() const
 {
-  m_DropTypeGroupBox->setEnabled(enabled);
+  return m_SlidersWidget->AreMagnificationControlsVisible();
 }
 
 
@@ -86,29 +95,77 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsEnabled(bool enab
 void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationControlsVisible(bool visible)
 {
   m_SlidersWidget->SetMagnificationControlsVisible(visible);
-  m_SlidersGroupBox->setTitle(visible ? "Slice && magnification" : "Slice");
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowBindingControlsVisible(bool visible)
+bool QmitkMIDASMultiViewWidgetControlPanel::AreMultiViewControlsVisible() const
 {
-  m_BindWindowPanningCheckBox->setVisible(visible);
-  m_BindWindowZoomingCheckBox->setVisible(visible);
+  return m_MultiViewControlsGroupBox->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsVisible(bool visible)
+void QmitkMIDASMultiViewWidgetControlPanel::SetMultiViewControlsVisible(bool visible)
 {
-  m_ViewNumberGroupBox->setVisible(visible);
+  m_MultiViewControlsGroupBox->setVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreDropTypeControlsVisible() const
+{
+  return m_DropTypeSeparator->isVisible() && m_DropTypeWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsVisible(bool visible)
 {
-  m_DropTypeGroupBox->setVisible(visible);
+  m_DropTypeSeparator->setVisible(visible);
+  m_DropTypeWidget->setVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowBindingControlsEnabled() const
+{
+  return m_WindowBindingWidget->isEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowBindingControlsEnabled(bool enabled)
+{
+  m_WindowBindingWidget->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreViewBindingControlsEnabled() const
+{
+  return m_ViewBindingWidget->isEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewBindingControlsEnabled(bool enabled)
+{
+  m_ViewBindingWidget->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreDropTypeControlsEnabled() const
+{
+  return m_DropTypeWidget->isEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsEnabled(bool enabled)
+{
+  m_DropTypeWidget->setEnabled(enabled);
 }
 
 
@@ -245,9 +302,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetLayout(MIDASLayout layout)
   m_LayoutWidget->SetLayout(layout);
   m_LayoutWidget->blockSignals(wasBlocked);
 
-  bool isMultiWindowLayout = ::IsMultiWindowLayout(layout);
-  m_BindWindowPanningCheckBox->setEnabled(isMultiWindowLayout);
-  m_BindWindowZoomingCheckBox->setEnabled(isMultiWindowLayout);
+  this->SetWindowBindingControlsEnabled(::IsMultiWindowLayout(layout));
 }
 
 
@@ -286,16 +341,16 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowZoomingBound(bool bound)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::IsCursorVisible() const
 {
-  return m_ShowCursorsCheckBox->isChecked();
+  return m_ShowCursorCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetCursorVisible(bool visible)
 {
-  bool wasBlocked = m_ShowCursorsCheckBox->blockSignals(true);
-  m_ShowCursorsCheckBox->setChecked(visible);
-  m_ShowCursorsCheckBox->blockSignals(wasBlocked);
+  bool wasBlocked = m_ShowCursorCheckBox->blockSignals(true);
+  m_ShowCursorCheckBox->setChecked(visible);
+  m_ShowCursorCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -357,9 +412,9 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 {
   bool singleView = rows == 1 && columns == 1;
 
-  bool wasBlocked = m_1x1ViewButton->blockSignals(true);
-  m_1x1ViewButton->setChecked(singleView);
-  m_1x1ViewButton->blockSignals(wasBlocked);
+  bool wasBlocked = m_1x1ViewsButton->blockSignals(true);
+  m_1x1ViewsButton->setChecked(singleView);
+  m_1x1ViewsButton->blockSignals(wasBlocked);
 
   wasBlocked = m_1x2ViewsButton->blockSignals(true);
   m_1x2ViewsButton->setChecked(rows == 1 && columns == 2);
@@ -389,28 +444,28 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewLayoutsBound() const
 {
-  return m_ViewBindingWidget->AreLayoutsBound();
+  return m_BindViewLayoutCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewCursorsBound() const
 {
-  return m_ViewBindingWidget->AreCursorsBound();
+  return m_BindViewPanningCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewMagnificationsBound() const
 {
-  return m_ViewBindingWidget->AreMagnificationsBound();
+  return m_BindViewZoomingCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewGeometriesBound() const
 {
-  return m_ViewBindingWidget->AreGeometriesBound();
+  return m_BindViewGeometryCheckBox->isChecked();
 }
 
 
@@ -454,7 +509,16 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropType(MIDASDropType dropType)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On1x1ViewButtonClicked()
+void QmitkMIDASMultiViewWidgetControlPanel::OnLayoutChanged(MIDASLayout layout)
+{
+  this->SetWindowBindingControlsEnabled(::IsMultiWindowLayout(layout));
+
+  emit LayoutChanged(layout);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::On1x1ViewsButtonClicked()
 {
   this->SetViewNumber(1, 1);
   emit ViewNumberChanged(1, 1);

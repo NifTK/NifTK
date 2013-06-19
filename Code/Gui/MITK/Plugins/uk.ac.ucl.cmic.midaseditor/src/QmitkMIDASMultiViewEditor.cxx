@@ -211,7 +211,7 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     // Setup GUI a bit more.
     d->m_MIDASMultiViewWidget->SetDropType(defaultDropType);
     d->m_MIDASMultiViewWidget->SetShowDropTypeWidgets(showDropTypeWidgets);
-    d->m_MIDASMultiViewWidget->SetViewNumberControlsVisible(showLayoutButtons);
+    d->m_MIDASMultiViewWidget->SetMultiViewControlsVisible(showLayoutButtons);
     d->m_MIDASMultiViewWidget->SetShow2DCursors(show2DCursors);
     d->m_MIDASMultiViewWidget->SetShow3DWindowInOrthoView(show3DWindowInOrthoView);
     d->m_MIDASMultiViewWidget->SetShowMagnificationSlider(showMagnificationSlider);
@@ -263,7 +263,7 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     d->m_MIDASMultiViewWidget->SetDefaultLayout((MIDASLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW, 2))); // default coronal
     d->m_MIDASMultiViewWidget->SetDropType((MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0)));
     d->m_MIDASMultiViewWidget->SetShowDropTypeWidgets(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
-    d->m_MIDASMultiViewWidget->SetViewNumberControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, true));
+    d->m_MIDASMultiViewWidget->SetMultiViewControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS, true));
     d->m_MIDASMultiViewWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
     d->m_MIDASMultiViewWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
     d->m_MIDASMultiViewWidget->SetShow3DWindowInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, false));

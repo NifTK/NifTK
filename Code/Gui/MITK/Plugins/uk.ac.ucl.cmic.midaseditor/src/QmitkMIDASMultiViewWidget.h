@@ -31,7 +31,6 @@
 #include <QmitkMIDASSingleViewWidget.h>
 #include <QmitkMIDASMultiViewVisibilityManager.h>
 #include <QmitkMIDASLayoutWidget.h>
-#include <QmitkMIDASBindWidget.h>
 #include <QmitkMIDASSlidersWidget.h>
 
 class QSpinBox;
@@ -122,8 +121,11 @@ public:
   /// \brief Sets the visibility flag on the drop type checkboxes.
   void SetShowDropTypeWidgets(bool visible);
 
-  /// \brief Sets the visibility flag on the layout buttons.
-  void SetViewNumberControlsVisible(bool visible);
+  /// \brief Gets the visibility flag of the multi view controls on the control panel.
+  bool AreMultiViewControlsVisible() const;
+
+  /// \brief Sets the visibility flag of the multi view controls on the control panel.
+  void SetMultiViewControlsVisible(bool visible);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
