@@ -18,7 +18,6 @@ set(CPP_FILES
   QmitkMIDASImageAndSegmentationSelectorWidget.cxx
   QmitkMIDASDrawToolGUI.cxx
   QmitkMIDASPaintbrushToolGUI.cxx
-  QmitkMIDASBindWidget.cxx
   QmitkMIDASSlidersWidget.cxx
   QmitkMIDASLayoutWidget.cxx
   QmitkMIDASStdMultiWidget.cxx
@@ -37,7 +36,6 @@ set(MOC_H_FILES
   QmitkMIDASImageAndSegmentationSelectorWidget.h
   QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
-  QmitkMIDASBindWidget.h
   QmitkMIDASSlidersWidget.h
   QmitkMIDASLayoutWidget.h
   QmitkMIDASStdMultiWidget.h
@@ -49,7 +47,6 @@ set(MOC_H_FILES
 set(UI_FILES
   Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
   Resources/UI/QmitkMIDASToolSelector.ui
-  Resources/UI/QmitkMIDASBindWidget.ui
   Resources/UI/QmitkMIDASLayoutWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui
 )

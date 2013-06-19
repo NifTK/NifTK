@@ -19,29 +19,32 @@ public:
   explicit QmitkMIDASMultiViewWidgetControlPanel(QWidget *parent = 0);
   virtual ~QmitkMIDASMultiViewWidgetControlPanel();
   
-  /// \brief Enables/disables slider widgets.
-  void SetSliceAndMagnificationControlsEnabled(bool enabled);
+  /// \brief Tells if the single view controls are enabled.
+  bool AreSingleViewControlsEnabled() const;
 
-  /// \brief Enables/disables widgets to control layout.
-  void SetLayoutControlsEnabled(bool enabled);
+  /// \brief Enables or disables the single view controls.
+  void SetSingleViewControlsEnabled(bool enabled);
 
-  /// \brief Enables/disables widgets to control the number of views.
-  void SetViewNumberControlsEnabled(bool enabled);
+  /// \brief Tells if the multi view controls are enabled.
+  bool AreMultiViewControlsEnabled() const;
 
-  /// \brief Enables/disables widgets to control view binding / linking.
-  void SetViewBindingControlsEnabled(bool enabled);
+  /// \brief Enables or disables the multi view controls.
+  void SetMultiViewControlsEnabled(bool enabled);
 
-  /// \brief Enables/disables widgets to control the drop type.
-  void SetDropTypeControlsEnabled(bool enabled);
+  /// \brief Tells if the magnification controls are visible.
+  bool AreMagnificationControlsVisible() const;
 
   /// \brief Shows or hides the magnification controls.
   void SetMagnificationControlsVisible(bool visible);
 
-  /// \brief Shows or hides the window binding controls.
-  void SetWindowBindingControlsVisible(bool visible);
+  /// \brief Tells if the multi view controls are visible.
+  bool AreMultiViewControlsVisible() const;
 
-  /// \brief Shows or hides the view number controls.
-  void SetViewNumberControlsVisible(bool visible);
+  /// \brief Shows or hides the multi view controls.
+  void SetMultiViewControlsVisible(bool visible);
+
+  /// \brief Tells if the drop type controls are visible.
+  bool AreDropTypeControlsVisible() const;
 
   /// \brief Shows or hides the drop type controls.
   void SetDropTypeControlsVisible(bool visible);
@@ -115,11 +118,23 @@ public:
   /// \brief Sets the bind zooming check box to the given value.
   void SetWindowZoomingBound(bool bound);
 
-  /// \brief Returns true if the  cursor (aka crosshair) is set to visible, otherwise false.
+  /// \brief Returns true if the  show cursor check box is set, otherwise false.
   bool IsCursorVisible() const;
 
-  /// \brief Sets the cursor visibility check box to the given value.
+  /// \brief Sets the show cursor check box to the given value.
   void SetCursorVisible(bool visible);
+
+  /// \brief Returns true if the show orientation directions check box is set, otherwise false.
+  bool AreDirectionsVisible() const;
+
+  /// \brief Sets the show orientation direction option check box to the given value.
+  void SetDirectionsVisible(bool visible);
+
+  /// \brief Returns true if the show 3D window check box is set, otherwise false.
+  bool Is3DWindowVisible() const;
+
+  /// \brief Sets the show 3D window option check box to the given value.
+  void Set3DWindowVisible(bool visible);
 
   /// \brief Gets the number of rows of the views.
   int GetViewRows() const;
@@ -163,8 +178,11 @@ signals:
   void TimeStepChanged(int timeStep);
   void MagnificationChanged(double magnification);
 
-  void LayoutChanged(MIDASLayout layout);
   void CursorVisibilityChanged(bool visible);
+  void DirectionsVisibilityChanged(bool visible);
+  void _3DWindowVisibilityChanged(bool visible);
+
+  void LayoutChanged(MIDASLayout layout);
 
   void ViewNumberChanged(int rows, int columns);
 
@@ -177,7 +195,9 @@ signals:
 
 protected slots:
 
-  void On1x1ViewButtonClicked();
+  void OnLayoutChanged(MIDASLayout layout);
+
+  void On1x1ViewsButtonClicked();
   void On1x2ViewsButtonClicked();
   void On1x3ViewsButtonClicked();
   void On2x2ViewsButtonClicked();
@@ -187,6 +207,27 @@ protected slots:
   void OnDropSingleRadioButtonToggled(bool);
   void OnDropMultipleRadioButtonToggled(bool);
   void OnDropThumbnailRadioButtonToggled(bool);
+
+protected:
+
+  /// \brief Tells if the window binding controls are enabled.
+  bool AreWindowBindingControlsEnabled() const;
+
+  /// \brief Enables or disables the window binding controls.
+  void SetWindowBindingControlsEnabled(bool enabled);
+
+  /// \brief Tells if the view binding controls are enabled.
+  bool AreViewBindingControlsEnabled() const;
+
+  /// \brief Enables or disables the view binding controls.
+  void SetViewBindingControlsEnabled(bool enabled);
+
+  /// \brief Tells if the drop type controls are enabled.
+  bool AreDropTypeControlsEnabled() const;
+
+  /// \brief Enables or disables the drop type controls.
+  void SetDropTypeControlsEnabled(bool enabled);
+
 };
 
 #endif // QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
