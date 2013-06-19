@@ -101,6 +101,8 @@ CvPoint3D32f triangulate(
 class NIFTKIGI_EXPORT QDSInterface
 {
 public:
+  virtual ~QDSInterface();
+
   virtual void Process(const IplImage* left, const IplImage* right) = 0;
 
   virtual int GetWidth() const = 0;
