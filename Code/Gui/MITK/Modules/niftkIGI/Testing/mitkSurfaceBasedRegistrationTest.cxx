@@ -34,6 +34,7 @@ public:
   mitkClassMacro(TestSurfaceBasedRegistration, SurfaceBasedRegistration);
   itkNewMacro(TestSurfaceBasedRegistration);
   bool SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix);
+  bool CompareMatrices(vtkMatrix4x4 * m1, vtkMatrix4x4 * m2);
   virtual void Initialize(){};
 protected:
   virtual ~TestSurfaceBasedRegistration() {};
@@ -53,7 +54,28 @@ bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node 
     return false;
   }
 }
-
+bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix4x4 * m2)
+{
+  double delta=0.0;
+  for ( int i = 0 ; i < 4 ; i ++ ) 
+  {
+    for ( int j = 0 ; j < 4 ; j ++ )
+    {
+      delta += m1->GetElement(i,j) - m2->GetElement(i,j);
+    }
+  }
+  if ( fabs (delta > 1e-3) ) 
+  {
+    std::cerr << "Failed comparing matrices ... " << std::endl;
+    std::cerr << *m1 << "  ... does not equal";
+    std::cerr << *m2;
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
 
 } // end namespace
 
@@ -120,8 +142,8 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
     std::cout << "Starting registration test with index2world both identity.";
     registerer->Update(fixednode, movingnode, resultMatrix);
     registerer->ApplyTransform(movingnode, resultMatrix);
-  //MITK_TEST_CONDITION_REQUIRED(registerGetTrandform() == 1, ".. Testing surface to surface");
-
+    registerer->GetCurrentTransform(movingnode,movingMatrix);
+    MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing 2 ID");
   }
   else
   {
