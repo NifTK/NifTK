@@ -201,6 +201,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
                                   r.x, r.y, camIntr2->GetValue(),
                                   stereoRig->GetValue(),
                                   &error);
+              p.y = -p.y;
+              p.z = -p.z;
               if (error < maxTriangulationError)
               {
                 points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
