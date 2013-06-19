@@ -8,7 +8,6 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
 {
   this->setupUi(this);
 
-  m_ShowDirectionsCheckBox->setVisible(false);
   m_BindViewPositionCheckBox->setVisible(false);
 
   // Default all widgets off except viewer number widgets, until something dropped.
@@ -22,7 +21,7 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_SlidersWidget, SIGNAL(MagnificationChanged(double)), this, SIGNAL(MagnificationChanged(double)));
 
   connect(m_ShowCursorCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(CursorVisibilityChanged(bool)));
-  connect(m_ShowDirectionsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(DirectionsVisibilityChanged(bool)));
+  connect(m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)));
   connect(m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(_3DWindowVisibilityChanged(bool)));
 
   connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
@@ -351,6 +350,38 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetCursorVisible(bool visible)
   bool wasBlocked = m_ShowCursorCheckBox->blockSignals(true);
   m_ShowCursorCheckBox->setChecked(visible);
   m_ShowCursorCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreDirectionAnnotationsVisible() const
+{
+  return m_ShowDirectionAnnotationsCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetDirectionAnnotationsVisible(bool visible)
+{
+  bool wasBlocked = m_ShowDirectionAnnotationsCheckBox->blockSignals(true);
+  m_ShowDirectionAnnotationsCheckBox->setChecked(visible);
+  m_ShowDirectionAnnotationsCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::Is3DWindowVisible() const
+{
+  return m_Show3DWindowCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::Set3DWindowVisible(bool visible)
+{
+  bool wasBlocked = m_Show3DWindowCheckBox->blockSignals(true);
+  m_Show3DWindowCheckBox->setChecked(visible);
+  m_Show3DWindowCheckBox->blockSignals(wasBlocked);
 }
 
 

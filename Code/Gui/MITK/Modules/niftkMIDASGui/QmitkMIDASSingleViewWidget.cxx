@@ -284,6 +284,20 @@ bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsGlobally() const
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASSingleViewWidget::AreDirectionAnnotationsVisible() const
+{
+  return m_MultiWidget->AreDirectionAnnotationsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSingleViewWidget::SetDirectionAnnotationsVisible(bool visible)
+{
+  m_MultiWidget->SetDirectionAnnotationsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkMIDASSingleViewWidget::GetShow3DWindowInOrthoView() const
 {
   return m_MultiWidget->GetShow3DWindowInOrthoView();
