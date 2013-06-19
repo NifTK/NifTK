@@ -94,23 +94,29 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
  // mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
 
+  mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
+  mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
   mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
   PointReader->SetFileName(argv[1]);
   mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
+  mitk::Surface::Pointer FixedSurface = mitk::Surface::New();
   PointReader->Update();
   FixedPoints = PointReader->GetOutput();
 
   int numberOfPoints = FixedPoints->GetSize();
-  std::cout << "There are " << numberOfPoints << "points." << std::endl;
   if ( numberOfPoints == 0  )
   {
-    std::cerr << "Failed to Read fixed points, hatlting.";
-    return EXIT_FAILURE;
+    mitk::VtkSurfaceReader::Pointer  FixedSurfaceReader = mitk::VtkSurfaceReader::New();
+    FixedSurfaceReader->SetFileName(argv[1]);
+    FixedSurfaceReader->Update();
+    FixedSurface = FixedSurfaceReader->GetOutput();
+    fixednode->SetData(FixedSurface);
   }
-  
-  mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
-  fixednode->SetData(FixedPoints);
+  else
+  {
+    fixednode->SetData(FixedPoints);
+  }
 
   //Read Moving Surface
   mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
@@ -119,17 +125,14 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   SurfaceReader->Update();
   MovingSurface = SurfaceReader->GetOutput();
   
-  mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   movingnode->SetData(MovingSurface);
 
   //Set up index to world matrices for each node
   vtkMatrix4x4 * fixedMatrix = vtkMatrix4x4::New();
   vtkMatrix4x4 * movingMatrix = vtkMatrix4x4::New();
-  vtkMatrix4x4 * IDMatrix = vtkMatrix4x4::New();
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   fixedMatrix->Identity();
   movingMatrix->Identity();
-  IDMatrix->Identity();
 
 
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
