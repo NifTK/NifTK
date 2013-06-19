@@ -457,28 +457,31 @@ vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& sil
   vtkMatrix4x4 *result = vtkMatrix4x4::New();
   result->Identity();
 
-  ifstream myfile(fileName.c_str());
-  if (myfile.is_open())
+  if(fileName.size() > 0)
   {
-    for (int i = 0; i < 4; i++)
+    ifstream myfile(fileName.c_str());
+    if (myfile.is_open())
     {
-      for (int j = 0; j < 4; j++)
+      for (int i = 0; i < 4; i++)
       {
-        double value;
-        myfile >> value;
+        for (int j = 0; j < 4; j++)
+        {
+          double value;
+          myfile >> value;
 
-        result->SetElement(i, j, value);
+          result->SetElement(i, j, value);
+        }
+      }
+    }
+    else
+    {
+      if (!silent)
+      {
+        std::cerr << "LoadMatrix4x4FromFile: failed to open file '" << fileName << "'" << std::endl;
       }
     }
   }
-  else
-  {
-    if (!silent)
-    {
-      std::cerr << "LoadMatrix4x4FromFile: failed to open file '" << fileName << "'" << std::endl;
-    }
-  }
-
+ 
   return result;
 }
 
