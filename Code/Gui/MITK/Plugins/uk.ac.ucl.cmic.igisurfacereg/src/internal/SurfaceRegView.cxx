@@ -83,6 +83,7 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
 
     m_Controls->m_MatrixWidget->setEditable(false);
+    m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
     connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
@@ -139,7 +140,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
   registration->Update(fixednode, movingnode, m_Matrix);
-
+  
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)

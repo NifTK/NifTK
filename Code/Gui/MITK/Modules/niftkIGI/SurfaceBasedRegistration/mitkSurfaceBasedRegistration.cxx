@@ -134,7 +134,7 @@ void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node , vt
   vtkMatrix4x4 * CurrentMatrix = vtkMatrix4x4::New();
   GetCurrentTransform (node , CurrentMatrix );
   vtkMatrix4x4 * NewMatrix = vtkMatrix4x4::New();
-  matrix->Multiply4x4(CurrentMatrix, matrix, NewMatrix);
+  matrix->Multiply4x4(matrix, CurrentMatrix, NewMatrix);
   mitk::CoordinateAxesData* transform = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 
   if (transform != NULL)
