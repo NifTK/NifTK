@@ -33,10 +33,27 @@ class TestSurfaceBasedRegistration : public SurfaceBasedRegistration
 public:
   mitkClassMacro(TestSurfaceBasedRegistration, SurfaceBasedRegistration);
   itkNewMacro(TestSurfaceBasedRegistration);
+  bool SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix);
   virtual void Initialize(){};
 protected:
   virtual ~TestSurfaceBasedRegistration() {};
 };
+
+bool TestSurfaceBasedRegistration::SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
+{
+  mitk::Geometry3D::Pointer geometry = node->GetData()->GetGeometry();
+  if (geometry.IsNotNull())
+  {
+    geometry->SetIndexToWorldTransformByVtkMatrix(matrix);
+    geometry->Modified();
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 
 } // end namespace
 
@@ -44,7 +61,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
 {
   if (argc != 3)
   {
-    std::cerr << "Usage: mitkSurfaceBasedRegistrationTest points.vtp surface.vtp" << std::endl;
+    std::cerr << "Usage: mitkSurfaceBasedRegistrationTest points.vtp/.mps surface.vtp" << std::endl;
     std::cerr << " argc=" << argc << std::endl;
     for (int i = 0; i < argc; ++i)
     {
@@ -52,29 +69,31 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
     }
     return EXIT_FAILURE;
   } 
-
+  
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
- // mitk::DataStorage* storage = mitk::DataStorage::New();
+ // mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+
+  //Read Fixed Points
   mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
   PointReader->SetFileName(argv[1]);
-//  PointReader->GenerateData();
   mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
   PointReader->Update();
   FixedPoints = PointReader->GetOutput();
 
   int numberOfPoints = FixedPoints->GetSize();
   std::cout << "There are " << numberOfPoints << "points." << std::endl;
+  if ( numberOfPoints == 0  )
+  {
+    std::cerr << "Failed to Read fixed points, hatlting.";
+    return EXIT_FAILURE;
+  }
   
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   fixednode->SetData(FixedPoints);
 
-  vtkMatrix4x4 * fixedMatrix = vtkMatrix4x4::New();
-  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
-
-  registration->ApplyTransform ( fixednode , fixedMatrix);
+  //Read Moving Surface
   mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
   SurfaceReader->SetFileName(argv[2]);
-//  PointReader->GenerateData();
   mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
   SurfaceReader->Update();
   MovingSurface = SurfaceReader->GetOutput();
@@ -82,10 +101,33 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   movingnode->SetData(MovingSurface);
 
+  //Set up index to world matrices for each node
+  vtkMatrix4x4 * fixedMatrix = vtkMatrix4x4::New();
   vtkMatrix4x4 * movingMatrix = vtkMatrix4x4::New();
+  vtkMatrix4x4 * IDMatrix = vtkMatrix4x4::New();
+  vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
+  fixedMatrix->Identity();
+  movingMatrix->Identity();
+  IDMatrix->Identity();
+
 
   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   Uni_Rand->SetSeed(2);
+  //first test, both index to world ID
+  if ( registerer->SetIndexToWorld (fixednode, fixedMatrix) && 
+      registerer->SetIndexToWorld (movingnode, movingMatrix ) )
+  {
+    std::cout << "Starting registration test with index2world both identity.";
+    registerer->Update(fixednode, movingnode, resultMatrix);
+    registerer->ApplyTransform(movingnode, resultMatrix);
+  //MITK_TEST_CONDITION_REQUIRED(registerGetTrandform() == 1, ".. Testing surface to surface");
+
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
+
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
   RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
@@ -95,10 +137,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
 
   std::cout << *movingMatrix << std::endl;
   
-  registration->ApplyTransform ( movingnode , movingMatrix);
   
-  vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
-  registration->Update(fixednode, movingnode, resultMatrix);
   std::cerr << "Result with shifted moving" << std::endl;
   std::cerr << *resultMatrix;
   /*registration->ApplyTransform(movingnode);
@@ -107,9 +146,9 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
   movingMatrix->Identity();
-  registration->ApplyTransform ( movingnode , movingMatrix);
-  registration->ApplyTransform ( fixednode , fixedMatrix);
-  registration->Update(fixednode, movingnode, resultMatrix);
+  registerer->ApplyTransform ( movingnode , movingMatrix);
+  registerer->ApplyTransform ( fixednode , fixedMatrix);
+  registerer->Update(fixednode, movingnode, resultMatrix);
   std::cerr << "Result with shifted fixed" << std::endl;
   std::cerr << *resultMatrix;
   //std::cerr << *affineTransform;
@@ -123,6 +162,15 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   //Set number of iterations, 
   //Set maximum number of points
   //
+  //Testing of the underlying registration libraries will be done within the
+  //relevant libraries. 
+  //The testing here only test the plugin functionality, and the correct functioning 
+  //of the indexto world transforms.
+  //Index2World Fixed
+  //Index2World Moving
+  //and transform
+  //If both inputs start off with the same index to world and are aligned then the
+  //end indextoworld should also be the same
   //Test that the the transform respects data nodes world to data transforms.
 
   return EXIT_SUCCESS;
