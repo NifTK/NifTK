@@ -44,8 +44,8 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_MatrixDrivenCamera(NULL)
 , m_IsCameraTracking(true)
 , m_IsCalibrated(false)
-, m_ZNear(0.01)
-, m_ZFar(100000)
+, m_ZNear(2.0)
+, m_ZFar(5000)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -345,8 +345,8 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
   double origin[4]     = {0, 0,     0,    1};
-  double focalPoint[4] = {0, 0,     2000, 1};
-  double viewUp[4]     = {0, -1.0e9, 0,    1};
+  double focalPoint[4] = {0, 0,     -1e9, 1};
+  double viewUp[4]     = {0, 1.0e9, 0,    1};
 
   // We then move the camera to that position.
   m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
@@ -389,7 +389,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
       m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
       m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
     }
-  } // end if we have a transformation
+  }
 }
 
 

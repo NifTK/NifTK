@@ -222,7 +222,7 @@ void QmitkBitmapOverlay::AutoSelectDataNode(const mitk::DataNode* node)
     // ToDo: These strings hard coded, as this widget in niftkCoreGui rather than niftkIGIGui.
     if (node->GetName() == "NVIDIA SDI stream 0")
     {
-      this->SetFlipViewUp(false);
+      this->SetFlipViewUp(true);
       this->SetNode(node);
     }
     else if (node->GetName() == "OpenCV image")
