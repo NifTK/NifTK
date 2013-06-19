@@ -620,6 +620,25 @@ bool QmitkMIDASStdMultiWidget::GetDisplay2DCursorsGlobally() const
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASStdMultiWidget::AreDirectionAnnotationsVisible() const
+{
+  return m_DirectionAnnotations[0]->GetVisibility()
+      && m_DirectionAnnotations[1]->GetVisibility()
+      && m_DirectionAnnotations[2]->GetVisibility();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetDirectionAnnotationsVisible(bool visible)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    m_DirectionAnnotations[i]->SetVisibility(visible);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetShow3DWindowInOrthoView(bool visible)
 {
   m_Show3DWindowInOrthoView = visible;

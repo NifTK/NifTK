@@ -136,6 +136,12 @@ public:
   /// \brief Sets the flag controlling the visibility of 2D cursors.
   void SetShow2DCursors(bool visibile);
 
+  /// \brief Tells if the direction annotations are visible.
+  bool AreDirectionAnnotationsVisible() const;
+
+  /// \brief Sets the visibility of the direction annotations.
+  void SetDirectionAnnotationsVisible(bool visible);
+
   /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
   bool GetShow3DWindowInOrthoView() const;
 
@@ -263,6 +269,15 @@ protected slots:
   /// \brief Called when the magnification has been changed through the control panel.
   void OnMagnificationChanged(double magnification);
 
+  /// \brief Called when the cursor visibility has been changed through the control panel.
+  void OnCursorVisibilityChanged(bool visible);
+
+  /// \brief Called when the direction annotations visibility has been changed through the control panel.
+  void OnDirectionAnnotationsVisibilityChanged(bool visible);
+
+  /// \brief Called when the 3D window visibility has been changed through the control panel.
+  void On3DWindowVisibilityChanged(bool visible);
+
   /// \brief Called when the window layout has been changed through the control panel.
   void OnLayoutChanged(MIDASLayout layout);
 
@@ -271,9 +286,6 @@ protected slots:
 
   /// \brief Called when the binding of zooming in render windows of a view has been changed through the control panel.
   void OnBindWindowZoomingChanged(bool);
-
-  /// \brief Called when the cursor visibility has been changed through the control panel.
-  void OnShow2DCursorsCheckBoxToggled(bool);
 
   /// \brief Called when the number of views has been changed through the control panel.
   void OnViewNumberChanged(int rows, int columns);

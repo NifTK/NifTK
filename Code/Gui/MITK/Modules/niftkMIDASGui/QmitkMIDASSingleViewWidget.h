@@ -134,6 +134,12 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
+  /// \brief Tells if the direction annotations are visible.
+  bool AreDirectionAnnotationsVisible() const;
+
+  /// \brief Sets the visibility of the direction annotations.
+  void SetDirectionAnnotationsVisible(bool visible);
+
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   bool GetShow3DWindowInOrthoView() const;
 

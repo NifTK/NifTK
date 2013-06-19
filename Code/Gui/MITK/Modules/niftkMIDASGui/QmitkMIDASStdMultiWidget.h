@@ -103,6 +103,12 @@ public:
   /// \brief Turn the 2D cursors visible/invisible for this viewer (renderer specific properties).
   void SetDisplay2DCursorsLocally(bool visible);
 
+  /// \brief Tells if the direction annotations are visible.
+  bool AreDirectionAnnotationsVisible() const;
+
+  /// \brief Sets the visibility of the direction annotations.
+  void SetDirectionAnnotationsVisible(bool visible);
+
   /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
   bool GetDisplay2DCursorsLocally() const;
 

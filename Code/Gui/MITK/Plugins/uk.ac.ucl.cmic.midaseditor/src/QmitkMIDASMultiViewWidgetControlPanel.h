@@ -125,10 +125,10 @@ public:
   void SetCursorVisible(bool visible);
 
   /// \brief Returns true if the show orientation directions check box is set, otherwise false.
-  bool AreDirectionsVisible() const;
+  bool AreDirectionAnnotationsVisible() const;
 
   /// \brief Sets the show orientation direction option check box to the given value.
-  void SetDirectionsVisible(bool visible);
+  void SetDirectionAnnotationsVisible(bool visible);
 
   /// \brief Returns true if the show 3D window check box is set, otherwise false.
   bool Is3DWindowVisible() const;
@@ -179,7 +179,7 @@ signals:
   void MagnificationChanged(double magnification);
 
   void CursorVisibilityChanged(bool visible);
-  void DirectionsVisibilityChanged(bool visible);
+  void DirectionAnnotationsVisibilityChanged(bool visible);
   void _3DWindowVisibilityChanged(bool visible);
 
   void LayoutChanged(MIDASLayout layout);

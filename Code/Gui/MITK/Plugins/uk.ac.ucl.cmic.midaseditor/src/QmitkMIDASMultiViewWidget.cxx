@@ -164,6 +164,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
   mitk::GlobalInteraction::GetInstance()->AddListener(m_ViewKeyPressStateMachine);
 
+  m_ControlPanel->SetDirectionAnnotationsVisible(true);
+
   // Default to dropping into single window.
   m_ControlPanel->SetDropType(MIDAS_DROP_TYPE_SINGLE);
   m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
@@ -177,10 +179,13 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), this, SLOT(OnTimeStepChanged(int)));
   connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), this, SLOT(OnMagnificationChanged(double)));
 
+  connect(m_ControlPanel, SIGNAL(CursorVisibilityChanged(bool)), this, SLOT(OnCursorVisibilityChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), this, SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(_3DWindowVisibilityChanged(bool)), this, SLOT(On3DWindowVisibilityChanged(bool)));
+
   connect(m_ControlPanel, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
   connect(m_ControlPanel, SIGNAL(BindWindowPanningChanged(bool)), this, SLOT(OnBindWindowPanningChanged(bool)));
   connect(m_ControlPanel, SIGNAL(BindWindowZoomingChanged(bool)), this, SLOT(OnBindWindowZoomingChanged(bool)));
-  connect(m_ControlPanel, SIGNAL(CursorVisibilityChanged(bool)), this, SLOT(OnShow2DCursorsCheckBoxToggled(bool)));
 
   connect(m_ControlPanel, SIGNAL(ViewNumberChanged(int, int)), this, SLOT(OnViewNumberChanged(int, int)));
 
@@ -350,6 +355,13 @@ void QmitkMIDASMultiViewWidget::SetDropType(MIDASDropType dropType)
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
+{
+  return m_Show2DCursors;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShow2DCursors(bool visible)
 {
   m_Show2DCursors = visible;
@@ -361,9 +373,21 @@ void QmitkMIDASMultiViewWidget::SetShow2DCursors(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::GetShow2DCursors() const
+bool QmitkMIDASMultiViewWidget::AreDirectionAnnotationsVisible() const
 {
-  return m_Show2DCursors;
+  return m_ControlPanel->AreDirectionAnnotationsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetDirectionAnnotationsVisible(bool visible)
+{
+  m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+  for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+  {
+    m_SingleViewWidgets[i]->SetDirectionAnnotationsVisible(visible);
+  }
+  this->RequestUpdateAll();
 }
 
 
@@ -375,12 +399,13 @@ bool QmitkMIDASMultiViewWidget::GetShow3DWindowInOrthoView() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetShow3DWindowInOrthoView(bool enabled)
+void QmitkMIDASMultiViewWidget::SetShow3DWindowInOrthoView(bool visible)
 {
-  m_Show3DWindowInOrthoView = enabled;
+  m_Show3DWindowInOrthoView = visible;
+  m_ControlPanel->Set3DWindowVisible(visible);
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
-    m_SingleViewWidgets[i]->SetShow3DWindowInOrthoView(enabled);
+    m_SingleViewWidgets[i]->SetShow3DWindowInOrthoView(visible);
   }
   this->RequestUpdateAll();
 }
@@ -1103,9 +1128,23 @@ void QmitkMIDASMultiViewWidget::OnBindWindowZoomingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnShow2DCursorsCheckBoxToggled(bool checked)
+void QmitkMIDASMultiViewWidget::OnCursorVisibilityChanged(bool visible)
 {
-  this->SetShow2DCursors(checked);
+  this->SetShow2DCursors(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  this->SetDirectionAnnotationsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::On3DWindowVisibilityChanged(bool visible)
+{
+  this->SetShow3DWindowInOrthoView(visible);
 }
 
 
