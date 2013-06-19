@@ -127,8 +127,8 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
   m_TransformCombo->SetDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-//  m_ImageCombo->SetPredicate(isImage);
-//  m_ImageCombo->SetAutoSelectNewItems(false);
+  m_ImageCombo->SetPredicate(isImage);
+  m_ImageCombo->SetAutoSelectNewItems(false);
 
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_TransformCombo->SetPredicate(isTransform);
