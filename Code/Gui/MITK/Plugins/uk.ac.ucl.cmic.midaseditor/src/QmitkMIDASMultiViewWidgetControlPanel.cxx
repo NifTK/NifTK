@@ -32,7 +32,12 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_ViewRowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewRowsSpinBoxValueChanged(int)));
   connect(m_ViewColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewColumnsSpinBoxValueChanged(int)));
 
-  connect(m_ViewBindingWidget, SIGNAL(BindTypeChanged()), this, SIGNAL(ViewBindingTypeChanged()));
+//  connect(m_ViewBindingWidget, SIGNAL(BindTypeChanged()), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewLayoutCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+//  connect(m_BindViewPositionCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewGeometryCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
 
   connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropSingleRadioButtonToggled(bool)));
   connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
@@ -86,7 +91,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsEnabled(bool enab
 void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationControlsVisible(bool visible)
 {
   m_SlidersWidget->SetMagnificationControlsVisible(visible);
-  m_SlidersGroupBox->setTitle(visible ? "Slice && magnification" : "Slice");
+//  m_SlidersGroupBox->setTitle(visible ? "Slice && magnification" : "Slice");
 }
 
 
@@ -389,28 +394,32 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewLayoutsBound() const
 {
-  return m_ViewBindingWidget->AreLayoutsBound();
+//  return m_ViewBindingWidget->AreLayoutsBound();
+  return m_BindViewLayoutCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewCursorsBound() const
 {
-  return m_ViewBindingWidget->AreCursorsBound();
+//  return m_ViewBindingWidget->AreCursorsBound();
+  return m_BindViewPanningCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewMagnificationsBound() const
 {
-  return m_ViewBindingWidget->AreMagnificationsBound();
+//  return m_ViewBindingWidget->AreMagnificationsBound();
+  return m_BindViewZoomingCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewGeometriesBound() const
 {
-  return m_ViewBindingWidget->AreGeometriesBound();
+//  return m_ViewBindingWidget->AreGeometriesBound();
+  return m_BindViewGeometryCheckBox->isChecked();
 }
 
 
