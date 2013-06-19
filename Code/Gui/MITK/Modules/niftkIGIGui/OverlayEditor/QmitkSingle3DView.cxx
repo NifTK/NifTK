@@ -345,7 +345,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
   double origin[4]     = {0, 0,     0,    1};
-  double focalPoint[4] = {0, 0,     -2000, 1};
+  double focalPoint[4] = {0, 0,     -1e9, 1};
   double viewUp[4]     = {0, 1.0e9, 0,    1};
 
   // We then move the camera to that position.
