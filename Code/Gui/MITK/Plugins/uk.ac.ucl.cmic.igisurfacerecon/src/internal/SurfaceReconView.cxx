@@ -170,6 +170,9 @@ void SurfaceReconView::RetrievePreferenceValues()
 
   m_MaxTriangulationErrorThresholdSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName, 0.1f));
 
+  m_MinDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName, 1.0f));
+  m_MaxDepthRangeSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName, 1000.0f));
+
   bool  useUndistortDefaultPath = prefs->GetBool(SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName, true);
   if (useUndistortDefaultPath)
   {
@@ -477,12 +480,14 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
           niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
 
-          float maxTriError = m_MaxTriangulationErrorThresholdSpinBox->value();
+          float maxTriError = (float) m_MaxTriangulationErrorThresholdSpinBox->value();
+          float minDepth    = (float) m_MinDepthRangeSpinBox->value();
+          float maxDepth    = (float) m_MaxDepthRangeSpinBox->value();
 
           try
           {
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError);
+            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError, minDepth, maxDepth);
           }
           catch (const std::exception& e)
           {

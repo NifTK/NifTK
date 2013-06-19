@@ -41,6 +41,8 @@ public:
   static const char*      s_DefaultCalibrationFilePathPrefsName;
   static const char*      s_UseUndistortionDefaultPathPrefsName;
   static const char*      s_DefaultTriangulationErrorPrefsName;
+  static const char*      s_DefaultMinDepthRangePrefsName;
+  static const char*      s_DefaultMaxDepthRangePrefsName;
 
   SurfaceReconViewPreferencePage();
   SurfaceReconViewPreferencePage(const SurfaceReconViewPreferencePage& other);
@@ -77,7 +79,6 @@ private:
   berry::IPreferences::Pointer      m_SurfaceReconViewPreferencesNode;
   QString                           m_DefaultCalibrationFilePath;
   bool                              m_UseUndistortPluginDefaultPath;
-  float                             m_DefaultTriangulationError;
 };
 
 #endif // SurfaceReconViewPreferencePage_h
