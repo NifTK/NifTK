@@ -71,7 +71,6 @@ bool TestSurfaceBasedRegistration::CompareMatrices( vtkMatrix4x4 * m1, vtkMatrix
   }
   else
   {
-    std::cerr << std::endl << *m1 << "  equals" << std::endl << *m2;
     return true;
   }
 }
