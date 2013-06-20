@@ -141,6 +141,10 @@ private:
   // there's no notification when the user clicked stop-record.
   bool  m_WasSavingMessagesPreviously;
 
+  // because the sdi thread is running separately to the data-source-interface
+  // we can end up in a situation where sdi bits get recreated with new sequence numbers
+  // but these parts here still expect the old sdi instance.
+  unsigned int            m_ExpectedCookie;
 
   static const char*      s_NODE_NAME;
 
