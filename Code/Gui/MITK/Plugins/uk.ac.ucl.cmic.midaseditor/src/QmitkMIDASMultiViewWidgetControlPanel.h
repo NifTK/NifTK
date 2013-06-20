@@ -267,7 +267,9 @@ private slots:
   void On1x1ViewsButtonClicked();
   void On1x2ViewsButtonClicked();
   void On1x3ViewsButtonClicked();
+  void On2x1ViewsButtonClicked();
   void On2x2ViewsButtonClicked();
+  void On2x3ViewsButtonClicked();
   void OnViewRowsSpinBoxValueChanged(int rows);
   void OnViewColumnsSpinBoxValueChanged(int columns);
 

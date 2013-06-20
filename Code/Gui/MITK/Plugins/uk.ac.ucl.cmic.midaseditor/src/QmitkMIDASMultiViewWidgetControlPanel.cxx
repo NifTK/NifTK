@@ -43,7 +43,9 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_1x1ViewsButton, SIGNAL(clicked()), this, SLOT(On1x1ViewsButtonClicked()));
   connect(m_1x2ViewsButton, SIGNAL(clicked()), this, SLOT(On1x2ViewsButtonClicked()));
   connect(m_1x3ViewsButton, SIGNAL(clicked()), this, SLOT(On1x3ViewsButtonClicked()));
+  connect(m_2x1ViewsButton, SIGNAL(clicked()), this, SLOT(On2x1ViewsButtonClicked()));
   connect(m_2x2ViewsButton, SIGNAL(clicked()), this, SLOT(On2x2ViewsButtonClicked()));
+  connect(m_2x3ViewsButton, SIGNAL(clicked()), this, SLOT(On2x3ViewsButtonClicked()));
   connect(m_ViewRowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewRowsSpinBoxValueChanged(int)));
   connect(m_ViewColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewColumnsSpinBoxValueChanged(int)));
 
@@ -636,10 +638,26 @@ void QmitkMIDASMultiViewWidgetControlPanel::On1x3ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::On2x1ViewsButtonClicked()
+{
+  this->SetViewNumber(2, 1);
+  emit ViewNumberChanged(2, 1);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::On2x2ViewsButtonClicked()
 {
   this->SetViewNumber(2, 2);
   emit ViewNumberChanged(2, 2);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::On2x3ViewsButtonClicked()
+{
+  this->SetViewNumber(2, 3);
+  emit ViewNumberChanged(2, 3);
 }
 
 
