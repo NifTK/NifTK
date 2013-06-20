@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>595</width>
-    <height>118</height>
+    <width>592</width>
+    <height>133</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -306,31 +306,6 @@
          <property name="spacing">
           <number>2</number>
          </property>
-         <item row="0" column="1">
-          <widget class="QPushButton" name="m_1x2ViewsButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>50</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays two image viewers&lt;br/&gt;in 1 row and 2 columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>1x2</string>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="m_1x1ViewsButton">
            <property name="sizePolicy">
@@ -346,48 +321,13 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays one image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>Displays one image viewer.</string>
            </property>
            <property name="text">
             <string>1x1</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3" alignment="Qt::AlignHCenter">
-          <widget class="QSpinBox" name="m_ViewColumnsSpinBox">
-           <property name="maximumSize">
-            <size>
-             <width>36</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects number of columns of image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>9</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2" alignment="Qt::AlignHCenter">
-          <widget class="QLabel" name="m_ViewColumnsLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>cols:</string>
            </property>
           </widget>
          </item>
@@ -400,7 +340,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays three image viewers&lt;br/&gt;in 1 row and 3 columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>Displays three image viewers in 1 row and 3 columns.</string>
            </property>
            <property name="text">
             <string>1x3</string>
@@ -410,7 +350,95 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="3">
+          <widget class="QSpinBox" name="m_ViewColumnsSpinBox">
+           <property name="maximumSize">
+            <size>
+             <width>36</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Selects number of columns of image viewers.</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>9</number>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="3">
+          <widget class="QSpinBox" name="m_ViewRowsSpinBox">
+           <property name="maximumSize">
+            <size>
+             <width>36</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Selects number of rows of image viewers.</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>9</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="m_1x2ViewsButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Displays two image viewers in 1 row and 2 columns.</string>
+           </property>
+           <property name="text">
+            <string>1x2</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="m_2x3ViewsButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Displays six image viewers in 2 rows and 3 columns.</string>
+           </property>
+           <property name="text">
+            <string>2x3</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
           <widget class="QPushButton" name="m_2x2ViewsButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -425,7 +453,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displays one image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>Displays four image viewers in 2 rows and 2 columns.</string>
            </property>
            <property name="text">
             <string>2x2</string>
@@ -435,38 +463,28 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1" alignment="Qt::AlignHCenter">
-          <widget class="QSpinBox" name="m_ViewRowsSpinBox">
-           <property name="maximumSize">
-            <size>
-             <width>36</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects number of rows of image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>9</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" alignment="Qt::AlignHCenter">
-          <widget class="QLabel" name="m_ViewRowsLabel">
+         <item row="1" column="0">
+          <widget class="QPushButton" name="m_2x1ViewsButton">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Displays two image viewers in 2 rows and 1 column.</string>
+           </property>
            <property name="text">
-            <string>rows:</string>
+            <string>2x1</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
