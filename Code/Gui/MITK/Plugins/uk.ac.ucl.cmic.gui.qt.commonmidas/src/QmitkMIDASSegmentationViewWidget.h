@@ -134,12 +134,6 @@ private:
   /// \brief Works out the MIDASLayout of the currently focused window.
   MIDASLayout GetCurrentMainWindowLayout();
 
-  /// \brief Returns true if the currently focused window is in this widget.
-  bool IsCurrentlyFocusedWindowInThisWidget();
-
-  /// \brief Returns the currently focused window.
-  mitk::BaseRenderer* GetCurrentlyFocusedRenderer() const;
-
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 

@@ -266,27 +266,33 @@ public:
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controls whether the display interactions are enabled for the render windows.
+  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Gets the flag controls whether the panning is bound between the 2D render windows.
-  bool IsPanningBound() const;
+  /// \brief Gets the flag that controls whether the cursor position is bound between the 2D render windows.
+  bool AreCursorPositionsBound() const;
 
-  /// \brief Sets the flag that controls whether the panning is bound between the 2D render windows.
-  void SetPanningBound(bool bound);
+  /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
+  void SetCursorPositionsBound(bool bound);
 
-  /// \brief Gets the flag controls whether the zooming is bound between the 2D render windows.
-  bool IsZoomingBound() const;
+  /// \brief Gets the flag controls whether the magnification is bound between the 2D render windows.
+  bool AreMagnificationsBound() const;
 
-  /// \brief Sets the flag that controls whether the zooming is bound between the 2D render windows.
-  void SetZoomingBound(bool bound);
+  /// \brief Sets the flag that controls whether the magnification is bound between the 2D render windows.
+  void SetMagnificationsBound(bool bound);
 
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Emitted when the cursor position has changed.
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
+
+  /// \brief Emitted when the magnification has changed.
   void MagnificationChanged(double magnification);
 
 protected slots:
@@ -337,10 +343,10 @@ private:
   /// }
   void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
-  /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
+  /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
-  /// \brief Removes a display geometry observer from the render window. Used to synchronise zooming and moving.
+  /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
@@ -406,8 +412,8 @@ private:
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
 
-  bool m_PanningBound;
-  bool m_ZoomingBound;
+  bool m_CursorPositionsAreBound;
+  bool m_MagnificationsAreBound;
 
   friend class DisplayGeometryModificationCommand;
 

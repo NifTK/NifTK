@@ -179,17 +179,21 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), this, SLOT(OnTimeStepChanged(int)));
   connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), this, SLOT(OnMagnificationChanged(double)));
 
-  connect(m_ControlPanel, SIGNAL(CursorVisibilityChanged(bool)), this, SLOT(OnCursorVisibilityChanged(bool)));
-  connect(m_ControlPanel, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), this, SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
-  connect(m_ControlPanel, SIGNAL(_3DWindowVisibilityChanged(bool)), this, SLOT(On3DWindowVisibilityChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), this, SLOT(OnShowCursorChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), this, SLOT(OnShowDirectionAnnotationsChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), this, SLOT(OnShow3DWindowChanged(bool)));
 
   connect(m_ControlPanel, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
-  connect(m_ControlPanel, SIGNAL(BindWindowPanningChanged(bool)), this, SLOT(OnBindWindowPanningChanged(bool)));
-  connect(m_ControlPanel, SIGNAL(BindWindowZoomingChanged(bool)), this, SLOT(OnBindWindowZoomingChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), this, SLOT(OnWindowCursorBindingChanged(bool)));
+  connect(m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), this, SLOT(OnWindowMagnificationBindingChanged(bool)));
 
   connect(m_ControlPanel, SIGNAL(ViewNumberChanged(int, int)), this, SLOT(OnViewNumberChanged(int, int)));
 
-  connect(m_ControlPanel, SIGNAL(ViewBindingTypeChanged()), this, SLOT(OnViewBindingTypeChanged()));
+  connect(m_ControlPanel, SIGNAL(ViewPositionBindingChanged(bool)), this, SLOT(OnViewBindingChanged()));
+  connect(m_ControlPanel, SIGNAL(ViewCursorBindingChanged(bool)), this, SLOT(OnViewBindingChanged()));
+  connect(m_ControlPanel, SIGNAL(ViewMagnificationBindingChanged(bool)), this, SLOT(OnViewBindingChanged()));
+  connect(m_ControlPanel, SIGNAL(ViewLayoutBindingChanged(bool)), this, SLOT(OnViewBindingChanged()));
+  connect(m_ControlPanel, SIGNAL(ViewGeometryBindingChanged(bool)), this, SLOT(OnViewBindingChanged()));
 
   connect(m_ControlPanel, SIGNAL(DropTypeChanged(MIDASDropType)), this, SLOT(OnDropTypeChanged(MIDASDropType)));
   connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), this, SLOT(OnDropAccumulateChanged(bool)));
@@ -213,8 +217,8 @@ QmitkMIDASMultiViewWidgetControlPanel* QmitkMIDASMultiViewWidget::CreateControlP
 
   controlPanel->SetMaxViewNumber(m_MaxViewRows, m_MaxViewColumns);
 
-  controlPanel->SetWindowPanningBound(true);
-  controlPanel->SetWindowZoomingBound(true);
+  controlPanel->SetWindowCursorsBound(true);
+  controlPanel->SetWindowMagnificationsBound(true);
 
   QHBoxLayout* controlPanelLayout = new QHBoxLayout(parent);
   controlPanelLayout->setContentsMargins(0, 0, 0, 0);
@@ -252,8 +256,8 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
   widget->SetRememberSettingsPerLayout(m_RememberSettingsPerLayout);
   widget->SetDisplayInteractionsEnabled(true);
-  widget->SetPanningBound(true);
-  widget->SetZoomingBound(true);
+  widget->SetCursorPositionsBound(true);
+  widget->SetMagnificationsBound(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
@@ -713,16 +717,25 @@ void QmitkMIDASMultiViewWidget::OnSelectedPositionChanged(QmitkMIDASSingleViewWi
     m_ControlPanel->SetSliceIndex(sliceIndex);
   }
 
-  mitk::Point3D selectedPosition = view->GetSelectedPosition();
-  mitk::Vector3D cursorPosition = view->GetCursorPosition();
-
-  if (m_ControlPanel->AreViewCursorsBound())
+  if (m_ControlPanel->AreViewPositionsBound())
   {
+    mitk::Point3D selectedPosition = view->GetSelectedPosition();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (m_SingleViewWidgets[i] != view)
       {
         m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
+      }
+    }
+  }
+
+  if (m_ControlPanel->AreViewCursorsBound())
+  {
+    mitk::Vector3D cursorPosition = view->GetCursorPosition();
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (m_SingleViewWidgets[i] != view)
+      {
         m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
       }
     }
@@ -1102,47 +1115,47 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnBindWindowPanningChanged(bool bound)
+void QmitkMIDASMultiViewWidget::OnWindowCursorBindingChanged(bool bound)
 {
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (m_SingleViewWidgets[i]->isVisible())
     {
-      m_SingleViewWidgets[i]->SetPanningBound(bound);
+      m_SingleViewWidgets[i]->SetCursorPositionsBound(bound);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnBindWindowZoomingChanged(bool bound)
+void QmitkMIDASMultiViewWidget::OnWindowMagnificationBindingChanged(bool bound)
 {
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
   {
     if (m_SingleViewWidgets[i]->isVisible())
     {
-      m_SingleViewWidgets[i]->SetZoomingBound(bound);
+      m_SingleViewWidgets[i]->SetMagnificationsBound(bound);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnCursorVisibilityChanged(bool visible)
+void QmitkMIDASMultiViewWidget::OnShowCursorChanged(bool visible)
 {
   this->SetShow2DCursors(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
+void QmitkMIDASMultiViewWidget::OnShowDirectionAnnotationsChanged(bool visible)
 {
   this->SetDirectionAnnotationsVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::On3DWindowVisibilityChanged(bool visible)
+void QmitkMIDASMultiViewWidget::OnShow3DWindowChanged(bool visible)
 {
   this->SetShow3DWindowInOrthoView(visible);
 }
@@ -1597,7 +1610,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedViewIndex(int selectedViewIndex)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnViewBindingTypeChanged()
+void QmitkMIDASMultiViewWidget::OnViewBindingChanged()
 {
   bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
   bool requestedGeometryBound = m_ControlPanel->AreViewGeometriesBound();
@@ -1621,17 +1634,29 @@ void QmitkMIDASMultiViewWidget::OnViewBindingTypeChanged()
     }
   }
 
-  if (m_ControlPanel->AreViewCursorsBound())
+  if (m_ControlPanel->AreViewPositionsBound())
   {
     int selectedViewIndex = this->GetSelectedViewIndex();
     QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
     mitk::Point3D selectedPosition = selectedView->GetSelectedPosition();
-    mitk::Vector3D cursorPosition = selectedView->GetCursorPosition();
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
       if (i != selectedViewIndex)
       {
         m_SingleViewWidgets[i]->SetSelectedPosition(selectedPosition);
+      }
+    }
+  }
+
+  if (m_ControlPanel->AreViewCursorsBound())
+  {
+    int selectedViewIndex = this->GetSelectedViewIndex();
+    QmitkMIDASSingleViewWidget* selectedView = m_SingleViewWidgets[selectedViewIndex];
+    mitk::Vector3D cursorPosition = selectedView->GetCursorPosition();
+    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
+    {
+      if (i != selectedViewIndex)
+      {
         m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
       }
     }

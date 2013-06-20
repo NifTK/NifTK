@@ -254,6 +254,7 @@ public:
    */
   virtual void SetFocus();
 
+  /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
 
 signals:
@@ -269,29 +270,29 @@ protected slots:
   /// \brief Called when the magnification has been changed through the control panel.
   void OnMagnificationChanged(double magnification);
 
-  /// \brief Called when the cursor visibility has been changed through the control panel.
-  void OnCursorVisibilityChanged(bool visible);
+  /// \brief Called when the show cursor option has been changed through the control panel.
+  void OnShowCursorChanged(bool visible);
 
-  /// \brief Called when the direction annotations visibility has been changed through the control panel.
-  void OnDirectionAnnotationsVisibilityChanged(bool visible);
+  /// \brief Called when the show direction annotations option has been changed through the control panel.
+  void OnShowDirectionAnnotationsChanged(bool visible);
 
-  /// \brief Called when the 3D window visibility has been changed through the control panel.
-  void On3DWindowVisibilityChanged(bool visible);
+  /// \brief Called when the show 3D window option has been changed through the control panel.
+  void OnShow3DWindowChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
   void OnLayoutChanged(MIDASLayout layout);
 
-  /// \brief Called when the binding of panning in render windows of a view has been changed through the control panel.
-  void OnBindWindowPanningChanged(bool);
+  /// \brief Called when the binding of cursors in the render windows of a view has been changed through the control panel.
+  void OnWindowCursorBindingChanged(bool);
 
-  /// \brief Called when the binding of zooming in render windows of a view has been changed through the control panel.
-  void OnBindWindowZoomingChanged(bool);
+  /// \brief Called when the binding of magnifications in the render windows of a view has been changed through the control panel.
+  void OnWindowMagnificationBindingChanged(bool);
 
   /// \brief Called when the number of views has been changed through the control panel.
   void OnViewNumberChanged(int rows, int columns);
 
   /// \brief Called when the view binding type has been changed through the control panel.
-  void OnViewBindingTypeChanged();
+  void OnViewBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(MIDASDropType dropType);
@@ -300,15 +301,16 @@ protected slots:
   void OnDropAccumulateChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(QmitkRenderWindow* window, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Each of the contained QmitkMIDASSingleViewWidget will signal when it's slice navigation controllers have changed.
-  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* widget, QmitkRenderWindow* window, int sliceIndex);
+  /// \brief Called when the selected position has changed in a render window of a view.
+  /// Each of the contained views will signal when its slice navigation controllers have changed.
+  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
 
-  /// \brief Called when the cursor position is changed on a render window because of panning.
-  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* widget, const mitk::Vector3D& cursorPosition);
+  /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
+  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Called when the magnification is changed by zooming in a renderer window.
+  /// \brief Called when the magnification of a view has changed by zooming in one of its render windows.
   void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
