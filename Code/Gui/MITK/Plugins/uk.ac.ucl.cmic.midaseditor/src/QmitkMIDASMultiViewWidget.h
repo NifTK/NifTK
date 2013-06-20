@@ -324,11 +324,14 @@ protected:
 private:
 
   /// \brief Utility method to get a list of views to update.
-  /// \param doAllVisible if true will ensure the returned vector contains all visible render window, and if false will return just the currently selected window.
+  /// \param doAllVisible if true will ensure the returned vector contains all visible views, and if false will return just the currently selected view.
   /// \return vector of integers corresponding to widget numbers.
-  QList<int> GetViewIndexesToUpdate(bool doAllVisible) const;
+  QList<QmitkMIDASSingleViewWidget*> GetViewsToUpdate(bool doAllVisible) const;
 
-  /// \brief Will return m_SelectedView, or if m_SelectedView < 0 will return 0.
+  /// \brief Will return the selected view or the first view if none is selected.
+  QmitkMIDASSingleViewWidget* GetSelectedView() const;
+
+  /// \brief Will return the index of the selected view or 0 if none is selected.
   int GetSelectedViewIndex() const;
 
   /// \brief Gets the row number, given a view index [0, m_MaxRows*m_MaxCols-1]
