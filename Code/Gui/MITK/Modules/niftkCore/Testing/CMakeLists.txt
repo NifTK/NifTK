@@ -50,3 +50,4 @@ if(BUILD_SLS_TESTING)
                           -V ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png
   )
 endif()
+mitkAddCustomModuleTest(SLS-mitkCoordinateAxesDataReaderWriterTest mitkCoordinateAxesDataReaderWriterTest ${TEMP}/mitkCoordinateAxesDataRenderingTest.4x4)

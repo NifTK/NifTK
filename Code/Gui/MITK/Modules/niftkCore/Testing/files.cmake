@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASImageUtilsTest.cxx
   mitkMIDASCompareImagesForEqualityTest.cxx
   mitkCoordinateAxesDataRenderingTest.cxx
+  mitkCoordinateAxesDataReaderWriterTest.cxx
 )

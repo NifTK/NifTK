@@ -920,6 +920,10 @@ endif (BUILD_MESHING)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(SLICER_EXECUTABLE_OUTPUTPATH ${EXECUTABLE_OUTPUT_PATH}/cli-modules)
 set(CXX_TEST_PATH ${EXECUTABLE_OUTPUT_PATH})              # Used to control, where to put unit test binaries.
+set(BASELINE ${NIFTK_DATA_DIR}/Baseline)
+set(INPUT_DATA ${NIFTK_DATA_DIR}/Input)
+make_directory(${CMAKE_BINARY_DIR}/Testing/Temporary)
+set(TEMP ${CMAKE_BINARY_DIR}/Testing/Temporary)
 
 foreach(type LIBRARY RUNTIME ARCHIVE)
   set(output_dir ${CMAKE_BINARY_DIR}/bin)

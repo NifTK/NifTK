@@ -21,11 +21,15 @@
 #include <mitkDataNode.h>
 #include <mitkImage.h>
 #include <mitkPointSet.h>
+#include <mitkCoordinateAxesData.h>
+#include <mitkCoordinateAxesDataWriter.h>
+#include <mitkCoordinateAxesDataReaderFactory.h>
+#include <mitkCoordinateAxesDataWriterFactory.h>
+#include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
 #include <itkPNMImageIOFactory.h>
 #include <mitkNifTKItkImageFileIOFactory.h>
-#include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
 
@@ -59,8 +63,11 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     // but then in addition, will load DRC Analyze files differently.
     mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
 
-    // Register the PNM IO factory
+    // Register our extra factories.
     itk::PNMImageIOFactory::RegisterOneFactory();
+    mitk::CoordinateAxesDataReaderFactory::RegisterOneFactory();
+    mitk::CoordinateAxesDataWriterFactory::RegisterOneFactory();
+    m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
 
     // Carry on as per normal.
     CreateFileExtensionsMap();
@@ -136,11 +143,13 @@ void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
 
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
 }
 
 

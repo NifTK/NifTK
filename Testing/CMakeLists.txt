@@ -12,10 +12,4 @@
 #
 #============================================================================*/
 
-set(BASELINE ${NIFTK_DATA_DIR}/Baseline)
-set(INPUT_DATA ${NIFTK_DATA_DIR}/Input)
-
-make_directory(${CMAKE_BINARY_DIR}/Testing/Temporary)
-set(TEMP ${CMAKE_BINARY_DIR}/Testing/Temporary)
-
 add_subdirectory(Code)
