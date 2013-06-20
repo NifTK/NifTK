@@ -94,17 +94,18 @@ private:
 //-----------------------------------------------------------------------------
 QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
     QWidget* parent,
-    Qt::WindowFlags f,
+    Qt::WindowFlags flags,
     mitk::RenderingManager* renderingManager,
     mitk::DataStorage* dataStorage
     )
-: QmitkStdMultiWidget(parent, f, renderingManager)
+: QmitkStdMultiWidget(parent, flags, renderingManager)
 , m_GridLayout(NULL)
 , m_AxialSliceTag(0)
 , m_SagittalSliceTag(0)
 , m_CoronalSliceTag(0)
 , m_IsSelected(false)
 , m_IsEnabled(false)
+, m_SelectedRenderWindow(0)
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
 , m_Show3DWindowInOrthoView(false)
@@ -392,24 +393,7 @@ bool QmitkMIDASStdMultiWidget::IsSelected() const
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* selectedRenderWindow = 0;
-  if (m_RectangleRendering1->IsEnabled())
-  {
-    selectedRenderWindow = this->GetRenderWindow1();
-  }
-  else if (m_RectangleRendering2->IsEnabled())
-  {
-    selectedRenderWindow = this->GetRenderWindow2();
-  }
-  else if (m_RectangleRendering3->IsEnabled())
-  {
-    selectedRenderWindow = this->GetRenderWindow3();
-  }
-  else if (m_RectangleRendering4->IsEnabled())
-  {
-    selectedRenderWindow = this->GetRenderWindow4();
-  }
-  return selectedRenderWindow;
+  return m_SelectedRenderWindow;
 }
 
 
@@ -423,9 +407,11 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
+  m_IsSelected = true;
+  m_SelectedRenderWindow = renderWindow;
+
   if (renderWindow == this->GetRenderWindow1())
   {
-    m_IsSelected = true;
     m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
     m_RectangleRendering2->Disable();
     m_RectangleRendering3->Disable();
@@ -473,19 +459,19 @@ std::vector<QmitkRenderWindow*> QmitkMIDASStdMultiWidget::GetVisibleRenderWindow
 {
   std::vector<QmitkRenderWindow*> renderWindows;
 
-  if (m_RectangleRendering1->IsEnabled())
+  if (this->mitkWidget1Container->isVisible())
   {
     renderWindows.push_back(this->GetRenderWindow1());
   }
-  if (m_RectangleRendering2->IsEnabled())
+  if (this->mitkWidget2Container->isVisible())
   {
     renderWindows.push_back(this->GetRenderWindow2());
   }
-  if (m_RectangleRendering3->IsEnabled())
+  if (this->mitkWidget3Container->isVisible())
   {
     renderWindows.push_back(this->GetRenderWindow3());
   }
-  if (m_RectangleRendering4->IsEnabled())
+  if (this->mitkWidget4Container->isVisible())
   {
     renderWindows.push_back(this->GetRenderWindow4());
   }

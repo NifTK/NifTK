@@ -145,9 +145,10 @@ public:
   /// \brief Get the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   QColor GetBackgroundColor() const;
 
-  /// \brief If b==true, this widget is "selected" meaning it will have coloured borders,
-  /// and if b==false, it is not selected, and will not have coloured borders.
-  void SetSelected(bool b);
+  /// \brief If selected, this widget is "selected" meaning its selected render window (if any)
+  /// will have coloured border, otherwise it is not selected, and will not have coloured borders
+  /// even if one of its render window was selected.
+  void SetSelected(bool selected);
 
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
@@ -382,29 +383,30 @@ private:
   /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
   void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
 
-  QmitkRenderWindow*    m_RenderWindows[4];
-  QColor                m_BackgroundColor;
-  QGridLayout*          m_GridLayout;
-  unsigned int          m_AxialSliceTag;
-  unsigned int          m_SagittalSliceTag;
-  unsigned int          m_CoronalSliceTag;
-  bool                  m_IsSelected;
-  bool                  m_IsEnabled;
-  bool                  m_Display2DCursorsLocally;
-  bool                  m_Display2DCursorsGlobally;
-  bool                  m_Show3DWindowInOrthoView;
-  MIDASLayout           m_Layout;
-  mitk::Point3D         m_SelectedPosition;
-  mitk::Vector3D        m_CursorPosition;
-  double                m_Magnification;
+  QmitkRenderWindow* m_RenderWindows[4];
+  QColor m_BackgroundColor;
+  QGridLayout* m_GridLayout;
+  unsigned m_AxialSliceTag;
+  unsigned m_SagittalSliceTag;
+  unsigned m_CoronalSliceTag;
+  bool m_IsSelected;
+  bool m_IsEnabled;
+  QmitkRenderWindow* m_SelectedRenderWindow;
+  bool m_Display2DCursorsLocally;
+  bool m_Display2DCursorsGlobally;
+  bool m_Show3DWindowInOrthoView;
+  MIDASLayout m_Layout;
+  mitk::Point3D m_SelectedPosition;
+  mitk::Vector3D m_CursorPosition;
+  double m_Magnification;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
-  mitk::Geometry3D*     m_Geometry;
+  mitk::Geometry3D* m_Geometry;
 
   /// \brief Voxel size in millimetres.
-  mitk::Vector3D        m_MmPerVx;
+  mitk::Vector3D m_MmPerVx;
 
   /// The axis along which the dimension of the voxel is the biggest.
-  int                   m_LongestSideOfVoxels;
+  int m_LongestSideOfVoxels;
 
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
