@@ -16,8 +16,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkCoordinateAxesDataWriter.h"
 #include <mitkCoordinateAxesData.h>
-#include <itksys/SystemTools.hxx>
 #include <mitkFileIOUtils.h>
+#include <itksys/SystemTools.hxx>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 

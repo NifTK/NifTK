@@ -46,6 +46,7 @@ public:
   /** Method for class instantiation. */
   itkFactorylessNewMacro(Self);
   static CoordinateAxesDataReaderFactory* FactoryNew() { return new CoordinateAxesDataReaderFactory;}
+
   /** Run-time type information (and related methods). */
   itkTypeMacro(CoordinateAxesDataReaderFactory, ObjectFactoryBase);
 
