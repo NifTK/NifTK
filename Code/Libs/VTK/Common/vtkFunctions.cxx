@@ -581,3 +581,33 @@ void SetCameraParallelTo2DImage(
   camera.SetParallelScale(scale);
   camera.SetClippingRange(clippingRange);
 }
+//-----------------------------------------------------------------------------
+bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points, vtkMinimalStandardRandomSequence * rng)
+{
+  if ( rng == NULL )
+  {
+    rng = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    rng->SetSeed(time(NULL));
+  }
+
+  int PointsCropped = 0; 
+  while ( PolyData->GetNumberOfPoints() > Points )
+  {
+    std::cerr << "Removing point. ... " <<  PolyData->GetNumberOfPoints() << "left" << std::cerr;
+    int PointToRemove = rng->GetValue() * PolyData->GetNumberOfPoints();
+    rng->Next();
+    PolyData->DeletePoint(PointToRemove);
+    PointsCropped ++;
+  }
+  std::cerr << PointsCropped << "Points Cropped." << std::cerr;
+  if ( PointsCropped == 0 ) 
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+
