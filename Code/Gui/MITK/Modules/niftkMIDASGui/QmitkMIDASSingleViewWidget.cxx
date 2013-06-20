@@ -456,30 +456,30 @@ bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetPanningBound(bool bound)
+bool QmitkMIDASSingleViewWidget::AreCursorPositionsBound() const
 {
-  m_MultiWidget->SetPanningBound(bound);
+  return m_MultiWidget->AreCursorPositionsBound();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsPanningBound() const
+void QmitkMIDASSingleViewWidget::SetCursorPositionsBound(bool bound)
 {
-  return m_MultiWidget->IsPanningBound();
+  m_MultiWidget->SetCursorPositionsBound(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetZoomingBound(bool bound)
+bool QmitkMIDASSingleViewWidget::AreMagnificationsBound() const
 {
-  m_MultiWidget->SetZoomingBound(bound);
+  return m_MultiWidget->AreMagnificationsBound();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsZoomingBound() const
+void QmitkMIDASSingleViewWidget::SetMagnificationsBound(bool bound)
 {
-  return m_MultiWidget->IsZoomingBound();
+  m_MultiWidget->SetMagnificationsBound(bound);
 }
 
 
@@ -788,7 +788,7 @@ void QmitkMIDASSingleViewWidget::SetMagnification(double magnification)
 void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
-  std::vector<QmitkRenderWindow*> renderWindows = GetRenderWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
   for (unsigned i = 0; i < renderWindows.size(); i++)
   {
     renderWindows[i]->GetVtkRenderWindow()->Render();

@@ -251,17 +251,17 @@ public:
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Sets the flag that controls whether the panning is bound between the render windows.
-  void SetPanningBound(bool bound);
+  /// \brief Gets the flag that controls whether the cursor position is bound between the render windows.
+  bool AreCursorPositionsBound() const;
 
-  /// \brief Gets the flag that controls whether the panning is bound between the render windows.
-  bool IsPanningBound() const;
+  /// \brief Sets the flag that controls whether the cursor position is bound between the render windows.
+  void SetCursorPositionsBound(bool bound);
 
-  /// \brief Sets the flag that controls whether the zooming is bound between the render windows.
-  void SetZoomingBound(bool bound);
+  /// \brief Gets the flag that controls whether the magnification is bound between the render windows.
+  bool AreMagnificationsBound() const;
 
-  /// \brief Gets the flag that controls whether the zooming is bound between the render windows.
-  bool IsZoomingBound() const;
+  /// \brief Sets the flag that controls whether the magnification is bound between the render windows.
+  void SetMagnificationsBound(bool bound);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -276,26 +276,38 @@ public:
 
 protected:
 
-  virtual void paintEvent(QPaintEvent *event);
+  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
+  virtual void paintEvent(QPaintEvent* event);
 
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
-  void CursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
-  void MagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+
+  /// \brief Emitted when the selected slice has changed in a render window of this view.
+  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Emitted when the cursor position has changed in this view.
+  void CursorPositionChanged(QmitkMIDASSingleViewWidget* thisView, const mitk::Vector3D& cursorPosition);
+
+  /// \brief Emitted when the magnification has changed in this view.
+  void MagnificationChanged(QmitkMIDASSingleViewWidget* thisView, double magnification);
 
 protected slots:
 
-  // Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceIndex);
+  /// \brief Called when nodes are dropped on the contained render windows.
+  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief Called when the selected slice has changed in a render window.
+  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Called when the cursor position has changed.
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
+
+  /// \brief Called when the magnification has changed.
   virtual void OnMagnificationChanged(double magnification);
 
 private:
-
 
   /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
   void InitializeStandardViews(const mitk::Geometry3D * geometry );

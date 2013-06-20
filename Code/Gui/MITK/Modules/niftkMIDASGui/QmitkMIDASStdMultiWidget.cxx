@@ -112,8 +112,8 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Magnification(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
-, m_PanningBound(true)
-, m_ZoomingBound(true)
+, m_CursorPositionsAreBound(true)
+, m_MagnificationsAreBound(true)
 {
   m_RenderWindows[0] = this->GetRenderWindow1();
   m_RenderWindows[1] = this->GetRenderWindow2();
@@ -461,7 +461,7 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   }
   this->ForceImmediateUpdate();
 
-  if (!this->IsZoomingBound())
+  if (!this->AreMagnificationsBound())
   {
     m_Magnification = this->ComputeMagnification(renderWindow);
   }
@@ -1399,13 +1399,11 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxSliceIndex(MIDASOrientation orienta
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(orientation);
   assert(snc);
 
-  if (snc->GetSlice() != NULL)
+  if (snc->GetSlice() != NULL && snc->GetSlice()->GetSteps() > 0)
   {
-    if (snc->GetSlice()->GetSteps() > 0)
-    {
-      result = snc->GetSlice()->GetSteps() - 1;
-    }
+    result = snc->GetSlice()->GetSteps() - 1;
   }
+
   return result;
 }
 
@@ -1418,13 +1416,11 @@ unsigned int QmitkMIDASStdMultiWidget::GetMaxTimeStep() const
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   assert(snc);
 
-  if (snc->GetTime() != NULL)
+  if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
   {
-    if (snc->GetTime()->GetSteps() >= 1)
-    {
-      result = snc->GetTime()->GetSteps() -1;
-    }
+    result = snc->GetTime()->GetSteps() -1;
   }
+
   return result;
 }
 
@@ -1456,7 +1452,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, 
       m_CursorPosition[2] = cursorPosition[1];
     }
 
-    if (beingPanned && this->IsPanningBound())
+    if (beingPanned && this->AreCursorPositionsBound())
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1505,7 +1501,7 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
     {
       mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
 
-      if (this->IsZoomingBound())
+      if (this->AreMagnificationsBound())
       {
         // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
         for (int i = 0; i < 3; ++i)
@@ -1594,7 +1590,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
     }
 
-    if (this->IsPanningBound() && !this->IsZoomingBound())
+    if (this->AreCursorPositionsBound() && !this->AreMagnificationsBound())
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1757,7 +1753,7 @@ void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPos
 
   bool hasChanged = false;
 
-  if (this->IsPanningBound())
+  if (this->AreCursorPositionsBound())
   {
     // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
     for (int i = 0; i < 3; ++i)
@@ -1785,7 +1781,6 @@ void QmitkMIDASStdMultiWidget::SetCursorPosition(const mitk::Vector3D& cursorPos
   if (hasChanged)
   {
     this->RequestUpdate();
-//    emit CursorPositionChanged();
   }
 }
 
@@ -1851,7 +1846,7 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 
   bool hasChanged = false;
 
-  if (this->IsZoomingBound())
+  if (this->AreMagnificationsBound())
   {
     // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
     for (int i = 0; i < 3; ++i)
@@ -1878,7 +1873,6 @@ void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
   {
     m_Magnification = magnification;
     this->RequestUpdate();
-    emit MagnificationChanged(magnification);
   }
 }
 
@@ -2065,22 +2059,22 @@ bool QmitkMIDASStdMultiWidget::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsPanningBound() const
+bool QmitkMIDASStdMultiWidget::AreCursorPositionsBound() const
 {
-  return m_PanningBound;
+  return m_CursorPositionsAreBound;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetPanningBound(bool bound)
+void QmitkMIDASStdMultiWidget::SetCursorPositionsBound(bool bound)
 {
-  if (bound == this->IsPanningBound())
+  if (bound == this->AreCursorPositionsBound())
   {
     // Already bound/unbound.
     return;
   }
 
-  m_PanningBound = bound;
+  m_CursorPositionsAreBound = bound;
 
   if (bound)
   {
@@ -2090,22 +2084,22 @@ void QmitkMIDASStdMultiWidget::SetPanningBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::IsZoomingBound() const
+bool QmitkMIDASStdMultiWidget::AreMagnificationsBound() const
 {
-  return m_ZoomingBound;
+  return m_MagnificationsAreBound;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetZoomingBound(bool bound)
+void QmitkMIDASStdMultiWidget::SetMagnificationsBound(bool bound)
 {
-  if (bound == this->IsZoomingBound())
+  if (bound == this->AreMagnificationsBound())
   {
     // Already bound/unbound.
     return;
   }
 
-  m_ZoomingBound = bound;
+  m_MagnificationsAreBound = bound;
 
   if (bound)
   {

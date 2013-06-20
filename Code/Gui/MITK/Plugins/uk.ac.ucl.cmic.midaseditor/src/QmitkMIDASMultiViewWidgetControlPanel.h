@@ -1,3 +1,17 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #ifndef QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
 #define QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
 
@@ -6,17 +20,20 @@
 
 #include <mitkMIDASEnums.h>
 
-//namespace Ui {
-//class QmitkMIDASMultiViewWidgetControlPanel;
-//}
-
+/**
+ * \class QmitkMIDASMultiViewWidgetControlPanel
+ * \brief Control panel for the DnD display.
+ */
 class QmitkMIDASMultiViewWidgetControlPanel : public QWidget, private Ui_QmitkMIDASMultiViewWidgetControlPanel
 {
   Q_OBJECT
   
 public:
 
+  /// \brief Constructs the QmitkMIDASMultiViewWidgetControlPanel object.
   explicit QmitkMIDASMultiViewWidgetControlPanel(QWidget *parent = 0);
+
+  /// \brief Destructs the QmitkMIDASMultiViewWidgetControlPanel object.
   virtual ~QmitkMIDASMultiViewWidgetControlPanel();
   
   /// \brief Tells if the single view controls are enabled.
@@ -100,24 +117,6 @@ public:
   /// \brief Sets the magnification slider to be tracking.
   void SetMagnificationTracking(bool tracking);
 
-  /// \brief Gets the selected render window layout.
-  MIDASLayout GetLayout() const;
-
-  /// \brief Sets the render window layout controls to the given layout.
-  void SetLayout(MIDASLayout layout);
-
-  /// \brief Returns true if the panning is bound between the windows of a viewer, otherwise false.
-  bool IsWindowPanningBound() const;
-
-  /// \brief Sets the bind panning check box to the given value.
-  void SetWindowPanningBound(bool bound);
-
-  /// \brief Returns true if the zooming is bound between the windows of a viewer, otherwise false.
-  bool IsWindowZoomingBound() const;
-
-  /// \brief Sets the bind zooming check box to the given value.
-  void SetWindowZoomingBound(bool bound);
-
   /// \brief Returns true if the  show cursor check box is set, otherwise false.
   bool IsCursorVisible() const;
 
@@ -135,6 +134,24 @@ public:
 
   /// \brief Sets the show 3D window option check box to the given value.
   void Set3DWindowVisible(bool visible);
+
+  /// \brief Gets the selected render window layout.
+  MIDASLayout GetLayout() const;
+
+  /// \brief Sets the render window layout controls to the given layout.
+  void SetLayout(MIDASLayout layout);
+
+  /// \brief Returns true if the cursors are bound across the windows of a viewer, otherwise false.
+  bool AreWindowCursorsBound() const;
+
+  /// \brief Sets the bind window cursors check box to the given value.
+  void SetWindowCursorsBound(bool bound);
+
+  /// \brief Returns true if the magnification is bound across the windows of a viewer, otherwise false.
+  bool AreWindowMagnificationsBound() const;
+
+  /// \brief Sets the bind window magnifications check box to the given value.
+  void SetWindowMagnificationsBound(bool bound);
 
   /// \brief Gets the number of rows of the views.
   int GetViewRows() const;
@@ -154,17 +171,35 @@ public:
   /// \brief Sets the maximal number of the rows and columns of views to the given numbers.
   void SetMaxViewNumber(int rows, int columns);
 
-  /// \brief Returns true if the  layout of the views is bound, otherwise false.
-  bool AreViewLayoutsBound() const;
+  /// \brief Returns true if the selected position of the views is bound, otherwise false.
+  bool AreViewPositionsBound() const;
+
+  /// \brief Sets the bind view positions check box to the given value.
+  void SetViewPositionsBound(bool bound);
 
   /// \brief Returns true if the  cursor of the views is bound, otherwise false.
   bool AreViewCursorsBound() const;
 
+  /// \brief Sets the bind view cursors check box to the given value.
+  void SetViewCursorsBound(bool bound);
+
   /// \brief Returns true if the magnification of the views are bound, otherwise false.
   bool AreViewMagnificationsBound() const;
 
+  /// \brief Sets the bind view magnifications check box to the given value.
+  void SetViewMagnificationsBound(bool bound);
+
+  /// \brief Returns true if the  layout of the views is bound, otherwise false.
+  bool AreViewLayoutsBound() const;
+
+  /// \brief Sets the bind view layouts check box to the given value.
+  void SetViewLayoutsBound(bool bound);
+
   /// \brief Returns true if the  geometry of the views is bound, otherwise false.
   bool AreViewGeometriesBound() const;
+
+  /// \brief Sets the bind view geometries check box to the given value.
+  void SetViewGeometriesBound(bool bound);
 
   /// \brief Gets the selected drop type.
   MIDASDropType GetDropType() const;
@@ -174,26 +209,58 @@ public:
 
 signals:
 
+  /// \brief Emitted when the selected slice index has been changed.
   void SliceIndexChanged(int sliceIndex);
+
+  /// \brief Emitted when the selected time step has been changed.
   void TimeStepChanged(int timeStep);
+
+  /// \brief Emitted when the selected magnification has been changed.
   void MagnificationChanged(double magnification);
 
-  void CursorVisibilityChanged(bool visible);
-  void DirectionAnnotationsVisibilityChanged(bool visible);
-  void _3DWindowVisibilityChanged(bool visible);
+  /// \brief Emitted when the show cursor option has been changed.
+  void ShowCursorChanged(bool visible);
 
+  /// \brief Emitted when the show direction annotations option has been changed.
+  void ShowDirectionAnnotationsChanged(bool visible);
+
+  /// \brief Emitted when the show 3D window option has been changed.
+  void Show3DWindowChanged(bool visible);
+
+  /// \brief Emitted when the select layout has been changed.
   void LayoutChanged(MIDASLayout layout);
 
+  /// \brief Emitted when the window cursor binding option has been changed.
+  void WindowCursorBindingChanged(bool bound);
+
+  /// \brief Emitted when the window magnification binding option has been changed.
+  void WindowMagnificationBindingChanged(bool bound);
+
+  /// \brief Emitted when the selected number of views has been changed.
   void ViewNumberChanged(int rows, int columns);
 
-  void BindWindowPanningChanged(bool bound);
-  void BindWindowZoomingChanged(bool bound);
-  void ViewBindingTypeChanged();
+  /// \brief Emitted when the view position binding option has been changed.
+  void ViewPositionBindingChanged(bool bound);
 
+  /// \brief Emitted when the view cursor binding option has been changed.
+  void ViewCursorBindingChanged(bool bound);
+
+  /// \brief Emitted when the view magnification binding option has been changed.
+  void ViewMagnificationBindingChanged(bool bound);
+
+  /// \brief Emitted when the view layout binding option has been changed.
+  void ViewLayoutBindingChanged(bool bound);
+
+  /// \brief Emitted when the view geometry binding option has been changed.
+  void ViewGeometryBindingChanged(bool bound);
+
+  /// \brief Emitted when the selected drop type has been changed.
   void DropTypeChanged(MIDASDropType dropType);
+
+  /// \brief Emitted when the drop accumulate option has been changed.
   void DropAccumulateChanged(bool accumulate);
 
-protected slots:
+private slots:
 
   void OnLayoutChanged(MIDASLayout layout);
 
@@ -204,11 +271,14 @@ protected slots:
   void OnViewRowsSpinBoxValueChanged(int rows);
   void OnViewColumnsSpinBoxValueChanged(int columns);
 
-  void OnDropSingleRadioButtonToggled(bool);
-  void OnDropMultipleRadioButtonToggled(bool);
-  void OnDropThumbnailRadioButtonToggled(bool);
+  void OnViewPositionBindingChanged(bool bound);
+  void OnViewCursorBindingChanged(bool bound);
 
-protected:
+  void OnDropSingleRadioButtonToggled(bool bound);
+  void OnDropMultipleRadioButtonToggled(bool bound);
+  void OnDropThumbnailRadioButtonToggled(bool bound);
+
+private:
 
   /// \brief Tells if the window binding controls are enabled.
   bool AreWindowBindingControlsEnabled() const;

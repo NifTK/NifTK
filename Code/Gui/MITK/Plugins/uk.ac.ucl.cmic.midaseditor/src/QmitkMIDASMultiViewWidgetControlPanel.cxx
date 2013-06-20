@@ -1,3 +1,17 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #include "QmitkMIDASMultiViewWidgetControlPanel.h"
 
 #include <mitkLogMacros.h>
@@ -7,8 +21,6 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
 : QWidget(parent)
 {
   this->setupUi(this);
-
-  m_BindViewPositionCheckBox->setVisible(false);
 
   // Default all widgets off except viewer number widgets, until something dropped.
   this->SetSingleViewControlsEnabled(false);
@@ -20,13 +32,13 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_SlidersWidget, SIGNAL(TimeStepChanged(int)), this, SIGNAL(TimeStepChanged(int)));
   connect(m_SlidersWidget, SIGNAL(MagnificationChanged(double)), this, SIGNAL(MagnificationChanged(double)));
 
-  connect(m_ShowCursorCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(CursorVisibilityChanged(bool)));
-  connect(m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)));
-  connect(m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(_3DWindowVisibilityChanged(bool)));
+  connect(m_ShowCursorCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ShowCursorChanged(bool)));
+  connect(m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ShowDirectionAnnotationsChanged(bool)));
+  connect(m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(Show3DWindowChanged(bool)));
 
   connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
-  connect(m_BindWindowPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowPanningChanged(bool)));
-  connect(m_BindWindowZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(BindWindowZoomingChanged(bool)));
+  connect(m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(WindowCursorBindingChanged(bool)));
+  connect(m_BindWindowMagnificationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(WindowMagnificationBindingChanged(bool)));
 
   connect(m_1x1ViewsButton, SIGNAL(clicked()), this, SLOT(On1x1ViewsButtonClicked()));
   connect(m_1x2ViewsButton, SIGNAL(clicked()), this, SLOT(On1x2ViewsButtonClicked()));
@@ -35,12 +47,11 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
   connect(m_ViewRowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewRowsSpinBoxValueChanged(int)));
   connect(m_ViewColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewColumnsSpinBoxValueChanged(int)));
 
-//  connect(m_ViewBindingWidget, SIGNAL(BindTypeChanged()), this, SIGNAL(ViewBindingTypeChanged()));
-  connect(m_BindViewLayoutCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
-//  connect(m_BindViewPositionCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
-  connect(m_BindViewPanningCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
-  connect(m_BindViewZoomingCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
-  connect(m_BindViewGeometryCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewBindingTypeChanged()));
+  connect(m_BindViewPositionsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnViewPositionBindingChanged(bool)));
+  connect(m_BindViewCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnViewCursorBindingChanged(bool)));
+  connect(m_BindViewMagnificationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewMagnificationBindingChanged(bool)));
+  connect(m_BindViewLayoutsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewLayoutBindingChanged(bool)));
+  connect(m_BindViewGeometriesCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewGeometryBindingChanged(bool)));
 
   connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropSingleRadioButtonToggled(bool)));
   connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
@@ -306,34 +317,34 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetLayout(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::IsWindowPanningBound() const
+bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowCursorsBound() const
 {
-  return m_BindWindowPanningCheckBox->isChecked();
+  return m_BindWindowCursorsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowPanningBound(bool bound)
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowCursorsBound(bool bound)
 {
-  bool wasBlocked = m_BindWindowPanningCheckBox->blockSignals(true);
-  m_BindWindowPanningCheckBox->setChecked(bound);
-  m_BindWindowPanningCheckBox->blockSignals(wasBlocked);
+  bool wasBlocked = m_BindWindowCursorsCheckBox->blockSignals(true);
+  m_BindWindowCursorsCheckBox->setChecked(bound);
+  m_BindWindowCursorsCheckBox->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::IsWindowZoomingBound() const
+bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowMagnificationsBound() const
 {
-  return m_BindWindowZoomingCheckBox->isChecked();
+  return m_BindWindowMagnificationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowZoomingBound(bool bound)
+void QmitkMIDASMultiViewWidgetControlPanel::SetWindowMagnificationsBound(bool bound)
 {
-  bool wasBlocked = m_BindWindowZoomingCheckBox->blockSignals(true);
-  m_BindWindowZoomingCheckBox->setChecked(bound);
-  m_BindWindowZoomingCheckBox->blockSignals(wasBlocked);
+  bool wasBlocked = m_BindWindowMagnificationsCheckBox->blockSignals(true);
+  m_BindWindowMagnificationsCheckBox->setChecked(bound);
+  m_BindWindowMagnificationsCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -473,30 +484,82 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewLayoutsBound() const
+bool QmitkMIDASMultiViewWidgetControlPanel::AreViewPositionsBound() const
 {
-  return m_BindViewLayoutCheckBox->isChecked();
+  return m_BindViewPositionsCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewPositionsBound(bool bound)
+{
+  bool wasBlocked = m_BindViewPositionsCheckBox->blockSignals(true);
+  m_BindViewPositionsCheckBox->setChecked(bound);
+  m_BindViewPositionsCheckBox->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewCursorsBound() const
 {
-  return m_BindViewPanningCheckBox->isChecked();
+  return m_BindViewCursorsCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewCursorsBound(bool bound)
+{
+  bool wasBlocked = m_BindViewCursorsCheckBox->blockSignals(true);
+  m_BindViewCursorsCheckBox->setChecked(bound);
+  m_BindViewCursorsCheckBox->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewMagnificationsBound() const
 {
-  return m_BindViewZoomingCheckBox->isChecked();
+  return m_BindViewMagnificationsCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewMagnificationsBound(bool bound)
+{
+  bool wasBlocked = m_BindViewMagnificationsCheckBox->blockSignals(true);
+  m_BindViewMagnificationsCheckBox->setChecked(bound);
+  m_BindViewMagnificationsCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidgetControlPanel::AreViewLayoutsBound() const
+{
+  return m_BindViewLayoutsCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewLayoutsBound(bool bound)
+{
+  bool wasBlocked = m_BindViewLayoutsCheckBox->blockSignals(true);
+  m_BindViewLayoutsCheckBox->setChecked(bound);
+  m_BindViewLayoutsCheckBox->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewGeometriesBound() const
 {
-  return m_BindViewGeometryCheckBox->isChecked();
+  return m_BindViewGeometriesCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::SetViewGeometriesBound(bool bound)
+{
+  bool wasBlocked = m_BindViewGeometriesCheckBox->blockSignals(true);
+  m_BindViewGeometriesCheckBox->setChecked(bound);
+  m_BindViewGeometriesCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -595,6 +658,30 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnViewColumnsSpinBoxValueChanged(int
   int rows = m_ViewRowsSpinBox->value();
   this->SetViewNumber(rows, columns);
   emit ViewNumberChanged(rows, columns);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::OnViewPositionBindingChanged(bool bound)
+{
+  if (!bound && this->AreViewCursorsBound())
+  {
+    // Note that this will trigger emitting the ViewCursorBindingChanged(false) signal.
+    m_BindViewCursorsCheckBox->setChecked(false);
+  }
+  emit ViewPositionBindingChanged(bound);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidgetControlPanel::OnViewCursorBindingChanged(bool bound)
+{
+  if (bound && !this->AreViewPositionsBound())
+  {
+    // Note that this will trigger emitting the ViewPositionBindingChanged(true) signal.
+    m_BindViewPositionsCheckBox->setChecked(true);
+  }
+  emit ViewCursorBindingChanged(bound);
 }
 
 

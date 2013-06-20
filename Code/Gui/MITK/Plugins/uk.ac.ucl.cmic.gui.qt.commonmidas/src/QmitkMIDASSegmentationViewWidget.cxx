@@ -81,8 +81,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 
   m_ViewerWidget->SetRememberSettingsPerLayout(true);
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
-  m_ViewerWidget->SetPanningBound(false);
-  m_ViewerWidget->SetZoomingBound(true);
+  m_ViewerWidget->SetCursorPositionsBound(false);
+  m_ViewerWidget->SetMagnificationsBound(true);
 
   connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
   connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
@@ -297,11 +297,14 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+  QmitkRenderWindow* renderWindow = m_ViewerWidget->GetRenderWindow(focusedRenderer->GetRenderWindow());
+
   // If the newly focused window is this widget, nothing to update. Stop early.
-  if (this->IsCurrentlyFocusedWindowInThisWidget())
+  if (renderWindow)
   {
-    mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
-    QmitkRenderWindow* renderWindow = m_ViewerWidget->GetRenderWindow(focusedRenderer->GetRenderWindow());
     m_ViewerWidget->SetSelectedRenderWindow(renderWindow);
 
     double magnification = m_ViewerWidget->GetMagnification();
@@ -355,8 +358,6 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     m_MainWindowLayout = mainWindowLayout;
   }
 
-  mitk::BaseRenderer* currentlyFocusedRenderer = this->GetCurrentlyFocusedRenderer();
-
   if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowLayout != MIDAS_LAYOUT_UNKNOWN && m_Layout == MIDAS_LAYOUT_UNKNOWN))
   {
     const mitk::Geometry3D* worldGeometry = mainWindowAxial->GetRenderer()->GetWorldGeometry();
@@ -397,45 +398,9 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     this->ChangeLayout(false);
   }
 
-  m_CurrentRenderer = currentlyFocusedRenderer;
+  m_CurrentRenderer = focusedRenderer;
 
   m_ViewerWidget->RequestUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkMIDASSegmentationViewWidget::GetCurrentlyFocusedRenderer() const
-{
-  mitk::BaseRenderer* result = NULL;
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    result = focusManager->GetFocused();
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASSegmentationViewWidget::IsCurrentlyFocusedWindowInThisWidget()
-{
-  bool result = false;
-
-  mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
-  if (focusedRenderer != NULL)
-  {
-    std::vector<QmitkRenderWindow*> renderWindows = m_ViewerWidget->GetRenderWindows();
-    for (unsigned int i = 0; i < renderWindows.size(); i++)
-    {
-      if (renderWindows[i]->GetRenderer() == focusedRenderer)
-      {
-        result = true;
-        break;
-      }
-    }
-  }
-  return result;
 }
 
 
@@ -444,7 +409,9 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowOrientati
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
 
-  mitk::BaseRenderer* focusedRenderer = this->GetCurrentlyFocusedRenderer();
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
   if (focusedRenderer != NULL)
   {
     QmitkRenderWindow* mainWindowAxial = m_ContainingFunctionality->GetRenderWindow("axial");

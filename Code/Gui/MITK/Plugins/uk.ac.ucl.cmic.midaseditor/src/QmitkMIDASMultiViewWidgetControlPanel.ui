@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>674</width>
+    <width>595</width>
     <height>118</height>
    </rect>
   </property>
@@ -47,14 +47,14 @@
          <property name="margin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignLeft">
+         <item>
           <widget class="QLabel" name="m_WindowShowOptionsLabel">
            <property name="text">
             <string>show:</string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignLeft">
+         <item>
           <widget class="QCheckBox" name="m_ShowCursorCheckBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -137,34 +137,34 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="m_BindWindowPanningCheckBox">
+          <widget class="QCheckBox" name="m_BindWindowCursorsCheckBox">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor position relative to the window&lt;br/&gt;size, across the windows of the image viewer.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan&lt;br/&gt;the image or select a position then the image will&lt;br/&gt;be shifted in the other windows, so that the cursor&lt;br/&gt;planes are aligned in the adjacent windows.&lt;/p&gt;&lt;p&gt;This option controls only the displayed position&lt;br/&gt;of the cursor, not the selected position in space.&lt;br/&gt;The selected position in space is always linked&lt;br/&gt;across the windows of an image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor positions relative to the window size, across the windows of the same viewer.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan the image or select a position then the image will be shifted in the other windows, so that the cursor planes are aligned in the adjacent windows.&lt;/p&gt;&lt;p&gt;Note that this option controls only the displayed position of the cursor, not the selected position in space. The selected position in space is &lt;span style=&quot; font-style:italic;&quot;&gt;always&lt;/span&gt; linked across the windows of the same image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>panning</string>
+            <string>cursor</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="m_BindWindowZoomingCheckBox">
+          <widget class="QCheckBox" name="m_BindWindowMagnificationsCheckBox">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across the&lt;br/&gt;windows of the image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across the windows of an image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>zooming</string>
+            <string>magn.</string>
            </property>
           </widget>
          </item>
@@ -225,54 +225,69 @@
          <property name="spacing">
           <number>2</number>
          </property>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="m_BindViewPanningCheckBox">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="m_BindViewCursorsCheckBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor positions relative to the window size, across multiple image viewers.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan the image or select a position then the image will be shifted in the other image viewers, so that the cursor planes get to the same position relative to the size of the windows.&lt;/p&gt;&lt;p&gt;Note that this option controls only the displayed position of the cursor, not the selected position in space. The selected position in space is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; linked across the image viewers by default, but you can bind them by the 'position' check box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>cursor</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="m_BindViewZoomingCheckBox">
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="m_BindViewMagnificationsCheckBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
-            <string>zooming</string>
+            <string>magn.</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="2">
-          <widget class="QCheckBox" name="m_BindViewPositionCheckBox">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="m_BindViewPositionsCheckBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the selected position in physical space across several image viewers. The selected position is the position at the cursor (aka. crosshair).&lt;/p&gt;&lt;p&gt;Note that this option does not control the displayed position of the cursor relative to the window. That you can control by the 'cursor' check box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>position</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="0" column="0">
           <widget class="QLabel" name="m_BindViewsLabel">
            <property name="text">
             <string>bind viewers</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QCheckBox" name="m_BindViewLayoutCheckBox">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="m_BindViewLayoutsCheckBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the window layout (e.g. single coronal or 2x2) across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>layout</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
-          <widget class="QCheckBox" name="m_BindViewGeometryCheckBox">
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="m_BindViewGeometriesCheckBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the image geometry across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>geometry</string>
