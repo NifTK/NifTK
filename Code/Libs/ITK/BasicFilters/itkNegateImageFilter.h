@@ -26,9 +26,9 @@ namespace itk
  *
  * \ingroup IntensityImageFilters  Multithreaded
  */
-namespace Function {
+namespace Functor {
 
-template< class TInput, class TOutput>
+template< typename TInput, typename TOutput>
 class Negate
 {
 public:
@@ -44,24 +44,28 @@ public:
     }
   inline TOutput operator()( const TInput & A ) const
     {
-    return -A;
+#if 0
+      std::cout << "A: " << A << " -A: " << -static_cast<TOutput>( A ) << std::endl;
+      std::cout.flush();
+#endif
+      return -static_cast<TOutput>( A );
     }
 };
 }
 
-template <class TInputImage, class TOutputImage>
+template <typename TInputImage, typename TOutputImage>
 class ITK_EXPORT NegateImageFilter :
     public
 UnaryFunctorImageFilter<TInputImage,TOutputImage,
-                        Function::Negate<
-  typename TInputImage::PixelType,
-  typename TOutputImage::PixelType>   >
+      Functor::Negate< 
+      typename TInputImage::PixelType,
+      typename TOutputImage::PixelType>   >
 {
 public:
   /** Standard class typedefs. */
   typedef NegateImageFilter  Self;
   typedef UnaryFunctorImageFilter<TInputImage,TOutputImage,
-                                  Function::Negate< typename TInputImage::PixelType,
+                                  Functor::Negate< typename TInputImage::PixelType,
                                                  typename TOutputImage::PixelType> >  Superclass;
   typedef SmartPointer<Self>        Pointer;
   typedef SmartPointer<const Self>  ConstPointer;

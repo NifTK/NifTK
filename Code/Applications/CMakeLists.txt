@@ -72,7 +72,9 @@ if(SlicerExecutionModel_FOUND)
     niftkErode
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkInvertImage
     niftkMultiply
+    niftkNegateImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
