@@ -118,4 +118,27 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
 }
 
 
+//-----------------------------------------------------------------------------
+void TransformPointsByCameraToWorld(
+    vtkMatrix4x4* cameraToWorld,
+    mitk::Point3D& point
+    )
+{
+  double transformedPoint[4] = {0, 0, 0, 1};
+
+  if(cameraToWorld != NULL)
+  {
+    transformedPoint[0] = point[0];
+    transformedPoint[1] = point[1];
+    transformedPoint[2] = point[2];
+    transformedPoint[3] = 1;
+
+    cameraToWorld->MultiplyPoint(transformedPoint, transformedPoint);
+
+    point[0] = transformedPoint[0];
+    point[1] = transformedPoint[1];
+    point[2] = transformedPoint[2];
+  }
+}
+
 } // end namespace

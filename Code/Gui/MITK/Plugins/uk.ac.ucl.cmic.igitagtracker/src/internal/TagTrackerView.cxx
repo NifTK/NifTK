@@ -14,6 +14,8 @@
 
 // Qmitk
 #include "TagTrackerView.h"
+#include "TagTrackerViewActivator.h"
+#include "TagTrackerViewPreferencePage.h"
 #include <QFile>
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
@@ -22,12 +24,13 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include <mitkImage.h>
-#include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
-#include "TagTrackerViewActivator.h"
-#include "TagTrackerViewPreferencePage.h"
+#include <mitkCoordinateAxesData.h>
+#include <mitkNodePredicateDataType.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
 const std::string TagTrackerView::NODE_ID = "Tag Locations";
@@ -94,12 +97,17 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
 
     m_Controls = new Ui::TagTrackerViewControls();
     m_Controls->setupUi(parent);
-    m_Controls->m_LeftComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_LeftComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_LeftComboBox->SetPredicate(leftIsImage);
-    m_Controls->m_RightComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_RightComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_RightComboBox->SetPredicate(rightIsImage);
+    m_Controls->m_LeftImageComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_LeftImageComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_LeftImageComboBox->SetPredicate(leftIsImage);
+    m_Controls->m_RightImageComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_RightImageComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_RightImageComboBox->SetPredicate(rightIsImage);
+
+    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    m_Controls->m_CameraPositionComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_CameraPositionComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_CameraPositionComboBox->SetPredicate(isCoords);
 
     this->RetrievePreferenceValues();
 
@@ -149,7 +157,7 @@ void TagTrackerView::RetrievePreferenceValues()
   }
   m_MonoLeftCameraOnly = prefs->GetBool(TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME, TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA);
   m_Controls->m_LeftIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
-  m_Controls->m_RightComboBox->setEnabled(!m_MonoLeftCameraOnly);
+  m_Controls->m_RightImageComboBox->setEnabled(!m_MonoLeftCameraOnly);
   m_Controls->m_RightIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
   m_Controls->m_RightToLeftRotationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
   m_Controls->m_RightToLeftTranslationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
@@ -159,7 +167,7 @@ void TagTrackerView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void TagTrackerView::SetFocus()
 {
-  m_Controls->m_LeftComboBox->setFocus();
+  m_Controls->m_LeftImageComboBox->setFocus();
 }
 
 
@@ -239,8 +247,8 @@ void TagTrackerView::UpdateTags()
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   assert(dataStorage);
 
-  mitk::DataNode::Pointer leftNode = m_Controls->m_LeftComboBox->GetSelectedNode();
-  mitk::DataNode::Pointer rightNode = m_Controls->m_RightComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer leftNode = m_Controls->m_LeftImageComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer rightNode = m_Controls->m_RightImageComboBox->GetSelectedNode();
   QString leftIntrinsicFileName = m_Controls->m_LeftIntrinsicFileNameEdit->currentPath();
   QString rightIntrinsicFileName = m_Controls->m_RightIntrinsicFileNameEdit->currentPath();
   QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
@@ -299,6 +307,21 @@ void TagTrackerView::UpdateTags()
       }
     }
 
+    // Extract camera to world matrix to pass onto either mono or stereo.
+    vtkSmartPointer<vtkMatrix4x4> cameraToWorldMatrix = vtkMatrix4x4::New();
+    cameraToWorldMatrix->Identity();
+
+    mitk::CoordinateAxesData::Pointer cameraToWorld = NULL;
+    mitk::DataNode::Pointer cameraToWorldNode = m_Controls->m_CameraPositionComboBox->GetSelectedNode();
+    if (cameraToWorldNode.IsNotNull())
+    {
+      cameraToWorld = dynamic_cast<mitk::CoordinateAxesData*>(cameraToWorldNode->GetData());
+      if (cameraToWorld.IsNotNull())
+      {
+        cameraToWorld->GetVtkMatrix(*cameraToWorldMatrix);
+      }
+    }
+
     // Now use the data to extract points, and update the point set.
     QString modeName;
 
@@ -332,7 +355,8 @@ void TagTrackerView::UpdateTags()
           image,
           m_MinSize,
           m_MaxSize,
-          pointSet
+          pointSet,
+          cameraToWorldMatrix
           );
     }
     else
@@ -383,7 +407,8 @@ void TagTrackerView::UpdateTags()
           *m_RightIntrinsicMatrix,
           *m_RightToLeftRotationVector,
           *m_RightToLeftTranslationVector,
-          pointSet
+          pointSet,
+          cameraToWorldMatrix
           );
     } // end if mono/stereo
 
@@ -393,5 +418,31 @@ void TagTrackerView::UpdateTags()
     numberString.setNum(numberOfTrackedPoints);
     m_Controls->m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
 
+    m_Controls->m_TagPositionDisplay->clear();
+    if (numberOfTrackedPoints > 0)
+    {
+      mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
+      mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+      mitk::PointSet::PointsIterator pIt;
+      mitk::PointSet::PointIdentifier pointID;
+      mitk::PointSet::PointType point;
+
+      for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+      {
+        pointID = pIt->Index();
+        point = pIt->Value();
+
+        QString pointIdString;
+        pointIdString.setNum(pointID);
+        QString xNum;
+        xNum.setNum(point[0]);
+        QString yNum;
+        yNum.setNum(point[1]);
+        QString zNum;
+        zNum.setNum(point[2]);
+
+        m_Controls->m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
+      }
+    }
   } // end if we have at least one node specified
 }

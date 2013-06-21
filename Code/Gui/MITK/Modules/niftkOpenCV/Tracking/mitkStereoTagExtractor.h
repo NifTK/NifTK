@@ -22,6 +22,7 @@
 #include <mitkImage.h>
 #include <mitkPointSet.h>
 #include <cv.h>
+#include <vtkMatrix4x4.h>
 
 namespace mitk {
 
@@ -47,6 +48,7 @@ public:
    * \param rightCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightToLeftRotationVector a [1x3] rotation vector as per the Rodrigues formulation.
    * \param rightToLeftTranslationVector a [1x3] rotation vector.
+   * \param cameraToWorld if not null, all reconstructed points are multiplied by this transform.
    */
   void ExtractPoints(const mitk::Image::Pointer leftImage,
                      const mitk::Image::Pointer rightImage,
@@ -56,7 +58,8 @@ public:
                      const CvMat& rightCameraIntrinsics,
                      const CvMat& rightToLeftRotationVector,
                      const CvMat& rightToLeftTranslationVector,
-                     mitk::PointSet::Pointer pointSet
+                     mitk::PointSet::Pointer pointSet,
+                     const vtkMatrix4x4* cameraToWorld
                      );
 
 protected:

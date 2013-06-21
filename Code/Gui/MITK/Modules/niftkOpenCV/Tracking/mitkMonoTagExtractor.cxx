@@ -37,7 +37,8 @@ MonoTagExtractor::~MonoTagExtractor()
 void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
                                      const float& minSize,
                                      const float& maxSize,
-                                     mitk::PointSet::Pointer pointSet
+                                     mitk::PointSet::Pointer pointSet,
+                                     const vtkMatrix4x4* cameraToWorld
                                     )
 {
   pointSet->Clear();
@@ -46,9 +47,9 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
   filter->SetImage(image);
 
   IplImage *im = filter->GetOpenCVImage();
-  cv::Mat i(im);
+  cv::Mat imageWrapper(im);
 
-  std::map<int, cv::Point2f> result = mitk::DetectMarkers(i, minSize, maxSize);
+  std::map<int, cv::Point2f> result = mitk::DetectMarkers(imageWrapper, minSize, maxSize);
 
   cv::Point2f extractedPoint;
   mitk::PointSet::PointType outputPoint;
@@ -60,6 +61,7 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
     outputPoint[0] = extractedPoint.x;
     outputPoint[1] = extractedPoint.y;
     outputPoint[2] = 0;
+    TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
 

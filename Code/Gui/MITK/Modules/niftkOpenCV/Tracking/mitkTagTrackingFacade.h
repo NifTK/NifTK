@@ -18,6 +18,8 @@
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
+#include <vtkMatrix4x4.h>
+#include <mitkVector.h>
 
 namespace mitk
 {
@@ -65,6 +67,14 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
     const float& maxSize = 0.125,
     const bool& drawOutlines = false,
     const bool& drawCentre = false
+    );
+
+/**
+ * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL.
+ */
+void TransformPointsByCameraToWorld(
+    vtkMatrix4x4* cameraToWorld,
+    mitk::Point3D& point
     );
 
 } // end namespace
