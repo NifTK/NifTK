@@ -316,30 +316,58 @@ void QmitkMIDASMultiViewWidget::SetDefaultMultiWindowLayout(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetShowDropTypeWidgets(bool visible)
-{
-  m_ControlPanel->SetDropTypeControlsVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::AreMultiViewControlsVisible() const
-{
-  return m_ControlPanel->AreMultiViewControlsVisible();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetMultiViewControlsVisible(bool visible)
-{
-  m_ControlPanel->SetMultiViewControlsVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetShowMagnificationSlider(bool visible)
 {
   m_ControlPanel->SetMagnificationControlsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::AreShowOptionsVisible() const
+{
+  return m_ControlPanel->AreShowOptionsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetShowOptionsVisible(bool visible)
+{
+  m_ControlPanel->SetShowOptionsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::AreWindowLayoutControlsVisible() const
+{
+  return m_ControlPanel->AreWindowLayoutControlsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetWindowLayoutControlsVisible(bool visible)
+{
+  m_ControlPanel->SetWindowLayoutControlsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::AreViewNumberControlsVisible() const
+{
+  return m_ControlPanel->AreViewNumberControlsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetViewNumberControlsVisible(bool visible)
+{
+  m_ControlPanel->SetViewNumberControlsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::SetShowDropTypeControls(bool visible)
+{
+  m_ControlPanel->SetDropTypeControlsVisible(visible);
 }
 
 

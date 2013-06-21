@@ -36,6 +36,36 @@ public:
   /// \brief Destructs the QmitkMIDASMultiViewWidgetControlPanel object.
   virtual ~QmitkMIDASMultiViewWidgetControlPanel();
   
+  /// \brief Tells if the magnification controls are visible.
+  bool AreMagnificationControlsVisible() const;
+
+  /// \brief Shows or hides the magnification controls.
+  void SetMagnificationControlsVisible(bool visible);
+
+  /// \brief Tells if the show options (cursor, directions, 3D window) are visible.
+  bool AreShowOptionsVisible() const;
+
+  /// \brief Shows or hides the show options (cursor, directions, 3D window).
+  void SetShowOptionsVisible(bool visible);
+
+  /// \brief Tells if the window layout controls are visible.
+  bool AreWindowLayoutControlsVisible() const;
+
+  /// \brief Shows or hides the window layout controls.
+  void SetWindowLayoutControlsVisible(bool visible);
+
+  /// \brief Tells if the multi view controls are visible.
+  bool AreViewNumberControlsVisible() const;
+
+  /// \brief Shows or hides the multi view controls.
+  void SetViewNumberControlsVisible(bool visible);
+
+  /// \brief Tells if the drop type controls are visible.
+  bool AreDropTypeControlsVisible() const;
+
+  /// \brief Shows or hides the drop type controls.
+  void SetDropTypeControlsVisible(bool visible);
+
   /// \brief Tells if the single view controls are enabled.
   bool AreSingleViewControlsEnabled() const;
 
@@ -47,24 +77,6 @@ public:
 
   /// \brief Enables or disables the multi view controls.
   void SetMultiViewControlsEnabled(bool enabled);
-
-  /// \brief Tells if the magnification controls are visible.
-  bool AreMagnificationControlsVisible() const;
-
-  /// \brief Shows or hides the magnification controls.
-  void SetMagnificationControlsVisible(bool visible);
-
-  /// \brief Tells if the multi view controls are visible.
-  bool AreMultiViewControlsVisible() const;
-
-  /// \brief Shows or hides the multi view controls.
-  void SetMultiViewControlsVisible(bool visible);
-
-  /// \brief Tells if the drop type controls are visible.
-  bool AreDropTypeControlsVisible() const;
-
-  /// \brief Shows or hides the drop type controls.
-  void SetDropTypeControlsVisible(bool visible);
 
   /// \brief Gets the maximal slice index that is the number of slices - 1.
   int GetMaxSliceIndex() const;
@@ -282,24 +294,11 @@ private slots:
 
 private:
 
-  /// \brief Tells if the window binding controls are enabled.
-  bool AreWindowBindingControlsEnabled() const;
-
-  /// \brief Enables or disables the window binding controls.
-  void SetWindowBindingControlsEnabled(bool enabled);
-
-  /// \brief Tells if the view binding controls are enabled.
-  bool AreViewBindingControlsEnabled() const;
-
-  /// \brief Enables or disables the view binding controls.
-  void SetViewBindingControlsEnabled(bool enabled);
-
-  /// \brief Tells if the drop type controls are enabled.
-  bool AreDropTypeControlsEnabled() const;
-
-  /// \brief Enables or disables the drop type controls.
-  void SetDropTypeControlsEnabled(bool enabled);
-
+  bool m_ShowMagnificationControls;
+  bool m_ShowShowOptions;
+  bool m_ShowWindowLayoutControls;
+  bool m_ShowViewNumberControls;
+  bool m_ShowDropTypeControls;
 };
 
 #endif // QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
