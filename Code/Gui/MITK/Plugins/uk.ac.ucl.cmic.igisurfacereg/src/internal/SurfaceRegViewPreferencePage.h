@@ -72,6 +72,7 @@ private:
   QSpinBox       *m_MaximumIterations;
   QSpinBox       *m_MaximumPoints;
   QCheckBox      *m_TryDeformableRegistration;
+  QCheckBox      *m_UseSpatialFiltering;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_SurfaceRegViewPreferencesNode;
