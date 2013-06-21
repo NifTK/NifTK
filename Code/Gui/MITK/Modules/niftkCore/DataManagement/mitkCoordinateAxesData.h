@@ -41,6 +41,12 @@ public:
   mitkClassMacro(CoordinateAxesData, BaseData);
   itkNewMacro(Self);
 
+  static const char* FILE_NAME;
+  static const char* FILE_EXTENSION;
+  static const char* FILE_EXTENSION_WITH_ASTERISK;
+  static const char* FILE_DIALOG_PATTERN;
+  static const char* FILE_DIALOG_NAME;
+
   void SetRequestedRegionToLargestPossibleRegion();
   bool RequestedRegionIsOutsideOfTheBufferedRegion();
   virtual bool VerifyRequestedRegion();

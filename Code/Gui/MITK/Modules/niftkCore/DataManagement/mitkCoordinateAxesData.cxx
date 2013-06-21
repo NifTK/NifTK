@@ -20,6 +20,12 @@
 namespace mitk
 {
 
+const char* CoordinateAxesData::FILE_EXTENSION = ".4x4";
+const char* CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK = "*.4x4";
+const char* CoordinateAxesData::FILE_NAME = "CoordinateAxesTransform.4x4";
+const char* CoordinateAxesData::FILE_DIALOG_PATTERN = "Coordinate Axes Transform (*.4x4)";
+const char* CoordinateAxesData::FILE_DIALOG_NAME = "Coordinate Axes Transform 4x4";
+
 //-----------------------------------------------------------------------------
 CoordinateAxesData::CoordinateAxesData()
 {
