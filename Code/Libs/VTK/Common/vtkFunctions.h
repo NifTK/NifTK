@@ -20,6 +20,7 @@
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
+#include <vtkMinimalStandardRandomSequence.h>
 #include <vtkCellLocator.h>
 #include <vtkCamera.h>
 
@@ -206,4 +207,9 @@ extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
     vtkCamera& camera
     );
 
+/**
+ * \brief Randomly removes points from the passed polydata until the passed number of points 
+ * Any cells or surfaces will be deleted as part of the process, leaving only points.
+ */
+extern "C++" NIFTKVTK_WINEXPORT bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points = 200);
 #endif // vtkFunctions_h

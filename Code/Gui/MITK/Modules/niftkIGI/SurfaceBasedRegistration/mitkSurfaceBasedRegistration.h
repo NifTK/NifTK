@@ -47,6 +47,7 @@ public:
   static const int DEFAULT_MAX_ITERATIONS;
   static const int DEFAULT_MAX_POINTS;
   static const bool DEFAULT_USE_DEFORMABLE;
+  static const bool DEFAULT_USE_SPATIALFILTER;
   /**
    * \brief Write My Documentation
    */
@@ -64,6 +65,7 @@ public:
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
+  itkSetMacro (UseSpatialFilter, bool);
 
 protected:
 
@@ -78,10 +80,17 @@ private:
   int m_MaximumIterations;
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
+  bool m_UseSpatialFilter;  //flag to control use of spatial filter
 
   vtkMatrix4x4* m_Matrix;
 
   void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+  /**
+   * \brief An crude method to spatially filter the mitk point cloud, assuming that the 
+   * cloud is from a surface reconstruction where the point id encodes the point's 
+   * position on screen
+   */
+  void PointSetToPolyData_SpatialFilter ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
   void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut);
 
   void RunVTKICP(vtkPolyData* fixedPoly,

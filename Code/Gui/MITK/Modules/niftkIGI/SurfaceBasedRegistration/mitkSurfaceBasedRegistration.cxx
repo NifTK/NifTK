@@ -21,6 +21,7 @@
 #include <mitkFileIOUtils.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
+#include <vtkFunctions.h>
 
 namespace mitk
 {
@@ -28,11 +29,13 @@ namespace mitk
 const int SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS = 100;
 const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 100;
 const bool SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE = false;
+const bool SurfaceBasedRegistration::DEFAULT_USE_SPATIALFILTER = false;
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
 :m_MaximumIterations(50)
 ,m_MaximumNumberOfLandmarkPointsToUse(200)
 ,m_Method(VTK_ICP)
+,m_UseSpatialFilter(DEFAULT_USE_SPATIALFILTER)
 ,m_Matrix(NULL)
 {
   m_Matrix = vtkMatrix4x4::New();
@@ -54,7 +57,6 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);
   icp->SetTarget(fixedPoly);
-
   icp->Run();
   vtkMatrix4x4 * temp;
   temp = icp->GetTransform();
@@ -87,15 +89,59 @@ void SurfaceBasedRegistration::PointSetToPolyData (const  mitk::PointSet::Pointe
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   int numberOfPoints = PointsIn->GetSize();
-  for ( int i = 0 ; i < numberOfPoints ; i++ )
+  int i = 0 ;
+  int PointsFound = 0 ;
+  while ( PointsFound < numberOfPoints )
   {
-    mitk::Point3D point = PointsIn->GetPoint(i);
-    points->InsertNextPoint(point[0],point[1],point[2]);
+    mitk::Point3D point;
+    if ( PointsIn->GetPointIfExists(i,&point) )
+    {
+      points->InsertNextPoint(point[0],point[1],point[2]);
+      PointsFound ++ ;
+    }
+    i++;
   }
   PolyOut->SetPoints(points);
-
 }
+//-----------------------------------------------------------------------------
+void SurfaceBasedRegistration::PointSetToPolyData_SpatialFilter (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
+{
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  //assume input images were HD 1920×1080
+  //points in point set are assigned ID = y * width + x
+  int width=1920;
+  int height=1080;
 
+  //use a patch size of 15 x 9 pixels
+  for ( int x = 7 ; x < width ; x += 15 )
+  {
+    for ( int y = 4 ; y < height ; y += 9 )
+    {
+      vtkSmartPointer<vtkPoints> temppoints = vtkSmartPointer<vtkPoints>::New();
+      for ( int px = - 7 ; px <= 7 ; px ++ )
+      {
+        for ( int py = -4 ; py <= 4 ; py ++ )
+        {
+          int index = (y + py) * width + (x+px);
+          mitk::Point3D point;
+          if ( PointsIn->GetPointIfExists(index,&point) )
+          {
+            temppoints->InsertNextPoint(point[0],point[1],point[2]);
+          }
+        }
+      }
+      if ( temppoints->GetNumberOfPoints() > 0 )
+      {
+        int median = temppoints->GetNumberOfPoints() /2;
+       // std::cerr << "Found " << temppoints->GetNumberOfPoints() << " in patch " << x << "," << y << " Picking point " << median << std::endl;
+        points->InsertNextPoint(temppoints->GetPoint(median));
+      }
+    }
+  }
+  std::cerr << "Applied spatial Filter, " << points->GetNumberOfPoints() << " points left." << std::endl;
+
+  PolyOut->SetPoints(points);
+}
 void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkPolyData* PolyOut )
 {
   mitk::Surface::Pointer Surface = NULL;
@@ -104,7 +150,14 @@ void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkP
   Points = dynamic_cast<mitk::PointSet*>(node->GetData());
   if ( Surface.IsNull() ) 
   {
-    PointSetToPolyData ( Points,PolyOut );
+    if ( m_UseSpatialFilter ) 
+    {
+      PointSetToPolyData_SpatialFilter ( Points,PolyOut );
+    }
+    else
+    {
+      PointSetToPolyData ( Points,PolyOut );
+    } 
   }
   else
   {
@@ -123,8 +176,6 @@ void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkP
   }
 }
   
-
-
 void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node)
 {
   ApplyTransform(node, m_Matrix);
