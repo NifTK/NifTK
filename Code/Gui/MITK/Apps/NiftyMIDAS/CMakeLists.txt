@@ -16,10 +16,13 @@ project(NiftyMIDAS)
 set(MY_APP_NAME NiftyMIDAS)
 
 set(_exclude_plugins
+  org.mitk.gui.qt.common.legacy
   org.mitk.gui.qt.pointsetinteraction
   org.mitk.gui.qt.stdmultiwidgeteditor
-  it.unito.cim.intensityprofile 
+  org.mitk.gui.qt.volumevisualization
+  it.unito.cim.intensityprofile
   uk.ac.ucl.cmic.breastsegmentation
+  uk.ac.ucl.cmic.gui.qt.commonlegacy
   uk.ac.ucl.cmic.gui.qt.niftyview
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.niftyseg
