@@ -93,6 +93,10 @@ static float relative_systime(const SYSTEMTIME& start, const SYSTEMTIME& end)
 
 class CompressorImpl
 {
+    // used to protect various bits here that might be accessed from different threads.
+    CRITICAL_SECTION      lock;
+
+
     /** @name Keep some performance stats. */
     //@{
 public:
@@ -118,7 +122,7 @@ public:
         // 1 = i-frame
         // 2 = p-frame
         // 3 = b-frame
-        unsigned char       frametype;
+        FrameType::FT       frametype;
 
         // frame had to wait because there are no more free slots in the queue
         // writing out to hdd was too slow
@@ -152,6 +156,9 @@ public:
     // we only need this for perf-stats in the bitstream-callbacks, which dont have the frame number on input
     int                 currentframe;
 
+    // keep track of where in the output file each frame is (variable nal size)
+    std::vector<std::pair<unsigned __int64, FrameType::FT> >   outputinfo;
+
     // accumulated size of the current nal packet
     // the encoder will ask for one or more chunks of storage
     //  and we just add it up
@@ -169,11 +176,14 @@ public:
         // simple ring buffer style
         int slot = (this_->currentqueueslot + 1) % (sizeof(this_->outputqueue) / sizeof(this_->outputqueue[0]));
 
+        EnterCriticalSection(&this_->lock);
         if ((this_->frameperstats.capacity() - this_->frameperstats.size()) > 1)
         {
             assert(this_->frameperstats.size() >= this_->currentframe);
             assert(this_->frameperstats[this_->currentframe].frameno == this_->currentframe);
         }
+        LeaveCriticalSection(&this_->lock);
+
         // gotta make sure that this slot has actually finished!
         DWORD slotresult = WaitForSingleObject(this_->outputqueue[slot].overlapped.hEvent, 0);
         if ((this_->frameperstats.capacity() - this_->frameperstats.size()) > 1)
@@ -195,6 +205,27 @@ public:
 
         // add up the size of multiple chunks until endframe_callback()
         this_->currentnalsize += nBytesInBuffer;
+
+#ifdef _DEBUG
+        // check whether the current nal packet fits into one of our 3 mb buffers
+        // if not then we do not do debug stuff.
+        if (this_->currentnalsize == nBytesInBuffer)
+        {
+            unsigned char*   ptr2end = &cb[nBytesInBuffer];
+
+            // our decompressor expects to be able to find packet delimiters to rebuild an index.
+            // so here we check that the nvidia encoder actually does output what we expect.
+
+            static const char iframestartseq[] = {0x00, 0x00, 0x00, 0x01, 0x09, 0x10, 0x00, 0x00, 0x00, 0x01, 0x67};
+            static const char pframestartseq[] = {0x00, 0x00, 0x00, 0x01, 0x09, 0x30, 0x00, 0x00, 0x00, 0x01, 0x06};
+
+            assert(nBytesInBuffer > sizeof(iframestartseq));
+            bool  equal = false;
+            equal |= std::memcmp(cb, &iframestartseq[0], sizeof(iframestartseq)) == 0;
+            equal |= std::memcmp(cb, &pframestartseq[0], sizeof(pframestartseq)) == 0;
+            assert(equal);
+        }
+#endif
 
         if (this_->outputfile)
         {
@@ -234,6 +265,12 @@ public:
 
         // starting a new nal packet
         this_->currentnalsize = 0;
+
+        EnterCriticalSection(&this_->lock);
+        // sequential output ordering, i.e. the same as input
+        assert(this_->outputinfo.size() == pbfi->nFrameNumber);
+        this_->outputinfo.push_back(std::make_pair(this_->outputoffset, (FrameType::FT) pbfi->nPicType));
+        LeaveCriticalSection(&this_->lock);
     }
 
     static void _stdcall endframe_callback(const NVVE_EndFrameInfo *pefi, void *pUserdata)
@@ -242,6 +279,7 @@ public:
 
         assert(this_->currentframe == pefi->nFrameNumber);
 
+        EnterCriticalSection(&this_->lock);
         if ((this_->frameperstats.capacity() - this_->frameperstats.size()) > 1)
         {
             FramePerfStats&     fps = this_->frameperstats[pefi->nFrameNumber];
@@ -252,8 +290,9 @@ public:
             GetSystemTime(&fps.finished);
 
             // keep track of i and p-frames, just for curiosity
-            fps.frametype = pefi->nPicType;
+            fps.frametype = (FrameType::FT) pefi->nPicType;
         }
+        LeaveCriticalSection(&this_->lock);
 
         unsigned int    histindex = (unsigned int) (std::log(std::max(this_->currentnalsize, 1024u) / 1024.0) / std::log(2.0));
         unsigned int    maxindex = (sizeof(this_->nalsizehistogram) / sizeof(this_->nalsizehistogram[0])) - 1;
@@ -327,6 +366,8 @@ public:
         outputfile = CreateFileA(filename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, 0);
         if (outputfile == INVALID_HANDLE_VALUE)
             throw std::runtime_error("Cannot open output file");
+
+        InitializeCriticalSection(&lock);
 
         // from now on we need to undo quite a bit of stuff if something goes wrong
         try
@@ -512,6 +553,7 @@ public:
         }
         catch (...)
         {
+            DeleteCriticalSection(&lock);
             try_cleanup();
             throw;
         }
@@ -645,8 +687,10 @@ public:
             throw std::logic_error("Requested texture has not been prepared for compression");
 
 
+        EnterCriticalSection(&lock);
+
         // the performance stats thing is for debugging and optimisation only
-        //  so if we record for longer that 1h we just ignore later perf timings
+        //  so if we record for longer than 1h we just ignore later perf timings
         if ((frameperstats.capacity() - frameperstats.size()) > 1)
         {
             if (formatconversion_finished)
@@ -680,6 +724,10 @@ public:
             throw CompressorFailedException("Cannot lock compressor buffer");
 
         frameperstats.back().gotlock_tsc = __rdtsc();
+
+        // FIXME: is this gonna deadlock? we are interleaving two different locks here
+        LeaveCriticalSection(&lock);
+
 
         try
         {
@@ -737,6 +785,22 @@ public:
         if (hr != S_OK)
             throw CompressorFailedException("Cannot feed frame into compressor", hr);	
     }
+
+    bool get_output_info(unsigned int frameno, unsigned __int64* fileoffset, FrameType::FT* frametype)
+    {
+        bool  good = false;
+        EnterCriticalSection(&lock);
+        if (outputinfo.size() > frameno)
+        {
+            if (fileoffset)
+                *fileoffset = outputinfo[frameno].first;
+            if (frametype)
+                *frametype = outputinfo[frameno].second;
+            good = true;
+        }
+        LeaveCriticalSection(&lock);
+        return good;
+    }
 };
 
 const float CompressorImpl::BITRATEESTIMATER_BITSPERPIXEL = 0.6f;//0.48f;
@@ -768,6 +832,12 @@ void Compressor::preparetexture(int gltexture)
 void Compressor::compresstexture(int gltexture)
 {
     pimpl->compresstexture(gltexture);
+}
+
+
+bool Compressor::get_output_info(unsigned int frameno, unsigned __int64* fileoffset, FrameType::FT* frametype)
+{
+  return pimpl->get_output_info(frameno, fileoffset, frametype);
 }
 
 
