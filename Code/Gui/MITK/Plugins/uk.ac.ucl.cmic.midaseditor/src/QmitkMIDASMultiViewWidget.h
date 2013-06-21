@@ -119,13 +119,25 @@ public:
   void SetDropType(MIDASDropType dropType);
 
   /// \brief Sets the visibility flag on the drop type checkboxes.
-  void SetShowDropTypeWidgets(bool visible);
+  void SetShowDropTypeControls(bool visible);
+
+  /// \brief Gets the visibility flag of the show option controls on the control panel.
+  bool AreShowOptionsVisible() const;
+
+  /// \brief Sets the visibility flag of the show option controls on the control panel.
+  void SetShowOptionsVisible(bool visible);
+
+  /// \brief Gets the visibility flag of the window layout controls on the control panel.
+  bool AreWindowLayoutControlsVisible() const;
+
+  /// \brief Sets the visibility flag of the window layout controls on the control panel.
+  void SetWindowLayoutControlsVisible(bool visible);
 
   /// \brief Gets the visibility flag of the multi view controls on the control panel.
-  bool AreMultiViewControlsVisible() const;
+  bool AreViewNumberControlsVisible() const;
 
   /// \brief Sets the visibility flag of the multi view controls on the control panel.
-  void SetMultiViewControlsVisible(bool visible);
+  void SetViewNumberControlsVisible(bool visible);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
