@@ -46,7 +46,7 @@
    <item row="0" column="1">
     <widget class="ctkSliderWidget" name="m_SliceIndexSliderWidget" native="true">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the slice index of the currently selected&lt;br/&gt;window, and also in other image viewers if the&lt;br/&gt;cursor is bound between them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the index of the selected slice in the currently selected 2D window.&lt;/p&gt;&lt;p&gt;Changing the slice index changes the &lt;span style=&quot; font-style:italic;&quot;&gt;selected position&lt;/span&gt; along the dimension that is orthogonal to the plane of the currently selected orientation. The selected position is always bound across the windows of the same viewer. You can bind the selected position across the viewers by the '&lt;span style=&quot; font-style:italic;&quot;&gt;position&lt;/span&gt;' check box in the '&lt;span style=&quot; font-style:italic;&quot;&gt;bind viewers&lt;/span&gt;' section on this panel.&lt;/p&gt;&lt;p&gt;The selected position can be displayed by the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor&lt;/span&gt; (aka. crosshair). Changing the slice index also changes the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor position&lt;/span&gt; in the other two 2D windows of the same viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

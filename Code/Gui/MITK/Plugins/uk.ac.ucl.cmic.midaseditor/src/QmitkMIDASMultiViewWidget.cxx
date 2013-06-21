@@ -116,7 +116,7 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setAutoShow(true);
   m_PopupWidget->setAutoHide(true);
   m_PopupWidget->setEffectDuration(100);
-  m_PopupWidget->setContentsMargins(5, 5, 5, 5);
+  m_PopupWidget->setContentsMargins(5, 5, 5, 1);
   m_PopupWidget->setLineWidth(0);
 
   QPalette popupPalette = this->palette();
