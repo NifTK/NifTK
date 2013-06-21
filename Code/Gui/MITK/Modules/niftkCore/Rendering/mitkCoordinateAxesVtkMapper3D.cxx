@@ -54,6 +54,15 @@ void CoordinateAxesVtkMapper3D::ResetMapper( mitk::BaseRenderer* renderer )
 
 
 //-----------------------------------------------------------------------------
+void CoordinateAxesVtkMapper3D::SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
+{
+  node->AddProperty( "show text", mitk::BoolProperty::New(false), renderer, overwrite );
+  node->AddProperty( "size", mitk::IntProperty::New(10), renderer, overwrite );
+  Superclass::SetDefaultProperties(node, renderer, overwrite);
+}
+
+
+//-----------------------------------------------------------------------------
 void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* renderer)
 {
   LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);

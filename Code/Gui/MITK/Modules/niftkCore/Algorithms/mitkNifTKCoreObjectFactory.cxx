@@ -131,6 +131,12 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
     mitk::ImageVtkMapper2D::SetDefaultProperties(node);
     mitk::VolumeDataVtkMapper3D::SetDefaultProperties(node);
   }
+
+  mitk::CoordinateAxesData::Pointer coordinateAxesData = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  if (coordinateAxesData.IsNotNull())
+  {
+    mitk::CoordinateAxesVtkMapper3D::SetDefaultProperties(node);
+  }
 }
 
 

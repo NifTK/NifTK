@@ -38,6 +38,11 @@ public:
   virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer);
   const CoordinateAxesData* GetInput();
 
+  /**
+   * \see mitk::Mapper::SetDefaultProperties()
+   */
+  static void SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer = NULL, bool overwrite = false);
+
 protected:
   CoordinateAxesVtkMapper3D();
   ~CoordinateAxesVtkMapper3D();

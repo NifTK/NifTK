@@ -221,8 +221,6 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
         {
           coordinateAxes = mitk::CoordinateAxesData::New();
           node->SetData(coordinateAxes);
-          node->SetBoolProperty("show text", false);
-          node->SetIntProperty("size", 10);
           node->SetVisibility(false); // by default we don't need to see it.
         }
         coordinateAxes->SetVtkMatrix(*vtkMatrix);
