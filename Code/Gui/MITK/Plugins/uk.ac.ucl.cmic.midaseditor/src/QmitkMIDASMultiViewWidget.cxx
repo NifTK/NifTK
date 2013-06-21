@@ -121,10 +121,9 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 
   QPalette popupPalette = this->palette();
   QColor windowColor = popupPalette.color(QPalette::Window);
-  windowColor.setAlpha(128);
+  windowColor.setAlpha(64);
   popupPalette.setColor(QPalette::Window, windowColor);
   m_PopupWidget->setPalette(popupPalette);
-  m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
 
   int buttonRowHeight = 15;
   m_PinButton = new QToolButton(this);
