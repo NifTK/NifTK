@@ -54,7 +54,6 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);
   icp->SetTarget(fixedPoly);
-
   icp->Run();
   vtkMatrix4x4 * temp;
   temp = icp->GetTransform();
@@ -87,13 +86,19 @@ void SurfaceBasedRegistration::PointSetToPolyData (const  mitk::PointSet::Pointe
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   int numberOfPoints = PointsIn->GetSize();
-  for ( int i = 0 ; i < numberOfPoints ; i++ )
+  int i = 0 ;
+  int PointsFound = 0 ;
+  while ( PointsFound < numberOfPoints )
   {
-    mitk::Point3D point = PointsIn->GetPoint(i);
-    points->InsertNextPoint(point[0],point[1],point[2]);
+    mitk::Point3D point;
+    if ( PointsIn->GetPointIfExists(i,&point) )
+    {
+      points->InsertNextPoint(point[0],point[1],point[2]);
+      PointsFound ++ ;
+    }
+    i++;
   }
   PolyOut->SetPoints(points);
-
 }
 
 void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkPolyData* PolyOut )
@@ -123,8 +128,6 @@ void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkP
   }
 }
   
-
-
 void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node)
 {
   ApplyTransform(node, m_Matrix);
