@@ -211,5 +211,5 @@ extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
  * \brief Randomly removes points from the passed polydata until the passed number of points 
  * Any cells or surfaces will be deleted as part of the process, leaving only points.
  */
-extern "C++" NIFTKVTK_WINEXPORT bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points = 200, vtkMinimalStandardRandomSequence * rng = NULL);
+extern "C++" NIFTKVTK_WINEXPORT bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points = 200);
 #endif // vtkFunctions_h

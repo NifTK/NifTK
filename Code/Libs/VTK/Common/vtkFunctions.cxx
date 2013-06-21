@@ -582,32 +582,23 @@ void SetCameraParallelTo2DImage(
   camera.SetClippingRange(clippingRange);
 }
 //-----------------------------------------------------------------------------
-bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points, vtkMinimalStandardRandomSequence * rng)
+bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
 {
-  if ( rng == NULL )
-  {
-    rng = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-    rng->SetSeed(time(NULL));
-  }
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> rng = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  rng->SetSeed(time(NULL));
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> pointsout = vtkSmartPointer<vtkPoints>::New();
+  points->ShallowCopy(PolyData->GetPoints());
 
-  int PointsCropped = 0; 
-  while ( PolyData->GetNumberOfPoints() > Points )
+  for ( int i = 0 ; i < Points ; i ++ )
   {
-    std::cerr << "Removing point. ... " <<  PolyData->GetNumberOfPoints() << "left" << std::cerr;
-    int PointToRemove = rng->GetValue() * PolyData->GetNumberOfPoints();
+    int PointToGet = rng->GetValue() * PolyData->GetNumberOfPoints();
     rng->Next();
-    PolyData->DeletePoint(PointToRemove);
-    PointsCropped ++;
+    pointsout->InsertNextPoint(points->GetPoint(PointToGet));
   }
-  std::cerr << PointsCropped << "Points Cropped." << std::cerr;
-  if ( PointsCropped == 0 ) 
-  {
-    return false;
-  }
-  else
-  {
-    return true;
-  }
+  PolyData->SetPoints(pointsout);
+  return true;
 }
 
 
