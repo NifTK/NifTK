@@ -22,6 +22,7 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataReader::CoordinateAxesDataReader()
+: m_OutputCache(NULL)
 {
 
 }
@@ -110,7 +111,7 @@ bool CoordinateAxesDataReader::CanReadFile(
 void CoordinateAxesDataReader::GenerateData()
 {
   MITK_INFO << "Reading CoordinateAxesData";
-  if ( ( ! m_OutputCache ) )
+  if (!m_OutputCache)
   {
     Superclass::SetNumberOfRequiredOutputs(0);
     this->GenerateOutputInformation();

@@ -74,9 +74,11 @@ public:
     writer->DoWrite(cad.GetPointer());
 
     std::vector<mitk::BaseData::Pointer> matricesFromFile = mitk::BaseDataIO::LoadBaseDataFromFile(fileName, "", "", false );
-    mitk::BaseData::Pointer baseData = matricesFromFile.at(0);
-    mitk::CoordinateAxesData::Pointer cadFromFile = dynamic_cast<mitk::CoordinateAxesData*>(baseData.GetPointer());
-    MITK_TEST_CONDITION_REQUIRED(cadFromFile.IsNotNull(),"check if reader returned null")
+    MITK_TEST_CONDITION_REQUIRED(matricesFromFile.size() > 0, "check if LoadBaseDataFromFile returned anything")
+
+    mitk::BaseData* baseData = matricesFromFile.at(0);
+    mitk::CoordinateAxesData* cadFromFile = dynamic_cast<mitk::CoordinateAxesData*>(baseData);
+    MITK_TEST_CONDITION_REQUIRED(cadFromFile != NULL,"check if reader returned null")
 
     vtkSmartPointer<vtkMatrix4x4> matrixFromFile = vtkMatrix4x4::New();
     cadFromFile->GetVtkMatrix(*matrixFromFile);
