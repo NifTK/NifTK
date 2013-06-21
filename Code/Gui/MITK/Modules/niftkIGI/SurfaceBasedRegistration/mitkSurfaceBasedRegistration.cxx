@@ -29,12 +29,13 @@ namespace mitk
 const int SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS = 100;
 const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 100;
 const bool SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE = false;
+const bool SurfaceBasedRegistration::DEFAULT_USE_SPATIALFILTER = false;
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
 :m_MaximumIterations(50)
 ,m_MaximumNumberOfLandmarkPointsToUse(200)
 ,m_Method(VTK_ICP)
-,m_UseSpatialFilter(true)
+,m_UseSpatialFilter(DEFAULT_USE_SPATIALFILTER)
 ,m_Matrix(NULL)
 {
   m_Matrix = vtkMatrix4x4::New();

@@ -47,6 +47,7 @@ public:
   static const int DEFAULT_MAX_ITERATIONS;
   static const int DEFAULT_MAX_POINTS;
   static const bool DEFAULT_USE_DEFORMABLE;
+  static const bool DEFAULT_USE_SPATIALFILTER;
   /**
    * \brief Write My Documentation
    */
