@@ -23,6 +23,8 @@
 #include <highgui.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 /**
  * \class TagTrackingTest
@@ -62,9 +64,12 @@ public:
     CvMat *r2lTrnMat = (CvMat*)cvLoad(rightToLeftTranslationVector.c_str());
     MITK_TEST_CONDITION_REQUIRED(r2lTrnMat != NULL, "Checking r2lTrnMat is not null");
 
+    vtkSmartPointer<vtkMatrix4x4> matrix = vtkMatrix4x4::New();
+    matrix->Identity();
+
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
-    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet);
+    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet, matrix);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
 
@@ -87,7 +92,7 @@ public:
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
-    extractor->ExtractPoints(mitkImage, 0.01, 0.125, pointSet);
+    extractor->ExtractPoints(mitkImage, 0.01, 0.125, pointSet, NULL);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
     MITK_TEST_OUTPUT(<< "Finished TestMono...");
