@@ -27,6 +27,26 @@ namespace niftk
 const char*    Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
 const char*    Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
 
+//-----------------------------------------------------------------------------
+Undistortion::Undistortion(mitk::DataNode::Pointer node)
+  : m_Node(node), m_MapX(0), m_MapY(0)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+Undistortion::~Undistortion()
+{
+  if (m_MapX)
+  {
+    cvReleaseImage(&m_MapX);
+  }
+  if (m_MapY)
+  {
+    cvReleaseImage(&m_MapY);
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 void Undistortion::LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node)
@@ -88,23 +108,90 @@ void Undistortion::LoadCalibration(const std::string& filename, mitk::Image::Poi
 
 
 //-----------------------------------------------------------------------------
-Undistortion::Undistortion(mitk::DataNode::Pointer node)
-  : m_Node(node), m_MapX(0), m_MapY(0)
+void Undistortion::LoadStereoRig(
+    const std::string& filename,
+    const std::string& propertyName,
+    mitk::Image::Pointer img)
 {
+  assert(img.IsNotNull());
+
+  itk::Matrix<float, 4, 4>    txf;
+  txf.SetIdentity();
+
+  if (!filename.empty())
+  {
+    std::ifstream   file(filename.c_str());
+    if (!file.good())
+    {
+      throw std::runtime_error("Cannot open stereo-rig file " + filename);
+    }
+    float   values[3 * 4];
+    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    {
+      if (!file.good())
+      {
+        throw std::runtime_error("Cannot read enough data from stereo-rig file " + filename);
+      }
+      file >> values[i];
+    }
+    file.close();
+
+    // set rotation
+    for (int i = 0; i < 9; ++i)
+    {
+      txf.GetVnlMatrix()(i / 3, i % 3) = values[i];
+    }
+
+    // set translation
+    for (int i = 0; i < 3; ++i)
+    {
+      txf.GetVnlMatrix()(i, 3) = values[9 + i];
+    }
+  }
+  else
+  {
+    // no idea what to invent here...
+  }
+
+  // Attach as property to image.
+  MatrixProperty::Pointer  prop = MatrixProperty::New(txf);
+  img->SetProperty(propertyName.c_str(), prop);
+}
+
+
+
+//-----------------------------------------------------------------------------
+template <typename T>
+bool HasCalibProp(const typename T::Pointer& n)
+{
+  mitk::BaseProperty::Pointer  bp = n->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+  if (bp.IsNull())
+  {
+    return false;
+  }
+  return true;
 }
 
 
 //-----------------------------------------------------------------------------
-Undistortion::~Undistortion()
+bool Undistortion::NeedsToLoadCalib(const std::string& filename, const mitk::Image::Pointer& image)
 {
-  if (m_MapX)
+  bool  needs2load = false;
+  // filename overrides any existing properties
+  if (filename.size() > 0)
   {
-    cvReleaseImage(&m_MapX);
+    needs2load = true;
   }
-  if (m_MapY)
+  else
   {
-    cvReleaseImage(&m_MapY);
+    // no filename? check if there's a suitable property.
+    // if not then invent some stuff.
+    if (HasCalibProp<mitk::Image>(image))
+    {
+      needs2load = true;
+    }
   }
+  return needs2load;
 }
 
 
@@ -124,6 +211,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   }
 
   assert(m_Intrinsics.IsNotNull());
+
   if (m_MapX == 0)
   {
     assert(m_MapY == 0);
@@ -254,8 +342,6 @@ void Undistortion::ValidateInput(bool& recomputeCache)
     // we need to copy it because somebody could modify that instance of CameraIntrinsics
     m_Intrinsics = nodeIntrinsic->Clone();
   }
-
-
 
   // FIXME: check that calibration data is in some meaningful range for our input image
 }

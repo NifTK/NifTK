@@ -38,7 +38,11 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_LeftImageComboBox"/>
+           <widget class="QmitkDataStorageComboBox" name="m_LeftImageComboBox">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="m_RightImageLabel">
@@ -54,7 +58,11 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_RightImageComboBox"/>
+           <widget class="QmitkDataStorageComboBox" name="m_RightImageComboBox">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="m_CameraPositionLabel">
@@ -64,7 +72,11 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_CameraPositionComboBox"/>
+           <widget class="QmitkDataStorageComboBox" name="m_CameraPositionComboBox">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
