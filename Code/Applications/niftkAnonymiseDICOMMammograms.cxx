@@ -442,7 +442,7 @@ int main( int argc, char *argv[] )
     if ( flgAnonymiseDICOMHeader )
     {
       AnonymiseTag( flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00-00-00"     ); // Patient's Birth Date                        
+      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
       AnonymiseTag( flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
       AnonymiseTag( flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
       AnonymiseTag( flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           
