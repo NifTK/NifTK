@@ -24,7 +24,6 @@
 namespace niftk
 {
 
-
 // Idea is to create one of these Undistortion objects for a given DataNode,
 // which then does all the magic for computing the undistortion and caches some data.
 // Output, however, is not tied into an instance of the class. Instead it's passed into Run().
@@ -35,22 +34,25 @@ public:
   // FIXME: this one should go to our calibration class/module, not here
   static const char*    s_CameraCalibrationPropertyName;        // mitk::CameraIntrinsicsProperty
 
+  // used for stereo-rig transformation, i.e. between left and right camera
+  // FIXME: sticking in an opencv matrix would be prefered
+ typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
 public:
   // node should have Image data attached, at least when Run() is called.
   Undistortion(mitk::DataNode::Pointer node);
   virtual ~Undistortion();
 
-
 public:
   // loads calibration from a text file (not the opencv xml format!).
   // if filename is empty then it will dream up some parameters for the given image.
   static void LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node);
   static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
+  static void LoadStereoRig(const std::string& filename, const std::string& propertyName, mitk::Image::Pointer img);
+  static bool NeedsToLoadCalib(const std::string& filename, const mitk::Image::Pointer& image);
 
   // FIXME: should undistorting an already undistorted image fail? or silently ignore?
   virtual void Run(mitk::DataNode::Pointer output);
-
 
 protected:
   // make sure that output node has an image attached with the correct size/etc.
@@ -62,7 +64,6 @@ protected:
   //        but then the ipl parameters are no use!
   // throws exceptions if anything is wrong.
   virtual void Process(const IplImage* input, IplImage* output, bool recomputeCache);
-
 
 protected:
   // the node that this class is to operate on

@@ -17,6 +17,7 @@
 
 #include "niftkCoreExports.h"
 #include <vtkMatrix4x4.h>
+#include <mitkImage.h>
 
 namespace mitk {
 
