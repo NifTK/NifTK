@@ -30,9 +30,13 @@ namespace niftk
 class NIFTKOPENCV_EXPORT Undistortion
 {
 public:
-  static const char*    s_ImageIsUndistortedPropertyName;       // mitk::BoolProperty
+  static const char* s_ImageIsUndistortedPropertyName;       // mitk::BoolProperty
+
   // FIXME: this one should go to our calibration class/module, not here
-  static const char*    s_CameraCalibrationPropertyName;        // mitk::CameraIntrinsicsProperty
+  static const char* s_CameraCalibrationPropertyName; // mitk::CameraIntrinsicsProperty
+  // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
+  static const char* s_ImageIsRectifiedPropertyName;         // mitk::BoolProperty
+  static const char* s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
 
   // used for stereo-rig transformation, i.e. between left and right camera
   // FIXME: sticking in an opencv matrix would be prefered
@@ -50,6 +54,7 @@ public:
   static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
   static void LoadStereoRig(const std::string& filename, const std::string& propertyName, mitk::Image::Pointer img);
   static bool NeedsToLoadCalib(const std::string& filename, const mitk::Image::Pointer& image);
+  static bool NeedsToLoadStereoRigExtrinsics(const std::string& filename, const mitk::Image::Pointer& image);
 
   // FIXME: should undistorting an already undistorted image fail? or silently ignore?
   virtual void Run(mitk::DataNode::Pointer output);
@@ -66,6 +71,11 @@ protected:
   virtual void Process(const IplImage* input, IplImage* output, bool recomputeCache);
 
 protected:
+
+  static bool NeedsToLoadCalibrationProperty(const std::string& fileName,
+                                             const std::string& propertyName,
+                                             const mitk::Image::Pointer& image);
+
   // the node that this class is to operate on
   mitk::DataNode::Pointer     m_Node;
   // the image attached to our node

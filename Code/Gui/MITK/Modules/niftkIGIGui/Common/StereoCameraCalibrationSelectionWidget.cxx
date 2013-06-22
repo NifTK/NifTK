@@ -26,6 +26,21 @@ StereoCameraCalibrationSelectionWidget::StereoCameraCalibrationSelectionWidget(Q
 
 
 //-----------------------------------------------------------------------------
+void StereoCameraCalibrationSelectionWidget::SetLeftChannelEnabled(const bool& isEnabled)
+{
+  m_LeftIntrinsicEdit->setEnabled(isEnabled);
+}
+
+
+//-----------------------------------------------------------------------------
+void StereoCameraCalibrationSelectionWidget::SetRightChannelEnabled(const bool& isEnabled)
+{
+  m_RightIntrinsicEdit->setEnabled(isEnabled);
+  m_LeftRightTransformEdit->setEnabled(isEnabled);
+}
+
+
+//-----------------------------------------------------------------------------
 QString StereoCameraCalibrationSelectionWidget::GetLastDirectory() const
 {
   return m_LastDirectory;

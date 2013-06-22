@@ -35,6 +35,35 @@ StereoTagExtractor::~StereoTagExtractor()
 
 //-----------------------------------------------------------------------------
 void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
+                   const mitk::Image::Pointer rightImage,
+                   const float& minSize,
+                   const float& maxSize,
+                   mitk::PointSet::Pointer pointSet,
+                   const vtkMatrix4x4* cameraToWorld
+                   )
+{
+  CvMat* leftCameraIntrinsics  = cvCreateMat(3, 3, CV_32FC1);
+  CvMat* rightCameraIntrinsics  = cvCreateMat(3, 3, CV_32FC1);
+  CvMat* rightToLeftRotationVector  = cvCreateMat(1, 3, CV_32FC1);
+  CvMat* rightToLeftTranslationVector  = cvCreateMat(1, 3, CV_32FC1);
+
+
+
+  this->ExtractPoints(leftImage, rightImage,
+                      minSize, maxSize,
+                      *leftCameraIntrinsics, *rightCameraIntrinsics,
+                      *rightToLeftRotationVector, *rightToLeftTranslationVector,
+                      pointSet, cameraToWorld);
+
+  cvReleaseMat(&leftCameraIntrinsics);
+  cvReleaseMat(&rightCameraIntrinsics);
+  cvReleaseMat(&rightToLeftRotationVector);
+  cvReleaseMat(&rightToLeftTranslationVector);
+}
+
+
+//-----------------------------------------------------------------------------
+void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                        const mitk::Image::Pointer rightImage,
                                        const float& minSize,
                                        const float& maxSize,

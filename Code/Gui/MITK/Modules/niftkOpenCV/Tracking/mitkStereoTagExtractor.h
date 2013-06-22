@@ -62,6 +62,17 @@ public:
                      const vtkMatrix4x4* cameraToWorld
                      );
 
+  /**
+   * \brief Overloaded interface for other method, extracting the necessary matrices off of the mitk::Image
+   */
+  void ExtractPoints(const mitk::Image::Pointer leftImage,
+                     const mitk::Image::Pointer rightImage,
+                     const float& minSize,
+                     const float& maxSize,
+                     mitk::PointSet::Pointer pointSet,
+                     const vtkMatrix4x4* cameraToWorld
+                     );
+
 protected:
 
   StereoTagExtractor();

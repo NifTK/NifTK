@@ -26,7 +26,7 @@
  * \brief User interface to provide a small plugin to track Augmented Reality tags.
  * \ingroup uk_ac_ucl_cmic_igitagtracker_internal
 */
-class TagTrackerView : public QmitkBaseView
+class TagTrackerView : public QmitkBaseView, public Ui::TagTrackerViewControls
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -81,11 +81,6 @@ private slots:
    */
   void OnManualUpdate();
 
-  /**
-   * \brief If any of the matrix file names change, we try to reload all matrices.
-   */
-  void OnFileNameChanged();
-
 private:
 
   /**
@@ -99,26 +94,28 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
-   * \brief Loads a matrix.
-   */
-  void LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo);
-
-  /**
    * \brief Main method to update tag positions.
    */
   void UpdateTags();
 
-  /** The Widgets. */
-  Ui::TagTrackerViewControls *m_Controls;
-
-  /** The Member Variables. */
-  CvMat *m_LeftIntrinsicMatrix;
-  CvMat *m_RightIntrinsicMatrix;
-  CvMat *m_RightToLeftRotationVector;
-  CvMat *m_RightToLeftTranslationVector;
+  /**
+   * \brief If true, we continuously update according to the ping event on the CTK Event Bus.
+   */
   bool m_ListenToEventBusPulse;
+
+  /**
+   * \brief If true, we dont bother with stereo and triangulation.
+   */
   bool m_MonoLeftCameraOnly;
+
+  /**
+   * \brief Preference to determin the minimum acceptable tag size, as a proportion of image size.
+   */
   float m_MinSize;
+
+  /**
+   * \brief Preference to determin the maximum acceptable tag size, as a proportion of image size.
+   */
   float m_MaxSize;
 };
 

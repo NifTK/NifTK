@@ -39,6 +39,9 @@ public:
   QString GetRightIntrinsicFileName() const;
   QString GetLeftToRightTransformationFileName() const;
 
+  void SetRightChannelEnabled(const bool& isEnabled);
+  void SetLeftChannelEnabled(const bool& isEnabled);
+
 private slots:
 
   void OnLeftIntrinsicCurrentPathChanged(const QString &path);
