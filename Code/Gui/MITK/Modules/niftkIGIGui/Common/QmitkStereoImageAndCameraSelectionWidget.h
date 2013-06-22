@@ -43,8 +43,10 @@ public:
   mitk::DataNode* GetCameraNode() const;
 
   void SetDataStorage(const mitk::DataStorage* dataStorage);
-
   void UpdateNodeNameComboBox();
+
+  void SetRightChannelEnabled(const bool& isEnabled);
+  void SetLeftChannelEnabled(const bool& isEnabled);
 
 private slots:
   void OnComboBoxIndexChanged(int index);

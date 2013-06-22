@@ -41,6 +41,20 @@ QmitkStereoImageAndCameraSelectionWidget::~QmitkStereoImageAndCameraSelectionWid
 
 
 //-----------------------------------------------------------------------------
+void QmitkStereoImageAndCameraSelectionWidget::SetRightChannelEnabled(const bool& isEnabled)
+{
+  m_RightImageCombo->setEnabled(isEnabled);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkStereoImageAndCameraSelectionWidget::SetLeftChannelEnabled(const bool& isEnabled)
+{
+  m_LeftImageCombo->setEnabled(isEnabled);
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::Image* QmitkStereoImageAndCameraSelectionWidget::GetLeftImage() const
 {
   mitk::Image* result = NULL;

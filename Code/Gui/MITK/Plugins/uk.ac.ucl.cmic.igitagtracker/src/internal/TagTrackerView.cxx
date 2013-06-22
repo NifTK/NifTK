@@ -26,23 +26,19 @@
 #include <mitkImage.h>
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkNodePredicateDataType.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
+#include <Undistortion.h>
+#include <SurfaceReconstruction.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
 const std::string TagTrackerView::NODE_ID = "Tag Locations";
 
 //-----------------------------------------------------------------------------
 TagTrackerView::TagTrackerView()
-: m_Controls(NULL)
-, m_LeftIntrinsicMatrix(NULL)
-, m_RightIntrinsicMatrix(NULL)
-, m_RightToLeftRotationVector(NULL)
-, m_RightToLeftTranslationVector(NULL)
-, m_ListenToEventBusPulse(true)
+: m_ListenToEventBusPulse(true)
 , m_MonoLeftCameraOnly(false)
 , m_MinSize(0.01)
 , m_MaxSize(0.0125)
@@ -53,27 +49,6 @@ TagTrackerView::TagTrackerView()
 //-----------------------------------------------------------------------------
 TagTrackerView::~TagTrackerView()
 {
-  if (m_Controls != NULL)
-  {
-    delete m_Controls;
-  }
-
-  if (m_LeftIntrinsicMatrix != NULL)
-  {
-    cvReleaseMat(&m_LeftIntrinsicMatrix);
-  }
-  if (m_RightIntrinsicMatrix != NULL)
-  {
-    cvReleaseMat(&m_RightIntrinsicMatrix);
-  }
-  if (m_RightToLeftRotationVector != NULL)
-  {
-    cvReleaseMat(&m_RightToLeftRotationVector);
-  }
-  if (m_RightToLeftTranslationVector != NULL)
-  {
-    cvReleaseMat(&m_RightToLeftTranslationVector);
-  }
 }
 
 
@@ -87,45 +62,25 @@ std::string TagTrackerView::GetViewID() const
 //-----------------------------------------------------------------------------
 void TagTrackerView::CreateQtPartControl( QWidget *parent )
 {
-  if (!m_Controls)
+  setupUi(parent);
+
+  bool ok = false;
+  ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
+  assert(ok);
+
+  ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+  if (ref)
   {
-    mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-    assert(dataStorage);
-
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer leftIsImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer rightIsImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-
-    m_Controls = new Ui::TagTrackerViewControls();
-    m_Controls->setupUi(parent);
-    m_Controls->m_LeftImageComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_LeftImageComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_LeftImageComboBox->SetPredicate(leftIsImage);
-    m_Controls->m_RightImageComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_RightImageComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_RightImageComboBox->SetPredicate(rightIsImage);
-
-    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
-    m_Controls->m_CameraPositionComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_CameraPositionComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_CameraPositionComboBox->SetPredicate(isCoords);
-
-    this->RetrievePreferenceValues();
-
-    connect(m_Controls->m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
-    connect(m_Controls->m_LeftIntrinsicFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
-    connect(m_Controls->m_RightIntrinsicFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
-    connect(m_Controls->m_RightToLeftRotationFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
-    connect(m_Controls->m_RightToLeftTranslationFileNameEdit, SIGNAL(currentPathChanged(QString)), this, SLOT(OnFileNameChanged()));
-
-    ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
-    if (ref)
-    {
-      ctkEventAdmin* eventAdmin = mitk::TagTrackerViewActivator::getContext()->getService<ctkEventAdmin>(ref);
-      ctkDictionary properties;
-      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
-    }
+    ctkEventAdmin* eventAdmin = mitk::TagTrackerViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+    ctkDictionary properties;
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
+
+  this->RetrievePreferenceValues();
+
+  m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
+  m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
 }
 
 
@@ -149,78 +104,24 @@ void TagTrackerView::RetrievePreferenceValues()
 
   if (m_ListenToEventBusPulse)
   {
-    m_Controls->m_UpdateButton->setEnabled(false);
+    m_UpdateButton->setEnabled(false);
   }
   else
   {
-    m_Controls->m_UpdateButton->setEnabled(true);
+    m_UpdateButton->setEnabled(true);
   }
   m_MonoLeftCameraOnly = prefs->GetBool(TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME, TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA);
-  m_Controls->m_LeftIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
-  m_Controls->m_RightImageComboBox->setEnabled(!m_MonoLeftCameraOnly);
-  m_Controls->m_RightIntrinsicFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
-  m_Controls->m_RightToLeftRotationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
-  m_Controls->m_RightToLeftTranslationFileNameEdit->setEnabled(!m_MonoLeftCameraOnly);
+  m_StereoImageAndCameraSelectionWidget->SetLeftChannelEnabled(true);
+  m_StereoImageAndCameraSelectionWidget->SetRightChannelEnabled(!m_MonoLeftCameraOnly);
+  m_StereoCameraCalibrationSelectionWidget->SetLeftChannelEnabled(!m_MonoLeftCameraOnly);
+  m_StereoCameraCalibrationSelectionWidget->SetRightChannelEnabled(!m_MonoLeftCameraOnly);
 }
 
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::SetFocus()
 {
-  m_Controls->m_LeftImageComboBox->setFocus();
-}
-
-
-//-----------------------------------------------------------------------------
-void TagTrackerView::LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo)
-{
-  QFile file(fileName);
-  if (!file.exists())
-  {
-    if (matrixToWriteTo != NULL)
-    {
-      cvReleaseMat(&matrixToWriteTo);
-      matrixToWriteTo = NULL;
-    }
-    MITK_ERROR << "TagTrackerView::LoadMatrix cannot load from file:" << fileName.toStdString() << std::endl;
-  }
-
-  if (matrixToWriteTo != NULL)
-  {
-    cvReleaseMat(&matrixToWriteTo);
-  }
-  matrixToWriteTo = (CvMat*)cvLoad(fileName.toStdString().c_str());
-  if (matrixToWriteTo == NULL)
-  {
-    MITK_ERROR << "TagTrackerView::LoadMatrix failed to load from file:" << fileName.toStdString() << std::endl;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void TagTrackerView::OnFileNameChanged()
-{
-  QString leftIntrinsicFileName = m_Controls->m_LeftIntrinsicFileNameEdit->currentPath();
-  QString rightIntrinsicFileName = m_Controls->m_RightIntrinsicFileNameEdit->currentPath();
-  QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
-  QString r2lTranslationVectorFileName = m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath();
-
-  if (leftIntrinsicFileName.size() > 0)
-  {
-    this->LoadMatrix(leftIntrinsicFileName, m_LeftIntrinsicMatrix);
-  }
-  if (rightIntrinsicFileName.size() > 0)
-  {
-    this->LoadMatrix(rightIntrinsicFileName, m_RightIntrinsicMatrix);
-  }
-  if (r2lRotationVectorFileName.size() > 0)
-  {
-    this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftRotationVector);
-  }
-  if (r2lTranslationVectorFileName.size() > 0)
-  {
-    this->LoadMatrix(m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath(), m_RightToLeftTranslationVector);
-  }
+  m_StereoImageAndCameraSelectionWidget->setFocus();
 }
 
 
@@ -247,34 +148,47 @@ void TagTrackerView::UpdateTags()
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   assert(dataStorage);
 
-  mitk::DataNode::Pointer leftNode = m_Controls->m_LeftImageComboBox->GetSelectedNode();
-  mitk::DataNode::Pointer rightNode = m_Controls->m_RightImageComboBox->GetSelectedNode();
-  QString leftIntrinsicFileName = m_Controls->m_LeftIntrinsicFileNameEdit->currentPath();
-  QString rightIntrinsicFileName = m_Controls->m_RightIntrinsicFileNameEdit->currentPath();
-  QString r2lRotationVectorFileName = m_Controls->m_RightToLeftRotationFileNameEdit->currentPath();
-  QString r2lTranslationVectorFileName = m_Controls->m_RightToLeftTranslationFileNameEdit->currentPath();
+  mitk::Image::Pointer leftImage = m_StereoImageAndCameraSelectionWidget->GetLeftImage();
+  mitk::Image::Pointer rightImage = m_StereoImageAndCameraSelectionWidget->GetRightImage();
+  mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
+  mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
+  QString leftIntrinsicFileName = m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName();
+  QString rightIntrinsicFileName = m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName();
+  QString leftToRightTransformationFileName = m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName();
 
   if (leftNode.IsNotNull() || rightNode.IsNotNull())
   {
-    // Make sure all specified matrices are loaded.
-    if (leftIntrinsicFileName.size() > 0 && m_LeftIntrinsicMatrix == NULL)
+    bool needToLoadLeftCalib  = false;
+    if (leftImage.IsNotNull())
     {
-      this->LoadMatrix(leftIntrinsicFileName, m_LeftIntrinsicMatrix);
-    }
-    if (rightIntrinsicFileName.size() > 0 && m_RightIntrinsicMatrix == NULL)
-    {
-      this->LoadMatrix(rightIntrinsicFileName, m_RightIntrinsicMatrix);
-    }
-    if (r2lRotationVectorFileName.size() > 0 && m_RightToLeftRotationVector == NULL)
-    {
-      this->LoadMatrix(r2lRotationVectorFileName, m_RightToLeftRotationVector);
-    }
-    if (r2lTranslationVectorFileName.size() > 0 && m_RightToLeftTranslationVector == NULL)
-    {
-      this->LoadMatrix(r2lTranslationVectorFileName, m_RightToLeftTranslationVector);
+      needToLoadLeftCalib = niftk::Undistortion::NeedsToLoadCalib(leftIntrinsicFileName.toStdString(),  leftImage);
     }
 
-    // Retrieve the node from data storage, or create it if it does not exist.
+    bool needToLoadRightCalib = false;
+    bool needToLoadLeftToRightTransformation = false;
+    if (rightImage.IsNotNull())
+    {
+      needToLoadRightCalib = niftk::Undistortion::NeedsToLoadCalib(rightIntrinsicFileName.toStdString(), rightImage);
+      needToLoadLeftToRightTransformation = niftk::Undistortion::NeedsToLoadStereoRigExtrinsics(leftToRightTransformationFileName.toStdString(), rightImage);
+    }
+
+    if (needToLoadLeftCalib)
+    {
+      niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftImage);
+    }
+    if (needToLoadRightCalib)
+    {
+      niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
+    }
+    if (needToLoadLeftToRightTransformation)
+    {
+      niftk::Undistortion::LoadStereoRig(
+          m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName().toStdString(),
+          niftk::Undistortion::s_StereoRigTransformationPropertyName,
+          rightImage);
+    }
+
+    // Retrieve the point set node from data storage, or create it if it does not exist.
     mitk::PointSet::Pointer pointSet;
     mitk::DataNode::Pointer pointSetNode = dataStorage->GetNamedNode(NODE_ID);
 
@@ -311,15 +225,10 @@ void TagTrackerView::UpdateTags()
     vtkSmartPointer<vtkMatrix4x4> cameraToWorldMatrix = vtkMatrix4x4::New();
     cameraToWorldMatrix->Identity();
 
-    mitk::CoordinateAxesData::Pointer cameraToWorld = NULL;
-    mitk::DataNode::Pointer cameraToWorldNode = m_Controls->m_CameraPositionComboBox->GetSelectedNode();
-    if (cameraToWorldNode.IsNotNull())
+    mitk::CoordinateAxesData::Pointer cameraToWorld = m_StereoImageAndCameraSelectionWidget->GetCameraTransform();
+    if (cameraToWorld.IsNotNull())
     {
-      cameraToWorld = dynamic_cast<mitk::CoordinateAxesData*>(cameraToWorldNode->GetData());
-      if (cameraToWorld.IsNotNull())
-      {
-        cameraToWorld->GetVtkMatrix(*cameraToWorldMatrix);
-      }
+      cameraToWorld->GetVtkMatrix(*cameraToWorldMatrix);
     }
 
     // Now use the data to extract points, and update the point set.
@@ -361,8 +270,6 @@ void TagTrackerView::UpdateTags()
     }
     else
     {
-      mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(leftNode->GetData());
-      mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(rightNode->GetData());
       modeName = "stereo";
 
       if (leftImage.IsNull())
@@ -375,26 +282,6 @@ void TagTrackerView::UpdateTags()
         MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right image is NULL" << std::endl;
         return;
       }
-      if (m_LeftIntrinsicMatrix == NULL)
-      {
-        MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, left camera intrinsic matrix is NULL" << std::endl;
-        return;
-      }
-      if (m_RightIntrinsicMatrix == NULL)
-      {
-        MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right camera intrinsic matrix is NULL" << std::endl;
-        return;
-      }
-      if (m_RightToLeftRotationVector == NULL)
-      {
-        MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right to left rotation vector is NULL" << std::endl;
-        return;
-      }
-      if (m_RightToLeftTranslationVector == NULL)
-      {
-        MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right to left translation vector is NULL" << std::endl;
-        return;
-      }
 
       // Stereo Case.
       mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
@@ -403,10 +290,6 @@ void TagTrackerView::UpdateTags()
           rightImage,
           m_MinSize,
           m_MaxSize,
-          *m_LeftIntrinsicMatrix,
-          *m_RightIntrinsicMatrix,
-          *m_RightToLeftRotationVector,
-          *m_RightToLeftTranslationVector,
           pointSet,
           cameraToWorldMatrix
           );
@@ -416,9 +299,10 @@ void TagTrackerView::UpdateTags()
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
-    m_Controls->m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
 
-    m_Controls->m_TagPositionDisplay->clear();
+    m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
+    m_TagPositionDisplay->clear();
+
     if (numberOfTrackedPoints > 0)
     {
       mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
@@ -441,7 +325,7 @@ void TagTrackerView::UpdateTags()
         QString zNum;
         zNum.setNum(point[2]);
 
-        m_Controls->m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
+        m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
     }
   } // end if we have at least one node specified

@@ -169,7 +169,7 @@ void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer s
   CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::Undistortion::s_CameraCalibrationPropertyName);
 
   // has the image been rectified?
-  CopyProp<mitk::BoolProperty>(source, target, niftk::SurfaceReconstruction::s_ImageIsRectifiedPropertyName);
+  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsRectifiedPropertyName);
 
   // has the image been undistorted?
   CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsUndistortedPropertyName);
@@ -225,7 +225,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
       }
       niftk::Undistortion::LoadStereoRig(
           m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName().toStdString(),
-          niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName,
+          niftk::Undistortion::s_StereoRigTransformationPropertyName,
           rightImage);
 
       CopyImagePropsIfNecessary(leftNode,  leftImage);

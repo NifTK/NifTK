@@ -23,9 +23,10 @@
 namespace niftk
 {
 
-
-const char*    Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
-const char*    Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+const char* Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
+const char* Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+const char* Undistortion::s_ImageIsRectifiedPropertyName        = "niftk.ImageIsRectified";
+const char* Undistortion::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
 
 //-----------------------------------------------------------------------------
 Undistortion::Undistortion(mitk::DataNode::Pointer node)
@@ -162,9 +163,9 @@ void Undistortion::LoadStereoRig(
 
 //-----------------------------------------------------------------------------
 template <typename T>
-bool HasCalibProp(const typename T::Pointer& n)
+bool HasCalibProp(const typename T::Pointer& n, const std::string& propertyName)
 {
-  mitk::BaseProperty::Pointer  bp = n->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+  mitk::BaseProperty::Pointer  bp = n->GetProperty(propertyName.c_str());
   if (bp.IsNull())
   {
     return false;
@@ -174,24 +175,40 @@ bool HasCalibProp(const typename T::Pointer& n)
 
 
 //-----------------------------------------------------------------------------
-bool Undistortion::NeedsToLoadCalib(const std::string& filename, const mitk::Image::Pointer& image)
+bool Undistortion::NeedsToLoadCalibrationProperty(const std::string& fileName,
+                                                  const std::string& propertyName,
+                                                  const mitk::Image::Pointer& image)
 {
   bool  needs2load = false;
+
   // filename overrides any existing properties
-  if (filename.size() > 0)
+  if (fileName.size() > 0)
   {
     needs2load = true;
   }
   else
   {
     // no filename? check if there's a suitable property.
-    // if not then invent some stuff.
-    if (HasCalibProp<mitk::Image>(image))
+    if (HasCalibProp<mitk::Image>(image, propertyName))
     {
       needs2load = true;
     }
   }
   return needs2load;
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadCalib(const std::string& fileName, const mitk::Image::Pointer& image)
+{
+  return NeedsToLoadCalibrationProperty(fileName, s_CameraCalibrationPropertyName, image);
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadStereoRigExtrinsics(const std::string& fileName, const mitk::Image::Pointer& image)
+{
+  return NeedsToLoadCalibrationProperty(fileName, s_StereoRigTransformationPropertyName, image);
 }
 
 

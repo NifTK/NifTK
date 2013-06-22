@@ -65,12 +65,6 @@ public:
     DISPARITY_IMAGE
   };
 
-
-  // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
-  static const char*    s_ImageIsRectifiedPropertyName;         // mitk::BoolProperty
-  static const char*    s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
-
-
 public:
 
   mitkClassMacro(SurfaceReconstruction, itk::Object);

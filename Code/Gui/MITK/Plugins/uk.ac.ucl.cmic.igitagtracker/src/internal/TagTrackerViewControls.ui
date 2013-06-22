@@ -13,135 +13,31 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4">
+  <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <widget class="ctkCollapsibleGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="groupBox">
        <property name="title">
         <string>1) Choose input nodes</string>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="m_LeftImageLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Left channel:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_LeftImageComboBox">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="m_RightImageLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Right channel:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_RightImageComboBox">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="m_CameraPositionLabel">
-            <property name="text">
-             <string>Camera position:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_CameraPositionComboBox">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="ctkCollapsibleGroupBox" name="groupBox_3">
-       <property name="title">
-        <string>2) Choose camera calibration</string>
-       </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="m_LeftIntrinsicLabel">
-            <property name="text">
-             <string>Left intrinsic:</string>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QmitkStereoImageAndCameraSelectionWidget" name="m_StereoImageAndCameraSelectionWidget" native="true"/>
+          </item>
+          <item>
+           <widget class="ctkCollapsibleGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>Show camera calibration options</string>
             </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="StereoCameraCalibrationSelectionWidget" name="m_StereoCameraCalibrationSelectionWidget" native="true"/>
+             </item>
+            </layout>
            </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkPathLineEdit" name="m_LeftIntrinsicFileNameEdit" native="true"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="m_RightIntrinsicLabel">
-            <property name="text">
-             <string>Right intrinsic:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="ctkPathLineEdit" name="m_RightIntrinsicFileNameEdit" native="true"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="m_RightToLeftRotationLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Rotation:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="ctkPathLineEdit" name="m_RightToLeftRotationFileNameEdit" native="true"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="m_RightToLeftTranslationLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Translation:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="ctkPathLineEdit" name="m_RightToLeftTranslationFileNameEdit" native="true"/>
           </item>
          </layout>
         </item>
@@ -203,20 +99,21 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkDataStorageComboBox</class>
-   <extends>QComboBox</extends>
-   <header>QmitkDataStorageComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkPathLineEdit</class>
-   <extends>QWidget</extends>
-   <header>ctkPathLineEdit.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ctkCollapsibleGroupBox</class>
    <extends>QGroupBox</extends>
    <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StereoCameraCalibrationSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>StereoCameraCalibrationSelectionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkStereoImageAndCameraSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>QmitkStereoImageAndCameraSelectionWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
