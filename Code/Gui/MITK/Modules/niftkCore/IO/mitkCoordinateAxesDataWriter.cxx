@@ -42,9 +42,30 @@ CoordinateAxesDataWriter::~CoordinateAxesDataWriter()
 
 
 //-----------------------------------------------------------------------------
+const char * CoordinateAxesDataWriter::GetDefaultExtension()
+{
+  return mitk::CoordinateAxesData::FILE_EXTENSION;
+}
+
+
+//-----------------------------------------------------------------------------
+const char * CoordinateAxesDataWriter::GetDefaultFilename()
+{
+  return mitk::CoordinateAxesData::FILE_NAME;
+}
+
+
+//-----------------------------------------------------------------------------
+const char * CoordinateAxesDataWriter::GetFileDialogPattern()
+{
+  return mitk::CoordinateAxesData::FILE_DIALOG_PATTERN;
+}
+
+
+//-----------------------------------------------------------------------------
 void CoordinateAxesDataWriter::Update()
 {
-  Write();
+  this->Write();
 }
 
 

@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
+#include <math.h>
 #include <mitkTestingMacros.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
@@ -32,7 +33,7 @@ bool MatrixOK ( vtkMatrix4x4 * matrix )
   {
     for ( int j = 0 ; j < 4 ; j++ )
     {
-      if ( isnan(matrix->GetElement(i,j)) )
+      if ( std::isnan(matrix->GetElement(i,j)) )
       {
         return false;
       }

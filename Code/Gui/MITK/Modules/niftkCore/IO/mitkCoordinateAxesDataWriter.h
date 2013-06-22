@@ -26,11 +26,11 @@ namespace mitk
  * \class CoordinateAxesDataWriter
  * \brief Writes mitk::CoordinateAxesDataWriter to file.
  */
-class CoordinateAxesDataWriter : public mitk::FileWriterWithInformation
+class CoordinateAxesDataWriter : public FileWriterWithInformation
 {
 public:
 
-  mitkClassMacro( CoordinateAxesDataWriter, mitk::FileWriterWithInformation );
+  mitkClassMacro( CoordinateAxesDataWriter, FileWriterWithInformation );
   itkNewMacro( Self );
 
   typedef mitk::CoordinateAxesData InputType;
@@ -66,29 +66,29 @@ public:
   itkGetStringMacro( FilePattern );
 
   /**
-   * \see mitk::FileWriter::GetInput()
-   */
-  InputType* GetInput();
-
-  /**
    * \see mitk::FileWriter::GetSuccess()
    */
   itkGetMacro( Success, bool );
 
   /**
+   * \see mitk::FileWriter::GetInput()
+   */
+  InputType* GetInput();
+
+  /**
    * \see mitk::FileWriter::GetPossibleFileExtensions()
    * \brief Returns mitk::CoordinateAxesData::FILE_EXTENSION
    */
-  virtual std::vector<std::string> GetPossibleFileExtensions();
+  std::vector<std::string> GetPossibleFileExtensions();
 
-  virtual const char * GetDefaultExtension() { return mitk::CoordinateAxesData::FILE_EXTENSION; }
-  virtual const char * GetDefaultFilename() { return mitk::CoordinateAxesData::FILE_NAME; }
-  virtual const char * GetFileDialogPattern() { return mitk::CoordinateAxesData::FILE_DIALOG_PATTERN; }
+  const char * GetDefaultExtension();
+  const char * GetDefaultFilename();
+  const char * GetFileDialogPattern();
 
-  virtual void Write();
-  virtual void Update();
-  virtual bool CanWriteBaseDataType(BaseData::Pointer data);
-  virtual void DoWrite(BaseData::Pointer data);
+  void Write();
+  void Update();
+  bool CanWriteBaseDataType(BaseData::Pointer data);
+  void DoWrite(BaseData::Pointer data);
 
 protected:
 
