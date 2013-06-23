@@ -446,6 +446,19 @@ public:
             index.resize(frameno + 1);
         index[frameno] = std::make_pair(offset, type);
     }
+
+    bool get_index(unsigned int frameno, unsigned __int64* offset, FrameType::FT* type)
+    {
+        if (frameno >= index.size())
+            return false;
+
+        const std::pair<unsigned __int64, FrameType::FT>&   r = index[frameno];
+        if (offset != 0)
+            *offset = r.first;
+        if (type != 0)
+            *type = r.second;
+        return true;
+    }
 };
 
 
@@ -459,6 +472,11 @@ Decompressor::~Decompressor()
     delete pimpl;
 }
 
+
+bool Decompressor::get_index(unsigned int frameno, unsigned __int64* offset, FrameType::FT* type)
+{
+    return pimpl->get_index(frameno, offset, type);
+}
 
 void Decompressor::update_index(unsigned int frameno, unsigned __int64 offset, FrameType::FT type)
 {

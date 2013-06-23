@@ -378,6 +378,9 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
 {
   assert(m_Pimpl != 0);
 
+  // cannot record while playing back
+  assert(!GetIsPlayingBack());
+
   bool success = false;
   outputFileName = "";
 
@@ -533,3 +536,91 @@ int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 
   return m_Pimpl->GetTextureId(stream);
 }
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // nothing we can do if we dont have suitable decoder bits
+  if (m_Pimpl == 0)
+  {
+    return false;
+  }
+
+  igtlUint64    firstTimeStampFound = 0;
+  igtlUint64    lastTimeStampFound  = 0;
+
+  // needs to match what SaveData() does below
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGINVidiaDataSource");
+  QDir directory(directoryPath);
+  if (directory.exists())
+  {
+    QStringList filters;
+    filters << QString("capture-*.264");
+    directory.setNameFilters(filters);
+    directory.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
+
+    QStringList nalfiles = directory.entryList();
+    // currently, we are only writing a single huge file.
+    if (nalfiles.size() > 1)
+    {
+      std::cerr << "QmitkIGINVidiaDataSource: Warning: found more than one NAL file, will use " + nalfiles[0].toStdString() + " only!" << std::endl;
+    }
+    if (nalfiles.size() >= 1)
+    {
+      std::string filename = (directoryPath + QDir::separator() + nalfiles[0]).toStdString();
+
+      // try to open video file
+      m_Pimpl->TryPlayback(filename);
+
+      // now we need to correlate frame numbers with timestamps
+    }
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  StopGrabbingThread();
+  ClearBuffer();
+
+  // needs to match what SaveData() does
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGINVidiaDataSource");
+  QDir directory(directoryPath);
+
+
+  SetIsPlayingBack(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::StopPlayback()
+{
+  //m_PlaybackIndex.clear();
+  ClearBuffer();
+
+  SetIsPlayingBack(false);
+
+  //this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  assert(GetIsPlayingBack());
+
+}
+

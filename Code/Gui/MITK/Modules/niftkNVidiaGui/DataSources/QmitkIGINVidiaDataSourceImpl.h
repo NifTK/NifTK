@@ -22,6 +22,7 @@
 #include <cuda.h>
 #include <video/sdiinput.h>
 #include <video/compress.h>
+#include <video/decompress.h>
 #include <opencv2/core/types_c.h>
 #include <string>
 #include "QmitkIGITimerBasedThread.h"
@@ -42,7 +43,8 @@ public:
     HW_ENUM,
     FAILED,     // something is broken. signal dropout is not failed!
     RUNNING,    // trying to capture
-    DEAD
+    DEAD,
+    PLAYBACK
   };
 
 
@@ -81,7 +83,8 @@ public:
   void StopCompression();
 
 
-  //std::pair<int, int> get_capture_dimensions() const;
+  void TryPlayback(const std::string& filename);
+
 
 protected:
   // repeatedly called by timer to check for new frames.
@@ -152,7 +155,6 @@ private:
 
   video::Compressor*      compressor;
 
-
   struct SequenceNumberComparator
   {
     bool operator()(const video::FrameInfo& a, const video::FrameInfo& b) const;
@@ -162,6 +164,9 @@ private:
   std::map<video::FrameInfo, int, SequenceNumberComparator>   sn2slot_map;
   // maps ringbuffer slots to sequence numbers
   std::map<int, video::FrameInfo>                             slot2sn_map;
+
+
+  video::Decompressor*    decompressor;
 
 
   // time stamp of the previous successfully captured frame.

@@ -21,6 +21,7 @@
 #include <igtlTimeStamp.h>
 #include <boost/typeof/typeof.hpp>
 #include <NiftyLinkUtils.h>
+#include <fstream>
 
 
 //-----------------------------------------------------------------------------
@@ -57,7 +58,8 @@ static bool CUDADelayLoadCheck()
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
-    sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
+    sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), decompressor(0),
+    lock(QMutex::Recursive), 
     current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
     m_Cookie(0),
     state_message("Starting up")
@@ -143,6 +145,7 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
     // we need the capture context for proper cleanup
     oglwin->makeCurrent();
 
+    delete decompressor;
     delete compressor;
     delete sdiin;
     // we do not own sdidev!
@@ -185,9 +188,6 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   delete sdiin;
   sdiin = 0;
   format = video::StreamFormat();
-  // even though this pimpl class doesnt use the compressor directly
-  // we should cleanup anyway.
-  // so that whenever video dies we get a new file (because format could differ!)
   delete compressor;
   compressor = 0;
 
@@ -438,6 +438,12 @@ void QmitkIGINVidiaDataSourceImpl::run()
   ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), Qt::BlockingQueuedConnection);
   assert(ok);
 
+  // current_state is reset by Reset() called above.
+  // but is this a requirement for our message loop to run properly?
+  // i think it is: whenever somebody (re-)starts our sdi thread we can assume
+  // that our previous capture-setup is now dead/stale.
+  assert(current_state == PRE_INIT);
+
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
 
@@ -469,6 +475,12 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     return;
   }
   if (current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
+  {
+    return;
+  }
+
+  // not much to do in case of playback. it's all synchronous on the gui thread.
+  if (current_state == PLAYBACK)
   {
     return;
   }
@@ -812,6 +824,65 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 void QmitkIGINVidiaDataSourceImpl::StopCompression()
 {
   emit SignalStopCompression();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
+{
+  // FIXME: we still need to queue this onto the sdi thread!
+  //        because we need a cuda context (even though we are using purevideo)
+  QMutexLocker    l(&lock);
+
+  delete decompressor;
+  decompressor = 0;
+
+  try
+  {
+    decompressor = new video::Decompressor(filename);
+
+    std::ifstream   indexfile((filename + ".nalindex").c_str());
+    if (indexfile.good())
+    {
+
+      indexfile.close();
+    }
+    else
+    {
+      // dont leave an open file handle lingering around
+      indexfile.close();
+
+      bool ok = decompressor->recover_index();
+      if (!ok)
+      {
+        throw std::runtime_error("No index found and cannot recover one from stream.");
+      }
+      // try to write it to file so we dont have to do this repeatedly
+      std::ofstream   recoveredindexfile((filename + ".nalindex").c_str());
+      if (recoveredindexfile.is_open())
+      {
+        for (unsigned int f = 0; ; ++f)
+        {
+          unsigned __int64      offset = 0;
+          video::FrameType::FT  type;
+
+          ok = decompressor->get_index(f, &offset, &type);
+          if (!ok)
+          {
+            break;
+          }
+          recoveredindexfile << f << ' ' << offset << ' ' << type << std::endl;
+        }
+        recoveredindexfile.close();
+      }
+    }
+    
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Decompression init failed: " << e.what() << std::endl;
+    throw;
+  }
 }
 
 
