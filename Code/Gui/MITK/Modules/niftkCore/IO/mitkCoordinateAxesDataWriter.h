@@ -15,6 +15,7 @@
 #ifndef CoordinateAxesDataWriter_h
 #define CoordinateAxesDataWriter_h
 
+#include "niftkCoreExports.h"
 #include <itkProcessObject.h>
 #include <mitkFileWriterWithInformation.h>
 #include <mitkCoordinateAxesData.h>
@@ -26,7 +27,7 @@ namespace mitk
  * \class CoordinateAxesDataWriter
  * \brief Writes mitk::CoordinateAxesDataWriter to file.
  */
-class CoordinateAxesDataWriter : public FileWriterWithInformation
+class NIFTKCORE_EXPORT CoordinateAxesDataWriter : public FileWriterWithInformation
 {
 public:
 

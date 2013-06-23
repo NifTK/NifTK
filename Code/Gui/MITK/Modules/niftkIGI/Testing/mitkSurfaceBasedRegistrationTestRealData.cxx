@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <math.h>
+#include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkTestingMacros.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkDataStorage.h>
@@ -33,7 +33,7 @@ bool MatrixOK ( vtkMatrix4x4 * matrix )
   {
     for ( int j = 0 ; j < 4 ; j++ )
     {
-      if ( std::isnan(matrix->GetElement(i,j)) )
+      if ( boost::math::isnan(matrix->GetElement(i,j)) )
       {
         return false;
       }
