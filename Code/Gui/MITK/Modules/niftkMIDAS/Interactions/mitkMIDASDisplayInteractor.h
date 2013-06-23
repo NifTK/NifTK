@@ -93,6 +93,10 @@ namespace mitk
      */
     virtual bool Init(StateMachineAction*, InteractionEvent*);
     /**
+     * \brief Initializes an interaction, saves the pointers start position for further reference.
+     */
+    virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
+    /**
      * \brief Performs panning of the data set in the render window.
      */
     virtual bool Move(StateMachineAction*, InteractionEvent*);

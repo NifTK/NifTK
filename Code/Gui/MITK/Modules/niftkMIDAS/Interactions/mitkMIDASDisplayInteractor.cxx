@@ -66,6 +66,7 @@ void mitk::MIDASDisplayInteractor::Notify(InteractionEvent* interactionEvent, bo
 void mitk::MIDASDisplayInteractor::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("init", Init);
+  CONNECT_FUNCTION("initZoom", InitZoom);
   CONNECT_FUNCTION("move", Move);
   CONNECT_FUNCTION("zoom", Zoom);
   CONNECT_FUNCTION("scroll", Scroll);
@@ -76,6 +77,90 @@ void mitk::MIDASDisplayInteractor::ConnectActionsAndFunctions()
 
 bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)
 {
+  MITK_INFO << "mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)" << std::endl;
+  BaseRenderer* sender = interactionEvent->GetSender();
+  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent == NULL)
+  {
+    MITK_WARN<< "DisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
+    return false;
+  }
+
+  // --------------------------------------------------------------------------
+  // MIDAS customisation starts.
+  //
+  // First, check if the slice navigation controllers have a valid geometry,
+  // i.e. an image is loaded.
+//  if (!m_SliceNavigationControllers[0]->GetCreatedWorldGeometry())
+//  {
+//    return false;
+//  }
+
+//  // Selects the point under the mouse pointer in the slice navigation controllers.
+//  // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
+//  // selects the slice in the two other render window.
+//  const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
+//  m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
+//  m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
+//  m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);
+
+//  // Although the code above puts the crosshair to the mouse pointer position,
+//  // the two positions are not completely equal because the crosshair is always in
+//  // the middle of the voxel that contains the mouse position. This slight difference
+//  // causes that in strong zooming the crosshair moves away from the focus point.
+//  // So that we zoom around the crosshair, we have to calculate the crosshair position
+//  // (in world coordinates) and then its projection to the displayed region (in pixels).
+//  // This will be the focus point during the zooming.
+//  const mitk::PlaneGeometry* plane1 = m_SliceNavigationControllers[0]->GetCurrentPlaneGeometry();
+//  const mitk::PlaneGeometry* plane2 = m_SliceNavigationControllers[1]->GetCurrentPlaneGeometry();
+//  const mitk::PlaneGeometry* plane3 = m_SliceNavigationControllers[2]->GetCurrentPlaneGeometry();
+
+//  mitk::Line3D line;
+//  mitk::Point3D point;
+//  mitk::Point3D focusPoint;
+//  if (plane1 && plane2 && plane1->IntersectionLine(plane2, line) &&
+//      plane3 && plane3->IntersectionPoint(line, point))
+//  {
+//    focusPoint = point;
+//  }
+//  else
+//  {
+//    focusPoint = positionInWorld;
+//  }
+
+//  mitk::Point2D projectedFocusInMillimeters;
+//  mitk::Point2D projectedFocusInPixels;
+
+//  mitk::DisplayGeometry* displayGeometry = sender->GetDisplayGeometry();
+//  displayGeometry->Map(focusPoint, projectedFocusInMillimeters);
+//  displayGeometry->WorldToDisplay(projectedFocusInMillimeters, projectedFocusInPixels);
+
+//  m_StartDisplayCoordinate = projectedFocusInPixels;
+//  m_LastDisplayCoordinate = projectedFocusInPixels;
+//  m_CurrentDisplayCoordinate = projectedFocusInPixels;
+
+  //
+  // MIDAS customisation ends.
+  // --------------------------------------------------------------------------
+
+  // Original MITK code:
+  mitk::DisplayGeometry* displayGeometry = sender->GetDisplayGeometry();
+  m_StartDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+  m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+  m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+
+  Vector2D origin = displayGeometry->GetOriginInMM();
+  double scaleFactorMMPerDisplayUnit = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
+  m_StartCoordinateInMM = mitk::Point2D(
+      (origin + m_StartDisplayCoordinate.GetVectorFromOrigin() * scaleFactorMMPerDisplayUnit).GetDataPointer());
+
+  return true;
+}
+
+bool mitk::MIDASDisplayInteractor::InitZoom(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  MITK_INFO << "mitk::MIDASDisplayInteractor::InitZoom(StateMachineAction*, InteractionEvent* interactionEvent)" << std::endl;
   BaseRenderer* sender = interactionEvent->GetSender();
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
@@ -109,9 +194,9 @@ bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* i
   // So that we zoom around the crosshair, we have to calculate the crosshair position
   // (in world coordinates) and then its projection to the displayed region (in pixels).
   // This will be the focus point during the zooming.
-  const mitk::PlaneGeometry *plane1 = m_SliceNavigationControllers[0]->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry *plane2 = m_SliceNavigationControllers[1]->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry *plane3 = m_SliceNavigationControllers[2]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane1 = m_SliceNavigationControllers[0]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane2 = m_SliceNavigationControllers[1]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane3 = m_SliceNavigationControllers[2]->GetCurrentPlaneGeometry();
 
   mitk::Line3D line;
   mitk::Point3D point;
@@ -137,6 +222,7 @@ bool mitk::MIDASDisplayInteractor::Init(StateMachineAction*, InteractionEvent* i
   m_LastDisplayCoordinate = projectedFocusInPixels;
   m_CurrentDisplayCoordinate = projectedFocusInPixels;
 
+  //
   // MIDAS customisation ends.
   // --------------------------------------------------------------------------
 
