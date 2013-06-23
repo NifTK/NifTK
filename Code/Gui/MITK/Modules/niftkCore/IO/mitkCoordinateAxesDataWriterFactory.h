@@ -15,10 +15,10 @@
 #ifndef CoordinateAxesDataWriterFactory_h
 #define CoordinateAxesDataWriterFactory_h
 
+#include "niftkCoreExports.h"
 #include <itkObjectFactoryBase.h>
 #include <mitkCoreObjectFactoryBase.h>
 #include <mitkBaseData.h>
-#include "niftkCoreExports.h"
 
 namespace mitk
 {
