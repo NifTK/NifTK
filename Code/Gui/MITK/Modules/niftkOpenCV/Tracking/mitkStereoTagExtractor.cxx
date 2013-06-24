@@ -156,7 +156,9 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   IplImage  leftIpl;
   cvInitImageHeader(&leftIpl, cvSize((int) leftImage->GetDimension(0), (int) leftImage->GetDimension(1)), leftImage->GetPixelType().GetBitsPerComponent(), leftImage->GetPixelType().GetNumberOfComponents());
   cvSetData(&leftIpl, leftPointer, leftImage->GetDimension(0) * (leftImage->GetPixelType().GetBitsPerComponent() / 8) * leftImage->GetPixelType().GetNumberOfComponents());
-  cv::Mat left(&leftIpl);
+  cv::Mat leftColour(&leftIpl);
+  cv::Mat left;
+  cv::cvtColor(leftColour, left, CV_RGBA2GRAY);
 
   mitk::ImageWriteAccessor  rightAccess(rightImage);
   void* rightPointer = rightAccess.GetData();
@@ -164,7 +166,9 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   IplImage  rightIpl;
   cvInitImageHeader(&rightIpl, cvSize((int) rightImage->GetDimension(0), (int) rightImage->GetDimension(1)), rightImage->GetPixelType().GetBitsPerComponent(), rightImage->GetPixelType().GetNumberOfComponents());
   cvSetData(&rightIpl, rightPointer, rightImage->GetDimension(0) * (rightImage->GetPixelType().GetBitsPerComponent() / 8) * rightImage->GetPixelType().GetNumberOfComponents());
-  cv::Mat right(&rightIpl);
+  cv::Mat rightColour(&rightIpl);
+  cv::Mat right;
+  cv::cvtColor(rightColour, right, CV_RGBA2GRAY);
 
   cv::Mat leftInt(&leftCameraIntrinsics);
   cv::Mat rightInt(&rightCameraIntrinsics);
