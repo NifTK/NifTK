@@ -110,6 +110,7 @@ protected:
   virtual void GrabData();
   virtual bool Update(mitk::IGIDataType* data);
 
+
 signals:
 
   /**
@@ -154,6 +155,21 @@ private:
   unsigned int            m_ExpectedCookie;
 
   static const char*      s_NODE_NAME;
+
+
+  struct PlaybackPerFrameInfo
+  {
+    unsigned int    m_SequenceNumber;
+    // we have max 4 channels via sdi.
+    unsigned int    m_frameNumber[4];
+
+    PlaybackPerFrameInfo();
+  };
+  std::map<igtlUint64, PlaybackPerFrameInfo>    m_PlaybackIndex;
+
+
+private:
+  bool InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
 
 }; // end class
 

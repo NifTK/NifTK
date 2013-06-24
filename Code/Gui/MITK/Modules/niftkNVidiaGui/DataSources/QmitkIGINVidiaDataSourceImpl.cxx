@@ -190,6 +190,8 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   format = video::StreamFormat();
   delete compressor;
   compressor = 0;
+  delete decompressor;
+  decompressor = 0;
 
   // find our capture card
   for (int i = 0; ; ++i)
@@ -437,6 +439,9 @@ void QmitkIGINVidiaDataSourceImpl::run()
   assert(ok);
   ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), Qt::BlockingQueuedConnection);
   assert(ok);
+  ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), Qt::BlockingQueuedConnection);
+  assert(ok);
+
 
   // current_state is reset by Reset() called above.
   // but is this a requirement for our message loop to run properly?
@@ -454,6 +459,8 @@ void QmitkIGINVidiaDataSourceImpl::run()
   ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
   assert(ok);
   ok = disconnect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
   assert(ok);
 }
 
@@ -479,7 +486,8 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     return;
   }
 
-  // not much to do in case of playback. it's all synchronous on the gui thread.
+  // not much to do in case of playback.
+  // it's all triggered by GetRGBAImage().
   if (current_state == PLAYBACK)
   {
     return;
@@ -652,9 +660,55 @@ void QmitkIGINVidiaDataSourceImpl::Reset()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg)
+{
+  // has to be called with lock held!
+
+  // these are display dimenions (what we are interested in).
+  int   w = decompressor->get_width();
+  int   h = decompressor->get_height();
+
+  IplImage* frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
+  // mark layout as rgba instead of the opencv-default bgr
+  std::memcpy(&frame->channelSeq[0], "RGBA", 4);
+
+  // during playback there are no proper sequence numbers. instead, we repurpose
+  // these as a frame number (quite similar anyway).
+  bool ok = true;
+  for (int i = 0; i < streamcount; ++i)
+  {
+    // note: opencv's widthStep is in bytes.
+    char* subimg = &(frame->imageData[i * h * frame->widthStep]);
+    ok &= decompressor->decompress(sequencenumber + i, subimg, frame->widthStep * h, frame->widthStep);
+  }
+
+  if (ok)
+  {
+    *img = frame;
+    *streamcountinimg = streamcount;
+  }
+  else
+  {
+    cvReleaseImage(&frame);
+    *img = 0;
+    *streamcountinimg = 0;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg)
 {
   QMutexLocker    l(&lock);
+
+  // redirect to decompression early.
+  // all the other stuff below is for live video capture.
+  if (current_state == PLAYBACK)
+  {
+    assert(decompressor);
+    DecompressRGBA(sequencenumber, img, streamcountinimg);
+    return;
+  }
 
   // temp obj to search for the correct slot
   video::FrameInfo    fi = {0};
@@ -698,6 +752,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned in
 {
   IplImage*     img = 0;
   unsigned int  streamcount = 0;
+  // this will block on the sdi thread. so no locking in this method!
   emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
 
   return std::make_pair(img, streamcount);
@@ -828,10 +883,57 @@ void QmitkIGINVidiaDataSourceImpl::StopCompression()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
+void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
 {
-  // FIXME: we still need to queue this onto the sdi thread!
-  //        because we need a cuda context (even though we are using purevideo)
+  QMutexLocker    l(&lock);
+
+  if (on)
+  {
+    // decompressor should have been initialised via TryPlayback().
+    if (decompressor == 0)
+    {
+      throw std::runtime_error("No decompressor. Forgot to call TryPlayback()?");
+    }
+    if (expectedstreamcount <= 0)
+    {
+      throw std::runtime_error("Need correct stream count for playback");
+    }
+    if (expectedstreamcount > 4)
+    {
+      std::cerr << "WARNING: more than 4 streams during playback! That is likely an error: current hardware can capture max 4." << std::endl;
+    }
+
+    // may not be necessary but cleanup a bit anyway to avoid confusion later.
+    sn2slot_map.clear();
+    slot2sn_map.clear();
+
+    // beware: do not stop this thread!
+    // it still needs to do all event processing for GetRGBAImage() and friends.
+    // but there's no need to run it at full speed.
+    SetInterval(1000);
+    // it will not do anything: wake up from timer sleep, and return immediately.
+    current_state = PLAYBACK;
+
+    // the compressor is bare-bones, it doesnt know anything about multiple streams.
+    // it only compresses individual images we pipe in.
+    // so the number of streams during playback has to come from an external source.
+    streamcount = expectedstreamcount;
+  }
+  else
+  {
+    current_state = HW_ENUM;
+    // bumping this thread will wake it up from timer sleep.
+    // it will then do a hardware check and set its own refreshrate to something suitable for the input video.
+    emit SignalBump();
+
+    // note: decompressor will be killed on the sdi thread, during InitVideo().
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::DoTryPlayback(const char* filename, bool* ok, const char** errormsg)
+{
   QMutexLocker    l(&lock);
 
   delete decompressor;
@@ -841,9 +943,11 @@ void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
   {
     decompressor = new video::Decompressor(filename);
 
-    std::ifstream   indexfile((filename + ".nalindex").c_str());
+    std::ifstream   indexfile((std::string(filename) + ".nalindex").c_str());
     if (indexfile.good())
     {
+      // FIXME: implement me
+      assert(false);
 
       indexfile.close();
     }
@@ -852,13 +956,14 @@ void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
       // dont leave an open file handle lingering around
       indexfile.close();
 
-      bool ok = decompressor->recover_index();
-      if (!ok)
+      *ok = decompressor->recover_index();
+      if (!(*ok))
       {
-        throw std::runtime_error("No index found and cannot recover one from stream.");
+        *errormsg = "No index found and cannot recover one from stream.";
+        return;
       }
       // try to write it to file so we dont have to do this repeatedly
-      std::ofstream   recoveredindexfile((filename + ".nalindex").c_str());
+      std::ofstream   recoveredindexfile((std::string(filename) + ".nalindex").c_str());
       if (recoveredindexfile.is_open())
       {
         for (unsigned int f = 0; ; ++f)
@@ -866,8 +971,8 @@ void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
           unsigned __int64      offset = 0;
           video::FrameType::FT  type;
 
-          ok = decompressor->get_index(f, &offset, &type);
-          if (!ok)
+          bool b = decompressor->get_index(f, &offset, &type);
+          if (!b)
           {
             break;
           }
@@ -880,8 +985,30 @@ void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
   }
   catch (const std::exception& e)
   {
+    *ok = false;
     std::cerr << "Decompression init failed: " << e.what() << std::endl;
-    throw;
+    *errormsg = "Decompression init failed";
+    return;
+  }
+
+  *errormsg = 0;
+  *ok = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
+{
+  const char*   fns = filename.c_str();
+  bool          ok = false;
+  const char*   err = 0;
+
+  emit SignalTryPlayback(fns, &ok, &err);
+
+  if (!ok)
+  {
+    assert(err != 0);
+    throw std::runtime_error(err);
   }
 }
 

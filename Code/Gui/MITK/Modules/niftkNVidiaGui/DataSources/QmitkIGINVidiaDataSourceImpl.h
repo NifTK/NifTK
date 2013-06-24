@@ -84,6 +84,9 @@ public:
 
 
   void TryPlayback(const std::string& filename);
+  // stops realtime capture if on=true and enables decompressor.
+  // use GetRGBAImage() to retrieve a frame.
+  void SetPlayback(bool on, int expectedstreamcount = 0);
 
 
 protected:
@@ -103,22 +106,23 @@ protected slots:
   void DoCompressFrame(unsigned int sequencenumber, unsigned int* frameindex);
   void DoStopCompression();
   void DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
-
+  void DoTryPlayback(const char* filename, bool* ok, const char** errormsg);
 
 signals:
   // bumping this thread means to wake it up from its timer sleep.
+  // this is a queued connection.
   void SignalBump();
-  // internal! use CompressFrame() instead!
+  // these are blocking queued connections!
   void SignalCompress(unsigned int sequencenumber, unsigned int* frameindex);
   void SignalStopCompression();
   void SignalGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
-
+  void SignalTryPlayback(const char* filename, bool* ok, const char** errormsg);
 
 private:
   // has to be called with lock held!
   void InitVideo();
   void ReadbackRGBA(char* buffer, std::size_t bufferpitch, int width, int height, int slot);
-
+  void DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg);
 
   // any access to members needs to be locked
   mutable QMutex          lock;

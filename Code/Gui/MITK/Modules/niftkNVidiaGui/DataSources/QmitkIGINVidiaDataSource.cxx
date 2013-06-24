@@ -24,6 +24,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
+#include <boost/typeof/typeof.hpp>
 
 
 // note the trailing space
@@ -539,14 +540,8 @@ int QmitkIGINVidiaDataSource::GetTextureId(int stream)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
 {
-  // nothing we can do if we dont have suitable decoder bits
-  if (m_Pimpl == 0)
-  {
-    return false;
-  }
-
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
@@ -568,12 +563,57 @@ bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUi
     }
     if (nalfiles.size() >= 1)
     {
-      std::string filename = (directoryPath + QDir::separator() + nalfiles[0]).toStdString();
+      QString     basename = nalfiles[0].split(".264")[0];
+      std::string nalfilename = (directoryPath + QDir::separator() + basename + ".264").toStdString();
 
       // try to open video file
-      m_Pimpl->TryPlayback(filename);
+      m_Pimpl->TryPlayback(nalfilename);
 
       // now we need to correlate frame numbers with timestamps
+      index.clear();
+      std::string     framemapfilename = (directoryPath + QDir::separator() + basename + ".framemap.log").toStdString();
+      std::ifstream   framemapfile(framemapfilename.c_str());
+      if (framemapfile.good())
+      {
+        std::string   commentline;
+        std::getline(framemapfile, commentline);
+        if (commentline[0] != '#')
+        {
+          throw std::runtime_error("Frame map has been tampered with");
+        }
+
+        unsigned int    framenumber     = -1;
+        unsigned int    sequencenumber  = -1;
+        unsigned int    channelnumber   = -1;
+        igtlUint64      timestamp       = -1;
+
+        while (framemapfile.good())
+        {
+          framemapfile >> framenumber;
+          framemapfile >> sequencenumber;
+          framemapfile >> channelnumber;
+          framemapfile >> timestamp;
+
+          if (timestamp == -1)
+          {
+            break;
+          }
+
+          assert(channelnumber < 4);
+          index[timestamp].m_SequenceNumber = sequencenumber;
+          index[timestamp].m_frameNumber[channelnumber] = framenumber;
+        }
+
+        if (!index.empty())
+        {
+          firstTimeStampFound = index.begin()->first;
+          lastTimeStampFound  = (--(index.end()))->first;
+        }
+      }
+      else
+      {
+        throw std::runtime_error("Frame map not readable");
+      }
     }
   }
 
@@ -591,28 +631,64 @@ bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUi
 
 
 //-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // nothing we can do if we dont have suitable decoder bits
+  if (m_Pimpl == 0)
+  {
+    return false;
+  }
+
+  std::map<igtlUint64, PlaybackPerFrameInfo> index;
+  return InitWithRecordedData(index, path, firstTimeStampInStore, lastTimeStampInStore);
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkIGINVidiaDataSource::PlaybackPerFrameInfo::PlaybackPerFrameInfo()
+  : m_SequenceNumber(-1)
+{
+  // zero is a valid frame index, so use -1.
+  m_frameNumber[0] = m_frameNumber[1] = m_frameNumber[2] = m_frameNumber[3] = -1;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
 {
+  // if we dont have decoder then other things should have failed earlier
+  // and this method should not have been called.
+  assert(m_Pimpl);
+
   StopGrabbingThread();
   ClearBuffer();
 
-  // needs to match what SaveData() does
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGINVidiaDataSource");
-  QDir directory(directoryPath);
+  bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0);
+  assert(ok);
 
+  // lets guess how many streams we have dumped into that file.
+  int   streamcount = 0;
+  for (int j = 0; j < 4; ++j, ++streamcount)
+  {
+    if (m_PlaybackIndex.begin()->second.m_frameNumber[j] == -1)
+    {
+      break;
+    }
+  }
 
   SetIsPlayingBack(true);
+  m_Pimpl->SetPlayback(true, streamcount);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::StopPlayback()
 {
-  //m_PlaybackIndex.clear();
+  m_PlaybackIndex.clear();
   ClearBuffer();
 
   SetIsPlayingBack(false);
-
+  m_Pimpl->SetPlayback(false);
   //this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
 }
 
@@ -622,5 +698,25 @@ void QmitkIGINVidiaDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 {
   assert(GetIsPlayingBack());
 
+  BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
+  // so we need to pick the previous
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
+  if (i != m_PlaybackIndex.end())
+  {
+    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+
+    // gpu arrival time is bogus here. we've never used it for anything anyway.
+    // also note: the pimpl decompressor index does not know anything about sequence numbers.
+    // so we are using the frame number as a sequence number.
+    wrapper->SetValues(m_Pimpl->GetCookie(), i->second.m_frameNumber[0], i->first);
+    wrapper->SetTimeStampInNanoSeconds(i->first);
+    wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+    m_MostRecentSequenceNumber = 1;
+    this->AddData(wrapper.GetPointer());
+    this->SetStatus("Playing");
+  }
 }
 
