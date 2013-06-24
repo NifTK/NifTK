@@ -16,6 +16,8 @@
 #include "mitkTagTrackingFacade.h"
 #include <mitkImageToOpenCVImageFilter.h>
 #include <mitkCameraIntrinsicsProperty.h>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
 #include <cv.h>
 #include <Undistortion.h>
 
@@ -148,17 +150,21 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
 {
 //  pointSet->Clear();
 
-  mitk::ImageToOpenCVImageFilter::Pointer leftOpenCVFilter = mitk::ImageToOpenCVImageFilter::New();
-  leftOpenCVFilter->SetImage(leftImage);
+  mitk::ImageWriteAccessor  leftAccess(leftImage);
+  void* leftPointer = leftAccess.GetData();
 
-  IplImage *leftIm = leftOpenCVFilter->GetOpenCVImage();
-  cv::Mat left(leftIm);
+  IplImage  leftIpl;
+  cvInitImageHeader(&leftIpl, cvSize((int) leftImage->GetDimension(0), (int) leftImage->GetDimension(1)), leftImage->GetPixelType().GetBitsPerComponent(), leftImage->GetPixelType().GetNumberOfComponents());
+  cvSetData(&leftIpl, leftPointer, leftImage->GetDimension(0) * (leftImage->GetPixelType().GetBitsPerComponent() / 8) * leftImage->GetPixelType().GetNumberOfComponents());
+  cv::Mat left(&leftIpl);
 
-  mitk::ImageToOpenCVImageFilter::Pointer rightOpenCVFilter = mitk::ImageToOpenCVImageFilter::New();
-  rightOpenCVFilter->SetImage(rightImage);
+  mitk::ImageWriteAccessor  rightAccess(rightImage);
+  void* rightPointer = rightAccess.GetData();
 
-  IplImage *rightIm = rightOpenCVFilter->GetOpenCVImage();
-  cv::Mat right(rightIm);
+  IplImage  rightIpl;
+  cvInitImageHeader(&rightIpl, cvSize((int) rightImage->GetDimension(0), (int) rightImage->GetDimension(1)), rightImage->GetPixelType().GetBitsPerComponent(), rightImage->GetPixelType().GetNumberOfComponents());
+  cvSetData(&rightIpl, rightPointer, rightImage->GetDimension(0) * (rightImage->GetPixelType().GetBitsPerComponent() / 8) * rightImage->GetPixelType().GetNumberOfComponents());
+  cv::Mat right(&rightIpl);
 
   cv::Mat leftInt(&leftCameraIntrinsics);
   cv::Mat rightInt(&rightCameraIntrinsics);
@@ -189,9 +195,6 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
     TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
-
-  cvReleaseImage(&leftIm);
-  cvReleaseImage(&rightIm);
 }
 
 
