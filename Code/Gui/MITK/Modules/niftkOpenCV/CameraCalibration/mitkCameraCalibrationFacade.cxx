@@ -639,10 +639,10 @@ void OutputCalibrationData(
   os << "Intrinsic matrix" << std::endl;
   for (int i = 0; i < 3; i++)
   {
-    os << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    os << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
     if (writeIntrinsicToFlatFile)
     {
-      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
     }
   }
 
@@ -650,7 +650,7 @@ void OutputCalibrationData(
   os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
   if (writeIntrinsicToFlatFile)
   {
-    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
   }
   if(intrinsicFileOutput.is_open())
   {

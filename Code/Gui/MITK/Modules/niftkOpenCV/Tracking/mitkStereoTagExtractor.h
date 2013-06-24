@@ -47,7 +47,7 @@ public:
    * \param leftCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightToLeftRotationVector a [1x3] rotation vector as per the Rodrigues formulation.
-   * \param rightToLeftTranslationVector a [1x3] rotation vector.
+   * \param rightToLeftTranslationVector a [1x3] translation vector.
    * \param cameraToWorld if not null, all reconstructed points are multiplied by this transform.
    */
   void ExtractPoints(const mitk::Image::Pointer leftImage,

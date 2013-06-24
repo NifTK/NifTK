@@ -222,11 +222,12 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
   cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
 
+  // Output right to left transformation as a rotation [3x3] then a translation [1x3]
   for (int i = 0; i < 3; i++)
   {
-    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 2) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, i, 0) << std::endl;
+    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 2) << std::endl;
   }
-  fsr2l << "0 0 0 1" << std::endl;
+  fsr2l << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 2, 0) << std::endl;
 
   // Also calculate specific right to left transformations for each view.
   ComputeRightToLeftTransformations(

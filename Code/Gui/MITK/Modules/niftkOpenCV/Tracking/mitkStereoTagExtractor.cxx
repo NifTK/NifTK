@@ -70,7 +70,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   )
   {
     leftCam = leftIntrinsicsProp->GetValue();
-    rightCam = leftIntrinsicsProp->GetValue();
+    rightCam = rightIntrinsicsProp->GetValue();
     txf = leftToRightMatrixProp->GetValue();
   }
   else
