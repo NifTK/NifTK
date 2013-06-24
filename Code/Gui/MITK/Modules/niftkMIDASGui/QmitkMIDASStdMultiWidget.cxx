@@ -1522,6 +1522,8 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
     m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
     sliceIndex = selectedPositionInVx[axis];
 
+    emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
+
     // cursor[0] <-> axial[0] <-> coronal[0]
     // cursor[1] <-> axial[1] <-> -sagittal[0]
     // cursor[2] <-> sagittal[1] <-> coronal[1]
@@ -1590,10 +1592,9 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
         }
       }
       this->RequestUpdate();
-      emit CursorPositionChanged(m_CursorPosition);
     }
 
-    emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
+    emit CursorPositionChanged(m_CursorPosition);
   }
 }
 
@@ -2013,17 +2014,11 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
       renderers[i] = m_RenderWindows[i]->GetRenderer();
     }
 
-    std::vector<mitk::SliceNavigationController*> sliceNavigationControllers(3);
-    sliceNavigationControllers[0] = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-    sliceNavigationControllers[1] = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-    sliceNavigationControllers[2] = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
-
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers, sliceNavigationControllers);
+    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers);
 
     mitk::Module* niftkMIDASModule = mitk::ModuleRegistry::GetModule("niftkMIDAS");
     m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkMIDASModule);
-//    m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml");
     m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 
     // ... and register it as listener via the micro services.
