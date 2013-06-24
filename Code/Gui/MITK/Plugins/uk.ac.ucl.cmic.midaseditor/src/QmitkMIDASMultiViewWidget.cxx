@@ -119,11 +119,20 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setContentsMargins(5, 5, 5, 1);
   m_PopupWidget->setLineWidth(0);
 
+#ifdef __APPLE__
   QPalette popupPalette = this->palette();
   QColor windowColor = popupPalette.color(QPalette::Window);
   windowColor.setAlpha(64);
   popupPalette.setColor(QPalette::Window, windowColor);
   m_PopupWidget->setPalette(popupPalette);
+#else
+  QPalette popupPalette = this->palette();
+  QColor windowColor = popupPalette.color(QPalette::Window);
+  windowColor.setAlpha(128);
+  popupPalette.setColor(QPalette::Window, windowColor);
+  m_PopupWidget->setPalette(popupPalette);
+  m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+#endif
 
   int buttonRowHeight = 15;
   m_PinButton = new QToolButton(this);
