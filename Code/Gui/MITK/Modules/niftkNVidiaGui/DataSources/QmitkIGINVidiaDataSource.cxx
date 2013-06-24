@@ -40,6 +40,9 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
 , m_Pimpl(0), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
 , m_WasSavingMessagesPreviously(false)
 , m_ExpectedCookie(0)
+, m_MostRecentlyPlayedbackTimeStamp(0)
+, m_MostRecentlyUpdatedTimeStamp(0)
+, m_CachedUpdate((IplImage*) 0, 0)
 {
   this->SetName("QmitkIGINVidiaDataSource");
   this->SetType("Frame Grabber");
@@ -261,14 +264,22 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
   {
     if (m_Pimpl->GetCookie() == dataType->GetCookie())
     {
-      // one massive image, with all streams stacked in.
-      // note: we own the image now, we can do with it whatever we want.
-      std::pair<IplImage*, int> frame = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
+      // we cache data storage updates, mainly for decompression.
+      // its current implementation is quite heavy-weight and Update() will be called
+      // at the GUI refresh rate, even if no new timestamp has been selected.
+      if (m_MostRecentlyUpdatedTimeStamp != dataType->GetTimeStampInNanoSeconds())
+      {
+        cvReleaseImage(&m_CachedUpdate.first);
+
+        // one massive image, with all streams stacked in
+        m_CachedUpdate = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber());
+      }
+
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
-      if (frame.first)
+      if (m_CachedUpdate.first)
       {
         // max 4 streams
-        const int streamcount = frame.second;
+        const int streamcount = m_CachedUpdate.second;
         for (int i = 0; i < streamcount; ++i)
         {
           std::ostringstream  nodename;
@@ -279,15 +290,16 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           {
             MITK_ERROR << "Can't find mitk::DataNode with name " << nodename.str() << std::endl;
             this->SetStatus("Failed");
-            cvReleaseImage(&frame.first);
+            cvReleaseImage(&m_CachedUpdate.first);
+            m_CachedUpdate.first = 0;
             return false;
           }
 
           // we ignore field mode here, it's up to any consumer to deal with this properly
-          int   subimagheight = frame.first->height / streamcount;
+          int   subimagheight = m_CachedUpdate.first->height / streamcount;
           IplImage  subimg;
-          cvInitImageHeader(&subimg, cvSize((int) frame.first->width, subimagheight), IPL_DEPTH_8U, frame.first->nChannels);
-          cvSetData(&subimg, &frame.first->imageData[i * subimagheight * frame.first->widthStep], frame.first->widthStep);
+          cvInitImageHeader(&subimg, cvSize((int) m_CachedUpdate.first->width, subimagheight), IPL_DEPTH_8U, m_CachedUpdate.first->nChannels);
+          cvSetData(&subimg, &m_CachedUpdate.first->imageData[i * subimagheight * m_CachedUpdate.first->widthStep], m_CachedUpdate.first->widthStep);
 
           // readback will have dumped data in opengl orientation (origin is at the lower left corner).
           // and we cannot flip the whole image because that would change channel order.
@@ -356,8 +368,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           node->Modified();
         } // for
 
-        cvReleaseImage(&frame.first);
-      } 
+        m_MostRecentlyUpdatedTimeStamp = dataType->GetTimeStampInNanoSeconds();
+      }
       else
         this->SetStatus("Failed");
     }
@@ -665,6 +677,8 @@ void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64
   StopGrabbingThread();
   ClearBuffer();
 
+  m_MostRecentlyUpdatedTimeStamp = 0;
+
   bool ok = InitWithRecordedData(m_PlaybackIndex, path, 0, 0);
   assert(ok);
 
@@ -692,6 +706,8 @@ void QmitkIGINVidiaDataSource::StopPlayback()
   SetIsPlayingBack(false);
   m_Pimpl->SetPlayback(false);
 
+  m_MostRecentlyUpdatedTimeStamp = 0;
+
   this->InitializeAndRunGrabbingThread(20); // 40ms = 25fps
 }
 
@@ -701,25 +717,31 @@ void QmitkIGINVidiaDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 {
   assert(GetIsPlayingBack());
 
-  BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
-  // so we need to pick the previous
-  if (i != m_PlaybackIndex.begin())
+  // dont replay the same timestamp over and over again.
+  if (m_MostRecentlyPlayedbackTimeStamp != requestedTimeStamp)
   {
-    --i;
-  }
-  if (i != m_PlaybackIndex.end())
-  {
-    mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
+    BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
+    // so we need to pick the previous
+    if (i != m_PlaybackIndex.begin())
+    {
+      --i;
+    }
+    if (i != m_PlaybackIndex.end())
+    {
+      mitk::IGINVidiaDataType::Pointer wrapper = mitk::IGINVidiaDataType::New();
 
-    // gpu arrival time is bogus here. we've never used it for anything anyway.
-    // also note: the pimpl decompressor index does not know anything about sequence numbers.
-    // so we are using the frame number as a sequence number.
-    wrapper->SetValues(m_Pimpl->GetCookie(), i->second.m_frameNumber[0], i->first);
-    wrapper->SetTimeStampInNanoSeconds(i->first);
-    wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
-    m_MostRecentSequenceNumber = 1;
-    this->AddData(wrapper.GetPointer());
-    this->SetStatus("Playing");
+      // gpu arrival time is bogus here. we've never used it for anything anyway.
+      // also note: the pimpl decompressor index does not know anything about sequence numbers.
+      // so we are using the frame number as a sequence number.
+      wrapper->SetValues(m_Pimpl->GetCookie(), i->second.m_frameNumber[0], i->first);
+      wrapper->SetTimeStampInNanoSeconds(i->first);
+      wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+      m_MostRecentSequenceNumber = 1;
+      this->AddData(wrapper.GetPointer());
+      this->SetStatus("Playing");
+
+      m_MostRecentlyPlayedbackTimeStamp = requestedTimeStamp;
+    }
   }
 }
 

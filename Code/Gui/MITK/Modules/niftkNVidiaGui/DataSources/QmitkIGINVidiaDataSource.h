@@ -167,6 +167,14 @@ private:
   };
   std::map<igtlUint64, PlaybackPerFrameInfo>    m_PlaybackIndex;
 
+  // used to prevent replaying the same thing over and over again.
+  // because decompression in its current implementation is quite heavy-weight,
+  // the repeated calls to PlaybackData() and similarly Update() slow down the machine
+  // quite significantly.
+  igtlUint64                                    m_MostRecentlyPlayedbackTimeStamp;
+  igtlUint64                                    m_MostRecentlyUpdatedTimeStamp;
+  std::pair<IplImage*, int>                     m_CachedUpdate;
+
 
 private:
   bool InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
