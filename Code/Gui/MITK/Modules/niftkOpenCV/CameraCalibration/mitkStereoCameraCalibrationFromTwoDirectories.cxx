@@ -222,7 +222,7 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
   cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
 
-  // Output right to left transformation as a rotation [3x3] then a translation [1x3]
+  // Output right to left MEDIAN transformation as a rotation [3x3] then a translation [1x3]
   for (int i = 0; i < 3; i++)
   {
     fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 2) << std::endl;
@@ -248,6 +248,27 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     }
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.rotation.xml").c_str(), r2LRot);
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.translation.xml").c_str(), r2LTrans);
+
+    // Also output in plain text format, which is a [3x3] rotation, AND THEN a [1x3] translation.
+    std::ofstream tmpR2L;
+    std::string tmpR2LFileName = successfullFileNamesLeft[i] + ".r2l.txt";
+    tmpR2L.open((tmpR2LFileName).c_str(), std::ios::out);
+    if (!tmpR2L.fail())
+    {
+      cvRodrigues2(r2LRot, rightToLeftRotationMatrix);
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*r2LTrans, float, 0, 0) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 1) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 2) << std::endl;
+    }
+    else
+    {
+      std::cerr << "ERROR: Writing right-to-left data to file " << tmpR2LFileName << " failed!" << std::endl;
+    }
+    if(tmpR2L.is_open())
+    {
+      tmpR2L.close();
+    }
   }
 
   // Might as well

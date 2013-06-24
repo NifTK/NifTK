@@ -94,7 +94,7 @@ public:
     mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
     extractor->ExtractPoints(mitkImage, 0.01, 0.125, pointSet, NULL);
 
-    MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
+    MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 5 points out, and we got " << pointSet->GetSize());
     MITK_TEST_OUTPUT(<< "Finished TestMono...");
   }
 }; // end class

@@ -165,12 +165,15 @@ void Undistortion::LoadStereoRig(
 template <typename T>
 bool HasCalibProp(const typename T::Pointer& n, const std::string& propertyName)
 {
+  bool result = false;
+
   mitk::BaseProperty::Pointer  bp = n->GetProperty(propertyName.c_str());
-  if (bp.IsNull())
+  if (bp.IsNotNull())
   {
-    return false;
+    result = true;
   }
-  return true;
+
+  return result;
 }
 
 
@@ -188,8 +191,7 @@ bool Undistortion::NeedsToLoadCalibrationProperty(const std::string& fileName,
   }
   else
   {
-    // no filename? check if there's a suitable property.
-    if (HasCalibProp<mitk::Image>(image, propertyName))
+    if (!HasCalibProp<mitk::Image>(image, propertyName))
     {
       needs2load = true;
     }
