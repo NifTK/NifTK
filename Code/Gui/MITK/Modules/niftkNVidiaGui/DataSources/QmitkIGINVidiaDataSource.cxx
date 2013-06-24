@@ -305,7 +305,13 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           // and we cannot flip the whole image because that would change channel order.
           // so do it individually for each channel-subimage.
           // note: we are free to do this because we own the IplImage returned by readback.
-          cvFlip(&subimg);
+          if (!GetIsPlayingBack())
+          {
+            // but: only flip it for live video.
+            // currently the decompressor outputs top-left, instead of opengl bottom-left.
+            // (i'm not sure which one is better or more correct here.)
+            cvFlip(&subimg);
+          }
 
           // Check if we already have an image on the node.
           // We dont want to create a new one in that case (there is a lot of stuff going on
