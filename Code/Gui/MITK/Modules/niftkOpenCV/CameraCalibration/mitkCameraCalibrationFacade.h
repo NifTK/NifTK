@@ -177,7 +177,7 @@ void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
 
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
- * right cameras, and compute transformations from left to right.
+ * right cameras, and compute transformations from right to left.
  */
 void ComputeRightToLeftTransformations(
     const CvMat& rotationVectorsLeft,

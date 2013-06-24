@@ -45,6 +45,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="m_UpdateButton">
+       <property name="text">
+        <string>update</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="ctkCollapsibleGroupBox" name="groupBox_2">
        <property name="title">
         <string>3) Information</string>
@@ -71,13 +78,6 @@
          </layout>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="m_UpdateButton">
-       <property name="text">
-        <string>update</string>
-       </property>
       </widget>
      </item>
      <item>
