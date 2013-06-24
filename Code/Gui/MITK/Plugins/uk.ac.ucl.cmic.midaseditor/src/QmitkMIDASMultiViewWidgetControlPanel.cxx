@@ -137,7 +137,9 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsVisible(bool vi
   m_ViewBindingSeparator->setVisible(visible);
   m_ViewBindingWidget->setVisible(visible);
   m_DropTypeSeparator->setVisible(visible && m_ShowDropTypeControls);
-  m_MultiViewControlsGroupBox->setVisible(visible || m_ShowDropTypeControls);
+  bool showMultiViewControls = visible || m_ShowDropTypeControls;
+  m_MultiViewControlsSeparator->setVisible(showMultiViewControls);
+  m_MultiViewControlsWidget->setVisible(showMultiViewControls);
 }
 
 
@@ -154,35 +156,37 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsVisible(bool visi
   m_ShowDropTypeControls = visible;
   m_DropTypeWidget->setVisible(visible);
   m_DropTypeSeparator->setVisible(visible && m_ShowViewNumberControls);
-  m_MultiViewControlsGroupBox->setVisible(visible || m_ShowViewNumberControls);
+  bool showMultiViewControls = visible || m_ShowViewNumberControls;
+  m_MultiViewControlsSeparator->setVisible(showMultiViewControls);
+  m_MultiViewControlsWidget->setVisible(showMultiViewControls);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreSingleViewControlsEnabled() const
 {
-  return m_SingleViewControlsGroupBox->isEnabled();
+  return m_SingleViewControlsWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetSingleViewControlsEnabled(bool enabled)
 {
-  m_SingleViewControlsGroupBox->setEnabled(enabled);
+  m_SingleViewControlsWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreMultiViewControlsEnabled() const
 {
-  return m_MultiViewControlsGroupBox->isEnabled();
+  return m_MultiViewControlsWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetMultiViewControlsEnabled(bool enabled)
 {
-  m_MultiViewControlsGroupBox->setEnabled(enabled);
+  m_MultiViewControlsWidget->setEnabled(enabled);
 }
 
 
