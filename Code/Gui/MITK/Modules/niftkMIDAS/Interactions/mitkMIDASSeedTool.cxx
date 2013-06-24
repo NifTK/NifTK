@@ -104,7 +104,7 @@ void mitk::MIDASSeedTool::Activated()
     if (m_PointSetInteractor.IsNull())
     {
       m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
-      m_PointSetInteractor->SetPrecision(3);
+      m_PointSetInteractor->SetPrecision(1);
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_PointSetInteractor );
   }
