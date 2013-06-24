@@ -106,7 +106,8 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
     if (cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cudadevices[0]) == CUDA_SUCCESS)
     {
       cuCtxGetCurrent(&cuContext);
-      // FIXME: do we need to pop the current context? is it leaking to the caller somehow?
+      // should we pop the current context? is it leaking to the caller somehow?
+      // i think we should.
       CUcontext oldctx;
       cuCtxPopCurrent(&oldctx);
     }
@@ -427,6 +428,16 @@ void QmitkIGINVidiaDataSourceImpl::run()
   // OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
   oglwin->makeCurrent();
 
+  // we also want our cuda context to be active!
+  // it used to be enabled only on demand when the compressor would run.
+  CUresult r = cuCtxPushCurrent(cuContext);
+  if (r != CUDA_SUCCESS)
+  {
+    current_state = FAILED;
+    state_message = "CUDA failed";
+    return;
+  }
+
   // it's possible for someone else to start and stop our thread.
   // just make sure we start clean if that happens.
   Reset();
@@ -679,7 +690,16 @@ void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, I
   {
     // note: opencv's widthStep is in bytes.
     char* subimg = &(frame->imageData[i * h * frame->widthStep]);
-    ok &= decompressor->decompress(sequencenumber + i, subimg, frame->widthStep * h, frame->widthStep);
+    try
+    {
+      ok &= decompressor->decompress(sequencenumber + i, subimg, frame->widthStep * h, frame->widthStep);
+    }
+    catch (const std::exception& e)
+    {
+      std::cerr << "Caught exception while decompressing: " << e.what() << std::endl;
+      ok = false;
+      break;
+    }
   }
 
   if (ok)
@@ -770,13 +790,15 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
 
   if (compressor == 0)
   {
-    CUresult r = cuCtxPushCurrent(cuContext);
+    CUcontext ctx = 0;
+    CUresult r = cuCtxGetCurrent(&ctx);
     // die straight away
     if (r != CUDA_SUCCESS)
     {
       *frameindex = 0;
       return;
     }
+    assert(ctx == cuContext);
 
     // also keep sdi logs
     sdiin->flush_log();
@@ -946,9 +968,22 @@ void QmitkIGINVidiaDataSourceImpl::DoTryPlayback(const char* filename, bool* ok,
     std::ifstream   indexfile((std::string(filename) + ".nalindex").c_str());
     if (indexfile.good())
     {
-      // FIXME: implement me
-      assert(false);
+      while (indexfile.good())
+      {
+        unsigned int          framenumber = -1;
+        unsigned __int64      offset = -1;
+        int                   type   = -1;
 
+        indexfile >> framenumber;
+        indexfile >> offset;
+        indexfile >> type;
+
+        if (type == -1)
+        {
+          break;
+        }
+        decompressor->update_index(framenumber, offset, (video::FrameType::FT) type);
+      }
       indexfile.close();
     }
     else

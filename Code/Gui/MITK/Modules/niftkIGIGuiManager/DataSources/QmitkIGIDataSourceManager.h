@@ -231,9 +231,9 @@ private slots:
   void OnRecordStart();
 
   /**
-   * \brief Callback to stop recording data.
+   * \brief Callback to stop recording/playback data.
    */
-  void OnRecordStop();
+  void OnStop();
 
 
   void OnPlayStart();

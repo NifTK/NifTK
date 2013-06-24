@@ -689,7 +689,8 @@ void QmitkIGINVidiaDataSource::StopPlayback()
 
   SetIsPlayingBack(false);
   m_Pimpl->SetPlayback(false);
-  //this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
+
+  this->InitializeAndRunGrabbingThread(20); // 40ms = 25fps
 }
 
 

@@ -288,7 +288,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
-  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
+  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
   connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
   connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
@@ -868,17 +868,25 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnRecordStop()
+void QmitkIGIDataSourceManager::OnStop()
 {
-  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+  if (m_PlayPushButton->isChecked())
   {
-    source->StopRecording();
+    // we are playing back, so simulate a user click to stop.
+    m_PlayPushButton->click();
   }
+  else
+  {
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      source->StopRecording();
+    }
 
-  m_RecordPushButton->setEnabled(true);
-  m_StopPushButton->setEnabled(false);
-  assert(!m_PlayPushButton->isChecked());
-  m_PlayPushButton->setEnabled(true);
+    m_RecordPushButton->setEnabled(true);
+    m_StopPushButton->setEnabled(false);
+    assert(m_PlayPushButton->isChecked());
+    m_PlayPushButton->setEnabled(true);
+  }
 }
 
 
@@ -888,7 +896,7 @@ void QmitkIGIDataSourceManager::OnPlayStart()
   if (m_PlayPushButton->isChecked())
   {
     QString playbackpath = m_DirectoryChooser->currentPath();
-    // FIXME: playback button should only be enabled if there's a path in m_DirectoryChooser.
+    // playback button should only be enabled if there's a path in m_DirectoryChooser.
     if (playbackpath.isEmpty())
     {
       m_PlayPushButton->setChecked(false);
