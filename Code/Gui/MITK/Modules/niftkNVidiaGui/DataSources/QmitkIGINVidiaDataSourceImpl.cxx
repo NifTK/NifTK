@@ -113,7 +113,7 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
     }
   }
   // else case is not very interesting: we could be running this on non-nvidia hardware
-  // but we'll only know once we start enumerating sdi devices during QmitkIGINVidiaDataSource::GrabData()
+  // but we'll only know once we start enumerating sdi devices during OnTimeoutImpl()
 
   if (prevctx)
     prevctx->makeCurrent();
@@ -145,6 +145,9 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
   {
     // we need the capture context for proper cleanup
     oglwin->makeCurrent();
+
+    // final attempt to not loose data.
+    DumpNALIndex();
 
     delete decompressor;
     delete compressor;
@@ -189,6 +192,8 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   delete sdiin;
   sdiin = 0;
   format = video::StreamFormat();
+  // try not to loose any still compressing info
+  DumpNALIndex();
   delete compressor;
   compressor = 0;
   delete decompressor;
@@ -892,6 +897,7 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 
   sdiin->flush_log();
 
+  DumpNALIndex();
   delete compressor;
   compressor = 0;
 }
@@ -911,6 +917,11 @@ void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
 
   if (on)
   {
+    // recording should have stopped earlier!
+    if (compressor != 0)
+    {
+      throw std::runtime_error("Compressor still running! Cannot playback and record at the same time.");
+    }
     // decompressor should have been initialised via TryPlayback().
     if (decompressor == 0)
     {
@@ -950,6 +961,39 @@ void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
 
     // note: decompressor will be killed on the sdi thread, during InitVideo().
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::DumpNALIndex() const
+{
+  QMutexLocker    l(&lock);
+
+  if (compressor == 0)
+  {
+    return false;
+  }
+
+  std::ofstream   indexfile((GetCompressionOutputFilename() + ".nalindex").c_str());
+  if (indexfile.is_open())
+  {
+    for (unsigned int f = 0; ; ++f)
+    {
+      unsigned __int64      offset = 0;
+      video::FrameType::FT  type;
+
+      bool b = compressor->get_output_info(f, &offset, &type);
+      if (!b)
+      {
+        break;
+      }
+      indexfile << f << ' ' << offset << ' ' << type << std::endl;
+    }
+
+    indexfile.close();
+    return true;
+  }
+  return false;
 }
 
 
@@ -1016,7 +1060,6 @@ void QmitkIGINVidiaDataSourceImpl::DoTryPlayback(const char* filename, bool* ok,
         recoveredindexfile.close();
       }
     }
-    
   }
   catch (const std::exception& e)
   {

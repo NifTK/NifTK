@@ -99,6 +99,8 @@ protected:
   // qt thread
   virtual void run();
 
+  bool DumpNALIndex() const;
+
 
 protected slots:
   void DoWakeUp();

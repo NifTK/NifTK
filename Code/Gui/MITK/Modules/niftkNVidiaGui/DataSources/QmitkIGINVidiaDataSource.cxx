@@ -422,6 +422,7 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   }
 
   // no record-stop-notification work around
+  // this is checked in GrabData(), which is called periodically by the data-grabbing-thread.
   m_WasSavingMessagesPreviously = true;
 
   mitk::IGINVidiaDataType::Pointer dataType = static_cast<mitk::IGINVidiaDataType*>(data);
