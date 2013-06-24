@@ -957,6 +957,8 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         m_RecordPushButton->setEnabled(false);
 
         m_TimeStampEdit->setReadOnly(false);
+        m_PlaybackSlider->setEnabled(true);
+        m_PlaybackSlider->setValue(0);
       }
       else
       {
@@ -974,6 +976,8 @@ void QmitkIGIDataSourceManager::OnPlayStart()
     m_StopPushButton->setEnabled(false);
     m_RecordPushButton->setEnabled(true);
     m_TimeStampEdit->setReadOnly(true);
+    m_PlaybackSlider->setEnabled(false);
+    m_PlaybackSlider->setValue(0);
   }
 }
 
