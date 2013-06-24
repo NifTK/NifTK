@@ -1185,12 +1185,13 @@ void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
 
-  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-  mitk::BaseRenderer* selectedRenderer = selectedView->GetSelectedRenderWindow()->GetRenderer();
-
-  if (selectedRenderer && selectedRenderer != focusedRenderer)
+  if (QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow())
   {
-    focusManager->SetFocused(selectedRenderer);
+    mitk::BaseRenderer* selectedRenderer = selectedRenderWindow->GetRenderer();
+    if (selectedRenderer != focusedRenderer)
+    {
+      focusManager->SetFocused(selectedRenderer);
+    }
   }
 }
 
