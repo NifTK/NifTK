@@ -871,7 +871,6 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
   {
     // i want to know how often this happens, really...
     std::cerr << "Debug: sdi compressor: requested sn that is no longer available" << std::endl;
-    assert(false);
     *frameindex = 0;
   }
 

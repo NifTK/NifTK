@@ -619,6 +619,11 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
             break;
           }
 
+          // remember: the frame number stored in the framemap was intended to be used with ffmpeg.
+          // but ffmpeg starts counting at 1 instead of zero.
+          // so we need to substract one to get the framenumber for the decompressor.
+          framenumber -= 1;
+
           assert(channelnumber < 4);
           index[timestamp].m_SequenceNumber = sequencenumber;
           index[timestamp].m_frameNumber[channelnumber] = framenumber;

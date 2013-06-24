@@ -884,7 +884,6 @@ void QmitkIGIDataSourceManager::OnStop()
 
     m_RecordPushButton->setEnabled(true);
     m_StopPushButton->setEnabled(false);
-    assert(m_PlayPushButton->isChecked());
     m_PlayPushButton->setEnabled(true);
   }
 }
