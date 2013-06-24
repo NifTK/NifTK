@@ -586,6 +586,7 @@ double CalibrateStereoCameraParameters(
 //-----------------------------------------------------------------------------
 void OutputCalibrationData(
     std::ostream& os,
+    const std::string intrinsicFlatFileName,
     const CvMat& objectPoints,
     const CvMat& imagePoints,
     const CvMat& pointCounts,
@@ -626,13 +627,35 @@ void OutputCalibrationData(
   os.precision(10);
   os.width(10);
 
+  bool writeIntrinsicToFlatFile = false;
+
+  std::ofstream intrinsicFileOutput;
+  intrinsicFileOutput.open((intrinsicFlatFileName).c_str(), std::ios::out);
+  if (!intrinsicFileOutput.fail())
+  {
+    writeIntrinsicToFlatFile = true;
+  }
+
   os << "Intrinsic matrix" << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 2) << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 2) << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 2) << std::endl;
+  for (int i = 0; i < 3; i++)
+  {
+    os << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    if (writeIntrinsicToFlatFile)
+    {
+      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    }
+  }
 
   os << "Distortion vector (k1, k2, p1, p2)" << std::endl;
   os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+  if (writeIntrinsicToFlatFile)
+  {
+    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+  }
+  if(intrinsicFileOutput.is_open())
+  {
+    intrinsicFileOutput.close();
+  }
 
   os << "projection error:" << projectionError << std::endl;
   os << "image size:" << sizeX << " " << sizeY << std::endl;
@@ -674,6 +697,16 @@ void OutputCalibrationData(
     cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
+
+    bool writeExtrinsicToFlatFile = false;
+
+    std::ofstream extrinsicFileOutput;
+    extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
+    if (!extrinsicFileOutput.fail())
+    {
+      writeExtrinsicToFlatFile = true;
+    }
+
     for (int a = 0; a < 4; a++)
     {
       for (int b = 0; b < 4; b++)
@@ -684,7 +717,15 @@ void OutputCalibrationData(
           os << ", ";
         }
       }
+      if (writeExtrinsicToFlatFile)
+      {
+        extrinsicFileOutput << CV_MAT_ELEM(*extrinsicMatrix, float, a, 0) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 1) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 2) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 3) << std::endl;
+      }
       os << std::endl;
+    }
+    if(extrinsicFileOutput.is_open())
+    {
+      extrinsicFileOutput.close();
     }
 
     for (unsigned int j = 0; j < numberOfPoints; j++)
