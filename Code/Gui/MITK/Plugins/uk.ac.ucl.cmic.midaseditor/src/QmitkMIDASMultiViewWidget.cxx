@@ -760,18 +760,6 @@ void QmitkMIDASMultiViewWidget::OnSelectedPositionChanged(QmitkMIDASSingleViewWi
       }
     }
   }
-
-  if (m_ControlPanel->AreViewCursorsBound())
-  {
-    mitk::Vector3D cursorPosition = view->GetCursorPosition();
-    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if (m_SingleViewWidgets[i] != view)
-      {
-        m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
-      }
-    }
-  }
 }
 
 
