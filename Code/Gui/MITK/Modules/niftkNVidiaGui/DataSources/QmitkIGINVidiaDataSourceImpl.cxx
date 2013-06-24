@@ -124,8 +124,8 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   // we want signal/slot processing to happen on our background thread.
   // for that to work we need to explicitly move this object because
   // it is currently owned by the gui thread.
-  // FIXME: i wonder how well that works with start() and quit(). our thread instance stays
-  //        the same so it should be ok?
+  // beware: i wonder how well that works with start() and quit(). our thread instance stays
+  // the same so it should be ok?
   this->moveToThread(this);
 }
 
@@ -424,8 +424,8 @@ void QmitkIGINVidiaDataSourceImpl::setCompressionOutputFilename(const std::strin
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::run()
 {
-  // make sure the correct opengl context is active
-  // OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
+  // make sure the correct opengl context is active.
+  // in OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
   oglwin->makeCurrent();
 
   // we also want our cuda context to be active!

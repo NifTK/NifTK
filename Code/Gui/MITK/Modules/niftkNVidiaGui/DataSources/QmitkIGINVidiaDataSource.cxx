@@ -389,6 +389,7 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
   if (m_WasSavingMessagesPreviously == false)
   {
     // FIXME: use qt for this
+    //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2546
     SYSTEMTIME  now;
     GetSystemTime(&now);
 
@@ -469,7 +470,7 @@ const char* QmitkIGINVidiaDataSource::GetWireFormatString()
 {
   if (m_Pimpl == 0)
   {
-    return "FIXME";
+    return "Nothing";
   }
 
   return m_Pimpl->GetWireFormatString();
