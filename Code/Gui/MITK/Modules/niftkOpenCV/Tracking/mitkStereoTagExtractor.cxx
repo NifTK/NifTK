@@ -146,7 +146,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                        const vtkMatrix4x4* cameraToWorld
                                       )
 {
-  pointSet->Clear();
+//  pointSet->Clear();
 
   mitk::ImageToOpenCVImageFilter::Pointer leftOpenCVFilter = mitk::ImageToOpenCVImageFilter::New();
   leftOpenCVFilter->SetImage(leftImage);
