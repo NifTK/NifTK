@@ -35,6 +35,8 @@ std::map<int, cv::Point2f> DetectMarkers(
   aruco::MarkerDetector detector;
 
   detector.setMinMaxSize(minSize, maxSize);
+  detector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  detector.setThresholdParams(20, 20);
   detector.detect(inImage, markers, cameraParams);
 
   if (drawOutlines)
