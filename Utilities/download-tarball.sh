@@ -106,6 +106,37 @@ function download_from_sourceforge() {
     fi
 }
 
+function download_from_sourceforge_git() {
+  project=$1
+  version=$2
+  directory=$project-$version
+  project_lowercase=$(echo $project | tr [:upper:] [:lower:])
+  tarball=$directory.tar.gz
+  if [[ $keep_repository && ! $keep_sources ]]
+  then
+    mkdir $directory
+    git clone --bare git://git.code.sf.net/p/$project_lowercase/code $directory/.git
+    cd $directory
+    git config --local --bool core.bare false
+    cd ..
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  else
+    git clone git://git.code.sf.net/p/$project_lowercase/code $directory
+    cd $directory
+    git checkout $version
+    if [[ ! $keep_repository ]]
+    then
+      rm -rf .git
+    fi
+    cd ..
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  fi
+}
+
 if [[ $project = MITK || $project = OpenIGTLink ]]
 then
     download_from_github NifTK $project $version
@@ -143,7 +174,7 @@ then
     download_from_sourceforge $project $version trunk/nifty_reg
 elif [ $project = NiftySim ]
 then
-    download_from_sourceforge $project $version trunk/nifty_sim
+    download_from_sourceforge_git $project $version 
 elif [ $project = NiftyRec ]
 then
     download_from_sourceforge $project $version 
@@ -201,7 +232,7 @@ else
     print_usage
 fi
     
-rm $tarball.md5
+rm $tarball.md5 2> /dev/null
 md5sum $tarball > $tarball.md5
 chmod 664 $tarball
 chmod 664 $tarball.md5
