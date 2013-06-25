@@ -656,27 +656,26 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           lastTimeStampFound  = (--(index.end()))->first;
         }
 
+        int   fieldmode = -1;
         std::string     fieldmodefilename = (directoryPath + QDir::separator() + basename + ".fieldmode").toStdString();
         std::ifstream   fieldmodefile(fieldmodefilename.c_str());
         if (fieldmodefile.good())
         {
-          int   fieldmode = -1;
           fieldmodefile >> fieldmode;
-
-          switch (fieldmode)
-          {
-            default:
-              std::cerr << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
-              fieldmode = STACK_FIELDS;
-              // fall through to default
-            case STACK_FIELDS:
-            case DROP_ONE_FIELD:
-            case DO_NOTHING_SPECIAL:
-              m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
-              break;
-          }
         }
         fieldmodefile.close();
+        switch (fieldmode)
+        {
+          default:
+            std::cerr << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
+            fieldmode = STACK_FIELDS;
+            // fall through to default
+          case STACK_FIELDS:
+          case DROP_ONE_FIELD:
+          case DO_NOTHING_SPECIAL:
+            m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+            break;
+        }
       }
       else
       {

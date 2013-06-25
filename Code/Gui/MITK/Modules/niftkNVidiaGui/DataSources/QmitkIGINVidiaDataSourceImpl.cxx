@@ -196,8 +196,8 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   DumpNALIndex();
   delete compressor;
   compressor = 0;
-  delete decompressor;
-  decompressor = 0;
+  // note: do not kill off decompressor here.
+  // see description in SetPlayback() as for why.
 
   // find our capture card
   for (int i = 0; ; ++i)
@@ -958,7 +958,11 @@ void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
     // it will then do a hardware check and set its own refreshrate to something suitable for the input video.
     emit SignalBump();
 
-    // note: decompressor will be killed on the sdi thread, during InitVideo().
+    // note: decompressor will not be killed during InitVideo()! it will just linger around.
+    // there is not really a nice way of cleaning up with the current design...
+    // there's a race condition: user calls TryPlayback() which inits the decompressor,
+    // meanwhile OnTimeoutImpl will try to call InitVideo() which would kill the decompressor,
+    // and then user calls here SetPlayback(true): exception.
   }
 }
 
