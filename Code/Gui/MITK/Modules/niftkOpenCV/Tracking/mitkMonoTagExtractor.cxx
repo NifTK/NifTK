@@ -37,6 +37,8 @@ MonoTagExtractor::~MonoTagExtractor()
 void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
                                      const float& minSize,
                                      const float& maxSize,
+                                     const int& blockSize,
+                                     const int& offset,
                                      mitk::PointSet::Pointer pointSet,
                                      const vtkMatrix4x4* cameraToWorld
                                     )

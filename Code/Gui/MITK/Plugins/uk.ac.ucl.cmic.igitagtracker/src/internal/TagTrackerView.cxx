@@ -40,8 +40,6 @@ const std::string TagTrackerView::NODE_ID = "Tag Locations";
 TagTrackerView::TagTrackerView()
 : m_ListenToEventBusPulse(true)
 , m_MonoLeftCameraOnly(false)
-, m_MinSize(0.01)
-, m_MaxSize(0.0125)
 {
 }
 
@@ -63,6 +61,19 @@ std::string TagTrackerView::GetViewID() const
 void TagTrackerView::CreateQtPartControl( QWidget *parent )
 {
   setupUi(parent);
+
+  m_BlockSizeSpinBox->setMinimum(3);
+  m_BlockSizeSpinBox->setMaximum(50);
+  m_BlockSizeSpinBox->setValue(10);
+  m_OffsetSpinBox->setMinimum(-50);
+  m_OffsetSpinBox->setMaximum(50);
+  m_OffsetSpinBox->setValue(10);
+  m_MinSizeSpinBox->setMinimum(0.001);
+  m_MinSizeSpinBox->setMaximum(0.999);
+  m_MinSizeSpinBox->setValue(0.005);
+  m_MaxSizeSpinBox->setMinimum(0.001);
+  m_MaxSizeSpinBox->setMaximum(0.999);
+  m_MaxSizeSpinBox->setValue(0.125);
 
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
@@ -98,8 +109,6 @@ void TagTrackerView::RetrievePreferenceValues()
   if (prefs.IsNotNull())
   {
     m_ListenToEventBusPulse = prefs->GetBool(TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS_NAME, TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS);
-    m_MinSize = static_cast<float>(prefs->GetDouble(TagTrackerViewPreferencePage::MIN_SIZE_NAME, TagTrackerViewPreferencePage::MIN_SIZE));
-    m_MaxSize = static_cast<float>(prefs->GetDouble(TagTrackerViewPreferencePage::MAX_SIZE_NAME, TagTrackerViewPreferencePage::MAX_SIZE));
   }
 
   if (m_ListenToEventBusPulse)
@@ -156,6 +165,11 @@ void TagTrackerView::UpdateTags()
   QString rightIntrinsicFileName = m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName();
   QString leftToRightTransformationFileName = m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName();
 
+  double minSize = m_MinSizeSpinBox->value();
+  double maxSize = m_MaxSizeSpinBox->value();
+  int blockSize = m_BlockSizeSpinBox->value();
+  int offset = m_OffsetSpinBox->value();
+
   if (leftNode.IsNotNull() || rightNode.IsNotNull())
   {
     bool needToLoadLeftCalib  = false;
@@ -171,7 +185,6 @@ void TagTrackerView::UpdateTags()
       needToLoadRightCalib = niftk::Undistortion::NeedsToLoadCalib(rightIntrinsicFileName.toStdString(), rightImage);
       needToLoadLeftToRightTransformation = niftk::Undistortion::NeedsToLoadStereoRigExtrinsics(leftToRightTransformationFileName.toStdString(), rightImage);
     }
-
     if (needToLoadLeftCalib)
     {
       niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftImage);
@@ -262,8 +275,10 @@ void TagTrackerView::UpdateTags()
       mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
       extractor->ExtractPoints(
           image,
-          m_MinSize,
-          m_MaxSize,
+          minSize,
+          maxSize,
+          blockSize,
+          offset,
           pointSet,
           cameraToWorldMatrix
           );
@@ -288,8 +303,10 @@ void TagTrackerView::UpdateTags()
       extractor->ExtractPoints(
           leftImage,
           rightImage,
-          m_MinSize,
-          m_MaxSize,
+          minSize,
+          maxSize,
+          blockSize,
+          offset,
           pointSet,
           cameraToWorldMatrix
           );

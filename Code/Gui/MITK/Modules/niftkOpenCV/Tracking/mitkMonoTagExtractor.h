@@ -43,12 +43,16 @@ public:
    * \param image RGB colour image
    * \param minSize the minimum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
    * \param maxSize the maximum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
+   * \param blockSize window size for adaptive thresholding
+   * \param offset the amount below the mean intensity of the window to set the threshold at
    * \param pointSet a point set object, allocated outside of this method. i.e. pointer must be non-null when calling this method.
    * \param cameraToWorld if not null, all reconstructed points are multiplied by this transform.
    */
   void ExtractPoints(const mitk::Image::Pointer image,
                      const float& minSize,
                      const float& maxSize,
+                     const int& blockSize,
+                     const int& offset,
                      mitk::PointSet::Pointer pointSet,
                      const vtkMatrix4x4* cameraToWorld
                      );

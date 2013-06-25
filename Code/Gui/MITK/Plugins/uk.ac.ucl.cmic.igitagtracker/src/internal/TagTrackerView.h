@@ -107,16 +107,6 @@ private:
    * \brief If true, we dont bother with stereo and triangulation.
    */
   bool m_MonoLeftCameraOnly;
-
-  /**
-   * \brief Preference to determin the minimum acceptable tag size, as a proportion of image size.
-   */
-  float m_MinSize;
-
-  /**
-   * \brief Preference to determin the maximum acceptable tag size, as a proportion of image size.
-   */
-  float m_MaxSize;
 };
 
 #endif // TagTrackerView_h

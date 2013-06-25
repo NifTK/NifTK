@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_3">
+  <layout class="QHBoxLayout" name="horizontalLayout_4">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
@@ -38,6 +38,59 @@
              </item>
             </layout>
            </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
+       <property name="title">
+        <string>2) Choose parameters</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_BlockSizeLabel">
+            <property name="text">
+             <string>block size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="m_BlockSizeSpinBox"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_OffsetLabel">
+            <property name="text">
+             <string>offset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="m_OffsetSpinBox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="m_MinSizeLabel">
+            <property name="text">
+             <string>min size [0..1]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="m_MaxSizeLabel">
+            <property name="text">
+             <string>max size [0..1]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="m_MinSizeSpinBox"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="m_MaxSizeSpinBox"/>
           </item>
          </layout>
         </item>
