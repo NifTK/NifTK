@@ -69,7 +69,7 @@ public:
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
-    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet, matrix);
+    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, 20, 20, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet, matrix);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
 
@@ -92,7 +92,7 @@ public:
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
-    extractor->ExtractPoints(mitkImage, 0.01, 0.125, pointSet, NULL);
+    extractor->ExtractPoints(mitkImage, 0.01, 0.125,  20, 20, pointSet, NULL);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 5 points out, and we got " << pointSet->GetSize());
     MITK_TEST_OUTPUT(<< "Finished TestMono...");
