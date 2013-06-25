@@ -153,7 +153,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                        const vtkMatrix4x4* cameraToWorld
                                       )
 {
-//  pointSet->Clear();
+  pointSet->Clear();
 
   mitk::ImageWriteAccessor  leftAccess(leftImage);
   void* leftPointer = leftAccess.GetData();
