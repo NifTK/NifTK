@@ -113,6 +113,14 @@ void QmitkIGINVidiaDataSource::SetFieldMode(InterlacedBehaviour b)
 
 
 //-----------------------------------------------------------------------------
+QmitkIGINVidiaDataSource::InterlacedBehaviour QmitkIGINVidiaDataSource::GetFieldMode() const
+{
+  assert(m_Pimpl);
+  return (InterlacedBehaviour) m_Pimpl->GetFieldMode();
+}
+
+
+//-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSource::~QmitkIGINVidiaDataSource()
 {
   // Try stop grabbing and threading etc.
@@ -436,6 +444,18 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       }
 
       m_Pimpl->setCompressionOutputFilename(filenamebase + ".264");
+
+      // we need to keep track of what our current field mode is so that we can restore it during playback.
+      std::ofstream   fieldmodefile((filenamebase + ".fieldmode").c_str());
+      fieldmodefile << m_Pimpl->GetFieldMode() << std::endl;
+      fieldmodefile <<
+        "# only the single number above is interpreted, anything that follows is discarded.\n"
+        "# field mode determines how fields of interlaced video are packed into full video frames.\n"
+        "# this only applies to interlaced video, it has no meaning for \n"
+        "# " << DO_NOTHING_SPECIAL << " = DO_NOTHING_SPECIAL: interlaced video is treated as full frame.\n"
+        "# " << DROP_ONE_FIELD << " = DROP_ONE_FIELD: only one field is captured, the other discarded.\n"
+        "# " << STACK_FIELDS << " = STACK_FIELDS: both fields are stacked vertically.\n";
+      fieldmodefile.close();
     }
   }
 
@@ -635,6 +655,28 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           firstTimeStampFound = index.begin()->first;
           lastTimeStampFound  = (--(index.end()))->first;
         }
+
+        std::string     fieldmodefilename = (directoryPath + QDir::separator() + basename + ".fieldmode").toStdString();
+        std::ifstream   fieldmodefile(fieldmodefilename.c_str());
+        if (fieldmodefile.good())
+        {
+          int   fieldmode = -1;
+          fieldmodefile >> fieldmode;
+
+          switch (fieldmode)
+          {
+            default:
+              std::cerr << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
+              fieldmode = STACK_FIELDS;
+              // fall through to default
+            case STACK_FIELDS:
+            case DROP_ONE_FIELD:
+            case DO_NOTHING_SPECIAL:
+              m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+              break;
+          }
+        }
+        fieldmodefile.close();
       }
       else
       {
@@ -706,6 +748,8 @@ void QmitkIGINVidiaDataSource::StartPlayback(const std::string& path, igtlUint64
 
   SetIsPlayingBack(true);
   m_Pimpl->SetPlayback(true, streamcount);
+
+  emit UpdateDisplay();
 }
 
 
@@ -721,6 +765,8 @@ void QmitkIGINVidiaDataSource::StopPlayback()
   m_MostRecentlyUpdatedTimeStamp = 0;
 
   this->InitializeAndRunGrabbingThread(20); // 40ms = 25fps
+
+  emit UpdateDisplay();
 }
 
 

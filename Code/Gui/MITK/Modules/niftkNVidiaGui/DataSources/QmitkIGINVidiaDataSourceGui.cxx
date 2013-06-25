@@ -106,22 +106,28 @@ void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
-    // FIXME: if we are recording do not allow changing it!
-
-    // if we dont stop then preview-widget will reference a deleted texture
-    StopPreviewWidget();
-
-    bool    wascapturing = source->IsCapturing();
-    if (wascapturing)
+    // only allow changing field mode during live capture.
+    // for playback the combobox is disabled anyway and allowing this handler to
+    // proceed will mess up the internal state of the data source.
+    if (!source->GetIsPlayingBack())
     {
-      source->StopCapturing();
-    }
+      // FIXME: if we are recording do not allow changing it!
 
-    source->SetFieldMode((QmitkIGINVidiaDataSource::InterlacedBehaviour) index);
+      // if we dont stop then preview-widget will reference a deleted texture
+      StopPreviewWidget();
 
-    if (wascapturing)
-    {
-      source->StartCapturing();
+      bool    wascapturing = source->IsCapturing();
+      if (wascapturing)
+      {
+        source->StopCapturing();
+      }
+
+      source->SetFieldMode((QmitkIGINVidiaDataSource::InterlacedBehaviour) index);
+
+      if (wascapturing)
+      {
+        source->StartCapturing();
+      }
     }
   }
   else
@@ -173,6 +179,14 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
     {
       FormatIDTextBox->setText(wireformat);
     }
+
+    int   fieldmodecomboboxindex = FieldModeComboBox->currentIndex();
+    QmitkIGINVidiaDataSource::InterlacedBehaviour   fieldmode = source->GetFieldMode();
+    if (fieldmodecomboboxindex != (int) fieldmode)
+    {
+      FieldModeComboBox->setCurrentIndex((int) fieldmode);
+    }
+    FieldModeComboBox->setEnabled(!source->GetIsPlayingBack());
 
     if (streamcount > 0)
     {

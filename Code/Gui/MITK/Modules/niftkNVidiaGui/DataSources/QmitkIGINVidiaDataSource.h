@@ -80,6 +80,7 @@ public:
   // can only be changed when no capture is running! see IsCapturing() etc 
   void SetMipmapLevel(unsigned int l);
   void SetFieldMode(InterlacedBehaviour b);
+  InterlacedBehaviour GetFieldMode() const;
 
 
   static const char*      s_SDISequenceNumberPropertyName;      // mitk::IntProperty
