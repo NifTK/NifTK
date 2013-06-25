@@ -157,6 +157,7 @@ void TagTrackerView::OnUpdate(const ctkEvent& event)
 void TagTrackerView::OnManualUpdate()
 {
   this->UpdateTags();
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -164,6 +165,7 @@ void TagTrackerView::OnManualUpdate()
 void TagTrackerView::OnSpinBoxPressed()
 {
   this->UpdateTags();
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
