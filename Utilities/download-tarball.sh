@@ -84,6 +84,35 @@ function download_from_github() {
     fi
 }
 
+# Requires a specific commit hash -> !
+function download_from_sf_git() {
+    project=${1}
+    path=${2}
+    commit=${3}    
+    branch=${4}
+    local LC_PROJNAME=`echo ${project} | tr [:upper:] [:lower:]`
+    local CI_FS_ID=`echo ${commit} | head -c 4`
+    local DST_PATH=${LC_PROJNAME}-${CI_FS_ID}
+
+    if [ ! -d ${DST_PATH} ]; then
+	local GIT_CMD="git clone "
+
+	if [ "x${branch}" != "x" ]; then
+	    GIT_CMD="${GIT_CMD} -b \"${branch}\" "
+	fi
+    
+	eval "${GIT_CMD} git://git.code.sf.net/p/${LC_PROJNAME}/code ${DST_PATH}" 
+    fi
+
+    pushd ${DST_PATH}
+    git reset --hard ${commit}
+    popd
+
+    tar zcf ${DST_PATH}{.tar.gz,}
+    
+    tarball=${DST_PATH}.tar.gz
+}
+
 function download_from_sourceforge() {
     project=$1
     version=$2
@@ -143,7 +172,7 @@ then
     download_from_sourceforge $project $version trunk/nifty_reg
 elif [ $project = NiftySim ]
 then
-    download_from_sourceforge $project $version trunk/nifty_sim
+    download_from_sf_git $project niftysim-2.0 $version
 elif [ $project = NiftyRec ]
 then
     download_from_sourceforge $project $version 
@@ -201,7 +230,7 @@ else
     print_usage
 fi
     
-rm $tarball.md5
+[ -f $tarball.md5 ] && rm $tarball.md5
 md5sum $tarball > $tarball.md5
 chmod 664 $tarball
 chmod 664 $tarball.md5
