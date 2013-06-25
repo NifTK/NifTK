@@ -456,8 +456,8 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
         for (unsigned int i = t; i < frameindex; ++i)
         if (m_FrameMapLogFile.is_open())
         {
-          m_FrameMapLogFile 
-            << (i + 1) << '\t' 
+          m_FrameMapLogFile
+            << (i) << '\t'
             << seqnum << '\t'
             << (i - t) << '\t'
             << dataType->GetTimeStampInNanoSeconds() << '\t'
@@ -622,7 +622,8 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           // remember: the frame number stored in the framemap was intended to be used with ffmpeg.
           // but ffmpeg starts counting at 1 instead of zero.
           // so we need to substract one to get the framenumber for the decompressor.
-          framenumber -= 1;
+          // WARNING: actually no! all pig data was recorded with zero-based index.
+          //framenumber -= 1;
 
           assert(channelnumber < 4);
           index[timestamp].m_SequenceNumber = sequencenumber;
