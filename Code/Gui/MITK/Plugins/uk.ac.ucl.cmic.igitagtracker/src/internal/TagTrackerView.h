@@ -81,6 +81,11 @@ private slots:
    */
   void OnManualUpdate();
 
+  /**
+   * \brief if any spin box pressed, we update.
+   */
+  void OnSpinBoxPressed();
+
 private:
 
   /**

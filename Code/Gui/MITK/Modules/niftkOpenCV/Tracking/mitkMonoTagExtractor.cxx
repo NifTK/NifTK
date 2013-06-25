@@ -51,7 +51,7 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
   IplImage *im = filter->GetOpenCVImage();
   cv::Mat imageWrapper(im);
 
-  std::map<int, cv::Point2f> result = mitk::DetectMarkers(imageWrapper, minSize, maxSize);
+  std::map<int, cv::Point2f> result = mitk::DetectMarkers(imageWrapper, minSize, maxSize, blockSize, offset);
 
   cv::Point2f extractedPoint;
   mitk::PointSet::PointType outputPoint;

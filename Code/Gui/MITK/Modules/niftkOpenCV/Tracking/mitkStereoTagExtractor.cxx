@@ -188,7 +188,9 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
     r2lRot,
     r2lTran,
     minSize,
-    maxSize
+    maxSize,
+    blockSize,
+    offset
     );
 
   cv::Point3f extractedPoint;

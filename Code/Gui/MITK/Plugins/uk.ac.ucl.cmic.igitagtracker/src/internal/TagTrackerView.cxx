@@ -64,7 +64,7 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
 
   m_BlockSizeSpinBox->setMinimum(3);
   m_BlockSizeSpinBox->setMaximum(50);
-  m_BlockSizeSpinBox->setValue(10);
+  m_BlockSizeSpinBox->setValue(20);
   m_OffsetSpinBox->setMinimum(-50);
   m_OffsetSpinBox->setMaximum(50);
   m_OffsetSpinBox->setValue(10);
@@ -77,6 +77,15 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
 
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
+  assert(ok);
+
+  ok = connect(m_BlockSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
+  assert(ok);
+  ok = connect(m_OffsetSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
+  assert(ok);
+  ok = connect(m_MinSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnSpinBoxPressed()));
+  assert(ok);
+  ok = connect(m_MaxSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
 
   ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
@@ -146,6 +155,13 @@ void TagTrackerView::OnUpdate(const ctkEvent& event)
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnManualUpdate()
+{
+  this->UpdateTags();
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnSpinBoxPressed()
 {
   this->UpdateTags();
 }

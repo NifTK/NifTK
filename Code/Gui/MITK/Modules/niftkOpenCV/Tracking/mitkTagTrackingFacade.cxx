@@ -24,6 +24,8 @@ std::map<int, cv::Point2f> DetectMarkers(
     cv::Mat& inImage,
     const float& minSize,
     const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines,
     const bool& drawCentre
     )
@@ -36,7 +38,7 @@ std::map<int, cv::Point2f> DetectMarkers(
 
   detector.setMinMaxSize(minSize, maxSize);
   detector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
-  detector.setThresholdParams(20, 20);
+  detector.setThresholdParams(blockSize, offset);
   detector.detect(inImage, markers, cameraParams);
 
   if (drawOutlines)
@@ -74,12 +76,14 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
     const cv::Mat& rightToLeftTranslationVector,
     const float& minSize,
     const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines,
     const bool& drawCentre
     )
 {
-  std::map<int, cv::Point2f> leftPoints = DetectMarkers(inImageLeft, minSize, maxSize, drawOutlines, drawCentre);
-  std::map<int, cv::Point2f> rightPoints = DetectMarkers(inImageRight, minSize, maxSize, drawOutlines, drawCentre);
+  std::map<int, cv::Point2f> leftPoints = DetectMarkers(inImageLeft, minSize, maxSize, blockSize, offset, drawOutlines, drawCentre);
+  std::map<int, cv::Point2f> rightPoints = DetectMarkers(inImageRight, minSize, maxSize, blockSize, offset, drawOutlines, drawCentre);
 
   std::map<int, cv::Point3f> result;
 
