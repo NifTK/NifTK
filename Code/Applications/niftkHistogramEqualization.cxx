@@ -17,25 +17,29 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkAdaptiveHistogramEqualizationImageFilter.h>
 
-#include <niftkInvertImageCLP.h>
+#include <niftkHistogramEqualizationCLP.h>
 
 /*!
- * \file niftkInvertImage.cxx
- * \page niftkInvertImage
- * \section niftkInvertImageSummary Runs filter InvertIntensityBetweenMaxAndMinImageFilter on an image by computing Inew = Imax - I + Imin
+ * \file niftkHistogramEqualization.cxx
+ * \page niftkHistogramEqualization
+ * \section niftkHistogramEqualizationSummary Runs filter AdaptiveHistogramEqualizationImageFilter on an image to enhance its contrast
  *
- * This program uses ITK ImageFileReader to load an image, and then uses InvertIntensityBetweenMaxAndMinImageFilter to invert its intensities before writing the output with ITK ImageFileWriter. The resulting image will have an identical range to the input image.
+ * This program uses ITK ImageFileReader to load an image, and then uses ITK AdaptiveHistogramEqualizationImageFilter to enhance its contrast before writing the output with ITK ImageFileWriter.
  *
  * \li Dimensions: 2,3.
  * \li Pixel type: Scalars only of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float and double.
  *
- * \section niftkInvertImageCaveats Caveats
+ * \section niftkHistogramEqualizationCaveats Caveats
  * \li None
  */
 struct arguments
 {
+  float alpha;
+  float beta;
+  int radius;
+
   std::string inputImage;
   std::string outputImage;  
 };
@@ -46,13 +50,24 @@ int DoMain(arguments args)
   typedef typename itk::Image< PixelType, Dimension >     InputImageType;   
   typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef typename itk::ImageFileWriter< InputImageType > OutputImageWriterType;
-  typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
+  typedef typename itk::AdaptiveHistogramEqualizationImageFilter<InputImageType> EqualizeHistogramFilterType;
 
   typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName(args.inputImage);
 
-  typename InvertFilterType::Pointer filter = InvertFilterType::New();
+  typename EqualizeHistogramFilterType::Pointer filter = EqualizeHistogramFilterType::New();
   filter->SetInput(imageReader->GetOutput());
+  
+  filter->SetAlpha( args.alpha );
+  filter->SetBeta( args.beta );
+
+  typename InputImageType::SizeType neighbourhood;
+  for (int i = 0; i < Dimension; i++)
+  {
+    neighbourhood[i] = args.radius;
+  }
+
+  filter->SetRadius( neighbourhood );
   
   typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
   imageWriter->SetFileName(args.outputImage);
@@ -71,7 +86,7 @@ int DoMain(arguments args)
 }
 
 /**
- * \brief Takes the input image and inverts it using InvertIntensityBetweenMaxAndMinImageFilter
+ * \brief Takes the input image and enhances its contrast using AdaptiveHistogramEqualizationImageFilter
  */
 int main(int argc, char** argv)
 {
@@ -80,8 +95,12 @@ int main(int argc, char** argv)
 
   // To pass around command line args
   struct arguments args;
-  args.inputImage=inputImage.c_str();
-  args.outputImage=outputImage.c_str();
+  args.inputImage=inputImage;
+  args.outputImage=outputImage;
+
+  args.alpha  = alpha;
+  args.beta   = beta;
+  args.radius = radius;
 
   std::cout << "Input image:  " << args.inputImage << std::endl
             << "Output image: " << args.outputImage << std::endl;

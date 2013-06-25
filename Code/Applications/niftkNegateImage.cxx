@@ -10,7 +10,7 @@
 
   See LICENSE.txt in the top level directory for details.
 
-=============================================================================*/
+  =============================================================================*/
 
 #include <itkLogHelper.h>
 #include <ConversionUtils.h>
@@ -52,9 +52,6 @@ int DoMain(Arguments args)
   typedef typename itk::NegateImageFilter<OutputImageType, OutputImageType> NegateFilterType;
   typedef typename itk::ImageFileWriter< OutputImageType > OutputImageWriterType;
 
-  std::cout << "Input image:  " << args.inputImage << std::endl
-            << "Output image: " << args.outputImage << std::endl;
-
   try
   {
 
@@ -72,7 +69,7 @@ int DoMain(Arguments args)
 
     typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
     imageWriter->SetFileName(args.outputImage);
-    imageWriter->SetInput(caster->GetOutput());
+    imageWriter->SetInput(filter->GetOutput());
     imageWriter->Update(); 
   }
   catch( itk::ExceptionObject & err ) 
@@ -93,131 +90,174 @@ int main(int argc, char** argv)
 
   // To pass around command line args
   Arguments args;
-  args.inputImage  = inputImage.c_str();
-  args.outputImage = outputImage.c_str();
+  args.inputImage  = inputImage;
+  args.outputImage = outputImage;
+
+  std::cout << "Input image:  " << args.inputImage << std::endl
+            << "Output image: " << args.outputImage << std::endl;
 
   // Validate command line args
   if (args.inputImage.length() == 0 ||
       args.outputImage.length() == 0)
-    {
-      return EXIT_FAILURE;
-    }
+  {
+    std::cerr << "ERROR: Input and output images must be set" << std::endl;
+    return EXIT_FAILURE;
+  }
 
-  int dims = itk::PeekAtImageDimension(args.inputImage);
-  if (dims != 2 && dims != 3)
-    {
-      std::cout << "Unsupported image dimension" << std::endl;
-      return EXIT_FAILURE;
-    }
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels( args.inputImage);
+  if ( (dims != 2) && (dims != 3) )
+  {
+    std::cout << "ERROR: Unsupported image dimension" << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (dims == 2)
+  {
+    std::cout << "Input is 2D" << std::endl;
+  }
+  else
+  {
+    std::cout << "Input is 3D" << std::endl;
+  }
   
   int result;
 
   switch (itk::PeekAtComponentType(args.inputImage))
+  {
+  case itk::ImageIOBase::UCHAR:
+  {
+    std::cout << "Converting UNSIGNED CHAR to SHORT INT" << std::endl;
+    if (dims == 2)
     {
-    case itk::ImageIOBase::UCHAR:
-      if (dims == 2)
-        {
-          result = DoMain<2, unsigned char, short>(args);  
-        }
-      else
-        {
-          result = DoMain<3, unsigned char, short>(args);
-        }
-      break;
-    case itk::ImageIOBase::CHAR:
-      if (dims == 2)
-        {
-          result = DoMain<2, char, char>(args);  
-        }
-      else
-        {
-          result = DoMain<3, char, char>(args);
-        }
-      break;
-    case itk::ImageIOBase::USHORT:
-      if (dims == 2)
-        {
-          std::cout << "Converting unsigned short to long" << std::endl;
-          result = DoMain<2, unsigned short, long>(args);  
-        }
-      else
-        {
-          result = DoMain<3, unsigned short, long>(args);
-        }
-      break;
-    case itk::ImageIOBase::SHORT:
-      if (dims == 2)
-        {
-          result = DoMain<2, short, short>(args);  
-        }
-      else
-        {
-          result = DoMain<3, short, short>(args);
-        }
-      break;
-    case itk::ImageIOBase::UINT:
-      if (dims == 2)
-        {
-          result = DoMain<2, unsigned long, float>(args);  
-        }
-      else
-        {
-          result = DoMain<3, unsigned long, float>(args);
-        }
-      break;
-    case itk::ImageIOBase::INT:
-      if (dims == 2)
-        {
-          result = DoMain<2, long, long>(args);  
-        }
-      else
-        {
-          result = DoMain<3, long, long>(args);
-        }
-      break;
-    case itk::ImageIOBase::ULONG:
-      if (dims == 2)
-        {
-          result = DoMain<2, unsigned long, float>(args);  
-        }
-      else
-        {
-          result = DoMain<3, unsigned long, float>(args);
-        }
-      break;
-    case itk::ImageIOBase::LONG:
-      if (dims == 2)
-        {
-          result = DoMain<2, long, long>(args);  
-        }
-      else
-        {
-          result = DoMain<3, long, long>(args);
-        }
-      break;
-    case itk::ImageIOBase::FLOAT:
-      if (dims == 2)
-        {
-          result = DoMain<2, float, float>(args);  
-        }
-      else
-        {
-          result = DoMain<3, float, float>(args);
-        }
-      break;
-    case itk::ImageIOBase::DOUBLE:
-      if (dims == 2)
-        {
-          result = DoMain<2, double, double>(args);  
-        }
-      else
-        {
-          result = DoMain<3, double, double>(args);
-        }
-      break;
-    default:
-      std::cerr << "non standard pixel format" << std::endl;
-      return EXIT_FAILURE;
+      result = DoMain<2, unsigned char, short int>(args);  
     }
+    else
+    {
+      result = DoMain<3, unsigned char, short int>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::CHAR:
+  {
+    std::cout << "Input is CHAR" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, char, char>(args);  
+    }
+    else
+    {
+      result = DoMain<3, char, char>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::USHORT:
+  {
+    std::cout << "Converting UNSIGNED SHORT INT to INT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, unsigned short int, int>(args);  
+    }
+    else
+    {
+      result = DoMain<3, unsigned short int, int>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::SHORT:
+  {
+    std::cout << "Input is SHORT INT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, short int, short int>(args);  
+    }
+    else
+    {
+      result = DoMain<3, short int, short int>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::UINT:
+  {
+    std::cout << "Converting UNSIGNED INT to FLOAT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, unsigned int, float>(args);  
+    }
+    else
+    {
+      result = DoMain<3, unsigned int, float>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::INT:
+  {
+    std::cout << "Input is INT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, int, int>(args);  
+    }
+    else
+    {
+      result = DoMain<3, int, int>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::ULONG:
+  {
+    std::cout << "Converting UNSIGNED LONG to FLOAT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, unsigned int, float>(args);  
+    }
+    else
+    {
+      result = DoMain<3, unsigned int, float>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::LONG:
+  {
+    std::cout << "Input is LONG" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, int, int>(args);  
+    }
+    else
+    {
+      result = DoMain<3, int, int>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::FLOAT:
+  {
+    std::cout << "Input is FLOAT" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, float, float>(args);  
+    }
+    else
+    {
+      result = DoMain<3, float, float>(args);
+    }
+    break;
+  }
+  case itk::ImageIOBase::DOUBLE:
+  {
+    std::cout << "Input is DOUBLE" << std::endl;
+    if (dims == 2)
+    {
+      result = DoMain<2, double, double>(args);  
+    }
+    else
+    {
+      result = DoMain<3, double, double>(args);
+    }
+    break;
+  }
+  default:
+  {
+    std::cerr << "ERROR: Non standard pixel format" << std::endl;
+    return EXIT_FAILURE;
+  }
+  }
   return result;
 }

@@ -44,10 +44,6 @@ public:
     }
   inline TOutput operator()( const TInput & A ) const
     {
-#if 0
-      std::cout << "A: " << A << " -A: " << -static_cast<TOutput>( A ) << std::endl;
-      std::cout.flush();
-#endif
       return -static_cast<TOutput>( A );
     }
 };
