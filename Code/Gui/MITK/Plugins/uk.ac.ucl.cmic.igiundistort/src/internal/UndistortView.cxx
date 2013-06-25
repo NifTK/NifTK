@@ -228,10 +228,11 @@ void UndistortView::OnGoButtonClick()
         // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
         if (calibparamitem != 0)
         {
-          niftk::Undistortion::LoadCalibration(calibparamitem->text().toStdString(), inputNode);
+          niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
         }
 
         ci->second->Run(outputNode);
+
         if (storage->GetNamedNode(outputitem->text().toStdString()) == NULL)
         {
           storage->Add(outputNode, inputNode);

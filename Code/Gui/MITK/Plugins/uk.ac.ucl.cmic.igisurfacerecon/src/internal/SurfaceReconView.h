@@ -59,11 +59,6 @@ protected:
    */
   virtual void SetFocus();
 
-  /**
-   * \brief Copies properties from node to image, if they don't already exist on the image.
-   */
-  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
-
 protected slots:
 
   /**

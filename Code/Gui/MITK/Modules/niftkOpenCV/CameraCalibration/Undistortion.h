@@ -50,11 +50,20 @@ public:
 public:
   // loads calibration from a text file (not the opencv xml format!).
   // if filename is empty then it will dream up some parameters for the given image.
-  static void LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node);
-  static void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
-  static void LoadStereoRig(const std::string& filename, const std::string& propertyName, mitk::Image::Pointer img);
-  static bool NeedsToLoadCalib(const std::string& filename, const mitk::Image::Pointer& image);
+  static void LoadIntrinsicCalibration(const std::string& filename, mitk::DataNode::Pointer node);
+  static void LoadIntrinsicCalibration(const std::string& filename, mitk::Image::Pointer img);
+  static void LoadStereoRig(const std::string& filename, mitk::DataNode::Pointer node);
+  static void LoadStereoRig(const std::string& filename, mitk::Image::Pointer img);
+  static bool NeedsToLoadIntrinsicCalib(const std::string& filename, const mitk::DataNode::Pointer& node);
+  static bool NeedsToLoadIntrinsicCalib(const std::string& filename, const mitk::Image::Pointer& image);
+  static bool NeedsToLoadStereoRigExtrinsics(const std::string& filename, const mitk::DataNode::Pointer& node);
   static bool NeedsToLoadStereoRigExtrinsics(const std::string& filename, const mitk::Image::Pointer& image);
+
+  /**
+   * \brief Copies properties from node to image, if they don't already exist on the image.
+   */
+  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
+
 
   // FIXME: should undistorting an already undistorted image fail? or silently ignore?
   virtual void Run(mitk::DataNode::Pointer output);
@@ -72,9 +81,9 @@ protected:
 
 protected:
 
-  static bool NeedsToLoadCalibrationProperty(const std::string& fileName,
-                                             const std::string& propertyName,
-                                             const mitk::Image::Pointer& image);
+  static bool NeedsToLoadImageProperty(const std::string& fileName,
+                                       const std::string& propertyName,
+                                       const mitk::Image::Pointer& image);
 
   // the node that this class is to operate on
   mitk::DataNode::Pointer     m_Node;

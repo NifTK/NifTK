@@ -137,46 +137,6 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
 
 //-----------------------------------------------------------------------------
-template <typename PropType>
-static void CopyProp(const mitk::DataNode::Pointer source, mitk::Image::Pointer target, const char* name)
-{
-  mitk::BaseProperty::Pointer baseProp = target->GetProperty(name);
-  if (baseProp.IsNull())
-  {
-    // none there yet, try to pull it from the datanode
-    baseProp = source->GetProperty(name);
-    if (baseProp.IsNotNull())
-    {
-      // check that it's the correct type
-      typename PropType::Pointer   prop = dynamic_cast<PropType*>(baseProp.GetPointer());
-      if (prop.IsNotNull())
-      {
-        // FIXME: copy? or simply ref the same object?
-        target->SetProperty(name, prop);
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void SurfaceReconView::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target)
-{
-  // we copy known meta-data properties to the images, but only if they dont exist yet.
-  // we'll not ever change the value of an existing property!
-
-  // calibration data
-  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::Undistortion::s_CameraCalibrationPropertyName);
-
-  // has the image been rectified?
-  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsRectifiedPropertyName);
-
-  // has the image been undistorted?
-  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsUndistortedPropertyName);
-}
-
-
-//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -212,24 +172,23 @@ void SurfaceReconView::DoSurfaceReconstruction()
       }
 
 
-      bool    needToLoadLeftCalib  = niftk::Undistortion::NeedsToLoadCalib(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(),  leftImage);
-      bool    needToLoadRightCalib = niftk::Undistortion::NeedsToLoadCalib(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
+      bool    needToLoadLeftCalib  = niftk::Undistortion::NeedsToLoadIntrinsicCalib(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(),  leftImage);
+      bool    needToLoadRightCalib = niftk::Undistortion::NeedsToLoadIntrinsicCalib(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
 
       if (needToLoadLeftCalib)
       {
-        niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftImage);
+        niftk::Undistortion::LoadIntrinsicCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftImage);
       }
       if (needToLoadRightCalib)
       {
-        niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
+        niftk::Undistortion::LoadIntrinsicCalibration(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
       }
       niftk::Undistortion::LoadStereoRig(
           m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName().toStdString(),
-          niftk::Undistortion::s_StereoRigTransformationPropertyName,
           rightImage);
 
-      CopyImagePropsIfNecessary(leftNode,  leftImage);
-      CopyImagePropsIfNecessary(rightNode, rightImage);
+      niftk::Undistortion::CopyImagePropsIfNecessary(leftNode,  leftImage);
+      niftk::Undistortion::CopyImagePropsIfNecessary(rightNode, rightImage);
 
       niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
       if (GenerateDisparityImageRadioBox->isChecked())

@@ -175,29 +175,29 @@ void TagTrackerView::UpdateTags()
     bool needToLoadLeftCalib  = false;
     if (leftImage.IsNotNull())
     {
-      needToLoadLeftCalib = niftk::Undistortion::NeedsToLoadCalib(leftIntrinsicFileName.toStdString(),  leftImage);
+      needToLoadLeftCalib = niftk::Undistortion::NeedsToLoadIntrinsicCalib(leftIntrinsicFileName.toStdString(),  leftNode);
     }
 
     bool needToLoadRightCalib = false;
     bool needToLoadLeftToRightTransformation = false;
     if (rightImage.IsNotNull())
     {
-      needToLoadRightCalib = niftk::Undistortion::NeedsToLoadCalib(rightIntrinsicFileName.toStdString(), rightImage);
+      needToLoadRightCalib = niftk::Undistortion::NeedsToLoadIntrinsicCalib(rightIntrinsicFileName.toStdString(), rightNode);
       needToLoadLeftToRightTransformation = niftk::Undistortion::NeedsToLoadStereoRigExtrinsics(leftToRightTransformationFileName.toStdString(), rightImage);
     }
+
     if (needToLoadLeftCalib)
     {
-      niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftImage);
+      niftk::Undistortion::LoadIntrinsicCalibration(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(), leftNode);
     }
     if (needToLoadRightCalib)
     {
-      niftk::Undistortion::LoadCalibration(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
+      niftk::Undistortion::LoadIntrinsicCalibration(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightNode);
     }
     if (needToLoadLeftToRightTransformation)
     {
       niftk::Undistortion::LoadStereoRig(
           m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName().toStdString(),
-          niftk::Undistortion::s_StereoRigTransformationPropertyName,
           rightImage);
     }
 
