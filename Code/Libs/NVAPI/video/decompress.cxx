@@ -207,6 +207,42 @@ public:
         r = cuvidDestroyVideoSource(nvsource);
         assert(r == CUDA_SUCCESS);
         nvsource = 0;
+
+
+        CUVIDPARSERPARAMS parserparams = {(cudaVideoCodec) 0};
+        parserparams.CodecType              = format.codec;
+        parserparams.ulMaxNumDecodeSurfaces = 15;   // our idr period is 15 (unrelated, but might as well)
+        parserparams.ulMaxDisplayDelay      = 0;
+        parserparams.pUserData              = this;
+        parserparams.pfnSequenceCallback    = HandleVideoSequence;
+        parserparams.pfnDecodePicture       = HandlePictureDecode;
+        parserparams.pfnDisplayPicture      = HandlePictureDisplay;
+        r = cuvidCreateVideoParser(&nvparser, &parserparams);
+        if (r != CUDA_SUCCESS)
+            throw DecompressorFailedException("Cannot create stream parser", r);
+
+        CUVIDDECODECREATEINFO   decoderparams = {0};
+        // unscaled input and output
+        decoderparams.ulWidth             = format.coded_width;
+        decoderparams.ulHeight            = format.coded_height;
+        decoderparams.ulTargetWidth       = format.coded_width;
+        decoderparams.ulTargetHeight      = format.coded_height;
+        decoderparams.CodecType           = format.codec;
+        decoderparams.ulNumDecodeSurfaces = 15;     // our idr period is 15 (unrelated, but might as well)
+        decoderparams.ChromaFormat        = format.chroma_format;
+        decoderparams.OutputFormat        = cudaVideoSurfaceFormat_NV12;
+        decoderparams.DeinterlaceMode     = cudaVideoDeinterlaceMode_Weave;   // we dont write out interlaced video
+        decoderparams.ulNumOutputSurfaces = 1;
+        // use hardware decoder (non-cuda)
+        decoderparams.ulCreationFlags     = cudaVideoCreate_PreferCUVID;
+        decoderparams.vidLock             = 0;
+        r = cuvidCreateDecoder(&nvdecoder, &decoderparams);
+        if (r != CUDA_SUCCESS)
+        {
+            CUresult x = cuvidDestroyVideoParser(nvparser);
+            assert(x == CUDA_SUCCESS);
+            throw DecompressorFailedException("Cannot create decoder", r);
+        }
     }
 
     ~DecompressorImpl()
@@ -330,83 +366,16 @@ public:
         requested_frame = frameno - iframeno;
         session_frame_count = 0;
 
-        // FIXME: we should figure out whether we can recycle the current instances.
-        if (nvparser)
+        // we submit stuff until the decoder has finished with our requested frame.
+        // this sucks for performance, lots of wasted cycles. but the nv decoder is
+        // more suitable for continuous playback instead of picking out a few frames.
+        done_requested_frame = false;
+        for (unsigned int i = iframeno; i < frameno + 2; ++i)
         {
-            CUresult r = cuvidDestroyVideoParser(nvparser);
-            assert(r == CUDA_SUCCESS);
-            nvparser = 0;
+            submit_frame(i, iframeno);
+            if (done_requested_frame)
+                break;
         }
-        if (nvdecoder)
-        {
-            CUresult r = cuvidDestroyDecoder(nvdecoder);
-            assert(r == CUDA_SUCCESS);
-            nvdecoder = 0;
-        }
-
-
-        CUVIDPARSERPARAMS parserparams = {(cudaVideoCodec) 0};
-        parserparams.CodecType              = format.codec;
-        parserparams.ulMaxNumDecodeSurfaces = 15;   // our idr period is 15 (unrelated, but might as well)
-        parserparams.ulMaxDisplayDelay      = 0;
-        parserparams.pUserData              = this;
-        parserparams.pfnSequenceCallback    = HandleVideoSequence;
-        parserparams.pfnDecodePicture       = HandlePictureDecode;
-        parserparams.pfnDisplayPicture      = HandlePictureDisplay;
-        CUresult r = cuvidCreateVideoParser(&nvparser, &parserparams);
-        if (r != CUDA_SUCCESS)
-            throw DecompressorFailedException("Cannot create stream parser", r);
-
-        try
-        {
-            CUVIDDECODECREATEINFO   decoderparams = {0};
-            // unscaled input and output
-            decoderparams.ulWidth             = format.coded_width;
-            decoderparams.ulHeight            = format.coded_height;
-            decoderparams.ulTargetWidth       = format.coded_width;
-            decoderparams.ulTargetHeight      = format.coded_height;
-            decoderparams.CodecType           = format.codec;
-            decoderparams.ulNumDecodeSurfaces = 15;     // our idr period is 15 (unrelated, but might as well)
-            decoderparams.ChromaFormat        = format.chroma_format;
-            decoderparams.OutputFormat        = cudaVideoSurfaceFormat_NV12;
-            decoderparams.DeinterlaceMode     = cudaVideoDeinterlaceMode_Weave;   // we dont write out interlaced video
-            decoderparams.ulNumOutputSurfaces = 1;
-            // use hardware decoder (non-cuda)
-            decoderparams.ulCreationFlags     = cudaVideoCreate_PreferCUVID;
-            decoderparams.vidLock             = 0;
-            r = cuvidCreateDecoder(&nvdecoder, &decoderparams);
-            if (r != CUDA_SUCCESS)
-                throw DecompressorFailedException("Cannot create decoder", r);
-
-            try
-            {
-                // we submit stuff until the decoder has finished with our requested frame.
-                // this sucks for performance, lots of wasted cycles. but the nv decoder is
-                // more suitable for continuous playback instead of picking out a few frames.
-                done_requested_frame = false;
-                for (unsigned int i = iframeno; i < frameno + 2; ++i)
-                {
-                    submit_frame(i, iframeno);
-                    if (done_requested_frame)
-                        break;
-                }
-            }
-            catch (...)
-            {
-                r = cuvidDestroyDecoder(nvdecoder);
-                assert(r == CUDA_SUCCESS);
-                nvdecoder = 0;
-                throw;
-            }
-        }
-        catch (...)
-        {
-            r = cuvidDestroyVideoParser(nvparser);
-            assert(r == CUDA_SUCCESS);
-            nvparser = 0;
-            throw;
-        }
-
 
         return done_requested_frame;
     }
