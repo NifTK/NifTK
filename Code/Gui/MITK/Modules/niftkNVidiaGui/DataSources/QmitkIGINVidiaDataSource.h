@@ -80,10 +80,18 @@ public:
   // can only be changed when no capture is running! see IsCapturing() etc 
   void SetMipmapLevel(unsigned int l);
   void SetFieldMode(InterlacedBehaviour b);
+  InterlacedBehaviour GetFieldMode() const;
 
 
   static const char*      s_SDISequenceNumberPropertyName;      // mitk::IntProperty
   static const char*      s_SDIFieldModePropertyName;           // mitk::IntProperty --> InterlacedBehaviour
+
+
+  // overridden from IGIDataSource
+  virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
+  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
+  virtual void StopPlayback();
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
 
 public:
@@ -102,6 +110,7 @@ public:
 protected:
   virtual void GrabData();
   virtual bool Update(mitk::IGIDataType* data);
+
 
 signals:
 
@@ -147,6 +156,29 @@ private:
   unsigned int            m_ExpectedCookie;
 
   static const char*      s_NODE_NAME;
+
+
+  struct PlaybackPerFrameInfo
+  {
+    unsigned int    m_SequenceNumber;
+    // we have max 4 channels via sdi.
+    unsigned int    m_frameNumber[4];
+
+    PlaybackPerFrameInfo();
+  };
+  std::map<igtlUint64, PlaybackPerFrameInfo>    m_PlaybackIndex;
+
+  // used to prevent replaying the same thing over and over again.
+  // because decompression in its current implementation is quite heavy-weight,
+  // the repeated calls to PlaybackData() and similarly Update() slow down the machine
+  // quite significantly.
+  igtlUint64                                    m_MostRecentlyPlayedbackTimeStamp;
+  igtlUint64                                    m_MostRecentlyUpdatedTimeStamp;
+  std::pair<IplImage*, int>                     m_CachedUpdate;
+
+
+private:
+  bool InitWithRecordedData(std::map<igtlUint64, PlaybackPerFrameInfo>& index, const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
 
 }; // end class
 

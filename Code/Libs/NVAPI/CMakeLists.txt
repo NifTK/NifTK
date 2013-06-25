@@ -19,6 +19,8 @@ set(niftknvapi_SRCS
   niftkNVAPICommon.cxx
   glew/glew.c
   video/compress.cxx
+  video/conversion.cxx
+  video/decompress.cxx
   video/device.cxx
   video/deviceimpl.cxx
   video/frame.cxx

@@ -19,6 +19,10 @@
 #include "QmitkIGINiftyLinkDataSource.h"
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
+#include <set>
+#include <map>
+#include <string>
+
 
 /**
  * \class QmitkIGITrackerSource
@@ -45,6 +49,13 @@ public:
    */
   virtual bool Update(mitk::IGIDataType* data);
 
+
+  // overridden from IGIDataSource
+  virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
+  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
+  virtual void StopPlayback();
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
+
 signals:
 
   void StatusUpdate(QString statusUpdateMessage);
@@ -70,6 +81,9 @@ protected slots:
   virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
 
 private:
+
+  std::map<std::string, std::set<igtlUint64> >    m_PlaybackIndex;
+  std::string                                     m_PlaybackDirectoryName;
 
 }; // end class
 

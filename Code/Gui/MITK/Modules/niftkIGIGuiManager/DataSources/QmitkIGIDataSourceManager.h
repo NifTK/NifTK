@@ -231,9 +231,12 @@ private slots:
   void OnRecordStart();
 
   /**
-   * \brief Callback to stop recording data.
+   * \brief Callback to stop recording/playback data.
    */
-  void OnRecordStop();
+  void OnStop();
+
+
+  void OnPlayStart();
 
 private:
 
@@ -256,6 +259,14 @@ private:
   bool                                      m_SaveInBackground;
   QTimer                                   *m_GuiUpdateTimer;
   QTimer                                   *m_ClearDownTimer;
+
+  // either real wallclock time or slider-determined playback time
+  igtlUint64                                m_CurrentTime;
+
+  // slider position is relative to this base value.
+  // slider can only represent int values, but we need all 64 bit.
+  igtlUint64                                m_PlaybackSliderBase;
+  double                                    m_PlaybackSliderFactor;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
