@@ -28,6 +28,8 @@
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <QtConcurrentRun>
+#include <boost/bind.hpp>
 
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
@@ -37,6 +39,10 @@ const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 SurfaceReconView::SurfaceReconView()
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
+
+  bool ok = false;
+  ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
 }
 
 
@@ -58,6 +64,14 @@ SurfaceReconView::~SurfaceReconView()
   assert(ok);
   ok = disconnect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
   assert(ok);
+
+  // wait for it to finish first and then disconnect?
+  // or the other way around?
+  // i'd say disconnect first then wait because at that time we no longer care about the result
+  // and the finished-handler might access some half-destroyed objects.
+  ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
+  m_BackgroundProcessWatcher.waitForFinished();
 }
 
 
@@ -207,6 +221,14 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
   // we call this all the time to update the has-calib-property for the node comboboxes.
   UpdateNodeNameComboBox();
+
+  if (m_AutomaticUpdateRadioButton->isChecked())
+  {
+    if (!m_BackgroundProcess.isRunning())
+    {
+      DoSurfaceReconstruction();
+    }
+  }
 }
 
 
@@ -401,6 +423,10 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
 //-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
+  // buttons and other stuff should have been disabled to prevent this function from being called
+  // whenever we are already running one instance in the background.
+  assert(!m_BackgroundProcess.isRunning());
+
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
@@ -426,18 +452,18 @@ void SurfaceReconView::DoSurfaceReconstruction()
           // it may not be tagged as "derived" from the correct source nodes
           // but that shouldn't be a problem here.
 
-          std::string               outputName = OutputNodeNameLineEdit->text().toStdString();
-          mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputName);
-          if (outputNode.IsNull())
+          std::string outputName = OutputNodeNameLineEdit->text().toStdString();
+          m_BackgroundOutputNode = storage->GetNamedNode(outputName);
+          if (m_BackgroundOutputNode.IsNull())
           {
-            outputNode = mitk::DataNode::New();
-            outputNode->SetName(outputName);
+            m_BackgroundOutputNode = mitk::DataNode::New();
+            m_BackgroundOutputNode->SetName(outputName);
 
             mitk::DataStorage::SetOfObjects::Pointer   nodeParents = mitk::DataStorage::SetOfObjects::New();
             nodeParents->push_back(leftNode);
             nodeParents->push_back(rightNode);
 
-            storage->Add(outputNode, nodeParents);
+            storage->Add(m_BackgroundOutputNode, nodeParents);
           }
 
 
@@ -486,8 +512,23 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
           try
           {
+            // dont allow clicking on it until we are done with the current one.
+            DoItButton->setEnabled(false);
+
+            niftk::SurfaceReconstruction::ParamPacket   params;
+            params.image1 = leftImage;
+            params.image2 = rightImage;
+            params.method = method;
+            params.outputtype = outputtype;
+            params.camnode = camNode;
+            params.maxTriangulationError = maxTriError;
+            params.minDepth = minDepth;
+            params.maxDepth = maxDepth;
+
+            m_BackgroundProcess = QtConcurrent::run(m_SurfaceReconstruction.GetPointer(), &niftk::SurfaceReconstruction::Run, params);
+            m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
             // Then delagate everything to class outside of plugin, so we can unit test it.
-            m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError, minDepth, maxDepth);
+            //m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError, minDepth, maxDepth);
           }
           catch (const std::exception& e)
           {
@@ -499,3 +540,13 @@ void SurfaceReconView::DoSurfaceReconstruction()
     }
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnBackgroundProcessFinished()
+{
+  m_BackgroundOutputNode->SetData(m_BackgroundProcessWatcher.result());
+
+  DoItButton->setEnabled(true);
+}
+

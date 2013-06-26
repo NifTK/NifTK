@@ -19,6 +19,9 @@
 #include <SurfaceReconstruction.h>
 #include <service/event/ctkEvent.h>
 #include "ui_SurfaceReconViewWidget.h"
+#include <QFuture>
+#include <QFutureWatcher>
+
 
 /**
  * \class SurfaceReconView
@@ -88,6 +91,9 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  // we connect the future to this slot
+  void OnBackgroundProcessFinished();
+
 private:
 
   /**
@@ -108,6 +114,10 @@ private:
   // used to init the calib file chooser.
   // also read from prefs.
   QString         m_LastFile;
+
+  QFuture<mitk::BaseData::Pointer>           m_BackgroundProcess;
+  QFutureWatcher<mitk::BaseData::Pointer>    m_BackgroundProcessWatcher;
+  mitk::DataNode::Pointer                    m_BackgroundOutputNode;
 };
 
 #endif // SurfaceReconView_h

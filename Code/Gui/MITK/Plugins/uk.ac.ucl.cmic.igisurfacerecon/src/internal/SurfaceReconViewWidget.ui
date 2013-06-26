@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>795</width>
-    <height>1264</height>
+    <width>855</width>
+    <height>1400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -481,6 +481,9 @@ If you leave it empty a suitable name will be generated.</string>
       <string>3) Choose method</string>
      </property>
      <layout class="QFormLayout" name="formLayout_3">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -523,12 +526,60 @@ If you leave it empty a suitable name will be generated.</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="DoItButton">
-        <property name="text">
-         <string>DO IT NOW</string>
-        </property>
-       </widget>
+      <item row="3" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QRadioButton" name="m_ManualUpdateRadioButton">
+            <property name="text">
+             <string>Manual update</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="m_AutomaticUpdateRadioButton">
+            <property name="toolTip">
+             <string>Triggers on data sources update.</string>
+            </property>
+            <property name="text">
+             <string>Automatic update</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="DoItButton">
+            <property name="text">
+             <string>DO IT NOW</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Minimum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -556,7 +607,6 @@ If you leave it empty a suitable name will be generated.</string>
   <tabstop>outputoptionsgroupbox</tabstop>
   <tabstop>GenerateDisparityImageRadioBox</tabstop>
   <tabstop>MethodComboBox</tabstop>
-  <tabstop>DoItButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
