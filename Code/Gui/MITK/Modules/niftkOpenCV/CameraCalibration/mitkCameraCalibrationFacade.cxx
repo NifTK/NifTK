@@ -489,7 +489,6 @@ void ProjectAllPoints(
 
 //-----------------------------------------------------------------------------
 double CalibrateStereoCameraParameters(
-    const int& numberSuccessfulViews,
     const CvMat& objectPointsLeft,
     const CvMat& imagePointsLeft,
     const CvMat& pointCountsLeft,
@@ -546,7 +545,7 @@ double CalibrateStereoCameraParameters(
       &outputEssentialMatrix,
       &outputFundamentalMatrix,
       cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      CV_CALIB_FIX_INTRINSIC // Use the initial guess, but feel free to optimise it.
+      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to optimise it.
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;

@@ -214,7 +214,6 @@ void ProjectAllPoints(
  * and also outputs the rotation and translation vector between the two cameras.
  */
 double CalibrateStereoCameraParameters(
-    const int& numberSuccessfulViews,
     const CvMat& objectPointsLeft,
     const CvMat& imagePointsLeft,
     const CvMat& pointCountsLeft,

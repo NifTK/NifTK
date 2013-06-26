@@ -147,7 +147,6 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
 
   reprojectionError = CalibrateStereoCameraParameters(
-      numberOfSuccessfulViews,
       *objectPointsLeft,
       *imagePointsLeft,
       *pointCountsLeft,
