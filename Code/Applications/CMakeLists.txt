@@ -66,13 +66,18 @@ if(SlicerExecutionModel_FOUND)
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
     niftkConvertImage
+    niftkConvertRawDICOMMammogramsToPresentation
     niftkCreateMaskImage
     niftkCropImage
     niftkDilate
     niftkErode
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkHistogramEqualization
+    niftkInvertImage
+    niftkLogInvertImage
     niftkMultiply
+    niftkNegateImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
