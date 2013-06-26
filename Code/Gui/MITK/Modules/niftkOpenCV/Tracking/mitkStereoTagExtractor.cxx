@@ -14,7 +14,6 @@
 
 #include "mitkStereoTagExtractor.h"
 #include "mitkTagTrackingFacade.h"
-#include <mitkImageToOpenCVImageFilter.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
