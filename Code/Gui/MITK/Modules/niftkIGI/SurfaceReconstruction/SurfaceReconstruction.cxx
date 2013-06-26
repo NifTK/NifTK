@@ -46,19 +46,24 @@ SurfaceReconstruction::~SurfaceReconstruction()
 
 
 //-----------------------------------------------------------------------------
-void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
-                                mitk::DataNode::Pointer outputNode,
+mitk::BaseData::Pointer SurfaceReconstruction::Run(ParamPacket params)
+{
+  return this->Run(params.image1, params.image2, params.method, params.outputtype, params.camnode, params.maxTriangulationError, params.minDepth, params.maxDepth);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseData::Pointer SurfaceReconstruction::Run(
                                 const mitk::Image::Pointer image1,
                                 const mitk::Image::Pointer image2,
                                 Method method,
                                 OutputType outputtype,
-                                mitk::DataNode::Pointer camnode,
+                                const mitk::DataNode::Pointer camnode,
                                 float maxTriangulationError,
                                 float minDepth,
                                 float maxDepth)
 {
   // sanity check
-  assert(dataStorage.IsNotNull());
   assert(image1.IsNotNull());
   assert(image2.IsNotNull());
 
@@ -219,7 +224,7 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
             }
           }
         }
-        outputNode->SetData(points);
+        //outputNode->SetData(points);
 
         // if our camnode has mitk::CoordinateAxesData::Pointer then we use that.
         // otherwise we copy its geometry.
@@ -237,7 +242,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
             points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
           }
         }
-        break;
+
+        return points.GetPointer();
       }
 
       case DISPARITY_IMAGE:
@@ -259,8 +265,8 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
           imgData4Node->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, undist1bp);
         }
 
-        outputNode->SetData(imgData4Node);
-        break;
+        //outputNode->SetData(imgData4Node);
+        return imgData4Node.GetPointer();
       }
     } // end switch on output
 
@@ -270,6 +276,7 @@ void SurfaceReconstruction::Run(const mitk::DataStorage::Pointer dataStorage,
     throw std::runtime_error(std::string("Something went wrong with MITK bits: ") + e.what());
   }
 
+  return 0;
 }
 
 } // end namespace
