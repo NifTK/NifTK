@@ -220,8 +220,13 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
         if (coordinateAxes.IsNull())
         {
           coordinateAxes = mitk::CoordinateAxesData::New();
+
+          // We remove and add to trigger the NodeAdded event,
+          // which is not emmitted if the node was added with no data.
+          m_DataStorage->Remove(node);
           node->SetData(coordinateAxes);
           node->SetVisibility(false); // by default we don't need to see it.
+          m_DataStorage->Add(node);
         }
         coordinateAxes->SetVtkMatrix(*vtkMatrix);
 
