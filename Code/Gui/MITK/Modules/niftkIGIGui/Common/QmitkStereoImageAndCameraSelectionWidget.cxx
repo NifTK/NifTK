@@ -128,12 +128,12 @@ void QmitkStereoImageAndCameraSelectionWidget::SetDataStorage(const mitk::DataSt
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
 
   m_LeftImageCombo->SetDataStorage(m_DataStorage);
-  m_LeftImageCombo->SetAutoSelectNewItems(false);
   m_LeftImageCombo->SetPredicate(isImage);
+  m_LeftImageCombo->SetAutoSelectNewItems(false);
 
   m_RightImageCombo->SetDataStorage(m_DataStorage);
-  m_RightImageCombo->SetAutoSelectNewItems(false);
   m_RightImageCombo->SetPredicate(isImage);
+  m_RightImageCombo->SetAutoSelectNewItems(false);
 
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_CameraPositionComboBox->SetDataStorage(m_DataStorage);
