@@ -309,7 +309,7 @@ int main( int argc, char *argv[] )
 
     // Change the tag to "FOR PRESENTATION"
 
-    ModifyTag( dictionary, "0008|0068", " PRESENTATION " );
+    ModifyTag( dictionary, "0008|0068", "FOR PRESENTATION" );
     
 
     // Convert the image to a "FOR PRESENTATION" version by calculating the logarithm and inverting 
