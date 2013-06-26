@@ -42,7 +42,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 , m_CurrentRenderer(NULL)
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
-, m_PreviousMagnification(0.0)
+, m_Magnification(0.0)
 {
   this->setupUi(parent);
 
@@ -79,10 +79,11 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
+  m_ViewerWidget->SetDisplay2DCursorsLocally(true);
   m_ViewerWidget->SetRememberSettingsPerLayout(true);
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
   m_ViewerWidget->SetCursorPositionsBound(false);
-  m_ViewerWidget->SetMagnificationsBound(true);
+  m_ViewerWidget->SetScaleFactorsBound(true);
 
   connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
   connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
@@ -91,7 +92,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
   connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnMagnificationChanged(double)));
-  connect(m_ViewerWidget, SIGNAL(MagnificationChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationChanged(QmitkMIDASSingleViewWidget*, double)));
+  connect(m_ViewerWidget, SIGNAL(ScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 }
 
 
@@ -308,7 +309,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     m_ViewerWidget->SetSelectedRenderWindow(renderWindow);
 
     double magnification = m_ViewerWidget->GetMagnification();
-    m_PreviousMagnification = magnification;
+    m_Magnification = magnification;
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
@@ -461,13 +462,15 @@ MIDASLayout QmitkMIDASSegmentationViewWidget::GetCurrentMainWindowLayout()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(QmitkMIDASSingleViewWidget*, double magnification)
+void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double scaleFactor)
 {
+  double magnification = m_ViewerWidget->GetMagnification();
+
   bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
   m_MagnificationSpinBox->setValue(magnification);
   m_MagnificationSpinBox->blockSignals(wasBlocked);
 
-  m_PreviousMagnification = magnification;
+  m_Magnification = magnification;
 }
 
 
@@ -481,7 +484,7 @@ void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnificati
   {
     double newMagnification = roundedMagnification;
     // If the value has decreased, we have to increase the rounded value.
-    if (magnification < m_PreviousMagnification)
+    if (magnification < m_Magnification)
     {
       newMagnification += 1.0;
     }
@@ -491,6 +494,6 @@ void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnificati
   else
   {
     m_ViewerWidget->SetMagnification(magnification);
-    m_PreviousMagnification = magnification;
+    m_Magnification = magnification;
   }
 }

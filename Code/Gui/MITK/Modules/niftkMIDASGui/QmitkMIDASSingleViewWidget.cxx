@@ -111,7 +111,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
     {
       m_CursorPositions[i][j] = 0.5;
     }
-    m_Magnifications[i] = m_MinimumMagnification;
+    m_ScaleFactors[i] = 1.0;
     m_LayoutInitialised[i] = false;
   }
 
@@ -132,7 +132,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
   connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
   connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
-  connect(m_MultiWidget, SIGNAL(MagnificationChanged(double)), this, SLOT(OnMagnificationChanged(double)));
+  connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
 }
 
 
@@ -165,9 +165,9 @@ void QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& c
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnMagnificationChanged(double magnification)
+void QmitkMIDASSingleViewWidget::OnScaleFactorChanged(double scaleFactor)
 {
-  emit MagnificationChanged(this, magnification);
+  emit ScaleFactorChanged(this, scaleFactor);
 }
 
 
@@ -470,16 +470,16 @@ void QmitkMIDASSingleViewWidget::SetCursorPositionsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreMagnificationsBound() const
+bool QmitkMIDASSingleViewWidget::AreScaleFactorsBound() const
 {
-  return m_MultiWidget->AreMagnificationsBound();
+  return m_MultiWidget->AreScaleFactorsBound();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetMagnificationsBound(bool bound)
+void QmitkMIDASSingleViewWidget::SetScaleFactorsBound(bool bound)
 {
-  m_MultiWidget->SetMagnificationsBound(bound);
+  m_MultiWidget->SetScaleFactorsBound(bound);
 }
 
 
@@ -499,7 +499,7 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   m_SliceIndexes[Index(orientation)] = this->GetSliceIndex(orientation);
   m_TimeSteps[Index(orientation)] = this->GetTimeStep();
   m_CursorPositions[Index(layout)] = m_MultiWidget->GetCursorPosition();
-  m_Magnifications[Index(layout)] = m_MultiWidget->GetMagnification();
+  m_ScaleFactors[Index(layout)] = m_MultiWidget->GetScaleFactor();
   m_LayoutInitialised[Index(layout)] = true;
 
   MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
@@ -520,7 +520,7 @@ void QmitkMIDASSingleViewWidget::ResetCurrentPosition()
   {
     m_CursorPositions[Index(m_Layout)][j] = 0.5;
   }
-  m_Magnifications[Index(m_Layout)] = m_MinimumMagnification;
+  m_ScaleFactors[Index(m_Layout)] = 1.0;
   m_LayoutInitialised[Index(m_Layout)] = false;
 }
 
@@ -539,7 +539,7 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
     {
       m_CursorPositions[Index(i)][j] = 0.5;
     }
-    m_Magnifications[Index(i)] = m_MinimumMagnification;
+    m_ScaleFactors[Index(i)] = 1.0;
     m_LayoutInitialised[Index(i)] = false;
   }
 }
@@ -684,7 +684,7 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
     if (fitToDisplay)
     {
       // Fits the display geometry to the current widget size.
-      m_MultiWidget->Fit();
+//      m_MultiWidget->Fit();
     }
 
     // Restore the selected position if it was set before.
@@ -699,7 +699,7 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
     m_Layout = layout;
 
     // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
-    // we should go back to the same slice index, time step, cursor position on display, magnification.
+    // we should go back to the same slice index, time step, cursor position on display, scale factor.
     bool hasBeenInitialised = m_LayoutInitialised[Index(layout)];
     if (m_RememberSettingsPerLayout && hasBeenInitialised)
     {
@@ -709,7 +709,7 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
         this->SetTimeStep(m_TimeSteps[Index(orientation)]);
       }
       this->SetCursorPosition(m_CursorPositions[Index(layout)]);
-      this->SetMagnification(m_Magnifications[Index(layout)]);
+      this->SetScaleFactor(m_ScaleFactors[Index(layout)]);
     }
     else
     {
@@ -720,13 +720,16 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout, bool fitToDisplay
 
       unsigned int sliceIndex = this->GetSliceIndex(orientation);
       unsigned int timeStep = this->GetTimeStep();
-      double magnification = m_MultiWidget->FitMagnification();
+      QmitkRenderWindow* renderWindow = m_MultiWidget->GetRenderWindow(orientation);
+      double magnification = m_MultiWidget->GetMagnification(renderWindow);
+//      double scaleFactor = m_MultiWidget->GetScaleFactor();
       const mitk::Vector3D& cursorPosition = m_MultiWidget->GetCursorPosition();
 
       this->SetSliceIndex(orientation, sliceIndex);
       this->SetTimeStep(timeStep);
       this->SetCursorPosition(cursorPosition);
       this->SetMagnification(magnification);
+//      this->SetScaleFactor(scaleFactor);
       m_LayoutInitialised[Index(layout)] = true;
     }
   }
@@ -780,6 +783,23 @@ void QmitkMIDASSingleViewWidget::SetMagnification(double magnification)
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
     m_MultiWidget->SetMagnification(magnification);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+double QmitkMIDASSingleViewWidget::GetScaleFactor() const
+{
+  return m_MultiWidget->GetScaleFactor();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSingleViewWidget::SetScaleFactor(double scaleFactor)
+{
+  if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
+  {
+    m_MultiWidget->SetScaleFactor(scaleFactor);
   }
 }
 

@@ -146,10 +146,10 @@ public:
   /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, magnification) when we switch the render window layout
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
   void SetRememberSettingsPerLayout(bool remember);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, magnification) when we switch the render window layout
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
   bool GetRememberSettingsPerLayout() const;
 
   /// \brief Sets the background colour.
@@ -233,11 +233,17 @@ public:
   /// \brief Set the current cursor position on the render window in pixels, normalised with the size of the render windows.
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Get the current magnification factor.
+  /// \brief Get the current magnification.
   double GetMagnification() const;
 
-  /// \brief Set the current magnification factor.
+  /// \brief Set the current magnification.
   void SetMagnification(double magnification);
+
+  /// \brief Get the current scale factor.
+  double GetScaleFactor() const;
+
+  /// \brief Set the current scale factor.
+  void SetScaleFactor(double scaleFactor);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -251,17 +257,17 @@ public:
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
 
-  /// \brief Gets the flag that controls whether the cursor position is bound between the render windows.
+  /// \brief Gets the flag that controls whether the cursor position is bound across the render windows.
   bool AreCursorPositionsBound() const;
 
-  /// \brief Sets the flag that controls whether the cursor position is bound between the render windows.
+  /// \brief Sets the flag that controls whether the cursor position is bound across the render windows.
   void SetCursorPositionsBound(bool bound);
 
-  /// \brief Gets the flag that controls whether the magnification is bound between the render windows.
-  bool AreMagnificationsBound() const;
+  /// \brief Gets the flag that controls whether the scale factors are bound across the render windows.
+  bool AreScaleFactorsBound() const;
 
-  /// \brief Sets the flag that controls whether the magnification is bound between the render windows.
-  void SetMagnificationsBound(bool bound);
+  /// \brief Sets the flag that controls whether the scale factors are bound across the render windows.
+  void SetScaleFactorsBound(bool bound);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -290,8 +296,8 @@ signals:
   /// \brief Emitted when the cursor position has changed in this view.
   void CursorPositionChanged(QmitkMIDASSingleViewWidget* thisView, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Emitted when the magnification has changed in this view.
-  void MagnificationChanged(QmitkMIDASSingleViewWidget* thisView, double magnification);
+  /// \brief Emitted when the scale factor has changed in this view.
+  void ScaleFactorChanged(QmitkMIDASSingleViewWidget* thisView, double scaleFactor);
 
 protected slots:
 
@@ -304,8 +310,8 @@ protected slots:
   /// \brief Called when the cursor position has changed.
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Called when the magnification has changed.
-  virtual void OnMagnificationChanged(double magnification);
+  /// \brief Called when the scale factor has changed.
+  virtual void OnScaleFactorChanged(double scaleFactor);
 
 private:
 
@@ -347,7 +353,7 @@ private:
   int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
   mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
-  double m_Magnifications[MIDAS_LAYOUT_NUMBER * 2];     // Two each for layout. Unbound, then bound, alternatingly.
+  double m_ScaleFactors[MIDAS_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
   bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
