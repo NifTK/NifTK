@@ -1238,23 +1238,21 @@ std::vector< cv::Point3f > TriangulatePointPairs(
       Qtc.y = Q0.y + tc*v.y;
       Qtc.z = Q0.z + tc*v.z;
 
-      /*
       midPoint.x = (Psc.x + Qtc.x)/2.0;
       midPoint.y = (Psc.y + Qtc.y)/2.0;
       midPoint.z = (Psc.z + Qtc.z)/2.0;
-      */
 
-      /*
+      /* For testing.
       midPoint.x = Psc.x;
       midPoint.y = Psc.y;
       midPoint.z = Psc.z;
       */
 
-
+      /* For testing.
       midPoint.x = Qtc.x;
       midPoint.y = Qtc.y;
       midPoint.z = Qtc.z;
-
+      */
 
       outputPoints.push_back(midPoint);
     }
