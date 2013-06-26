@@ -207,6 +207,11 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
   // we call this all the time to update the has-calib-property for the node comboboxes.
   UpdateNodeNameComboBox();
+
+  if (m_AutomaticUpdateRadioButton->isChecked())
+  {
+    DoSurfaceReconstruction();
+  }
 }
 
 
