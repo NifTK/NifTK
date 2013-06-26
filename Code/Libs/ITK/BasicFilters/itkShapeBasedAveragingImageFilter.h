@@ -54,7 +54,8 @@ public:
     // Median. 
     MEDIAN = 1, 
     // Interquartile mean - more robust. 
-    INTERQUARTILE_MEAN = 2
+    INTERQUARTILE_MEAN = 2,
+    CORRECT_INTERQUARTILE_MEAN = 3
   } MeanModeType;
   /** 
    * Method for creation through the object factory. 
@@ -148,7 +149,7 @@ protected:
   /**
    * Option to use mean, median or interquartile mean. 
    */
-  MeanModeType m_MeanMode; 
+  int m_MeanMode;
   /**
    * Input segmentation reliability. 
    */
