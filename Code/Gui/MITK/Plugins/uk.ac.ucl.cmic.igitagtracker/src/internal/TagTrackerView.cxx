@@ -17,6 +17,7 @@
 #include "TagTrackerViewActivator.h"
 #include "TagTrackerViewPreferencePage.h"
 #include <QFile>
+#include <QMessageBox>
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -313,6 +314,16 @@ void TagTrackerView::UpdateTags()
       if (rightImage.IsNull())
       {
         MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right image is NULL" << std::endl;
+        return;
+      }
+      if (leftNode->GetName() == rightNode->GetName())
+      {
+        QMessageBox msgBox;
+        msgBox.setText("The left and right image are the same!");
+        msgBox.setInformativeText("They need to be different for stereo tracking.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.exec();
         return;
       }
 
