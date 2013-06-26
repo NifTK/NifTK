@@ -208,7 +208,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
         }
           break;
 
-        case 3:
+        case CORRECT_INTERQUARTILE_MEAN:
         {
           int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0));
           int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1;
