@@ -65,8 +65,13 @@ SurfaceReconView::~SurfaceReconView()
   ok = disconnect(RightChannelNodeNameComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxIndexChanged(int)));
   assert(ok);
 
+  // wait for it to finish first and then disconnect?
+  // or the other way around?
+  // i'd say disconnect first then wait because at that time we no longer care about the result
+  // and the finished-handler might access some half-destroyed objects.
   ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
   assert(ok);
+  m_BackgroundProcessWatcher.waitForFinished();
 }
 
 
@@ -418,6 +423,10 @@ void SurfaceReconView::LoadStereoRig(const std::string& filename, mitk::Image::P
 //-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
+  // buttons and other stuff should have been disabled to prevent this function from being called
+  // whenever we are already running one instance in the background.
+  assert(!m_BackgroundProcess.isRunning());
+
   mitk::DataStorage::Pointer storage = GetDataStorage();
   if (storage.IsNotNull())
   {
