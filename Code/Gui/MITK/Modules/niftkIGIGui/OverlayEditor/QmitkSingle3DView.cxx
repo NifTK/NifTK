@@ -262,17 +262,50 @@ void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
+{
+  bool isCalibrated = false;
+
+  if (m_Image.IsNotNull() && m_ImageNode.IsNotNull())
+  {
+    int width = m_Image->GetDimension(0);
+    int height = m_Image->GetDimension(1);
+    m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
+
+    // Check for property that determines if we are doing a calibrated model or not.
+    mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
+        = dynamic_cast<mitk::CameraIntrinsicsProperty*>(m_ImageNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
+
+    if (intrinsicsProperty.IsNotNull())
+    {
+      mitk::CameraIntrinsics::Pointer intrinsics;
+      intrinsics = intrinsicsProperty->GetValue();
+
+      m_MatrixDrivenCamera->SetIntrinsicParameters
+          (intrinsics->GetFocalLengthX(),
+           intrinsics->GetFocalLengthY(),
+           intrinsics->GetPrincipalPointX(),
+           intrinsics->GetPrincipalPointY()
+          );
+      isCalibrated = true;
+    }
+  }
+  m_IsCalibrated = isCalibrated;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
 {
-  m_IsCalibrated = false;
+  // Remember: node can be NULL, as we have to respond to NodeRemoved events.
 
   m_BitmapOverlay->SetNode(node);
 
-  // Remember node can be NULL, as we have to respond to NodeRemoved events.
   if (node == NULL)
   {
     m_Image = NULL;
     m_ImageNode = NULL;
+    m_IsCalibrated = false;
   }
   else
   {
@@ -281,29 +314,6 @@ void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
     {
       m_Image = image;
       m_ImageNode = const_cast<mitk::DataNode*>(node);
-
-      int width = image->GetDimension(0);
-      int height = image->GetDimension(1);
-      m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
-
-      // Check for property that determines if we are doing a calibrated model or not.
-      mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
-          = dynamic_cast<mitk::CameraIntrinsicsProperty*>(node->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
-
-      if (intrinsicsProperty.IsNotNull())
-      {
-        mitk::CameraIntrinsics::Pointer intrinsics;
-        intrinsics = intrinsicsProperty->GetValue();
-
-        m_MatrixDrivenCamera->SetIntrinsicParameters
-            (intrinsics->GetFocalLengthX(),
-             intrinsics->GetFocalLengthY(),
-             intrinsics->GetPrincipalPointX(),
-             intrinsics->GetPrincipalPointY()
-            );
-
-        m_IsCalibrated = true;
-      }
     }
   }
   this->Update();
@@ -319,12 +329,12 @@ void QmitkSingle3DView::Update()
     return;
   }
 
-  // Setup the size of the window, and whether or not we are calibrated.
+  this->UpdateCameraIntrinsicParameters();
+  m_MatrixDrivenCamera->SetUseCalibratedCamera(m_IsCalibrated);
+
   int widthOfCurrentWindow = this->width();
   int heightOfCurrentWindow = this->height();
-
   m_MatrixDrivenCamera->SetActualWindowSize(widthOfCurrentWindow, heightOfCurrentWindow);
-  m_MatrixDrivenCamera->SetUseCalibratedCamera(m_IsCalibrated);
 
   if (m_IsCameraTracking)
   {
@@ -344,9 +354,9 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
 {
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
-  double origin[4]     = {0, 0,     0,    1};
-  double focalPoint[4] = {0, 0,     -1e9, 1};
-  double viewUp[4]     = {0, 1.0e9, 0,    1};
+  double origin[4]     = {0, 0,  0, 1};
+  double focalPoint[4] = {0, 0, -1000, 1};
+  double viewUp[4]     = {0, 1000,  0, 1};
 
   // We then move the camera to that position.
   m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
@@ -354,42 +364,48 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
   m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
   m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
 
+  // We can then use a "User View Transform" to concatenate to the view to move the view point.
+  vtkSmartPointer<vtkTransform> userTransform = vtkTransform::New();
+  userTransform->Identity();
+  userTransform->PostMultiply();
+
+  // If the stereo right to left matrix exists, we must be doing the right image.
+  // So, in this case, we have an extra transformation to consider.
+  if (m_Image.IsNotNull())
+  {
+    niftk::Undistortion::MatrixProperty::Pointer prop = dynamic_cast<niftk::Undistortion::MatrixProperty*>(m_Image->GetProperty(niftk::Undistortion::s_StereoRigTransformationPropertyName).GetPointer());
+    if (prop.IsNotNull())
+    {
+      itk::Matrix<float, 4, 4> txf = prop->GetValue();
+      vtkSmartPointer<vtkMatrix4x4> tmpMatrix = vtkMatrix4x4::New();
+      for (int i = 0; i < 4; ++i)
+      {
+        for (int j = 0; j < 4; ++j)
+        {
+          tmpMatrix->SetElement(i, j, txf[i][j]);
+        }
+      }
+      tmpMatrix->Invert();
+      userTransform->Concatenate(tmpMatrix);
+    }
+  }
+
   // If additionally, the user has selected a tracking matrix, we can move camera accordingly.
-  if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
+  if (false && m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
   {
     mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
     if (trackingTransform.IsNotNull())
     {
-      // And now do the extrinsics. We basically need to move the camera to the right
-      // position, and set focal point and view up in world (tracker coordinates).
-
-      // This is achieved by taking the default camera position, focal point and
-      // view up specified above and multiply by the calibration (eye to hand transform)
-      // matrix, and then by the tracker matrix, which transforms from the hand to
-      // tracker coordinates. If the "calibration" is a hand-eye rather than an eye-hand
-      // then the calibration matrix may well need inverting. I haven't been able to test this
-      // as the moment, as the test machine is broken.
-
       vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkMatrix4x4::New();
       trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
 
       vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
       vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_TrackingCalibrationTransform, combinedTransform);
 
-      double transformedOrigin[4]     = {0, 0, 0, 1};
-      double transformedFocalPoint[4] = {0, 0, 0, 1};
-      double transformedViewUp[4]     = {0, 0, 0, 1};
-
-      combinedTransform->MultiplyPoint(origin, transformedOrigin);
-      combinedTransform->MultiplyPoint(focalPoint, transformedFocalPoint);
-      combinedTransform->MultiplyPoint(viewUp, transformedViewUp);
-
-      m_MatrixDrivenCamera->SetPosition(transformedOrigin[0], transformedOrigin[1], transformedOrigin[2]);
-      m_MatrixDrivenCamera->SetFocalPoint(transformedFocalPoint[0], transformedFocalPoint[1], transformedFocalPoint[2]);
-      m_MatrixDrivenCamera->SetViewUp(transformedViewUp[0], transformedViewUp[1], transformedViewUp[2]);
-      m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
+      userTransform->Concatenate(combinedTransform);
     }
   }
+  m_MatrixDrivenCamera->SetUserViewTransform(userTransform);
 }
 
 

@@ -71,6 +71,8 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
     TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
+
+  pointSet->Modified();
 }
 
 //-----------------------------------------------------------------------------

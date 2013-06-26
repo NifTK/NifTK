@@ -301,6 +301,7 @@ void TagTrackerView::UpdateTags()
           pointSet,
           cameraToWorldMatrix
           );
+      pointSetNode->Modified();
     }
     else
     {
@@ -339,6 +340,7 @@ void TagTrackerView::UpdateTags()
           pointSet,
           cameraToWorldMatrix
           );
+      pointSetNode->Modified();
     } // end if mono/stereo
 
     int numberOfTrackedPoints = pointSet->GetSize();

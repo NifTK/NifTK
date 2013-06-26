@@ -205,6 +205,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
     TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
+
+  pointSet->Modified();
 }
 
 

@@ -170,6 +170,11 @@ private:
   void SetTrackedImageVisibility(const bool& visibility);
 
   /**
+   * \brief Separate method, so we can force an update on each refresh.
+   */
+  void UpdateCameraIntrinsicParameters();
+
+  /**
    * \brief Used to move the camera based on a tracking transformation.
    *
    * In addition, we also have a fallback position. If the camera calibration
