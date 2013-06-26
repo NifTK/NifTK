@@ -225,7 +225,6 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
           // which is not emmitted if the node was added with no data.
           m_DataStorage->Remove(node);
           node->SetData(coordinateAxes);
-          node->SetVisibility(false); // by default we don't need to see it.
           m_DataStorage->Add(node);
         }
         coordinateAxes->SetVtkMatrix(*vtkMatrix);
