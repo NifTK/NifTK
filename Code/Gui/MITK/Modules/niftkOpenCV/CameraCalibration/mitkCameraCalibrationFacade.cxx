@@ -550,6 +550,31 @@ double CalibrateStereoCameraParameters(
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
 
+  // OpenCV calculates left to right, so we want right to left.
+  CvMat *leftToRight = cvCreateMat(4,4,CV_32FC1);
+  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_32FC1);
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      CV_MAT_ELEM(*leftToRight, float, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, float, i, j);
+    }
+    CV_MAT_ELEM(*leftToRight, float, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0);
+  }
+  CV_MAT_ELEM(*leftToRight, float, 3, 0) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 1) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 2) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 3) = 1;
+  cvInvert(leftToRight, leftToRightInverted);
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      CV_MAT_ELEM(outputRightToLeftRotation, float, i, j) = CV_MAT_ELEM(*leftToRightInverted, float, i, j);
+    }
+    CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0) = CV_MAT_ELEM(*leftToRightInverted, float, i, 3);
+  }
+
   double leftProjectError2 = cvCalibrateCamera2(
                             &objectPointsLeft,
                             &imagePointsLeft,
@@ -575,6 +600,9 @@ double CalibrateStereoCameraParameters(
                             );
 
   std::cout << "Final extrinsic calibration gave re-projection errors of left=" << leftProjectError2 << ", right=" << rightProjectError2 << std::endl;
+
+  cvReleaseMat(&leftToRight);
+  cvReleaseMat(&leftToRightInverted);
 
   return stereoCalibrationProjectionError;
 }
