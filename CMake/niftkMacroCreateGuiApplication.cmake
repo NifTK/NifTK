@@ -12,7 +12,11 @@
 #
 #============================================================================*/
 
-macro(NIFTK_CREATE_APPLICATION)
+###############################################################################
+# Note: This is for creating a BlueBerry Application, not a generic Qt one.
+###############################################################################
+
+macro(NIFTK_CREATE_GUI_APPLICATION)
   MACRO_PARSE_ARGUMENTS(_APP
                         "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
                         ""
@@ -99,4 +103,4 @@ macro(NIFTK_CREATE_APPLICATION)
     set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT ${NIFTK_COPYRIGHT})
   endif()
   
-endmacro(NIFTK_CREATE_APPLICATION)
+endmacro()

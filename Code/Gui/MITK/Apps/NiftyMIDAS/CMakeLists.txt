@@ -37,7 +37,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.igiundistort
 )
 
-NIFTK_CREATE_APPLICATION(
+NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyMIDAS
   EXCLUDE_PLUGINS ${_exclude_plugins}
 )
