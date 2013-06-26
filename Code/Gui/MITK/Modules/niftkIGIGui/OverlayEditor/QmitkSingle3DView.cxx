@@ -354,22 +354,11 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
 {
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
-  double origin[4]     = {0, 0,  0, 1};
-  double focalPoint[4] = {0, 0, -1000, 1};
-  double viewUp[4]     = {0, 1000,  0, 1};
+  double origin[4]     = {0, 0,    0,    1};
+  double focalPoint[4] = {0, 0,   -1000, 1};
+  double viewUp[4]     = {0, 1000, 0,    1};
 
-  // We then move the camera to that position.
-  m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
-  m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
-  m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
-  m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
-
-  // We can then use a "User View Transform" to concatenate to the view to move the view point.
-  vtkSmartPointer<vtkTransform> userTransform = vtkTransform::New();
-  userTransform->Identity();
-  userTransform->PostMultiply();
-
-  // If the stereo right to left matrix exists, we must be doing the right image.
+  // If the stereo right to left matrix exists, we must be doing the right hand image.
   // So, in this case, we have an extra transformation to consider.
   if (m_Image.IsNotNull())
   {
@@ -386,12 +375,17 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
         }
       }
       tmpMatrix->Invert();
-      userTransform->Concatenate(tmpMatrix);
+      tmpMatrix->MultiplyPoint(origin, origin);
+      tmpMatrix->MultiplyPoint(focalPoint, focalPoint);
+      tmpMatrix->MultiplyPoint(viewUp, viewUp);
+      viewUp[0] = viewUp[0] - origin[0];
+      viewUp[1] = viewUp[1] - origin[1];
+      viewUp[2] = viewUp[2] - origin[2];
     }
   }
 
   // If additionally, the user has selected a tracking matrix, we can move camera accordingly.
-  if (false && m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
+  if (m_TransformNode.IsNotNull() && m_TrackingCalibrationTransform != NULL)
   {
     mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
     if (trackingTransform.IsNotNull())
@@ -402,10 +396,20 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
       vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
       vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_TrackingCalibrationTransform, combinedTransform);
 
-      userTransform->Concatenate(combinedTransform);
+      combinedTransform->MultiplyPoint(origin, origin);
+      combinedTransform->MultiplyPoint(focalPoint, focalPoint);
+      combinedTransform->MultiplyPoint(viewUp, viewUp);
+      viewUp[0] = viewUp[0] - origin[0];
+      viewUp[1] = viewUp[1] - origin[1];
+      viewUp[2] = viewUp[2] - origin[2];
     }
   }
-  m_MatrixDrivenCamera->SetUserViewTransform(userTransform);
+
+  // We then move the camera to that position.
+  m_MatrixDrivenCamera->SetPosition(origin[0], origin[1], origin[2]);
+  m_MatrixDrivenCamera->SetFocalPoint(focalPoint[0], focalPoint[1], focalPoint[2]);
+  m_MatrixDrivenCamera->SetViewUp(viewUp[0], viewUp[1], viewUp[2]);
+  m_MatrixDrivenCamera->SetClippingRange(m_ZNear, m_ZFar);
 }
 
 
