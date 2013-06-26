@@ -1,35 +1,39 @@
 #!/bin/bash
 
-#/*============================================================================
-#
-#  NifTK: A software platform for medical image computing.
-#
-#  Copyright (c) University College London (UCL). All rights reserved.
-#
-#  This software is distributed WITHOUT ANY WARRANTY; without even
-#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.
-#
-#  See LICENSE.txt in the top level directory for details.
-#
-#============================================================================*/
-
 # Downloads external project dependencies of NifTK and creates a
 # tarball and MD5 checksum.
+
+# Note:
+# We have to use an old version of subversion so that the external projects
+# can be checked out on each client.
+# This script is supposed to be used on jet.cs.ucl.ac.uk where there is
+# Subversion 1.4.0 in /opt/subversion.
+
+export PATH=/opt/subversion/bin:$PATH
 
 function print_usage() {
   echo "
 Usage:
-        ./download-tarball.sh [ -d|--discard-repo ] <project> <version>
+
+    download-tarball.sh [-s|--sources] [-r|--repository] <project> <version>
+
+Options:
+
+    -s, --sources         Put the source files in the tarball.
+
+    -r, --repository      Put the files of the versioning system in the tarball.
+
+The options can be combined but at least one of them must be given. The suggested
+options are -r for the git and -sr for the subversion projects.
 
 Supported projects:
 
     MITK
-    CTK
+    commontk/CTK
+    NifTK/CTK
     OpenIGTLink
     SlicerExecutionModel
     qRestAPI
-    espakm/CTK
     NiftyRec
     NiftyReg
     NiftySeg
@@ -41,69 +45,133 @@ Supported projects:
   exit 1
 }
 
-
 if [ $# -eq 0 ]
 then
-    print_usage
+  print_usage
 fi
 
-if [[ $1 = -d || $1 = --discard-repo ]]
-then
-    discard_repo=true
+while true
+do
+  if [[ $1 = -s || $1 = --sources ]]
+  then
+    keep_sources=true
     shift
-else
-    discard_repo=false
-fi
+  elif [[ $1 = -r || $1 = --repository ]]
+  then
+    keep_repository=true
+    shift
+  elif [[ $1 = -sr || $1 = -rs ]]
+  then
+    keep_sources=true
+    keep_repository=true
+    shift
+  else
+    break
+  fi
+done
 
 if [ $# -ne 2 ]
 then
-    print_usage
+  print_usage
+fi
+
+if [[ ! $keep_sources && ! $keep_repository ]]
+then
+  print_usage
 fi
 
 project=$1
 version=$2
 
 function download_from_github() {
-    organisation=$1
-    project=$2
-    version=$3
+  organisation=$1
+  project=$2
+  version=$3
+  if [ -z $4 ]
+  then
     directory=$organisation-$project-$version
-    tarball=$directory.tar.gz
-    if $discard_repo
-    then
-        rm $tarball
-        wget -O $tarball http://github.com/$organisation/$project/tarball/$version
-    else
-        git clone git://github.com/$organisation/$project $directory
-        cd $directory
-        git checkout $version
-        cd ..
-        rm $tarball
-        tar cvfz $tarball ${directory}
-        rm -rf $directory
-    fi
+  else
+    directory=$4
+  fi
+  tarball=$directory.tar.gz
+  if [[ $keep_sources && ! $keep_repository ]]
+  then
+    rm $tarball 2> /dev/null
+    wget -O $tarball http://github.com/$organisation/$project/tarball/$version
+  elif [[ $keep_repository && ! $keep_sources ]]
+  then
+    mkdir $directory
+    git clone --bare git://github.com/$organisation/$project $directory/.git
+    cd $directory
+    git config --local --bool core.bare false
+    cd ..
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  else
+    git clone git://github.com/$organisation/$project $directory
+    cd $directory
+    git checkout $version
+    cd ..
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  fi
 }
 
-function download_from_sourceforge() {
-    project=$1
-    version=$2
-    path=$3
-    project_lowercase=$(echo $project | tr [:upper:] [:lower:])
-    repo_url=https://$project_lowercase.svn.sourceforge.net/svnroot/$project_lowercase/$path
-    directory=$project-$version
-    tarball=$directory.tar.gz
-    if $discard_repo
+function download_from_cmicdev() {
+  project=$1
+  version=$2
+  directory=$project-$version
+  tarball=$directory.tar.gz
+  if [[ $keep_repository && ! $keep_sources ]]
+  then
+    mkdir $directory
+    git clone --bare git://cmicdev.cs.ucl.ac.uk/$project $directory/.git
+    cd $directory
+    git config --local --bool core.bare false
+    cd ..
+  else
+    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
+    cd $directory
+    git checkout $version
+    if ! $keep_repository
     then
-        svn export -r ${version} $repo_url $directory
-        rm $tarball
-        tar cvfz $tarball $directory
-        rm -rf $directory
-    else
-        svn checkout -r ${version} $repo_url $directory
-        rm $tarball
-        tar cvfz $tarball $directory
-        rm -rf $directory
+      rm -rf .git
     fi
+    cd ..
+  fi
+  rm $tarball 2> /dev/null
+  tar cvfz $tarball $directory
+  rm -rf $directory
+}
+
+function download_from_sourceforge_svn() {
+  project=$1
+  version=$2
+  path=$3
+  project_lowercase=$(echo $project | tr [:upper:] [:lower:])
+  # This was the old URI before SourceForge moved every project to the new server.
+  #repo_url=https://$project_lowercase.svn.sourceforge.net/svnroot/$project_lowercase/$path
+  repo_url=http://svn.code.sf.net/p/$project_lowercase/code/$path
+  directory=$project-$version
+  tarball=$directory.tar.gz
+  if [ ! $keep_sources ]
+  then
+    print_usage
+  fi
+  if [ ! $keep_repository ]
+  then
+    svn export -r ${version} $repo_url $directory
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  else
+    svn checkout -r ${version} $repo_url $directory
+    rm $tarball 2> /dev/null
+    tar cvfz $tarball $directory
+    rm -rf $directory
+  fi
 }
 
 function download_from_sourceforge_git() {
@@ -139,99 +207,70 @@ function download_from_sourceforge_git() {
 
 if [[ $project = MITK || $project = OpenIGTLink ]]
 then
-    download_from_github NifTK $project $version
-elif [ $project = CTK ]
+  download_from_github NifTK $project $version
+elif [ $project = commontk/CTK ]
 then
-    organisation=commontk
-    directory=NifTK-$project-$version
-    tarball=$directory.tar.gz
-    if $discard_repo
-    then
-        wget -O $tarball http://github.com/$organisation/$project/tarball/$version
-    else
-        git clone git://github.com/$organisation/$project $directory
-        cd $directory
-        git checkout $version
-        cd ..
-        rm $tarball
-        tar cvfz $tarball ${directory}
-        rm -rf $directory
-    fi
+  download_from_github commontk CTK $version
+elif [ $project = NifTK/CTK ]
+then
+  download_from_github NifTK CTK $version
 elif [ $project = SlicerExecutionModel ]
 then
-    download_from_github Slicer $project $version
+  download_from_github Slicer $project $version
 elif [ $project = qRestAPI ]
 then
-    download_from_github commontk $project $version
-elif [ $project = espakm/CTK ]
-then
-    download_from_github espakm CTK $version
+  download_from_github commontk $project $version
 elif [ $project = NiftySeg ]
 then
-    download_from_sourceforge $project $version 
+  download_from_sourceforge_svn $project $version 
 elif [ $project = NiftyReg ]
 then
-    download_from_sourceforge $project $version trunk/nifty_reg
+  download_from_sourceforge_svn $project $version trunk/nifty_reg
 elif [ $project = NiftySim ]
 then
-    download_from_sourceforge_git $project $version 
+#  download_from_sourceforge_svn $project $version trunk/nifty_sim
+  download_from_sourceforge_git $project $version
 elif [ $project = NiftyRec ]
 then
-    download_from_sourceforge $project $version 
+  download_from_sourceforge_svn $project $version 
 elif [ $project = NiftyLink ]
 then
-    directory=$project-$version
-    tarball=$directory.tar.gz
-    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
-    cd $directory
-    git checkout $version
-    if $discard_repo
-    then
-        rm -rf .git
-    fi
-    cd ..
-    rm $tarball
-    tar cvfz $tarball $directory
-    rm -rf $directory
+  download_from_cmicdev $project $version
 elif [ $project = NifTKData ]
 then
-    directory=$project-$version
-    tarball=$directory.tar.gz
-    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
-    cd $directory
-    git checkout $version
-    if $discard_repo
-    then
-        rm -rf .git
-    fi
-    cd ..
-    rm $tarball
-    tar cvfz $tarball $directory
-    rm -rf $directory
+  download_from_cmicdev $project $version
 elif [ $project = IGSTK ]
 then
-    if [[ $version = IGSTK-* ]]
-    then
-        directory=$version
-    else
-        directory=$project-$version
-    fi
-    tarball=$directory.tar.gz
+  if [[ $version = IGSTK-* ]]
+  then
+    directory=$version
+  else
+    directory=$project-$version
+  fi
+  tarball=$directory.tar.gz
+  if [[ $keep_repository && ! $keep_sources ]]
+  then
+    mkdir $directory
+    cd $directory
+    git clone --bare git://igstk.org/IGSTK.git .git
+    git config --local --bool core.bare false
+  else
     git clone git://igstk.org/IGSTK.git $directory
     cd $directory
     git checkout $version
-    if $discard_repo
+    if ! $keep_repository
     then
-        rm -rf .git
+      rm -rf .git
     fi
-    cd ..
-    rm $tarball
-    tar cvfz $tarball $directory
-    rm -rf $directory
+  fi
+  cd ..
+  rm $tarball
+  tar cvfz $tarball $directory
+  rm -rf $directory
 else
-    print_usage
+  print_usage
 fi
-    
+
 rm $tarball.md5 2> /dev/null
 md5sum $tarball > $tarball.md5
 chmod 664 $tarball
