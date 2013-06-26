@@ -43,8 +43,8 @@ public:
   , m_StdMultiWidget(stdMultiWidget)
   , m_RenderWindow(renderWindow)
   , m_DisplayGeometry(displayGeometry)
-  , m_LastOrigin(displayGeometry->GetOriginInMM())
-  , m_LastScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
+  , m_Origin(displayGeometry->GetOriginInMM())
+  , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
   {
   }
 
@@ -65,21 +65,21 @@ public:
     bool beingPanned = true;
 
     double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
-    if (scaleFactor != m_LastScaleFactor)
+    if (scaleFactor != m_ScaleFactor)
     {
       beingPanned = false;
-      m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow);
-      m_LastScaleFactor = scaleFactor;
+      m_StdMultiWidget->OnScaleFactorChanged(m_RenderWindow, scaleFactor);
+      m_ScaleFactor = scaleFactor;
     }
 
     mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-    if (origin != m_LastOrigin)
+    if (origin != m_Origin)
     {
       if (beingPanned)
       {
         m_StdMultiWidget->OnOriginChanged(m_RenderWindow, beingPanned);
       }
-      m_LastOrigin = origin;
+      m_Origin = origin;
     }
   }
 
@@ -87,8 +87,8 @@ private:
   QmitkMIDASStdMultiWidget* const m_StdMultiWidget;
   QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
-  mitk::Vector2D m_LastOrigin;
-  double m_LastScaleFactor;
+  mitk::Vector2D m_Origin;
+  double m_ScaleFactor;
 };
 
 
@@ -112,10 +112,11 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
 , m_Show3DWindowInOrthoView(false)
 , m_Layout(MIDAS_LAYOUT_ORTHO)
 , m_Magnification(0.0)
+, m_ScaleFactor(0.0)
 , m_Geometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 , m_CursorPositionsAreBound(true)
-, m_MagnificationsAreBound(true)
+, m_ScaleFactorsAreBound(true)
 {
   m_RenderWindows[0] = this->GetRenderWindow1();
   m_RenderWindows[1] = this->GetRenderWindow2();
@@ -448,9 +449,10 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   }
   this->ForceImmediateUpdate();
 
-  if (!this->AreMagnificationsBound())
+  if (!this->AreScaleFactorsBound())
   {
-    m_Magnification = this->ComputeMagnification(renderWindow);
+    m_Magnification = this->GetMagnification(renderWindow);
+    m_ScaleFactor = this->GetScaleFactor(renderWindow);
   }
 }
 
@@ -821,17 +823,11 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
   {
     m_Geometry = geometry;
 
-    m_LongestSideOfVoxels = 0;
-
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
     for (int i = 0; i < 3; ++i)
     {
       m_MmPerVx[i] = m_Geometry->GetExtentInMM(i) / m_Geometry->GetExtent(i);
-      if (m_MmPerVx[i] > m_MmPerVx[m_LongestSideOfVoxels])
-      {
-        m_LongestSideOfVoxels = i;
-      }
     }
 
     // Add these annotations the first time we have a real geometry.
@@ -1478,17 +1474,15 @@ void QmitkMIDASStdMultiWidget::SetOrigin(QmitkRenderWindow* renderWindow, const 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWindow)
+void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
-    double magnification = this->ComputeMagnification(renderWindow);
+    double magnification = this->GetMagnification(renderWindow);
 
-    if (magnification != m_Magnification)
+    if (scaleFactor != m_ScaleFactor)
     {
-      mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
-
-      if (this->AreMagnificationsBound())
+      if (this->AreScaleFactorsBound())
       {
         // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
         for (int i = 0; i < 3; ++i)
@@ -1496,14 +1490,15 @@ void QmitkMIDASStdMultiWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWin
           QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
           if (otherRenderWindow != renderWindow && otherRenderWindow->isVisible())
           {
-            this->SetScaleFactor(otherRenderWindow, scaleFactors[m_LongestSideOfVoxels]);
+            this->SetScaleFactor(otherRenderWindow, scaleFactor);
           }
         }
       }
 
       m_Magnification = magnification;
+      m_ScaleFactor = scaleFactor;
       this->RequestUpdate();
-      emit MagnificationChanged(magnification);
+      emit ScaleFactorChanged(scaleFactor);
     }
   }
 }
@@ -1579,7 +1574,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
     }
 
-    if (this->AreCursorPositionsBound() && !this->AreMagnificationsBound())
+    if (this->AreCursorPositionsBound() && !this->AreScaleFactorsBound())
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
@@ -1821,47 +1816,110 @@ mitk::Vector2D QmitkMIDASStdMultiWidget::ComputeOriginFromCursorPosition(QmitkRe
 
 
 //-----------------------------------------------------------------------------
+double QmitkMIDASStdMultiWidget::GetScaleFactor() const
+{
+  return m_ScaleFactor;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetScaleFactor(double scaleFactor)
+{
+  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
+
+  if (selectedRenderWindow)
+  {
+    this->SetScaleFactor(selectedRenderWindow, scaleFactor);
+
+    m_ScaleFactor = scaleFactor;
+    m_Magnification = this->GetMagnification(selectedRenderWindow);
+    this->RequestUpdate();
+  }
+
+  if (this->AreScaleFactorsBound())
+  {
+    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
+    for (int i = 0; i < 3; ++i)
+    {
+      QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
+      if (otherRenderWindow != selectedRenderWindow && otherRenderWindow->isVisible())
+      {
+        this->SetScaleFactor(otherRenderWindow, scaleFactor);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 double QmitkMIDASStdMultiWidget::GetMagnification() const
 {
-  return m_Magnification;
+  return this->GetMagnification(this->GetSelectedRenderWindow());
+//  return m_Magnification;
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::SetMagnification(double magnification)
 {
+  this->SetMagnification(this->GetSelectedRenderWindow(), magnification);
+}
+
+
+//-----------------------------------------------------------------------------
+int QmitkMIDASStdMultiWidget::GetDominantAxis(MIDASOrientation orientation) const
+{
+  int axisWithLongerSide = 0;
+  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    axisWithLongerSide = m_MmPerVx[0] > m_MmPerVx[1] ? 0 : 1;
+  }
+  else if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    axisWithLongerSide = m_MmPerVx[1] > m_MmPerVx[2] ? 1 : 2;
+  }
+  else // if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    axisWithLongerSide = m_MmPerVx[0] > m_MmPerVx[2] ? 0 : 2;
+  }
+  return axisWithLongerSide;
+}
+
+
+//-----------------------------------------------------------------------------
+double QmitkMIDASStdMultiWidget::GetMagnification(QmitkRenderWindow* renderWindow) const
+{
+  double scaleFactorMmPerPx = this->GetScaleFactor(renderWindow);
+
+  MIDASOrientation orientation = this->GetOrientation(renderWindow);
+  int dominantAxis = this->GetDominantAxis(orientation);
+
+  // Note that we take the scale factor from the first axis always, consequently.
+  // Other strategies could be followed as well, e.g. taking the axes with the smallest
+  // voxel size.
+  double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / scaleFactorMmPerPx;
+
+  // Finally, we calculate the magnification from the scale factor.
+  double magnification = scaleFactorPxPerVx - 1.0;
+  if (magnification < 0.0)
+  {
+    magnification /= scaleFactorPxPerVx;
+  }
+
+  return magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASStdMultiWidget::SetMagnification(QmitkRenderWindow* renderWindow, double magnification)
+{
+  MIDASOrientation orientation = this->GetOrientation(renderWindow);
+  int dominantAxis = this->GetDominantAxis(orientation);
+
   mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
+  double scaleFactor = scaleFactors[dominantAxis];
 
-  bool hasChanged = false;
-
-  if (this->AreMagnificationsBound())
-  {
-    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-    for (int i = 0; i < 3; ++i)
-    {
-      QmitkRenderWindow* renderWindow = m_RenderWindows[i];
-      if (renderWindow->isVisible())
-      {
-        this->SetScaleFactor(renderWindow, scaleFactors[m_LongestSideOfVoxels]);
-        hasChanged = true;
-      }
-    }
-  }
-  else
-  {
-    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-    if (renderWindow && renderWindow->isVisible())
-    {
-      this->SetScaleFactor(renderWindow, scaleFactors[m_LongestSideOfVoxels]);
-      hasChanged = true;
-    }
-  }
-
-  if (hasChanged)
-  {
-    m_Magnification = magnification;
-    this->RequestUpdate();
-  }
+  this->SetScaleFactor(scaleFactor);
 }
 
 
@@ -1883,58 +1941,15 @@ mitk::Vector3D QmitkMIDASStdMultiWidget::ComputeScaleFactors(double magnificatio
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::ComputeMagnification(QmitkRenderWindow* renderWindow)
+double QmitkMIDASStdMultiWidget::GetScaleFactor(QmitkRenderWindow* renderWindow) const
 {
-  if (renderWindow == 0 || renderWindow == this->GetRenderWindow4())
+  if (renderWindow == 0)
   {
     return 0.0;
   }
 
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
-  double scaleFactorMmPerPx = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-
-  mitk::Vector3D scaleFactorsPxPerVx = m_MmPerVx / scaleFactorMmPerPx;
-
-  // Note that we take the scale factor from the first axis always, consequently.
-  // Other strategies could be followed as well, e.g. taking the axes with the smallest
-  // voxel size.
-  double scaleFactorPxPerVx = scaleFactorsPxPerVx[m_LongestSideOfVoxels];
-
-  // Finally, we calculate the magnification from the scale factor.
-  double magnification = scaleFactorPxPerVx - 1.0;
-  if (magnification < 0.0)
-  {
-    magnification /= scaleFactorPxPerVx;
-  }
-
-  return magnification;
-}
-
-
-//-----------------------------------------------------------------------------
-double QmitkMIDASStdMultiWidget::FitMagnification()
-{
-  double magnification = 0.0;
-
-  MIDASOrientation orientation = this->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    // Note, that this method should only be called for MIDAS purposes, when the layout is a 2D
-    // layout, so it will either be Axial, Coronal, Sagittal, and not 3D or ortho layout.
-    QmitkRenderWindow* renderWindow = this->GetRenderWindow(orientation);
-
-    // Given the above comment, this means, we MUST have a window from this choice of 3.
-    assert(renderWindow);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Use the current window to work out a reasonable magnification factor.
-    // This has to be done for each window, as they may be out of sync
-    // due to the user manually (right click + mouse move) zooming the window.
-    //////////////////////////////////////////////////////////////////////////
-
-    magnification = this->ComputeMagnification(renderWindow);
-  }
-  return magnification;
+  return displayGeometry->GetScaleFactorMMPerDisplayUnit();
 }
 
 
@@ -1968,7 +1983,7 @@ void QmitkMIDASStdMultiWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, d
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientation& orientation) const
 {
-  QmitkRenderWindow* renderWindow = NULL;
+  QmitkRenderWindow* renderWindow;
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
     renderWindow = this->GetRenderWindow1();
@@ -1981,7 +1996,39 @@ QmitkRenderWindow* QmitkMIDASStdMultiWidget::GetRenderWindow(const MIDASOrientat
   {
     renderWindow = this->GetRenderWindow3();
   }
+//  else if (orientation == MIDAS_ORIENTATION_UNKNOWN)
+//  {
+//    renderWindow = this->GetRenderWindow4();
+//  }
+  else
+  {
+    renderWindow = 0;
+  }
   return renderWindow;
+}
+
+
+//-----------------------------------------------------------------------------
+MIDASOrientation QmitkMIDASStdMultiWidget::GetOrientation(const QmitkRenderWindow* renderWindow) const
+{
+  MIDASOrientation orientation;
+  if (renderWindow == this->GetRenderWindow1())
+  {
+    orientation = MIDAS_ORIENTATION_AXIAL;
+  }
+  else if (renderWindow == this->GetRenderWindow2())
+  {
+    orientation = MIDAS_ORIENTATION_SAGITTAL;
+  }
+  else if (renderWindow == this->GetRenderWindow3())
+  {
+    orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+  else
+  {
+    orientation = MIDAS_ORIENTATION_UNKNOWN;
+  }
+  return orientation;
 }
 
 
@@ -2071,25 +2118,25 @@ void QmitkMIDASStdMultiWidget::SetCursorPositionsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASStdMultiWidget::AreMagnificationsBound() const
+bool QmitkMIDASStdMultiWidget::AreScaleFactorsBound() const
 {
-  return m_MagnificationsAreBound;
+  return m_ScaleFactorsAreBound;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASStdMultiWidget::SetMagnificationsBound(bool bound)
+void QmitkMIDASStdMultiWidget::SetScaleFactorsBound(bool bound)
 {
-  if (bound == this->AreMagnificationsBound())
+  if (bound == this->AreScaleFactorsBound())
   {
     // Already bound/unbound.
     return;
   }
 
-  m_MagnificationsAreBound = bound;
+  m_ScaleFactorsAreBound = bound;
 
   if (bound)
   {
-    this->SetMagnification(this->GetMagnification());
+    this->SetScaleFactor(this->GetScaleFactor());
   }
 }

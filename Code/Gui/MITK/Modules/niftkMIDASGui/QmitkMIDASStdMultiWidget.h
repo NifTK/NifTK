@@ -170,6 +170,10 @@ public:
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
   QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
 
+  /// \brief Gets the orientation corresponding to the given render window.
+  /// Returns MIDAS_ORIENTATION_UNKNOWN for the 3D window.
+  MIDASOrientation GetOrientation(const QmitkRenderWindow* renderWindow) const;
+
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
@@ -238,17 +242,35 @@ public:
   ///
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  /// \brief Gets the scale factor of the given render window. (mm/px)
+  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+
+  /// \brief Sets the scale factor of the render window to the given value. (mm/px)
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor) const;
+
+  /// \brief Gets the scale factor of the selected render window or 0.0 if no
+  /// window is selected.
+  double GetScaleFactor() const;
+
+  /// \brief Sets the scale factor of the selected window to the given value.
+  /// If the zooming is bound across the windows then this will set the scaling
+  /// of the other windows as well.
+  void SetScaleFactor(double scaleFactor);
+
+  /// \brief Gets the voxel size (mm/vx).
+  const mitk::Vector3D& GetVoxelSize() const;
+
+  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
   double GetMagnification() const;
 
-  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
   void SetMagnification(double magnification);
 
-  /// \brief Works out a suitable magnification factor given the current geometry.
-  double FitMagnification();
+  /// \brief Computes the magnification of a render window.
+  double GetMagnification(QmitkRenderWindow* renderWindow) const;
 
-  /// \brief Computes the magnification factor of a render window.
-  double ComputeMagnification(QmitkRenderWindow* renderWindow);
+  /// \brief Sets the magnification of a render window to the given value.
+  void SetMagnification(QmitkRenderWindow* renderWindow, double magnification);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -276,11 +298,11 @@ public:
   /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
   void SetCursorPositionsBound(bool bound);
 
-  /// \brief Gets the flag controls whether the magnification is bound between the 2D render windows.
-  bool AreMagnificationsBound() const;
+  /// \brief Gets the flag controls whether the scale factors are bound across the 2D render windows.
+  bool AreScaleFactorsBound() const;
 
-  /// \brief Sets the flag that controls whether the magnification is bound between the 2D render windows.
-  void SetMagnificationsBound(bool bound);
+  /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
+  void SetScaleFactorsBound(bool bound);
 
 signals:
 
@@ -293,8 +315,8 @@ signals:
   /// \brief Emitted when the cursor position has changed.
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Emitted when the magnification has changed.
-  void MagnificationChanged(double magnification);
+  /// \brief Emitted when the scale factor has changed.
+  void ScaleFactorChanged(double scaleFactor);
 
 protected slots:
 
@@ -354,7 +376,7 @@ private:
   void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow);
+  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
@@ -383,6 +405,10 @@ private:
   /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
   void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
 
+  /// \brief The magnification is calculated with the longer voxel side of an orientation.
+  /// This function returns the index of this axis.
+  int GetDominantAxis(MIDASOrientation orientation) const;
+
   QmitkRenderWindow* m_RenderWindows[4];
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
@@ -399,14 +425,12 @@ private:
   mitk::Point3D m_SelectedPosition;
   mitk::Vector3D m_CursorPosition;
   double m_Magnification;
+  double m_ScaleFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
 
   /// \brief Voxel size in millimetres.
   mitk::Vector3D m_MmPerVx;
-
-  /// The axis along which the dimension of the voxel is the biggest.
-  int m_LongestSideOfVoxels;
 
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
@@ -415,7 +439,7 @@ private:
   bool m_BlockDisplayGeometryEvents;
 
   bool m_CursorPositionsAreBound;
-  bool m_MagnificationsAreBound;
+  bool m_ScaleFactorsAreBound;
 
   friend class DisplayGeometryModificationCommand;
 
