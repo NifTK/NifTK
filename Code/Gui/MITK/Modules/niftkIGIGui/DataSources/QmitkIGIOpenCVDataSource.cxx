@@ -184,7 +184,11 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
     if (imageInNode.IsNull())
     {
+      // We remove and add to trigger the NodeAdded event,
+      // which is not emmitted if the node was added with no data.
+      m_DataStorage->Remove(node);
       node->SetData(convertedImage);
+      m_DataStorage->Add(node);
     }
     else
     {
