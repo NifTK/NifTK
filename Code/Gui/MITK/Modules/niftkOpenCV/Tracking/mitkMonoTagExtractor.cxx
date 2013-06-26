@@ -14,7 +14,8 @@
 
 #include "mitkMonoTagExtractor.h"
 #include "mitkTagTrackingFacade.h"
-#include <mitkImageToOpenCVImageFilter.h>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageWriteAccessor.h>
 #include <cv.h>
 
 namespace mitk {
@@ -45,13 +46,17 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
 {
   pointSet->Clear();
 
-  mitk::ImageToOpenCVImageFilter::Pointer filter = mitk::ImageToOpenCVImageFilter::New();
-  filter->SetImage(image);
+  mitk::ImageWriteAccessor  imageAccess(image);
+  void* imagePointer = imageAccess.GetData();
 
-  IplImage *im = filter->GetOpenCVImage();
-  cv::Mat imageWrapper(im);
+  IplImage  imageIpl;
+  cvInitImageHeader(&imageIpl, cvSize((int) image->GetDimension(0), (int) image->GetDimension(1)), image->GetPixelType().GetBitsPerComponent(), image->GetPixelType().GetNumberOfComponents());
+  cvSetData(&imageIpl, imagePointer, image->GetDimension(0) * (image->GetPixelType().GetBitsPerComponent() / 8) * image->GetPixelType().GetNumberOfComponents());
+  cv::Mat leftColour(&imageIpl);
+  cv::Mat leftGrey;
+  cv::cvtColor(leftColour, leftGrey, CV_RGBA2GRAY);
 
-  std::map<int, cv::Point2f> result = mitk::DetectMarkers(imageWrapper, minSize, maxSize, blockSize, offset);
+  std::map<int, cv::Point2f> result = mitk::DetectMarkers(leftGrey, minSize, maxSize, blockSize, offset);
 
   cv::Point2f extractedPoint;
   mitk::PointSet::PointType outputPoint;
@@ -66,8 +71,6 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
     TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
-
-  cvReleaseImage(&im);
 }
 
 //-----------------------------------------------------------------------------
