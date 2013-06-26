@@ -91,7 +91,6 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *translationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
   reprojectionError = CalibrateSingleCameraParameters(
-      numberOfSuccessfulViews,
       *objectPoints,
       *imagePoints,
       *pointCounts,

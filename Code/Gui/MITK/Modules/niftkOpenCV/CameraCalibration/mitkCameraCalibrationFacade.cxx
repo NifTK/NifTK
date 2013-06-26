@@ -283,7 +283,6 @@ void CalibrateSingleCameraExtrinsicParameters(
 
 //-----------------------------------------------------------------------------
 double CalibrateSingleCameraParameters(
-     const int& numberSuccessfulViews,
      const CvMat& objectPoints,
      const CvMat& imagePoints,
      const CvMat& pointCounts,
@@ -438,7 +437,6 @@ void ProjectAllPoints(
     const int& numberSuccessfulViews,
     const int& pointCount,
     const CvMat& objectPoints,
-    const CvMat& imagePoints,
     const CvMat& intrinsicMatrix,
     const CvMat& distortionCoeffictions,
     const CvMat& rotationVectors,
@@ -616,7 +614,6 @@ void OutputCalibrationData(
       numberOfFilesUsed,
       pointCount,
       objectPoints,
-      imagePoints,
       intrinsicMatrix,
       distortionCoeffs,
       rotationVectors,
