@@ -41,6 +41,7 @@ const std::string TagTrackerView::NODE_ID = "Tag Locations";
 TagTrackerView::TagTrackerView()
 : m_ListenToEventBusPulse(true)
 , m_MonoLeftCameraOnly(false)
+, m_ShownStereoSameNameWarning(false)
 {
 }
 
@@ -158,7 +159,6 @@ void TagTrackerView::OnUpdate(const ctkEvent& event)
 void TagTrackerView::OnManualUpdate()
 {
   this->UpdateTags();
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -166,7 +166,6 @@ void TagTrackerView::OnManualUpdate()
 void TagTrackerView::OnSpinBoxPressed()
 {
   this->UpdateTags();
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -233,13 +232,14 @@ void TagTrackerView::UpdateTags()
       pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
       pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
       pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
-      pointSetNode->SetVisibility(true);
+	    pointSetNode->SetProperty( "pointsize", mitk::IntProperty::New(5));
       pointSetNode->SetBoolProperty("helper object", false);
       pointSetNode->SetBoolProperty("show distant lines", false);
       pointSetNode->SetBoolProperty("show distant points", false);
       pointSetNode->SetBoolProperty("show distances", false);
       pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
-      pointSetNode->SetColor( 1.0, 0, 0 );
+      pointSetNode->SetColor( 1.0, 1.0, 0 );
+	    pointSetNode->SetVisibility(true);
       dataStorage->Add(pointSetNode);
     }
     else
@@ -319,15 +319,20 @@ void TagTrackerView::UpdateTags()
       }
       if (leftNode->GetName() == rightNode->GetName())
       {
-        QMessageBox msgBox;
-        msgBox.setText("The left and right image are the same!");
-        msgBox.setInformativeText("They need to be different for stereo tracking.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.exec();
+        if(!m_ShownStereoSameNameWarning)
+		    {
+          m_ShownStereoSameNameWarning = true;
+          QMessageBox msgBox;
+          msgBox.setText("The left and right image are the same!");
+          msgBox.setInformativeText("They need to be different for stereo tracking.");
+          msgBox.setStandardButtons(QMessageBox::Ok);
+          msgBox.setDefaultButton(QMessageBox::Ok);
+          msgBox.exec();
+          return;
+		    }
         return;
       }
-
+	  
       // Stereo Case.
       mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
       extractor->ExtractPoints(
@@ -340,7 +345,6 @@ void TagTrackerView::UpdateTags()
           pointSet,
           cameraToWorldMatrix
           );
-      pointSetNode->Modified();
     } // end if mono/stereo
 
     int numberOfTrackedPoints = pointSet->GetSize();
@@ -376,5 +380,8 @@ void TagTrackerView::UpdateTags()
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
     }
+	pointSetNode->Modified();
+	pointSet->Modified();
+	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   } // end if we have at least one node specified
 }
