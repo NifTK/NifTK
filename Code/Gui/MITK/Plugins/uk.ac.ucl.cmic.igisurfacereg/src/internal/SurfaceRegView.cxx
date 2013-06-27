@@ -23,6 +23,8 @@
 #include <mitkFileIOUtils.h>
 #include <QMessageBox>
 #include <QtConcurrentRun>
+#include <vtkFunctions.h>
+
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
@@ -130,6 +132,20 @@ void SurfaceRegView::OnComputeDistance()
 //-----------------------------------------------------------------------------
 float SurfaceRegView::ComputeDistance(mitk::DataNode::Pointer fixed, mitk::DataNode::Pointer moving)
 {
+  // note: this is run in a worker thread! do not do any updates to data storage or nodes!
+
+  // essentially the same stuff that SurfaceBasedRegistration::Update() does.
+  // FIXME: we should do that before we kick off the worker thread! 
+  //        otherwise someone else might move around the node's matrices.
+  vtkPolyData* fixedPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(fixed, fixedPoly);
+  vtkPolyData* movingPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(moving, movingPoly);
+
+  vtkSmartPointer<vtkDoubleArray>   result;
+  // FIXME: this crashes because targetLocator has a null tree member...
+  DistanceToSurface(movingPoly, fixedPoly, result);
+
   return -1;
 }
 

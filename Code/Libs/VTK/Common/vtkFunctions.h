@@ -23,6 +23,7 @@
 #include <vtkMinimalStandardRandomSequence.h>
 #include <vtkCellLocator.h>
 #include <vtkCamera.h>
+#include <vtkSmartPointer.h>
 
 /**
  * \file vtkFunctions.h
@@ -163,6 +164,14 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
  * \param source,target the source and target polydata.
  */
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
+
+/**
+ * \brief Calculates the euclidean distance (in 3D) between each point in the 
+ * source polydata and the closest point on the target polydata mesh.
+ * The result distances are stored in the scalar values passed in.
+ * \param source,target the source and target polydata.
+ */
+extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface(vtkPolyData* source, vtkPolyData* target, vtkSmartPointer<vtkDoubleArray>& result);
 
 /**
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.

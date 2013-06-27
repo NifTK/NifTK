@@ -72,9 +72,9 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode* fixedNode,
   if ( m_Method == VTK_ICP )
   {
     vtkPolyData * fixedPoly = vtkPolyData::New();
-    NodeToPolyData ( fixedNode, fixedPoly );
+    NodeToPolyData ( fixedNode, fixedPoly, m_UseSpatialFilter);
     vtkPolyData * movingPoly = vtkPolyData::New();
-    NodeToPolyData ( movingNode, movingPoly );
+    NodeToPolyData ( movingNode, movingPoly, m_UseSpatialFilter);
     RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
   }
   if ( m_Method == DEFORM )
@@ -103,6 +103,8 @@ void SurfaceBasedRegistration::PointSetToPolyData (const  mitk::PointSet::Pointe
   }
   PolyOut->SetPoints(points);
 }
+
+
 //-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::PointSetToPolyData_SpatialFilter (const  mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut )
 {
@@ -142,7 +144,10 @@ void SurfaceBasedRegistration::PointSetToPolyData_SpatialFilter (const  mitk::Po
 
   PolyOut->SetPoints(points);
 }
-void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkPolyData* PolyOut )
+
+
+//-----------------------------------------------------------------------------
+void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkPolyData* PolyOut, bool useSpatialFilter)
 {
   mitk::Surface::Pointer Surface = NULL;
   mitk::PointSet::Pointer Points = NULL;
@@ -150,7 +155,7 @@ void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkP
   Points = dynamic_cast<mitk::PointSet*>(node->GetData());
   if ( Surface.IsNull() ) 
   {
-    if ( m_UseSpatialFilter ) 
+    if ( useSpatialFilter ) 
     {
       PointSetToPolyData_SpatialFilter ( Points,PolyOut );
     }
@@ -175,11 +180,16 @@ void SurfaceBasedRegistration::NodeToPolyData (const  mitk::DataNode* node, vtkP
 
   }
 }
-  
+
+
+//-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node)
 {
   ApplyTransform(node, m_Matrix);
 }
+
+
+//-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix)
 {
   vtkMatrix4x4 * CurrentMatrix = vtkMatrix4x4::New();
@@ -214,6 +224,8 @@ void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node , vt
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::GetCurrentTransform (const mitk::DataNode* node, vtkMatrix4x4* Matrix)
 {
   mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->GetIndexToWorldTransform();
@@ -236,5 +248,7 @@ void SurfaceBasedRegistration::GetCurrentTransform (const mitk::DataNode* node, 
   }
 
 }
+
+
 } // end namespace
 

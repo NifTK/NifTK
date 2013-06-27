@@ -400,27 +400,36 @@ double DistanceToSurface (  double point[3],
 
 
 //-----------------------------------------------------------------------------
-void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+void DistanceToSurface(vtkPolyData* source, vtkPolyData* target, vtkSmartPointer<vtkDoubleArray>& result)
 {
-  vtkSmartPointer<vtkDoubleArray> distances = vtkSmartPointer<vtkDoubleArray>::New();
-  distances->SetNumberOfComponents(1);
-  distances->SetName("Distances");
-  
+  result = vtkSmartPointer<vtkDoubleArray>::New();
+  result->SetNumberOfComponents(1);
+  result->SetName("Distances");
+
   vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
   targetLocator->SetDataSet(target);
   targetLocator->BuildLocator();
 
   vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
   double p[3];
-  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ ) 
+  for (int i = 0; i < source->GetNumberOfPoints(); i++)
   {
-    source->GetPoint(i,p);
-    distances->InsertNextValue (DistanceToSurface ( p , targetLocator, cell ));
+    source->GetPoint(i, p);
+    result->InsertNextValue(DistanceToSurface(p, targetLocator, cell));
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+{
+  vtkSmartPointer<vtkDoubleArray>   distances;
+  DistanceToSurface(source, target, distances);
+
   source->GetPointData()->SetScalars(distances);
 }
 
-                                                                      
+
 //-----------------------------------------------------------------------------
 bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
 {
