@@ -19,6 +19,8 @@
 #include "ui_SurfaceRegView.h"
 #include <vtkSmartPointer.h>
 #include <mitkSurfaceBasedRegistration.h>
+#include <QFuture>
+#include <QFutureWatcher>
 
 class vtkMatrix4x4;
 
@@ -70,13 +72,19 @@ protected:
 protected slots:
 
 protected:
+  float ComputeDistance(mitk::DataNode::Pointer fixed, mitk::DataNode::Pointer moving);
 
 private slots:
 
   void OnCalculateButtonPressed();
   void OnComposeWithDataButtonPressed();
   void OnSaveToFileButtonPressed();
-  
+
+  void DataStorageEventListener(const mitk::DataNode* node);
+
+  void OnComputeDistance();
+  void OnBackgroundProcessFinished();
+
 private:
 
   /**
@@ -98,6 +106,9 @@ private:
   int m_MaxIterations;
   int m_MaxPoints;
   mitk::SurfaceBasedRegistration::Method m_Method;
+
+  QFuture<float>           m_BackgroundProcess;
+  QFutureWatcher<float>    m_BackgroundProcessWatcher;
 
 };
 
