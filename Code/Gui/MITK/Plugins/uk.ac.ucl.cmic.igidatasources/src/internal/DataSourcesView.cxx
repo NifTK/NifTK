@@ -50,7 +50,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
 
   this->RetrievePreferenceValues();
 
-  connect(m_DataSourceManager, SIGNAL(UpdateGuiEnd(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
 
   ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
