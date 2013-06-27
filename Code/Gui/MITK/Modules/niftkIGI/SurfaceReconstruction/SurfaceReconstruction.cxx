@@ -25,11 +25,6 @@
 namespace niftk 
 {
 
-
-const char*    SurfaceReconstruction::s_ImageIsRectifiedPropertyName        = "niftk.ImageIsRectified";
-const char*    SurfaceReconstruction::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
-
-
 //-----------------------------------------------------------------------------
 SurfaceReconstruction::SurfaceReconstruction()
   : m_SequentialCpuQds(0)
@@ -107,11 +102,11 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
       throw std::runtime_error("Image does not have a valid calibration which is required for point cloud output");
     }
 
-    mitk::BaseProperty::Pointer   rigbp = image1->GetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName);
+    mitk::BaseProperty::Pointer   rigbp = image1->GetProperty(niftk::Undistortion::s_StereoRigTransformationPropertyName);
     // undecided whether both channels should have a stereo-rig transform, whether they need to match, or only one channel
     if (rigbp.IsNull())
     {
-      rigbp = image2->GetProperty(niftk::SurfaceReconstruction::s_StereoRigTransformationPropertyName);
+      rigbp = image2->GetProperty(niftk::Undistortion::s_StereoRigTransformationPropertyName);
       if (rigbp.IsNull())
       {
         throw std::runtime_error("Images need a stereo-rig transformation for point cloud output");

@@ -23,24 +23,43 @@
 namespace niftk
 {
 
+const char* Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
+const char* Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+const char* Undistortion::s_ImageIsRectifiedPropertyName        = "niftk.ImageIsRectified";
+const char* Undistortion::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
 
-const char*    Undistortion::s_CameraCalibrationPropertyName       = "niftk.CameraCalibration";
-const char*    Undistortion::s_ImageIsUndistortedPropertyName      = "niftk.ImageIsUndistorted";
+//-----------------------------------------------------------------------------
+Undistortion::Undistortion(mitk::DataNode::Pointer node)
+  : m_Node(node), m_MapX(0), m_MapY(0)
+{
+}
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::LoadCalibration(const std::string& filename, mitk::DataNode::Pointer node)
+Undistortion::~Undistortion()
+{
+  if (m_MapX)
+  {
+    cvReleaseImage(&m_MapX);
+  }
+  if (m_MapY)
+  {
+    cvReleaseImage(&m_MapY);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::LoadIntrinsicCalibration(const std::string& filename, mitk::DataNode::Pointer node)
 {
   mitk::Image::Pointer  img = dynamic_cast<mitk::Image*>(node->GetData());
-
-  LoadCalibration(filename, img);
-
+  LoadIntrinsicCalibration(filename, img);
   node->SetProperty(s_CameraCalibrationPropertyName, img->GetProperty(s_CameraCalibrationPropertyName));
 }
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::LoadCalibration(const std::string& filename, mitk::Image::Pointer img)
+void Undistortion::LoadIntrinsicCalibration(const std::string& filename, mitk::Image::Pointer img)
 {
   assert(img.IsNotNull());
 
@@ -88,23 +107,158 @@ void Undistortion::LoadCalibration(const std::string& filename, mitk::Image::Poi
 
 
 //-----------------------------------------------------------------------------
-Undistortion::Undistortion(mitk::DataNode::Pointer node)
-  : m_Node(node), m_MapX(0), m_MapY(0)
+void Undistortion::LoadStereoRig(const std::string& filename,
+                                 mitk::DataNode::Pointer node)
 {
+  mitk::Image::Pointer  img = dynamic_cast<mitk::Image*>(node->GetData());
+  LoadStereoRig(filename, img);
+  node->SetProperty(s_StereoRigTransformationPropertyName, img->GetProperty(s_StereoRigTransformationPropertyName));
 }
 
 
 //-----------------------------------------------------------------------------
-Undistortion::~Undistortion()
+void Undistortion::LoadStereoRig(
+    const std::string& filename,
+    mitk::Image::Pointer img)
 {
-  if (m_MapX)
+  assert(img.IsNotNull());
+
+  itk::Matrix<float, 4, 4>    txf;
+  txf.SetIdentity();
+
+  if (!filename.empty())
   {
-    cvReleaseImage(&m_MapX);
+    std::ifstream   file(filename.c_str());
+    if (!file.good())
+    {
+      throw std::runtime_error("Cannot open stereo-rig file " + filename);
+    }
+    float   values[3 * 4];
+    for (unsigned int i = 0; i < (sizeof(values) / sizeof(values[0])); ++i)
+    {
+      if (!file.good())
+      {
+        throw std::runtime_error("Cannot read enough data from stereo-rig file " + filename);
+      }
+      file >> values[i];
+    }
+    file.close();
+
+    // set rotation
+    for (int i = 0; i < 9; ++i)
+    {
+      txf.GetVnlMatrix()(i / 3, i % 3) = values[i];
+    }
+
+    // set translation
+    for (int i = 0; i < 3; ++i)
+    {
+      txf.GetVnlMatrix()(i, 3) = values[9 + i];
+    }
   }
-  if (m_MapY)
+  else
   {
-    cvReleaseImage(&m_MapY);
+    // no idea what to invent here...
   }
+
+  // Attach as property to image.
+  MatrixProperty::Pointer  prop = MatrixProperty::New(txf);
+  img->SetProperty(s_StereoRigTransformationPropertyName, prop);
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadImageProperty(const std::string& fileName,
+                                            const std::string& propertyName,
+                                            const mitk::Image::Pointer& image)
+{
+  bool  needs2load = false;
+
+  // filename overrides any existing properties
+  if (fileName.size() > 0)
+  {
+    needs2load = true;
+  }
+  else
+  {
+    mitk::BaseProperty::Pointer prop = image->GetProperty(propertyName.c_str());
+    if (prop.IsNull())
+    {
+      needs2load = true;
+    }
+  }
+  return needs2load;
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadIntrinsicCalib(const std::string& fileName, const mitk::DataNode::Pointer& node)
+{
+  mitk::Image::Pointer  img = dynamic_cast<mitk::Image*>(node->GetData());
+  return NeedsToLoadIntrinsicCalib(fileName, img);
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadIntrinsicCalib(const std::string& fileName, const mitk::Image::Pointer& image)
+{
+  return NeedsToLoadImageProperty(fileName, s_CameraCalibrationPropertyName, image);
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadStereoRigExtrinsics(const std::string& fileName, const mitk::DataNode::Pointer& node)
+{
+  mitk::Image::Pointer  img = dynamic_cast<mitk::Image*>(node->GetData());
+  return NeedsToLoadStereoRigExtrinsics(fileName, img);
+}
+
+
+//-----------------------------------------------------------------------------
+bool Undistortion::NeedsToLoadStereoRigExtrinsics(const std::string& fileName, const mitk::Image::Pointer& image)
+{
+  return NeedsToLoadImageProperty(fileName, s_StereoRigTransformationPropertyName, image);
+}
+
+
+
+//-----------------------------------------------------------------------------
+template <typename PropType>
+static void CopyProp(const mitk::DataNode::Pointer source, mitk::Image::Pointer target, const char* name)
+{
+  mitk::BaseProperty::Pointer baseProp = target->GetProperty(name);
+  if (baseProp.IsNull())
+  {
+    // none there yet, try to pull it from the datanode
+    baseProp = source->GetProperty(name);
+    if (baseProp.IsNotNull())
+    {
+      // check that it's the correct type
+      typename PropType::Pointer   prop = dynamic_cast<PropType*>(baseProp.GetPointer());
+      if (prop.IsNotNull())
+      {
+        // FIXME: copy? or simply ref the same object?
+        target->SetProperty(name, prop);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target)
+{
+  // we copy known meta-data properties to the images, but only if they dont exist yet.
+  // we'll not ever change the value of an existing property!
+
+  // calibration data
+  CopyProp<mitk::CameraIntrinsicsProperty>(source, target, niftk::Undistortion::s_CameraCalibrationPropertyName);
+
+  // has the image been rectified?
+  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsRectifiedPropertyName);
+
+  // has the image been undistorted?
+  CopyProp<mitk::BoolProperty>(source, target, niftk::Undistortion::s_ImageIsUndistortedPropertyName);
 }
 
 
@@ -124,6 +278,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
   }
 
   assert(m_Intrinsics.IsNotNull());
+
   if (m_MapX == 0)
   {
     assert(m_MapY == 0);
@@ -255,8 +410,6 @@ void Undistortion::ValidateInput(bool& recomputeCache)
     m_Intrinsics = nodeIntrinsic->Clone();
   }
 
-
-
   // FIXME: check that calibration data is in some meaningful range for our input image
 }
 
@@ -307,8 +460,8 @@ void Undistortion::Run(mitk::DataNode::Pointer output)
 
   PrepareOutput(output);
 
-
   mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+
   mitk::ImageWriteAccessor  outputAccess(outputImage);
   void* outputPointer = outputAccess.GetData();
   mitk::ImageReadAccessor   inputAccess(m_Image);
@@ -322,13 +475,14 @@ void Undistortion::Run(mitk::DataNode::Pointer output)
   cvInitImageHeader(&inipl, cvSize((int) m_Image->GetDimension(0), (int) m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
   cvSetData(&inipl, const_cast<void*>(inputPointer), m_Image->GetDimension(0) * (m_Image->GetPixelType().GetBitsPerComponent() / 8) * m_Image->GetPixelType().GetNumberOfComponents());
 
-
   Process(&inipl, &outipl, recomputeCache);
 
   // copy relevant props to output node
   output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
   output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
   output->Modified();
+
+  CopyImagePropsIfNecessary(output, outputImage);
 }
 
 

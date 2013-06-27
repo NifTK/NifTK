@@ -50,26 +50,6 @@ public:
   static const std::string PREFERENCES_NODE_NAME;
 
   /**
-   * \brief Stores the minimum size of the tag as a fraction [0..1] of the maximum of the number of rows and columns.
-   */
-  static const float MIN_SIZE;
-
-  /**
-   * \brief Stores the name of the preferences node used to store the MIN_SIZE.
-   */
-  static const std::string MIN_SIZE_NAME;
-
-  /**
-   * \brief Stores the maximum size of the tag as a fraction [0..1] of the maximum of the number of rows and columns.
-   */
-  static const float MAX_SIZE;
-
-  /**
-   * \brief Stores the name of the preferences node used to store the MAX_SIZE.
-   */
-  static const std::string MAX_SIZE_NAME;
-
-  /**
    * \brief Stores the boolean as to whether we listen to event bus.
    */
   static const bool LISTEN_TO_EVENT_BUS;
@@ -111,8 +91,6 @@ private:
   QWidget        *m_MainControl;
   QRadioButton   *m_ListenToEventBusPulse;
   QRadioButton   *m_ManualUpdate;
-  QDoubleSpinBox *m_MinSize;
-  QDoubleSpinBox *m_MaxSize;
   QCheckBox      *m_DoMonoLeftCamera;
 
   bool            m_Initializing;

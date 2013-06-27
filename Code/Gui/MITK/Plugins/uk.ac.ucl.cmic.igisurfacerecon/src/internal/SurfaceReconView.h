@@ -62,27 +62,12 @@ protected:
    */
   virtual void SetFocus();
 
-  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
-
-  // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-  void LoadStereoRig(const std::string& filename, mitk::Image::Pointer img);
-
 protected slots:
 
   /**
    * \brief The main method to perform the surface reconstruction.
    */
   void DoSurfaceReconstruction();
-
-  void UpdateNodeNameComboBox();
-
-  void LeftBrowseButtonClicked();
-  void RightBrowseButtonClicked();
-  void StereoRigBrowseButtonClicked();
-
-  void OnComboBoxIndexChanged(int index);
-
-protected:
 
 private slots:
   
@@ -109,15 +94,14 @@ private:
   /**
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
-  niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+  niftk::SurfaceReconstruction::Pointer      m_SurfaceReconstruction;
 
-  // used to init the calib file chooser.
-  // also read from prefs.
-  QString         m_LastFile;
 
   QFuture<mitk::BaseData::Pointer>           m_BackgroundProcess;
   QFutureWatcher<mitk::BaseData::Pointer>    m_BackgroundProcessWatcher;
-  mitk::DataNode::Pointer                    m_BackgroundOutputNode;
+  std::string                                m_BackgroundOutputNodeName;
+  std::string                                m_BackgroundLeftNodeName;
+  std::string                                m_BackgroundRightNodeName;
 };
 
 #endif // SurfaceReconView_h

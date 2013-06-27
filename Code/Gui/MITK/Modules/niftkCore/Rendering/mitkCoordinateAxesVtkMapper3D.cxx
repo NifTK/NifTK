@@ -56,6 +56,10 @@ void CoordinateAxesVtkMapper3D::ResetMapper( mitk::BaseRenderer* renderer )
 //-----------------------------------------------------------------------------
 void CoordinateAxesVtkMapper3D::SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
 {
+  // Temporary: By default, start off invisible, as there is a current glitch
+  // which means that with visibility on, the OverlayEditor goes nuts.
+  node->AddProperty( "visible", mitk::BoolProperty::New(false), renderer, overwrite );
+
   node->AddProperty( "show text", mitk::BoolProperty::New(false), renderer, overwrite );
   node->AddProperty( "size", mitk::IntProperty::New(10), renderer, overwrite );
   Superclass::SetDefaultProperties(node, renderer, overwrite);

@@ -24,6 +24,8 @@ std::map<int, cv::Point2f> DetectMarkers(
     cv::Mat& inImage,
     const float& minSize,
     const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines,
     const bool& drawCentre
     )
@@ -35,6 +37,8 @@ std::map<int, cv::Point2f> DetectMarkers(
   aruco::MarkerDetector detector;
 
   detector.setMinMaxSize(minSize, maxSize);
+  detector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  detector.setThresholdParams(blockSize, offset);
   detector.detect(inImage, markers, cameraParams);
 
   if (drawOutlines)
@@ -72,12 +76,14 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
     const cv::Mat& rightToLeftTranslationVector,
     const float& minSize,
     const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines,
     const bool& drawCentre
     )
 {
-  std::map<int, cv::Point2f> leftPoints = DetectMarkers(inImageLeft, minSize, maxSize, drawOutlines, drawCentre);
-  std::map<int, cv::Point2f> rightPoints = DetectMarkers(inImageRight, minSize, maxSize, drawOutlines, drawCentre);
+  std::map<int, cv::Point2f> leftPoints = DetectMarkers(inImageLeft, minSize, maxSize, blockSize, offset, drawOutlines, drawCentre);
+  std::map<int, cv::Point2f> rightPoints = DetectMarkers(inImageRight, minSize, maxSize, blockSize, offset, drawOutlines, drawCentre);
 
   std::map<int, cv::Point3f> result;
 
@@ -117,5 +123,28 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+void TransformPointsByCameraToWorld(
+    vtkMatrix4x4* cameraToWorld,
+    mitk::Point3D& point
+    )
+{
+  double transformedPoint[4] = {0, 0, 0, 1};
+
+  if(cameraToWorld != NULL)
+  {
+    transformedPoint[0] = point[0];
+    transformedPoint[1] = point[1];
+    transformedPoint[2] = point[2];
+    transformedPoint[3] = 1;
+
+    cameraToWorld->MultiplyPoint(transformedPoint, transformedPoint);
+
+    point[0] = transformedPoint[0];
+    point[1] = transformedPoint[1];
+    point[2] = transformedPoint[2];
+  }
+}
 
 } // end namespace

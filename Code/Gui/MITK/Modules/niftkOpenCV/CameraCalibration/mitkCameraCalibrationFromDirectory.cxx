@@ -47,6 +47,21 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
     const bool& writeImages
     )
 {
+  // Note: top level validation checks that outputFileName has length > 0.
+  assert(outputFile.size() > 0);
+
+  std::ofstream fs;
+  fs.open(outputFile.c_str(), std::ios::out);
+  if (!fs.fail())
+  {
+    std::cout << "Writing to " << outputFile << std::endl;
+  }
+  else
+  {
+    std::cerr << "ERROR: Writing calibration data to file " << outputFile << " failed!" << std::endl;
+    return -1;
+  }
+
   double reprojectionError = std::numeric_limits<double>::max();
   int width = 0;
   int height = 0;
@@ -76,7 +91,6 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *translationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
 
   reprojectionError = CalibrateSingleCameraParameters(
-      numberOfSuccessfulViews,
       *objectPoints,
       *imagePoints,
       *pointCounts,
@@ -87,31 +101,10 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
       *translationVectors
       );
 
-  std::ostream *os = NULL;
-  std::ostringstream oss;
-  std::ofstream fs;
-
-  if (outputFile.size() > 0)
-  {
-    fs.open(outputFile.c_str(), std::ios::out);
-    if (!fs.fail())
-    {
-      os = &fs;
-      std::cout << "Writing to " << outputFile << std::endl;
-    }
-    else
-    {
-      std::cerr << "ERROR: Writing calibration data to file " << outputFile << " failed!" << std::endl;
-    }
-  }
-  else
-  {
-    os = &oss;
-  }
-
-  *os << "Mono calibration" << std::endl;
+  fs << "Mono calibration" << std::endl;
   OutputCalibrationData(
-      *os,
+      fs,
+      outputFile + ".intrinsic.txt",
       *objectPoints,
       *imagePoints,
       *pointCounts,

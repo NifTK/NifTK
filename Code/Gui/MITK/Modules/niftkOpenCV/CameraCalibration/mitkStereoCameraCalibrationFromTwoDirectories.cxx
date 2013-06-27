@@ -48,6 +48,38 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     const bool& writeImages
     )
 {
+  // Note: top level validation checks that outputFileName has length > 0.
+  assert(outputFileName.size() > 0);
+
+  std::ofstream fs;
+  fs.open(outputFileName.c_str(), std::ios::out);
+  if (!fs.fail())
+  {
+    std::cout << "Writing main calibration output to " << outputFileName << std::endl;
+  }
+  else
+  {
+    std::cerr << "ERROR: Writing main calibration output to file " << outputFileName << " failed!" << std::endl;
+    return -1;
+  }
+
+  std::ofstream fsr2l;
+  std::string r2lFileName = outputFileName + ".r2l.txt";
+  fsr2l.open((r2lFileName).c_str(), std::ios::out);
+  if (!fsr2l.fail())
+  {
+    std::cout << "Writing right-to-left transform to " << r2lFileName << std::endl;
+  }
+  else
+  {
+    std::cerr << "ERROR: Writing right-to-left data to file " << r2lFileName << " failed!" << std::endl;
+    if(fs.is_open())
+    {
+      fs.close();
+    }
+    return -2;
+  }
+
   double reprojectionError = std::numeric_limits<double>::max();
   int width = 0;
   int height = 0;
@@ -115,7 +147,6 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
 
   reprojectionError = CalibrateStereoCameraParameters(
-      numberOfSuccessfulViews,
       *objectPointsLeft,
       *imagePointsLeft,
       *pointCountsLeft,
@@ -137,33 +168,12 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
       *fundamentalMatrix
       );
 
-  std::ostream *os = NULL;
-  std::ostringstream oss;
-  std::ofstream fs;
+  fs << "Stereo calibration" << std::endl;
 
-  if (outputFileName.size() > 0)
-  {
-    fs.open(outputFileName.c_str(), std::ios::out);
-    if (!fs.fail())
-    {
-      os = &fs;
-      std::cout << "Writing to " << outputFileName << std::endl;
-    }
-    else
-    {
-      std::cerr << "ERROR: Writing calibration data to file " << outputFileName << " failed!" << std::endl;
-    }
-  }
-  else
-  {
-    os = &oss;
-  }
-
-  *os << "Stereo calibration" << std::endl;
-
-  *os << "Left camera" << std::endl;
+  fs << "Left camera" << std::endl;
   OutputCalibrationData(
-      *os,
+      fs,
+      outputFileName + ".left.intrinsic.txt",
       *objectPointsLeft,
       *imagePointsLeft,
       *pointCountsLeft,
@@ -183,9 +193,10 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   cvSave(std::string(outputFileName + ".left.intrinsic.xml").c_str(), intrinsicMatrixLeft);
   cvSave(std::string(outputFileName + ".left.distortion.xml").c_str(), distortionCoeffsLeft);
 
-  *os << "Right camera" << std::endl;
+  fs << "Right camera" << std::endl;
   OutputCalibrationData(
-      *os,
+      fs,
+      outputFileName + ".right.intrinsic.txt",
       *objectPointsRight,
       *imagePointsRight,
       *pointCountsRight,
@@ -210,6 +221,13 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
   cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
 
+  // Output right to left MEDIAN transformation as a rotation [3x3] then a translation [1x3]
+  for (int i = 0; i < 3; i++)
+  {
+    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 2) << std::endl;
+  }
+  fsr2l << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 2, 0) << std::endl;
+
   // Also calculate specific right to left transformations for each view.
   ComputeRightToLeftTransformations(
       *rotationVectorsLeft,
@@ -229,6 +247,27 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     }
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.rotation.xml").c_str(), r2LRot);
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.translation.xml").c_str(), r2LTrans);
+
+    // Also output in plain text format, which is a [3x3] rotation, AND THEN a [1x3] translation.
+    std::ofstream tmpR2L;
+    std::string tmpR2LFileName = successfullFileNamesLeft[i] + ".r2l.txt";
+    tmpR2L.open((tmpR2LFileName).c_str(), std::ios::out);
+    if (!tmpR2L.fail())
+    {
+      cvRodrigues2(r2LRot, rightToLeftRotationMatrix);
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*r2LTrans, float, 0, 0) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 1) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 2) << std::endl;
+    }
+    else
+    {
+      std::cerr << "ERROR: Writing right-to-left data to file " << tmpR2LFileName << " failed!" << std::endl;
+    }
+    if(tmpR2L.is_open())
+    {
+      tmpR2L.close();
+    }
   }
 
   // Might as well
@@ -239,6 +278,10 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   if(fs.is_open())
   {
     fs.close();
+  }
+  if(fsr2l.is_open())
+  {
+    fsr2l.close();
   }
 
   cvReleaseMat(&imagePointsLeft);

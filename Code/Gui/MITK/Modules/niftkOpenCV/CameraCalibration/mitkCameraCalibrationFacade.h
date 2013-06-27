@@ -137,7 +137,6 @@ void CalibrateSingleCameraExtrinsicParameters(
 
 /**
  * \brief Calibrate a single camera for both intrinsic and extrinsic parameters, using number of views = M, and number of corners per view = N.
- * \param numberSuccessfulViews the number of successful views from ExtractChessBoardPoints = M
  * \param objectPoints [(MxN)x3] list of 3D points generated as output from ExtractChessBoardPoints, for all M views.
  * \param imagePoints [(MxN)x2] list of 2D image points generated as output from ExtractChessBoardPoints for all M views.
  * \param pointCounts [Mx1] array containing the number of points that matched, which should all be equal for all M views, and contain the number N.
@@ -147,7 +146,6 @@ void CalibrateSingleCameraExtrinsicParameters(
  * \param outputTranslationVector an [Mx3] matrix of translation vectors.
  */
 double CalibrateSingleCameraParameters(
-     const int& numberSuccessfulViews,
      const CvMat& objectPoints,
      const CvMat& imagePoints,
      const CvMat& pointCounts,
@@ -177,7 +175,7 @@ void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
 
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
- * right cameras, and compute transformations from left to right.
+ * right cameras, and compute transformations from right to left.
  */
 void ComputeRightToLeftTransformations(
     const CvMat& rotationVectorsLeft,
@@ -193,7 +191,6 @@ void ComputeRightToLeftTransformations(
  * \param numberSuccessfulViews the number of successful views from ExtractChessBoardPoints, in this documentation called 'M'.
  * \param pointCount the number of detected points in each view, in this documentation, called 'N'.
  * \param objectPoints [(MxN)x3] list of 3D object points generated as output from ExtractChessBoardPoints.
- * \param imagePoints [(MxN)x2] list of 2D image points generated as output from ExtractChessBoardPoints.
  * \param intrinsicMatrix [3x3] matrix of pre-initialised intrinsic parameters.
  * \param distortionCoefficients [5x1] matrix of [k1, k2, p1, p2, k3], pre-initialised.
  * \param rotationVectors an [Mx3] matrix of rotation vectors, see also cvRodrigues2 to convert from a rotation vector to a rotation matrix.
@@ -204,7 +201,6 @@ void ProjectAllPoints(
     const int& numberSuccessfulViews,
     const int& pointCount,
     const CvMat& objectPoints,
-    const CvMat& imagePoints,
     const CvMat& intrinsicMatrix,
     const CvMat& distortionCoeffictions,
     const CvMat& rotationVectors,
@@ -218,7 +214,6 @@ void ProjectAllPoints(
  * and also outputs the rotation and translation vector between the two cameras.
  */
 double CalibrateStereoCameraParameters(
-    const int& numberSuccessfulViews,
     const CvMat& objectPointsLeft,
     const CvMat& imagePointsLeft,
     const CvMat& pointCountsLeft,
@@ -245,6 +240,7 @@ double CalibrateStereoCameraParameters(
  */
 void OutputCalibrationData(
     std::ostream& outputStream,
+    const std::string intrinsicFlatFileName,
     const CvMat& objectPoints,
     const CvMat& imagePoints,
     const CvMat& pointCounts,
