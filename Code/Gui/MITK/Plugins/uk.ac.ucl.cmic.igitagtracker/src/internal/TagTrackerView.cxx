@@ -232,7 +232,7 @@ void TagTrackerView::UpdateTags()
       pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
       pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
       pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
-	    pointSetNode->SetProperty( "pointsize", mitk::IntProperty::New(5));
+      pointSetNode->SetProperty( "pointsize", mitk::FloatProperty::New(5));
       pointSetNode->SetBoolProperty("helper object", false);
       pointSetNode->SetBoolProperty("show distant lines", false);
       pointSetNode->SetBoolProperty("show distant points", false);
@@ -380,8 +380,8 @@ void TagTrackerView::UpdateTags()
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
     }
-	pointSetNode->Modified();
-	pointSet->Modified();
-	mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    pointSetNode->Modified();
+    pointSet->Modified();
+    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   } // end if we have at least one node specified
 }
