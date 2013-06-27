@@ -112,6 +112,11 @@ private:
    * \brief If true, we dont bother with stereo and triangulation.
    */
   bool m_MonoLeftCameraOnly;
+
+  /**
+   * \brief to make sure we only show dialog box once.
+   */
+  bool m_ShownStereoSameNameWarning;
 };
 
 #endif // TagTrackerView_h
