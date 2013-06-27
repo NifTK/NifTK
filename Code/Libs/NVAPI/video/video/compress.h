@@ -49,6 +49,19 @@ public:
 // forward-decl for pimpl
 class CompressorImpl;
 
+
+// this matches what the nvidia compressor uses internally
+struct FrameType
+{
+    enum FT
+    {
+        I = 1,
+        P = 2,
+        B = 3
+    };
+};
+
+
 /**
  * @warning The constructor of this class will query the current OpenGL rendering context
  * and the current CUDA context and store both internally. Every time you call a method
@@ -89,6 +102,14 @@ public:
     void compresstexture(int gltexture);
 
     void preparetexture(int gltexture);
+
+
+public:
+    /**
+     * Returns some info you'll if you want to decompress the output.
+     * @returns true if info is available, false if frame is not finished yet
+     */
+    bool get_output_info(unsigned int frameno, unsigned __int64* fileoffset, FrameType::FT* frametype);
 };
 
 

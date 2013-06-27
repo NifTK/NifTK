@@ -24,6 +24,8 @@
 #include "QmitkIGIDataSourceMacro.h"
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
+#include <boost/typeof/typeof.hpp>
+
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSource::QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject * socket)
@@ -311,3 +313,150 @@ bool QmitkIGITrackerSource::SaveData(mitk::IGIDataType* data, std::string& outpu
   }
   return success;
 }
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
+  igtlUint64    firstTimeStampFound = 0;
+  igtlUint64    lastTimeStampFound  = 0;
+
+  // needs to match what SaveData() does below
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  // FIXME: check for QmitkIGITrackerSource too!
+  QDir directory(directoryPath);
+  if (directory.exists())
+  {
+    // then directories with tool names
+    //QStringList filters;
+    //filters << QString("*.");
+    //path.setNameFilters(filters);
+    directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
+
+    QStringList toolNames = directory.entryList();
+    foreach (QString tool, toolNames)
+    {
+      QDir  tooldir(directory.path() + QDir::separator() + tool);
+      assert(tooldir.exists());
+
+      std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(tooldir, QString("txt"));
+      if (!timestamps.empty())
+      {
+        firstTimeStampFound = *timestamps.begin();
+        lastTimeStampFound  = *(--(timestamps.end()));
+      }
+    }
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  //StopGrabbingThread();
+  ClearBuffer();
+
+  // needs to match what SaveData() does
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  QDir directory(directoryPath);
+  if (directory.exists())
+  {
+    directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
+
+    QStringList toolNames = directory.entryList();
+    foreach (QString tool, toolNames)
+    {
+      QDir  tooldir(directory.path() + QDir::separator() + tool);
+      assert(tooldir.exists());
+
+      m_PlaybackIndex[tool.toStdString()] = ProbeTimeStampFiles(tooldir, QString("txt"));
+    }
+
+    m_PlaybackDirectoryName = directoryPath.toStdString();
+  }
+  else
+  {
+    // shouldnt happen
+    assert(false);
+  }
+
+  SetIsPlayingBack(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSource::StopPlayback()
+{
+  m_PlaybackIndex.clear();
+  ClearBuffer();
+
+  SetIsPlayingBack(false);
+
+  //this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  assert(GetIsPlayingBack());
+
+
+  for (BOOST_AUTO(t, m_PlaybackIndex.begin()); t != m_PlaybackIndex.end(); ++t)
+  {
+    // this will find us the timestamp right after the requested one
+    BOOST_AUTO(i, t->second.upper_bound(requestedTimeStamp));
+    // so we need to pick the previous
+    // FIXME: not sure if the non-existing-else here ever applies!
+    if (i != t->second.begin())
+    {
+      --i;
+    }
+    if (i != t->second.end())
+    {
+      igtl::Matrix4x4 matrix;
+
+      std::ostringstream    filename;
+      filename << m_PlaybackDirectoryName << '/' << t->first << '/' << (*i) << ".txt";
+      std::ifstream   file(filename.str().c_str());
+      if (file)
+      {
+        for (int r = 0; r < 4; ++r)
+        {
+          for (int c = 0; c < 4; ++c)
+          {
+            file >> matrix[r][c];
+          }
+        }
+
+        NiftyLinkTrackingDataMessage*   msg = new NiftyLinkTrackingDataMessage;
+        msg->ChangeMessageType("TDATA");
+        msg->ChangeHostName("localhost");
+        msg->SetTrackerToolName(QString::fromStdString(t->first));
+        msg->SetMatrix(matrix);
+        //msg->SetT
+        QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
+        dataType->SetMessage(msg);
+        dataType->SetTimeStampInNanoSeconds(*i);
+        dataType->SetDuration(m_TimeStampTolerance);
+
+        AddData(dataType.GetPointer());
+        SetStatus("Playing back");
+      }
+      file.close();
+    }
+  }
+}
+

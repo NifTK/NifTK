@@ -15,6 +15,7 @@
 #ifndef CoordinateAxesDataReader_h
 #define CoordinateAxesDataReader_h
 
+#include "niftkCoreExports.h"
 #include <mitkCommon.h>
 #include <mitkFileReader.h>
 #include <mitkCoordinateAxesData.h>
@@ -27,7 +28,7 @@ namespace mitk
  * \brief The reader for mitk::CoordinateAxesData
  */
 
-class CoordinateAxesDataReader : public FileReader, public BaseProcess
+class NIFTKCORE_EXPORT CoordinateAxesDataReader : public FileReader, public BaseProcess
 {
 public:
 

@@ -73,16 +73,36 @@ public:
   /**
    * \brief Write My Documentation
    */
-  void Run(const mitk::DataStorage::Pointer dataStorage,
-           mitk::DataNode::Pointer outputNode,
+  mitk::BaseData::Pointer Run(
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
            Method method,
            OutputType outputtype,
-           mitk::DataNode::Pointer camnode,
+           const mitk::DataNode::Pointer camnode,
            float maxTriangulationError,
            float minDepth,
            float maxDepth);
+
+
+  struct ParamPacket
+  {
+    mitk::DataStorage::Pointer dataStorage;
+    mitk::DataNode::Pointer outputNode;
+    mitk::Image::Pointer image1;
+    mitk::Image::Pointer image2;
+    Method method;
+    OutputType outputtype;
+    mitk::DataNode::Pointer camnode;
+    float maxTriangulationError;
+    float minDepth;
+    float maxDepth;
+
+    ParamPacket()
+    {
+    }
+  };
+
+  mitk::BaseData::Pointer Run(ParamPacket params);
 
 protected:
 

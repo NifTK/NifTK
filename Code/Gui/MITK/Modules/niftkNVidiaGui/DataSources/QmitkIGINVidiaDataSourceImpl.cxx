@@ -21,6 +21,7 @@
 #include <igtlTimeStamp.h>
 #include <boost/typeof/typeof.hpp>
 #include <NiftyLinkUtils.h>
+#include <fstream>
 
 
 //-----------------------------------------------------------------------------
@@ -57,7 +58,8 @@ static bool CUDADelayLoadCheck()
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   : QmitkIGITimerBasedThread(0),
-    sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), lock(QMutex::Recursive), 
+    sdidev(0), sdiin(0), streamcount(0), oglwin(0), oglshare(0), cuContext(0), compressor(0), decompressor(0),
+    lock(QMutex::Recursive), 
     current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
     m_Cookie(0),
     state_message("Starting up")
@@ -104,13 +106,14 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
     if (cuCtxCreate(&cuContext, CU_CTX_SCHED_AUTO, cudadevices[0]) == CUDA_SUCCESS)
     {
       cuCtxGetCurrent(&cuContext);
-      // FIXME: do we need to pop the current context? is it leaking to the caller somehow?
+      // should we pop the current context? is it leaking to the caller somehow?
+      // i think we should.
       CUcontext oldctx;
       cuCtxPopCurrent(&oldctx);
     }
   }
   // else case is not very interesting: we could be running this on non-nvidia hardware
-  // but we'll only know once we start enumerating sdi devices during QmitkIGINVidiaDataSource::GrabData()
+  // but we'll only know once we start enumerating sdi devices during OnTimeoutImpl()
 
   if (prevctx)
     prevctx->makeCurrent();
@@ -121,8 +124,8 @@ QmitkIGINVidiaDataSourceImpl::QmitkIGINVidiaDataSourceImpl()
   // we want signal/slot processing to happen on our background thread.
   // for that to work we need to explicitly move this object because
   // it is currently owned by the gui thread.
-  // FIXME: i wonder how well that works with start() and quit(). our thread instance stays
-  //        the same so it should be ok?
+  // beware: i wonder how well that works with start() and quit(). our thread instance stays
+  // the same so it should be ok?
   this->moveToThread(this);
 }
 
@@ -143,6 +146,10 @@ QmitkIGINVidiaDataSourceImpl::~QmitkIGINVidiaDataSourceImpl()
     // we need the capture context for proper cleanup
     oglwin->makeCurrent();
 
+    // final attempt to not loose data.
+    DumpNALIndex();
+
+    delete decompressor;
     delete compressor;
     delete sdiin;
     // we do not own sdidev!
@@ -185,11 +192,12 @@ void QmitkIGINVidiaDataSourceImpl::InitVideo()
   delete sdiin;
   sdiin = 0;
   format = video::StreamFormat();
-  // even though this pimpl class doesnt use the compressor directly
-  // we should cleanup anyway.
-  // so that whenever video dies we get a new file (because format could differ!)
+  // try not to loose any still compressing info
+  DumpNALIndex();
   delete compressor;
   compressor = 0;
+  // note: do not kill off decompressor here.
+  // see description in SetPlayback() as for why.
 
   // find our capture card
   for (int i = 0; ; ++i)
@@ -421,9 +429,19 @@ void QmitkIGINVidiaDataSourceImpl::setCompressionOutputFilename(const std::strin
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::run()
 {
-  // make sure the correct opengl context is active
-  // OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
+  // make sure the correct opengl context is active.
+  // in OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
   oglwin->makeCurrent();
+
+  // we also want our cuda context to be active!
+  // it used to be enabled only on demand when the compressor would run.
+  CUresult r = cuCtxPushCurrent(cuContext);
+  if (r != CUDA_SUCCESS)
+  {
+    current_state = FAILED;
+    state_message = "CUDA failed";
+    return;
+  }
 
   // it's possible for someone else to start and stop our thread.
   // just make sure we start clean if that happens.
@@ -437,6 +455,15 @@ void QmitkIGINVidiaDataSourceImpl::run()
   assert(ok);
   ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), Qt::BlockingQueuedConnection);
   assert(ok);
+  ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), Qt::BlockingQueuedConnection);
+  assert(ok);
+
+
+  // current_state is reset by Reset() called above.
+  // but is this a requirement for our message loop to run properly?
+  // i think it is: whenever somebody (re-)starts our sdi thread we can assume
+  // that our previous capture-setup is now dead/stale.
+  assert(current_state == PRE_INIT);
 
   // let base class deal with timer and event loop and stuff
   QmitkIGITimerBasedThread::run();
@@ -448,6 +475,8 @@ void QmitkIGINVidiaDataSourceImpl::run()
   ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
   assert(ok);
   ok = disconnect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)));
+  assert(ok);
+  ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
   assert(ok);
 }
 
@@ -469,6 +498,13 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
     return;
   }
   if (current_state == QmitkIGINVidiaDataSourceImpl::DEAD)
+  {
+    return;
+  }
+
+  // not much to do in case of playback.
+  // it's all triggered by GetRGBAImage().
+  if (current_state == PLAYBACK)
   {
     return;
   }
@@ -640,9 +676,64 @@ void QmitkIGINVidiaDataSourceImpl::Reset()
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::DecompressRGBA(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg)
+{
+  // has to be called with lock held!
+
+  // these are display dimenions (what we are interested in).
+  int   w = decompressor->get_width();
+  int   h = decompressor->get_height();
+
+  IplImage* frame = cvCreateImage(cvSize(w, h * streamcount), IPL_DEPTH_8U, 4);
+  // mark layout as rgba instead of the opencv-default bgr
+  std::memcpy(&frame->channelSeq[0], "RGBA", 4);
+
+  // during playback there are no proper sequence numbers. instead, we repurpose
+  // these as a frame number (quite similar anyway).
+  bool ok = true;
+  for (int i = 0; i < streamcount; ++i)
+  {
+    // note: opencv's widthStep is in bytes.
+    char* subimg = &(frame->imageData[i * h * frame->widthStep]);
+    try
+    {
+      ok &= decompressor->decompress(sequencenumber + i, subimg, frame->widthStep * h, frame->widthStep);
+    }
+    catch (const std::exception& e)
+    {
+      std::cerr << "Caught exception while decompressing: " << e.what() << std::endl;
+      ok = false;
+      break;
+    }
+  }
+
+  if (ok)
+  {
+    *img = frame;
+    *streamcountinimg = streamcount;
+  }
+  else
+  {
+    cvReleaseImage(&frame);
+    *img = 0;
+    *streamcountinimg = 0;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcountinimg)
 {
   QMutexLocker    l(&lock);
+
+  // redirect to decompression early.
+  // all the other stuff below is for live video capture.
+  if (current_state == PLAYBACK)
+  {
+    assert(decompressor);
+    DecompressRGBA(sequencenumber, img, streamcountinimg);
+    return;
+  }
 
   // temp obj to search for the correct slot
   video::FrameInfo    fi = {0};
@@ -686,6 +777,7 @@ std::pair<IplImage*, int> QmitkIGINVidiaDataSourceImpl::GetRGBAImage(unsigned in
 {
   IplImage*     img = 0;
   unsigned int  streamcount = 0;
+  // this will block on the sdi thread. so no locking in this method!
   emit SignalGetRGBAImage(sequencenumber, &img, &streamcount);
 
   return std::make_pair(img, streamcount);
@@ -703,13 +795,15 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
 
   if (compressor == 0)
   {
-    CUresult r = cuCtxPushCurrent(cuContext);
+    CUcontext ctx = 0;
+    CUresult r = cuCtxGetCurrent(&ctx);
     // die straight away
     if (r != CUDA_SUCCESS)
     {
       *frameindex = 0;
       return;
     }
+    assert(ctx == cuContext);
 
     // also keep sdi logs
     sdiin->flush_log();
@@ -777,7 +871,6 @@ void QmitkIGINVidiaDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, 
   {
     // i want to know how often this happens, really...
     std::cerr << "Debug: sdi compressor: requested sn that is no longer available" << std::endl;
-    assert(false);
     *frameindex = 0;
   }
 
@@ -803,6 +896,7 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 
   sdiin->flush_log();
 
+  DumpNALIndex();
   delete compressor;
   compressor = 0;
 }
@@ -812,6 +906,191 @@ void QmitkIGINVidiaDataSourceImpl::DoStopCompression()
 void QmitkIGINVidiaDataSourceImpl::StopCompression()
 {
   emit SignalStopCompression();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::SetPlayback(bool on, int expectedstreamcount)
+{
+  QMutexLocker    l(&lock);
+
+  if (on)
+  {
+    // recording should have stopped earlier!
+    if (compressor != 0)
+    {
+      throw std::runtime_error("Compressor still running! Cannot playback and record at the same time.");
+    }
+    // decompressor should have been initialised via TryPlayback().
+    if (decompressor == 0)
+    {
+      throw std::runtime_error("No decompressor. Forgot to call TryPlayback()?");
+    }
+    if (expectedstreamcount <= 0)
+    {
+      throw std::runtime_error("Need correct stream count for playback");
+    }
+    if (expectedstreamcount > 4)
+    {
+      std::cerr << "WARNING: more than 4 streams during playback! That is likely an error: current hardware can capture max 4." << std::endl;
+    }
+
+    // may not be necessary but cleanup a bit anyway to avoid confusion later.
+    sn2slot_map.clear();
+    slot2sn_map.clear();
+
+    // beware: do not stop this thread!
+    // it still needs to do all event processing for GetRGBAImage() and friends.
+    // but there's no need to run it at full speed.
+    SetInterval(1000);
+    // it will not do anything: wake up from timer sleep, and return immediately.
+    current_state = PLAYBACK;
+
+    // the compressor is bare-bones, it doesnt know anything about multiple streams.
+    // it only compresses individual images we pipe in.
+    // so the number of streams during playback has to come from an external source.
+    streamcount = expectedstreamcount;
+  }
+  else
+  {
+    current_state = HW_ENUM;
+    // bumping this thread will wake it up from timer sleep.
+    // it will then do a hardware check and set its own refreshrate to something suitable for the input video.
+    emit SignalBump();
+
+    // note: decompressor will not be killed during InitVideo()! it will just linger around.
+    // there is not really a nice way of cleaning up with the current design...
+    // there's a race condition: user calls TryPlayback() which inits the decompressor,
+    // meanwhile OnTimeoutImpl will try to call InitVideo() which would kill the decompressor,
+    // and then user calls here SetPlayback(true): exception.
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSourceImpl::DumpNALIndex() const
+{
+  QMutexLocker    l(&lock);
+
+  if (compressor == 0)
+  {
+    return false;
+  }
+
+  std::ofstream   indexfile((GetCompressionOutputFilename() + ".nalindex").c_str());
+  if (indexfile.is_open())
+  {
+    for (unsigned int f = 0; ; ++f)
+    {
+      unsigned __int64      offset = 0;
+      video::FrameType::FT  type;
+
+      bool b = compressor->get_output_info(f, &offset, &type);
+      if (!b)
+      {
+        break;
+      }
+      indexfile << f << ' ' << offset << ' ' << type << std::endl;
+    }
+
+    indexfile.close();
+    return true;
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::DoTryPlayback(const char* filename, bool* ok, const char** errormsg)
+{
+  QMutexLocker    l(&lock);
+
+  delete decompressor;
+  decompressor = 0;
+
+  try
+  {
+    decompressor = new video::Decompressor(filename);
+
+    std::ifstream   indexfile((std::string(filename) + ".nalindex").c_str());
+    if (indexfile.good())
+    {
+      while (indexfile.good())
+      {
+        unsigned int          framenumber = -1;
+        unsigned __int64      offset = -1;
+        int                   type   = -1;
+
+        indexfile >> framenumber;
+        indexfile >> offset;
+        indexfile >> type;
+
+        if (type == -1)
+        {
+          break;
+        }
+        decompressor->update_index(framenumber, offset, (video::FrameType::FT) type);
+      }
+      indexfile.close();
+    }
+    else
+    {
+      // dont leave an open file handle lingering around
+      indexfile.close();
+
+      *ok = decompressor->recover_index();
+      if (!(*ok))
+      {
+        *errormsg = "No index found and cannot recover one from stream.";
+        return;
+      }
+      // try to write it to file so we dont have to do this repeatedly
+      std::ofstream   recoveredindexfile((std::string(filename) + ".nalindex").c_str());
+      if (recoveredindexfile.is_open())
+      {
+        for (unsigned int f = 0; ; ++f)
+        {
+          unsigned __int64      offset = 0;
+          video::FrameType::FT  type;
+
+          bool b = decompressor->get_index(f, &offset, &type);
+          if (!b)
+          {
+            break;
+          }
+          recoveredindexfile << f << ' ' << offset << ' ' << type << std::endl;
+        }
+        recoveredindexfile.close();
+      }
+    }
+  }
+  catch (const std::exception& e)
+  {
+    *ok = false;
+    std::cerr << "Decompression init failed: " << e.what() << std::endl;
+    *errormsg = "Decompression init failed";
+    return;
+  }
+
+  *errormsg = 0;
+  *ok = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceImpl::TryPlayback(const std::string& filename)
+{
+  const char*   fns = filename.c_str();
+  bool          ok = false;
+  const char*   err = 0;
+
+  emit SignalTryPlayback(fns, &ok, &err);
+
+  if (!ok)
+  {
+    assert(err != 0);
+    throw std::runtime_error(err);
+  }
 }
 
 

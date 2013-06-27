@@ -47,6 +47,8 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_NextSourceIdentifier(0)
 , m_GuiUpdateTimer(NULL)
 , m_ClearDownTimer(NULL)
+, m_PlaybackSliderBase(0)
+, m_PlaybackSliderFactor(1)
 {
   m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -246,7 +248,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/record.png"));
   m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/stop.png"));
 
-  m_PlayPushButton->setEnabled(false); // not ready yet.
+  m_PlayPushButton->setEnabled(true);
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 
@@ -262,6 +264,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 
   m_Frame->setContentsMargins(0, 0, 0, 0);
 
+  m_DirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
+  m_DirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
+
   // BEWARE: these need to be ordered in this way! various other code simply checks for
   //         selection index to distinguish between source types, etc.
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
@@ -272,6 +277,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
 
+  m_ToolManagerPlaybackGroupBox->setCollapsed(true);
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
   m_ToolManagerConsole->setMaximumHeight(100);
   m_TableWidget->setMaximumHeight(150);
@@ -282,9 +288,11 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
-  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStop()) );
+  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
   connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+  // FIXME: do we need to connect a slot to the playback slider? gui-update-timer will eventually check its state anyway.
 
   m_SourceSelectComboBox->setCurrentIndex(0);
 }
@@ -700,9 +708,25 @@ void QmitkIGIDataSourceManager::OnUpdateSourceView(const int& sourceIdentifier)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
-  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  igtlUint64 idNow = GetTimeInNanoSeconds(timeNow);
 
+  // whether we are currently grabbing live data or playing back canned bits
+  // depends solely on the state of the play-button.
+  if (m_PlayPushButton->isChecked())
+  {
+    int         sliderValue = m_PlaybackSlider->value();
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((double) sliderValue / m_PlaybackSliderFactor);
+
+    m_CurrentTime = sliderTime;
+  }
+  else
+  {
+    igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+    m_CurrentTime = GetTimeInNanoSeconds(timeNow);
+  }
+
+  m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
+
+  igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
 
   if (m_Sources.size() > 0)
@@ -838,19 +862,122 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 
   m_RecordPushButton->setEnabled(false);
   m_StopPushButton->setEnabled(true);
+  assert(!m_PlayPushButton->isChecked());
+  m_PlayPushButton->setEnabled(false);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnRecordStop()
+void QmitkIGIDataSourceManager::OnStop()
 {
-  foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+  if (m_PlayPushButton->isChecked())
   {
-    source->StopRecording();
+    // we are playing back, so simulate a user click to stop.
+    m_PlayPushButton->click();
   }
+  else
+  {
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      source->StopRecording();
+    }
 
-  m_RecordPushButton->setEnabled(true);
-  m_StopPushButton->setEnabled(false);
+    m_RecordPushButton->setEnabled(true);
+    m_StopPushButton->setEnabled(false);
+    m_PlayPushButton->setEnabled(true);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnPlayStart()
+{
+  if (m_PlayPushButton->isChecked())
+  {
+    QString playbackpath = m_DirectoryChooser->currentPath();
+    // playback button should only be enabled if there's a path in m_DirectoryChooser.
+    if (playbackpath.isEmpty())
+    {
+      m_PlayPushButton->setChecked(false);
+    }
+    else
+    {
+      std::set<QmitkIGIDataSource::Pointer> goodSources;
+
+      igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
+      igtlUint64    overallEndTime   = std::numeric_limits<igtlUint64>::min();
+      std::string   pathstring       = playbackpath.toStdString();
+
+      foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+      {
+        igtlUint64  startTime = -1;
+        igtlUint64  endTime   = -1;
+        bool cando = source->ProbeRecordedData(pathstring, &startTime, &endTime);
+        if (cando)
+        {
+          overallStartTime = std::min(overallStartTime, startTime);
+          overallEndTime   = std::max(overallEndTime, endTime);
+
+          goodSources.insert(source);
+        }
+        else
+        {
+          // data source that cannot playback enters freeze-frame mode
+          source->SetShouldCallUpdate(false);
+        }
+      }
+
+      if (overallEndTime >= overallStartTime)
+      {
+        foreach (QmitkIGIDataSource::Pointer source, goodSources)
+        {
+          source->ClearBuffer();
+          source->StartPlayback(pathstring, overallStartTime, overallEndTime);
+        }
+
+
+        m_PlaybackSliderBase = overallStartTime;
+        m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+        // if the time range is very short then dont upscale for the slider
+        m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+
+        double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+        assert(sliderMax < std::numeric_limits<int>::max());
+
+        m_PlaybackSlider->setMinimum(0);
+        m_PlaybackSlider->setMaximum(sliderMax);
+
+        // pop open the controls
+        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+        // can stop playback with stop button (in addition to unchecking the playbutton)
+        m_StopPushButton->setEnabled(true);
+        // for now, cannot start recording directly from playback mode.
+        // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+        m_RecordPushButton->setEnabled(false);
+
+        m_TimeStampEdit->setReadOnly(false);
+        m_PlaybackSlider->setEnabled(true);
+        m_PlaybackSlider->setValue(0);
+      }
+      else
+      {
+        m_PlayPushButton->setChecked(false);
+      }
+    }
+  }
+  else
+  {
+    foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+    {
+      source->StopPlayback();
+    }
+
+    m_StopPushButton->setEnabled(false);
+    m_RecordPushButton->setEnabled(true);
+    m_TimeStampEdit->setReadOnly(true);
+    m_PlaybackSlider->setEnabled(false);
+    m_PlaybackSlider->setValue(0);
+  }
 }
 
 

@@ -146,6 +146,9 @@ public:
   itkThreadSafeSetMacro(ShouldCallUpdate, bool);
   itkThreadSafeGetConstMacro(ShouldCallUpdate, bool);
 
+  itkThreadSafeSetMacro(IsPlayingBack, bool);
+  itkThreadSafeGetConstMacro(IsPlayingBack, bool);
+
   /**
    * \brief FrameRate is calculated internally, and can be retrieved here in frames per second.
    */
@@ -209,6 +212,19 @@ public:
   // FIXME: should these be virtual? derived class may need to do some special setup/teardown
   void StopRecording();
 
+
+  /**
+   * Checks whether the previously recorded data is readable, and returns the time-range for it.
+   * Default implementation returns false, i.e. is not capable of playback.
+   */
+  virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
+
+
+  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
+  virtual void StopPlayback();
+  // RequestData() would be a candidate to fold this into. but it's currently not suitable.
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
+
   /**
    * \brief Returns the first time stamp, or 0 if the buffer is empty.
    */
@@ -247,6 +263,7 @@ public:
    */
   std::list<std::string> GetRelatedSources();
 
+
 protected:
 
   IGIDataSource(mitk::DataStorage* storage); // Purposefully hidden.
@@ -283,6 +300,7 @@ protected:
    * closest message to the requested time stamp, and sets the
    * ActualTimeStamp accordingly, or else return NULL if it can't be found.
    */
+  // FIXME: why is this virtual? this method does all sorts of stuff that makes overriding impractical
   virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
   /**
@@ -308,6 +326,8 @@ protected:
   mitk::DataStorage* m_DataStorage;
 
   bool        m_ShouldCallUpdate;
+
+  bool        m_IsPlayingBack;
 
 private:
 
@@ -338,9 +358,16 @@ private:
   bool                                            m_SavingMessages;
   bool                                            m_SaveOnReceipt;
   bool                                            m_SaveInBackground;
-  std::list<mitk::IGIDataType::Pointer>           m_Buffer;
-  std::list<mitk::IGIDataType::Pointer>::iterator m_BufferIterator;
-  std::list<mitk::IGIDataType::Pointer>::iterator m_FrameRateBufferIterator;
+
+  struct TimeStampComparator
+  {
+    bool operator()(const mitk::IGIDataType::Pointer& a, const mitk::IGIDataType::Pointer& b);
+  };
+  typedef std::set<mitk::IGIDataType::Pointer, TimeStampComparator>    BufferType;
+  BufferType              m_Buffer;
+  BufferType::iterator    m_BufferIterator;
+  BufferType::iterator    m_FrameRateBufferIterator;
+
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;
   mitk::IGIDataType*                              m_ActualData;

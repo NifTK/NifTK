@@ -28,13 +28,21 @@
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <QtConcurrentRun>
+#include <boost/bind.hpp>
+
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
+
+  bool ok = false;
+  ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
 }
 
 
@@ -44,6 +52,14 @@ SurfaceReconView::~SurfaceReconView()
   bool ok = false;
   ok = disconnect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
   assert(ok);
+
+  // wait for it to finish first and then disconnect?
+  // or the other way around?
+  // i'd say disconnect first then wait because at that time we no longer care about the result
+  // and the finished-handler might access some half-destroyed objects.
+  ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
+  m_BackgroundProcessWatcher.waitForFinished();
 }
 
 
@@ -133,6 +149,14 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
   // we call this all the time to update the has-calib-property for the node comboboxes.
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
+
+  if (m_AutomaticUpdateRadioButton->isChecked())
+  {
+    if (!m_BackgroundProcess.isRunning())
+    {
+      DoSurfaceReconstruction();
+    }
+  }
 }
 
 
@@ -147,29 +171,28 @@ void SurfaceReconView::DoSurfaceReconstruction()
     mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
     mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
 
+    // we store these background processing.
+    // we keep names instead of pointers because data storage screws up if we add the output node
+    // with parents that might have been deleted already.
+    m_BackgroundLeftNodeName = "";
+    m_BackgroundRightNodeName = "";
+    if (leftNode.IsNotNull())
+    {
+      m_BackgroundLeftNodeName = leftNode->GetName();
+    }
+    if (rightNode.IsNotNull())
+    {
+      m_BackgroundRightNodeName = rightNode->GetName();
+    }
+
     if (leftNode.IsNotNull()
       && rightNode.IsNotNull()
       && leftImage.IsNotNull()
       && rightImage.IsNotNull()
       )
     {
-      // if our output node exists already then we recycle it, of course.
-      // it may not be tagged as "derived" from the correct source nodes
-      // but that shouldn't be a problem here.
-
-      std::string               outputName = OutputNodeNameLineEdit->text().toStdString();
-      mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputName);
-      if (outputNode.IsNull())
-      {
-        outputNode = mitk::DataNode::New();
-        outputNode->SetName(outputName);
-
-        mitk::DataStorage::SetOfObjects::Pointer   nodeParents = mitk::DataStorage::SetOfObjects::New();
-        nodeParents->push_back(leftNode);
-        nodeParents->push_back(rightNode);
-
-        storage->Add(outputNode, nodeParents);
-      }
+      // store the name for use once processing has finished in OnBackgroundProcessFinished().
+      m_BackgroundOutputNodeName = OutputNodeNameLineEdit->text().toStdString();
 
 
       bool    needToLoadLeftCalib  = niftk::Undistortion::NeedsToLoadIntrinsicCalib(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(),  leftImage);
@@ -213,8 +236,22 @@ void SurfaceReconView::DoSurfaceReconstruction()
 
       try
       {
-        // Then delagate everything to class outside of plugin, so we can unit test it.
-        m_SurfaceReconstruction->Run(storage, outputNode, leftImage, rightImage, method, outputtype, camNode, maxTriError, minDepth, maxDepth);
+        // dont allow clicking on it until we are done with the current one.
+        DoItButton->setEnabled(false);
+
+        // have a parameters packet because QtConcurrent::run() does not cater for functions with lots of parameters.
+        niftk::SurfaceReconstruction::ParamPacket   params;
+        params.image1 = leftImage;
+        params.image2 = rightImage;
+        params.method = method;
+        params.outputtype = outputtype;
+        params.camnode = camNode;
+        params.maxTriangulationError = maxTriError;
+        params.minDepth = minDepth;
+        params.maxDepth = maxDepth;
+
+        m_BackgroundProcess = QtConcurrent::run(m_SurfaceReconstruction.GetPointer(), &niftk::SurfaceReconstruction::Run, params);
+        m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
       }
       catch (const std::exception& e)
       {
@@ -224,3 +261,60 @@ void SurfaceReconView::DoSurfaceReconstruction()
     }
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnBackgroundProcessFinished()
+{
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  if (storage.IsNotNull())
+  {
+    mitk::BaseData::Pointer data = m_BackgroundProcessWatcher.result();
+
+    // if our output node exists already then we recycle it, of course.
+    // it may not be tagged as "derived" from the correct source nodes
+    // but that shouldn't be a problem here.
+    mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(m_BackgroundOutputNodeName);
+    if (outputNode.IsNull())
+    {
+      outputNode = mitk::DataNode::New();
+      outputNode->SetName(m_BackgroundOutputNodeName);
+
+      mitk::DataStorage::SetOfObjects::Pointer   nodeParents = mitk::DataStorage::SetOfObjects::New();
+      if (!m_BackgroundLeftNodeName.empty())
+      {
+        mitk::DataNode::Pointer   leftNode = storage->GetNamedNode(m_BackgroundLeftNodeName);
+        if (leftNode.IsNotNull())
+        {
+          nodeParents->push_back(leftNode);
+        }
+      }
+      if (!m_BackgroundRightNodeName.empty())
+      {
+        mitk::DataNode::Pointer   rightNode = storage->GetNamedNode(m_BackgroundRightNodeName);
+        if (rightNode.IsNotNull())
+        {
+          nodeParents->push_back(rightNode);
+        }
+      }
+
+      // we need to have data on the node before we add it to data storage!
+      // otherwise listeners on it are not fired properly. (bug in mitk?)
+      outputNode->SetData(data);
+      storage->Add(outputNode, nodeParents);
+    }
+    else
+    {
+      outputNode->SetData(data);
+    }
+
+    DoItButton->setEnabled(true);
+  }
+  else
+  {
+    // i think this else branch will only ever happen if we are half-way down the shutdown process.
+    // but not sure...
+    std::cerr << "Warning: data storage gone while processing surface reconstruction!" << std::endl;
+  }
+}
+

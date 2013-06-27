@@ -119,11 +119,20 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PopupWidget->setContentsMargins(5, 5, 5, 1);
   m_PopupWidget->setLineWidth(0);
 
+#ifdef __APPLE__
   QPalette popupPalette = this->palette();
   QColor windowColor = popupPalette.color(QPalette::Window);
   windowColor.setAlpha(64);
   popupPalette.setColor(QPalette::Window, windowColor);
   m_PopupWidget->setPalette(popupPalette);
+#else
+  QPalette popupPalette = this->palette();
+  QColor windowColor = popupPalette.color(QPalette::Window);
+  windowColor.setAlpha(128);
+  popupPalette.setColor(QPalette::Window, windowColor);
+  m_PopupWidget->setPalette(popupPalette);
+  m_PopupWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+#endif
 
   int buttonRowHeight = 15;
   m_PinButton = new QToolButton(this);
@@ -256,13 +265,13 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetRememberSettingsPerLayout(m_RememberSettingsPerLayout);
   widget->SetDisplayInteractionsEnabled(true);
   widget->SetCursorPositionsBound(true);
-  widget->SetMagnificationsBound(true);
+  widget->SetScaleFactorsBound(true);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(SelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
   connect(widget, SIGNAL(CursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
-  connect(widget, SIGNAL(MagnificationChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnMagnificationChanged(QmitkMIDASSingleViewWidget*, double)));
+  connect(widget, SIGNAL(ScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)));
 
   return widget;
 }
@@ -373,11 +382,14 @@ void QmitkMIDASMultiViewWidget::SetShowDropTypeControls(bool visible)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetDropType(MIDASDropType dropType)
 {
-  m_ControlPanel->SetDropType(dropType);
+  if (dropType != m_ControlPanel->GetDropType())
+  {
+    m_ControlPanel->SetDropType(dropType);
 
-  m_VisibilityManager->ClearAllWindows();
-  m_VisibilityManager->SetDropType(dropType);
-  this->SetThumbnailMode(dropType == MIDAS_DROP_TYPE_ALL);
+    m_VisibilityManager->ClearAllWindows();
+    m_VisibilityManager->SetDropType(dropType);
+    this->SetThumbnailMode(dropType == MIDAS_DROP_TYPE_ALL);
+  }
 }
 
 
@@ -751,18 +763,6 @@ void QmitkMIDASMultiViewWidget::OnSelectedPositionChanged(QmitkMIDASSingleViewWi
       }
     }
   }
-
-  if (m_ControlPanel->AreViewCursorsBound())
-  {
-    mitk::Vector3D cursorPosition = view->GetCursorPosition();
-    for (int i = 0; i < m_SingleViewWidgets.size(); i++)
-    {
-      if (m_SingleViewWidgets[i] != view)
-      {
-        m_SingleViewWidgets[i]->SetCursorPosition(cursorPosition);
-      }
-    }
-  }
 }
 
 
@@ -783,17 +783,18 @@ void QmitkMIDASMultiViewWidget::OnCursorPositionChanged(QmitkMIDASSingleViewWidg
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnMagnificationChanged(QmitkMIDASSingleViewWidget* widget, double magnification)
+void QmitkMIDASMultiViewWidget::OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double scaleFactor)
 {
+  double magnification = view->GetMagnification();
   m_ControlPanel->SetMagnification(magnification);
 
   if (m_ControlPanel->AreViewMagnificationsBound())
   {
     for (int i = 0; i < m_SingleViewWidgets.size(); i++)
     {
-      if (m_SingleViewWidgets[i] != widget)
+      if (m_SingleViewWidgets[i] != view)
       {
-        m_SingleViewWidgets[i]->SetMagnification(magnification);
+        m_SingleViewWidgets[i]->SetScaleFactor(scaleFactor);
       }
     }
   }
@@ -843,9 +844,12 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, 
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
 
   double magnification = selectedView->GetMagnification();
+//  double scaleFactor = selectedView->GetScaleFactor();
 
   m_ControlPanel->SetMagnification(magnification);
+//  m_ControlPanel->SetMagnification(scaleFactor);
   this->OnMagnificationChanged(magnification);
+//  this->OnMagnificationChanged(scaleFactor);
 
   MIDASLayout layout = selectedView->GetLayout();
   m_ControlPanel->SetLayout(layout);
@@ -1074,19 +1078,13 @@ void QmitkMIDASMultiViewWidget::OnMagnificationChanged(double magnification)
     m_ControlPanel->SetMagnification(magnification);
   }
 
-  this->SetSelectedWindowMagnification(magnification);
-  m_Magnification = magnification;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::SetSelectedWindowMagnification(double magnification)
-{
   QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewMagnificationsBound());
   foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
   {
     view->SetMagnification(magnification);
   }
+
+  m_Magnification = magnification;
 }
 
 
@@ -1143,7 +1141,7 @@ void QmitkMIDASMultiViewWidget::OnWindowMagnificationBindingChanged(bool bound)
   {
     if (m_SingleViewWidgets[i]->isVisible())
     {
-      m_SingleViewWidgets[i]->SetMagnificationsBound(bound);
+      m_SingleViewWidgets[i]->SetScaleFactorsBound(bound);
     }
   }
 }
@@ -1176,12 +1174,13 @@ void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
 
-  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-  mitk::BaseRenderer* selectedRenderer = selectedView->GetSelectedRenderWindow()->GetRenderer();
-
-  if (selectedRenderer && selectedRenderer != focusedRenderer)
+  if (QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow())
   {
-    focusManager->SetFocused(selectedRenderer);
+    mitk::BaseRenderer* selectedRenderer = selectedRenderWindow->GetRenderer();
+    if (selectedRenderer != focusedRenderer)
+    {
+      focusManager->SetFocused(selectedRenderer);
+    }
   }
 }
 
@@ -1262,6 +1261,15 @@ bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
   // be called.
   m_ControlPanel->SetLayout(nextLayout);
   this->OnLayoutChanged(nextLayout);
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkMIDASMultiViewWidget::ToggleCursor()
+{
+  this->SetShow2DCursors(!this->GetShow2DCursors());
 
   return true;
 }

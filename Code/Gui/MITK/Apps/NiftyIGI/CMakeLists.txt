@@ -31,7 +31,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.surfaceextractor
 )
 
-NIFTK_CREATE_APPLICATION(
+NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI
   EXCLUDE_PLUGINS ${_exclude_plugins}
 )

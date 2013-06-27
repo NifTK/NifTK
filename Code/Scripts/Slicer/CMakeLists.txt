@@ -24,7 +24,7 @@ endif()
 
 foreach(script ${scripts})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
-  NIFTK_INSTALL_CLI(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
 endforeach()
 
 

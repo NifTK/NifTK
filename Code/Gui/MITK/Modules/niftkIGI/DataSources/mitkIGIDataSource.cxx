@@ -27,6 +27,7 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_TimeStampTolerance(1000000000)
 , m_DataStorage(storage)
 , m_ShouldCallUpdate(true)
+, m_IsPlayingBack(false)
 , m_Mutex(itk::FastMutexLock::New())
 , m_Identifier(-1)
 , m_SourceType(SOURCE_TYPE_UNKNOWN)
@@ -75,7 +76,7 @@ igtlUint64 IGIDataSource::GetFirstTimeStamp() const
   igtlUint64 timeStamp = 0;
   if (m_Buffer.size() > 0)
   {
-    timeStamp = m_Buffer.front()->GetTimeStampInNanoSeconds();
+    timeStamp = (*m_Buffer.begin())->GetTimeStampInNanoSeconds();
   }
 
   return timeStamp;
@@ -90,7 +91,7 @@ igtlUint64 IGIDataSource::GetLastTimeStamp() const
   igtlUint64 timeStamp = 0;
   if (m_Buffer.size() > 0)
   {
-    timeStamp = m_Buffer.back()->GetTimeStampInNanoSeconds();
+    timeStamp = (*(--(m_Buffer.end())))->GetTimeStampInNanoSeconds();
   }
 
   return timeStamp;
@@ -155,8 +156,8 @@ void IGIDataSource::CleanBuffer()
     unsigned int bufferSizeBefore = m_Buffer.size();
     unsigned int numberToDelete = 0;
 
-    std::list<mitk::IGIDataType::Pointer>::iterator startIter = m_Buffer.begin();
-    std::list<mitk::IGIDataType::Pointer>::iterator endIter = m_Buffer.begin();
+    BufferType::iterator startIter = m_Buffer.begin();
+    BufferType::iterator endIter = m_Buffer.begin();
 
     while(   bufferSizeBefore - numberToDelete > approxDoubleTheFrameRate
           && endIter != m_FrameRateBufferIterator
@@ -186,6 +187,15 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
 
+  if (GetIsPlayingBack())
+  {
+    // no recording playback data
+    assert(m_SavingMessages == false);
+
+    // this should stuff the packet into the buffer via AddData()
+    PlaybackData(requestedTimeStamp);
+  }
+
   if (m_Buffer.size() == 0)
   {
     SetTimeInNanoSeconds(m_ActualTimeStamp, 0);
@@ -193,6 +203,10 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   }
   else
   {
+    if (GetIsPlayingBack())
+    {
+      m_BufferIterator = m_Buffer.begin();
+    }
     if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
@@ -202,7 +216,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
             && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(m_RequestedTimeStamp)
-           )
+            )
       {
         m_BufferIterator++;
       }
@@ -220,6 +234,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
         igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
         igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
 
+        // FIXME: this can under/overflow!
         igtlUint64 beforeToRequested = requestedTimeStamp - beforeTimeStamp;
         igtlUint64 afterToRequested = afterTimeStamp - requestedTimeStamp;
 
@@ -301,7 +316,7 @@ float IGIDataSource::UpdateFrameRate()
 
   if (m_Buffer.size() >= 2)
   {
-    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
+    BufferType::iterator iter = m_Buffer.end();
     iter--;
 
     if (iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
@@ -335,7 +350,7 @@ unsigned long int IGIDataSource::SaveBuffer()
 
   unsigned long int numberSaved = 0;
 
-  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+  BufferType::iterator iter = m_Buffer.begin();
   for (iter = m_Buffer.begin(); iter != m_Buffer.end(); iter++)
   {
     if (    (*iter).IsNotNull()
@@ -400,6 +415,41 @@ void IGIDataSource::StopRecording()
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = 0;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = 0;
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopPlayback()
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
   assert(data);
@@ -414,7 +464,7 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
 
-    m_Buffer.push_back(data);
+    m_Buffer.insert(data);
 
     if (m_Buffer.size() == 1)
     {
@@ -497,6 +547,11 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       }
     }
     else
+    if (m_IsPlayingBack && m_ShouldCallUpdate)
+    {
+      result = this->Update(data);
+    }
+    else
     {
       MITK_DEBUG << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                  << ", req=" << requestedTimeStamp \
@@ -568,6 +623,15 @@ std::list<std::string> IGIDataSource::GetRelatedSources()
   return m_RelatedSources;
 }
 
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::TimeStampComparator::operator()(const mitk::IGIDataType::Pointer& a, const mitk::IGIDataType::Pointer& b)
+{
+  assert(a.IsNotNull());
+  assert(b.IsNotNull());
+
+  return a->GetTimeStampInNanoSeconds() < b->GetTimeStampInNanoSeconds();
+}
 
 //-----------------------------------------------------------------------------
 } // end namespace

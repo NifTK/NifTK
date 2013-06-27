@@ -178,9 +178,6 @@ public:
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice index.
   void SetSelectedWindowSliceIndex(int sliceIndex);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes magnification.
-  void SetSelectedWindowMagnification(double magnification);
-
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
 
@@ -204,6 +201,9 @@ public:
 
   /// \brief Switch the from single window to multiple windows or back
   bool ToggleMultiWindowLayout();
+
+  /// \brief Shows or hides the cursor.
+  bool ToggleCursor();
 
   /// \brief Sets whether the interaction is enabled, and a single viewer.
   void SetMIDASSegmentationMode(bool enabled);
@@ -322,8 +322,8 @@ protected slots:
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
   void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Called when the magnification of a view has changed by zooming in one of its render windows.
-  void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+  /// \brief Called when the scale factor of a view has changed by zooming in one of its render windows.
+  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double scaleFactor);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);

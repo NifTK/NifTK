@@ -19,6 +19,9 @@
 #include <SurfaceReconstruction.h>
 #include <service/event/ctkEvent.h>
 #include "ui_SurfaceReconViewWidget.h"
+#include <QFuture>
+#include <QFutureWatcher>
+
 
 /**
  * \class SurfaceReconView
@@ -73,6 +76,9 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  // we connect the future to this slot
+  void OnBackgroundProcessFinished();
+
 private:
 
   /**
@@ -88,7 +94,14 @@ private:
   /**
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
-  niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+  niftk::SurfaceReconstruction::Pointer      m_SurfaceReconstruction;
+
+
+  QFuture<mitk::BaseData::Pointer>           m_BackgroundProcess;
+  QFutureWatcher<mitk::BaseData::Pointer>    m_BackgroundProcessWatcher;
+  std::string                                m_BackgroundOutputNodeName;
+  std::string                                m_BackgroundLeftNodeName;
+  std::string                                m_BackgroundRightNodeName;
 };
 
 #endif // SurfaceReconView_h

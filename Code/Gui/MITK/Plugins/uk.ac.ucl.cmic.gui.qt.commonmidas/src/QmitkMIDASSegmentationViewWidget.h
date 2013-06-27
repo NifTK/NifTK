@@ -116,7 +116,7 @@ protected slots:
   void OnMagnificationChanged(double magnification);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnMagnificationChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
 protected:
 
@@ -151,7 +151,7 @@ private:
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
-  double m_PreviousMagnification;
+  double m_Magnification;
 };
 
 #endif

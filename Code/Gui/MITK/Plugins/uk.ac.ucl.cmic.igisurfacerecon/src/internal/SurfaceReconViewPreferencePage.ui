@@ -75,7 +75,7 @@
          <item row="0" column="0" colspan="2">
           <widget class="QRadioButton" name="m_UseUndistortionDefaultPathRadioButton">
            <property name="text">
-            <string>Use Undistortion plugin default path</string>
+            <string>Use Distortion Correction plugin default path</string>
            </property>
            <property name="checked">
             <bool>true</bool>

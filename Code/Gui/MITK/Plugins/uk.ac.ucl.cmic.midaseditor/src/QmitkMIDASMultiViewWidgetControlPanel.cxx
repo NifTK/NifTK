@@ -116,7 +116,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowLayoutControlsVisible(bool 
 {
   m_ShowWindowLayoutControls = visible;
   m_WindowLayoutSeparator->setVisible(visible);
-  m_LayoutWidget->setVisible(visible);
+  m_WindowLayoutWidget->setVisible(visible);
   m_WindowBindingOptionsSeparator->setVisible(visible);
   m_WindowBindingWidget->setVisible(visible);
 }
@@ -125,64 +125,65 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowLayoutControlsVisible(bool 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreViewNumberControlsVisible() const
 {
-  return m_ShowViewNumberControls;
+  return m_ViewNumberWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsVisible(bool visible)
 {
-  m_ShowViewNumberControls = visible;
   m_ViewNumberWidget->setVisible(visible);
   m_ViewBindingSeparator->setVisible(visible);
   m_ViewBindingWidget->setVisible(visible);
-  m_DropTypeSeparator->setVisible(visible && m_ShowDropTypeControls);
-  m_MultiViewControlsGroupBox->setVisible(visible || m_ShowDropTypeControls);
+  m_MultiViewControlsSeparator->setVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreDropTypeControlsVisible() const
 {
-  return m_ShowDropTypeControls;
+  return m_DropTypeWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsVisible(bool visible)
 {
-  m_ShowDropTypeControls = visible;
   m_DropTypeWidget->setVisible(visible);
-  m_DropTypeSeparator->setVisible(visible && m_ShowViewNumberControls);
-  m_MultiViewControlsGroupBox->setVisible(visible || m_ShowViewNumberControls);
+  m_DropTypeSeparator->setVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreSingleViewControlsEnabled() const
 {
-  return m_SingleViewControlsGroupBox->isEnabled();
+  return m_SlidersWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetSingleViewControlsEnabled(bool enabled)
 {
-  m_SingleViewControlsGroupBox->setEnabled(enabled);
+  m_SlidersWidget->setEnabled(enabled);
+  m_ShowOptionsSeparator->setEnabled(enabled);
+  m_ShowOptionsWidget->setEnabled(enabled);
+  m_WindowBindingOptionsSeparator->setEnabled(enabled);
+  m_WindowBindingWidget->setEnabled(enabled);
+  m_WindowLayoutSeparator->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASMultiViewWidgetControlPanel::AreMultiViewControlsEnabled() const
 {
-  return m_MultiViewControlsGroupBox->isEnabled();
+  return m_ViewNumberWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetMultiViewControlsEnabled(bool enabled)
 {
-  m_MultiViewControlsGroupBox->setEnabled(enabled);
+  m_ViewNumberWidget->setEnabled(enabled);
 }
 
 
