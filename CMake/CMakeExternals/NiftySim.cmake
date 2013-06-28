@@ -52,8 +52,6 @@ IF(BUILD_NIFTYSIM)
       LIST(APPEND proj_DEPENDENCIES VTK)
     ENDIF (USE_VTK)
 
-    MESSAGE("VTK use file: ${VTK_USE_FILE}")
-
     ExternalProject_Add(${proj}
       URL ${NIFTK_LOCATION_NIFTYSIM}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYSIM}
