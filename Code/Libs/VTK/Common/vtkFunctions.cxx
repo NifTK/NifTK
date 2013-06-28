@@ -581,6 +581,8 @@ void SetCameraParallelTo2DImage(
   camera.SetParallelScale(scale);
   camera.SetClippingRange(clippingRange);
 }
+
+
 //-----------------------------------------------------------------------------
 bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
 {
@@ -593,7 +595,7 @@ bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
 
   for ( int i = 0 ; i < Points ; i ++ )
   {
-    int PointToGet = rng->GetValue() * PolyData->GetNumberOfPoints();
+    int PointToGet = static_cast<int>(rng->GetValue() * PolyData->GetNumberOfPoints());
     rng->Next();
     pointsout->InsertNextPoint(points->GetPoint(PointToGet));
   }
