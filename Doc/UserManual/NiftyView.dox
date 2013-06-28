@@ -1,29 +1,40 @@
 /**
 
-\page UserManualNiftyView NiftyView
+\page UserManualNiftyView NiftyView, NiftyIGI and NiftyMIDAS applications.
 
-The NiftyView graphical user interface (GUI), built on <a href="http://www.mitk.org">MITK</a> and hence
+The graphical user interface (GUI) applications are built on <a href="http://www.mitk.org">MITK</a> and hence
 <a href="http://www.commontk.org">CTK</a> technology is based around "plugins". These plugins each 
-provide a discrete piece of functionality, and so to understand the operation of the GUI, the user 
+provide a discrete piece of functionality, and so to understand the operation of each GUI, the user
 should seek to understand each plugin of interest. A link to the user documentation page for each of the 
-plugins is shown below, and these exact pages are available in the NiftyView GUI as help pages.
+plugins is shown below, and these exact pages are available in each GUI as help pages.
 
 \section UserManualNiftyViewPlugins Plugins
 
-\li \subpage uk.ac.ucl.cmic.gui.qt.niftyview
+\li \subpage uk.ac.ucl.cmic.gui.qt.niftyview The original NiftyView application containing most if not all plugins.
+\li \subpage uk.ac.ucl.cmic.gui.qt.niftyigi NiftyIGI contains a subset of plugins, dedicated to image guided interventions.
+\li \subpage uk.ac.ucl.cmic.gui.qt.niftymidas NiftyMIDAS contains a subset of plugins, dedicated to image analysis.
+\li \subpage it.unito.cim.intensityprofile
 \li \subpage uk.ac.ucl.cmic.affinetransform
-\li \subpage uk.ac.ucl.cmic.midaseditor
+\li \subpage uk.ac.ucl.cmic.igidatasources
+\li \subpage uk.ac.ucl.cmic.igioverlayeditor
+\li \subpage uk.ac.ucl.cmic.igipointreg
+\li \subpage uk.ac.ucl.cmic.igisurfacerecon
+\li \subpage uk.ac.ucl.cmic.igisurfacereg
+\li \subpage uk.ac.ucl.cmic.igitagtracker
+\li \subpage uk.ac.ucl.cmic.igitrackedimage
+\li \subpage uk.ac.ucl.cmic.igitrackedpointer
+\li \subpage uk.ac.ucl.cmic.igiundistort
 \li \subpage uk.ac.ucl.cmic.imagelookuptables
 \li \subpage uk.ac.ucl.cmic.imagestatistics
-\li \subpage it.unito.cim.intensityprofile
+\li \subpage uk.ac.ucl.cmic.midaseditor
 \li \subpage uk.ac.ucl.cmic.midasgeneralsegmentor
 \li \subpage uk.ac.ucl.cmic.midasmorphologicalsegmentor
 \li \subpage uk.ac.ucl.cmic.mitksegmentation
 \li \subpage uk.ac.ucl.cmic.niftyreg
 \li \subpage uk.ac.ucl.cmic.snapshot
 \li \subpage uk.ac.ucl.cmic.surfaceextractor
-\li \subpage uk.ac.ucl.cmic.surgicalguidance
 \li \subpage uk.ac.ucl.cmic.thumbnail
+\li \subpage uk.ac.ucl.cmic.xnat
 
 \section UserManualEnvVariables Environment Variables
 

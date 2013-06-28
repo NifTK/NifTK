@@ -1,0 +1,83 @@
+/**
+\page @NIFTK_PLATFORM@License @NIFTK_PLATFORM@ Licenses
+
+\li \ref LicenseNifTK
+\li \ref LicenseNiftyLink
+\li \ref LicenseNiftyReg
+\li \ref LicenseNiftySeg
+\li \ref LicenseNiftySim
+\li \ref LicenseMITK
+\li \ref LicenseCTK
+\li \ref LicenseVTK
+\li \ref LicenseITK
+\li \ref LicenseAruco
+\li \ref LicenseGDCM
+\li \ref LicenseDCMTK
+\li \ref LicenseOpenCV
+\li \ref LicenseQt
+
+\section LicenseNifTK The @NIFTK_PLATFORM@ License
+
+\include LICENSE.txt
+
+\section LicenseNiftyLink The NiftyLink License
+
+\include LICENSE_NiftyLink.txt
+
+\section LicenseNiftyReg The NiftyReg License
+
+\include LICENSE_NiftyReg.txt
+
+\section LicenseNiftySeg The NiftySeg License
+
+\include LICENSE_NiftySeg.txt
+
+\section LicenseNiftySim The NiftySim License
+
+\include LICENSE_NiftySim.txt
+
+\section LicenseNiftyLink The NiftyLink License
+
+\include LICENSE_NiftyLink.txt
+
+\section LicenseMITK The MITK License
+
+\include LICENSE_MITK.txt
+
+\section LicenseCTK The CTK License
+
+\include LICENSE_CTK.txt
+
+\section LicenseITK The ITK License
+
+\include LICENSE_ITK.txt
+
+\section LicenseVTK The VTK License
+
+\include LICENSE_VTK.txt
+
+\section LicenseAruco The ARUCO License
+
+\include LICENSE_Aruco.txt
+
+\section LicenseGDCM The GDCM License
+
+\include LICENSE_GDCM.txt
+
+\section LicenseDCMTK The DCMTK License
+
+\include LICENSE_DCMTK.txt
+
+\section LicenseOpenCV The OpenCV License
+
+\include LICENSE_OpenCV.txt
+
+\section LicenseQt The Qt License
+
+@NIFTK_PLATFORM@ uses Qt under the LGPL v2.1 license, reproduced here for convenience.
+Qt was downloaded from the main Qt website, and this version of @NIFTK_PLATFORM@ was
+built using Qt version @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@.
+
+\include LICENSE_Qt.txt
+
+*/
