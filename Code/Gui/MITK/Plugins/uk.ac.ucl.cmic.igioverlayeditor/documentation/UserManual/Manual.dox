@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igioverlayeditor} The Overlay Display
+
+\image html icon.png "The Icon for the Overlay Display"
+
+\section OverlayDisplayIntro Introduction
+
+Do an introduction here.
+
+\section OverlayDisplayUsage Usage
+
+Put all usage information here.
+
+\section OverlayDisplayPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section OverlayDisplayReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+
