@@ -36,10 +36,6 @@
 
 \include LICENSE_NiftySim.txt
 
-\section LicenseNiftyLink The NiftyLink License
-
-\include LICENSE_NiftyLink.txt
-
 \section LicenseMITK The MITK License
 
 \include LICENSE_MITK.txt
