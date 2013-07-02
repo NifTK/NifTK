@@ -631,10 +631,6 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake 
     ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
-  if (NOT WIN32) 
-    message("cgal => -L${CGAL_DIR}/..")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CGAL_DIR}/..")
-  endif (NOT WIN32) 
 endif (BUILD_MESHING)
 
 ######################################################################
