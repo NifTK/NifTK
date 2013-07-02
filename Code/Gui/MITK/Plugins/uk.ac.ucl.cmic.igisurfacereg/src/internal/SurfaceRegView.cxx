@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QtConcurrentRun>
 #include <vtkFunctions.h>
+#include <vtkDoubleArray.h>
 
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
@@ -143,10 +144,17 @@ float SurfaceRegView::ComputeDistance(mitk::DataNode::Pointer fixed, mitk::DataN
   mitk::SurfaceBasedRegistration::NodeToPolyData(moving, movingPoly);
 
   vtkSmartPointer<vtkDoubleArray>   result;
-  // FIXME: this crashes because targetLocator has a null tree member...
+  // FIXME: this crashes because targetLocator has a null tree member... sometimes???
   DistanceToSurface(movingPoly, fixedPoly, result);
 
-  return -1;
+  double  sum = 0;
+  for (int i = 0; i < result->GetNumberOfTuples(); ++i)
+  {
+    double p = result->GetValue(i);
+    sum += p;
+  }
+
+  return sum;
 }
 
 
