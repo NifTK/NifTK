@@ -246,13 +246,13 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
 
   bool result = false;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
       // Should also have 4 children (see mitk::MIDASTool)
-      mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true);
+      mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true);
       for (unsigned int i = 0; i < children->size(); i++)
       {
         (*children)[i]->GetStringProperty("name", name);
@@ -279,9 +279,9 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk:
   assert(node);
   bool result = false;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
       std::string name;
@@ -323,7 +323,7 @@ mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorPipelineManager::Ge
   assert(node);
   mitk::ToolManager::DataVectorType result;
 
-  mitk::DataStorage::SetOfObjects::Pointer children = FindDerivedImages(this->GetDataStorage(), node, true );
+  mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true );
 
   for (unsigned int i = 0; i < children->size(); i++)
   {
@@ -353,9 +353,9 @@ mitk::DataNode* MIDASMorphologicalSegmentorPipelineManager::GetSegmentationNodeF
   assert(node);
   mitk::DataNode* result = NULL;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
       result = parent;

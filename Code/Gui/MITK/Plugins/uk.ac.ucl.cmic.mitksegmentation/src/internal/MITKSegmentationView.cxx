@@ -191,9 +191,9 @@ bool MITKSegmentationView::IsNodeASegmentationImage(const mitk::DataNode::Pointe
   assert(node);
   bool result = false;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
@@ -205,7 +205,7 @@ bool MITKSegmentationView::IsNodeASegmentationImage(const mitk::DataNode::Pointe
 
 bool MITKSegmentationView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
 {
-  return IsNodeASegmentationImage(node);
+  return this->IsNodeASegmentationImage(node);
 }
 
 void MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
