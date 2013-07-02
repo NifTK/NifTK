@@ -142,7 +142,7 @@ OPTION(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Cod
 OPTION(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
 OPTION(BUILD_NIFTYREG "Build NiftyReg." ON)
 OPTION(BUILD_NIFTYREC "Build NiftyRec." OFF)
-OPTION(BUILD_NIFTYSIM "Build NiftySim." OFF)
+OPTION(BUILD_NIFTYSIM "Build NiftySim." ON)
 OPTION(BUILD_NIFTYSEG "Build NiftySeg." ON)
 OPTION(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 OPTION(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
