@@ -30,14 +30,6 @@ if(BUILD_MESHING)
     # Configure the CGAL Superbuild, to decide which plugins we want.
     ######################################################################
 
-    if (WIN32)
-      set(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-vc90-mt-gd-1_46_1.lib")
-      set(BUILD_SHARED OFF)
-    else (WIN32)
-      set(BOOST_THREAD_LIB "${BOOST_LIBRARYDIR}/libboost_thread-mt.a")
-      set(BUILD_SHARED ON)
-    endif (WIN32)
-
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CGAL ${NIFTK_LOCATION_CGAL})
 
     ExternalProject_Add(${proj}
@@ -48,11 +40,10 @@ if(BUILD_MESHING)
         ${EP_COMMON_ARGS}
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}
-        -DBoost_INCLUDE_DIR:PATH=${BOOST_INCLUDEDIR}
-        -DBoost_LIBRARY_DIRS:PATH=${BOOST_LIBRARYDIR}
-        -DBoost_THREAD_LIBRARY:PATH=${BOOST_THREAD_LIB}
-        -DBoost_THREAD_LIBRARY_DEBUG:PATH=${BOOST_THREAD_LIB}
-        -DBoost_THREAD_LIBRARY_RELEASE:PATH=${BOOST_THREAD_LIB} 
+	-DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
+        -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
+        -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
+	-DBoost_USE_STATIC_LIBS:BOOL=TRUE
         -DCGAL_CFG_NO_STL:BOOL=OFF
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED}
         -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
