@@ -15,7 +15,7 @@
 #ifndef ITKForwardDifferenceisplacementFieldJacobianDeterminantFilter_H_
 #define ITKForwardDifferenceisplacementFieldJacobianDeterminantFilter_H_
 
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
 
 namespace itk
 {

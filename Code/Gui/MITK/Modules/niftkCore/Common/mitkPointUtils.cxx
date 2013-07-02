@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkPointUtils.h"
-#include "mitkCommon.h"
+#include <mitkCommon.h>
 
 //-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)
@@ -103,3 +103,16 @@ void mitk::Normalise(mitk::Point3D& vector)
     }
   }
 }
+
+
+//-----------------------------------------------------------------------------
+int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
+{
+  output.Clear();
+  for (int i = 0; i < input.GetSize(); ++i)
+  {
+    output.InsertPoint(i, input.GetPoint(i));
+  }
+  return output.GetSize();
+}
+

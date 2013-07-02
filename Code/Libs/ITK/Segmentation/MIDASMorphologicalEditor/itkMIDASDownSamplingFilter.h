@@ -15,7 +15,7 @@
 #ifndef itkMIDASDownSamplingFilter_h
 #define itkMIDASDownSamplingFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

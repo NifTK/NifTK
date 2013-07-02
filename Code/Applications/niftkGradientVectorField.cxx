@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
-#include "vtkStructuredPoints.h"
-#include "vtkStructuredPointsWriter.h"
-#include "vtkFloatArray.h"
-#include "vtkPointData.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
+#include <vtkStructuredPoints.h>
+#include <vtkStructuredPointsWriter.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 
 /*!
  * \file niftkGradientVectorField.cxx

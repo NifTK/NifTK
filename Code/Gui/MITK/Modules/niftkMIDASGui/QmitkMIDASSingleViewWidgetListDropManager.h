@@ -18,8 +18,8 @@
 #include <niftkMIDASGuiExports.h>
 #include <vector>
 #include "QmitkMIDASSingleViewWidgetListManager.h"
-#include "mitkMIDASEnums.h"
-#include "mitkDataStorage.h"
+#include <mitkMIDASEnums.h>
+#include <mitkDataStorage.h>
 
 namespace mitk
 {
@@ -56,11 +56,11 @@ public:
   /// \brief Set the data storage.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
-  /// \brief Sets the default view.
-  void SetDefaultView(const MIDASView& view);
+  /// \brief Sets the default layout.
+  void SetDefaultLayout(MIDASLayout layout);
 
-  /// \brief Gets the default view.
-  MIDASView GetDefaultView() const;
+  /// \brief Gets the default layout.
+  MIDASLayout GetDefaultLayout() const;
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single widget.
   void SetDropType(const MIDASDropType& dropType);
@@ -78,7 +78,7 @@ protected:
 
 private:
 
-  MIDASView m_DefaultView;
+  MIDASLayout m_DefaultLayout;
   MIDASDropType m_DropType;
   bool m_AccumulateWhenDropped;
   mitk::DataStorage::Pointer m_DataStorage;

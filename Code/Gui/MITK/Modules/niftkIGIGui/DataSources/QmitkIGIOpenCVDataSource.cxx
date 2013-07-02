@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "QmitkIGIOpenCVDataSource.h"
-#include "mitkIGIOpenCVDataType.h"
-#include "../Conversion/ImageConversion.h"
+#include <mitkIGIOpenCVDataType.h>
+#include <../Conversion/ImageConversion.h>
 #include <mitkDataNode.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
@@ -137,9 +137,8 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
-  wrapper->SetDataSource("QmitkIGIOpenCVDataSource");
   wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
-  wrapper->SetDuration(1000000000); // nanoseconds
+  wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
   this->AddData(wrapper.GetPointer());
   this->SetStatus("Grabbing");
@@ -185,7 +184,11 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
     if (imageInNode.IsNull())
     {
+      // We remove and add to trigger the NodeAdded event,
+      // which is not emmitted if the node was added with no data.
+      m_DataStorage->Remove(node);
       node->SetData(convertedImage);
+      m_DataStorage->Add(node);
     }
     else
     {
@@ -229,6 +232,109 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
 
 
 //-----------------------------------------------------------------------------
+bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
+  igtlUint64    firstTimeStampFound = 0;
+  igtlUint64    lastTimeStampFound  = 0;
+
+  // needs to match what SaveData() does below
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+  QDir directory(directoryPath);
+  if (directory.exists())
+  {
+    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString("jpg"));
+    if (!timestamps.empty())
+    {
+      firstTimeStampFound = *timestamps.begin();
+      lastTimeStampFound  = *(--(timestamps.end()));
+    }
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  StopGrabbingThread();
+  ClearBuffer();
+
+  // needs to match what SaveData() does below
+  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+  QDir directory(directoryPath);
+  if (directory.exists())
+  {
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString("jpg"));
+    m_PlaybackDirectoryName = directoryPath.toStdString();
+  }
+  else
+  {
+    // shouldnt happen
+    assert(false);
+  }
+
+  SetIsPlayingBack(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::StopPlayback()
+{
+  m_PlaybackIndex.clear();
+  ClearBuffer();
+
+  SetIsPlayingBack(false);
+
+  this->InitializeAndRunGrabbingThread(40); // 40ms = 25fps
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOpenCVDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  assert(GetIsPlayingBack());
+
+  // this will find us the timestamp right after the requested one
+  std::set<igtlUint64>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
+  // so we need to pick the previous
+  // FIXME: not sure if the non-existing-else here ever applies!
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
+  if (i != m_PlaybackIndex.end())
+  {
+    std::ostringstream  filename;
+    filename << m_PlaybackDirectoryName << '/' << (*i) << ".jpg";
+
+    IplImage* img = cvLoadImage(filename.str().c_str());
+    if (img)
+    {
+      mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
+      wrapper->CloneImage(img);
+      wrapper->SetTimeStampInNanoSeconds(*i);
+      wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
+
+      this->AddData(wrapper.GetPointer());
+      this->SetStatus("Playing back");
+      cvReleaseImage(&img);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& outputFileName)
 {
   bool success = false;
@@ -240,7 +346,7 @@ bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     const IplImage* imageFrame = dataType->GetImage();
     if (imageFrame != NULL)
     {
-      QString directoryPath = QString::fromStdString(this->GetSavePrefix()) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+      QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
       QDir directory(directoryPath);
       if (directory.mkpath(directoryPath))
       {

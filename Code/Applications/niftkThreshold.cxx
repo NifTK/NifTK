@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkCommandLineHelper.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkCommandLineHelper.h>
 
 /*!
  * \file niftkThreshold.cxx

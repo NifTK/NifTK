@@ -13,9 +13,9 @@
 =============================================================================*/
 
 #include "QmitkNiftyViewApplicationPlugin.h"
-#include "QmitkNiftyViewIGIPerspective.h"
-#include "QmitkNiftyViewMIDASPerspective.h"
-#include "QmitkNiftyViewApplicationPreferencePage.h"
+#include <QmitkNiftyViewIGIPerspective.h>
+#include <QmitkNiftyViewMIDASPerspective.h>
+#include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyViewApplication.h"
 
 //-----------------------------------------------------------------------------

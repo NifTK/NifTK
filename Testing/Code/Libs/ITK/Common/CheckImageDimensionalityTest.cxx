@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 #include <iostream>
-#include "itkCommandLineHelper.h"
+#include <itkCommandLineHelper.h>
 
 /**
  * Simply runs the function itk::itkCommandLineHelper::GetImageDimension(filename)

@@ -16,13 +16,13 @@
 #define __itkThresholdImageWithRespectToPlane_txx
 
 #include "itkThresholdImageWithRespectToPlane.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageFileWriter.h"
-#include "itkProgressReporter.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageFileWriter.h>
+#include <itkProgressReporter.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

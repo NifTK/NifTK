@@ -16,10 +16,10 @@
 #define __itkNormaliseVectorFilter_txx
 
 #include "itkNormaliseVectorFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

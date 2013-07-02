@@ -14,7 +14,7 @@
 
 #include "mitkStereoImageToModelMetric.h"
 #include "mitkRegistrationHelper.h"
-#include "mitkCameraCalibrationFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPoints.h>
@@ -343,8 +343,8 @@ StereoImageToModelMetric::MeasureType StereoImageToModelMetric::GetValue( const 
       // Draw circle for each projected point
       for (int i = 0; i < numberProjectedPoints; i++)
       {
-        cvCircle(m_OutputLeftImage, cvPoint(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0), CV_MAT_ELEM(*output2DPointsLeft, float, i, 1)), 1, CV_RGB(255,0,0), 1, 8);
-        cvCircle(m_OutputRightImage, cvPoint(CV_MAT_ELEM(*output2DPointsRight, float, i, 0), CV_MAT_ELEM(*output2DPointsRight, float, i, 1)), 1, CV_RGB(255,0,0), 1, 8);
+        cvCircle(m_OutputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
+        cvCircle(m_OutputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
       }
 
       // Save output images.

@@ -74,6 +74,12 @@ namespace mitk {
     /// \brief We store the name of the draw tool contours, so all classes have access to the name.
     static const std::string DRAW_CONTOURS_NAME;
 
+    /// \brief We store the name of the initial segmentation image, so all classes have access to the name.
+    static const std::string INITIAL_SEGMENTATION_IMAGE_NAME;
+
+    /// \brief We store the name of the initial set of seeds, so all classes have access to the name.
+    static const std::string INITIAL_SEEDS_NAME;
+
     /// \brief We store the name of the MIDAS connection breaker image, used in Morphological Editor.
     static const std::string MORPH_EDITS_EROSIONS_SUBTRACTIONS;
 

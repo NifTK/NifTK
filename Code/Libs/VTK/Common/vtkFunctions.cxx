@@ -12,22 +12,21 @@
 
 =============================================================================*/
 
-#ifndef VTKFUNCTIONS_CPP
-#define VTKFUNCTIONS_CPP
-
-#include "math.h"
-#include "iostream"
-#include "ConversionUtils.h"
+#include <math.h>
+#include <iostream>
+#include <ConversionUtils.h>
 #include "vtkFunctions.h"
-#include "vtkSmartPointer.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkBoxMuellerRandomSequence.h"
-#include "vtkMinimalStandardRandomSequence.h"
+#include <vtkSmartPointer.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkBoxMuellerRandomSequence.h>
+#include <vtkMinimalStandardRandomSequence.h>
 #include <vtkDoubleArray.h>
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkGenericCell.h>
 
+//-----------------------------------------------------------------------------
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
   double distance = 0;
@@ -39,6 +38,8 @@ double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
   return distance;
 }
 
+
+//-----------------------------------------------------------------------------
 double GetLength(const double *a)
 {
   double length = 0;
@@ -50,6 +51,18 @@ double GetLength(const double *a)
   return length;
 }
 
+
+//-----------------------------------------------------------------------------
+void ScaleVector(const double& scaleFactor, const double* a, double* b)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    b[i] = a[i] * scaleFactor;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void SubtractTwo3DPoints(const double *a, const double *b, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -58,6 +71,8 @@ void SubtractTwo3DPoints(const double *a, const double *b, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void AddTwo3DPoints(const double *a, const double *b, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -66,6 +81,8 @@ void AddTwo3DPoints(const double *a, const double *b, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void Normalise3DPoint(const double *a, const double length, double *output)
 {
   for (int i = 0; i < 3; i++)
@@ -81,12 +98,16 @@ void Normalise3DPoint(const double *a, const double length, double *output)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void NormaliseToUnitLength(const double *a, double *output)
 {
   double length = GetLength(a);
   Normalise3DPoint(a, length, output);
 }
 
+
+//-----------------------------------------------------------------------------
 void CrossProductTwo3DVectors(const double *a, const double *b, double *c)
 {
   c[0] =        a[1]*b[2] - b[1]*a[2];
@@ -94,6 +115,8 @@ void CrossProductTwo3DVectors(const double *a, const double *b, double *c)
   c[2] =        a[0]*b[1] - b[0]*a[1];
 }
 
+
+//-----------------------------------------------------------------------------
 void CalculateUnitVector(const double *a, const double* b, double *output)
 {
   double normal[3];
@@ -103,6 +126,8 @@ void CalculateUnitVector(const double *a, const double* b, double *output)
   Normalise3DPoint(normal, length, output);
 }
 
+
+//-----------------------------------------------------------------------------
 double AngleBetweenTwoUnitVectors(const double *a, const double *b)
 {
   double cosTheta = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
@@ -110,12 +135,16 @@ double AngleBetweenTwoUnitVectors(const double *a, const double *b)
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 double AngleBetweenTwoUnitVectorsInDegrees(const double *a, const double *b)
 {
   double result = (AngleBetweenTwoUnitVectors(a, b))*180.0/NIFTK_PI;
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool ClipPointToWithinBoundingBox(const double *bounds, double *point)
 {
   bool wasClipped = false;
@@ -137,6 +166,8 @@ bool ClipPointToWithinBoundingBox(const double *bounds, double *point)
   return wasClipped;
 }
 
+
+//-----------------------------------------------------------------------------
 double GetBoundingBoxDiagonalLength(const double *boundingBoxVector6)
 {
   double length = 0;
@@ -147,6 +178,8 @@ double GetBoundingBoxDiagonalLength(const double *boundingBoxVector6)
   return length;
 }
 
+
+//-----------------------------------------------------------------------------
 void CopyDoubleVector(int n, const double *a, double *b)
 {
   for (int i = 0; i < n; i++)
@@ -155,6 +188,8 @@ void CopyDoubleVector(int n, const double *a, double *b)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
     vtkRandomSequence* rng)
@@ -181,6 +216,8 @@ void RandomTransform ( vtkTransform * transform,
   transform->RotateZ(rot);
 }
 
+
+//-----------------------------------------------------------------------------
 void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
 {
   vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter =
@@ -196,6 +233,9 @@ void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
   polydata->ShallowCopy(transformFilter->GetOutput());
 
 }
+
+
+//-----------------------------------------------------------------------------
 void PerturbPolyData(vtkPolyData* polydata, 
     double xerr, double yerr, double zerr, vtkRandomSequence* rng)
 {
@@ -221,6 +261,9 @@ void PerturbPolyData(vtkPolyData* polydata,
   }
   polydata->SetPoints(points);
 }
+
+
+//-----------------------------------------------------------------------------
 void PerturbPolyData(vtkPolyData* polydata, 
     double xerr, double yerr, double zerr)
 {
@@ -231,6 +274,8 @@ void PerturbPolyData(vtkPolyData* polydata,
    PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
 }
 
+
+//-----------------------------------------------------------------------------
 void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
 {
@@ -239,6 +284,8 @@ void RandomTransform ( vtkTransform * transform,
    RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
 }
 
+
+//-----------------------------------------------------------------------------
 double NormalisedRNG (vtkRandomSequence* rng) 
 {
   if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 ) 
@@ -253,6 +300,8 @@ double NormalisedRNG (vtkRandomSequence* rng)
   return rng->GetValue();
 }
 
+
+//-----------------------------------------------------------------------------
 bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
 {
   if ( source->GetNumberOfPoints() != target->GetNumberOfPoints() )
@@ -313,8 +362,245 @@ bool DistancesToColorMap ( vtkPolyData * source, vtkPolyData * target )
    target->GetPointData()->SetScalars(colors);
    return true;
 }
-                           
+
+
+//-----------------------------------------------------------------------------
+double DistanceToSurface (  double point[3],  vtkPolyData * target )
+{
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  return DistanceToSurface (point, targetLocator);
+}
+
+
+//-----------------------------------------------------------------------------
+double DistanceToSurface (  double point[3], 
+     vtkCellLocator * targetLocator, vtkGenericCell * cell )
+{
+  double NearestPoint [3];
+  vtkIdType cellID;
+  int SubID;
+  double DistanceSquared;
+
+  if ( cell != NULL ) 
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint, cell,
+        cellID, SubID, DistanceSquared);
+  }
+  else
+  {
+    targetLocator->FindClosestPoint(point, NearestPoint,
+        cellID, SubID, DistanceSquared);
+  }
+
+  return sqrt(DistanceSquared);
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
+{
+  vtkSmartPointer<vtkDoubleArray> distances = vtkSmartPointer<vtkDoubleArray>::New();
+  distances->SetNumberOfComponents(1);
+  distances->SetName("Distances");
+  
+  vtkSmartPointer<vtkCellLocator> targetLocator = vtkSmartPointer<vtkCellLocator>::New();
+  targetLocator->SetDataSet(target);
+  targetLocator->BuildLocator();
+
+  vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
+  double p[3];
+  for ( int i = 0 ; i < source->GetNumberOfPoints() ; i ++ ) 
+  {
+    source->GetPoint(i,p);
+    distances->InsertNextValue (DistanceToSurface ( p , targetLocator, cell ));
+  }
+  source->GetPointData()->SetScalars(distances);
+}
 
                                                                       
+//-----------------------------------------------------------------------------
+bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
+{
+  bool successful = false;
+  
+  ofstream myfile(fileName.c_str());
+  if (myfile.is_open())
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      myfile << matrix.GetElement(i, 0) << " " \
+             << matrix.GetElement(i, 1) << " " \
+             << matrix.GetElement(i, 2) << " " \
+             << matrix.GetElement(i, 3) << std::endl;
+    }
+    myfile.close();
+    successful = true;
+  }
+  else
+  {
+    if (!silent)
+    {
+      std::cerr << "SaveMatrix4x4ToFile: failed to save to file '" << fileName << "'" << std::endl;
+    }
+  }
 
-#endif
+  return successful;
+}
+
+
+//-----------------------------------------------------------------------------
+vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& silent)
+{
+  vtkMatrix4x4 *result = vtkMatrix4x4::New();
+  result->Identity();
+
+  if(fileName.size() > 0)
+  {
+    ifstream myfile(fileName.c_str());
+    if (myfile.is_open())
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        for (int j = 0; j < 4; j++)
+        {
+          double value;
+          myfile >> value;
+
+          result->SetElement(i, j, value);
+        }
+      }
+    }
+    else
+    {
+      if (!silent)
+      {
+        std::cerr << "LoadMatrix4x4FromFile: failed to open file '" << fileName << "'" << std::endl;
+      }
+    }
+  }
+ 
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool MatricesAreEqual(const vtkMatrix4x4& m1, const vtkMatrix4x4& m2, const double& tolerance)
+{
+  bool result = true;
+
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      if (fabs(m1.GetElement(i,j) - m2.GetElement(i,j)) > tolerance)
+      {
+        result = false;
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void SetCameraParallelTo2DImage(
+    const int *imageSize,
+    const int *windowSize,
+    const double *origin,
+    const double *spacing,
+    const double *xAxis,
+    const double *yAxis,
+    const double *clippingRange,
+    const bool& flipYAxis,
+    vtkCamera& camera
+    )
+{
+  double focalPoint[3] = {0, 0, 1};
+  double position[3] = {0, 0, 0};
+  double viewUp[3] = {0, 1, 0};
+  double xAxisUnitVector[3] = {1, 0, 0};
+  double yAxisUnitVector[3] = {0, 1, 0};
+  double zAxisUnitVector[3] = {0, 0, 1};
+  double distanceAlongX = 1;
+  double distanceAlongY = 1;
+  double vectorAlongX[3] = {1, 0, 0};
+  double vectorAlongY[3] = {0, 1, 0};
+  double vectorAlongZ[3] = {0, 0, 1};
+
+  double distanceToFocalPoint = -1000;
+  double viewUpScaleFactor = 1.0e9;
+  if ( flipYAxis )
+  {
+    viewUpScaleFactor *= -1;
+  }
+
+  NormaliseToUnitLength(xAxis, xAxisUnitVector);
+  NormaliseToUnitLength(yAxis, yAxisUnitVector);
+  CrossProductTwo3DVectors(xAxisUnitVector, yAxisUnitVector, zAxisUnitVector);
+
+  distanceAlongX = ( spacing[0] * (imageSize[0] - 1) ) / 2.0;
+  distanceAlongY = ( spacing[1] * (imageSize[1] - 1) ) / 2.0;
+
+  ScaleVector(distanceAlongX,       xAxisUnitVector, vectorAlongX);
+  ScaleVector(distanceAlongY,       yAxisUnitVector, vectorAlongY);
+  ScaleVector(distanceToFocalPoint, zAxisUnitVector, vectorAlongZ);
+
+  for ( unsigned int i = 0; i < 3; ++i)
+  {
+    focalPoint[i] = origin[i] + vectorAlongX[i] + vectorAlongY[i];
+  }
+
+  AddTwo3DPoints(focalPoint, vectorAlongZ, position);
+  ScaleVector(viewUpScaleFactor, vectorAlongY, viewUp);
+
+  double imageWidth = imageSize[0]*spacing[0];
+  double imageHeight = imageSize[1]*spacing[1];
+
+  double widthRatio = imageWidth / windowSize[0];
+  double heightRatio = imageHeight / windowSize[1];
+
+  double scale = 1;
+  if (widthRatio > heightRatio)
+  {
+    scale = 0.5*imageWidth*((double)windowSize[1]/(double)windowSize[0]);
+  }
+  else
+  {
+    scale = 0.5*imageHeight;
+  }
+
+  camera.SetPosition(position);
+  camera.SetFocalPoint(focalPoint);
+  camera.SetViewUp(viewUp);
+  camera.SetParallelProjection(true);
+  camera.SetParallelScale(scale);
+  camera.SetClippingRange(clippingRange);
+}
+
+
+//-----------------------------------------------------------------------------
+bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
+{
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> rng = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  rng->SetSeed(time(NULL));
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> pointsout = vtkSmartPointer<vtkPoints>::New();
+  points->ShallowCopy(PolyData->GetPoints());
+
+  for ( int i = 0 ; i < Points ; i ++ )
+  {
+    int PointToGet = static_cast<int>(rng->GetValue() * PolyData->GetNumberOfPoints());
+    rng->Next();
+    pointsout->InsertNextPoint(points->GetPoint(PointToGet));
+  }
+  PolyData->SetPoints(pointsout);
+  return true;
+}
+
+

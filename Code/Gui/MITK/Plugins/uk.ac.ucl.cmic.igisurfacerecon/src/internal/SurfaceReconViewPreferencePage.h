@@ -15,9 +15,10 @@
 #ifndef SurfaceReconViewPreferencePage_h
 #define SurfaceReconViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
+#include "ui_SurfaceReconViewPreferencePage.h"
 
 class QWidget;
 class QPushButton;
@@ -28,7 +29,7 @@ class QPushButton;
  * \ingroup uk_ac_ucl_cmic_igisurfacerecon_internal
  *
  */
-class SurfaceReconViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class SurfaceReconViewPreferencePage : public QObject, public berry::IQtPreferencePage, public Ui::SurfaceReconViewPreferencePageForm
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -36,7 +37,12 @@ class SurfaceReconViewPreferencePage : public QObject, public berry::IQtPreferen
 public:
 
   /// \brief Stores the name of the preferences node.
-  static const std::string PREFERENCES_NODE_NAME;
+  static const char*      s_PrefsNodeName;
+  static const char*      s_DefaultCalibrationFilePathPrefsName;
+  static const char*      s_UseUndistortionDefaultPathPrefsName;
+  static const char*      s_DefaultTriangulationErrorPrefsName;
+  static const char*      s_DefaultMinDepthRangePrefsName;
+  static const char*      s_DefaultMaxDepthRangePrefsName;
 
   SurfaceReconViewPreferencePage();
   SurfaceReconViewPreferencePage(const SurfaceReconViewPreferencePage& other);
@@ -63,15 +69,16 @@ public:
    */
   virtual void Update();
 
-private slots:
+protected slots:
+  void OnDefaultPathBrowseButtonClicked();
+  // used for both radio buttons
+  void OnUseUndistortRadioButtonClicked();
+
 
 private:
-
-  QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
-  bool            m_Initializing;
-
-  berry::IPreferences::Pointer m_SurfaceReconViewPreferencesNode;
+  berry::IPreferences::Pointer      m_SurfaceReconViewPreferencesNode;
+  QString                           m_DefaultCalibrationFilePath;
+  bool                              m_UseUndistortPluginDefaultPath;
 };
 
 #endif // SurfaceReconViewPreferencePage_h

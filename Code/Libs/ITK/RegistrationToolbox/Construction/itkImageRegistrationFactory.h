@@ -15,63 +15,63 @@
 #ifndef __itkImageRegistrationFactory_h
 #define __itkImageRegistrationFactory_h
 
-#include "itkProcessObject.h"
-#include "itkConstantBoundaryCondition.h"
-#include "itkWindowedSincInterpolateImageFunction.h"
+#include <itkProcessObject.h>
+#include <itkConstantBoundaryCondition.h>
+#include <itkWindowedSincInterpolateImageFunction.h>
 
 // Interpolators.
-#include "itkInterpolateImageFunction.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkBSplineInterpolateImageFunction.h"
+#include <itkInterpolateImageFunction.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkBSplineInterpolateImageFunction.h>
 
 // Similarity Measures
-#include "itkSimilarityMeasure.h"
-#include "itkMSDImageToImageMetric.h"
-#include "itkNCCImageToImageMetric.h" 
-#include "itkSSDImageToImageMetric.h"
-#include "itkSADImageToImageMetric.h"
-#include "itkRIUImageToImageMetric.h"
-#include "itkPIUImageToImageMetric.h"
-#include "itkJEImageToImageMetric.h"
-#include "itkMIImageToImageMetric.h"
-#include "itkNMIImageToImageMetric.h"
-#include "itkCRImageToImageMetric.h"
+#include <itkSimilarityMeasure.h>
+#include <itkMSDImageToImageMetric.h>
+#include <itkNCCImageToImageMetric.h>
+#include <itkSSDImageToImageMetric.h>
+#include <itkSADImageToImageMetric.h>
+#include <itkRIUImageToImageMetric.h>
+#include <itkPIUImageToImageMetric.h>
+#include <itkJEImageToImageMetric.h>
+#include <itkMIImageToImageMetric.h>
+#include <itkNMIImageToImageMetric.h>
+#include <itkCRImageToImageMetric.h>
 
 // Transformations
-#include "itkTransform.h"
-#include "itkPerspectiveProjectionTransform.h" // Unlikely to be optimised in a reg'n but here for completeness
-#include "itkEulerAffineTransform.h" // This one does, translations, rotations, rigid, scale, affine
-#include "itkBSplineTransform.h"
-#include "itkFluidDeformableTransform.h"
-#include "itkAffineTransform.h"
-#include "itkPCADeformationModelTransform.h"
-#include "itkTranslationPCADeformationModelTransform.h"
+#include <itkTransform.h>
+#include <itkPerspectiveProjectionTransform.h>
+#include <itkEulerAffineTransform.h>
+#include <itkBSplineTransform.h>
+#include <itkFluidDeformableTransform.h>
+#include <itkAffineTransform.h>
+#include <itkPCADeformationModelTransform.h>
+#include <itkTranslationPCADeformationModelTransform.h>
 
 // Optimizers
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkGradientDescentOptimizer.h"
-#include "itkUCLSimplexOptimizer.h"
-#include "itkUCLRegularStepGradientDescentOptimizer.h"
-#include "itkConjugateGradientOptimizer.h"
-#include "itkPowellOptimizer.h"
-#include "itkUCLRegularStepOptimizer.h"
-#include "itkUCLPowellOptimizer.h"
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkGradientDescentOptimizer.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkUCLRegularStepGradientDescentOptimizer.h>
+#include <itkConjugateGradientOptimizer.h>
+#include <itkPowellOptimizer.h>
+#include <itkUCLRegularStepOptimizer.h>
+#include <itkUCLPowellOptimizer.h>
 
 // Commands
-#include "itkIterationUpdateCommand.h"
-#include "itkVnlIterationUpdateCommand.h"
+#include <itkIterationUpdateCommand.h>
+#include <itkVnlIterationUpdateCommand.h>
 
 // Registration methods.
-#include "itkSingleResolutionImageRegistrationMethod.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkTranslationThenRotationImageRegistrationMethod.h"
-#include "itkTranslateRotateScaleImageRegistrationMethod.h"
-#include "itkRigidPlusScaleImageRegistrationMethod.h"
-#include "itkBlockMatchingMethod.h"
+#include <itkSingleResolutionImageRegistrationMethod.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkTranslationThenRotationImageRegistrationMethod.h>
+#include <itkTranslateRotateScaleImageRegistrationMethod.h>
+#include <itkRigidPlusScaleImageRegistrationMethod.h>
+#include <itkBlockMatchingMethod.h>
 
 // Multi-resolution methods
-#include "itkMultiResolutionImageRegistrationWrapper.h"
+#include <itkMultiResolutionImageRegistrationWrapper.h>
 
 namespace itk
 {

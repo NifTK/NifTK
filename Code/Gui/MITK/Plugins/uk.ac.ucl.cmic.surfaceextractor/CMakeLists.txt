@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_surfaceextractor)
+project(uk_ac_ucl_cmic_surfaceextractor)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE SURFACEEXTRACTOR_EXPORTS

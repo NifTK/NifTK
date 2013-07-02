@@ -16,8 +16,8 @@
 #define __itkCreateEulerAffineTransformMatrix_h
 
 #include "itkCreateEulerAffineTransformMatrixBaseClass.h"
-#include "itkEulerAffineTransform.h"
-#include "itk_hash_map.h"
+#include <itkEulerAffineTransform.h>
+#include <itk_hash_map.h>
 
 #include <vnl/vnl_math.h>
 #include <vnl/vnl_vector.h>

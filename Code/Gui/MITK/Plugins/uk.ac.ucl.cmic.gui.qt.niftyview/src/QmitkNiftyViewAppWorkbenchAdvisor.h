@@ -23,7 +23,7 @@
 #endif
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
-#include "QmitkBaseAppWorkbenchAdvisor.h"
+#include <QmitkBaseAppWorkbenchAdvisor.h>
 
 /**
  * \class QmitkNiftyViewAppWorkbenchAdvisor

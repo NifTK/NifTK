@@ -16,7 +16,7 @@
 #define __itkCrossCorrelationDerivativeForceFilter_txx
 
 #include "itkCrossCorrelationDerivativeForceFilter.h"
-#include "itkConstNeighborhoodIterator.h"
+#include <itkConstNeighborhoodIterator.h>
 #include <iomanip>
 
 namespace itk {

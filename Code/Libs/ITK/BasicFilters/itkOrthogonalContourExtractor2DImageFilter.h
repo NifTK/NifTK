@@ -32,13 +32,13 @@
 #ifndef __itkOrthogonalContourExtractor2DImageFilter_h
 #define __itkOrthogonalContourExtractor2DImageFilter_h
 
-#include "itkImageToPathFilter.h"
-#include "itkNumericTraits.h"
-#include "itkPolyLineParametricPath.h"
-#include "itkConceptChecking.h"
-#include "itk_hash_map.h"
-#include "vcl_deque.h"
-#include "vcl_list.h"
+#include <itkImageToPathFilter.h>
+#include <itkNumericTraits.h>
+#include <itkPolyLineParametricPath.h>
+#include <itkConceptChecking.h>
+#include <itk_hash_map.h>
+#include <vcl_deque.h>
+#include <vcl_list.h>
 
 namespace itk
 {

@@ -20,17 +20,18 @@
  * Reads a text file where
  * each line represents a point. The first 3 columns being the 
  * coordinates and the 4th column being a weighting. At present the
- * weighting is discarded.
+ * weighting is discarded, though may be used to clip points. Now has
+ * option to not read weights, so should work for a file with 3 columns
+ * defining the point data.
  */
 
 #ifndef __niftkvtk4PointsReader_h
 #define __niftkvtk4PointsReader_h
 
-#include "NifTKConfigure.h"
-#include "niftkCommonWin32ExportHeader.h"
+#include <NifTKConfigure.h>
 #include "niftkVTKWin32ExportHeader.h"
 
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
 class NIFTKVTK_WINEXPORT niftkvtk4PointsReader : public vtkPolyDataAlgorithm
 {
@@ -58,8 +59,13 @@ public:
    * Direction to clip in (0 = x, 1 = y , 2 = z, 3 = weight)
    */
   void SetClippingOff ( int direction );
-  
 
+  /* \brief
+   * Set/Get whether to read the weights (4th) column. Set to false if 
+   * the file only has three columns
+   */
+  vtkSetMacro(m_ReadWeights,bool);
+  vtkGetMacro(m_ReadWeights,bool);
 
 protected:
   niftkvtk4PointsReader();
@@ -73,6 +79,7 @@ protected:
   bool          m_Clipping[4]; 
   double        m_Min[4];
   double        m_Max[4];
+  bool          m_ReadWeights;
 };
 
 #endif

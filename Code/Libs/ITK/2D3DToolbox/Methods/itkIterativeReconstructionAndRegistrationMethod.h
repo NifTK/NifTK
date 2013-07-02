@@ -15,11 +15,11 @@
 #ifndef __itkIterativeReconstructionAndRegistrationMethod_h
 #define __itkIterativeReconstructionAndRegistrationMethod_h
 
-#include "itkProcessObject.h"
+#include <itkProcessObject.h>
 #include "itkImageReconstructionMethod.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkDataObjectDecorator.h"
-#include "itkReconstructionAndRegistrationUpdateCommand.h"
+#include <itkImageRegistrationFilter.h>
+#include <itkDataObjectDecorator.h>
+#include <itkReconstructionAndRegistrationUpdateCommand.h>
 
 
 namespace itk

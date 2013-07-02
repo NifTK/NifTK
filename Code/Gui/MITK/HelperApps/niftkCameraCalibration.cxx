@@ -14,9 +14,9 @@
 
 #include <cstdlib>
 #include <limits>
-#include "mitkCameraCalibrationFromDirectory.h"
-#include "mitkStereoCameraCalibrationFromTwoDirectories.h"
-#include "niftkCameraCalibrationCLP.h"
+#include <mitkCameraCalibrationFromDirectory.h>
+#include <mitkStereoCameraCalibrationFromTwoDirectories.h>
+#include <niftkCameraCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {

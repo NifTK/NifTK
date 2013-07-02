@@ -322,7 +322,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
          m_ThresholdingUpperThresholdSlider->value(),
-         m_ThresholdingAxialCutoffSlider->value()
+         static_cast<int>(m_ThresholdingAxialCutoffSlider->value())
        );
 }
 

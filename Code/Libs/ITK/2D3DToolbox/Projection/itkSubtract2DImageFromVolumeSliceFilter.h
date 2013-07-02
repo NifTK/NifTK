@@ -15,7 +15,7 @@
 #ifndef __itkSubtract2DImageFromVolumeSliceFilter_h
 #define __itkSubtract2DImageFromVolumeSliceFilter_h
 
-#include "itkInPlaceImageFilter.h"
+#include <itkInPlaceImageFilter.h>
 
 namespace itk
 {

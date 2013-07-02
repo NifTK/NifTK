@@ -18,15 +18,15 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
-  MESSAGE(FATAL_ERROR "aruco_DIR variable is defined but corresponds to non-existing directory \"${aruco_DIR}\".")
-ENDIF()
+if(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
+  message(FATAL_ERROR "aruco_DIR variable is defined but corresponds to non-existing directory \"${aruco_DIR}\".")
+endif()
 
-SET(proj aruco)
-SET(proj_DEPENDENCIES MITK)
-SET(aruco_DEPENDS ${proj})
+set(proj aruco)
+set(proj_DEPENDENCIES OpenCV)
+set(aruco_DEPENDS ${proj})
 
-IF(NOT DEFINED aruco_DIR)
+if(NOT DEFINED aruco_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
 
@@ -38,15 +38,15 @@ IF(NOT DEFINED aruco_DIR)
         ${EP_COMMON_ARGS}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
-        -DOpenCV_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/MITK-build/OpenCV-build
+        -DOpenCV_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/OpenCV-build
      DEPENDS ${proj_DEPENDENCIES}
     )
 
-  SET(aruco_DIR ${EP_BASE}/Install/${proj})
-  MESSAGE("SuperBuild loading ARUCO from ${aruco_DIR}")
+  set(aruco_DIR ${EP_BASE}/Install/${proj})
+  message("SuperBuild loading ARUCO from ${aruco_DIR}")
 
-ELSE(NOT DEFINED aruco_DIR)
+else(NOT DEFINED aruco_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF(NOT DEFINED aruco_DIR)
+endif(NOT DEFINED aruco_DIR)

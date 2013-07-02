@@ -12,19 +12,19 @@
 #
 #============================================================================*/
 
-SET(scripts)
+set(scripts)
 
-IF(NOT WIN32)
-  SET(scripts
+if(NOT WIN32)
+  set(scripts
     niftkBET.sh
     niftkCaminoMakeFAMDTRD.sh
     ${scripts}    
   )
-ENDIF()
+endif()
 
-FOREACH(script ${scripts})
-  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
-  NIFTK_INSTALL_CLI(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
-ENDFOREACH()
+foreach(script ${scripts})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
+  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+endforeach()
 
 

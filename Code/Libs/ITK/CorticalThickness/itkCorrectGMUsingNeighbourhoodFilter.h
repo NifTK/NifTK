@@ -15,7 +15,7 @@
 #ifndef __itkCorrectGMUsingNeighbourhoodFilter_h
 #define __itkCorrectGMUsingNeighbourhoodFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 namespace itk

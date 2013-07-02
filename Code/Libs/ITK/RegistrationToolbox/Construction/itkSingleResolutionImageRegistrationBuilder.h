@@ -16,8 +16,8 @@
 #define __itkSingleResolutionImageRegistrationBuilder_h
 
 
-#include "itkObject.h"
-#include "itkSingleResolutionImageRegistrationMethod.h"
+#include <itkObject.h>
+#include <itkSingleResolutionImageRegistrationMethod.h>
 #include "itkImageRegistrationFactory.h"
 
 namespace itk

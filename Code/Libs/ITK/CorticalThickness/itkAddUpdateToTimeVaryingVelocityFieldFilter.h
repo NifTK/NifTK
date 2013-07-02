@@ -15,9 +15,9 @@
 #ifndef __itkAddUpdateToTimeVaryingVelocityFieldFilter_h
 #define __itkAddUpdateToTimeVaryingVelocityFieldFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkInPlaceImageFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkInPlaceImageFilter.h>
 
 namespace itk {
 

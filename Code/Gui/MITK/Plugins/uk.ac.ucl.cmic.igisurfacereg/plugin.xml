@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igisurfacereg"
+          name="Surface Based Registration"
+          class="SurfaceRegView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.SurfaceRegViewPreferencePage" name="Surface Based Registration" class="SurfaceRegViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.SurfaceRegViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

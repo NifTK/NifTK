@@ -17,15 +17,15 @@
 
 #include <iostream>
 #include "itkDeformableTransform.h"
-#include "itkImage.h"
-#include "itkImageRegion.h"
-#include "itkVector.h"
-#include "itkArray2D.h"
+#include <itkImage.h>
+#include <itkImageRegion.h>
+#include <itkVector.h>
+#include <itkArray2D.h>
 
-#include "itkContinuousIndex.h"
-#include "itkImageRegionIterator.h"
-#include "itkSingleValuedCostFunction.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
+#include <itkContinuousIndex.h>
+#include <itkImageRegionIterator.h>
+#include <itkSingleValuedCostFunction.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
 
 namespace itk
 {

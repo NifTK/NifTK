@@ -16,15 +16,15 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
 #include "niftkBreastMaskSegmentationFromMRI_xml.h"
 
-#include "itkImage.h"
-#include "itkBreastMaskSegmentationFromMRI.h"
-#include "itkBreastMaskSegmForModelling.h"
-#include "itkBreastMaskSegmForBreastDensity.h"
+#include <itkImage.h>
+#include <itkBreastMaskSegmentationFromMRI.h>
+#include <itkBreastMaskSegmForModelling.h>
+#include <itkBreastMaskSegmForBreastDensity.h>
 
 #include <boost/filesystem.hpp>
 

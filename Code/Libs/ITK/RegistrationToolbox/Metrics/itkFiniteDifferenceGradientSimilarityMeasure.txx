@@ -16,7 +16,7 @@
 #define _itkFiniteDifferenceGradientSimilarityMeasure_txx
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

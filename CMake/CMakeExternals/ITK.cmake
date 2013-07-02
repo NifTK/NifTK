@@ -18,28 +18,28 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
-  MESSAGE(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
-ENDIF()
+if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
+  message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory \"${ITK_DIR}\".")
+endif()
 
-SET(proj ITK)
-SET(proj_DEPENDENCIES GDCM)
-SET(ITK_DEPENDS ${proj})
+set(proj ITK)
+set(proj_DEPENDENCIES GDCM)
+set(ITK_DEPENDS ${proj})
 
-IF(NOT DEFINED ITK_DIR)
+if(NOT DEFINED ITK_DIR)
 
-  SET(additional_cmake_args )
-  IF(MINGW)
-    SET(additional_cmake_args
+  set(additional_cmake_args )
+  if(MINGW)
+    set(additional_cmake_args
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
-  ENDIF()
+  endif()
 
-  IF(GDCM_IS_2_0_18)
-    IF(NIFTK_VERSION_ITK MATCHES "3.20.1")
-      SET(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-3.20.cmake)
-    ENDIF()
-  ENDIF()
+  if(GDCM_IS_2_0_18)
+    if(NIFTK_VERSION_ITK MATCHES "3.20.1")
+      set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-3.20.cmake)
+    endif()
+  endif()
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
 
@@ -70,11 +70,11 @@ IF(NOT DEFINED ITK_DIR)
      DEPENDS ${proj_DEPENDENCIES}
   )
  
-  SET(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  MESSAGE("SuperBuild loading ITK from ${ITK_DIR}")
+  set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  message("SuperBuild loading ITK from ${ITK_DIR}")
 
-ELSE(NOT DEFINED ITK_DIR)
+else(NOT DEFINED ITK_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF(NOT DEFINED ITK_DIR)
+endif(NOT DEFINED ITK_DIR)

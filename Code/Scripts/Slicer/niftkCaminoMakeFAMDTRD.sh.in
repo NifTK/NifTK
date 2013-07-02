@@ -27,9 +27,9 @@ function XML()
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Camino</category>
-  <title>Make FA, MD, Trace</title>
-  <description><![CDATA[A simple wrapper sript, provided within @NIFTK_PLATFORM@ to generate an FA/MD/Tr(D) image using Camino]]></description>
+  <category>Diffusion Tensor Imaging</category>
+  <title>Make FA, MD, Trace using Camino</title>
+  <description><![CDATA[A simple wrapper script, provided within @NIFTK_PLATFORM@ to generate an FA/MD/Tr(D) image using Camino]]></description>
   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/camino/</documentation-url>
   <license>BSD</license>

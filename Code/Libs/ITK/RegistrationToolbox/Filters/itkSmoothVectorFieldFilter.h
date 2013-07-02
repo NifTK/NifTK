@@ -14,11 +14,11 @@
 
 #ifndef __itkSmoothVectorFieldFilter_h
 #define __itkSmoothVectorFieldFilter_h
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkInPlaceImageFilter.h"
-#include "itkNeighborhoodOperator.h"
-#include "itkVectorNeighborhoodOperatorImageFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkInPlaceImageFilter.h>
+#include <itkNeighborhoodOperator.h>
+#include <itkVectorNeighborhoodOperatorImageFilter.h>
 
 namespace itk {
 /** 

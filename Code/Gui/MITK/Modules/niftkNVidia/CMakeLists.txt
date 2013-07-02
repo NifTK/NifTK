@@ -18,10 +18,10 @@ MITK_CREATE_MODULE(niftkNVidia
   DEPENDS niftkIGI
 )
 
-TARGET_LINK_LIBRARIES(niftkNVidia
+target_link_libraries(niftkNVidia
   niftknvapi
   )
 
-IF(BUILD_TESTING)  
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+if(BUILD_TESTING)  
+  add_subdirectory(Testing)
+endif()

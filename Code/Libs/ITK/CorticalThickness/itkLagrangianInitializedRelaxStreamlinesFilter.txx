@@ -16,8 +16,8 @@
 #define __itkLagrangianInitializedRelaxStreamlinesFilter_txx
 
 #include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
 
 namespace itk
 {

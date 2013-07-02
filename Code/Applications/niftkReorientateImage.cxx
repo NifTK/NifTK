@@ -16,15 +16,15 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkCommandLineHelper.h"
-#include "itkConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkOrientedImage.h"
-#include "itkOrientImageFilter.h"
+#include <itkCommandLineHelper.h>
+#include <itkConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkOrientedImage.h>
+#include <itkOrientImageFilter.h>
 
 #include <boost/filesystem.hpp>
 

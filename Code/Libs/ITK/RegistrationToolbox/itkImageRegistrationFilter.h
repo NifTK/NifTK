@@ -16,14 +16,14 @@
 #define __itkImageRegistrationFilter_h
 
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
-#include "itkCastImageFilter.h"
-#include "itkResampleImageFilter.h"
-#include "itkSingleResolutionImageRegistrationMethod.h"
-#include "itkMultiResolutionImageRegistrationWrapper.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkAbsImageFilter.h"
+#include <itkCastImageFilter.h>
+#include <itkResampleImageFilter.h>
+#include <itkSingleResolutionImageRegistrationMethod.h>
+#include <itkMultiResolutionImageRegistrationWrapper.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkAbsImageFilter.h>
 
 namespace itk
 {

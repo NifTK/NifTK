@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIDATASOURCE_H
-#define QMITKIGIDATASOURCE_H
+#ifndef QmitkIGIDataSource_h
+#define QmitkIGIDataSource_h
 
 #include "niftkIGIGuiExports.h"
-#include "mitkIGIDataSource.h"
+#include <mitkIGIDataSource.h>
 #include <QObject>
 #include <QThread>
 #include <QTimer>
@@ -46,6 +46,21 @@ public:
    * \brief Set the interval for saving data.
    */
   virtual void SetSavingInterval(int seconds);
+
+  /**
+   * \brief To force the DataSourceStatusUpdated signal.
+   */
+  void EmitDataSourceStatusUpdatedSignal();
+
+
+  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& extension);
+
+signals:
+
+  /**
+   * \brief Signal for when the data source has updated to tell the GUI to redraw.
+   */
+  void DataSourceStatusUpdated(int);
 
 protected:
 

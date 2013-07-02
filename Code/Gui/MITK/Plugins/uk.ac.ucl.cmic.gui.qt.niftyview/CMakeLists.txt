@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_gui_qt_niftyview)
+project(uk_ac_ucl_cmic_gui_qt_niftyview)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE CMIC_QT_NIFTYVIEWAPP

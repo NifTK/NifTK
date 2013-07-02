@@ -12,21 +12,23 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   DataSources/QmitkIGINVidiaDataSource.cxx
   DataSources/QmitkIGINVidiaDataSourceGui.cxx
   DataSources/QmitkVideoPreviewWidget.cxx
+  DataSources/QmitkIGINVidiaDataSourceImpl.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   DataSources/QmitkIGINVidiaDataSource.h
   DataSources/QmitkIGINVidiaDataSourceGui.h
   DataSources/QmitkVideoPreviewWidget.h
+  DataSources/QmitkIGINVidiaDataSourceImpl.h
 )
 
-SET(UI_FILES
+set(UI_FILES
   DataSources/QmitkIGINVidiaDataSourceGui.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
 )

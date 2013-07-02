@@ -20,11 +20,18 @@
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
+#include <mitkPointSet.h>
+#include <mitkCoordinateAxesData.h>
+#include <mitkCoordinateAxesDataWriter.h>
+#include <mitkCoordinateAxesDataReaderFactory.h>
+#include <mitkCoordinateAxesDataWriterFactory.h>
+#include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include "itkPNMImageIOFactory.h"
-#include "mitkNifTKItkImageFileIOFactory.h"
-#include "mitkCoordinateAxesVtkMapper3D.h"
+#include <itkPNMImageIOFactory.h>
+#include <mitkNifTKItkImageFileIOFactory.h>
+#include <mitkFastPointSetVtkMapper3D.h>
+#include <mitkPointSetVtkMapper3D.h>
 
 //-----------------------------------------------------------------------------
 mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
@@ -56,8 +63,11 @@ mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory(bool /*registerSelf*/)
     // but then in addition, will load DRC Analyze files differently.
     mitk::NifTKItkImageFileIOFactory::RegisterOneFactory();
 
-    // Register the PNM IO factory
+    // Register our extra factories.
     itk::PNMImageIOFactory::RegisterOneFactory();
+    mitk::CoordinateAxesDataReaderFactory::RegisterOneFactory();
+    mitk::CoordinateAxesDataWriterFactory::RegisterOneFactory();
+    m_FileWriters.push_back(mitk::CoordinateAxesDataWriter::New().GetPointer());
 
     // Carry on as per normal.
     CreateFileExtensionsMap();
@@ -76,12 +86,25 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
 
   if ( id == mitk::BaseRenderer::Standard3D )
   {
-    if((dynamic_cast<Image*>(data) != NULL))
+    if(dynamic_cast<Image*>(data) != NULL)
     {
       newMapper = mitk::VolumeDataVtkMapper3D::New();
       newMapper->SetDataNode(node);
     }
-    else if ((dynamic_cast<CoordinateAxesData*>(data) != NULL))
+    else if (dynamic_cast<PointSet*>(data) != NULL )
+    {
+      mitk::PointSet* pointSet = dynamic_cast<PointSet*>(data);
+      if (pointSet->GetSize() > 1000)
+      {
+        newMapper = mitk::FastPointSetVtkMapper3D::New();
+      }
+      else
+      {
+        newMapper = mitk::PointSetVtkMapper3D::New();
+      }
+      newMapper->SetDataNode(node);
+    }
+    else if (dynamic_cast<CoordinateAxesData*>(data) != NULL)
     {
       newMapper = mitk::CoordinateAxesVtkMapper3D::New();
       newMapper->SetDataNode(node);
@@ -108,6 +131,12 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
     mitk::ImageVtkMapper2D::SetDefaultProperties(node);
     mitk::VolumeDataVtkMapper3D::SetDefaultProperties(node);
   }
+
+  mitk::CoordinateAxesData::Pointer coordinateAxesData = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  if (coordinateAxesData.IsNotNull())
+  {
+    mitk::CoordinateAxesVtkMapper3D::SetDefaultProperties(node);
+  }
 }
 
 
@@ -120,11 +149,13 @@ void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
   m_FileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+  m_FileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
 
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pgm", "Portable Gray Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.ppm", "Portable Pixel Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pbm", "Portable Binary Map"));
   m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>("*.pnm", "Portable aNy Map"));
+  m_SaveFileExtensionsMap.insert(std::pair<std::string, std::string>(mitk::CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK, mitk::CoordinateAxesData::FILE_DIALOG_NAME));
 }
 
 

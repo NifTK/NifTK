@@ -16,9 +16,9 @@
 #define __itkSingleResolutionImageRegistrationMethod_h
 
 
-#include "itkImageRegistrationMethod.h"
-#include "itkIterationUpdateCommand.h"
-#include "itkSimilarityMeasure.h"
+#include <itkImageRegistrationMethod.h>
+#include <itkIterationUpdateCommand.h>
+#include <itkSimilarityMeasure.h>
 
 namespace itk
 {

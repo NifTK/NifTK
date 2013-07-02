@@ -24,7 +24,7 @@
 #include <mitkCommon.h>
 #include <mitkException.h>
 
-#include "mitkNifTKCoreObjectFactory.h"
+#include <mitkNifTKCoreObjectFactory.h>
 
 /**
  * \file NifTKApplication.h

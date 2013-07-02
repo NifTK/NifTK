@@ -12,5 +12,5 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY( MIDASMorphologicalEditor )
-ADD_SUBDIRECTORY( MIDASIrregularVolumeEditor )
+add_subdirectory( MIDASMorphologicalEditor )
+add_subdirectory( MIDASIrregularVolumeEditor )

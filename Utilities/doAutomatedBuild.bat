@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.13 *****
+@echo ***** NifTK Automated Build Script - v.17 *****
 @echo. 
 
 @REM ***** Attempt to enable Command extensions *****
@@ -46,6 +46,10 @@
 @echo CMake generator:        %CMAKE_GENERATOR%
 @echo Date Stamp:             %DATESTAMP%
 @echo.
+
+@rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
+@rem http://stackoverflow.com/questions/12174877/visual-studio-2012-rtm-has-msbuild-exe-in-memory-after-close
+@set MSBUILDDISABLENODEREUSE=1
 
 @if ["%BTYPE%"] == ["x64"] (
   @REM *****  Setting environmental variables for x64  *****
@@ -138,7 +142,7 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @REM *****  Run CMAKE  *****
 @echo Running CMake....
 @cd %BUILDPATH%
-@call "%CMAKE_LOCATION%\cmake.exe" -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_LOCATION%\NIFTK" >"%BUILD_LOCATION%\log_cmake.txt"
+@call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_LOCATION%\NIFTK" >"%BUILD_LOCATION%\log_cmake.txt"
 @echo. 
 
 @REM pause
@@ -175,11 +179,9 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @set PATHSTRING=%var1:/=\%
 @set PATHSTRING=%PATHSTRING:PATH=%
 @set PATHSTRING=%PATHSTRING:~1,-2%
-@if ["%BTYPE%"] == ["x64"] (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\SysWOW64;%SystemRoot%\SysWOW64\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
-) else (
-  @PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
-)
+@PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
+
+@if defined CUDA_PATH PATH=%PATH%;%CUDA_PATH%\bin
 
 @echo.
 @echo The current system path:
@@ -188,11 +190,11 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 
 @REM *****  Run CTEST  *****
 @echo Running CTest....
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyStart >%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyConfigure >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyBuild >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlyTest >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C Release -E CTE-Stream -D NightlySubmit >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyStart >%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyConfigure >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyBuild >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyTest >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlySubmit >>%BUILD_LOCATION%\log_ctest.txt
 @echo.
 
 @REM *****  Package the installer *****

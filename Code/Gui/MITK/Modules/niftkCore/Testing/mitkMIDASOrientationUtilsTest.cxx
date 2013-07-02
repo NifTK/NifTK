@@ -25,10 +25,10 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkMIDASOrientationUtils.h"
-#include "mitkNifTKCoreObjectFactory.h"
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkMIDASOrientationUtils.h>
+#include <mitkNifTKCoreObjectFactory.h>
 
 /**
  * \brief Test class for mitkMIDASOrientationUtilsTest.

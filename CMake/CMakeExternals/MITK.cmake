@@ -18,18 +18,21 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
-  MESSAGE(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
-ENDIF()
+if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
+  message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
+endif()
 
-SET(proj MITK)
-SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
-IF(QT_FOUND)
-  SET(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
-ENDIF(QT_FOUND)
-SET(MITK_DEPENDS ${proj})
+set(proj MITK)
+set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
+if(QT_FOUND)
+  set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
+endif(QT_FOUND)
+if(BUILD_OPENCV)
+  set(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
+endif(BUILD_OPENCV)
+set(MITK_DEPENDS ${proj})
 
-IF(NOT DEFINED MITK_DIR)
+if(NOT DEFINED MITK_DIR)
 
     ######################################################################
     # Configure the MITK Superbuild, to decide which plugins we want.
@@ -457,9 +460,9 @@ IF(NOT DEFINED MITK_DIR)
         -DMITK_USE_Boost:BOOL=ON
         -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
-        -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
-        -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
-        -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
+        -DMITK_USE_OpenCV:BOOL=${BUILD_OPENCV}
+        -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
+        -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
         -DBOOST_ROOT:PATH=${BOOST_ROOT}                        # FindBoost expectes BOOST_ROOT  
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
@@ -468,14 +471,15 @@ IF(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+		-DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )
-    SET(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
-    MESSAGE("SuperBuild loading MITK from ${MITK_DIR}")
+    set(MITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/${proj}-build)
+    message("SuperBuild loading MITK from ${MITK_DIR}")
 
-ELSE()
+else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF()
+endif()

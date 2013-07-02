@@ -12,22 +12,22 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkGradientDescentOptimizer.h"
-#include "itkUCLSimplexOptimizer.h"
-#include "itkUCLRegularStepGradientDescentOptimizer.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkTransformFileWriter.h"
-#include "itkImageMomentsCalculator.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkGradientDescentOptimizer.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkUCLRegularStepGradientDescentOptimizer.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkTransformFileWriter.h>
+#include <itkImageMomentsCalculator.h>
 
 /*!
  * \file niftkAffine.cxx

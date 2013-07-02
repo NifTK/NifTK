@@ -22,10 +22,10 @@
 // Qt
 #include <QMessageBox>
 
-#include "mitkDataStorageUtils.h"
-#include "mitkNodePredicateDataType.h"
+#include <mitkDataStorageUtils.h>
+#include <mitkNodePredicateDataType.h>
 
-#include "_seg_EM.h"
+#include <_seg_EM.h>
 
 
 const std::string BreastSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.views.breastsegmentation";

@@ -15,14 +15,14 @@
 #ifndef __itkSetBoundaryVoxelsToValueFilter_txx
 #define __itkSetBoundaryVoxelsToValueFilter_txx
 
-#include "itkShapedNeighborhoodIterator.h"
-#include "itkNeighborhoodAlgorithm.h"
+#include <itkShapedNeighborhoodIterator.h>
+#include <itkNeighborhoodAlgorithm.h>
 #include "itkSetBoundaryVoxelsToValueFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkProgressReporter.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkProgressReporter.h>
+#include <ConversionUtils.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

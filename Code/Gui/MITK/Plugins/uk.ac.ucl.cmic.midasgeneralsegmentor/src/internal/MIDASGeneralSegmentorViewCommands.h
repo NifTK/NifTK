@@ -15,15 +15,15 @@
 #ifndef MITKMIDASGENERALSEGMENTORCOMMANDS_H
 #define MITKMIDASGENERALSEGMENTORCOMMANDS_H
 
-#include "mitkOperation.h"
-#include "mitkDataNode.h"
-#include "mitkTool.h"
-#include "mitkPointSet.h"
-#include "mitkContourSet.h"
-#include "itkMIDASHelper.h"
-#include "itkMIDASImageUpdateClearRegionProcessor.h"
-#include "itkMIDASImageUpdatePasteRegionProcessor.h"
-#include "itkMIDASRetainMarksNoThresholdingProcessor.h"
+#include <mitkOperation.h>
+#include <mitkDataNode.h>
+#include <mitkTool.h>
+#include <mitkPointSet.h>
+#include <mitkContourSet.h>
+#include <itkMIDASHelper.h>
+#include <itkMIDASImageUpdateClearRegionProcessor.h>
+#include <itkMIDASImageUpdatePasteRegionProcessor.h>
+#include <itkMIDASRetainMarksNoThresholdingProcessor.h>
 
 namespace mitk
 {

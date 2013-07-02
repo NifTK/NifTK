@@ -22,6 +22,7 @@
 #include <mitkImage.h>
 #include <mitkPointSet.h>
 #include <cv.h>
+#include <vtkMatrix4x4.h>
 
 namespace mitk {
 
@@ -43,20 +44,39 @@ public:
    * \param rightImage RGB colour image
    * \param minSize the minimum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
    * \param maxSize the maximum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
+   * \param blockSize window size for adaptive thresholding
+   * \param offset the amount below the mean intensity of the window to set the threshold at
    * \param leftCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightToLeftRotationVector a [1x3] rotation vector as per the Rodrigues formulation.
-   * \param rightToLeftTranslationVector a [1x3] rotation vector.
+   * \param rightToLeftTranslationVector a [1x3] translation vector.
+   * \param cameraToWorld if not null, all reconstructed points are multiplied by this transform.
    */
   void ExtractPoints(const mitk::Image::Pointer leftImage,
                      const mitk::Image::Pointer rightImage,
                      const float& minSize,
                      const float& maxSize,
+                     const int& blockSize,
+                     const int& offset,
                      const CvMat& leftCameraIntrinsics,
                      const CvMat& rightCameraIntrinsics,
                      const CvMat& rightToLeftRotationVector,
                      const CvMat& rightToLeftTranslationVector,
-                     mitk::PointSet::Pointer pointSet
+                     mitk::PointSet::Pointer pointSet,
+                     const vtkMatrix4x4* cameraToWorld
+                     );
+
+  /**
+   * \brief Overloaded interface for other method, extracting the necessary matrices off of the mitk::Image
+   */
+  void ExtractPoints(const mitk::Image::Pointer leftImage,
+                     const mitk::Image::Pointer rightImage,
+                     const float& minSize,
+                     const float& maxSize,
+                     const int& blockSize,
+                     const int& offset,
+                     mitk::PointSet::Pointer pointSet,
+                     const vtkMatrix4x4* cameraToWorld
                      );
 
 protected:

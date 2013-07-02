@@ -12,29 +12,29 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkBSplineTransform.h"
-#include "itkNMILocalHistogramDerivativeForceFilter.h"
-#include "itkParzenWindowNMIDerivativeForceGenerator.h"
-#include "itkSSDRegistrationForceFilter.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkBSplineBendingEnergyConstraint.h"
-#include "itkSumLogJacobianDeterminantConstraint.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkFFDGradientDescentOptimizer.h"
-#include "itkFFDSteepestGradientDescentOptimizer.h"
-#include "itkFFDConjugateGradientDescentOptimizer.h"
-#include "itkFFDMultiResolutionMethod.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkBSplineTransform.h>
+#include <itkNMILocalHistogramDerivativeForceFilter.h>
+#include <itkParzenWindowNMIDerivativeForceGenerator.h>
+#include <itkSSDRegistrationForceFilter.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkBSplineBendingEnergyConstraint.h>
+#include <itkSumLogJacobianDeterminantConstraint.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkFFDGradientDescentOptimizer.h>
+#include <itkFFDSteepestGradientDescentOptimizer.h>
+#include <itkFFDConjugateGradientDescentOptimizer.h>
+#include <itkFFDMultiResolutionMethod.h>
 #include <string>
-#include "itkTransformFileWriter.h"
-#include "itkLinearlyInterpolatedDerivativeFilter.h"
+#include <itkTransformFileWriter.h>
+#include <itkLinearlyInterpolatedDerivativeFilter.h>
 
 /*!
  * \file niftkFFD.cxx
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
   int dilations = 0;
   int opt=1;
   int constraint=1;
-  double spacing[Dimension];
+  double spacing[3];    // don't use Dimension here, further down there's a command line param to write into the 3rd slot
   spacing[0] = 5.0;
   spacing[1] = 5.0;
   if (Dimension > 2)

@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Conversion/ImageConversion.cxx
   DataSources/mitkIGITestDataUtils.cxx
   DataSources/mitkIGIDataType.cxx
   DataSources/mitkIGIDataSource.cxx
@@ -22,5 +21,7 @@ set(CPP_FILES
   SurfaceReconstruction/SequentialCpuQds.cxx
   SurfaceReconstruction/QDSCommon.cxx
   TrackedImage/mitkTrackedImageCommand.cxx
-  TrackedPointer/mitkTrackedPointerCommand.cxx
+  TrackedPointer/mitkTrackedPointerManager.cxx
+  PointBasedRegistration/mitkPointBasedRegistration.cxx
+  SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
 )

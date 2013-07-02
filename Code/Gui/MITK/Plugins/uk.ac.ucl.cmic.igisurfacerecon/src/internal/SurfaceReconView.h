@@ -15,10 +15,13 @@
 #ifndef SurfaceReconView_h
 #define SurfaceReconView_h
 
-#include "QmitkBaseView.h"
-#include "SurfaceReconstruction.h"
+#include <QmitkBaseView.h>
+#include <SurfaceReconstruction.h>
 #include <service/event/ctkEvent.h>
 #include "ui_SurfaceReconViewWidget.h"
+#include <QFuture>
+#include <QFutureWatcher>
+
 
 /**
  * \class SurfaceReconView
@@ -59,12 +62,6 @@ protected:
    */
   virtual void SetFocus();
 
-  static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
-
-  // FIXME: this is here temporarily only. calibration should come from a calibration-plugin instead!
-  void LoadCalibration(const std::string& filename, mitk::Image::Pointer img);
-  void LoadStereoRig(const std::string& filename, mitk::Image::Pointer img);
-
 protected slots:
 
   /**
@@ -72,20 +69,15 @@ protected slots:
    */
   void DoSurfaceReconstruction();
 
-  void UpdateNodeNameComboBox();
-
-  void LeftBrowseButtonClicked();
-  void RightBrowseButtonClicked();
-  void StereoRigBrowseButtonClicked();
-
-protected:
-
 private slots:
   
   /**
    * \brief We can listen to the event bus to trigger updates.
    */
   void OnUpdate(const ctkEvent& event);
+
+  // we connect the future to this slot
+  void OnBackgroundProcessFinished();
 
 private:
 
@@ -102,7 +94,14 @@ private:
   /**
    * \brief Delegate all functionality to this class, so we can unit test it outside of the plugin.
    */
-  niftk::SurfaceReconstruction::Pointer m_SurfaceReconstruction;
+  niftk::SurfaceReconstruction::Pointer      m_SurfaceReconstruction;
+
+
+  QFuture<mitk::BaseData::Pointer>           m_BackgroundProcess;
+  QFutureWatcher<mitk::BaseData::Pointer>    m_BackgroundProcessWatcher;
+  std::string                                m_BackgroundOutputNodeName;
+  std::string                                m_BackgroundLeftNodeName;
+  std::string                                m_BackgroundRightNodeName;
 };
 
 #endif // SurfaceReconView_h

@@ -15,21 +15,21 @@
 #ifndef __itkRegistrationBasedCTEFilter_h
 #define __itkRegistrationBasedCTEFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageFileWriter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkGaussianSmoothVectorFieldFilter.h"
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "itkSetOutputVectorToCurrentPositionFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkVectorMagnitudeImageFilter.h"
-#include "itkVectorVPlusLambdaUImageFilter.h"
+#include <itkImageToImageFilter.h>
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkGaussianSmoothVectorFieldFilter.h>
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
+#include <itkMinimumMaximumImageCalculator.h>
+#include <itkSetOutputVectorToCurrentPositionFilter.h>
+#include <itkSubtractImageFilter.h>
+#include <itkVectorMagnitudeImageFilter.h>
+#include <itkVectorVPlusLambdaUImageFilter.h>
 #include "itkVectorPhiPlusDeltaTTimesVFilter.h"
 #include "itkDasGradientFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
+#include <itkDiscreteGaussianImageFilter.h>
 
 namespace itk {
 

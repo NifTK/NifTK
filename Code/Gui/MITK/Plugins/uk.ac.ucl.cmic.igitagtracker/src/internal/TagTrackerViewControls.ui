@@ -6,112 +6,132 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
-    <height>418</height>
+    <width>594</width>
+    <height>841</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_4">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_LeftComboBoxLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>left</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_LeftComboBox"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="ctkPathLineEdit" name="m_LeftIntrinsicFileNameEdit" native="true"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_RightComboBoxLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>right</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_RightComboBox"/>
-       </item>
-       <item row="3" column="1">
-        <widget class="ctkPathLineEdit" name="m_RightIntrinsicFileNameEdit" native="true"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="m_RightToLeftRotationLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>rotation</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="ctkPathLineEdit" name="m_RightToLeftRotationFileNameEdit" native="true"/>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="m_RightToLeftTranslationLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>translation</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="ctkPathLineEdit" name="m_RightToLeftTranslationFileNameEdit" native="true"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="m_NumberOfTagsLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>tags</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QPushButton" name="m_UpdateButton">
-         <property name="text">
-          <string>update</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>1) Choose input nodes</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QmitkStereoImageAndCameraSelectionWidget" name="m_StereoImageAndCameraSelectionWidget" native="true"/>
+          </item>
+          <item>
+           <widget class="ctkCollapsibleGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>Show camera calibration options</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="StereoCameraCalibrationSelectionWidget" name="m_StereoCameraCalibrationSelectionWidget" native="true"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item>
-      <widget class="QPlainTextEdit" name="m_TagPositionDisplay"/>
+      <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
+       <property name="title">
+        <string>2) Choose parameters</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_BlockSizeLabel">
+            <property name="text">
+             <string>block size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="m_BlockSizeSpinBox"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_OffsetLabel">
+            <property name="text">
+             <string>offset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="m_OffsetSpinBox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="m_MinSizeLabel">
+            <property name="text">
+             <string>min size [0..1]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="m_MaxSizeLabel">
+            <property name="text">
+             <string>max size [0..1]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="m_MinSizeSpinBox"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="m_MaxSizeSpinBox"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_UpdateButton">
+       <property name="text">
+        <string>update</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>3) Information</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QLabel" name="m_NumberOfTagsLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>tags</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPlainTextEdit" name="m_TagPositionDisplay"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">
@@ -132,14 +152,21 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkDataStorageComboBox</class>
-   <extends>QComboBox</extends>
-   <header>QmitkDataStorageComboBox.h</header>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ctkPathLineEdit</class>
+   <class>StereoCameraCalibrationSelectionWidget</class>
    <extends>QWidget</extends>
-   <header>ctkPathLineEdit.h</header>
+   <header>StereoCameraCalibrationSelectionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkStereoImageAndCameraSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>QmitkStereoImageAndCameraSelectionWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

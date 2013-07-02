@@ -12,8 +12,8 @@
 #
 #============================================================================*/
 
-IF(NOT WIN32)
-  SET(scripts
+if(NOT WIN32)
+  set(scripts
     _regInclude.sh
     regAIR.sh
     _regAIR.sh
@@ -44,19 +44,19 @@ IF(NOT WIN32)
     compute_symmetric_transform_3.sh
     compute_symmetric_transform_n.sh
   )
-  FOREACH(script ${scripts})
-    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+  foreach(script ${scripts})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
     MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
-  ENDFOREACH()
-ENDIF()
+  endforeach()
+endif()
 
-IF(NOT WIN32)
-  SET(textfiles
+if(NOT WIN32)
+  set(textfiles
     _regADNIScaling_brain_params.txt
     _regADNIScaling_skull_params.txt
   )
-  FOREACH(textfile ${textfiles})
-    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${textfile} ${EXECUTABLE_OUTPUT_PATH}/${textfile} @ONLY )
+  foreach(textfile ${textfiles})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${textfile} ${EXECUTABLE_OUTPUT_PATH}/${textfile} @ONLY )
     MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${textfile})
-  ENDFOREACH()
-ENDIF()
+  endforeach()
+endif()

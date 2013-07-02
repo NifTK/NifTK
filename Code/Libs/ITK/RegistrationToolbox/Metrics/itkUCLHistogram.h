@@ -15,7 +15,7 @@
 #ifndef __itkUCLHistogram_h
 #define __itkUCLHistogram_h
 
-#include "itkHistogram.h"
+#include <itkHistogram.h>
 
 namespace itk{
 namespace Statistics{

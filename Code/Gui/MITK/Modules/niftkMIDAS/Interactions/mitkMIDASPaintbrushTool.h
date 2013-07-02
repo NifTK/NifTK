@@ -18,7 +18,7 @@
 #include "niftkMIDASExports.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
-#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkSegTool2D.h>

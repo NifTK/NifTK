@@ -15,13 +15,13 @@
 MITK_CREATE_MODULE(niftkOpenCV
   EXPORT_DEFINE NIFTKOPENCV_EXPORT
   INCLUDE_DIRS CameraCalibration VideoProcessing Registration Tracking demo
-  DEPENDS mitkOpenCVVideoSupport MitkExt
+  DEPENDS mitkOpenCVVideoSupport MitkExt mitkCameraCalibration
   PACKAGE_DEPENDS OpenCV
 )
 
-TARGET_LINK_LIBRARIES(niftkOpenCV
+target_link_libraries(niftkOpenCV
   niftkcommon
   ${aruco_LIBS}
   )
     
-ADD_SUBDIRECTORY(Testing)
+add_subdirectory(Testing)

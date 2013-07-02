@@ -14,8 +14,8 @@
 
 #include <cstdlib>
 #include <limits>
-#include "mitkHandeyeCalibrate.h"
-#include "niftkHandeyeCalibrationCLP.h"
+#include <mitkHandeyeCalibrate.h>
+#include <niftkHandeyeCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {

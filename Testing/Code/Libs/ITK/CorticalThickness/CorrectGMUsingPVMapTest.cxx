@@ -16,8 +16,8 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkCorrectGMUsingPVMapFilter.h"
+#include <itkImage.h>
+#include <itkCorrectGMUsingPVMapFilter.h>
 
 /**
  * Test the CorrectGMUsingPVMap filter

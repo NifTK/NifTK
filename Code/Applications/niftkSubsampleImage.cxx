@@ -15,14 +15,14 @@
 #include <math.h>
 #include <float.h>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkCommandLineHelper.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkCommandLineHelper.h>
 
-#include "itkSubsampleImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImage.h"
+#include <itkSubsampleImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImage.h>
 
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {

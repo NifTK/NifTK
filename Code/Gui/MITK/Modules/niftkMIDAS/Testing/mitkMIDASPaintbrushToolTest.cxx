@@ -35,11 +35,11 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 
-#include "mitkNifTKCoreObjectFactory.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPaintbrushTool.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
+#include <mitkNifTKCoreObjectFactory.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPaintbrushTool.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
 
 /**
  * \brief Test class for mitkMIDASPaintbrushTool.

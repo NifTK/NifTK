@@ -1,0 +1,22 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igiundistort} The Distortion Correction View
+
+\image html UndistortIcon.png "The Icon for Distortion Correction View"
+
+\section DistortionCorrectionIntro Introduction
+
+Do an introduction here.
+
+\section DistortionCorrectionUsage Usage
+
+Put all usage information here.
+
+\section DistortionCorrectionPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section DistortionCorrectionReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/

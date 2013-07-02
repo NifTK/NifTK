@@ -19,7 +19,7 @@
 
 extern "C"
 {
-#include "XnatRest.h"
+#include <XnatRest.h>
 }
 
 XnatProjectNode::XnatProjectNode(int row, XnatNode* parent)

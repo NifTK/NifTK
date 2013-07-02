@@ -16,10 +16,10 @@
 #define _itkMultiResolutionImageRegistrationWrapper_txx
 
 #include "itkMultiResolutionImageRegistrationWrapper.h"
-#include "itkRecursiveMultiResolutionPyramidImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
+#include <itkRecursiveMultiResolutionPyramidImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

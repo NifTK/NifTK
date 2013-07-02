@@ -22,33 +22,32 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
-: m_Mutex(itk::FastMutexLock::New())
+: m_SavePrefix("")
+, m_Description("")
+, m_TimeStampTolerance(1000000000)
 , m_DataStorage(storage)
+, m_ShouldCallUpdate(true)
+, m_IsPlayingBack(false)
+, m_Mutex(itk::FastMutexLock::New())
 , m_Identifier(-1)
+, m_SourceType(SOURCE_TYPE_UNKNOWN)
 , m_FrameRate(0)
 , m_CurrentFrameId(0)
 , m_Name("")
 , m_Type("")
 , m_Status("")
-, m_Description("")
 , m_SavingMessages(false)
 , m_SaveOnReceipt(true)
 , m_SaveInBackground(false)
-, m_SavePrefix("")
 , m_RequestedTimeStamp(0)
 , m_ActualTimeStamp(0)
-, m_TimeStampTolerance(1000000000)
 , m_ActualData(NULL)
-, m_NumberOfTools(0)
-, m_SuccessfullyProcessing(false)
 {
   m_RequestedTimeStamp = igtl::TimeStamp::New();
   m_ActualTimeStamp = igtl::TimeStamp::New();
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
-  m_SubTools.clear();
-  m_SubToolsIterator = m_SubTools.begin();
 }
 
 
@@ -70,25 +69,14 @@ IGIDataSource::~IGIDataSource()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::SetSavingMessages(bool isSaving)
-{
-  this->m_SavingMessages = isSaving;
-  this->Modified();
-
-  SaveStateChanged.Send();
-}
-
-
-//-----------------------------------------------------------------------------
 igtlUint64 IGIDataSource::GetFirstTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   igtlUint64 timeStamp = 0;
-
   if (m_Buffer.size() > 0)
   {
-    timeStamp = m_Buffer.front()->GetTimeStampInNanoSeconds();
+    timeStamp = (*m_Buffer.begin())->GetTimeStampInNanoSeconds();
   }
 
   return timeStamp;
@@ -101,13 +89,30 @@ igtlUint64 IGIDataSource::GetLastTimeStamp() const
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   igtlUint64 timeStamp = 0;
-
   if (m_Buffer.size() > 0)
   {
-    timeStamp = m_Buffer.back()->GetTimeStampInNanoSeconds();
+    timeStamp = (*(--(m_Buffer.end())))->GetTimeStampInNanoSeconds();
   }
 
   return timeStamp;
+}
+
+
+//-----------------------------------------------------------------------------
+igtlUint64 IGIDataSource::GetRequestedTimeStamp() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return GetTimeInNanoSeconds(m_RequestedTimeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
+igtlUint64 IGIDataSource::GetActualTimeStamp() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return GetTimeInNanoSeconds(m_ActualTimeStamp);
 }
 
 
@@ -124,14 +129,7 @@ unsigned long int IGIDataSource::GetBufferSize() const
 void IGIDataSource::ClearBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
-  unsigned long int bufferSizeBefore = m_Buffer.size();
-
   m_Buffer.clear();
-
-  unsigned long int bufferSizeAfter = m_Buffer.size();
-  MITK_INFO << this->GetName() << ": Clear operation reduced the buffer size from " << bufferSizeBefore << ", to " << bufferSizeAfter << std::endl;
-
 }
 
 
@@ -141,9 +139,9 @@ void IGIDataSource::CleanBuffer()
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   unsigned int approxDoubleTheFrameRate = 1;
-  if (this->GetFrameRate() > 0)
+  if (m_FrameRate > 0.0f)
   {
-    approxDoubleTheFrameRate = (int)(this->GetFrameRate() * 2);
+    approxDoubleTheFrameRate = static_cast<unsigned int>(m_FrameRate * 2);
   }
 
   // Don't forget that frame rate can deteriorate to zero if no data is arriving.
@@ -158,8 +156,8 @@ void IGIDataSource::CleanBuffer()
     unsigned int bufferSizeBefore = m_Buffer.size();
     unsigned int numberToDelete = 0;
 
-    std::list<mitk::IGIDataType::Pointer>::iterator startIter = m_Buffer.begin();
-    std::list<mitk::IGIDataType::Pointer>::iterator endIter = m_Buffer.begin();
+    BufferType::iterator startIter = m_Buffer.begin();
+    BufferType::iterator endIter = m_Buffer.begin();
 
     while(   bufferSizeBefore - numberToDelete > approxDoubleTheFrameRate
           && endIter != m_FrameRateBufferIterator
@@ -183,13 +181,20 @@ void IGIDataSource::CleanBuffer()
 //-----------------------------------------------------------------------------
 mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   // Aim here is to iterate through the buffer, and find the closest
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
 
   SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
+
+  if (GetIsPlayingBack())
+  {
+    // no recording playback data
+    assert(m_SavingMessages == false);
+
+    // this should stuff the packet into the buffer via AddData()
+    PlaybackData(requestedTimeStamp);
+  }
 
   if (m_Buffer.size() == 0)
   {
@@ -198,6 +203,10 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   }
   else
   {
+    if (GetIsPlayingBack())
+    {
+      m_BufferIterator = m_Buffer.begin();
+    }
     if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
@@ -207,7 +216,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
             && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(m_RequestedTimeStamp)
-           )
+            )
       {
         m_BufferIterator++;
       }
@@ -225,6 +234,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
         igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
         igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
 
+        // FIXME: this can under/overflow!
         igtlUint64 beforeToRequested = requestedTimeStamp - beforeTimeStamp;
         igtlUint64 afterToRequested = afterTimeStamp - requestedTimeStamp;
 
@@ -244,7 +254,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSource::IsCurrentWithinTimeTolerance() const
+bool IGIDataSource::IsWithinTimeTolerance() const
 {
   bool result = false;
 
@@ -264,22 +274,33 @@ bool IGIDataSource::IsCurrentWithinTimeTolerance() const
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSource::IsCurrentWithinTimeTolerance() const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return this->IsWithinTimeTolerance();
+}
+
+
+//-----------------------------------------------------------------------------
 double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   double lag = 0;
 
   if (m_ActualData != NULL)
   {
     igtlUint64 dataTime = m_ActualData->GetTimeStampInNanoSeconds();
     lag = (double)nowTime - (double)dataTime;
+    lag /= 1000000000.0;
   }
-  lag /= 1000000000.0;
   return lag;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::UpdateFrameRate()
+float IGIDataSource::UpdateFrameRate()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -295,7 +316,7 @@ void IGIDataSource::UpdateFrameRate()
 
   if (m_Buffer.size() >= 2)
   {
-    std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.end();
+    BufferType::iterator iter = m_Buffer.end();
     iter--;
 
     if (iter != m_Buffer.begin() && iter != m_Buffer.end() && iter != m_FrameRateBufferIterator)
@@ -318,6 +339,7 @@ void IGIDataSource::UpdateFrameRate()
   }
 
   m_FrameRate = rate;
+  return m_FrameRate;
 }
 
 
@@ -325,9 +347,10 @@ void IGIDataSource::UpdateFrameRate()
 unsigned long int IGIDataSource::SaveBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   unsigned long int numberSaved = 0;
 
-  std::list<mitk::IGIDataType::Pointer>::iterator iter = m_Buffer.begin();
+  BufferType::iterator iter = m_Buffer.begin();
   for (iter = m_Buffer.begin(); iter != m_Buffer.end(); iter++)
   {
     if (    (*iter).IsNotNull()
@@ -370,25 +393,78 @@ bool IGIDataSource::DoSaveData(mitk::IGIDataType* data)
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSource::StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt)
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  m_Buffer.clear();
+  m_SavePrefix = directoryPrefix;
+  m_SavingMessages = true;
+  m_SaveInBackground = saveInBackground;
+  m_SaveOnReceipt = saveOnReceipt;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopRecording()
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+  m_SavingMessages = false;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = 0;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = 0;
+  }
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopPlayback()
+{
+  // nop
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::AddData(mitk::IGIDataType* data)
 {
+  assert(data);
+
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   bool result = false;
 
-  if (data == NULL)
-  {
-    MITK_ERROR << "IGIDataSource::AddData is receiving NULL data. This is not allowed!" << std::endl;
-    return false;
-  }
-
   if (this->CanHandleData(data))
   {
-    data->SetShouldBeSaved(this->GetSavingMessages());
+    data->SetShouldBeSaved(m_SavingMessages);
     data->SetIsSaved(false);
     data->SetFrameId(m_CurrentFrameId++);
 
-    m_Buffer.push_back(data);
+    m_Buffer.insert(data);
 
     if (m_Buffer.size() == 1)
     {
@@ -396,7 +472,6 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
-    // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
     if (   m_SavingMessages     // recording/saving is turned on.
         && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
         && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
@@ -416,6 +491,8 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
 //-----------------------------------------------------------------------------
 bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   bool result = false;
   bool saveResult = false;
 
@@ -423,7 +500,7 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 
   if (data != NULL)
   {
-    if (this->IsCurrentWithinTimeTolerance())
+    if (this->IsWithinTimeTolerance())
     {
       try
       {
@@ -436,14 +513,20 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
 
           saveResult = this->DoSaveData(data);
 
-          if(saveResult)
+          if (saveResult)
           {
-            result = this->Update(data);
+            if (m_ShouldCallUpdate)
+            {
+              result = this->Update(data);
+            }
           }
         }
         else
         {
-          result = this->Update(data);
+          if (m_ShouldCallUpdate)
+          {
+            result = this->Update(data);
+          }
         }
       } catch (mitk::Exception& e)
       {
@@ -464,6 +547,11 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       }
     }
     else
+    if (m_IsPlayingBack && m_ShouldCallUpdate)
+    {
+      result = this->Update(data);
+    }
+    else
     {
       MITK_DEBUG << "IGIDataSource::ProcessData: Source=" << this->GetIdentifier() \
                  << ", req=" << requestedTimeStamp \
@@ -477,16 +565,14 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
   {
     MITK_DEBUG << "IGIDataSource::ProcessData did not process data at requestedTimeStamp=" << requestedTimeStamp << ", as the data was NULL" << std::endl;
   }
-
-  m_SuccessfullyProcessing = result;
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
+mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
 {
-  if (m_DataStorage == NULL)
+  if (this->GetDataStorage() == NULL)
   {
     mitkThrow() << "m_DataStorage is NULL.";
   }
@@ -509,7 +595,10 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
     result->SetOpacity(1);
     result->SetName(nodeName);
 
-    m_DataStorage->Add(result);
+    if (addToDataStorage)
+    {
+      m_DataStorage->Add(result);
+    }
     m_DataNodes.insert(result);
   }
 
@@ -518,18 +607,31 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::SetToolStringList(std::list<std::string> inStringList)
+void IGIDataSource::SetRelatedSources(const std::list<std::string>& listOfSourceNames)
 {
-  this->m_SubTools = inStringList;
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  m_RelatedSources = listOfSourceNames;
 }
 
 
 //-----------------------------------------------------------------------------
-std::list<std::string> IGIDataSource::GetSubToolList ()
+std::list<std::string> IGIDataSource::GetRelatedSources()
 {
-  return m_SubTools;
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  return m_RelatedSources;
 }
 
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::TimeStampComparator::operator()(const mitk::IGIDataType::Pointer& a, const mitk::IGIDataType::Pointer& b)
+{
+  assert(a.IsNotNull());
+  assert(b.IsNotNull());
+
+  return a->GetTimeStampInNanoSeconds() < b->GetTimeStampInNanoSeconds();
+}
 
 //-----------------------------------------------------------------------------
 } // end namespace

@@ -15,7 +15,7 @@
 #ifndef _itkMultiStageImageRegistrationMethod_txx
 #define _itkMultiStageImageRegistrationMethod_txx
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 #include "itkMultiStageImageRegistrationMethod.h"
 
 namespace itk

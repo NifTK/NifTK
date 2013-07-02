@@ -18,18 +18,18 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYSEG_ROOT AND NOT EXISTS ${NIFTYSEG_ROOT})
-  MESSAGE(FATAL_ERROR "NIFTYSEG_ROOT variable is defined but corresponds to non-existing disegtory \"${NIFTYSEG_ROOT}\".")
-ENDIF()
+if(DEFINED NIFTYSEG_ROOT AND NOT EXISTS ${NIFTYSEG_ROOT})
+  message(FATAL_ERROR "NIFTYSEG_ROOT variable is defined but corresponds to non-existing disegtory \"${NIFTYSEG_ROOT}\".")
+endif()
 
-IF(BUILD_NIFTYSEG)
+if(BUILD_NIFTYSEG)
 
-  SET(proj NIFTYSEG)
-  SET(proj_DEPENDENCIES )
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj} )
-  SET(NIFTYSEG_DEPENDS ${proj})
+  set(proj NIFTYSEG)
+  set(proj_DEPENDENCIES )
+  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(NIFTYSEG_DEPENDS ${proj})
 
-  IF(NOT DEFINED NIFTYSEG_ROOT)
+  if(NOT DEFINED NIFTYSEG_ROOT)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
 
@@ -48,16 +48,16 @@ IF(BUILD_NIFTYSEG)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    SET(NIFTYSEG_ROOT ${proj_INSTALL})
-    SET(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
-    SET(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
+    set(NIFTYSEG_ROOT ${proj_INSTALL})
+    set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
+    set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
 
-    MESSAGE("SuperBuild loading NIFTYSEG from ${NIFTYSEG_ROOT}")
+    message("SuperBuild loading NIFTYSEG from ${NIFTYSEG_ROOT}")
 
-  ELSE(NOT DEFINED NIFTYSEG_ROOT)
+  else(NOT DEFINED NIFTYSEG_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NIFTYSEG_ROOT)
+  endif(NOT DEFINED NIFTYSEG_ROOT)
 
-ENDIF(BUILD_NIFTYSEG)
+endif(BUILD_NIFTYSEG)

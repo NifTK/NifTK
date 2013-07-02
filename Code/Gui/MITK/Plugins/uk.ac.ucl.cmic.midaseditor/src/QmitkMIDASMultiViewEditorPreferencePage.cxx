@@ -25,41 +25,53 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_NUMBER_ROWS("midas default number of rows");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_NUMBER_COLUMNS("midas default number of columns");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW("midas default view");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION("midas default image interpolation");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR("midas background colour");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR_STYLESHEET("midas background colour stylesheet");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE("midas default drop type");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_WIDGETS("midas show drop type widgets");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_LAYOUT_BUTTONS("midas show layout buttons");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW("midas show 3D window in ortho (2x2) view");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS("midas show 2D cursors");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER("midas show magnification slider");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION("midas remember each orientations view settings");
+
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SLICE_SELECT_TRACKING("midas slice select tracking");
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING("midas magnification select tracking");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING("midas time select tracking");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING("midas magnification select tracking");
+
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS("midas show 2D cursors");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DIRECTION_ANNOTATIONS("midas show direction annotations");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("midas show 3D window in multiple window layout");
+
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT("midas default window layout");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT("midas remember view settings of each window layout");
+
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW_ROW_NUMBER("midas default number of view rows");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW_COLUMN_NUMBER("midas default number of view columns");
+
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE("midas default drop type");
+
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER("midas show magnification slider");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_SHOWING_OPTIONS("midas show showing options");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_WINDOW_LAYOUT_CONTROLS("midas show window layout controls");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_VIEW_NUMBER_CONTROLS("midas show view number controls");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_CONTROLS("midas show drop type widgets");
 
 //-----------------------------------------------------------------------------
 QmitkMIDASMultiViewEditorPreferencePage::QmitkMIDASMultiViewEditorPreferencePage()
 : m_MainControl(0)
-, m_DefaultNumberOfRowsSpinBox(NULL)
-, m_DefaultNumberOfColumnsSpinBox(NULL)
-, m_DefaultViewComboBox(NULL)
 , m_ImageInterpolationComboBox(NULL)
-, m_DefaultDropType(NULL)
-, m_ShowDropTypeWidgetsCheckBox(NULL)
-, m_ShowLayoutButtonsCheckBox(NULL)
-, m_ShowMagnificationSliderCheckBox(NULL)
-, m_Show3DWindowInOrthoViewCheckBox(NULL)
-, m_Show2DCursorsCheckBox(NULL)
-, m_RememberEachOrientationsViewSettings(NULL)
-, m_BackgroundColourButton(NULL)
 , m_SliceSelectTracking(NULL)
-, m_MagnificationSelectTracking(NULL)
 , m_TimeSelectTracking(NULL)
+, m_MagnificationSelectTracking(NULL)
+, m_Show2DCursorsCheckBox(NULL)
+, m_ShowDirectionAnnotationsCheckBox(NULL)
+, m_Show3DWindowInMultiWindowLayoutCheckBox(NULL)
+, m_DefaultWindowLayoutComboBox(NULL)
+, m_RememberEachWindowLayoutsViewSettings(NULL)
+, m_DefaultNumberOfViewRowsSpinBox(NULL)
+, m_DefaultNumberOfViewColumnsSpinBox(NULL)
+, m_DefaultDropType(NULL)
+, m_ShowMagnificationSliderCheckBox(NULL)
+, m_ShowShowingOptionsCheckBox(NULL)
+, m_ShowWindowLayoutControlsCheckBox(NULL)
+, m_ShowViewNumberControlsCheckBox(NULL)
+, m_ShowDropTypeControlsCheckBox(NULL)
+, m_BackgroundColourButton(NULL)
 {
 }
 
@@ -89,7 +101,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
 
   m_MainControl = new QWidget(parent);
 
-  QFormLayout *formLayout = new QFormLayout;
+  QFormLayout* formLayout = new QFormLayout;
 
   m_ImageInterpolationComboBox = new QComboBox(parent);
   m_ImageInterpolationComboBox->insertItem(0, "none");
@@ -97,60 +109,68 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_ImageInterpolationComboBox->insertItem(2, "cubic");
   formLayout->addRow("image interpolation", m_ImageInterpolationComboBox);
 
-  m_DefaultNumberOfRowsSpinBox = new QSpinBox(parent);
-  m_DefaultNumberOfRowsSpinBox->setMinimum(1);
-  m_DefaultNumberOfRowsSpinBox->setMaximum(5);
-  formLayout->addRow("initial number of rows", m_DefaultNumberOfRowsSpinBox);
-
-  m_DefaultNumberOfColumnsSpinBox = new QSpinBox(parent);
-  m_DefaultNumberOfColumnsSpinBox->setMinimum(1);
-  m_DefaultNumberOfColumnsSpinBox->setMaximum(5);
-
-  formLayout->addRow("initial number of columns", m_DefaultNumberOfColumnsSpinBox);
-
-  m_DefaultViewComboBox = new QComboBox(parent);
-  formLayout->addRow("default view", m_DefaultViewComboBox);
-  m_DefaultViewComboBox->insertItem(0, "axial");
-  m_DefaultViewComboBox->insertItem(1, "sagittal");
-  m_DefaultViewComboBox->insertItem(2, "coronal");
-  m_DefaultViewComboBox->insertItem(3, "2x2 orthogonal");
-  m_DefaultViewComboBox->insertItem(4, "3D");
-  m_DefaultViewComboBox->insertItem(5, "3-horizontal");
-  m_DefaultViewComboBox->insertItem(6, "3-vertical");
-  m_DefaultViewComboBox->insertItem(7, "as acquired (XY plane)");
-
-  m_DefaultDropType = new QComboBox(parent);
-  formLayout->addRow("default drop type", m_DefaultDropType);
-  m_DefaultDropType->insertItem(0, "single");
-  m_DefaultDropType->insertItem(1, "multiple");
-  m_DefaultDropType->insertItem(2, "all");
-
-  m_ShowDropTypeWidgetsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show drop type check boxes", m_ShowDropTypeWidgetsCheckBox);
-
-  m_ShowLayoutButtonsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show layout buttons", m_ShowLayoutButtonsCheckBox);
-
-  m_ShowMagnificationSliderCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show magnification slider", m_ShowMagnificationSliderCheckBox);
-
-  m_Show3DWindowInOrthoViewCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 3D view in orthoview", m_Show3DWindowInOrthoViewCheckBox);
-
-  m_Show2DCursorsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
-
   m_SliceSelectTracking = new QCheckBox(parent);
   formLayout->addRow("slice select tracking", m_SliceSelectTracking);
-
-  m_MagnificationSelectTracking = new QCheckBox(parent);
-  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
 
   m_TimeSelectTracking = new QCheckBox(parent);
   formLayout->addRow("time select tracking", m_TimeSelectTracking);
 
-  m_RememberEachOrientationsViewSettings = new QCheckBox(parent);
-  formLayout->addRow("remember each orientations view settings", m_RememberEachOrientationsViewSettings);
+  m_MagnificationSelectTracking = new QCheckBox(parent);
+  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
+
+  m_Show2DCursorsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
+
+  m_ShowDirectionAnnotationsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show direction annotations", m_ShowDirectionAnnotationsCheckBox);
+
+  m_Show3DWindowInMultiWindowLayoutCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 3D window in multiple window layout", m_Show3DWindowInMultiWindowLayoutCheckBox);
+
+  m_DefaultWindowLayoutComboBox = new QComboBox(parent);
+  m_DefaultWindowLayoutComboBox->insertItem(0, "axial");
+  m_DefaultWindowLayoutComboBox->insertItem(1, "sagittal");
+  m_DefaultWindowLayoutComboBox->insertItem(2, "coronal");
+  m_DefaultWindowLayoutComboBox->insertItem(3, "2x2 orthogonal");
+  m_DefaultWindowLayoutComboBox->insertItem(4, "3D");
+  m_DefaultWindowLayoutComboBox->insertItem(5, "3 horizontal");
+  m_DefaultWindowLayoutComboBox->insertItem(6, "3 vertical");
+  m_DefaultWindowLayoutComboBox->insertItem(7, "as acquired (XY plane)");
+  formLayout->addRow("default window layout", m_DefaultWindowLayoutComboBox);
+
+  m_RememberEachWindowLayoutsViewSettings = new QCheckBox(parent);
+  formLayout->addRow("remember settings of each window layout", m_RememberEachWindowLayoutsViewSettings);
+
+  m_DefaultNumberOfViewRowsSpinBox = new QSpinBox(parent);
+  m_DefaultNumberOfViewRowsSpinBox->setMinimum(1);
+  m_DefaultNumberOfViewRowsSpinBox->setMaximum(5);
+  formLayout->addRow("initial number of view rows", m_DefaultNumberOfViewRowsSpinBox);
+
+  m_DefaultNumberOfViewColumnsSpinBox = new QSpinBox(parent);
+  m_DefaultNumberOfViewColumnsSpinBox->setMinimum(1);
+  m_DefaultNumberOfViewColumnsSpinBox->setMaximum(5);
+  formLayout->addRow("initial number of view columns", m_DefaultNumberOfViewColumnsSpinBox);
+
+  m_DefaultDropType = new QComboBox(parent);
+  m_DefaultDropType->insertItem(0, "single");
+  m_DefaultDropType->insertItem(1, "multiple");
+  m_DefaultDropType->insertItem(2, "all");
+  formLayout->addRow("default drop type", m_DefaultDropType);
+
+  m_ShowMagnificationSliderCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show magnification slider", m_ShowMagnificationSliderCheckBox);
+
+  m_ShowShowingOptionsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show 'show' options", m_ShowShowingOptionsCheckBox);
+
+  m_ShowWindowLayoutControlsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show window layout controls", m_ShowWindowLayoutControlsCheckBox);
+
+  m_ShowViewNumberControlsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show view number controls", m_ShowViewNumberControlsCheckBox);
+
+  m_ShowDropTypeControlsCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show drop type controls", m_ShowDropTypeControlsCheckBox);
 
   QPushButton* backgroundColourResetButton = new QPushButton(parent);
   backgroundColourResetButton->setText("reset");
@@ -162,10 +182,10 @@ void QmitkMIDASMultiViewEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_BackgroundColourButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
 
   QGridLayout* backgroundColourWidgetLayout = new QGridLayout;
-  backgroundColourWidgetLayout->setContentsMargins(4,4,4,4);
+  backgroundColourWidgetLayout->setContentsMargins(4, 4, 4, 4);
   backgroundColourWidgetLayout->addWidget(m_BackgroundColourButton, 0, 0);
-  backgroundColourWidgetLayout->addWidget(backgroundColourResetButton, 0, 1);
-  backgroundColourWidgetLayout->addWidget(backgroundColorSpecificallyMIDAS, 0, 2);
+  backgroundColourWidgetLayout->addWidget(backgroundColorSpecificallyMIDAS, 0, 1);
+  backgroundColourWidgetLayout->addWidget(backgroundColourResetButton, 0, 2);
 
   formLayout->addRow("background colour", backgroundColourWidgetLayout);
 
@@ -191,17 +211,20 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
 {
   m_MIDASMultiViewEditorPreferencesNode->Put(MIDAS_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet.toStdString());
   m_MIDASMultiViewEditorPreferencesNode->PutByteArray(MIDAS_BACKGROUND_COLOUR, m_BackgroundColor);
-  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_NUMBER_ROWS, m_DefaultNumberOfRowsSpinBox->value());
-  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_NUMBER_COLUMNS, m_DefaultNumberOfColumnsSpinBox->value());
-  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_VIEW, m_DefaultViewComboBox->currentIndex());
+  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_VIEW_ROW_NUMBER, m_DefaultNumberOfViewRowsSpinBox->value());
+  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_VIEW_COLUMN_NUMBER, m_DefaultNumberOfViewColumnsSpinBox->value());
+  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_WINDOW_LAYOUT, m_DefaultWindowLayoutComboBox->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, m_ImageInterpolationComboBox->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_DROP_TYPE, m_DefaultDropType->currentIndex());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, m_ShowDropTypeWidgetsCheckBox->isChecked());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_LAYOUT_BUTTONS, m_ShowLayoutButtonsCheckBox->isChecked());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, m_Show3DWindowInOrthoViewCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DROP_TYPE_CONTROLS, m_ShowDropTypeControlsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_SHOWING_OPTIONS, m_ShowShowingOptionsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_WINDOW_LAYOUT_CONTROLS, m_ShowWindowLayoutControlsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_VIEW_NUMBER_CONTROLS, m_ShowViewNumberControlsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DIRECTION_ANNOTATIONS, m_ShowDirectionAnnotationsCheckBox->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, m_Show3DWindowInMultiWindowLayoutCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
-  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, m_RememberEachOrientationsViewSettings->isChecked());
+  m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT, m_RememberEachWindowLayoutsViewSettings->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SLICE_SELECT_TRACKING, m_SliceSelectTracking->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_MAGNIFICATION_SELECT_TRACKING, m_MagnificationSelectTracking->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_TIME_SELECT_TRACKING, m_TimeSelectTracking->isChecked());
@@ -230,17 +253,20 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   }
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 
-  m_DefaultNumberOfRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_ROWS, 1));
-  m_DefaultNumberOfColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_NUMBER_COLUMNS, 1));
-  m_DefaultViewComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW, 2)); // default coronal
+  m_DefaultNumberOfViewRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW_ROW_NUMBER, 1));
+  m_DefaultNumberOfViewColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW_COLUMN_NUMBER, 1));
+  m_DefaultWindowLayoutComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_WINDOW_LAYOUT, 2)); // default coronal
   m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_DROP_TYPE, 0));
-  m_ShowDropTypeWidgetsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_WIDGETS, false));
-  m_ShowLayoutButtonsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_LAYOUT_BUTTONS, true));
-  m_Show3DWindowInOrthoViewCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_WINDOW_IN_ORTHO_VIEW, false));
+  m_ShowDropTypeControlsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_CONTROLS, false));
+  m_ShowShowingOptionsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_SHOWING_OPTIONS, true));
+  m_ShowWindowLayoutControlsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_WINDOW_LAYOUT_CONTROLS, true));
+  m_ShowViewNumberControlsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_VIEW_NUMBER_CONTROLS, true));
   m_Show2DCursorsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_2D_CURSORS, true));
+  m_ShowDirectionAnnotationsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DIRECTION_ANNOTATIONS, true));
+  m_Show3DWindowInMultiWindowLayoutCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
   m_ShowMagnificationSliderCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
-  m_RememberEachOrientationsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_ORIENTATION, true));
+  m_RememberEachWindowLayoutsViewSettings->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT, true));
   m_SliceSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SLICE_SELECT_TRACKING, true));
   m_MagnificationSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_MAGNIFICATION_SELECT_TRACKING, true));
   m_TimeSelectTracking->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_TIME_SELECT_TRACKING, true));

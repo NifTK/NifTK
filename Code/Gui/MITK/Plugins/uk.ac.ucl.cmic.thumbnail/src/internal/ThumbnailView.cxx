@@ -13,13 +13,13 @@
 =============================================================================*/
 
 #include "ThumbnailView.h"
-#include "berryIPreferencesService.h"
-#include "berryIBerryPreferences.h"
-#include "berryIWorkbenchPage.h"
-#include "mitkIDataStorageService.h"
-#include "mitkDataStorage.h"
-#include "mitkDataStorageEditorInput.h"
-#include "mitkWorkbenchUtil.h"
+#include <berryIPreferencesService.h>
+#include <berryIBerryPreferences.h>
+#include <berryIWorkbenchPage.h>
+#include <mitkIDataStorageService.h>
+#include <mitkDataStorage.h>
+#include <mitkDataStorageEditorInput.h>
+#include <mitkWorkbenchUtil.h>
 #include "QmitkThumbnailViewPreferencePage.h"
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";

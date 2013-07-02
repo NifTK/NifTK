@@ -40,8 +40,8 @@
 #include <itkBoundingBox.h>
 
 // VTK
-#include "vtkLinearTransform.h"
-#include "vtkMatrix4x4.h"
+#include <vtkLinearTransform.h>
+#include <vtkMatrix4x4.h>
 
 // MITK Misc
 #include <mitkImage.h>
@@ -57,13 +57,13 @@
 #include <mitkCone.h>
 #include <mitkCuboid.h>
 
-//#include "mitkAffineInteractor3D.h"
+//#include <mitkAffineInteractor3D.h>
 
 // NIFTK
 #include "AffineTransformView.h"
-#include "mitkAffineTransformDataNodeProperty.h"
-#include "mitkAffineTransformParametersDataNodeProperty.h"
-#include "ConversionUtils.h"
+#include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkAffineTransformParametersDataNodeProperty.h>
+#include <ConversionUtils.h>
 
 //-----------------------------------------------------------------------------
 AffineTransformView::AffineTransformView()
@@ -280,7 +280,7 @@ void AffineTransformView::OnRotationValueChanged()
     sliderVal = (double)m_Controls->rotationSliderX->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->rotationSliderX->setValue(spboxVal * 100);
+      m_Controls->rotationSliderX->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("rotationSpinBoxY"))
   {
@@ -288,7 +288,7 @@ void AffineTransformView::OnRotationValueChanged()
     sliderVal = (double)m_Controls->rotationSliderY->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->rotationSliderY->setValue(spboxVal * 100);
+      m_Controls->rotationSliderY->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("rotationSpinBoxZ"))
   {
@@ -296,7 +296,7 @@ void AffineTransformView::OnRotationValueChanged()
     sliderVal = (double)m_Controls->rotationSliderZ->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->rotationSliderZ->setValue(spboxVal * 100);
+      m_Controls->rotationSliderZ->setValue(static_cast<int>(spboxVal * 100.0));
   }
 
   OnParameterChanged();
@@ -343,7 +343,7 @@ void AffineTransformView::OnTranslationValueChanged()
     sliderVal = (double)m_Controls->translationSliderX->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->translationSliderX->setValue(spboxVal * 100);
+      m_Controls->translationSliderX->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("translationSpinBoxY"))
   {
@@ -351,7 +351,7 @@ void AffineTransformView::OnTranslationValueChanged()
     sliderVal = (double)m_Controls->translationSliderY->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->translationSliderY->setValue(spboxVal * 100);
+      m_Controls->translationSliderY->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("translationSpinBoxZ"))
   {
@@ -359,7 +359,7 @@ void AffineTransformView::OnTranslationValueChanged()
     sliderVal = (double)m_Controls->translationSliderZ->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->translationSliderZ->setValue(spboxVal * 100);
+      m_Controls->translationSliderZ->setValue(static_cast<int>(spboxVal * 100.0));
   }
 
   OnParameterChanged();
@@ -406,7 +406,7 @@ void AffineTransformView::OnScalingValueChanged()
     sliderVal = (double)m_Controls->scalingSliderX->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->scalingSliderX->setValue(spboxVal * 100);
+      m_Controls->scalingSliderX->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("scalingSpinBoxY"))
   {
@@ -414,7 +414,7 @@ void AffineTransformView::OnScalingValueChanged()
     sliderVal = (double)m_Controls->scalingSliderY->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->scalingSliderY->setValue(spboxVal * 100);
+      m_Controls->scalingSliderY->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("scalingSpinBoxZ"))
   {
@@ -422,7 +422,7 @@ void AffineTransformView::OnScalingValueChanged()
     sliderVal = (double)m_Controls->scalingSliderZ->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->scalingSliderZ->setValue(spboxVal * 100);
+      m_Controls->scalingSliderZ->setValue(static_cast<int>(spboxVal * 100.0));
   }
 
   OnParameterChanged();
@@ -469,7 +469,7 @@ void AffineTransformView::OnShearingValueChanged()
     sliderVal = (double)m_Controls->shearingSliderXY->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->shearingSliderXY->setValue(spboxVal * 100);
+      m_Controls->shearingSliderXY->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("shearingSpinBoxXZ"))
   {
@@ -477,7 +477,7 @@ void AffineTransformView::OnShearingValueChanged()
     sliderVal = (double)m_Controls->shearingSliderXZ->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->shearingSliderXZ->setValue(spboxVal * 100);
+      m_Controls->shearingSliderXZ->setValue(static_cast<int>(spboxVal * 100.0));
   }
   else if (sender == QString("shearingSpinBoxXZ"))
   {
@@ -485,7 +485,7 @@ void AffineTransformView::OnShearingValueChanged()
     sliderVal = (double)m_Controls->shearingSliderXZ->value() / 100.0;
 
     if (spboxVal != sliderVal)
-      m_Controls->shearingSliderXZ->setValue(spboxVal * 100);
+      m_Controls->shearingSliderXZ->setValue(static_cast<int>(spboxVal * 100.0));
   }
 
   OnParameterChanged();

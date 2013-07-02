@@ -15,7 +15,7 @@
 #ifndef itkMIDASUpSamplingFilter_h
 #define itkMIDASUpSamplingFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

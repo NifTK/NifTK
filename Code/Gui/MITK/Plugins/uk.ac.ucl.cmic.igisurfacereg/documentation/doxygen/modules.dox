@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igisurfacereg uk.ac.ucl.cmic.igisurfacereg  Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin to provide point based registration. 
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk) and Steve Thompson (s.thompson@ucl.ac.uk).a
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igisurfacereg_internal Internal
+  \ingroup uk_ac_ucl_cmic_igisurfacereg
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.igisurfacereg plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

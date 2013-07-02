@@ -18,7 +18,7 @@
 #include "niftkCoreExports.h"
 #include <mitkImage.h>
 #include "mitkMIDASEnums.h"
-#include "itkMIDASHelper.h"
+#include <itkMIDASHelper.h>
 
 /**
  * \file mitkMIDASOrientationUtils.h

@@ -14,16 +14,17 @@
 
 MITK_CREATE_MODULE(niftkCoreGui
   EXPORT_DEFINE NIFTKCOREGUI_EXPORT
-  INCLUDE_DIRS Events Dialogs LookupTables
+  INCLUDE_DIRS Events LookupTables
   DEPENDS Mitk MitkExt Qmitk QmitkExt niftkCore
   PACKAGE_DEPENDS QT QVTK CTK
   QT_MODULE 
 )
 
-TARGET_LINK_LIBRARIES(niftkCoreGui
+target_link_libraries(niftkCoreGui
   niftkITK
+  niftkVTK
   )
 
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF(BUILD_TESTING)
+if(BUILD_TESTING)
+  #add_subdirectory(Testing)
+endif(BUILD_TESTING)

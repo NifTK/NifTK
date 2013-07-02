@@ -57,11 +57,13 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 # Param	    : $1 input image 
 # Param     : $2 patient name
 # Param	    : $3 volume orientation
+# Param	    : $4 dir output
 function normalization() 
 {
 	local img=$1
 	local name=$2
 	local orientation=$3
+	local dir_output=$4
 	
 	# Normalization
 	if [[ ! -f "${img}_n3.nii.gz"  ]] ; then
@@ -91,21 +93,21 @@ function normalization()
 		execute_command_or_else_stop "fslchfiletype NIFTI ${img}.nii.gz ${img}_2.nii"  
 
 		# Change format to mnc
-		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_2.nii ${img}.mnc"
-		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_2.nii ${dir_output}/${img}.mnc"
+		execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${img}_ICBM152_mask_register.nii ${dir_output}/${img}_ICBM152_mask_register.mnc"
 		progressXML "0.30" "Image ready to be normalized"
 		
 		# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 		if [[ ! -f "${img}_n3.mnc"  ]] ; then		
 			execute_command_or_else_stop "${n3dir}nu_correct $n3_options \
-			-mask ${img}_ICBM152_mask_register.mnc \
-			${img}.mnc \
-			${img}_n3.mnc" > /dev/null
+			-mask ${dir_output}/${img}_ICBM152_mask_register.mnc \
+			${dir_output}/${img}.mnc \
+			${dir_output}/${img}_n3.mnc" > /dev/null
 		fi		
 		progressXML "0.45" "Image normalized"
 
 		# Change format from mnc to NIFTI
-		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc ${img}_n3_temp.nii"
+		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${dir_output}/${img}_n3.mnc ${img}_n3_temp.nii"
 		execute_command_or_else_stop "fslchfiletype NIFTI_GZ ${img}_n3_temp.nii ${img}_n3.nii.gz"
 		execute_command_or_else_stop "rm -f ${img}_n3_nifti.nii *.mnc"
 	else
@@ -130,7 +132,6 @@ function remove_neck() {
 			-flo ${HEAD_IMAGE} \
 			-aff source-to-target-12dof.txt \
 			-res ${img}_neck_register.nii.gz \
-			-sym \
 			-lp 5" 
 		progressXML "0.15" "Atlas registered"
 			
@@ -166,6 +167,8 @@ function remove_neck() {
 # Param     : $5 fractional intensity threshold
 # Param	    : $6 volume orientation
 # Param	    : $7 apply normalization
+# Param	    : $8 output file type
+# Param	    : $9 dir output
 function BETter() 
 {
 	local img=$1
@@ -176,6 +179,7 @@ function BETter()
 	local orientation=$6
 	local norm=$7
 	local output_type=$8
+	local dir_output=$9
 	local suffix=""
 	
 	# Starting brain extraction process
@@ -186,7 +190,7 @@ function BETter()
 
 		if [ ${norm} = true ] ; then
 			# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
-			normalization ${img}_no_neck ${name} ${orientation}
+			normalization "${img}_no_neck" "${name}" "${orientation}" "${dir_output}"
 			suffix="_no_neck_n3"
 		else
 			suffix="_no_neck"
@@ -238,7 +242,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Segmentation</category>
+   <category>Multiple Sclerosis Tools.Segmentation</category>
    <title>BET Brain segmentation improved</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 
    brain extraction process.<br>
@@ -364,7 +368,7 @@ cat <<EOF
           <name>same</name>
           <longflag>same</longflag>      
           <description>Always use the same temp directory for computing (this option is useful mixed with -debug)</description>
-          <label>Temp directory</label>
+          <label>Same temp directory</label>
       </boolean>
     </parameters>
 </executable>
@@ -534,7 +538,7 @@ if [ ${same} = true ] ; then
 else
 	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
 fi
-dir_output=${patient}-${dir_output}
+dir_output="/tmp/${patient}-${dir_output}"
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
@@ -546,7 +550,7 @@ copyFileToDestination ${INPUT_IMAGE} "${dir_output}input_image.nii.gz"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-BETter "input_image" "${OUTPUT_IMAGE}" "${patient}" "${options}" "${f}" "${orientation}" "${norm}" "${OUTPUT_TYPE}"
+BETter "input_image" "${OUTPUT_IMAGE}" "${patient}" "${options}" "${f}" "${orientation}" "${norm}" "${OUTPUT_TYPE}" "${dir_output}"
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}

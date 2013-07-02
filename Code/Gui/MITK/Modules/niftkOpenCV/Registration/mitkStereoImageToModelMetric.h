@@ -15,8 +15,8 @@
 #ifndef MITKSTEREOIMAGETOMODELMETRIC_H
 #define MITKSTEREOIMAGETOMODELMETRIC_H
 
-#include "itkExceptionObject.h"
-#include "itkSingleValuedCostFunction.h"
+#include <itkExceptionObject.h>
+#include <itkSingleValuedCostFunction.h>
 #include <vtkPolyDataReader.h>
 #include <cv.h>
 #include <highgui.h>

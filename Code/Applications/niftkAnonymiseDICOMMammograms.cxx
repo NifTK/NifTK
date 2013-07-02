@@ -22,25 +22,25 @@
  */
 
 
-#include "FileHelper.h"
+#include <FileHelper.h>
 
-#include "itkLogHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
-#include "itkGDCMImageIO.h"
-#include "itkImageLinearIteratorWithIndex.h"
+#include <itkLogHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
+#include <itkImageLinearIteratorWithIndex.h>
 
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-#include "boost/progress.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/progress.hpp>
 
 #include <vector>
 
-#include "niftkAnonymiseDICOMMammogramsCLP.h"
+#include <niftkAnonymiseDICOMMammogramsCLP.h>
 
 
 namespace fs = boost::filesystem;
@@ -442,7 +442,7 @@ int main( int argc, char *argv[] )
     if ( flgAnonymiseDICOMHeader )
     {
       AnonymiseTag( flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00-00-00"     ); // Patient's Birth Date                        
+      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
       AnonymiseTag( flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
       AnonymiseTag( flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
       AnonymiseTag( flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           

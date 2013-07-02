@@ -15,12 +15,12 @@
 #ifndef _itkSimultaneousUnconstrainedMatrixReconRegnMethod_txx
 #define _itkSimultaneousUnconstrainedMatrixReconRegnMethod_txx
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 #include "itkSimultaneousUnconstrainedMatrixReconRegnMethod.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

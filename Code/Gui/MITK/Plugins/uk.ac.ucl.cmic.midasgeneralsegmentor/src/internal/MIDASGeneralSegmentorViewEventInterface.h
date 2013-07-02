@@ -15,10 +15,10 @@
 #ifndef MIDASGeneralSegmentorViewEventInterface_h
 #define MIDASGeneralSegmentorViewEventInterface_h
 
-#include "itkObject.h"
-#include "itkSmartPointer.h"
-#include "itkObjectFactory.h"
-#include "mitkOperationActor.h"
+#include <itkObject.h>
+#include <itkSmartPointer.h>
+#include <itkObjectFactory.h>
+#include <mitkOperationActor.h>
 
 class MIDASGeneralSegmentorView;
 

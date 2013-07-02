@@ -15,9 +15,9 @@
 #ifndef ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_
 #define ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_
 
-#include "itkVector.h"
-#include "itkMatrix.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <itkVector.h>
+#include <itkMatrix.h>
+#include <niftkITKWin32ExportHeader.h>
 
 /*
  * \brief   Class for performing the pixel based operation

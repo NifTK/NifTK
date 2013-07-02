@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
+#include <itkImage.h>
 #include "../itkMIDASSegmentationTestUtils.h"
-#include "itkMIDASThresholdApplyProcessor.h"
+#include <itkMIDASThresholdApplyProcessor.h>
 
 /**
  * Basic tests for MIDASThresholdApplyProcessor

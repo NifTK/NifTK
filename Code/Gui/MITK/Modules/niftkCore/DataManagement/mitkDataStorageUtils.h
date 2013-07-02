@@ -16,11 +16,11 @@
 #define mitk_DataStorageUtils_h
 
 #include "niftkCoreExports.h"
-#include "mitkDataNode.h"
-#include "mitkDataStorage.h"
-#include "mitkTimeSlicedGeometry.h"
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkTimeSlicedGeometry.h>
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
 
 /**
  * \file mitkDataStorageUtils.h
@@ -75,6 +75,13 @@ namespace mitk
    * </pre>
    */
   NIFTKCORE_EXPORT mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex=-1);
+
+  /**
+   * \brief Loads a 4x4 matrix from a plain textfile, and puts in data storage with the given nodeName, or else creates Identity matrix.
+   * \param fileName full file name
+   * \param helperObject if true the node is created in DataStorage as a helper object, and so by default will normally be invisible
+   */
+  NIFTKCORE_EXPORT void LoadMatrixOrCreateDefault(const std::string& fileName, const std::string& nodeName, const bool& helperObject, mitk::DataStorage* dataStorage);
 }
 
 #endif

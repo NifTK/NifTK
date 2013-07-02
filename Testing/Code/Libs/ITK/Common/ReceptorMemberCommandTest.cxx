@@ -17,10 +17,10 @@
 #endif
 
 #include <iostream>
-#include "itkSmartPointer.h"
-#include "itkCommand.h"
-#include "itkImage.h"
-#include "itkAddImageFilter.h"
+#include <itkSmartPointer.h>
+#include <itkCommand.h>
+#include <itkImage.h>
+#include <itkAddImageFilter.h>
 
 namespace mitk
 {

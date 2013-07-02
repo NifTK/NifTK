@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkGaussianCurvatureImageFilter.h"
-#include "itkMeanCurvatureImageFilter.h"
-#include "itkMinimumCurvatureImageFilter.h"
-#include "itkMaximumCurvatureImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkGaussianCurvatureImageFilter.h>
+#include <itkMeanCurvatureImageFilter.h>
+#include <itkMinimumCurvatureImageFilter.h>
+#include <itkMaximumCurvatureImageFilter.h>
 
 /*!
  * \file niftkExtractCurvatures.cxx

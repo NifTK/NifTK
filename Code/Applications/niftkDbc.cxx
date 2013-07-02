@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
-#include "itkLogImageFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkMedianImageFilter.h"
-#include "itkExpImageFilter.h"
-#include "itkDivideByConstantImageFilter.h"
-#include "itkMultiplyImageFilter.h"
-#include "itkDivideImageFilter.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
+#include <itkLogImageFilter.h>
+#include <itkSubtractImageFilter.h>
+#include <itkMedianImageFilter.h>
+#include <itkExpImageFilter.h>
+#include <itkDivideByConstantImageFilter.h>
+#include <itkMultiplyImageFilter.h>
+#include <itkDivideImageFilter.h>
 
 /*!
  * \file niftkDbc.cxx

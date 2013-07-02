@@ -16,13 +16,13 @@
 #define __itkInvRayCastInterpolateImageFunction_txx
 
 #include "itkInvRayCastInterpolateImageFunction.h"
-#include "itkImage.h" // I ADDED THAT
-#include "itkImageFileWriter.h" // I ADDED THAT
-#include "itkImageRegionIterator.h"// I ADDED THAT
-#include "itkImageRegionConstIterator.h"// I ADDED THAT
-#include "itkContinuousIndex.h"// I ADDED THAT
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkContinuousIndex.h>
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 bool useDebugVolume = 0;
 

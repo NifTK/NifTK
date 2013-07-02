@@ -19,17 +19,22 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QMessageBox>
-#include <QPushButton>
+#include <QCheckBox>
+#include <ctkPathLineEdit.h>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
+#include <mitkTrackedPointerManager.h>
 
 const std::string TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
+const std::string TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
+const std::string TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME("update view coordinate");
 
 //-----------------------------------------------------------------------------
 TrackedPointerViewPreferencePage::TrackedPointerViewPreferencePage()
 : m_MainControl(0)
-, m_DummyButton(0)
+, m_CalibrationFileName(0)
+, m_UpdateViewCoordinate(0)
 , m_Initializing(false)
 , m_TrackedPointerViewPreferencesNode(0)
 {
@@ -72,8 +77,12 @@ void TrackedPointerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
 
-  m_DummyButton = new QPushButton();
-  formLayout->addRow("dummy", m_DummyButton);
+  m_CalibrationFileName = new ctkPathLineEdit();
+  formLayout->addRow("calibration matrix file name", m_CalibrationFileName);
+
+  m_UpdateViewCoordinate = new QCheckBox();
+  m_UpdateViewCoordinate->setChecked(false);
+  formLayout->addRow("update view coordinate", m_UpdateViewCoordinate);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -92,6 +101,8 @@ QWidget* TrackedPointerViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TrackedPointerViewPreferencePage::PerformOk()
 {
+  m_TrackedPointerViewPreferencesNode->Put(CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
+  m_TrackedPointerViewPreferencesNode->PutBool(UPDATE_VIEW_COORDINATE_NAME, m_UpdateViewCoordinate->isChecked());
   return true;
 }
 
@@ -106,4 +117,7 @@ void TrackedPointerViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TrackedPointerViewPreferencePage::Update()
 {
+  m_CalibrationFileName->setCurrentPath(QString(m_TrackedPointerViewPreferencesNode->Get(CALIBRATION_FILE_NAME, "").c_str()));
+  bool updateViewCoordinate = m_TrackedPointerViewPreferencesNode->GetBool(UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT);
+  m_UpdateViewCoordinate->setChecked(updateViewCoordinate);
 }

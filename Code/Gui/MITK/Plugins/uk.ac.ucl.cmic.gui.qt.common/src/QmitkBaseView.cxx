@@ -329,8 +329,13 @@ bool QmitkBaseView::IsVisible()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBaseView::SetCurrentSelection(mitk::DataNode* dataNode)
+void QmitkBaseView::SetCurrentSelection(mitk::DataNode::Pointer dataNode)
 {
+  if (dataNode.IsNull())
+  {
+    return;
+  }
+
   // Select the node in the data manager.
   mitk::DataNodeSelection::ConstPointer dataNodeSelection(new mitk::DataNodeSelection(dataNode));
   this->SetDataManagerSelection(dataNodeSelection);

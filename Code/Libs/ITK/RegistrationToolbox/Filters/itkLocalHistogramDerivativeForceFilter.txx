@@ -16,13 +16,13 @@
 #define __itkLocalHistogramDerivativeForceFilter_txx
 
 #include "itkLocalHistogramDerivativeForceFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
-#include "itkConstNeighborhoodIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <itkConstNeighborhoodIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

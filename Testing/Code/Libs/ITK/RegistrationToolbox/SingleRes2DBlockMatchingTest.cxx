@@ -18,18 +18,18 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkBlockMatchingMethod.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkPowellOptimizer.h"
-#include "itkUCLSimplexOptimizer.h"
-#include "itkSimilarityMeasure.h"
-#include "itkTransform.h"
-#include "itkAbsoluteManhattanDistancePointMetric.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkBlockMatchingMethod.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkPowellOptimizer.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkSimilarityMeasure.h>
+#include <itkTransform.h>
+#include <itkAbsoluteManhattanDistancePointMetric.h>
 
 /**
  * SingleRes2DBlocMatchingTest.

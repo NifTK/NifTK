@@ -15,9 +15,9 @@
 #ifndef __itkCreateEulerAffineTransformMatrixBaseClass_h
 #define __itkCreateEulerAffineTransformMatrixBaseClass_h
 
-#include "itkImageToImageFilter.h"
-#include "itkConceptChecking.h"
-#include "itkEulerAffineTransform.h"
+#include <itkImageToImageFilter.h>
+#include <itkConceptChecking.h>
+#include <itkEulerAffineTransform.h>
 
 namespace itk
 {

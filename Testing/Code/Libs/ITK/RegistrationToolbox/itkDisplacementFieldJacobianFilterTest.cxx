@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 #include <iostream>
-#include "itkDisplacementFieldJacobianFilter.h"
+#include <itkDisplacementFieldJacobianFilter.h>
 
 int DisplacementFieldJacobianFilterTest(int argc, char * argv[])
 {

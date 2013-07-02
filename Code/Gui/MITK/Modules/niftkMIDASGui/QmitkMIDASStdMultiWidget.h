@@ -29,11 +29,14 @@
 
 #include <mitkMIDASDisplayInteractor.h>
 
-#include "mitkMIDASEnums.h"
+#include <mitkMIDASEnums.h>
 
 class QGridLayout;
 class QStackedLayout;
 class DisplayGeometryModificationCommand;
+
+class vtkRenderer;
+class vtkSideAnnotation;
 
 namespace mitk
 {
@@ -65,7 +68,10 @@ class SliceNavigationController;
  * -2              : 0.33 (i.e. 1 pixel covers 3 voxels).
  * etc.
  * </pre>
- * So, it is deliberately not a continuous magnification scale.
+ *
+ * In contrast with the original MIDAS, in NiftyMIDAS the zooming is continuous, so
+ * the rule above is extended to real numbers as well. If the image has anisotropic pixels then
+ * the size of the longest side of the voxels is used for the calculation.
  *
  * \sa QmitkStdMultiWidget
  * \sa QmitkMIDASSingleViewWidget
@@ -87,9 +93,6 @@ public:
   /// \brief Destructor.
   virtual ~QmitkMIDASStdMultiWidget();
 
-  /// \brief Returns true if the current view is axial, coronal or sagittal and false otherwise.
-  bool IsSingle2DView() const;
-
   /// \brief There are several things we turn off/on depending on whether the widget is
   /// visible or considered active, so we group them all under this Enabled(true/false) flag.
   void SetEnabled(bool b);
@@ -99,6 +102,12 @@ public:
 
   /// \brief Turn the 2D cursors visible/invisible for this viewer (renderer specific properties).
   void SetDisplay2DCursorsLocally(bool visible);
+
+  /// \brief Tells if the direction annotations are visible.
+  bool AreDirectionAnnotationsVisible() const;
+
+  /// \brief Sets the visibility of the direction annotations.
+  void SetDirectionAnnotationsVisible(bool visible);
 
   /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
   bool GetDisplay2DCursorsLocally() const;
@@ -115,24 +124,19 @@ public:
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
   bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief Set the view (layout), as the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  ///
-  /// We must specify the geometry to re-initialise the QmitkStdMultiWidget base class properly.
+  /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetMIDASView(MIDASView view, mitk::Geometry3D* geometry);
-
-  /// \brief Called by the other SetMIDASView method to actually switch QmitkRenderWindows, and in a Qt sense, rebuild the Qt layouts.
-  void SetMIDASView(MIDASView view, bool rebuildLayout);
-
-  /// \brief Called by SetMIDASView(MIDASView view, mitk::Geometry3D* geometry) to actually initialise the Geometry in the QmitkStdMultiWidget base class.
   void SetGeometry(mitk::Geometry3D* geometry);
 
-  /// \brief Get the view (layout), where the MIDAS functionality is only interested in
-  /// those orientations given by this Enum, currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  MIDASView GetMIDASView() const;
+  /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
+  void SetLayout(MIDASLayout layout);
 
-  /// \brief Works out the orientation of the current view, which is different to the MIDASView.
+  /// \brief Gets the layout, i.e. the set and the arrangement of the render windows.
+  /// The MIDAS functionality is only interested in those orientations given by this enum,
+  /// currently ax, sag, cor, ortho, 3D, 3H, 3V.
+  MIDASLayout GetLayout() const;
+
+  /// \brief Works out the orientation of the current layout, which is different to the MIDASLayout.
   MIDASOrientation GetOrientation();
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
@@ -141,9 +145,10 @@ public:
   /// \brief Get the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   QColor GetBackgroundColor() const;
 
-  /// \brief If b==true, this widget is "selected" meaning it will have coloured borders,
-  /// and if b==false, it is not selected, and will not have coloured borders.
-  void SetSelected(bool b);
+  /// \brief If selected, this widget is "selected" meaning its selected render window (if any)
+  /// will have coloured border, otherwise it is not selected, and will not have coloured borders
+  /// even if one of its render window was selected.
+  void SetSelected(bool selected);
 
   /// \brief Returns true if this widget is selected and false otherwise.
   bool IsSelected() const;
@@ -165,35 +170,33 @@ public:
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
   QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
 
+  /// \brief Gets the orientation corresponding to the given render window.
+  /// Returns MIDAS_ORIENTATION_UNKNOWN for the 3D window.
+  MIDASOrientation GetOrientation(const QmitkRenderWindow* renderWindow) const;
+
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
   QmitkRenderWindow* GetRenderWindow(vtkRenderWindow* aVtkRenderWindow) const;
 
-  /// \brief Returns the minimum allowed slice number for a given orientation.
-  unsigned int GetMinSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed slice index for a given orientation.
+  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed slice number for a given orientation.
-  unsigned int GetMaxSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed time step.
+  unsigned int GetMaxTimeStep() const;
 
-  /// \brief Returns the minimum allowed time slice number.
-  unsigned int GetMinTime() const;
+  /// \brief Get the current slice index.
+  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed time slice number.
-  unsigned int GetMaxTime() const;
+  /// \brief Set the current slice index.
+  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
 
-  /// \brief Get the current slice number.
-  unsigned int GetSliceNumber(const MIDASOrientation orientation) const;
+  /// \brief Get the current time step.
+  unsigned int GetTimeStep() const;
 
-  /// \brief Set the current slice number.
-  void SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber);
-
-  /// \brief Get the current time slice number.
-  unsigned int GetTime() const;
-
-  /// \brief Set the current time slice number.
-  void SetTime(unsigned int timeSlice);
+  /// \brief Set the current time step.
+  void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the selected position in the world coordinate system (mm).
   const mitk::Point3D GetSelectedPosition() const;
@@ -239,17 +242,35 @@ public:
   ///
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  /// \brief Gets the scale factor of the given render window. (mm/px)
+  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+
+  /// \brief Sets the scale factor of the render window to the given value. (mm/px)
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor) const;
+
+  /// \brief Gets the scale factor of the selected render window or 0.0 if no
+  /// window is selected.
+  double GetScaleFactor() const;
+
+  /// \brief Sets the scale factor of the selected window to the given value.
+  /// If the zooming is bound across the windows then this will set the scaling
+  /// of the other windows as well.
+  void SetScaleFactor(double scaleFactor);
+
+  /// \brief Gets the voxel size (mm/vx).
+  const mitk::Vector3D& GetVoxelSize() const;
+
+  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
   double GetMagnification() const;
 
-  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel.
+  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
   void SetMagnification(double magnification);
 
-  /// \brief Works out a suitable magnification factor given the current geometry.
-  double FitMagnification();
+  /// \brief Computes the magnification of a render window.
+  double GetMagnification(QmitkRenderWindow* renderWindow) const;
 
-  /// \brief Computes the magnification factor of a render window.
-  double ComputeMagnification(QmitkRenderWindow* renderWindow);
+  /// \brief Sets the magnification of a render window to the given value.
+  void SetMagnification(QmitkRenderWindow* renderWindow, double magnification);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -265,19 +286,37 @@ public:
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
-  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
-  void SetDisplayInteractionEnabled(bool enabled);
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
-  bool IsDisplayInteractionEnabled() const;
+  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
+
+  /// \brief Gets the flag that controls whether the cursor position is bound between the 2D render windows.
+  bool AreCursorPositionsBound() const;
+
+  /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
+  void SetCursorPositionsBound(bool bound);
+
+  /// \brief Gets the flag controls whether the scale factors are bound across the 2D render windows.
+  bool AreScaleFactorsBound() const;
+
+  /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
+  void SetScaleFactorsBound(bool bound);
 
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
   void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceNumber);
+
+  /// \brief Emitted when the selected slice has changed in a render window.
+  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Emitted when the cursor position has changed.
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
-  void MagnificationChanged(double magnification);
+
+  /// \brief Emitted when the scale factor has changed.
+  void ScaleFactorChanged(double scaleFactor);
 
 protected slots:
 
@@ -301,7 +340,7 @@ private:
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
-  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one view (i.e. either axial, coronal, sagittal).
+  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one render window (i.e. either axial, coronal, sagittal).
   mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
@@ -310,24 +349,34 @@ private:
   // \brief Sets the origin of the display geometry of the render window
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
-  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the current
-  /// and the required scale factor.
+  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
+  /// and the current scale factor.
+  /// \deprecated
+  /// {
+  ///   This function is deprecated because it requires the 'relative' scale factor.
+  ///   Use the SetScaleFactor functions instead.
+  /// }
   void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
 
   /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
+  /// \deprecated
+  /// {
+  ///   This should be calculated from the world geometry dimensions, display geometry dimensions
+  ///   and the scale factor of the display geometry.
+  /// }
   void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
-  /// \brief Adds a display geometry observer to the render window. Used to synchronise zooming and moving.
+  /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
-  /// \brief Removes a display geometry observer from the render window. Used to synchronise zooming and moving.
+  /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
   void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
   void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow);
+  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
@@ -336,29 +385,61 @@ private:
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the zoom factor for a render window from a magnification factor.
-  /// The zoom factor is the ratio of the current and the required scale factor.
+  /// The zoom factor is the ratio of the required and the current scale factor.
+  /// \deprecated
+  /// {
+  ///   This function is deprecated because it needs to know the current scaling in the render window.
+  ///   The function was used to compute the zoom factor for the ZoomDisplayAboutCursor function that
+  ///   has been deprecated as well. Use the ComputeScaleFactors function to calculate the absolute
+  ///   scale factors from the magnification and the SetScaleFactor function to set the required
+  ///   scale factor for a render window.
+  /// }
   double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
 
-  QmitkRenderWindow*    m_RenderWindows[4];
-  QColor                m_BackgroundColor;
-  QGridLayout*          m_GridLayout;
-  unsigned int          m_AxialSliceTag;
-  unsigned int          m_SagittalSliceTag;
-  unsigned int          m_CoronalSliceTag;
-  bool                  m_IsSelected;
-  bool                  m_IsEnabled;
-  bool                  m_Display2DCursorsLocally;
-  bool                  m_Display2DCursorsGlobally;
-  bool                  m_Show3DWindowInOrthoView;
-  MIDASView             m_View;
-  mitk::Point3D         m_SelectedPosition;
-  mitk::Vector3D        m_CursorPosition;
-  double                m_Magnification;
+  /// \brief Computes the scale factors from the magnification for each axes in mm/px.
+  /// Since the magnification is in linear relation with the px/vx ratio but not the
+  /// voxel size, the three scale factors can differ if the image has anisotropic voxels.
+  /// The voxel sizes are calculated when the geometry is set.
+  mitk::Vector3D ComputeScaleFactors(double magnification);
+
+  /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
+
+  /// \brief The magnification is calculated with the longer voxel side of an orientation.
+  /// This function returns the index of this axis.
+  int GetDominantAxis(MIDASOrientation orientation) const;
+
+  QmitkRenderWindow* m_RenderWindows[4];
+  QColor m_BackgroundColor;
+  QGridLayout* m_GridLayout;
+  unsigned m_AxialSliceTag;
+  unsigned m_SagittalSliceTag;
+  unsigned m_CoronalSliceTag;
+  bool m_IsSelected;
+  bool m_IsEnabled;
+  QmitkRenderWindow* m_SelectedRenderWindow;
+  bool m_Display2DCursorsLocally;
+  bool m_Display2DCursorsGlobally;
+  bool m_Show3DWindowInOrthoView;
+  MIDASLayout m_Layout;
+  mitk::Point3D m_SelectedPosition;
+  mitk::Vector3D m_CursorPosition;
+  double m_Magnification;
+  double m_ScaleFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
-  mitk::Geometry3D*     m_Geometry;
+  mitk::Geometry3D* m_Geometry;
+
+  /// \brief Voxel size in millimetres.
+  mitk::Vector3D m_MmPerVx;
+
+  vtkSideAnnotation* m_DirectionAnnotations[3];
+  vtkRenderer* m_DirectionAnnotationRenderers[3];
 
   std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
   bool m_BlockDisplayGeometryEvents;
+
+  bool m_CursorPositionsAreBound;
+  bool m_ScaleFactorsAreBound;
 
   friend class DisplayGeometryModificationCommand;
 

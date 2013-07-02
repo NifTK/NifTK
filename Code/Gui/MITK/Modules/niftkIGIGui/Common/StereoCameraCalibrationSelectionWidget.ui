@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StereoCameraCalibrationSelectionWidget</class>
+ <widget class="QWidget" name="StereoCameraCalibrationSelectionWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>512</width>
+    <height>277</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_LeftIntrinsicLabel">
+       <property name="text">
+        <string>Left intrinsic:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="ctkPathLineEdit" name="m_LeftIntrinsicEdit" native="true">
+       <property name="toolTip">
+        <string>Intrinsic calibration is in the form of a 3x3 matrix
+(fx, 0, px, 
+0, fy, py, 
+0, 0, 1), 
+followed by 4 distortion coefficients.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="m_RightIntrinsicLabel">
+       <property name="text">
+        <string>Right intrinsic:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="ctkPathLineEdit" name="m_RightIntrinsicEdit" native="true">
+       <property name="toolTip">
+        <string>Intrinsic calibration is in the form of a 3x3 matrix
+(fx, 0, px, 
+0, fy, py, 
+0, 0, 1), 
+followed by 4 distortion coefficients.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="m_LeftRightTransformLabel">
+       <property name="text">
+        <string>Left-right transform:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="ctkPathLineEdit" name="m_LeftRightTransformEdit" native="true">
+       <property name="toolTip">
+        <string>Left-right transformation is a 3x3 rotation matrix, followed by translation vector.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

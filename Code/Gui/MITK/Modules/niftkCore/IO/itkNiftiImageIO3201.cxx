@@ -29,15 +29,15 @@
 =========================================================================*/
 
 #include "itkNiftiImageIO3201.h"
-#include "itkIOCommon.h"
-#include "itkExceptionObject.h"
-#include "itkByteSwapper.h"
-#include "itkMetaDataObject.h"
-#include "itkSpatialOrientationAdapter.h"
-#include "itkNumericTraits.h"
+#include <itkIOCommon.h>
+#include <itkExceptionObject.h>
+#include <itkByteSwapper.h>
+#include <itkMetaDataObject.h>
+#include <itkSpatialOrientationAdapter.h>
+#include <itkNumericTraits.h>
 #include <itksys/SystemTools.hxx>
 #include <vnl/vnl_math.h>
-#include "itk_zlib.h"
+#include <itk_zlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

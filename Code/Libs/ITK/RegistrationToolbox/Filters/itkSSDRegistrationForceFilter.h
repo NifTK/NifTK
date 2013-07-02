@@ -14,10 +14,10 @@
 
 #ifndef __itkSSDRegistrationForceFilter_h
 #define __itkSSDRegistrationForceFilter_h
-#include "itkHistogramSimilarityMeasure.h"
-#include "itkImageToImageFilter.h"
-#include "itkVector.h"
-#include "itkImage.h"
+#include <itkHistogramSimilarityMeasure.h>
+#include <itkImageToImageFilter.h>
+#include <itkVector.h>
+#include <itkImage.h>
 #include "itkRegistrationForceFilter.h"
 
 namespace itk {

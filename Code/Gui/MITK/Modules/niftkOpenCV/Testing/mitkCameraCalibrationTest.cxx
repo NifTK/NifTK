@@ -18,8 +18,8 @@
 
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
-#include "mitkStereoCameraCalibrationFromTwoDirectories.h"
-#include "mitkCameraCalibrationFromDirectory.h"
+#include <mitkStereoCameraCalibrationFromTwoDirectories.h>
+#include <mitkCameraCalibrationFromDirectory.h>
 #include <cmath>
 
 /**

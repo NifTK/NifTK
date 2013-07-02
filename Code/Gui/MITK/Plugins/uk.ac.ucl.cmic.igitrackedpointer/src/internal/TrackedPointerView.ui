@@ -19,32 +19,6 @@
      <item>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="m_TipOriginLabel">
-         <property name="text">
-          <string>tip origin</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="ctkCoordinatesWidget" name="m_TipOriginSpinBoxes" native="true"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="m_TipToProbeLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>tip to probe</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="ctkPathLineEdit" name="m_TipToProbeCalibrationFile" native="true"/>
-       </item>
-       <item row="2" column="0">
         <widget class="QLabel" name="m_ProbeSurfaceLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -53,14 +27,14 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>probe</string>
+          <string>pointer</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode" native="true"/>
+       <item row="0" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode"/>
        </item>
-       <item row="3" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="m_ProbeToWorldLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -69,12 +43,46 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>probe to world</string>
+          <string>pointer to world</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_TipOriginLabel">
+         <property name="text">
+          <string>tip origin</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="ctkCoordinatesWidget" name="m_TipOriginSpinBoxes" native="true"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="m_MapsToLabel">
+         <property name="text">
+          <string>maps to</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode" native="true"/>
+        <widget class="ctkCoordinatesWidget" name="m_MapsToSpinBoxes" native="true"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QPushButton" name="m_ClearPointsButton">
+         <property name="text">
+          <string>clear</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QPushButton" name="m_GrabPointsButton">
+         <property name="text">
+          <string>grab</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -98,14 +106,8 @@
  <customwidgets>
   <customwidget>
    <class>QmitkDataStorageComboBox</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkPathLineEdit</class>
-   <extends>QWidget</extends>
-   <header>ctkPathLineEdit.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

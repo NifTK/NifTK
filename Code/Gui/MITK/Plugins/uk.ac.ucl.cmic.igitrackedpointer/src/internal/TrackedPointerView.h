@@ -15,10 +15,12 @@
 #ifndef TrackedPointerView_h
 #define TrackedPointerView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>
+#include <mitkDataStorage.h>
+#include <mitkTrackedPointerManager.h>
 
 class vtkMatrix4x4;
 
@@ -73,9 +75,14 @@ private slots:
   void OnUpdate(const ctkEvent& event);
 
   /**
-   * \brief When the user selects a new tip to probe matrix, we update the internal transform.
+   * \brief Called from GUI button to create points set and grab current pointer location.
    */
-  void OnTipToProbeChanged();
+  void OnGrabPoints();
+
+  /**
+   * \brief Called from the GUI button to clear all points.
+   */
+  void OnClearPoints();
 
 private:
 
@@ -99,6 +106,9 @@ private:
    */
   vtkSmartPointer<vtkMatrix4x4> m_TipToProbeTransform;
   std::string m_TipToProbeFileName;
+  bool m_UpdateViewCoordinate;
+  mitk::DataStorage* m_DataStorage;
+  mitk::TrackedPointerManager::Pointer m_TrackedPointerManager;
 };
 
 #endif // TrackedPointerView_h

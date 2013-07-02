@@ -20,17 +20,17 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED CTK_DIR AND NOT EXISTS ${CTK_DIR})
-  MESSAGE(FATAL_ERROR "CTK_DIR variable is defined but corresponds to non-existing directory \"${CTK_DIR}\"")
-ENDIF()
+if(DEFINED CTK_DIR AND NOT EXISTS ${CTK_DIR})
+  message(FATAL_ERROR "CTK_DIR variable is defined but corresponds to non-existing directory \"${CTK_DIR}\"")
+endif()
 
-IF(QT_FOUND)
+if(QT_FOUND)
 
-  SET(proj CTK)
-  SET(proj_DEPENDENCIES VTK ITK DCMTK)
-  SET(CTK_DEPENDS ${proj})
+  set(proj CTK)
+  set(proj_DEPENDENCIES VTK ITK DCMTK)
+  set(CTK_DEPENDS ${proj})
 
-  IF(NOT DEFINED CTK_DIR)
+  if(NOT DEFINED CTK_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CTK ${NIFTK_LOCATION_CTK})
 
@@ -57,23 +57,25 @@ IF(QT_FOUND)
         -DCTK_LIB_WIDGETS:BOOL=ON
         -DCTK_PLUGIN_org.commontk.eventadmin:BOOL=ON
         -DCTK_PLUGIN_org.commontk.configadmin:BOOL=ON
-        -DADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
-        -DADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
+        # CTK ignores the other standard flags variables: 
+        #   CMAKE_*_FLAGS_DEBUG, CMAKE_*_FLAGS_RELEASE, CMAKE_*_FLAGS_RELWITHDEBINFO, CMAKE_*_LINKER_FLAGS		
+        -DADDITIONAL_C_FLAGS:STRING=${CTK_ADDITIONAL_C_FLAGS}
+        -DADDITIONAL_CXX_FLAGS:STRING=${CTK_ADDITIONAL_CXX_FLAGS}
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
         -DDCMTK_URL:STRING=http://cmic.cs.ucl.ac.uk/platform/dependencies/CTK_DCMTK_085525e6.tar.gz 
       DEPENDS ${proj_DEPENDENCIES}
     )
-    SET(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-    SET(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
+    set(CTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+    set(CTK_SOURCE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src)
 
-    MESSAGE("SuperBuild loading CTK from ${CTK_DIR}")
+    message("SuperBuild loading CTK from ${CTK_DIR}")
 
-  ELSE()
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF()
+  endif()
 
-ENDIF(QT_FOUND)
+endif(QT_FOUND)

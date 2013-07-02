@@ -15,9 +15,9 @@
 #ifndef __itkSetOutputVectorToCurrentPositionFilter_h
 #define __itkSetOutputVectorToCurrentPositionFilter_h
 
-#include "itkInPlaceImageFilter.h"
-#include "itkVector.h"
-#include "itkImage.h"
+#include <itkInPlaceImageFilter.h>
+#include <itkVector.h>
+#include <itkImage.h>
 
 namespace itk {
 /**

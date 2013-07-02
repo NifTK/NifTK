@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
+#include <itkImage.h>
 #include "../itkMIDASSegmentationTestUtils.h"
-#include "itkMIDASRetainMarksNoThresholdingProcessor.h"
-#include "itkMIDASHelper.h"
+#include <itkMIDASRetainMarksNoThresholdingProcessor.h>
+#include <itkMIDASHelper.h>
 
 /**
  * Basic tests for itkMIDASRetailMarksNoThresholdingProcessor

@@ -12,9 +12,9 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY( Common )
-ADD_SUBDIRECTORY( RegistrationToolbox )
-ADD_SUBDIRECTORY( CorticalThickness )
-ADD_SUBDIRECTORY( BasicFilters )
-ADD_SUBDIRECTORY( BoundaryShiftIntegral )
-ADD_SUBDIRECTORY( Segmentation )
+add_subdirectory( Common )
+add_subdirectory( RegistrationToolbox )
+add_subdirectory( CorticalThickness )
+add_subdirectory( BasicFilters )
+add_subdirectory( BoundaryShiftIntegral )
+add_subdirectory( Segmentation )

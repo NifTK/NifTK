@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkNiftiImageIO.h"
-#include "itkVector.h"
-#include "itkExceptionObject.h"
-#include "itkImageAdaptor.h"
-#include "itkMultiplyByConstantImageFilter.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkNiftiImageIO.h>
+#include <itkVector.h>
+#include <itkExceptionObject.h>
+#include <itkImageAdaptor.h>
+#include <itkMultiplyByConstantImageFilter.h>
 
-#include "CommandLineParser.h"
-#include "itkDisplacementVectorCoordinateAdaptionPixelAccessor.h"
+#include <CommandLineParser.h>
+#include <itkDisplacementVectorCoordinateAdaptionPixelAccessor.h>
 
-#include "nifti1_io.h"
+#include <nifti1_io.h>
 
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 /*
  * Purpose: Convert a vector image saved as a nifti-file into a different format...

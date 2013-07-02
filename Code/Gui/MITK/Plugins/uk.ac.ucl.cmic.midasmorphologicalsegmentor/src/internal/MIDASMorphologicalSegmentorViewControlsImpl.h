@@ -16,7 +16,7 @@
 #define MIDASMorphologicalSegmentorViewControlsImpl_h
 
 #include "ui_MIDASMorphologicalSegmentorViewControls.h"
-#include "MorphologicalSegmentorPipelineParams.h"
+#include <MorphologicalSegmentorPipelineParams.h>
 
 class QAbstractButton;
 

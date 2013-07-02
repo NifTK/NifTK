@@ -16,13 +16,13 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkConnectedComponentImageFilter.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkConnectedComponentImageFilter.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIterator.h>
 
 /*!
  * \file niftkConnectedComponents.cxx

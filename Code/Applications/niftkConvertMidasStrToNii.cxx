@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkCastImageFilter.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkCastImageFilter.h>
 
 /*!
  * \file niftkConvertMidasStrToNii.cxx

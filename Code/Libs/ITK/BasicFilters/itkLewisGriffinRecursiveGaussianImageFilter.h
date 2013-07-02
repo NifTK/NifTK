@@ -15,8 +15,8 @@
 #ifndef __itkLewisGriffinRecursiveGaussianImageFilter_h
 #define __itkLewisGriffinRecursiveGaussianImageFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkImageToImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

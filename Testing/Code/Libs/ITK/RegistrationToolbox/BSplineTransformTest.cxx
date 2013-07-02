@@ -18,13 +18,13 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkBSplineTransform.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkResampleImageFilter.h"
-#include "itkArray.h"
+#include <ConversionUtils.h>
+#include <itkBSplineTransform.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkResampleImageFilter.h>
+#include <itkArray.h>
 
 /**
  * Basic tests for BSplineTransform.

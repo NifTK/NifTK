@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <mitkTestingMacros.h>
 #include <mitkVector.h>
-#include "mitkPointUtils.h"
+#include <mitkPointUtils.h>
 
 /**
  * \brief Test class for mitkPointUtils
@@ -110,10 +110,10 @@ public:
         a[0] = 0;    a[1] = 0;   a[2] = 0;
         b[0] = i*j;  b[1] = i*j; b[2] = i*j;
 
-        double distance =  (a[0]-b[0])*(a[0]-b[0])
-                         + (a[1]-b[1])*(a[1]-b[1])
-                         + (a[2]-b[2])*(a[2]-b[2]);
-        double result = mitk::GetSquaredDistanceBetweenPoints(a,b);
+        float distance =  (a[0]-b[0])*(a[0]-b[0])
+                        + (a[1]-b[1])*(a[1]-b[1])
+                        + (a[2]-b[2])*(a[2]-b[2]);
+        float result = mitk::GetSquaredDistanceBetweenPoints(a,b);
         MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, distance, 0.001),".. Testing GetSquaredDistanceBetweenPoints");
       }
     }

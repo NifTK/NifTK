@@ -15,16 +15,16 @@
 #ifndef ITKDBCImageFilter_TXX_
 #define ITKDBCImageFilter_TXX_
 
-#include "itkImageDuplicator.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkLogImageFilter.h"
-#include "itkSubtractImageFilter.h"
-#include "itkMedianImageFilter.h"
-#include "itkExpImageFilter.h"
-#include "itkDivideByConstantImageFilter.h"
-#include "itkMultiplyImageFilter.h"
-#include "itkDivideImageFilter.h"
-#include "itkImageFileWriter.h"
+#include <itkImageDuplicator.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkLogImageFilter.h>
+#include <itkSubtractImageFilter.h>
+#include <itkMedianImageFilter.h>
+#include <itkExpImageFilter.h>
+#include <itkDivideByConstantImageFilter.h>
+#include <itkMultiplyImageFilter.h>
+#include <itkDivideImageFilter.h>
+#include <itkImageFileWriter.h>
 
 namespace itk 
 {

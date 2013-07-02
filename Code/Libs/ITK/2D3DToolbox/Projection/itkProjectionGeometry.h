@@ -15,9 +15,9 @@
 #ifndef __itkProjectionGeometry_h
 #define __itkProjectionGeometry_h
 
-#include "itkImage.h"
-#include "itkPerspectiveProjectionTransform.h"
-#include "itkEulerAffineTransform.h"
+#include <itkImage.h>
+#include <itkPerspectiveProjectionTransform.h>
+#include <itkEulerAffineTransform.h>
 
 namespace itk {
 

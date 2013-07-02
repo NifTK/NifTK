@@ -16,18 +16,18 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkJoinImageFilter.h"
-#include "itkImageToHistogramGenerator.h"
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkNormalizeImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkHistogramToEntropyImageFilter.h"
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkJoinImageFilter.h>
+#include <itkImageToHistogramGenerator.h>
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkNormalizeImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkHistogramToEntropyImageFilter.h>
 
 
 

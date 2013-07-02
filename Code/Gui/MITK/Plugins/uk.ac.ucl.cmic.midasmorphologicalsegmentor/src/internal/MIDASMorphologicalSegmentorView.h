@@ -15,14 +15,14 @@
 #ifndef MIDASMorphologicalSegmentorView_h
 #define MIDASMorphologicalSegmentorView_h
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
 #include <mitkImage.h>
-#include "MorphologicalSegmentorPipeline.h"
-#include "MorphologicalSegmentorPipelineInterface.h"
-#include "MorphologicalSegmentorPipelineParams.h"
+#include <MorphologicalSegmentorPipeline.h>
+#include <MorphologicalSegmentorPipelineInterface.h>
+#include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include "mitkMIDASMorphologicalSegmentorPipelineManager.h"
+#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
 
 /**
  * \class MIDASMorphologicalSegmentorView
@@ -128,6 +128,9 @@ protected:
 
   /// \brief Called when a node changed.
   virtual void NodeChanged(const mitk::DataNode* node);
+
+  /// \brief Called when a node is removed.
+  virtual void NodeRemoved(const mitk::DataNode* node);
 
   /// \brief Returns the name of the preferences node to look up.
   virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }

@@ -18,15 +18,15 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkTranslationThenRotationImageRegistrationMethod.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkSmartPointer.h"
-#include "itkSimplexOptimizer.h"
-#include "itkEulerAffineTransform.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkTranslationThenRotationImageRegistrationMethod.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkSmartPointer.h>
+#include <itkSimplexOptimizer.h>
+#include <itkEulerAffineTransform.h>
 
 /**
  * Aim of this test is simply to test the switching between Rigid and Scale.

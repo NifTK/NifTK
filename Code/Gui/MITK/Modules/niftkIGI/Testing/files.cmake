@@ -13,13 +13,14 @@
 #============================================================================*/
 
 # tests with no extra command line parameter
-SET(MODULE_TESTS
+set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
   mitkTrackedImageCommandTest.cxx
-  mitkTrackedPointerCommandTest.cxx
+  mitkTrackedPointerManagerTest.cxx
   QDSCommonTest.cxx
-  ImageConversionTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
+  mitkSurfaceBasedRegistrationTest.cxx
+  mitkSurfaceBasedRegistrationTestRealData.cxx
 )

@@ -37,14 +37,14 @@
 #include <mitkProperties.h>
 #include <QmitkRenderWindow.h>
 
-#include "NifTKConfigure.h"
-#include "QmitkMIDASNewSegmentationDialog.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASDrawTool.h"
-#include "mitkMIDASPolyTool.h"
-#include "mitkMIDASSeedTool.h"
-#include "mitkMIDASOrientationUtils.h"
-#include "itkMIDASHelper.h"
+#include <NifTKConfigure.h>
+#include <QmitkMIDASNewSegmentationDialog.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASDrawTool.h>
+#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASSeedTool.h>
+#include <mitkMIDASOrientationUtils.h>
+#include <itkMIDASHelper.h>
 
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -132,10 +132,9 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ContainerForSelectorWidget = new QWidget(parent);
     m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->show();
 
     // Set up the Tool Selector.
@@ -262,7 +261,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     }
     else
     {
-      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
 
@@ -316,9 +315,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToo
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::DataNode::Pointer node = toolManager->GetReferenceData(0);
-
-  return node;
+  return toolManager->GetReferenceData(0);
 }
 
 
@@ -517,7 +514,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
     if (workingDataNodes.size() == 0)
     {
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
-      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
     else
     {
@@ -532,7 +529,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   else
   {
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
   }
 }
 
@@ -654,7 +651,10 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
 void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 {
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  this->SetCurrentSelection(referenceImageNode);
+  if (referenceImageNode.IsNotNull())
+  {
+    this->SetCurrentSelection(referenceImageNode);
+  }
 }
 
 

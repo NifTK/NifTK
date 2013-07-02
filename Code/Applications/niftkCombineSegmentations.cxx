@@ -16,14 +16,15 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkShapeBasedAveragingImageFilter.h"
-#include "itkSTAPLEImageFilter.h"
-#include "itkUCLLabelVotingImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkShapeBasedAveragingImageFilter.h>
+#include <itkSTAPLEImageFilter.h>
+#include <itkUCLLabelVotingImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkThresholdImageFilter.h>
 
 const unsigned int Dimension = 3;
 typedef short PixelType;
@@ -52,7 +53,7 @@ void StartUsage(char *name)
   std::cout << "    3. VOTE: Multi-classifier framework for atlas-based image segmentation, " << std::endl; 
   std::cout << "             Rohlfing and Maurer, Pattern Recognition Letters, 2005." << std::endl; 
   std::cout << "  " << std::endl;
-  std::cout << "  " << name << " <algo> <algo_params> <foreground> <output> <input1> <input2> <input3> ..." << std::endl;
+  std::cout << "  " << name << " <algo> <algo_params> <foreground> <mrf> <output> <input1> <input2> <input3> ..." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "*** [mandatory] ***" << std::endl << std::endl;
   std::cout << "  <algo> and <algo_params>   Algorithm and the associated parameters, where <algo> is " << std::endl;
@@ -131,10 +132,10 @@ void computeSTAPLE(std::string outputFilename, const std::vector<std::string>& i
  * Combine segmentation using shape based averaging. 
  * \param std::string outputFilename The output filename
  * \param const std::vector<std::string>& inputFilenames The vector storing the input filenames
- * \param PixelType foregroundValue The foreground values in the input images identifying the segmentations. 
+ * \param PixelType foregroundValue The mean mode used in the SBA.
  * \param std::string userDefinedUndecidedLabel The user-defined undecided label. 
  */
-void computeSBA(std::string outputFilename, const std::vector<std::string>& inputFilenames, PixelType foregroundValue, std::string userDefinedUndecidedLabel)
+void computeSBA(std::string outputFilename, const std::vector<std::string>& inputFilenames, PixelType foregroundValue, std::string userDefinedUndecidedLabel, double mrf)
 {
   typedef itk::Image< PixelType, Dimension > InputImageType;
   typedef itk::ImageFileReader<InputImageType> ImageFileReaderType;
@@ -159,11 +160,48 @@ void computeSBA(std::string outputFilename, const std::vector<std::string>& inpu
     reader->Update();
     filter->SetInput(inputFileIndex, reader->GetOutput());
   }
+
+  filter->Update();
+
   itk::ImageFileWriter<InputImageType>::Pointer writer = itk::ImageFileWriter<InputImageType>::New();
-      
-  writer->SetFileName(outputFilename);
-  writer->SetInput(filter->GetOutput());
-  writer->Update();
+
+  if (mrf <= 0.)
+  {
+    writer->SetFileName(outputFilename);
+    writer->SetInput(filter->GetOutput());
+    writer->Update();
+  }
+  else
+  {
+#if 0
+    itk::ImageFileWriter<FilterType::FloatImageType>::Pointer floatImageWriter = itk::ImageFileWriter<FilterType::FloatImageType>::New();
+    floatImageWriter->SetFileName("average_map.img");
+    floatImageWriter->SetInput(filter->GetAverageDistanceMap());
+    floatImageWriter->Update();
+    floatImageWriter->SetFileName("variability_map.img");
+    floatImageWriter->SetInput(filter->GetVariabilityMap());
+    floatImageWriter->Update();
+    floatImageWriter->SetFileName("probability_map.img");
+    floatImageWriter->SetInput(filter->GetProbabilityMap());
+    floatImageWriter->Update();
+    filter->ComputeMRF(filter->GetProbabilityMap(), 0.03, 10);
+    floatImageWriter->SetFileName("probability_mrf_map.img");
+    floatImageWriter->SetInput(filter->GetProbabilityMap());
+    floatImageWriter->Update();
+#endif
+    filter->ComputeMRF(filter->GetProbabilityMap(), mrf, 10);
+    typedef itk::BinaryThresholdImageFilter<FilterType::FloatImageType, InputImageType> BinaryThresholdImageFilterType;
+    BinaryThresholdImageFilterType::Pointer thresholdImageFilter = BinaryThresholdImageFilterType::New();
+    thresholdImageFilter->SetInput(filter->GetProbabilityMap());
+    thresholdImageFilter->SetLowerThreshold(0.);
+    thresholdImageFilter->SetUpperThreshold(0.5);
+    thresholdImageFilter->SetOutsideValue(255);
+    thresholdImageFilter->SetInsideValue(0);
+
+    writer->SetFileName(outputFilename);
+    writer->SetInput(thresholdImageFilter->GetOutput());
+    writer->Update();
+  }
 }
 
 /**
@@ -205,7 +243,6 @@ void computeVOTE(std::string outputFilename, const std::vector<std::string>& inp
 }
 
 
-
 int main(int argc, char** argv)
 {
   std::string algorithm; 
@@ -213,6 +250,7 @@ int main(int argc, char** argv)
   PixelType foregroundValue; 
   std::string outputFilename; 
   std::vector<std::string> inputFilenames; 
+  double mrf = 0.;
 
   if (argc < 7)
   {
@@ -232,6 +270,9 @@ int main(int argc, char** argv)
   foregroundValue = atoi(argv[argIndex]); 
   std::cout << "foreground=" << niftk::ConvertToString(foregroundValue)<< std::endl;
   argIndex += 1; 
+  mrf = atof(argv[argIndex]);
+  std::cout << "mrf=" << mrf << std::endl;
+  argIndex += 1;
   outputFilename = argv[argIndex];
   std::cout << "output=" << outputFilename<< std::endl;
   argIndex += 1; 
@@ -249,7 +290,7 @@ int main(int argc, char** argv)
     }
     else if (algorithm == "SBA")
     {
-      computeSBA(outputFilename, inputFilenames, foregroundValue, algorithmParameters); 
+      computeSBA(outputFilename, inputFilenames, foregroundValue, algorithmParameters, mrf);
     }
     else if (algorithm == "VOTE")
     {

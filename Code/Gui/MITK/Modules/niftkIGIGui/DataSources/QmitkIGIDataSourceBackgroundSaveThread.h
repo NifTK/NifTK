@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H
-#define QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H
+#ifndef QmitkIGIDataSourceBackgroundSaveThread_h
+#define QmitkIGIDataSourceBackgroundSaveThread_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGITimerBasedThread.h"
@@ -38,4 +38,4 @@ private:
   QmitkIGIDataSource *m_Source;
 };
 
-#endif // QMITKIGIDATASOURCEBACKGROUNDSAVETHREAD_H
+#endif

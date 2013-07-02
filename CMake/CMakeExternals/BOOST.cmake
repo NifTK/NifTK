@@ -18,73 +18,73 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED BOOST_ROOT AND NOT EXISTS ${BOOST_ROOT})
-  MESSAGE(FATAL_ERROR "BOOST_ROOT variable is defined but corresponds to non-existing directory \"${BOOST_ROOT}\".")
-ENDIF()
+if(DEFINED BOOST_ROOT AND NOT EXISTS ${BOOST_ROOT})
+  message(FATAL_ERROR "BOOST_ROOT variable is defined but corresponds to non-existing directory \"${BOOST_ROOT}\".")
+endif()
 
-SET(proj BOOST)
-SET(proj_DEPENDENCIES )
-SET(proj_INSTALL ${EP_BASE}/Install/${proj})
-SET(BOOST_DEPENDS ${proj})
+set(proj BOOST)
+set(proj_DEPENDENCIES )
+set(proj_INSTALL ${EP_BASE}/Install/${proj})
+set(BOOST_DEPENDS ${proj})
 
-IF(NOT DEFINED BOOST_ROOT)
+if(NOT DEFINED BOOST_ROOT)
 
-  SET(additional_cmake_args )
+  set(additional_cmake_args )
 
-  SET(BOOST_ARGS
+  set(BOOST_ARGS
     -DENABLE_MULTI_THREADED:BOOL=ON
     -DENABLE_SINGLE_THREADED:BOOL=OFF
     -DWITH_MPI:BOOL=OFF
   )
 
-  IF(${BUILD_SHARED_LIBS})
-    IF (BUILD_MESHING)
-      IF (NOT WIN32) 
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-      ENDIF (NOT WIN32)
-      SET(BOOST_ARGS
+  if(${BUILD_SHARED_LIBS})
+    if (BUILD_MESHING)
+      if (NOT WIN32) 
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+      endif (NOT WIN32)
+      set(BOOST_ARGS
         ${BOOST_ARGS}
        -DENABLE_SHARED:BOOL=ON
        -DBUILD_SHARED_LIBS:BOOL=ON
        -DENABLE_STATIC:BOOL=ON
        -DENABLE_STATIC_RUNTIME:BOOL=OFF
       )
-    ELSE (BUILD_MESHING)
-      SET(BOOST_ARGS
+    else (BUILD_MESHING)
+      set(BOOST_ARGS
         ${BOOST_ARGS}
         -DENABLE_SHARED:BOOL=ON
         -DBUILD_SHARED_LIBS:BOOL=ON
         -DENABLE_STATIC:BOOL=OFF
         -DENABLE_STATIC_RUNTIME:BOOL=OFF
       )
-    ENDIF (BUILD_MESHING)
-  ELSE(${BUILD_SHARED_LIBS})
-    IF (NOT WIN32)
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-    ENDIF (NOT WIN32)
-    SET(BOOST_ARGS
+    endif (BUILD_MESHING)
+  else(${BUILD_SHARED_LIBS})
+    if (NOT WIN32)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    endif (NOT WIN32)
+    set(BOOST_ARGS
       ${BOOST_ARGS}
       -DENABLE_SHARED:BOOL=OFF
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DENABLE_STATIC:BOOL=ON
       -DENABLE_STATIC_RUNTIME:BOOL=ON
       )
-  ENDIF(${BUILD_SHARED_LIBS})
+  endif(${BUILD_SHARED_LIBS})
 
-  IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-    SET(BOOST_ARGS
+  if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    set(BOOST_ARGS
       ${BOOST_ARGS}
       -DENABLE_RELEASE:BOOL=ON
       -DENABLE_DEBUG:BOOL=OFF
     )
-  ELSE(${CMAKE_BUILD_TYPE} MATCHES "Release")
-    SET(BOOST_ARGS
+  else(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    set(BOOST_ARGS
       ${BOOST_ARGS}
       -DENABLE_RELEASE:BOOL=OFF
       -DENABLE_DEBUG:BOOL=ON
     )
-  ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+  endif(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_BOOST ${NIFTK_LOCATION_BOOST})
 
@@ -106,21 +106,21 @@ IF(NOT DEFINED BOOST_ROOT)
         -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
      DEPENDS ${proj_DEPENDENCIES}
     )
-  SET(BOOST_ROOT ${proj_INSTALL})
-  IF(WIN32)
-    SET(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
-    SET(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
-  ELSE(WIN32)
-    SET(BOOST_INCLUDEDIR "${BOOST_ROOT}/include/boost-${NIFTK_VERSION_BOOST}")
-    SET(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib/boost-${NIFTK_VERSION_BOOST}")
-  ENDIF(WIN32)
+  set(BOOST_ROOT ${proj_INSTALL})
+  if(WIN32)
+    set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
+    set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+  else(WIN32)
+    set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include/boost-${NIFTK_VERSION_BOOST}")
+    set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib/boost-${NIFTK_VERSION_BOOST}")
+  endif(WIN32)
 
-  MESSAGE("SuperBuild loading Boost from ${BOOST_ROOT}")
-  MESSAGE("SuperBuild loading Boost using BOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}")
-  MESSAGE("SuperBuild loading Boost using BOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}")
+  message("SuperBuild loading Boost from ${BOOST_ROOT}")
+  message("SuperBuild loading Boost using BOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}")
+  message("SuperBuild loading Boost using BOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}")
 
-ELSE()
+else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-ENDIF()
+endif()

@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_xnat)
+project(uk_ac_ucl_cmic_xnat)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 

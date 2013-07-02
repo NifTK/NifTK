@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOL_H
-#define QMITKIGIULTRASONIXTOOL_H
+#ifndef QmitkIGIUltrasonixTool_h
+#define QmitkIGIUltrasonixTool_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkQImageToMitkImageFilter.h"
 #include "QmitkIGINiftyLinkDataSource.h"
-#include "mitkImage.h"
-#include "mitkDataNode.h"
+#include <mitkImage.h>
+#include <mitkDataNode.h>
 
 /**
  * \class QmitkIGIUltrasonixTool
@@ -38,6 +38,11 @@ public:
    * \brief We store the node name here so other classes can refer to it.
    */
   static const std::string ULTRASONIX_IMAGE_NAME;
+
+  /**
+   * \brief Conversion factor for radians to degrees.
+   */
+  static const float RAD_TO_DEGREES;
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
@@ -79,20 +84,9 @@ protected:
 private:
 
   /**
-   * \brief Called by the base class Update message, which processes the message
-   * by extracting an image, and converting it appropriate to the associated image
-   * in the data storage.
-   */
-  void HandleImageData(NiftyLinkMessage* msg);
-
-  /**
    * \brief Retrieves the motor position from the most recent data available.
    */
   float GetMotorPos(igtl::Matrix4x4& matrix);
-
-  mitk::Image::Pointer                  m_Image;
-  mitk::DataNode::Pointer               m_ImageNode;
-  float                                 m_RadToDeg;
 
 }; // end class
 

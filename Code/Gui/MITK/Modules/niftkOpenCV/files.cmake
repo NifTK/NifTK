@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cxx
@@ -28,6 +29,7 @@ set(CPP_FILES
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx
+  CameraCalibration/Undistortion.cxx
   Registration/mitkRegistrationHelper.cxx
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx

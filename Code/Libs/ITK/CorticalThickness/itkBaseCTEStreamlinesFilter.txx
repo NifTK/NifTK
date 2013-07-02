@@ -16,10 +16,10 @@
 #define __itkBaseCTEStreamlinesFilter_txx
 
 #include "itkBaseCTEStreamlinesFilter.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
-#include "itkVectorNearestNeighborInterpolateImageFunction.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkLinearInterpolateImageFunction.h"
+#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkVectorNearestNeighborInterpolateImageFunction.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkLinearInterpolateImageFunction.h>
 
 namespace itk
 {

@@ -9,7 +9,7 @@
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.TrackedPointerViewPreferencePage" name="Tracked Image" class="TrackedPointerViewPreferencePage">
+    <page id="uk.ac.ucl.cmic.TrackedPointerViewPreferencePage" name="Tracked Pointer" class="TrackedPointerViewPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.TrackedPointerViewKeywords"></keywordreference>
     </page>
   </extension>
