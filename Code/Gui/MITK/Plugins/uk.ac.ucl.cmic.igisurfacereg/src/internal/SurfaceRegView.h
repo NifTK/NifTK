@@ -72,7 +72,7 @@ protected:
 protected slots:
 
 protected:
-  float ComputeDistance(mitk::DataNode::Pointer fixed, mitk::DataNode::Pointer moving);
+  float ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSmartPointer<vtkPolyData> moving);
 
 private slots:
 

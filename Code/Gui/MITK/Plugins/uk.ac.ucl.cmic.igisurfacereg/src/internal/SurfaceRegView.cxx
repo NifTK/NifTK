@@ -101,6 +101,8 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
+    m_Controls->m_LiveDistanceGroupBox->setCollapsed(true);
+
     connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
 
@@ -125,27 +127,27 @@ void SurfaceRegView::OnComputeDistance()
   // should not be able to call/click here if it's still running.
   assert(!m_BackgroundProcess.isRunning());
 
-  m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), m_Controls->m_MovingSurfaceComboBox->GetSelectedNode());
+  // essentially the same stuff that SurfaceBasedRegistration::Update() does.
+  // we should do that before we kick off the worker thread! 
+  // otherwise someone else might move around the node's matrices.
+  vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), fixedPoly);
+  vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), movingPoly);
+
+  m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, fixedPoly, movingPoly);
   m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
 }
 
 
 //-----------------------------------------------------------------------------
-float SurfaceRegView::ComputeDistance(mitk::DataNode::Pointer fixed, mitk::DataNode::Pointer moving)
+float SurfaceRegView::ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSmartPointer<vtkPolyData> moving)
 {
   // note: this is run in a worker thread! do not do any updates to data storage or nodes!
 
-  // essentially the same stuff that SurfaceBasedRegistration::Update() does.
-  // FIXME: we should do that before we kick off the worker thread! 
-  //        otherwise someone else might move around the node's matrices.
-  vtkPolyData* fixedPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(fixed, fixedPoly);
-  vtkPolyData* movingPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(moving, movingPoly);
-
   vtkSmartPointer<vtkDoubleArray>   result;
   // FIXME: this crashes because targetLocator has a null tree member... sometimes???
-  DistanceToSurface(movingPoly, fixedPoly, result);
+  DistanceToSurface(moving, fixed, result);
 
   double  sum = 0;
   for (int i = 0; i < result->GetNumberOfTuples(); ++i)
