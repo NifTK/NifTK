@@ -271,8 +271,7 @@ bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::Da
 {
   bool canRestart = false;
 
-  if (node.IsNotNull() && mitk::IsNodeABinaryImage(node)
-      )
+  if (node.IsNotNull() && mitk::IsNodeABinaryImage(node))
   {
     mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())

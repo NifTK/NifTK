@@ -232,10 +232,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     {
       segmentedData = node;
     }
-
-    if (mitk::IsNodeABinaryImage(node) &&
-        this->CanStartSegmentationForBinaryNode(node) &&
-        !this->IsNodeASegmentationImage(node))
+    else if (mitk::IsNodeABinaryImage(node) && this->CanStartSegmentationForBinaryNode(node))
     {
       segmentedData = node;
     }
