@@ -50,10 +50,8 @@ if(BUILD_MESHING)
       DEPENDS ${proj_DEPENDENCIES}
       )
     set(CGAL_DIR "${EP_BASE}/Install/${proj}/lib/CGAL")
-    set(CGAL_LIBRARY_DIRS "${EP_BASE}/Install/${proj}/lib")
     set(CGAL_INCLUDE_DIRS "${EP_BASE}/Install/${proj}/include") 
 
-    link_directories("${CGAL_LIBRARY_DIRS}")
   else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")

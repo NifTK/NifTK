@@ -721,10 +721,8 @@ endif(MITK_FOUND)
 
 if (BUILD_MESHING)
   set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CMakeExternals/Install/CGAL/lib/CGAL")
-  find_package(CGAL)
-  if (NOT WIN32) 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CGAL_DIR}/..")
-  endif (NOT WIN32) 
+  find_package(CGAL) 
+  link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
 
 ######################################################################
