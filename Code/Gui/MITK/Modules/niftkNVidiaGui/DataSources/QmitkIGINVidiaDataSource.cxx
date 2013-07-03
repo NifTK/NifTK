@@ -483,7 +483,7 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       else
       {
         // dump a header line
-        m_FrameMapLogFile << "#framenumber_starting_at_one sequencenumber channel timestamp" << std::endl;
+        m_FrameMapLogFile << "#framenumber_starting_at_zero sequencenumber channel timestamp" << std::endl;
       }
 
       m_Pimpl->setCompressionOutputFilename(filenamebase + ".264");
