@@ -323,11 +323,19 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
           }
 
           // height of each channel in the frame (possibly including two fields)
-          int   subimagheight = m_CachedUpdate.first->height / streamcount;
+          int   channelHeight = m_CachedUpdate.first->height / streamcount;
+          // by default, each channel has only one field (ie. full frame progressive or drop).
+          int   fieldHeight = channelHeight;
+          if (currentFieldMode == STACK_FIELDS)
+          {
+            // we are rounding down here, intentionally.
+            // there are video formats with differing field heights (eg. ntsc) but because STACK_FIELDS was never
+            // implemented correctly we dont know which field we are actually returning here. rounding down is the safe option.
+            fieldHeight = channelHeight / 2;
+          }
           IplImage  subimg;
-          // FIXME: this should deal with existing STACK_FIELDS mode and drop the bottom half!
-          cvInitImageHeader(&subimg, cvSize((int) m_CachedUpdate.first->width, subimagheight), IPL_DEPTH_8U, m_CachedUpdate.first->nChannels);
-          cvSetData(&subimg, &m_CachedUpdate.first->imageData[i * subimagheight * m_CachedUpdate.first->widthStep], m_CachedUpdate.first->widthStep);
+          cvInitImageHeader(&subimg, cvSize((int) m_CachedUpdate.first->width, fieldHeight), IPL_DEPTH_8U, m_CachedUpdate.first->nChannels);
+          cvSetData(&subimg, &m_CachedUpdate.first->imageData[i * channelHeight * m_CachedUpdate.first->widthStep], m_CachedUpdate.first->widthStep);
 
           // readback will have dumped data in opengl orientation (origin is at the lower left corner).
           // and we cannot flip the whole image because that would change channel order.
