@@ -60,12 +60,22 @@ public:
    */
   void ApplyTransform (mitk::DataNode::Pointer node);
   void ApplyTransform (mitk::DataNode::Pointer node, vtkMatrix4x4* transform);
-  void GetCurrentTransform ( const mitk::DataNode * node , vtkMatrix4x4* matrix );
+  static void GetCurrentTransform ( const mitk::DataNode * node , vtkMatrix4x4* matrix );
 
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
   itkSetMacro (UseSpatialFilter, bool);
+
+
+  /**
+   * \brief An crude method to spatially filter the mitk point cloud, assuming that the 
+   * cloud is from a surface reconstruction where the point id encodes the point's 
+   * position on screen
+   */
+  static void PointSetToPolyData_SpatialFilter ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+  static void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut, bool useSpatialFilter = false);
+  static void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
 
 protected:
 
@@ -84,14 +94,6 @@ private:
 
   vtkMatrix4x4* m_Matrix;
 
-  void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
-  /**
-   * \brief An crude method to spatially filter the mitk point cloud, assuming that the 
-   * cloud is from a surface reconstruction where the point id encodes the point's 
-   * position on screen
-   */
-  void PointSetToPolyData_SpatialFilter ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
-  void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut);
 
   void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,
