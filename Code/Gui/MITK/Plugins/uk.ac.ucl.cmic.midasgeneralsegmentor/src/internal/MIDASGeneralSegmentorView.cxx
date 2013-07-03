@@ -271,10 +271,9 @@ bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::Da
 {
   bool canRestart = false;
 
-  if (node.IsNotNull() && mitk::IsNodeABinaryImage(node)
-      )
+  if (node.IsNotNull() && mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
       if (mitk::IsNodeAGreyScaleImage(parent))
@@ -294,10 +293,10 @@ bool MIDASGeneralSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::P
   assert(node);
   bool result = false;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
 
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
@@ -330,9 +329,9 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingNodesFrom
   assert(node);
   mitk::ToolManager::DataVectorType result;
 
-  if (IsNodeABinaryImage(node))
+  if (mitk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {

@@ -22,6 +22,10 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkFileIOUtils.h>
 #include <QMessageBox>
+#include <QtConcurrentRun>
+#include <vtkFunctions.h>
+#include <vtkDoubleArray.h>
+
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
@@ -32,12 +36,24 @@ SurfaceRegView::SurfaceRegView()
 {
   m_Matrix = vtkMatrix4x4::New();
   m_Matrix->Identity();
+
+  bool ok = false;
+  ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
 SurfaceRegView::~SurfaceRegView()
 {
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  if (dataStorage.IsNotNull())
+  {
+    dataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
+  }
+
+  m_BackgroundProcessWatcher.waitForFinished();
+
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -85,10 +101,86 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
+    m_Controls->m_LiveDistanceGroupBox->setCollapsed(true);
+
     connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
 
+    connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+
+    dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
+
     RetrievePreferenceValues();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceRegView::OnComputeDistance()
+{
+  // wouldnt be visible otherwise
+  assert(m_Controls->m_LiveDistanceGroupBox->isChecked());
+
+  // disable it until we are done with the current computation.
+  m_Controls->m_LiveDistanceUpdateButton->setEnabled(false);
+
+  // should not be able to call/click here if it's still running.
+  assert(!m_BackgroundProcess.isRunning());
+
+  // essentially the same stuff that SurfaceBasedRegistration::Update() does.
+  // we should do that before we kick off the worker thread! 
+  // otherwise someone else might move around the node's matrices.
+  vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), fixedPoly);
+  vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), movingPoly);
+
+  m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, fixedPoly, movingPoly);
+  m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
+}
+
+
+//-----------------------------------------------------------------------------
+float SurfaceRegView::ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSmartPointer<vtkPolyData> moving)
+{
+  // note: this is run in a worker thread! do not do any updates to data storage or nodes!
+
+  vtkSmartPointer<vtkDoubleArray>   result;
+  // FIXME: this crashes because targetLocator has a null tree member... sometimes???
+  DistanceToSurface(moving, fixed, result);
+
+  double  sum = 0;
+  for (int i = 0; i < result->GetNumberOfTuples(); ++i)
+  {
+    double p = result->GetValue(i);
+    sum += p;
+  }
+
+  return sum;
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceRegView::OnBackgroundProcessFinished()
+{
+  float   distance = m_BackgroundProcessWatcher.result();
+
+  m_Controls->m_DistanceLineEdit->setText(tr("%1").arg(distance));
+  m_Controls->m_LiveDistanceUpdateButton->setEnabled(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceRegView::DataStorageEventListener(const mitk::DataNode* node)
+{
+  if (m_Controls->m_LiveDistanceGroupBox->isChecked())
+  {
+    if ((node == m_Controls->m_FixedSurfaceComboBox->GetSelectedNode()) ||
+        (node == m_Controls->m_MovingSurfaceComboBox->GetSelectedNode()))
+    {
+      // re-use the existing gui mechanism
+      m_Controls->m_LiveDistanceUpdateButton->click();
+    }
   }
 }
 
@@ -110,6 +202,8 @@ void SurfaceRegView::RetrievePreferenceValues()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void SurfaceRegView::OnCalculateButtonPressed()
 {
   mitk::DataNode* fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
@@ -150,6 +244,9 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
 
   registration->ApplyTransform(movingnode);
+  // we seem to need an explicit node-modified to trigger the usual listeners.
+  // and even with this, the window will not re-render on its own, have to click in it.
+  movingnode->Modified();
 }
 
 //--------------------------------------------------------------------------------

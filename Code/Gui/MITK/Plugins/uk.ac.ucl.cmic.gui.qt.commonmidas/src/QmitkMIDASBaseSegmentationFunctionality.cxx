@@ -232,10 +232,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     {
       segmentedData = node;
     }
-
-    if (mitk::IsNodeABinaryImage(node) &&
-        this->CanStartSegmentationForBinaryNode(node) &&
-        !this->IsNodeASegmentationImage(node))
+    else if (mitk::IsNodeABinaryImage(node) && this->CanStartSegmentationForBinaryNode(node))
     {
       segmentedData = node;
     }
@@ -256,7 +253,6 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
-
       m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
     }
     else
@@ -340,7 +336,7 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolM
 //-----------------------------------------------------------------------------
 mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  mitk::DataNode* result = FindFirstParentImage(this->GetDataStorage(), node, false );
+  mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), node, false );
   return result;
 }
 
@@ -364,21 +360,21 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImage()
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeAGreyScaleImage(node);
+  return mitk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeABinaryImage(node);
+  return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeABinaryImage(node);
+  return mitk::IsNodeABinaryImage(node);
 }
 
 mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
