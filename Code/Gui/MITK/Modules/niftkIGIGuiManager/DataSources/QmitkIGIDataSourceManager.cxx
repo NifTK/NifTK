@@ -714,7 +714,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   if (m_PlayPushButton->isChecked())
   {
     int         sliderValue = m_PlaybackSlider->value();
-    igtlUint64  sliderTime  = m_PlaybackSliderBase + ((double) sliderValue / m_PlaybackSliderFactor);
+    igtlUint64  sliderTime  = m_PlaybackSliderBase + (igtlUint64) (((double) sliderValue / m_PlaybackSliderFactor));
 
     m_CurrentTime = sliderTime;
   }
@@ -945,7 +945,7 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         assert(sliderMax < std::numeric_limits<int>::max());
 
         m_PlaybackSlider->setMinimum(0);
-        m_PlaybackSlider->setMaximum(sliderMax);
+        m_PlaybackSlider->setMaximum((int) sliderMax);
 
         // pop open the controls
         m_ToolManagerPlaybackGroupBox->setCollapsed(false);
