@@ -230,7 +230,7 @@
       <item row="4" column="1">
        <widget class="QComboBox" name="FieldModeComboBox">
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <item>
          <property name="text">
@@ -240,11 +240,6 @@
         <item>
          <property name="text">
           <string extracomment="One field of the video is discarded, reducing the effective vertical resolution.">Drop one field</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string extracomment="Both fields are stacked on top of each other.">Stack</string>
          </property>
         </item>
        </widget>

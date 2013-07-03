@@ -25,6 +25,7 @@
 #include <mitkImageWriteAccessor.h>
 #include "QmitkIGINVidiaDataSourceImpl.h"
 #include <boost/typeof/typeof.hpp>
+#include <mitkProperties.h>
 
 
 // note the trailing space
@@ -63,7 +64,7 @@ QmitkIGINVidiaDataSource::QmitkIGINVidiaDataSource(mitk::DataStorage* storage)
     }
 
     // needs to match GUI combobox's default!
-    m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) STACK_FIELDS);
+    m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) DROP_ONE_FIELD);
     StartCapturing();
   }
   catch (const std::exception& e)
@@ -106,6 +107,11 @@ void QmitkIGINVidiaDataSource::SetFieldMode(InterlacedBehaviour b)
     throw std::runtime_error("Cannot change capture parameter while capture is in progress");
   }
 
+  if (b == STACK_FIELDS)
+  {
+    throw std::runtime_error("Support for interlaced field mode STACK_FIELDS has been removed");
+  }
+
   // until i've figured out suitable error handling lets just assert
   assert(m_Pimpl);
   m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) b);
@@ -116,7 +122,18 @@ void QmitkIGINVidiaDataSource::SetFieldMode(InterlacedBehaviour b)
 QmitkIGINVidiaDataSource::InterlacedBehaviour QmitkIGINVidiaDataSource::GetFieldMode() const
 {
   assert(m_Pimpl);
-  return (InterlacedBehaviour) m_Pimpl->GetFieldMode();
+
+  // we fudge the actual field mode to prevent STACK_FIELDS from showing up.
+  // this (atm) only affects the data source gui. Update() will still do the right thing.
+  InterlacedBehaviour internalfieldmode = (InterlacedBehaviour) m_Pimpl->GetFieldMode();
+  switch (internalfieldmode)
+  {
+    case STACK_FIELDS:
+      internalfieldmode = DROP_ONE_FIELD;
+      break;
+  }
+
+  return internalfieldmode;
 }
 
 
@@ -286,6 +303,8 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
       // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
       if (m_CachedUpdate.first)
       {
+        const video::SDIInput::InterlacedBehaviour  currentFieldMode = m_Pimpl->GetFieldMode();
+
         // max 4 streams
         const int streamcount = m_CachedUpdate.second;
         for (int i = 0; i < streamcount; ++i)
@@ -303,9 +322,10 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
             return false;
           }
 
-          // we ignore field mode here, it's up to any consumer to deal with this properly
+          // height of each channel in the frame (possibly including two fields)
           int   subimagheight = m_CachedUpdate.first->height / streamcount;
           IplImage  subimg;
+          // FIXME: this should deal with existing STACK_FIELDS mode and drop the bottom half!
           cvInitImageHeader(&subimg, cvSize((int) m_CachedUpdate.first->width, subimagheight), IPL_DEPTH_8U, m_CachedUpdate.first->nChannels);
           cvSetData(&subimg, &m_CachedUpdate.first->imageData[i * subimagheight * m_CachedUpdate.first->widthStep], m_CachedUpdate.first->widthStep);
 
@@ -377,8 +397,31 @@ bool QmitkIGINVidiaDataSource::Update(mitk::IGIDataType* data)
               MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
             }
           }
+
+          // copy the node properties to its image too.
+          imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+          assert(imageInNode.IsNotNull());
+          imageInNode->SetProperty(s_SDISequenceNumberPropertyName, mitk::IntProperty::New(dataType->GetSequenceNumber()));
+          imageInNode->SetProperty(s_SDIFieldModePropertyName, mitk::IntProperty::New(currentFieldMode));
+
+          // this is internal field mode, which might have the obsolete stack configured (i.e. during playback).
+          switch (currentFieldMode)
+          {
+            case STACK_FIELDS:
+              // in case of stack, the subimage-stuffing-into-mitk will have discarded the bottom half.
+            case DROP_ONE_FIELD:
+            {
+              mitk::Vector3D    s;
+              s[0] = 1;
+              s[1] = 2;
+              s[2] = 1;
+              imageInNode->GetGeometry()->SetSpacing(s);
+              break;
+            }
+          }
+
           node->SetIntProperty(s_SDISequenceNumberPropertyName, dataType->GetSequenceNumber());
-          node->SetIntProperty(s_SDIFieldModePropertyName, m_Pimpl->GetFieldMode());
+          node->SetIntProperty(s_SDIFieldModePropertyName, currentFieldMode);
           node->Modified();
         } // for
 
@@ -449,12 +492,13 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
       std::ofstream   fieldmodefile((filenamebase + ".fieldmode").c_str());
       fieldmodefile << m_Pimpl->GetFieldMode() << std::endl;
       fieldmodefile <<
+        "\n"
         "# only the single number above is interpreted, anything that follows is discarded.\n"
         "# field mode determines how fields of interlaced video are packed into full video frames.\n"
-        "# this only applies to interlaced video, it has no meaning for \n"
+        "# this only applies to interlaced video, it has no meaning for progressive input.\n"
         "# " << DO_NOTHING_SPECIAL << " = DO_NOTHING_SPECIAL: interlaced video is treated as full frame.\n"
         "# " << DROP_ONE_FIELD << " = DROP_ONE_FIELD: only one field is captured, the other discarded.\n"
-        "# " << STACK_FIELDS << " = STACK_FIELDS: both fields are stacked vertically.\n";
+        "# " << STACK_FIELDS << " = STACK_FIELDS: [deprecated] both fields are stacked vertically.\n";
       fieldmodefile.close();
     }
   }
@@ -669,7 +713,8 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
           default:
             std::cerr << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
             fieldmode = STACK_FIELDS;
-            // fall through to default
+            // STACK_FIELDS used to be the default for previous pig recordings. but it has been deprecated since.
+            // we still set this on pimpl, so that Update() will do the right thing of implicitly converting it to DROP_ONE_FIELD.
           case STACK_FIELDS:
           case DROP_ONE_FIELD:
           case DO_NOTHING_SPECIAL:

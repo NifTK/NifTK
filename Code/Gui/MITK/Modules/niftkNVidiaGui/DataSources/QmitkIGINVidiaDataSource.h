@@ -71,9 +71,11 @@ public:
   // this should match libvideo/SDIInput::InterlacedBehaviour
   enum InterlacedBehaviour
   {
-    DO_NOTHING_SPECIAL,
-    DROP_ONE_FIELD,
-    STACK_FIELDS
+    DO_NOTHING_SPECIAL    = 0,
+    DROP_ONE_FIELD        = 1,
+
+    /** No longer supported! */
+    STACK_FIELDS          = 2
   };
 
   // used to capture a lower-resolution image
