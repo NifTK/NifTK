@@ -135,6 +135,18 @@ void SurfaceRegView::OnComputeDistance()
   vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
   mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), movingPoly);
 
+  // this seems a bit messy here:
+  // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
+  // so if it doesnt then we swap, if both dont have any then dont do anything.
+  if (fixedPoly->GetNumberOfCells() == 0)
+  {
+    if (movingPoly->GetNumberOfCells() == 0)
+    {
+      m_Controls->m_DistanceLineEdit->setText("ERROR: need cells on at least one of the objects");
+    }
+    std::swap(fixedPoly, movingPoly);
+  }
+
   m_BackgroundProcess = QtConcurrent::run(this, &SurfaceRegView::ComputeDistance, fixedPoly, movingPoly);
   m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
 }
