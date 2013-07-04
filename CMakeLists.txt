@@ -451,6 +451,8 @@ set(OPENCV_ADDITIONAL_C_FLAGS "" CACHE STRING "Additional C Flags for OpenCV onl
 mark_as_advanced(OPENCV_ADDITIONAL_C_FLAGS)
 set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV only")
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
+set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
+mark_as_advanced(OPENCV_WITH_CUDA)
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -477,8 +479,6 @@ if(BUILD_IGI)
   if(NOT BUILD_OPENCV)
     message(FATAL_ERROR "Need BUILD_OPENCV turned ON for BUILD_IGI.")
   endif(NOT BUILD_OPENCV)
-  # FIXME: turn this on automatically? or turn of BUILD_IGI?
-  #set(BUILD_OPENCV ON)
 endif(BUILD_IGI)
 
 ######################################################################
@@ -678,8 +678,6 @@ endif(VTK_FOUND)
 ######################################################################
 # Find OpenCV.
 ######################################################################
-
-# FIXME
 if(BUILD_OPENCV)
   find_package(OpenCV REQUIRED)
   if(OpenCV_FOUND)

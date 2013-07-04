@@ -135,6 +135,9 @@ set(EXTERNAL_PROJECTS
 if(BUILD_OPENCV)
   list(FIND EXTERNAL_PROJECTS MITK MITK_POSITION_IN_EXTERNAL_PROJECTS)
   list(INSERT EXTERNAL_PROJECTS ${MITK_POSITION_IN_EXTERNAL_PROJECTS} OpenCV)
+  if(OPENCV_WITH_CUDA)
+    message("Beware: You are building with OPENCV_WITH_CUDA! This means OpenCV will have a hard dependency on CUDA and will not work without it!")
+  endif(OPENCV_WITH_CUDA)
 endif(BUILD_OPENCV)
 
 if(BUILD_IGI)
