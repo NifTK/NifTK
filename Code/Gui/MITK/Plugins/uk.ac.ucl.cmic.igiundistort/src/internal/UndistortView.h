@@ -21,6 +21,8 @@
 #include "ui_UndistortViewControls.h"
 #include <map>
 #include <string>
+#include <QFuture>
+#include <QFutureWatcher>
 
 
 // forward-decl
@@ -54,6 +56,7 @@ public:
 protected:
   void UpdateNodeTable();
 
+  void RunBackgroundProcessing();
 
 signals:
   void SignalDeferredNodeTableUpdate();
@@ -71,6 +74,9 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  // we connect the future to this slot
+  void OnBackgroundProcessFinished();
+
 private:
 
   void DataStorageEventListener(const mitk::DataNode* node);
@@ -78,8 +84,22 @@ private:
   /// \brief Retrieves the preferences, and sets the private member variables accordingly.
   void RetrievePreferenceValues();
 
-  QString                                       m_LastFile;
-  std::map<std::string, niftk::Undistortion*>   m_UndistortionMap;
+  QString                                                m_LastFile;
+  std::map<mitk::Image::Pointer, niftk::Undistortion*>   m_UndistortionMap;
+
+
+  struct WorkItem
+  {
+    niftk::Undistortion*    m_Proc;
+    mitk::Image::Pointer    m_InputImage;
+    mitk::Image::Pointer    m_OutputImage;
+    std::string             m_OutputNodeName;
+    std::string             m_InputNodeName;
+  };
+  std::vector<WorkItem>                         m_BackgroundQueue;
+
+  QFuture<void>                                 m_BackgroundProcess;
+  QFutureWatcher<void>                          m_BackgroundProcessWatcher;
 };
 
 #endif // UndistortView_h
