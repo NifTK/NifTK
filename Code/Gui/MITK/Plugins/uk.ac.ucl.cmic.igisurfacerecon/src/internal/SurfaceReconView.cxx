@@ -250,7 +250,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
         params.minDepth = minDepth;
         params.maxDepth = maxDepth;
 
-        m_BackgroundProcess = QtConcurrent::run(m_SurfaceReconstruction.GetPointer(), &niftk::SurfaceReconstruction::Run, params);
+        m_BackgroundProcess = QtConcurrent::run(this, &SurfaceReconView::RunBackgroundReconstruction, params);
         m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
       }
       catch (const std::exception& e)
@@ -260,6 +260,26 @@ void SurfaceReconView::DoSurfaceReconstruction()
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseData::Pointer SurfaceReconView::RunBackgroundReconstruction(niftk::SurfaceReconstruction::ParamPacket param)
+{
+  mitk::BaseData::Pointer   result;
+  try
+  {
+    result = m_SurfaceReconstruction->Run(param);
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Caught exception: " << e.what() << std::endl;
+  }
+  catch (...)
+  {
+    std::cerr << "Caught unknown exception!" << std::endl;
+  }
+  return result;
 }
 
 

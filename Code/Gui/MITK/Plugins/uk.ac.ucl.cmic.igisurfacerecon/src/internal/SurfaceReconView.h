@@ -80,6 +80,7 @@ private slots:
   void OnBackgroundProcessFinished();
 
 private:
+  mitk::BaseData::Pointer RunBackgroundReconstruction(niftk::SurfaceReconstruction::ParamPacket param);
 
   /**
    * \brief Retrieve's the pref values from preference service, and stored in member variables.

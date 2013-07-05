@@ -410,6 +410,18 @@ void Undistortion::ValidateInput(bool& recomputeCache)
     m_Intrinsics = nodeIntrinsic->Clone();
   }
 
+  // input image size can change wrt our previously cached remap image.
+  if (m_MapX != 0)
+  {
+    // these always come in pairs.
+    assert(m_MapY != 0);
+
+    if ((m_Image->GetDimension(0) != m_MapX->width) ||
+        (m_Image->GetDimension(1) != m_MapX->height))
+    {
+      recomputeCache = true;
+    }
+  }
   // FIXME: check that calibration data is in some meaningful range for our input image
 }
 
