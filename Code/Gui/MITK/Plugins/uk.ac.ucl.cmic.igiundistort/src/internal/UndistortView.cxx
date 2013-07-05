@@ -180,6 +180,8 @@ void UndistortView::OnGoButtonClick()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
 
+  m_DoItNowButton->setEnabled(false);
+
   for (int i = 0; i < m_NodeTable->rowCount(); ++i)
   {
     QTableWidgetItem* nameitem = m_NodeTable->item(i, 0);
@@ -203,39 +205,41 @@ void UndistortView::OnGoButtonClick()
       if (!nodename.empty())
       {
         mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(nodename);
-        // FIXME: is this a hard error? i'm a bit undecided...
-        assert(inputNode.IsNotNull());
-
-        // as long as we have an Undistortion object it will take care of validating itself
-        BOOST_AUTO(ci, m_UndistortionMap.find(nodename));
-        if (ci == m_UndistortionMap.end())
+        // is this a hard error? i'm a bit undecided...
+        // it could simply be a result of a stale table, so sliently ignoring it would be an option.
+        if (inputNode.IsNotNull())
         {
-          niftk::Undistortion*  undist = new niftk::Undistortion(inputNode);
-          // store the new Undistortion object in our cache
-          // note: insert() returns an iterator to the new insertion location
-          ci = m_UndistortionMap.insert(std::make_pair(nodename, undist)).first;
-        }
+          // as long as we have an Undistortion object it will take care of validating itself
+          BOOST_AUTO(ci, m_UndistortionMap.find(nodename));
+          if (ci == m_UndistortionMap.end())
+          {
+            niftk::Undistortion*  undist = new niftk::Undistortion(inputNode);
+            // store the new Undistortion object in our cache
+            // note: insert() returns an iterator to the new insertion location
+            ci = m_UndistortionMap.insert(std::make_pair(nodename, undist)).first;
+          }
 
-        mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
-        if (outputNode.IsNull())
-        {
-          // Undistortion takes care of sizing the output image correcly, etc
-          // we just need to make sure the output node exists
-          outputNode = mitk::DataNode::New();
-          outputNode->SetName(outputitem->text().toStdString());
-        }
+          mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
+          if (outputNode.IsNull())
+          {
+            // Undistortion takes care of sizing the output image correcly, etc
+            // we just need to make sure the output node exists
+            outputNode = mitk::DataNode::New();
+            outputNode->SetName(outputitem->text().toStdString());
+          }
 
-        // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
-        if (calibparamitem != 0)
-        {
-          niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
-        }
+          // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
+          if (calibparamitem != 0)
+          {
+            niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
+          }
 
-        ci->second->Run(outputNode);
+          ci->second->Run(outputNode);
 
-        if (storage->GetNamedNode(outputitem->text().toStdString()) == NULL)
-        {
-          storage->Add(outputNode, inputNode);
+          if (storage->GetNamedNode(outputitem->text().toStdString()) == NULL)
+          {
+            storage->Add(outputNode, inputNode);
+          }
         }
       }
       else
@@ -244,6 +248,8 @@ void UndistortView::OnGoButtonClick()
       }
     }
   }
+
+  m_DoItNowButton->setEnabled(true);
 }
 
 
