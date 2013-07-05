@@ -27,6 +27,7 @@
 #include <QFileDialog>
 #include <Undistortion.h>
 #include <boost/typeof/typeof.hpp>
+#include <QtConcurrentRun>
 
 
 const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
@@ -35,6 +36,9 @@ const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
 //-----------------------------------------------------------------------------
 UndistortView::UndistortView()
 {
+  bool ok = false;
+  ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
 }
 
 
@@ -55,6 +59,14 @@ UndistortView::~UndistortView()
     storage->AddNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
     storage->RemoveNodeEvent.RemoveListener(mitk::MessageDelegate1<UndistortView, const mitk::DataNode*>(this, &UndistortView::DataStorageEventListener));
   }
+
+  // wait for it to finish first and then disconnect?
+  // or the other way around?
+  // i'd say disconnect first then wait because at that time we no longer care about the result
+  // and the finished-handler might access some half-destroyed objects.
+  ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
+  m_BackgroundProcessWatcher.waitForFinished();
 }
 
 
@@ -63,7 +75,7 @@ void UndistortView::OnUpdate(const ctkEvent& event)
 {
   if (m_AutomaticUpdateRadioButton->isChecked())
   {
-    OnGoButtonClick();
+    m_DoItNowButton->click();
   }
 }
 
@@ -76,7 +88,8 @@ void UndistortView::UpdateNodeTable()
   {
     bool  wasModified = false;
 
-    std::set<std::string>   nodeNamesLeftToAdd;
+    std::set<std::string>             nodeNamesLeftToAdd;
+    std::set<mitk::Image::Pointer>    cacheItemsToKeep;
 
     mitk::DataStorage::SetOfObjects::ConstPointer allNodes = storage->GetAll();
     for (mitk::DataStorage::SetOfObjects::ConstIterator i = allNodes->Begin(); i != allNodes->End(); ++i)
@@ -87,33 +100,42 @@ void UndistortView::UpdateNodeTable()
       std::string nodeName = node->GetName();
       if (!nodeName.empty())
       {
-        // only list nodes that are not output of our own undistortion
-        bool hasBeenCorrected = false;
-        mitk::BaseProperty::Pointer cbp = node->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName);
-        if (cbp.IsNotNull())
+        mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+        if (imageInNode.IsNotNull())
         {
-          mitk::BoolProperty::Pointer c = dynamic_cast<mitk::BoolProperty*>(cbp.GetPointer());
-          if (c.IsNotNull())
+          // only list nodes that are not output of our own undistortion
+          bool hasBeenCorrected = false;
+          mitk::BoolProperty::Pointer cbp = dynamic_cast<mitk::BoolProperty*>(imageInNode->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName).GetPointer());
+          if (cbp.IsNull())
           {
-            hasBeenCorrected = c->GetValue();
+            // image doesnt have right props, check node
+            cbp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
           }
-        }
-
-        if (!hasBeenCorrected)
-        {
-          mitk::BaseData::Pointer data = node->GetData();
-          if (data.IsNotNull())
+          else
           {
-            mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(data.GetPointer());
-            if (imageInNode.IsNotNull())
+            // debug: if node and image have the prop then they need to match!
+            mitk::BoolProperty::Pointer n = dynamic_cast<mitk::BoolProperty*>(node->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
+            if (n.IsNotNull())
             {
-              nodeNamesLeftToAdd.insert(nodeName);
+              assert(n->GetValue() == cbp->GetValue());
             }
+          }
+
+          if (cbp.IsNotNull())
+          {
+            hasBeenCorrected = cbp->GetValue();
+          }
+
+          if (!hasBeenCorrected)
+          {
+            nodeNamesLeftToAdd.insert(nodeName);
+            cacheItemsToKeep.insert(imageInNode);
           }
         }
       }
     }
 
+    // go through the table and check which nodes are still there
     for (int i = 0; i < m_NodeTable->rowCount(); )
     {
       QTableWidgetItem* item = m_NodeTable->item(i, 0);
@@ -121,19 +143,15 @@ void UndistortView::UpdateNodeTable()
       {
         std::string itemName = item->text().toStdString();
 
+        // does the node in the table still exist in data storage?
         std::set<std::string>::iterator ni = nodeNamesLeftToAdd.find(itemName);
         if (ni == nodeNamesLeftToAdd.end())
         {
-          // drop it off table.
+          // if not drop it off table.
+
           // note: removing the row will change the index for the next element!
           // that's why there is no ++i in the top for statement.
           m_NodeTable->removeRow(i);
-          // drop if off the cache
-          BOOST_AUTO(ci, m_UndistortionMap.find(itemName));
-          if (ci != m_UndistortionMap.end())
-          {
-            m_UndistortionMap.erase(ci);
-          }
 
           wasModified = true;
         }
@@ -168,9 +186,18 @@ void UndistortView::UpdateNodeTable()
       wasModified = true;
     }
 
-    // this is very annoying
-    //m_NodeTable->resizeColumnsToContents();
-    //m_NodeTable->resizeRowsToContents();
+    // clear out all cache items that reference images no longer on any suitable nodes.
+    for (BOOST_AUTO(i, m_UndistortionMap.begin()); i != m_UndistortionMap.end(); )
+    {
+      if (cacheItemsToKeep.find(i->first) == cacheItemsToKeep.end())
+      {
+        i = m_UndistortionMap.erase(i);
+      }
+      else
+      {
+        ++i;
+      }
+    }
   }
 }
 
@@ -178,6 +205,17 @@ void UndistortView::UpdateNodeTable()
 //-----------------------------------------------------------------------------
 void UndistortView::OnGoButtonClick()
 {
+  // dont do anything if we are currently running undistortion.
+  // instead of disabling the go button we do this.
+  // because the flickering button is really annoying.
+  //if (m_BackgroundProcess.isRunning())
+  // race condition: if we check whether background process is running then we could
+  // end up in a situation where background is finished but future-watcher hasn't signaled us yet.
+  if (!m_BackgroundQueue.empty())
+  {
+    return;
+  }
+
   mitk::DataStorage::Pointer storage = GetDataStorage();
 
   for (int i = 0; i < m_NodeTable->rowCount(); ++i)
@@ -203,39 +241,53 @@ void UndistortView::OnGoButtonClick()
       if (!nodename.empty())
       {
         mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(nodename);
-        // FIXME: is this a hard error? i'm a bit undecided...
-        assert(inputNode.IsNotNull());
-
-        // as long as we have an Undistortion object it will take care of validating itself
-        BOOST_AUTO(ci, m_UndistortionMap.find(nodename));
-        if (ci == m_UndistortionMap.end())
+        // is this a hard error? i'm a bit undecided...
+        // it could simply be a result of a stale table, so sliently ignoring it would be an option.
+        if (inputNode.IsNotNull())
         {
-          niftk::Undistortion*  undist = new niftk::Undistortion(inputNode);
-          // store the new Undistortion object in our cache
-          // note: insert() returns an iterator to the new insertion location
-          ci = m_UndistortionMap.insert(std::make_pair(nodename, undist)).first;
+          // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
+          if (calibparamitem != 0)
+          {
+            // this will stick props on both node and its image
+            niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
+          }
+
+          mitk::Image::Pointer    inputImage = dynamic_cast<mitk::Image*>(inputNode->GetData());
+          if (inputImage.IsNotNull())
+          {
+            // as long as we have an Undistortion object it will take care of validating itself
+            BOOST_AUTO(ci, m_UndistortionMap.find(inputImage));
+            if (ci == m_UndistortionMap.end())
+            {
+              niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+              // store the new Undistortion object in our cache
+              // note: insert() returns an iterator to the new insertion location
+              ci = m_UndistortionMap.insert(std::make_pair(inputImage, undist)).first;
+            }
+
+            mitk::Image::Pointer      outputImage;
+            mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
+            if (outputNode.IsNotNull())
+            {
+              outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());
+            }
+
+            // check that output image is correct size.
+            ci->second->PrepareOutput(outputImage);
+
+            WorkItem    wi;
+            wi.m_InputImage = inputImage;
+            wi.m_OutputImage = outputImage;
+            wi.m_OutputNodeName = outputitem->text().toStdString();
+            wi.m_InputNodeName = nodename;
+            wi.m_Proc = ci->second;
+
+            m_BackgroundQueue.push_back(wi);
+          }
         }
-
-        mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
-        if (outputNode.IsNull())
+        else
         {
-          // Undistortion takes care of sizing the output image correcly, etc
-          // we just need to make sure the output node exists
-          outputNode = mitk::DataNode::New();
-          outputNode->SetName(outputitem->text().toStdString());
-        }
-
-        // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
-        if (calibparamitem != 0)
-        {
-          niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
-        }
-
-        ci->second->Run(outputNode);
-
-        if (storage->GetNamedNode(outputitem->text().toStdString()) == NULL)
-        {
-          storage->Add(outputNode, inputNode);
+          std::cerr << "Undistortion: skipping unknown node with name: " << nodename << std::endl;
         }
       }
       else
@@ -244,6 +296,76 @@ void UndistortView::OnGoButtonClick()
       }
     }
   }
+
+  if (!m_BackgroundQueue.empty())
+  {
+    m_BackgroundProcess = QtConcurrent::run(this, &UndistortView::RunBackgroundProcessing);
+    m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::RunBackgroundProcessing()
+{
+  assert(!m_BackgroundQueue.empty());
+  for (int i = 0; i < m_BackgroundQueue.size(); ++i)
+  {
+    try
+    {
+      m_BackgroundQueue[i].m_Proc->Run(m_BackgroundQueue[i].m_OutputImage);
+    }
+    catch (const std::exception& e)
+    {
+      std::cerr << "Caught exception while undistorting: " << e.what() << std::endl;
+    }
+    catch (...)
+    {
+      std::cerr << "Caught unknown exception while undistorting!" << std::endl;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UndistortView::OnBackgroundProcessFinished()
+{
+  mitk::DataStorage::Pointer storage = GetDataStorage();
+  assert(storage.IsNotNull());
+
+  for (int i = 0; i < m_BackgroundQueue.size(); ++i)
+  {
+    bool  nodeIsNew = false;
+    mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_OutputNodeName);
+    if (outputNode.IsNull())
+    {
+      nodeIsNew = true;
+      outputNode = mitk::DataNode::New();
+      outputNode->SetName(m_BackgroundQueue[i].m_OutputNodeName);
+    }
+
+    outputNode->SetData(m_BackgroundQueue[i].m_OutputImage);
+
+    if (nodeIsNew)
+    {
+      mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_InputNodeName);
+      if (inputNode.IsNotNull())
+      {
+        storage->Add(outputNode, inputNode);
+      }
+      else
+      {
+        storage->Add(outputNode);
+      }
+    }
+
+    // we'll have props on the image only, so copy them to node too.
+    outputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName,  m_BackgroundQueue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
+    outputNode->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, m_BackgroundQueue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
+    outputNode->Modified();
+  }
+
+  m_BackgroundQueue.clear();
 }
 
 

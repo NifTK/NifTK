@@ -36,6 +36,13 @@ Undistortion::Undistortion(mitk::DataNode::Pointer node)
 
 
 //-----------------------------------------------------------------------------
+Undistortion::Undistortion(mitk::Image::Pointer image)
+  : m_Image(image), m_MapX(0), m_MapY(0)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 Undistortion::~Undistortion()
 {
   if (m_MapX)
@@ -362,7 +369,7 @@ void Undistortion::ValidateInput(bool& recomputeCache)
 
   // we may or may not have checked yet whether image has a property
   // even if node has one already we check anyway for sanity-check purposes
-  mitk::BaseProperty::Pointer   imgprop = m_Node->GetProperty(s_CameraCalibrationPropertyName);
+  mitk::BaseProperty::Pointer   imgprop = m_Image->GetProperty(s_CameraCalibrationPropertyName);
   if (imgprop.IsNotNull())
   {
     mitk::CameraIntrinsicsProperty::Pointer imgcalib = dynamic_cast<mitk::CameraIntrinsicsProperty*>(imgprop.GetPointer());
@@ -427,12 +434,8 @@ void Undistortion::ValidateInput(bool& recomputeCache)
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
+void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
 {
-  // FIXME: check that output image matches input image in type/depth/dimensions
-  //        create a new one if necessary
-
-  mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
   if (!outputImage.IsNull())
   {
     bool haswrongsize = false;
@@ -453,8 +456,6 @@ void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
     IplImage* temp = cvCreateImage(cvSize(m_Image->GetDimension(0), m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
     outputImage = CreateMitkImage(temp);
     cvReleaseImage(&temp);
-
-    output->SetData(outputImage);
   }
 
   mitk::Geometry3D::Pointer   geomp = m_Image->GetGeometry();
@@ -467,13 +468,27 @@ void Undistortion::PrepareOutput(mitk::DataNode::Pointer output)
 //-----------------------------------------------------------------------------
 void Undistortion::Run(mitk::DataNode::Pointer output)
 {
+  mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+  PrepareOutput(outputImage);
+  output->SetData(outputImage);
+
+  Run(outputImage);
+
+  output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
+  output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
+  // this will kick off itk listeners. not a good idea in multi-threaded situations.
+  //output->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void Undistortion::Run(mitk::Image::Pointer outputImage)
+{
   bool  recomputeCache = true;
   ValidateInput(recomputeCache);
 
-  PrepareOutput(output);
-
-  mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
-
+  // always lock output first! so that we are not blocking previous stages if
+  // our subsequent one is slow.
   mitk::ImageWriteAccessor  outputAccess(outputImage);
   void* outputPointer = outputAccess.GetData();
   mitk::ImageReadAccessor   inputAccess(m_Image);
@@ -489,12 +504,11 @@ void Undistortion::Run(mitk::DataNode::Pointer output)
 
   Process(&inipl, &outipl, recomputeCache);
 
-  // copy relevant props to output node
-  output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
-  output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
-  output->Modified();
-
-  CopyImagePropsIfNecessary(output, outputImage);
+  // copy relevant props to output image
+  outputImage->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
+  outputImage->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
+  // this will kick off itk listeners. not a good idea in multi-threaded situations.
+  //outputImage->Modified();
 }
 
 

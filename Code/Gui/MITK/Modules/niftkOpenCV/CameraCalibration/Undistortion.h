@@ -45,6 +45,7 @@ public:
 public:
   // node should have Image data attached, at least when Run() is called.
   Undistortion(mitk::DataNode::Pointer node);
+  Undistortion(mitk::Image::Pointer image);
   virtual ~Undistortion();
 
 public:
@@ -65,12 +66,16 @@ public:
   static void CopyImagePropsIfNecessary(const mitk::DataNode::Pointer source, mitk::Image::Pointer target);
 
 
-  // FIXME: should undistorting an already undistorted image fail? or silently ignore?
+  /**
+   * @warning You need to call output->Modified() yourself if you want listeners to be notified!
+   */
   virtual void Run(mitk::DataNode::Pointer output);
+  virtual void Run(mitk::Image::Pointer output);
+
+  // make sure that output node has an image attached with the correct size/etc.
+  void PrepareOutput(mitk::Image::Pointer& output);
 
 protected:
-  // make sure that output node has an image attached with the correct size/etc.
-  void PrepareOutput(mitk::DataNode::Pointer output);
   // check that we have an image to work on, it has the correct depth/channels, etc
   void ValidateInput(bool& recomputeCache);
 
