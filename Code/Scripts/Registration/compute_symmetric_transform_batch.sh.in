@@ -61,6 +61,7 @@ Optional Arguments:
   -just_dbc yes/no      : just do dbc without transformation if yes. 
   -kernel i             : specify the size of kernel for DRC, default: 5
   -dbc_mode i           : mode to run dbc in: 1= from all images, 2= from consective TPs
+  -pairwise_dbc i       : pairwise dbc if 1, groupwise dbc if 0 (default).
                         
 EOF
 exit 127 
@@ -78,7 +79,7 @@ function IterateThroughFile()
     then 
       if [ "$mode" != "CHECK" ]; then
         # Generate a file of all commands
-        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${kernel_size} ${dbc_method} ${ss_atlas} ${output} ${each_line}" >> $command_file
+        echo "${script_dir}/compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${kernel_size} ${pairwise_dbc} ${dbc_method} ${ss_atlas} ${output} ${each_line}" >> $command_file
       fi
     elif [ "${tp3}" == "" ] 
     then 
@@ -156,6 +157,7 @@ pairwise="no"
 just_dbc="-just_dbc no"
 kernel_size="-radius 5"
 dbc_method="-mode 1"
+pairwise_dbc="-pairwise_dbc 0"
 
 # Parse remaining command line options
 shift $ndefargs
@@ -197,6 +199,10 @@ do
       ;;
     -dbc_mode)
       dbc_method="-mode $2"
+      shift 1
+      ;;
+    -pairwise_dbc)
+      pairwise_dbc="-pairwise_dbc $2"
       shift 1
       ;;
     -*)
