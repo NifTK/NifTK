@@ -187,11 +187,15 @@ void UndistortView::UpdateNodeTable()
     }
 
     // clear out all cache items that reference images no longer on any suitable nodes.
-    for (BOOST_AUTO(i, m_UndistortionMap.begin()); i != m_UndistortionMap.end(); )
+    for (std::map<mitk::Image::Pointer, niftk::Undistortion*>::iterator i = m_UndistortionMap.begin(); i != m_UndistortionMap.end(); )
     {
       if (cacheItemsToKeep.find(i->first) == cacheItemsToKeep.end())
       {
-        i = m_UndistortionMap.erase(i);
+        // in visual c++, erase() returns an iterator one past the deleted element.
+        std::map<mitk::Image::Pointer, niftk::Undistortion*>::iterator j(i);
+        ++j;
+        m_UndistortionMap.erase(i);
+        i = j;
       }
       else
       {

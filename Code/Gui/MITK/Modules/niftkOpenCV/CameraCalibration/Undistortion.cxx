@@ -423,8 +423,8 @@ void Undistortion::ValidateInput(bool& recomputeCache)
     // these always come in pairs.
     assert(m_MapY != 0);
 
-    if ((m_Image->GetDimension(0) != m_MapX->width) ||
-        (m_Image->GetDimension(1) != m_MapX->height))
+    if ((m_Image->GetDimension(0) != (unsigned int) m_MapX->width) ||
+        (m_Image->GetDimension(1) != (unsigned int) m_MapX->height))
     {
       recomputeCache = true;
     }
