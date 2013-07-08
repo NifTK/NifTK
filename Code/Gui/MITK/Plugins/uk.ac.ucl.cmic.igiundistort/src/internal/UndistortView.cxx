@@ -313,7 +313,7 @@ void UndistortView::OnGoButtonClick()
 void UndistortView::RunBackgroundProcessing()
 {
   assert(!m_BackgroundQueue.empty());
-  for (int i = 0; i < m_BackgroundQueue.size(); ++i)
+  for (std::size_t i = 0; i < m_BackgroundQueue.size(); ++i)
   {
     try
     {
