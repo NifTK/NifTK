@@ -209,7 +209,7 @@ set(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "5b47a4a6ce" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_CTK "64e5b774e1" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.2" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "f86e71ea81" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
@@ -229,7 +229,7 @@ set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${N
 set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
 set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
-set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
+set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.bz2" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 set(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl" FORCE)
