@@ -64,9 +64,21 @@ UndistortView::~UndistortView()
   // or the other way around?
   // i'd say disconnect first then wait because at that time we no longer care about the result
   // and the finished-handler might access some half-destroyed objects.
+  // side note: what happens if background-process is running and emits a signal just before we disconnect.
+  // that signal is then queued on our to-be-destructed object. does it get delivered or silently dropped?
   ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
   assert(ok);
   m_BackgroundProcessWatcher.waitForFinished();
+  // m_BackgroundQueue is cleared in the finished-signal-handler
+  // which we just disconnected above.
+  m_BackgroundQueue.clear();
+
+  for (std::map<mitk::Image::Pointer, niftk::Undistortion*>::iterator i = m_UndistortionMap.begin(); i != m_UndistortionMap.end(); ++i)
+  {
+    delete i->second;
+    i->second = 0;
+  }
+  m_UndistortionMap.clear();
 }
 
 
