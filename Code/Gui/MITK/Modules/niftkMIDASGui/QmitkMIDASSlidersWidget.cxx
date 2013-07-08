@@ -14,7 +14,7 @@
 
 #include "QmitkMIDASSlidersWidget.h"
 
-#include <QDoubleSpinBox>
+#include <ctkDoubleSpinBox.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
