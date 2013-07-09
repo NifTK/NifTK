@@ -349,7 +349,7 @@ void UndistortView::OnBackgroundProcessFinished()
   mitk::DataStorage::Pointer storage = GetDataStorage();
   assert(storage.IsNotNull());
 
-  for (int i = 0; i < m_BackgroundQueue.size(); ++i)
+  for (std::size_t i = 0; i < m_BackgroundQueue.size(); ++i)
   {
     bool  nodeIsNew = false;
     mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_OutputNodeName);
