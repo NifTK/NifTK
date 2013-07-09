@@ -429,9 +429,17 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetMaxViewNumber(int maxRows, int ma
   m_1x3ViewsButton->setEnabled(maxColumns >= 3);
   m_1x3ViewsButton->blockSignals(wasBlocked);
 
+  wasBlocked = m_2x1ViewsButton->blockSignals(true);
+  m_2x1ViewsButton->setEnabled(maxRows >= 2 && maxColumns >= 1);
+  m_2x1ViewsButton->blockSignals(wasBlocked);
+
   wasBlocked = m_2x2ViewsButton->blockSignals(true);
   m_2x2ViewsButton->setEnabled(maxRows >= 2 && maxColumns >= 2);
   m_2x2ViewsButton->blockSignals(wasBlocked);
+
+  wasBlocked = m_2x3ViewsButton->blockSignals(true);
+  m_2x3ViewsButton->setEnabled(maxRows >= 2 && maxColumns >= 3);
+  m_2x3ViewsButton->blockSignals(wasBlocked);
 
   wasBlocked = m_ViewRowsSpinBox->blockSignals(true);
   m_ViewRowsSpinBox->setMaximum(maxRows);
@@ -460,6 +468,11 @@ int QmitkMIDASMultiViewWidgetControlPanel::GetViewColumns() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 {
+  if (rows > m_ViewRowsSpinBox->maximum() || columns > m_ViewColumnsSpinBox->maximum())
+  {
+    return;
+  }
+
   bool singleView = rows == 1 && columns == 1;
 
   bool wasBlocked = m_1x1ViewsButton->blockSignals(true);
@@ -474,9 +487,17 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
   m_1x3ViewsButton->setChecked(rows == 1 && columns == 3);
   m_1x3ViewsButton->blockSignals(wasBlocked);
 
+  wasBlocked = m_2x1ViewsButton->blockSignals(true);
+  m_2x1ViewsButton->setChecked(rows == 2 && columns == 1);
+  m_2x1ViewsButton->blockSignals(wasBlocked);
+
   wasBlocked = m_2x2ViewsButton->blockSignals(true);
   m_2x2ViewsButton->setChecked(rows == 2 && columns == 2);
   m_2x2ViewsButton->blockSignals(wasBlocked);
+
+  wasBlocked = m_2x3ViewsButton->blockSignals(true);
+  m_2x3ViewsButton->setChecked(rows == 2 && columns == 3);
+  m_2x3ViewsButton->blockSignals(wasBlocked);
 
   wasBlocked = m_ViewRowsSpinBox->blockSignals(true);
   m_ViewRowsSpinBox->setValue(rows);
