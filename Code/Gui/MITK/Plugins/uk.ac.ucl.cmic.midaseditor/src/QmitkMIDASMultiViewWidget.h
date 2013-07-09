@@ -23,8 +23,6 @@
 #include <QWidget>
 
 #include <mitkBaseProperty.h>
-#include <mitkMIDASViewKeyPressResponder.h>
-#include <mitkMIDASViewKeyPressStateMachine.h>
 #include <mitkRenderingManager.h>
 #include <mitkMIDASEnums.h>
 
@@ -68,7 +66,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
-class MIDASEDITOR_EXPORT QmitkMIDASMultiViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class MIDASEDITOR_EXPORT QmitkMIDASMultiViewWidget : public QWidget
 {
   Q_OBJECT
 
@@ -180,27 +178,6 @@ public:
 
   /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
-
-  /// \brief Move anterior a slice.
-  bool MoveAnterior();
-
-  /// \brief Move posterior a slice.
-  bool MovePosterior();
-
-  /// \brief Switch to Axial.
-  bool SwitchToAxial();
-
-  /// \brief Switch to Sagittal.
-  bool SwitchToSagittal();
-
-  /// \brief Switch to Coronal.
-  bool SwitchToCoronal();
-
-  /// \brief Switch to 3D.
-  bool SwitchTo3D();
-
-  /// \brief Switch the from single window to multiple windows or back
-  bool ToggleMultiWindowLayout();
 
   /// \brief Shows or hides the cursor.
   bool ToggleCursor();
@@ -325,6 +302,9 @@ protected slots:
   /// \brief Called when the scale factor of a view has changed by zooming in one of its render windows.
   void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double scaleFactor);
 
+  /// \brief Called when the window layout of a view has changed.
+  void OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout);
+
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
 
@@ -391,9 +371,6 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  /// \brief Used to move either anterior/posterior by a certain number of slices.
-  bool MoveAnteriorPosterior(int slices);
-
   QmitkMIDASMultiViewWidgetControlPanel* CreateControlPanel(QWidget* parent);
 
   // Layouts
@@ -438,8 +415,6 @@ private:
   MIDASLayout m_MultiWindowLayout;
 
   QmitkMIDASMultiViewWidgetControlPanel* m_ControlPanel;
-
-  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };
 
 #endif

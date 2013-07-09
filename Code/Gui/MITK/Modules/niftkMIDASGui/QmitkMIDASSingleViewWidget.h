@@ -16,14 +16,21 @@
 #define QmitkMIDASSingleViewWidget_h
 
 #include <niftkMIDASGuiExports.h>
-#include <mitkMIDASEnums.h>
-#include "QmitkMIDASStdMultiWidget.h"
-#include <QWidget>
-#include <QColor>
+
+#include <deque>
+
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
 #include <mitkRenderingManager.h>
 #include <QmitkRenderWindow.h>
+
+#include <QColor>
+#include <QWidget>
+
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASViewKeyPressResponder.h>
+#include <mitkMIDASViewKeyPressStateMachine.h>
+#include "QmitkMIDASStdMultiWidget.h"
 
 class QGridLayout;
 
@@ -62,7 +69,8 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa QmitkMIDASStdMultiWidget
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidget : public QWidget {
+class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+{
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
   Q_OBJECT;
@@ -219,7 +227,7 @@ public:
   MIDASLayout GetLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetLayout(MIDASLayout layout, bool fitToDisplay);
+  void SetLayout(MIDASLayout layout, bool fitToDisplay = false);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -280,6 +288,36 @@ public:
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
+  /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+
+  /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+
+  /// \brief Move anterior a slice.
+  bool MoveAnterior();
+
+  /// \brief Move posterior a slice.
+  bool MovePosterior();
+
+  /// \brief Switch to Axial.
+  bool SwitchToAxial();
+
+  /// \brief Switch to Sagittal.
+  bool SwitchToSagittal();
+
+  /// \brief Switch to Coronal.
+  bool SwitchToCoronal();
+
+  /// \brief Switch to 3D.
+  bool SwitchTo3D();
+
+  /// \brief Switch the from single window to multiple windows or back
+  bool ToggleMultiWindowLayout();
+
+  /// \brief Shows or hides the cursor.
+  bool ToggleCursor();
+
 protected:
 
   /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
@@ -298,6 +336,9 @@ signals:
 
   /// \brief Emitted when the scale factor has changed in this view.
   void ScaleFactorChanged(QmitkMIDASSingleViewWidget* thisView, double scaleFactor);
+
+  /// \brief Emitted when the window layout has changed in this view.
+  void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
 
 protected slots:
 
@@ -333,6 +374,9 @@ private:
   void ResetCurrentPosition();
   void ResetRememberedPositions();
 
+  /// \brief Used to move either anterior/posterior by a certain number of slices.
+  bool MoveAnteriorPosterior(int slices);
+
   mitk::DataStorage::Pointer m_DataStorage;
   mitk::RenderingManager::Pointer m_RenderingManager;
 
@@ -352,12 +396,25 @@ private:
 
   int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
+//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
   double m_ScaleFactors[MIDAS_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
   bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerLayout;
+
+  MIDASLayout m_SingleWindowLayout;
+  MIDASLayout m_MultiWindowLayout;
+
+  mitk::Vector3D m_CursorPosition;
+  mitk::Vector3D m_LastCursorPosition;
+//  mitk::Vector3D m_SecondLastCursorPosition;
+  mitk::Point3D m_SelectedPosition;
+  mitk::Point3D m_LastSelectedPosition;
+  mitk::Point3D m_SecondLastSelectedPosition;
+//  std::deque<mitk::Point3D> m_LastSelectedPositions;
+
+  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };
 
 #endif

@@ -44,7 +44,6 @@
 #include <mitkIRenderWindowPart.h>
 
 #include <mitkMIDASOrientationUtils.h>
-#include <mitkMIDASViewKeyPressResponder.h>
 #include <QmitkMIDASSingleViewWidget.h>
 
 #include "QmitkMIDASMultiViewWidgetControlPanel.h"
@@ -59,7 +58,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
     int defaultNumberOfColumns,
     QWidget* parent, Qt::WindowFlags f)
 : QWidget(parent, f)
-, mitk::MIDASViewKeyPressResponder()
 , m_TopLevelLayout(NULL)
 , m_LayoutForRenderWindows(NULL)
 , m_PinButton(NULL)
@@ -81,7 +79,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
 , m_SingleWindowLayout(MIDAS_LAYOUT_CORONAL)
 , m_MultiWindowLayout(MIDAS_LAYOUT_ORTHO)
 , m_ControlPanel(0)
-, m_ViewKeyPressStateMachine(0)
 {
   assert(visibilityManager);
 
@@ -167,10 +164,6 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   /************************************
    * Now initialise stuff.
    ************************************/
-
-  // Create/Connect the state machine
-  m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
-  mitk::GlobalInteraction::GetInstance()->AddListener(m_ViewKeyPressStateMachine);
 
   m_ControlPanel->SetDirectionAnnotationsVisible(true);
 
@@ -266,12 +259,15 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
   widget->SetDisplayInteractionsEnabled(true);
   widget->SetCursorPositionsBound(true);
   widget->SetScaleFactorsBound(true);
+  widget->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
+  widget->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), m_VisibilityManager, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)));
   connect(widget, SIGNAL(SelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkMIDASSingleViewWidget*, QmitkRenderWindow*, int)));
   connect(widget, SIGNAL(CursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(QmitkMIDASSingleViewWidget*, const mitk::Vector3D&)));
   connect(widget, SIGNAL(ScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)), this, SLOT(OnScaleFactorChanged(QmitkMIDASSingleViewWidget*, double)));
+  connect(widget, SIGNAL(LayoutChanged(QmitkMIDASSingleViewWidget*, MIDASLayout)), this, SLOT(OnLayoutChanged(QmitkMIDASSingleViewWidget*, MIDASLayout)));
 
   return widget;
 }
@@ -583,11 +579,6 @@ void QmitkMIDASMultiViewWidget::SetViewNumber(int viewRows, int viewColumns, boo
       QmitkMIDASSingleViewWidget* view = this->CreateSingleViewWidget();
       view->hide();
 
-      std::vector<QmitkRenderWindow*> renderWindows = view->GetRenderWindows();
-      for (unsigned j = 0; j < renderWindows.size(); ++j)
-      {
-        m_ViewKeyPressStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
-      }
       m_SingleViewWidgets.push_back(view);
       m_VisibilityManager->RegisterWidget(view);
       m_VisibilityManager->SetAllNodeVisibilityForWindow(currentNumberOfViews + i, false);
@@ -600,11 +591,6 @@ void QmitkMIDASMultiViewWidget::SetViewNumber(int viewRows, int viewColumns, boo
 
     for (int i = requiredNumberOfViews; i < m_SingleViewWidgets.size(); i++)
     {
-      std::vector<QmitkRenderWindow*> renderWindows = m_SingleViewWidgets[i]->GetRenderWindows();
-      for (unsigned j = 0; j < renderWindows.size(); ++j)
-      {
-        m_ViewKeyPressStateMachine->RemoveRenderer(renderWindows[j]->GetRenderer());
-      }
       delete m_SingleViewWidgets[i];
     }
 
@@ -744,13 +730,7 @@ void QmitkMIDASMultiViewWidget::OnSelectedPositionChanged(QmitkMIDASSingleViewWi
     return;
   }
 
-  std::vector<QmitkRenderWindow*> renderWindows = view->GetVisibleRenderWindows();
-  if (renderWindows.size() == 1 &&
-      renderWindow == renderWindows[0] &&
-      sliceIndex != m_ControlPanel->GetSliceIndex())
-  {
-    m_ControlPanel->SetSliceIndex(sliceIndex);
-  }
+  m_ControlPanel->SetSliceIndex(view->GetSliceIndex(view->GetOrientation()));
 
   if (m_ControlPanel->AreViewPositionsBound())
   {
@@ -993,47 +973,6 @@ QList<QmitkMIDASSingleViewWidget*> QmitkMIDASMultiViewWidget::GetViewsToUpdate(b
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::MoveAnterior()
-{
-  return this->MoveAnteriorPosterior(1);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::MovePosterior()
-{
-  return this->MoveAnteriorPosterior(-1);
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::MoveAnteriorPosterior(int slices)
-{
-  bool actuallyDidSomething = false;
-  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-
-  MIDASOrientation orientation = selectedView->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    unsigned int sliceIndex = selectedView->GetSliceIndex(orientation);
-    int upDirection = selectedView->GetSliceUpDirection(orientation);
-
-    int nextSliceIndex = sliceIndex + slices * upDirection;
-
-    unsigned int maxSliceIndex = selectedView->GetMaxSliceIndex(orientation);
-
-    if (nextSliceIndex >= 0 && nextSliceIndex <= static_cast<int>(maxSliceIndex))
-    {
-      this->SetSelectedWindowSliceIndex(nextSliceIndex);
-      actuallyDidSomething = true;
-    }
-  }
-
-  return actuallyDidSomething;
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnSliceIndexChanged(int sliceIndex)
 {
   this->SetSelectedWindowSliceIndex(sliceIndex);
@@ -1047,7 +986,7 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceIndex(int sliceIndex)
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewGeometriesBound());
+    QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewPositionsBound());
     foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
     {
       view->SetSliceIndex(orientation, sliceIndex);
@@ -1122,6 +1061,23 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout layout)
+{
+  m_ControlPanel->SetLayout(layout);
+  this->UpdateFocusManagerToSelectedView();
+
+  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewLayoutsBound());
+  foreach (QmitkMIDASSingleViewWidget* otherView, viewsToUpdate)
+  {
+    if (otherView != view)
+    {
+      otherView->SetLayout(layout);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnWindowCursorBindingChanged(bool bound)
 {
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -1182,87 +1138,6 @@ void QmitkMIDASMultiViewWidget::UpdateFocusManagerToSelectedView()
       focusManager->SetFocused(selectedRenderer);
     }
   }
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::SwitchToAxial()
-{
-  this->SetLayout(MIDAS_LAYOUT_AXIAL);
-  m_ControlPanel->SetLayout(MIDAS_LAYOUT_AXIAL);
-  this->UpdateFocusManagerToSelectedView();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::SwitchToSagittal()
-{
-  this->SetLayout(MIDAS_LAYOUT_SAGITTAL);
-  m_ControlPanel->SetLayout(MIDAS_LAYOUT_SAGITTAL);
-  this->UpdateFocusManagerToSelectedView();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::SwitchToCoronal()
-{
-  this->SetLayout(MIDAS_LAYOUT_CORONAL);
-  m_ControlPanel->SetLayout(MIDAS_LAYOUT_CORONAL);
-  this->UpdateFocusManagerToSelectedView();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::SwitchTo3D()
-{
-  this->SetLayout(MIDAS_LAYOUT_3D);
-  m_ControlPanel->SetLayout(MIDAS_LAYOUT_3D);
-  this->UpdateFocusManagerToSelectedView();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidget::ToggleMultiWindowLayout()
-{
-  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-  MIDASLayout currentLayout = selectedView->GetLayout();
-  MIDASLayout nextLayout;
-
-  if (::IsSingleWindowLayout(currentLayout))
-  {
-    nextLayout = m_MultiWindowLayout;
-  }
-  else
-  {
-    switch (selectedView->GetOrientation())
-    {
-    case MIDAS_ORIENTATION_AXIAL:
-      nextLayout = MIDAS_LAYOUT_AXIAL;
-      break;
-    case MIDAS_ORIENTATION_SAGITTAL:
-      nextLayout = MIDAS_LAYOUT_SAGITTAL;
-      break;
-    case MIDAS_ORIENTATION_CORONAL:
-      nextLayout = MIDAS_LAYOUT_CORONAL;
-      break;
-    case MIDAS_ORIENTATION_UNKNOWN:
-      nextLayout = MIDAS_LAYOUT_3D;
-      break;
-    default:
-      nextLayout = MIDAS_LAYOUT_CORONAL;
-    }
-  }
-
-  // Note that we do not block the signals here, so this->SetLayout(nextLayout) will
-  // be called.
-  m_ControlPanel->SetLayout(nextLayout);
-  this->OnLayoutChanged(nextLayout);
-
-  return true;
 }
 
 
