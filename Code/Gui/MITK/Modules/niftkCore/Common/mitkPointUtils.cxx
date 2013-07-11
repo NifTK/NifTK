@@ -116,3 +116,50 @@ int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
   return output.GetSize();
 }
 
+
+//-----------------------------------------------------------------------------
+int mitk::FilterMatchingPoints(
+    const mitk::PointSet& fixedPointsIn,
+    const mitk::PointSet& movingPointsIn,
+    mitk::PointSet& fixedPointsOut,
+    mitk::PointSet& movingPointsOut
+    )
+{
+  int matchedPoints = 0;
+  fixedPointsOut.Clear();
+  movingPointsOut.Clear();
+
+  mitk::PointSet::DataType* fixedPointSet = fixedPointsIn.GetPointSet(0);
+  mitk::PointSet::PointsContainer* fixedPoints = fixedPointSet->GetPoints();
+  mitk::PointSet::DataType* movingPointSet = movingPointsIn.GetPointSet(0);
+  mitk::PointSet::PointsContainer* movingPoints = movingPointSet->GetPoints();
+
+  mitk::PointSet::PointsIterator fixedPointsIt;
+  mitk::PointSet::PointsIterator movingPointsIt;
+
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType fixedPoint;
+  mitk::PointSet::PointType movingPoint;
+
+  for (fixedPointsIt = fixedPoints->Begin(); fixedPointsIt != fixedPoints->End(); ++fixedPointsIt)
+  {
+    pointID = fixedPointsIt->Index();
+    fixedPoint = fixedPointsIt->Value();
+
+    for (movingPointsIt = movingPoints->Begin(); movingPointsIt != movingPoints->End(); ++movingPointsIt)
+    {
+      if (movingPointsIt->Index() == pointID)
+      {
+        movingPoint = movingPointsIt->Value();
+
+        fixedPointsOut.InsertPoint(pointID, fixedPoint);
+        movingPointsOut.InsertPoint(pointID, movingPoint);
+        matchedPoints++;
+      }
+    }
+  }
+
+  return matchedPoints;
+}
+
+

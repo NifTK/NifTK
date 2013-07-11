@@ -61,6 +61,18 @@ NIFTKCORE_EXPORT void Normalise(mitk::Point3D& vector);
  */
 NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);
 
+/**
+ * \brief Takes fixed and moving points, and scans for matching ID's and returns 2 point sets with
+ * ordered and corresponding points.
+ * \return the number of points in the output
+ */
+NIFTKCORE_EXPORT int FilterMatchingPoints(
+    const mitk::PointSet& fixedPointsIn,
+    const mitk::PointSet& movingPointsIn,
+    mitk::PointSet& fixedPointsOut,
+    mitk::PointSet& movingPointsOut
+    );
+
 } // end namespace mitk
 
 

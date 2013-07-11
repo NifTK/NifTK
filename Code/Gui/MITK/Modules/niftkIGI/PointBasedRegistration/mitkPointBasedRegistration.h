@@ -28,6 +28,18 @@ namespace mitk {
 /**
  * \class PointBasedRegistration
  * \brief Class to implement point based registration of two point sets.
+ *
+ * This class is called from both PointRegView and TagTrackerView.
+ * There are two 'normal' modes of operation:
+ * <ol>
+ * <li>Exact corresponding points: Both point sets should be ordered, the same size, and corresponding point-wise. Needs at least 3 points</li>
+ * <li>ICP mode: Calculates closest points to initialise, and needs at least 6 points (for some reason in MITK).</li>
+ * </ol>
+ * Due to the use of mitk::PointSet where point numbers can be labelled, we can also have a fallback position for point based registration,
+ * and extract points with matching ID. In this case, if we get 3 or more points with matching ID, we can do
+ * a straight point based match, with corresponding points. By default, this is a fallback for when the first
+ * two options cannot be performed. By setting AlwaysTryMatchedPoints to true, the points will always
+ * be filtered, and if the result has lower FRE will be used in preference.
  */
 class NIFTKIGI_EXPORT PointBasedRegistration : public itk::Object
 {
@@ -40,6 +52,9 @@ public:
    * \brief Stores the default value of whether to use ICP initialisation = false.
    */
   static const bool DEFAULT_USE_ICP_INITIALISATION;
+
+  itkSetMacro(AlwaysTryMatchedPoints, bool);
+  itkGetMacro(AlwaysTryMatchedPoints, bool);
 
   /**
    * \brief Main method to calculate the point based registration.
@@ -66,6 +81,8 @@ protected:
   PointBasedRegistration& operator=(const PointBasedRegistration&); // Purposefully not implemented.
 
 private:
+
+  bool m_AlwaysTryMatchedPoints;
 
 }; // end class
 
