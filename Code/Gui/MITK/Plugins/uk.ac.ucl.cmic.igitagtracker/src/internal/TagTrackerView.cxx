@@ -32,13 +32,15 @@
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointBasedRegistration.h>
 #include <mitkPointsAndNormalsBasedRegistration.h>
+#include <mitkCoordinateAxesData.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
-const std::string TagTrackerView::NODE_ID = "Tag Locations";
+const std::string TagTrackerView::POINTSET_NODE_ID = "Tag Locations";
+const std::string TagTrackerView::TRANSFORM_NODE_ID = "Tag Transform";
 
 //-----------------------------------------------------------------------------
 TagTrackerView::TagTrackerView()
@@ -115,6 +117,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
 
   this->RetrievePreferenceValues();
 
+  m_InformationGroupBox->setCollapsed(true);
+  m_TrackingParametersGroupBox->setCollapsed(true);
   m_RegistrationGroupBox->setCollapsed(true);
   m_RegistrationEnabledCheckbox->setChecked(false);
   this->OnRegistrationEnabledChecked(false);
@@ -249,14 +253,14 @@ void TagTrackerView::UpdateTags()
 
     // Retrieve the point set node from data storage, or create it if it does not exist.
     mitk::PointSet::Pointer pointSet;
-    mitk::DataNode::Pointer pointSetNode = dataStorage->GetNamedNode(NODE_ID);
+    mitk::DataNode::Pointer pointSetNode = dataStorage->GetNamedNode(POINTSET_NODE_ID);
 
     if (pointSetNode.IsNull())
     {
       pointSet = mitk::PointSet::New();
       pointSetNode = mitk::DataNode::New();
       pointSetNode->SetData( pointSet );
-      pointSetNode->SetProperty( "name", mitk::StringProperty::New(NODE_ID));
+      pointSetNode->SetProperty( "name", mitk::StringProperty::New(POINTSET_NODE_ID));
       pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
       pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
       pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
@@ -276,7 +280,7 @@ void TagTrackerView::UpdateTags()
       if (pointSet.IsNull())
       {
         // Give up, as the node has the wrong data.
-        MITK_ERROR << "TagTrackerView::OnUpdate node " << NODE_ID << " does not contain an mitk::PointSet" << std::endl;
+        MITK_ERROR << "TagTrackerView::OnUpdate node " << POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
         return;
       }
     }
@@ -383,6 +387,9 @@ void TagTrackerView::UpdateTags()
     m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
     m_TagPositionDisplay->clear();
 
+    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+    registrationMatrix->Identity();
+
     if (numberOfTrackedPoints > 0)
     {
       mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
@@ -416,8 +423,6 @@ void TagTrackerView::UpdateTags()
           mitk::PointSet::Pointer model = dynamic_cast<mitk::PointSet*>(modelNode->GetData());
           if (model.IsNotNull())
           {
-            vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
-
             if (m_RegistrationMethodPointsRadio->isChecked())
             {
               // do normal point based registration
@@ -431,9 +436,42 @@ void TagTrackerView::UpdateTags()
               mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
               pointsAndNormalsRegistration->Update(pointSet, model, *registrationMatrix);
             }
+
+            // Also need to create and update a node in DataStorage.
+            // We create a mitk::CoordinateAxesData, just like the tracker tools do.
+            // So, this makes this plugin function just like a tracker.
+            // So, the Tracked Image and Tracked Pointer plugin should be usable by selecting this matrix.
+            mitk::DataNode::Pointer coordinateAxesNode = dataStorage->GetNamedNode(TRANSFORM_NODE_ID);
+            if (coordinateAxesNode.IsNull())
+            {
+              MITK_ERROR << "Can't find mitk::DataNode with name " << TRANSFORM_NODE_ID << std::endl;
+              return;
+            }
+            mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(coordinateAxesNode->GetData());
+            if (coordinateAxes.IsNull())
+            {
+              coordinateAxes = mitk::CoordinateAxesData::New();
+
+              // We remove and add to trigger the NodeAdded event,
+              // which is not emmitted if the node was added with no data.
+              dataStorage->Remove(coordinateAxesNode);
+              coordinateAxesNode->SetData(coordinateAxes);
+              dataStorage->Add(coordinateAxesNode);
+            }
+            coordinateAxes->SetVtkMatrix(*registrationMatrix);
+
           } // end if we have model
         } // end if we have node
       } // end if we are doing registration
+    } // end if number tracked points > 0
+
+    // Always update registration matrix contained within the view - just for visual feedback.
+    for (int i = 0; i < 4; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        m_RegistrationMatrix->setValue(i, j, registrationMatrix->GetElement(i, j));
+      }
     }
 
     pointSetNode->Modified();

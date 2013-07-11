@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
@@ -45,7 +45,7 @@
       </widget>
      </item>
      <item>
-      <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
+      <widget class="ctkCollapsibleGroupBox" name="m_TrackingParametersGroupBox">
        <property name="title">
         <string>2) Tracking parameters</string>
        </property>
@@ -107,51 +107,61 @@
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="m_RegistrationEnabledLabel">
-            <property name="text">
-             <string>enabled</string>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::FieldsStayAtSizeHint</enum>
             </property>
-           </widget>
+            <item row="1" column="0">
+             <widget class="QLabel" name="m_RegistrationModelLabel">
+              <property name="text">
+               <string>model</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QmitkDataStorageComboBox" name="m_RegistrationModelComboBox"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="m_RegistrationMethodLabel">
+              <property name="text">
+               <string>method</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QRadioButton" name="m_RegistrationMethodPointsRadio">
+              <property name="text">
+               <string>points</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QRadioButton" name="m_RegistrationMethodPointsNormalsRadio">
+              <property name="text">
+               <string>points + normals</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="m_RegistrationEnabledCheckbox">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="m_RegistrationEnabledLabel">
+              <property name="text">
+               <string>enabled</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="m_RegistrationEnabledCheckbox">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="m_RegistrationModelLabel">
-            <property name="text">
-             <string>model</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QmitkDataStorageComboBox" name="m_RegistrationModelComboBox"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="m_RegistrationMethodLabel">
-            <property name="text">
-             <string>method</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QRadioButton" name="m_RegistrationMethodPointsRadio">
-            <property name="text">
-             <string>points</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QRadioButton" name="m_RegistrationMethodPointsNormalsRadio">
-            <property name="text">
-             <string>points + normals</string>
-            </property>
-           </widget>
+          <item>
+           <widget class="ctkMatrixWidget" name="m_RegistrationMatrix" native="true"/>
           </item>
          </layout>
         </item>
@@ -166,7 +176,7 @@
       </widget>
      </item>
      <item>
-      <widget class="ctkCollapsibleGroupBox" name="groupBox_2">
+      <widget class="ctkCollapsibleGroupBox" name="m_InformationGroupBox">
        <property name="title">
         <string>4) Information</string>
        </property>
@@ -234,6 +244,12 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkMatrixWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkMatrixWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
