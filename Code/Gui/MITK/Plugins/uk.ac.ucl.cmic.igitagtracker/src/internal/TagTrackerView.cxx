@@ -54,6 +54,20 @@ TagTrackerView::TagTrackerView()
 //-----------------------------------------------------------------------------
 TagTrackerView::~TagTrackerView()
 {
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(POINTSET_NODE_ID.c_str());
+  if (dataNode.IsNotNull())
+  {
+    dataStorage->Remove(dataNode);
+  }
+
+  dataNode = dataStorage->GetNamedNode(TRANSFORM_NODE_ID.c_str());
+  if (dataNode.IsNotNull())
+  {
+    dataStorage->Remove(dataNode);
+  }
+
 }
 
 
