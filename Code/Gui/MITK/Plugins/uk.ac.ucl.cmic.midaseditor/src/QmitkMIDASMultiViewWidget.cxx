@@ -276,9 +276,12 @@ QmitkMIDASSingleViewWidget* QmitkMIDASMultiViewWidget::CreateSingleViewWidget()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::RequestUpdateAll()
 {
-  foreach (QmitkMIDASSingleViewWidget* view, this->GetViewsToUpdate(true))
+  foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
   {
-    view->RequestUpdate();
+    if (view->isVisible())
+    {
+      view->RequestUpdate();
+    }
   }
 }
 
@@ -832,6 +835,7 @@ void QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, 
 //  this->OnMagnificationChanged(scaleFactor);
 
   MIDASLayout layout = selectedView->GetLayout();
+  MITK_INFO << "QmitkMIDASMultiViewWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes) selected layout: " << layout << std::endl;
   m_ControlPanel->SetLayout(layout);
   this->OnLayoutChanged(layout);
 
@@ -950,29 +954,6 @@ void QmitkMIDASMultiViewWidget::OnDropAccumulateChanged(bool checked)
 
 
 //-----------------------------------------------------------------------------
-QList<QmitkMIDASSingleViewWidget*> QmitkMIDASMultiViewWidget::GetViewsToUpdate(bool doAllVisible) const
-{
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate;
-
-  if (doAllVisible)
-  {
-    foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
-    {
-      if (view->isVisible())
-      {
-        viewsToUpdate.push_back(view);
-      }
-    }
-  }
-  else
-  {
-    viewsToUpdate.push_back(this->GetSelectedView());
-  }
-  return viewsToUpdate;
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnSliceIndexChanged(int sliceIndex)
 {
   this->SetSelectedWindowSliceIndex(sliceIndex);
@@ -986,10 +967,18 @@ void QmitkMIDASMultiViewWidget::SetSelectedWindowSliceIndex(int sliceIndex)
 
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewPositionsBound());
-    foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
+    QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+    selectedView->SetSliceIndex(orientation, sliceIndex);
+
+    if (m_ControlPanel->AreViewPositionsBound())
     {
-      view->SetSliceIndex(orientation, sliceIndex);
+      foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
+      {
+        if (otherView != selectedView && otherView->isVisible())
+        {
+          otherView->SetSliceIndex(orientation, sliceIndex);
+        }
+      }
     }
   }
   else
@@ -1017,10 +1006,18 @@ void QmitkMIDASMultiViewWidget::OnMagnificationChanged(double magnification)
     m_ControlPanel->SetMagnification(magnification);
   }
 
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewMagnificationsBound());
-  foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
+  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+  selectedView->SetMagnification(magnification);
+
+  if (m_ControlPanel->AreViewMagnificationsBound())
   {
-    view->SetMagnification(magnification);
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
+    {
+      if (otherView != selectedView && otherView->isVisible())
+      {
+        otherView->SetMagnification(magnification);
+      }
+    }
   }
 
   m_Magnification = magnification;
@@ -1038,10 +1035,19 @@ void QmitkMIDASMultiViewWidget::OnTimeStepChanged(int timeStep)
 void QmitkMIDASMultiViewWidget::SetSelectedTimeStep(int timeStep)
 {
   MIDASDropType dropType = m_ControlPanel->GetDropType();
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(dropType == MIDAS_DROP_TYPE_ALL);
-  foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
+
+  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+  selectedView->SetTimeStep(timeStep);
+
+  if (dropType == MIDAS_DROP_TYPE_ALL)
   {
-    view->SetTimeStep(timeStep);
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
+    {
+      if (otherView != selectedView && otherView->isVisible())
+      {
+        otherView->SetTimeStep(timeStep);
+      }
+    }
   }
 }
 
@@ -1066,12 +1072,17 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(QmitkMIDASSingleViewWidget* view
   m_ControlPanel->SetLayout(layout);
   this->UpdateFocusManagerToSelectedView();
 
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewLayoutsBound());
-  foreach (QmitkMIDASSingleViewWidget* otherView, viewsToUpdate)
+  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+  selectedView->SetLayout(layout);
+
+  if (m_ControlPanel->AreViewLayoutsBound())
   {
-    if (otherView != view)
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
     {
-      otherView->SetLayout(layout);
+      if (otherView != selectedView && otherView->isVisible())
+      {
+        otherView->SetLayout(layout);
+      }
     }
   }
 }
@@ -1153,29 +1164,35 @@ bool QmitkMIDASMultiViewWidget::ToggleCursor()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::SetLayout(MIDASLayout layout)
 {
+  m_ControlPanel->SetLayout(layout);
+
   QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+  selectedView->SetLayout(layout, false);
 
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(m_ControlPanel->AreViewLayoutsBound());
-  foreach (QmitkMIDASSingleViewWidget* viewToUpdate, viewsToUpdate)
+  if (layout == MIDAS_LAYOUT_AXIAL)
   {
-    viewToUpdate->SetLayout(layout, false);
+    selectedView->SetSelectedRenderWindow(selectedView->GetAxialWindow());
+  }
+  else if (layout == MIDAS_LAYOUT_SAGITTAL)
+  {
+    selectedView->SetSelectedRenderWindow(selectedView->GetSagittalWindow());
+  }
+  else if (layout == MIDAS_LAYOUT_CORONAL)
+  {
+    selectedView->SetSelectedRenderWindow(selectedView->GetCoronalWindow());
+  }
 
-    if (viewToUpdate == selectedView)
+  if (m_ControlPanel->AreViewLayoutsBound())
+  {
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
     {
-      if (layout == MIDAS_LAYOUT_AXIAL)
+      if (otherView != selectedView && otherView->isVisible())
       {
-        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetAxialWindow());
-      }
-      else if (layout == MIDAS_LAYOUT_SAGITTAL)
-      {
-        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetSagittalWindow());
-      }
-      else if (layout == MIDAS_LAYOUT_CORONAL)
-      {
-        viewToUpdate->SetSelectedRenderWindow(viewToUpdate->GetCoronalWindow());
+        otherView->SetLayout(layout);
       }
     }
   }
+
 
   if (::IsSingleWindowLayout(layout))
   {
@@ -1191,14 +1208,16 @@ void QmitkMIDASMultiViewWidget::SetLayout(MIDASLayout layout)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
 {
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(true);
-  foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
-  {
-    bool globalVisibility = false;
-    bool localVisibility = m_Show2DCursors;
+  bool globalVisibility = false;
+  bool localVisibility = m_Show2DCursors;
 
-    view->SetDisplay2DCursorsGlobally(globalVisibility);
-    view->SetDisplay2DCursorsLocally(localVisibility);
+  foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
+  {
+    if (view->isVisible())
+    {
+      view->SetDisplay2DCursorsGlobally(globalVisibility);
+      view->SetDisplay2DCursorsLocally(localVisibility);
+    }
   }
 
   this->RequestUpdateAll();
@@ -1216,14 +1235,22 @@ void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
   int timeStep = selectedView->GetTimeStep();
   double magnification = selectedView->GetMagnification();
 
-  QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(isBoundNow);
-  foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
+  selectedView->SetBoundGeometry(selectedGeometry);
+  selectedView->SetBoundGeometryActive(isBoundNow);
+  selectedView->SetMagnification(magnification);
+  selectedView->SetSliceIndex(orientation, sliceIndex);
+  selectedView->SetTimeStep(timeStep);
+
+  foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
   {
-    view->SetBoundGeometry(selectedGeometry);
-    view->SetBoundGeometryActive(isBoundNow);
-    view->SetMagnification(magnification);
-    view->SetSliceIndex(orientation, sliceIndex);
-    view->SetTimeStep(timeStep);
+    if (otherView != selectedView)
+    {
+      otherView->SetBoundGeometry(selectedGeometry);
+      otherView->SetBoundGeometryActive(isBoundNow);
+      otherView->SetMagnification(magnification);
+      otherView->SetSliceIndex(orientation, sliceIndex);
+      otherView->SetTimeStep(timeStep);
+    }
   }
 }
 
@@ -1579,11 +1606,7 @@ void QmitkMIDASMultiViewWidget::OnPopupOpened(bool opened)
 {
   if (!opened)
   {
-    QList<QmitkMIDASSingleViewWidget*> viewsToUpdate = this->GetViewsToUpdate(false);
-    foreach (QmitkMIDASSingleViewWidget* view, viewsToUpdate)
-    {
-      view->repaint();
-    }
+    this->GetSelectedView()->repaint();
   }
 }
 

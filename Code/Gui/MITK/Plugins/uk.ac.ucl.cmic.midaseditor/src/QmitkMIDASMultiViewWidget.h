@@ -315,11 +315,6 @@ protected:
 
 private:
 
-  /// \brief Utility method to get a list of views to update.
-  /// \param doAllVisible if true will ensure the returned vector contains all visible views, and if false will return just the currently selected view.
-  /// \return vector of integers corresponding to widget numbers.
-  QList<QmitkMIDASSingleViewWidget*> GetViewsToUpdate(bool doAllVisible) const;
-
   /// \brief Will return the selected view or the first view if none is selected.
   QmitkMIDASSingleViewWidget* GetSelectedView() const;
 
@@ -333,7 +328,7 @@ private:
   int GetColumnFromIndex(int i) const;
 
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
- int GetIndexFromRowAndColumn(int r, int c) const;
+  int GetIndexFromRowAndColumn(int r, int c) const;
 
   /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
   MIDASLayout GetDefaultLayoutForSegmentation() const;
