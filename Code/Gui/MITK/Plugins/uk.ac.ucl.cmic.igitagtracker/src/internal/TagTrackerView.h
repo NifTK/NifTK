@@ -86,6 +86,11 @@ private slots:
    */
   void OnSpinBoxPressed();
 
+  /**
+   * \brief We can toggle, whether or not to update the registration.
+   */
+  void OnRegistrationEnabledChecked(bool isChecked);
+
 private:
 
   /**

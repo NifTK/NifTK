@@ -29,6 +29,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
+#include <mitkNodePredicateDataType.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <Undistortion.h>
@@ -89,6 +90,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   assert(ok);
   ok = connect(m_MaxSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
+  ok = connect(m_RegistrationEnabledCheckbox, SIGNAL(toggled(bool)), this, SLOT(OnRegistrationEnabledChecked(bool)));
+  assert(ok);
 
   ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -99,10 +102,24 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
 
+  mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
+
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  assert(dataStorage);
+
+  m_RegistrationModelComboBox->SetDataStorage(dataStorage);
+  m_RegistrationModelComboBox->SetPredicate(isPointSet);
+  m_RegistrationModelComboBox->SetAutoSelectNewItems(false);
+
   this->RetrievePreferenceValues();
+
+  m_RegistrationGroupBox->setCollapsed(true);
+  m_RegistrationEnabledCheckbox->setChecked(false);
+  this->OnRegistrationEnabledChecked(false);
 
   m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
+
 }
 
 
@@ -142,6 +159,15 @@ void TagTrackerView::RetrievePreferenceValues()
 void TagTrackerView::SetFocus()
 {
   m_StereoImageAndCameraSelectionWidget->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnRegistrationEnabledChecked(bool isChecked)
+{
+  m_RegistrationModelComboBox->setEnabled(isChecked);
+  m_RegistrationMethodPointsRadio->setEnabled(isChecked);
+  m_RegistrationMethodPointsNormalsRadio->setEnabled(isChecked);
 }
 
 
@@ -378,6 +404,18 @@ void TagTrackerView::UpdateTags()
         zNum.setNum(point[2]);
 
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
+      }
+
+      if (m_RegistrationEnabledCheckbox->isChecked())
+      {
+        if (m_RegistrationMethodPointsRadio->isChecked())
+        {
+          // do normal point based registration
+        }
+        else
+        {
+          // do method that uses normals, and hence can cope with only 2 points.
+        }
       }
     }
     pointSetNode->Modified();

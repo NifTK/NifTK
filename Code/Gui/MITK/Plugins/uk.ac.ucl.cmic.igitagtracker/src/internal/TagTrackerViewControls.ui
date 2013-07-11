@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4">
+  <layout class="QHBoxLayout" name="horizontalLayout_5">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
@@ -47,11 +47,14 @@
      <item>
       <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
        <property name="title">
-        <string>2) Choose parameters</string>
+        <string>2)Tracking parameters</string>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <layout class="QFormLayout" name="formLayout">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="m_BlockSizeLabel">
             <property name="text">
@@ -79,6 +82,9 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="m_MinSizeSpinBox"/>
+          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="m_MaxSizeLabel">
             <property name="text">
@@ -86,11 +92,66 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="m_MinSizeSpinBox"/>
-          </item>
           <item row="3" column="1">
            <widget class="QDoubleSpinBox" name="m_MaxSizeSpinBox"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="m_RegistrationGroupBox">
+       <property name="title">
+        <string>3) Registration parameters</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_RegistrationEnabledLabel">
+            <property name="text">
+             <string>enabled</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="m_RegistrationEnabledCheckbox">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_RegistrationModelLabel">
+            <property name="text">
+             <string>model</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QmitkDataStorageComboBox" name="m_RegistrationModelComboBox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="m_RegistrationMethodLabel">
+            <property name="text">
+             <string>method</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QRadioButton" name="m_RegistrationMethodPointsRadio">
+            <property name="text">
+             <string>points</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QRadioButton" name="m_RegistrationMethodPointsNormalsRadio">
+            <property name="text">
+             <string>points + normals</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -107,7 +168,7 @@
      <item>
       <widget class="ctkCollapsibleGroupBox" name="groupBox_2">
        <property name="title">
-        <string>3) Information</string>
+        <string>4) Information</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
@@ -168,6 +229,11 @@
    <extends>QWidget</extends>
    <header>QmitkStereoImageAndCameraSelectionWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageComboBox</class>
+   <extends>QComboBox</extends>
+   <header>QmitkDataStorageComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
