@@ -316,7 +316,7 @@ void SurfaceRegView::OnSaveToFileButtonPressed()
     return;
   }
 
-  bool successful = mitk::SaveVtkMatrix4x4ToFileIfFileName(fileName.toStdString(), *m_Matrix);
+  bool successful = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *m_Matrix);
 
   if (!successful)
   {

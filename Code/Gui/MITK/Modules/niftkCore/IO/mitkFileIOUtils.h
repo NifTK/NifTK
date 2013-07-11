@@ -41,14 +41,6 @@ NIFTKCORE_EXPORT vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string &fileN
  */
 NIFTKCORE_EXPORT bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix);
 
-/**
- * \brief Saves the given transformation to file.
- * \param[In] fileName the full absolute path of the file to be saved to, which if it already exists will be silently over-written.
- * \param[In] transform transformation matrix.
- * \return bool true if successful and false otherwise.
- */
-NIFTKCORE_EXPORT bool SaveVtkMatrix4x4ToFileIfFileName(const std::string& fileName, const vtkMatrix4x4& transform);
-
 } // end namespace
 
 #endif // QmitkFileIOUtil_h
