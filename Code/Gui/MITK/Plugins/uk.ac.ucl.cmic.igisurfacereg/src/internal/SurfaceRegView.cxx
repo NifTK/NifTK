@@ -334,5 +334,5 @@ void SurfaceRegView::OnSaveToFileButtonPressed()
 //-----------------------------------------------------------------------------
 void SurfaceRegView::SetFocus()
 {
-  // Set focus to a sensible widget for when the view is launched.
+  m_Controls->m_FixedSurfaceComboBox->setFocus();
 }
