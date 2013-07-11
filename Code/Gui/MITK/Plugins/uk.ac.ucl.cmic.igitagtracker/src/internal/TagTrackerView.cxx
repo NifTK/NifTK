@@ -422,22 +422,14 @@ void TagTrackerView::UpdateTags()
             {
               // do normal point based registration
               mitk::PointBasedRegistration::Pointer pointBasedRegistration = mitk::PointBasedRegistration::New();
-              pointBasedRegistration->Update(
-                  pointSet,
-                  model,
-                  false,
-                  *registrationMatrix
-                  );
+              pointBasedRegistration->SetUsePointIDToMatchPoints(true);
+              pointBasedRegistration->Update(pointSet, model, *registrationMatrix);
             }
             else
             {
-              // do method that uses normals, and hence can cope with only 2 points.
+              // do method that uses normals, and hence can cope with a minimum of only 2 points.
               mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
-              pointsAndNormalsRegistration->Update(
-                  pointSet,
-                  model,
-                  *registrationMatrix
-                  );
+              pointsAndNormalsRegistration->Update(pointSet, model, *registrationMatrix);
             }
           } // end if we have model
         } // end if we have node

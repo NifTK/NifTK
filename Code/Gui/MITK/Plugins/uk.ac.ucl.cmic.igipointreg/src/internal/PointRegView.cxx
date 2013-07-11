@@ -188,11 +188,9 @@ void PointRegView::OnCalculateButtonPressed()
   }
 
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
-  double error = registration->Update(fixedPoints,
-                                      movingPoints,
-                                      m_UseICPInitialisation,
-                                      *m_Matrix
-                                      );
+  registration->SetUseICPInitialisation(m_UseICPInitialisation);
+  registration->SetUsePointIDToMatchPoints(false);
+  double error = registration->Update(fixedPoints, movingPoints, *m_Matrix);
 
   for (int i = 0; i < 4; i++)
   {
@@ -201,6 +199,7 @@ void PointRegView::OnCalculateButtonPressed()
       m_Controls->m_MatrixWidget->setValue(i, j, m_Matrix->GetElement(i, j));
     }
   }
+
   QString formattedDouble = QString::number(error);
   m_Controls->m_RMSError->setText(QString("FRE = ") + formattedDouble);
 }

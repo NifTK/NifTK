@@ -30,16 +30,40 @@ namespace mitk {
  * \brief Class to implement point based registration of two point sets.
  *
  * This class is called from both PointRegView and TagTrackerView.
- * There are two 'normal' modes of operation:
- * <ol>
- * <li>Exact corresponding points: Both point sets should be ordered, the same size, and corresponding point-wise. Needs at least 3 points</li>
- * <li>ICP mode: Calculates closest points to initialise, and needs at least 6 points (for some reason in MITK).</li>
- * </ol>
- * Due to the use of mitk::PointSet where point numbers can be labelled, we can also have a fallback position
- * for point based registration, and extract points with matching ID. In this case, if we get 3 or more points
- * with matching ID, we can do a straight point based match, with corresponding points. By default, this is a
- * fallback for when the first two options cannot be performed. By setting AlwaysTryMatchedPoints to true, the
- * points will always be filtered, and if the result has lower FRE will be used in preference.
+ * This is two different use-cases, and the usage is quite different.
+ * The code is kept here in one class for convenience to the user.
+ *
+ * The first case is for PointRegView, where expected usage is:
+ *
+ * <pre>
+ * mitk::PointBasedRegistration::Pointer reg = mitk::PointBasedRegistration::New();
+ * reg->SetUseICPInitialisation(bool);     // user can pick true/false.
+ * reg->SetUsePointIDToMatchPoints(false); // must be false.
+ * reg->Update(..);
+ * </pre>
+ * and the code calls the underlying mitk::NavigationDataLandmarkTransformFilter.
+ *
+ * If <code>UseICPInitialisation</code> is false then there must be 3 or more points
+ * in each point set, the fixed and moving point set must be the same size, and both
+ * ordered such that corresponding points are at a given index.
+ *
+ * If <code>UseICPInitialisation</code> is true, then there must be at least 6 points
+ * in each point set, and the algorithm searches for closest matching points to
+ * do a point based registration.
+ *
+ * The second use case is for Tag Tracker View.
+ *
+ * <pre>
+ * mitk::PointBasedRegistration::Pointer reg = mitk::PointBasedRegistration::New();
+ * reg->SetUsePointIDToMatchPoints(true); // must be true.
+ * reg->Update(..);
+ * </pre>
+ * in this case the ICPInitialisation is ignored.
+ *
+ * The algorithm takes the fixed and moving point set, and looks at the point's ID,
+ * and extracts a list of only those point IDs that match, and then performs a standard
+ * point based registration using mitk::NavigationDataLandmarkTransformFilter.
+ * This will require 3 or more matched points in each point set.
  */
 class NIFTKIGI_EXPORT PointBasedRegistration : public itk::Object
 {
@@ -49,12 +73,20 @@ public:
   itkNewMacro(PointBasedRegistration);
 
   /**
-   * \brief Stores the default value of whether to use ICP initialisation = false.
+   * \brief Stores the default value of UseICPInitialisation = false.
    */
   static const bool DEFAULT_USE_ICP_INITIALISATION;
 
-  itkSetMacro(AlwaysTryMatchedPoints, bool);
-  itkGetMacro(AlwaysTryMatchedPoints, bool);
+  /**
+   * \brief Stores the default value of UsePointIDToMatchPoints = false.
+   */
+  static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
+
+  itkSetMacro(UseICPInitialisation, bool);
+  itkGetMacro(UseICPInitialisation, bool);
+
+  itkSetMacro(UsePointIDToMatchPoints, bool);
+  itkGetMacro(UsePointIDToMatchPoints, bool);
 
   /**
    * \brief Main method to calculate the point based registration.
@@ -69,7 +101,6 @@ public:
    */
   double Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
-              const bool& useICPInitialisation,
               vtkMatrix4x4& outputTransform) const;
 
 protected:
@@ -82,7 +113,8 @@ protected:
 
 private:
 
-  bool m_AlwaysTryMatchedPoints;
+  bool m_UseICPInitialisation;
+  bool m_UsePointIDToMatchPoints;
 
 }; // end class
 

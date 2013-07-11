@@ -18,13 +18,15 @@
 #include <mitkPointUtils.h>
 
 const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
+const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
 PointBasedRegistration::PointBasedRegistration()
-: m_AlwaysTryMatchedPoints(false)
+: m_UseICPInitialisation(DEFAULT_USE_ICP_INITIALISATION)
+, m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
 {
 }
 
@@ -39,46 +41,23 @@ PointBasedRegistration::~PointBasedRegistration()
 double PointBasedRegistration::Update(
     const mitk::PointSet::Pointer fixedPointSet,
     const mitk::PointSet::Pointer movingPointSet,
-    const bool& useICPInitialisation,
     vtkMatrix4x4& outputTransform) const
 {
 
   double error = std::numeric_limits<double>::max();
-  bool haveDoneRegistration = false;
 
   mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::ConstPointer transform = NULL;
   mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::MatrixType rotationMatrix;
   mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::OffsetType translationVector;
 
-  // MITK class NavigationDataLandmarkTransformFilter has the following constraints.
-  if ((!useICPInitialisation && fixedPointSet->GetSize() >= 3 && movingPointSet->GetSize() >= 3 && fixedPointSet->GetSize() == movingPointSet->GetSize())
-    || (useICPInitialisation && fixedPointSet->GetSize() >= 6 && movingPointSet->GetSize() >= 6)
-    )
-  {
-    mitk::NavigationDataLandmarkTransformFilter::Pointer registrationFilter = mitk::NavigationDataLandmarkTransformFilter::New();
-    registrationFilter->SetUseICPInitialization(useICPInitialisation);
-    registrationFilter->SetTargetLandmarks(fixedPointSet);
-    registrationFilter->SetSourceLandmarks(movingPointSet);
-    registrationFilter->Update();
+  rotationMatrix.SetIdentity();
+  translationVector.Fill(0);
 
-    MITK_INFO << "PointBasedRegistration: FRE=" << registrationFilter->GetFRE() << "mm (Std. Dev. " << registrationFilter->GetFREStdDev() << ")" << std::endl;
-    MITK_INFO << "PointBasedRegistration: RMS=" << registrationFilter->GetRMSError() << "mm " << std::endl;
-    MITK_INFO << "PointBasedRegistration: min=" << registrationFilter->GetMinError() << "mm" << std::endl;
-    MITK_INFO << "PointBasedRegistration: max=" << registrationFilter->GetMaxError() << "mm" << std::endl;
-
-    haveDoneRegistration = true;
-    error = registrationFilter->GetFRE();
-
-    transform = registrationFilter->GetLandmarkTransform();
-    rotationMatrix = transform->GetMatrix();
-    translationVector = transform->GetOffset();
-  }
-
-  // In the event that we couldn't do anything above, try the following fallback.
-  if (!haveDoneRegistration || m_AlwaysTryMatchedPoints)
+  if (m_UsePointIDToMatchPoints)
   {
     mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
     mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
+
     int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPointSet,
                                                             *movingPointSet,
                                                             *filteredFixedPoints,
@@ -91,36 +70,47 @@ double PointBasedRegistration::Update(
       matchedRegistration->SetTargetLandmarks(filteredFixedPoints);
       matchedRegistration->SetSourceLandmarks(filteredMovingPoints);
       matchedRegistration->Update();
-      error = matchedRegistration->GetFRE();
 
       MITK_INFO << "PointBasedRegistration: Matched FRE=" << matchedRegistration->GetFRE() << "mm (Std. Dev. " << matchedRegistration->GetFREStdDev() << ")" << std::endl;
       MITK_INFO << "PointBasedRegistration: Matched RMS=" << matchedRegistration->GetRMSError() << "mm " << std::endl;
       MITK_INFO << "PointBasedRegistration: Matched min=" << matchedRegistration->GetMinError() << "mm" << std::endl;
       MITK_INFO << "PointBasedRegistration: Matched max=" << matchedRegistration->GetMaxError() << "mm" << std::endl;
 
-      double tmpError = matchedRegistration->GetFRE();
-
-      if (tmpError < error)
-      {
-        haveDoneRegistration = true;
-        error = matchedRegistration->GetFRE();
-
-        transform = matchedRegistration->GetLandmarkTransform();
-        rotationMatrix = transform->GetMatrix();
-        translationVector = transform->GetOffset();
-      }
+      error = matchedRegistration->GetFRE();
+      transform = matchedRegistration->GetLandmarkTransform();
     }
   }
-
-  // Output the result.
-  outputTransform.Identity();
-  for (int i = 0; i < 3; ++i)
+  else
   {
-    for (int j = 0; j < 3; ++j)
+    mitk::NavigationDataLandmarkTransformFilter::Pointer transformFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+    transformFilter->SetUseICPInitialization(m_UseICPInitialisation);
+    transformFilter->SetTargetLandmarks(fixedPointSet);
+    transformFilter->SetSourceLandmarks(movingPointSet);
+    transformFilter->Update();
+
+    MITK_INFO << "PointBasedRegistration: FRE=" << transformFilter->GetFRE() << "mm (Std. Dev. " << transformFilter->GetFREStdDev() << ")" << std::endl;
+    MITK_INFO << "PointBasedRegistration: RMS=" << transformFilter->GetRMSError() << "mm " << std::endl;
+    MITK_INFO << "PointBasedRegistration: min=" << transformFilter->GetMinError() << "mm" << std::endl;
+    MITK_INFO << "PointBasedRegistration: max=" << transformFilter->GetMaxError() << "mm" << std::endl;
+
+    error = transformFilter->GetFRE();
+    transform = transformFilter->GetLandmarkTransform();
+  }
+
+  if (transform.IsNotNull())
+  {
+    rotationMatrix = transform->GetMatrix();
+    translationVector = transform->GetOffset();
+
+    outputTransform.Identity();
+    for (int i = 0; i < 3; ++i)
     {
-      outputTransform.SetElement(i, j, rotationMatrix[i][j]);
+      for (int j = 0; j < 3; ++j)
+      {
+        outputTransform.SetElement(i, j, rotationMatrix[i][j]);
+      }
+      outputTransform.SetElement(i, 3, translationVector[i]);
     }
-    outputTransform.SetElement(i, 3, translationVector[i]);
   }
 
   return error;
