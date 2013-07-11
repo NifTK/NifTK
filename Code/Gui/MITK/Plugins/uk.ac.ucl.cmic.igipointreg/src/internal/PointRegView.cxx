@@ -21,6 +21,8 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkFileIOUtils.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkFileIOUtils.h>
 #include <QMessageBox>
 
 const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
@@ -227,7 +229,7 @@ void PointRegView::OnComposeWithDataButtonPressed()
   }
 
   mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->ApplyToNode(node, *m_Matrix, true);
+  bool successful = mitk::ApplyToNode(node, *m_Matrix, true);
 
   if (!successful)
   {
@@ -259,7 +261,7 @@ void PointRegView::OnSaveToFileButtonPressed()
   }
 
   mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->SaveToFile(fileName.toStdString(), *m_Matrix);
+  bool successful = mitk::SaveVtkMatrix4x4ToFileIfFileName(fileName.toStdString(), *m_Matrix);
 
   if (!successful)
   {

@@ -69,33 +69,5 @@ double PointBasedRegistration::Update(
   return error;
 }
 
-
-//-----------------------------------------------------------------------------
-bool PointBasedRegistration::SaveToFile(const std::string& fileName, const vtkMatrix4x4& transform) const
-{
-  bool isSuccessful = false;
-  if (fileName.length() > 0)
-  {
-    isSuccessful = mitk::SaveVtkMatrix4x4ToFile(fileName, transform);
-  }
-  return isSuccessful;
-}
-
-
-//-----------------------------------------------------------------------------
-bool PointBasedRegistration::ApplyToNode(
-    const mitk::DataNode::Pointer& node,
-    vtkMatrix4x4& transform,
-    const bool& makeUndoAble) const
-{
-  bool isSuccessful = false;
-
-  // Possiby should put the implementation of this method in something more generic like mitk::DataStorageUtils.h
-  // Maybe ignore makeUndoAble for now, and just get the apply to node bit working.
-
-  return isSuccessful;
-}
-
-
 } // end namespace
 

@@ -30,6 +30,8 @@
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkPointBasedRegistration.h>
+#include <mitkPointsAndNormalsBasedRegistration.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <Undistortion.h>
@@ -408,18 +410,43 @@ void TagTrackerView::UpdateTags()
 
       if (m_RegistrationEnabledCheckbox->isChecked())
       {
-        if (m_RegistrationMethodPointsRadio->isChecked())
+        mitk::DataNode::Pointer modelNode = m_RegistrationModelComboBox->GetSelectedNode();
+        if (modelNode.IsNotNull())
         {
-          // do normal point based registration
-        }
-        else
-        {
-          // do method that uses normals, and hence can cope with only 2 points.
-        }
-      }
+          mitk::PointSet::Pointer model = dynamic_cast<mitk::PointSet*>(modelNode->GetData());
+          if (model.IsNotNull())
+          {
+            vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+
+            if (m_RegistrationMethodPointsRadio->isChecked())
+            {
+              // do normal point based registration
+              mitk::PointBasedRegistration::Pointer pointBasedRegistration = mitk::PointBasedRegistration::New();
+              pointBasedRegistration->Update(
+                  pointSet,
+                  model,
+                  false,
+                  *registrationMatrix
+                  );
+            }
+            else
+            {
+              // do method that uses normals, and hence can cope with only 2 points.
+              mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
+              pointsAndNormalsRegistration->Update(
+                  pointSet,
+                  model,
+                  *registrationMatrix
+                  );
+            }
+          } // end if we have model
+        } // end if we have node
+      } // end if we are doing registration
     }
+
     pointSetNode->Modified();
     pointSet->Modified();
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
   } // end if we have at least one node specified
 }

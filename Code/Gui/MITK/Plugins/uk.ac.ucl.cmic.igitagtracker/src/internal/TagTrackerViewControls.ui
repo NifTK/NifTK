@@ -47,7 +47,7 @@
      <item>
       <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
        <property name="title">
-        <string>2)Tracking parameters</string>
+        <string>2) Tracking parameters</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>

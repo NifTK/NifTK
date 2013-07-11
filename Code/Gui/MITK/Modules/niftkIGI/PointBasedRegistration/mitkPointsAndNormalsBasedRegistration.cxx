@@ -12,37 +12,32 @@
 
 =============================================================================*/
 
+#include "mitkPointsAndNormalsBasedRegistration.h"
 #include <mitkFileIOUtils.h>
-#include <vtkFunctions.h>
+#include <mitkNavigationDataLandmarkTransformFilter.h>
 
-namespace mitk {
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
-vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string& fileName)
+PointsAndNormalsBasedRegistration::PointsAndNormalsBasedRegistration()
 {
-  return LoadMatrix4x4FromFile(fileName, true);
 }
 
 
 //-----------------------------------------------------------------------------
-bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix)
+PointsAndNormalsBasedRegistration::~PointsAndNormalsBasedRegistration()
 {
-  return SaveMatrix4x4ToFile(fileName, matrix);
 }
-
 
 
 //-----------------------------------------------------------------------------
-bool SaveVtkMatrix4x4ToFileIfFileName(const std::string& fileName, const vtkMatrix4x4& transform)
+double PointsAndNormalsBasedRegistration::Update(
+    const mitk::PointSet::Pointer fixedPointSet,
+    const mitk::PointSet::Pointer movingPointSet,
+    vtkMatrix4x4& outputTransform) const
 {
-  // TODO: Consolidate with above method. Need to do use-case analysis.
-  bool isSuccessful = false;
-  if (fileName.length() > 0)
-  {
-    isSuccessful = mitk::SaveVtkMatrix4x4ToFile(fileName, transform);
-  }
-  return isSuccessful;
 }
-
 
 } // end namespace
+

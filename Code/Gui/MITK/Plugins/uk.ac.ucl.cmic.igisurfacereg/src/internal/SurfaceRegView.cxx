@@ -21,6 +21,7 @@
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkPointBasedRegistration.h>
 #include <mitkFileIOUtils.h>
+#include <mitkDataStorageUtils.h>
 #include <QMessageBox>
 #include <QtConcurrentRun>
 #include <vtkFunctions.h>
@@ -261,6 +262,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   movingnode->Modified();
 }
 
+
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
@@ -283,8 +285,7 @@ void SurfaceRegView::OnComposeWithDataButtonPressed()
     return;
   }
 
-  mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->ApplyToNode(node, *m_Matrix, true);
+  bool successful = mitk::ApplyToNode(node, *m_Matrix, true);
 
   if (!successful)
   {
@@ -298,6 +299,7 @@ void SurfaceRegView::OnComposeWithDataButtonPressed()
   }
 
 }
+
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnSaveToFileButtonPressed()
@@ -314,8 +316,7 @@ void SurfaceRegView::OnSaveToFileButtonPressed()
     return;
   }
 
-  mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->SaveToFile(fileName.toStdString(), *m_Matrix);
+  bool successful = mitk::SaveVtkMatrix4x4ToFileIfFileName(fileName.toStdString(), *m_Matrix);
 
   if (!successful)
   {
@@ -328,6 +329,7 @@ void SurfaceRegView::OnSaveToFileButtonPressed()
     return;
   }
 }
+
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::SetFocus()
