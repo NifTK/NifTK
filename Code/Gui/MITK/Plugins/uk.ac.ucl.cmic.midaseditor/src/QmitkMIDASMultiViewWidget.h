@@ -280,8 +280,20 @@ protected slots:
   /// \brief Called when the number of views has been changed through the control panel.
   void OnViewNumberChanged(int rows, int columns);
 
-  /// \brief Called when the view binding type has been changed through the control panel.
-  void OnViewBindingChanged();
+  /// \brief Called when the view position binding has been changed through the control panel.
+  void OnViewPositionBindingChanged();
+
+  /// \brief Called when the view cursor binding has been changed through the control panel.
+  void OnViewCursorBindingChanged();
+
+  /// \brief Called when the view layout binding has been changed through the control panel.
+  void OnViewLayoutBindingChanged();
+
+  /// \brief Called when the view magnification binding has been changed through the control panel.
+  void OnViewMagnificationBindingChanged();
+
+  /// \brief Called when the view geometry binding has been changed through the control panel.
+  void OnViewGeometryBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(MIDASDropType dropType);
