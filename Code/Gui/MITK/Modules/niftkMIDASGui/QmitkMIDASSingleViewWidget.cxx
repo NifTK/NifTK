@@ -130,10 +130,10 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   m_GridLayout->addWidget(m_MultiWidget);
 
   // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
-  connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
-  connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
-  connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
+  QObject::connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  QObject::connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
+  QObject::connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
+  QObject::connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
 
   // Create/Connect the state machine
   m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
@@ -171,7 +171,6 @@ void QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *wi
     m_LastSelectedPosition = m_SelectedPosition;
     m_SelectedPosition = selectedPosition;
   }
-//  MITK_INFO << "QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *window, int sliceIndex) selected position: " << selectedPosition << std::endl;
   emit SelectedPositionChanged(this, window, sliceIndex);
 }
 
@@ -184,7 +183,6 @@ void QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& c
     m_LastCursorPosition = m_CursorPosition;
     m_CursorPosition = cursorPosition;
   }
-//  MITK_INFO << "QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& cursorPosition) cursor position: " << cursorPosition << std::endl;
   emit CursorPositionChanged(this, cursorPosition);
 }
 
@@ -526,12 +524,12 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   m_ScaleFactors[Index(layout)] = m_MultiWidget->GetScaleFactor();
   m_LayoutInitialised[Index(layout)] = true;
 
-  MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
-      << ", current orientation=" << orientation \
-      << ", layout=" << layout \
-      << ", so storing slice=" << this->GetSliceIndex(orientation) \
-      << ", time=" << this->GetTimeStep() \
-      << ", magnification=" << m_MultiWidget->GetMagnification() << std::endl;
+//  MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
+//      << ", current orientation=" << orientation \
+//      << ", layout=" << layout \
+//      << ", so storing slice=" << this->GetSliceIndex(orientation) \
+//      << ", time=" << this->GetTimeStep() \
+//      << ", magnification=" << m_MultiWidget->GetMagnification() << std::endl;
 }
 
 
@@ -775,7 +773,6 @@ mitk::Point3D QmitkMIDASSingleViewWidget::GetSelectedPosition() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
-  MITK_INFO << "QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition) selected position: " << selectedPosition << std::endl;
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
     m_SelectedPosition = selectedPosition;
@@ -796,7 +793,6 @@ const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCursorPosition() const
 //-----------------------------------------------------------------------------
 void QmitkMIDASSingleViewWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
 {
-  MITK_INFO << "QmitkMIDASSingleViewWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition) cursor position: " << cursorPosition << std::endl;
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
     m_CursorPosition = cursorPosition;
@@ -998,9 +994,8 @@ bool QmitkMIDASSingleViewWidget::ToggleMultiWindowLayout()
     }
   }
 
-//  MITK_INFO << "QmitkMIDASSingleViewWidget::ToggleMultiWindowLayout() last cursor position: " << m_LastCursorPosition << std::endl;
-//  MITK_INFO << "QmitkMIDASSingleViewWidget::ToggleMultiWindowLayout() 2. last selected position: " << m_SecondLastSelectedPosition << std::endl;
-
+  // We have to switch back to the previous position because the double click should not change
+  // neither the selected position nor the cursor position.
   this->SetSelectedPosition(m_SecondLastSelectedPosition);
   this->SetCursorPosition(m_LastCursorPosition);
 //  m_MultiWidget->SetCursorPosition(m_LastCursorPosition);

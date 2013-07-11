@@ -280,8 +280,20 @@ protected slots:
   /// \brief Called when the number of views has been changed through the control panel.
   void OnViewNumberChanged(int rows, int columns);
 
-  /// \brief Called when the view binding type has been changed through the control panel.
-  void OnViewBindingChanged();
+  /// \brief Called when the view position binding has been changed through the control panel.
+  void OnViewPositionBindingChanged();
+
+  /// \brief Called when the view cursor binding has been changed through the control panel.
+  void OnViewCursorBindingChanged();
+
+  /// \brief Called when the view layout binding has been changed through the control panel.
+  void OnViewLayoutBindingChanged();
+
+  /// \brief Called when the view magnification binding has been changed through the control panel.
+  void OnViewMagnificationBindingChanged();
+
+  /// \brief Called when the view geometry binding has been changed through the control panel.
+  void OnViewGeometryBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(MIDASDropType dropType);
@@ -315,11 +327,6 @@ protected:
 
 private:
 
-  /// \brief Utility method to get a list of views to update.
-  /// \param doAllVisible if true will ensure the returned vector contains all visible views, and if false will return just the currently selected view.
-  /// \return vector of integers corresponding to widget numbers.
-  QList<QmitkMIDASSingleViewWidget*> GetViewsToUpdate(bool doAllVisible) const;
-
   /// \brief Will return the selected view or the first view if none is selected.
   QmitkMIDASSingleViewWidget* GetSelectedView() const;
 
@@ -333,7 +340,7 @@ private:
   int GetColumnFromIndex(int i) const;
 
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
- int GetIndexFromRowAndColumn(int r, int c) const;
+  int GetIndexFromRowAndColumn(int r, int c) const;
 
   /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
   MIDASLayout GetDefaultLayoutForSegmentation() const;
