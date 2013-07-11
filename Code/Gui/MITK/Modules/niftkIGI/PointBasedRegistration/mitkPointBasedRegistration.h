@@ -35,11 +35,11 @@ namespace mitk {
  * <li>Exact corresponding points: Both point sets should be ordered, the same size, and corresponding point-wise. Needs at least 3 points</li>
  * <li>ICP mode: Calculates closest points to initialise, and needs at least 6 points (for some reason in MITK).</li>
  * </ol>
- * Due to the use of mitk::PointSet where point numbers can be labelled, we can also have a fallback position for point based registration,
- * and extract points with matching ID. In this case, if we get 3 or more points with matching ID, we can do
- * a straight point based match, with corresponding points. By default, this is a fallback for when the first
- * two options cannot be performed. By setting AlwaysTryMatchedPoints to true, the points will always
- * be filtered, and if the result has lower FRE will be used in preference.
+ * Due to the use of mitk::PointSet where point numbers can be labelled, we can also have a fallback position
+ * for point based registration, and extract points with matching ID. In this case, if we get 3 or more points
+ * with matching ID, we can do a straight point based match, with corresponding points. By default, this is a
+ * fallback for when the first two options cannot be performed. By setting AlwaysTryMatchedPoints to true, the
+ * points will always be filtered, and if the result has lower FRE will be used in preference.
  */
 class NIFTKIGI_EXPORT PointBasedRegistration : public itk::Object
 {
