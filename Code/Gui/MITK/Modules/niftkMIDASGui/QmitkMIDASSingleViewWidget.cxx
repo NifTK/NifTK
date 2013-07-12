@@ -524,11 +524,11 @@ void QmitkMIDASSingleViewWidget::StorePosition()
   m_ScaleFactors[Index(layout)] = m_MultiWidget->GetScaleFactor();
   m_LayoutInitialised[Index(layout)] = true;
 
-//  MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound \
-//      << ", current orientation=" << orientation \
-//      << ", layout=" << layout \
-//      << ", so storing slice=" << this->GetSliceIndex(orientation) \
-//      << ", time=" << this->GetTimeStep() \
+//  MITK_DEBUG << "QmitkMIDASSingleViewWidget::StorePosition is bound=" << m_IsBound
+//      << ", current orientation=" << orientation
+//      << ", layout=" << layout
+//      << ", so storing slice=" << this->GetSliceIndex(orientation)
+//      << ", time=" << this->GetTimeStep()
 //      << ", magnification=" << m_MultiWidget->GetMagnification() << std::endl;
 }
 
