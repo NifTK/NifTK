@@ -1,0 +1,6 @@
+<RCC>
+  <qresource>
+    <file>Icons/PushPinIn.png</file>
+    <file>Icons/PushPinOut.png</file>
+  </qresource>
+</RCC>

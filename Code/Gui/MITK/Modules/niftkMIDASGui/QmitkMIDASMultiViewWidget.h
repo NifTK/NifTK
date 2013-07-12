@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASMultiViewWidget_h
 #define QmitkMIDASMultiViewWidget_h
 
-#include <uk_ac_ucl_cmic_midaseditor_Export.h>
+#include <niftkMIDASGuiExports.h>
 
 #include <QColor>
 #include <QEvent>
@@ -66,7 +66,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
-class MIDASEDITOR_EXPORT QmitkMIDASMultiViewWidget : public QWidget
+class NIFTKMIDASGUI_EXPORT QmitkMIDASMultiViewWidget : public QWidget
 {
   Q_OBJECT
 

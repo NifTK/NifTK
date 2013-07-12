@@ -41,7 +41,6 @@
 #include <mitkGeometry3D.h>
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
-#include <mitkIRenderWindowPart.h>
 
 #include <mitkMIDASOrientationUtils.h>
 #include <QmitkMIDASSingleViewWidget.h>
@@ -145,8 +144,8 @@ QmitkMIDASMultiViewWidget::QmitkMIDASMultiViewWidget(
   m_PinButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
   QIcon pinButtonIcon;
-  pinButtonIcon.addFile(":/PushPinIn.png", QSize(), QIcon::Normal, QIcon::On);
-  pinButtonIcon.addFile(":/PushPinOut.png", QSize(), QIcon::Normal, QIcon::Off);
+  pinButtonIcon.addFile(":Icons/PushPinIn.png", QSize(), QIcon::Normal, QIcon::On);
+  pinButtonIcon.addFile(":Icons/PushPinOut.png", QSize(), QIcon::Normal, QIcon::Off);
   m_PinButton->setIcon(pinButtonIcon);
 
   QObject::connect(m_PinButton, SIGNAL(toggled(bool)),
