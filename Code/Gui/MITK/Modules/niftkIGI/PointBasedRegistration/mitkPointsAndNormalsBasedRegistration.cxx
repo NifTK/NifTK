@@ -37,6 +37,7 @@ double PointsAndNormalsBasedRegistration::Update(
     const mitk::PointSet::Pointer movingPointSet,
     vtkMatrix4x4& outputTransform) const
 {
+  return 0;
 }
 
 } // end namespace

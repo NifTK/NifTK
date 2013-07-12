@@ -91,7 +91,7 @@ namespace mitk
    * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
    * \return bool true if successful and false otherwise.
    */
-  bool ApplyToNode(const mitk::DataNode::Pointer& node, vtkMatrix4x4& transform, const bool& makeUndoAble);
+  NIFTKCORE_EXPORT bool ApplyToNode(const mitk::DataNode::Pointer& node, vtkMatrix4x4& transform, const bool& makeUndoAble);
 }
 
 #endif
