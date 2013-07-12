@@ -58,20 +58,36 @@ set(PROJECT_PLUGINS
 
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.  
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
+
   Plugins/it.unito.cim.intensityprofile:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 
-# This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.  
-  Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
-  Plugins/uk.ac.ucl.cmic.mitksegmentation:ON  
-  Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
-  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
-  
 # Plugins listed after 'commonlegacy' depend on it, and this list must be as short as possible.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonlegacy:ON           
 )
+
+
+# ---------------------------------------------------------------------------------------------------
+# MIDAS Specific Plugins
+# This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.
+# ---------------------------------------------------------------------------------------------------
+  
+if(BUILD_MIDAS)
+  set(PROJECT_PLUGINS
+    ${PROJECT_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON            
+    Plugins/uk.ac.ucl.cmic.mitksegmentation:ON  
+    Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
+    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+  )
+endif(BUILD_MIDAS)
+
+
+# ---------------------------------------------------------------------------------------------------
+# IGI Specific Plugins
+# ---------------------------------------------------------------------------------------------------
 
 set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi:ON
