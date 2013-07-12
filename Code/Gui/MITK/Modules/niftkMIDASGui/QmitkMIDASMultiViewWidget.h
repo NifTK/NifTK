@@ -200,6 +200,9 @@ public:
   // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Will return the selected view or the first view if none is selected.
+  QmitkMIDASSingleViewWidget* GetSelectedView() const;
+
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
    */
@@ -326,9 +329,6 @@ protected slots:
 protected:
 
 private:
-
-  /// \brief Will return the selected view or the first view if none is selected.
-  QmitkMIDASSingleViewWidget* GetSelectedView() const;
 
   /// \brief Will return the index of the selected view or 0 if none is selected.
   int GetSelectedViewIndex() const;
