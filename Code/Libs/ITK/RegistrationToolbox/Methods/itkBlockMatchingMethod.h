@@ -25,8 +25,8 @@
 #include <itkSimilarityMeasure.h>
 #include <itkDefaultStaticMeshTraits.h>
 #include <itkPointSetToPointSetSingleValuedMetric.h>
-#include <itkCovarianceCalculator.h>
-#include <itkScalarImageToListAdaptor.h>
+#include <itkCovarianceSampleFilter.h>
+#include <itkImageToListSampleAdaptor.h>
 #include <itkGradientMagnitudeImageFilter.h>
 #include <itkMinimumMaximumImageCalculator.h>
 
@@ -97,19 +97,19 @@ public:
   typedef typename RegionOfInterestFilterType::Pointer                  RegionOfInterestFilterPointer;
   
   // We either calculate the variance, based on the image, which will be whatever scalar type is passed in as template parameter
-  typedef itk::Statistics::ScalarImageToListAdaptor< ImageType >                    ImageTypeListAdaptorType;
+  typedef itk::Statistics::ImageToListSampleAdaptor< ImageType >                    ImageTypeListAdaptorType;
   typedef typename ImageTypeListAdaptorType::Pointer                                ImageTypeListAdaptorPointer;
-  typedef itk::Statistics::CovarianceCalculator< ImageTypeListAdaptorType >         ImageTypeCovarianceCalculatorType;
-  typedef typename ImageTypeCovarianceCalculatorType::Pointer                       ImageTypeCovarianceCalculatorPointer;
+  typedef itk::Statistics::CovarianceSampleFilter< ImageTypeListAdaptorType >         ImageTypeCovarianceSampleFilterType;
+  typedef typename ImageTypeCovarianceSampleFilterType::Pointer                       ImageTypeCovarianceSampleFilterPointer;
 
   // Or we take the gradient magnitude image, so we should do it as a float.
   typedef Image<float, TImageType::ImageDimension>                                  GradientImageType;
   typedef GradientMagnitudeImageFilter<TImageType, GradientImageType>               GradientMagnitudeFilterType;
   typedef typename GradientMagnitudeFilterType::Pointer                             GradientMagnitudeFilterPointer;
-  typedef itk::Statistics::ScalarImageToListAdaptor< GradientImageType >            GradientImageTypeListAdaptorType;
+  typedef itk::Statistics::ImageToListSampleAdaptor< GradientImageType >            GradientImageTypeListAdaptorType;
   typedef typename GradientImageTypeListAdaptorType::Pointer                        GradientImageTypeListAdaptorPointer;
-  typedef itk::Statistics::CovarianceCalculator< GradientImageTypeListAdaptorType > GradientImageTypeCovarianceCalculatorType;
-  typedef typename GradientImageTypeCovarianceCalculatorType::Pointer               GradientImageTypeCovarianceCalculatorPointer;
+  typedef itk::Statistics::CovarianceSampleFilter< GradientImageTypeListAdaptorType > GradientImageTypeCovarianceSampleFilterType;
+  typedef typename GradientImageTypeCovarianceSampleFilterType::Pointer               GradientImageTypeCovarianceSampleFilterPointer;
   
   typedef SimilarityMeasure<TImageType, TImageType >                    SimilarityMeasureType;
   typedef SimilarityMeasureType*                                        SimilarityMeasurePointer;
@@ -418,11 +418,11 @@ private:
   RegionOfInterestFilterPointer                m_FixedImageRegionFilter;
   
   ImageTypeListAdaptorPointer                  m_FixedImageListAdaptor;
-  ImageTypeCovarianceCalculatorPointer         m_FixedImageCovarianceCalculator;
+  ImageTypeCovarianceSampleFilterPointer         m_FixedImageCovarianceSampleFilter;
 
   GradientMagnitudeFilterPointer               m_GradientMagnitudeImageFilter;
   GradientImageTypeListAdaptorPointer          m_GradientMagnitudeListAdaptor;
-  GradientImageTypeCovarianceCalculatorPointer m_GradientMagnitudeCovarianceCalculator;
+  GradientImageTypeCovarianceSampleFilterPointer m_GradientMagnitudeCovarianceSampleFilter;
   
   DummyInterpolatorPointer                     m_DummyInterpolator;
  

@@ -38,10 +38,10 @@ BlockMatchingMethod<TImageType, TScalarType>
   m_FixedPointSetContainer = PointsContainerType::New();
   m_MovingPointSetContainer = PointsContainerType::New();
   m_FixedImageListAdaptor = ImageTypeListAdaptorType::New();
-  m_FixedImageCovarianceCalculator = ImageTypeCovarianceCalculatorType::New();
+  m_FixedImageCovarianceSampleFilter = ImageTypeCovarianceSampleFilterType::New();
   m_GradientMagnitudeImageFilter = GradientMagnitudeFilterType::New();
   m_GradientMagnitudeListAdaptor = GradientImageTypeListAdaptorType::New();
-  m_GradientMagnitudeCovarianceCalculator = GradientImageTypeCovarianceCalculatorType::New();
+  m_GradientMagnitudeCovarianceSampleFilter = GradientImageTypeCovarianceSampleFilterType::New();
   m_MinMaxCalculator = MinimumMaximumImageCalculatorType::New();
   
   m_MaximumNumberOfIterationsRoundMainLoop = 10;
@@ -192,12 +192,12 @@ BlockMatchingMethod<TImageType, TScalarType >
 
   // We will either be calculating covariance based on image intensity.
   m_FixedImageListAdaptor->SetImage(m_FixedImageRegionFilter->GetOutput());
-  m_FixedImageCovarianceCalculator->SetInputSample(m_FixedImageListAdaptor);
+  m_FixedImageCovarianceSampleFilter->SetInputSample(m_FixedImageListAdaptor);
   
   // Or we will be calculating covariance based on gradient magnitude image intensity.
   m_GradientMagnitudeImageFilter->SetInput(m_FixedImageRegionFilter->GetOutput());
   m_GradientMagnitudeListAdaptor->SetImage(m_GradientMagnitudeImageFilter->GetOutput());
-  m_GradientMagnitudeCovarianceCalculator->SetInputSample(m_GradientMagnitudeListAdaptor);
+  m_GradientMagnitudeCovarianceSampleFilter->SetInputSample(m_GradientMagnitudeListAdaptor);
   
   this->GetMetric()->SetTransform( this->GetTransform() );
   this->GetMetric()->SetInterpolator( this->m_DummyInterpolator);
@@ -540,13 +540,13 @@ BlockMatchingMethod<TImageType, TScalarType>
           if (m_UseGradientMagnitudeVariance)
             {
               m_GradientMagnitudeImageFilter->Update();
-              m_GradientMagnitudeCovarianceCalculator->Update();
-              variance = (*(m_GradientMagnitudeCovarianceCalculator->GetOutput()))(0,0);
+              m_GradientMagnitudeCovarianceSampleFilter->Update();
+              variance = (*(m_GradientMagnitudeCovarianceSampleFilter->GetCovarianceMatrixOutput()))(0,0);
             }
           else
             {
-              m_FixedImageCovarianceCalculator->Update();
-              variance = (*(m_FixedImageCovarianceCalculator->GetOutput()))(0,0);
+              m_FixedImageCovarianceSampleFilter->Update();
+              variance = (*(m_FixedImageCovarianceSampleFilter->GetCovarianceMatrixOutput()))(0,0);
             }
           if (variance > 0)
             {
@@ -778,13 +778,13 @@ BlockMatchingMethod<TImageType, TScalarType >
               if (m_UseGradientMagnitudeVariance)
                 {
                   m_GradientMagnitudeImageFilter->Update();
-                  m_GradientMagnitudeCovarianceCalculator->Update();
-                  variance = (*(m_GradientMagnitudeCovarianceCalculator->GetOutput()))(0,0);
+                  m_GradientMagnitudeCovarianceSampleFilter->Update();
+                  variance = (*(m_GradientMagnitudeCovarianceSampleFilter->GetCovarianceMatrixOutput()))(0,0);
                 }
               else
                 {
-                  m_FixedImageCovarianceCalculator->Update();
-                  variance = (*(m_FixedImageCovarianceCalculator->GetOutput()))(0,0);
+                  m_FixedImageCovarianceSampleFilter->Update();
+                  variance = (*(m_FixedImageCovarianceSampleFilter->GetCovarianceMatrixOutput()))(0,0);
                 }
               if (variance > 0)
                 {
