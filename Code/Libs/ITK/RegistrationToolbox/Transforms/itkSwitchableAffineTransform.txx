@@ -162,11 +162,11 @@ SwitchableAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
-int
+unsigned int
 SwitchableAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetNumberOfDOF() const
 {
-  int dof = 0;
+  unsigned int dof = 0;
   
   if (m_OptimiseTranslation)
     {
