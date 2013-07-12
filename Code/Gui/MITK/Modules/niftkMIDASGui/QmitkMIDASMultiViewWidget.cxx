@@ -1198,6 +1198,17 @@ void QmitkMIDASMultiViewWidget::SetLayout(MIDASLayout layout)
     }
   }
 
+  if (m_ControlPanel->AreViewMagnificationsBound())
+  {
+    double magnification = selectedView->GetMagnification();
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
+    {
+      if (otherView != selectedView && otherView->isVisible())
+      {
+        otherView->SetMagnification(magnification);
+      }
+    }
+  }
 
   if (::IsSingleWindowLayout(layout))
   {
