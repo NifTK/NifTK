@@ -81,7 +81,7 @@ Read()
                         << std::endl << "Filename: \"" << this->GetFileName() << "\"" );
     }
 
-  OStringStream InData;
+  std::ostringstream InData;
 
   // in.get ( InData );
   std::filebuf *pbuf;
