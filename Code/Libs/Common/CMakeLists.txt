@@ -34,10 +34,7 @@ if(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 target_link_libraries(niftkcommon  
-  ITKCommon  
-  ITKIO  
-  ITKBasicFilters 
-  ITKAlgorithms
+  ${NIFTK_ITK_LIB}
   vtkCommon
   vtkIO
   ${Boost_LIBRARIES}   
