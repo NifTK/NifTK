@@ -83,7 +83,7 @@ JacobianGradientSimilarityMeasure<TFixedImage, TMovingImage>
 
   const unsigned int parametersDimension = parameters.GetSize();
   derivative = DerivativeType( parametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   ti.GoToBegin();
 
