@@ -57,6 +57,21 @@ NIFTKCORE_EXPORT double Length(mitk::Point3D& vector);
 NIFTKCORE_EXPORT void Normalise(mitk::Point3D& vector);
 
 /**
+ * \brief Copies a into b.
+ */
+NIFTKCORE_EXPORT void CopyValues(const mitk::Point3D& a, mitk::Point3D& b);
+
+/**
+ * \brief Computes c = a x b, and will normalise a and b to unit length first.
+ */
+NIFTKCORE_EXPORT void CrossProduct(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& c);
+
+/**
+ * \brief Computes the normal by calculating cross product of (a-b) and (c-b).
+ */
+NIFTKCORE_EXPORT void ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& b, const mitk::Point3D& c, mitk::Point3D& output);
+
+/**
  * \brief Copies input to output, i.e. the output is erased, and re-populated.
  */
 NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);

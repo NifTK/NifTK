@@ -118,6 +118,43 @@ int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
 
 
 //-----------------------------------------------------------------------------
+void mitk::CopyValues(const mitk::Point3D& a, mitk::Point3D& b)
+{
+  for (int i = 0; i < 3; i++)
+  {
+    b[i] = a[i];
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::CrossProduct(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& c)
+{
+  mitk::Point3D aCopy;
+  mitk::Point3D bCopy;
+  CopyValues(a, aCopy);
+  CopyValues(b, bCopy);
+  Normalise(aCopy);
+  Normalise(bCopy);
+
+  c[0] = aCopy[1]*bCopy[2] - bCopy[1]*aCopy[2];
+  c[1] = -1 * (aCopy[0]*bCopy[2] - bCopy[0]*aCopy[2]);
+  c[2] = aCopy[0]*bCopy[1] - bCopy[0]*aCopy[1];
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& b, const mitk::Point3D& c, mitk::Point3D& output)
+{
+  mitk::Point3D aMinusB;
+  mitk::Point3D cMinusB;
+  GetDifference(a, b, aMinusB);
+  GetDifference(c, b, cMinusB);
+  CrossProduct(aMinusB, cMinusB, output);
+}
+
+
+//-----------------------------------------------------------------------------
 int mitk::FilterMatchingPoints(
     const mitk::PointSet& fixedPointsIn,
     const mitk::PointSet& movingPointsIn,

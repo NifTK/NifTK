@@ -145,6 +145,8 @@ public:
   //-----------------------------------------------------------------------------
   static void TestNormalise()
   {
+    MITK_TEST_OUTPUT(<< "Starting TestNormalise...");
+
     // Implictly testing GetLength().
     mitk::Point3D a;
     a[0] = 1; a[1] = 1; a[2] = 1;
@@ -174,6 +176,32 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[0], 0),".. Testing TestNormalise a[0] = 0");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[1], 0),".. Testing TestNormalise a[1] = 0");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[2], 0),".. Testing TestNormalise a[2] = 0");
+
+    MITK_TEST_OUTPUT(<< "Finished TestNormalise...");
+  }
+
+  //-----------------------------------------------------------------------------
+  static void TestComputeNormalFromPoints()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestComputeNormalFromPoints...");
+
+    // Implicitly tests CrossProduct and CopyValues
+    mitk::Point3D a, b, c, output;
+    a[0] = 0;
+    a[1] = 0;
+    a[2] = 0;
+    b[0] = 2;
+    b[1] = 0;
+    b[2] = 0;
+    c[0] = 2;
+    c[1] = 2;
+    c[2] = 0;
+    mitk::ComputeNormalFromPoints(a, b, c, output);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[0], 0),".. Testing TestComputeNormalFromPoints output[0] = 0, and it equals:" << output[0]);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[1], 0),".. Testing TestComputeNormalFromPoints output[1] = 0, and it equals:" << output[1]);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[2], -1),".. Testing TestComputeNormalFromPoints output[2] = 1, and it equals:" << output[2]);
+
+    MITK_TEST_OUTPUT(<< "Finished TestComputeNormalFromPoints...");
   }
 
 };
@@ -191,6 +219,7 @@ int mitkPointUtilsTest(int argc, char * argv[])
   mitkPointUtilsTestClass::TestGetSquaredDistanceBetweenPoints();
   mitkPointUtilsTestClass::TestGetDifference();
   mitkPointUtilsTestClass::TestNormalise();
+  mitkPointUtilsTestClass::TestComputeNormalFromPoints();
 
   MITK_TEST_END();
 }
