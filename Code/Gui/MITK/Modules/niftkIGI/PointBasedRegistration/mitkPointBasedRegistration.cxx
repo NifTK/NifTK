@@ -78,6 +78,8 @@ double PointBasedRegistration::Update(
 
       error = matchedRegistration->GetFRE();
       transform = matchedRegistration->GetLandmarkTransform();
+      rotationMatrix = transform->GetMatrix();
+      translationVector = transform->GetOffset();
     }
   }
   else
@@ -95,22 +97,18 @@ double PointBasedRegistration::Update(
 
     error = transformFilter->GetFRE();
     transform = transformFilter->GetLandmarkTransform();
-  }
-
-  if (transform.IsNotNull())
-  {
     rotationMatrix = transform->GetMatrix();
     translationVector = transform->GetOffset();
+  }
 
-    outputTransform.Identity();
-    for (int i = 0; i < 3; ++i)
+  outputTransform.Identity();
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
     {
-      for (int j = 0; j < 3; ++j)
-      {
-        outputTransform.SetElement(i, j, rotationMatrix[i][j]);
-      }
-      outputTransform.SetElement(i, 3, translationVector[i]);
+      outputTransform.SetElement(i, j, rotationMatrix[i][j]);
     }
+    outputTransform.SetElement(i, 3, translationVector[i]);
   }
 
   return error;
