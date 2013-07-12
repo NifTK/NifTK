@@ -148,7 +148,6 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
-option(BUILD_OPENCV "Build and use OpenCV for NifTK and MITK." ON)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -475,12 +474,6 @@ if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
 
-if(BUILD_IGI)
-  if(NOT BUILD_OPENCV)
-    message(FATAL_ERROR "Need BUILD_OPENCV turned ON for BUILD_IGI.")
-  endif(NOT BUILD_OPENCV)
-endif(BUILD_IGI)
-
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do
 # the Superbuild, because VTK needs to know if we have Qt.
@@ -678,12 +671,12 @@ endif(VTK_FOUND)
 ######################################################################
 # Find OpenCV.
 ######################################################################
-if(BUILD_OPENCV)
+if(BUILD_IGI)
   find_package(OpenCV REQUIRED)
   if(OpenCV_FOUND)
     message("Found OpenCV")
   endif(OpenCV_FOUND)
-endif(BUILD_OPENCV)
+endif(BUILD_IGI)
 
 
 ######################################################################
@@ -693,7 +686,7 @@ set(MITK_USE_EXT 1)
 set(MITK_USE_Boost 1)
 set(MITK_USE_BLUEBERRY ${QT_FOUND})
 set(MITK_USE_QT ${QT_FOUND})
-set(MITK_USE_OpenCV ${BUILD_OPENCV})
+set(MITK_USE_OpenCV ${BUILD_IGI})
 
 if(NIFTK_GENERATE_DOXYGEN_HELP)
   set(BLUEBERRY_USE_QT_HELP ON) 
