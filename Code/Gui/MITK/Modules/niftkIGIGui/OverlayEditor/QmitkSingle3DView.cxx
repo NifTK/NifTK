@@ -268,9 +268,17 @@ void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
 
   if (m_Image.IsNotNull() && m_ImageNode.IsNotNull())
   {
-    int width = m_Image->GetDimension(0);
+    // debug
+    mitk::Vector3D    s;
+    s[0] = 1;
+    s[1] = 2;
+    s[2] = 1;
+    m_Image->GetGeometry()->SetSpacing(s);
+
+    mitk::Vector3D  imgScaling = m_Image->GetGeometry()->GetSpacing();
+    int width  = m_Image->GetDimension(0);
     int height = m_Image->GetDimension(1);
-    m_MatrixDrivenCamera->SetCalibratedImageSize(width, height);
+    m_MatrixDrivenCamera->SetCalibratedImageSize(width, height, imgScaling[0] / imgScaling[1]);
 
     // Check for property that determines if we are doing a calibrated model or not.
     mitk::CameraIntrinsicsProperty::Pointer intrinsicsProperty
