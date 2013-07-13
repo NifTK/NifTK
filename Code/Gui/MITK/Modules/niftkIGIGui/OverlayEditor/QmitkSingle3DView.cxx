@@ -268,13 +268,6 @@ void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
 
   if (m_Image.IsNotNull() && m_ImageNode.IsNotNull())
   {
-    // debug
-    mitk::Vector3D    s;
-    s[0] = 1;
-    s[1] = 2;
-    s[2] = 1;
-    m_Image->GetGeometry()->SetSpacing(s);
-
     mitk::Vector3D  imgScaling = m_Image->GetGeometry()->GetSpacing();
     int width  = m_Image->GetDimension(0);
     int height = m_Image->GetDimension(1);
