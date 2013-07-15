@@ -106,8 +106,17 @@ signals:
 
 protected slots:
 
-  /// \brief Called when any of the layout radio buttons is toggled.
-  void OnLayoutRadioButtonToggled(bool checked);
+  /// \brief Called when the axial window layout radio button is toggled.
+  void OnAxialWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the sagittal window layout radio button is toggled.
+  void OnSagittalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the coronal window layout radio button is toggled.
+  void OnCoronalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the multi window layout radio button is toggled.
+  void OnMultiWindowRadioButtonToggled(bool checked);
 
   /// \brief Called when the window layout is selected in the the combo box.
   void OnMultiWindowComboBoxIndexChanged();
@@ -152,6 +161,11 @@ private:
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   double m_Magnification;
+
+  /// \brief Stores the last single window layout of the internal viewer,
+  /// one for each layout of the main window.
+  QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+
 };
 
 #endif
