@@ -487,6 +487,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/MIDAS
   ${CMAKE_SOURCE_DIR}/Code/Libs/VTK
   ${CMAKE_SOURCE_DIR}/Code/Libs/VTK/Common
+  ${CMAKE_SOURCE_DIR}/Code/Libs/VTKNiftyReg
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters
