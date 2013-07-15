@@ -517,12 +517,12 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
   ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
 )
-IF (BUILD_MESHING)
-  SET(NIFTK_INCLUDE_DIRS_BUILD_TREE
+if (BUILD_MESHING)
+  set(NIFTK_INCLUDE_DIRS_BUILD_TREE
     ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
     ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing
   )
-ENDIF (BUILD_MESHING)
+endif (BUILD_MESHING)
 
 ######################################################################
 # Find Qt. We need to check for Qt first, before we go ahead and do

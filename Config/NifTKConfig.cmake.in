@@ -101,22 +101,22 @@ set(NifTK_LIBRARIES
   niftkXnatRest
   niftkXnatRestWidgets
 )
-IF(${NifTK_NVAPI_FOUND})
-  LIST(APPEND NifTK_LIBRARIES niftkNVidia;niftkNVidiaGui)
-ENDIF()
-IF(${NifTK_BUILD_IGI})
-  LIST(APPEND NifTK_LIBRARIES niftkIGI;niftkIGIGui;niftkIGIGuiManager;)
-ENDIF()
+if(${NifTK_NVAPI_FOUND})
+  list(APPEND NifTK_LIBRARIES niftkNVidia;niftkNVidiaGui)
+endif()
+if(${NifTK_BUILD_IGI})
+  list(APPEND NifTK_LIBRARIES niftkIGI;niftkIGIGui;niftkIGIGuiManager;)
+endif()
 
 # Set config file for each MITK library
-FOREACH(_module ann;ClippingTools;Connectomics;DiffusionCore;FiberTracking;glew;ImageExtraction;ImageStatistics;IpPicSupport;ipSegmentation;LegacyAdaptors;mbilog;mitkCameraCalibration;Mitk;MitkDeformableRegistration;MitkDeformableRegistrationUI;mitkDicomUI;MitkExt;MitkGraphAlgorithms;MitkIGT;MitkIGTUI;mitkIpFunc;mitkIpPic;mitkOpenCVVideoSupport;mitkOpenCVVideoSupportUI;MitkRigidRegistration;MitkRigidRegistrationUI;mitkToFHardware;mitkToFProcessing;mitkTOFUI;MitkUS;MitkUSUI;Overlays;pic2vtk;PlanarFigure;Properties;Qmitk;QmitkExt;qtsingleapplication;Quantification;qwt;qxt;SceneSerializationBase;SceneSerialization;Segmentation;tinyxml;vecmath)
+foreach(_module ann;ClippingTools;Connectomics;DiffusionCore;FiberTracking;glew;ImageExtraction;ImageStatistics;IpPicSupport;ipSegmentation;LegacyAdaptors;mbilog;mitkCameraCalibration;Mitk;MitkDeformableRegistration;MitkDeformableRegistrationUI;mitkDicomUI;MitkExt;MitkGraphAlgorithms;MitkIGT;MitkIGTUI;mitkIpFunc;mitkIpPic;mitkOpenCVVideoSupport;mitkOpenCVVideoSupportUI;MitkRigidRegistration;MitkRigidRegistrationUI;mitkToFHardware;mitkToFProcessing;mitkTOFUI;MitkUS;MitkUSUI;Overlays;pic2vtk;PlanarFigure;Properties;Qmitk;QmitkExt;qtsingleapplication;Quantification;qwt;qxt;SceneSerializationBase;SceneSerialization;Segmentation;tinyxml;vecmath)
   set(${_module}_CONFIG_FILE "@MITK_DIR@/modulesConf/${_module}Config.cmake")
-ENDFOREACH()
+endforeach()
 
 # Set config file for each NifTK library
-FOREACH(_module XnatRest;XnatRestWidgets;niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
+foreach(_module XnatRest;XnatRestWidgets;niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
   set(${_module}_CONFIG_FILE "@CMAKE_BINARY_DIR@/modulesConf/${_module}Config.cmake")
-ENDFOREACH()
+endforeach()
 
 # The NifTK Library version number
 set(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
