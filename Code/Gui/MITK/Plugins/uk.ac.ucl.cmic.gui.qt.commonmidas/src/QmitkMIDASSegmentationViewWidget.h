@@ -123,7 +123,7 @@ protected:
 private:
 
   /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
-  void ChangeLayout(bool isInitialising = false);
+  void ChangeLayout();
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();

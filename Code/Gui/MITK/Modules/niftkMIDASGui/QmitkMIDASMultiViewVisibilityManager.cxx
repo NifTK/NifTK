@@ -675,7 +675,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
         m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-        m_Widgets[windowIndex]->SetLayout(layout, true);
+        m_Widgets[windowIndex]->SetLayout(layout);
         m_Widgets[windowIndex]->SetEnabled(true);
       }
 
@@ -725,7 +725,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
         if (this->GetNodesInWindow(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
         {
           m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-          m_Widgets[dropIndex]->SetLayout(layout, true);
+          m_Widgets[dropIndex]->SetLayout(layout);
           m_Widgets[dropIndex]->SetEnabled(true);
         }
 
@@ -781,7 +781,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
       if (this->GetNodesInWindow(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
         m_Widgets[0]->SetGeometry(geometry.GetPointer());
-        m_Widgets[0]->SetLayout(layout, true);
+        m_Widgets[0]->SetLayout(layout);
       }
 
       unsigned int maxSliceIndex = m_Widgets[0]->GetMaxSliceIndex(orientation);
@@ -799,7 +799,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
           if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
             m_Widgets[i]->SetGeometry(geometry.GetPointer());
-            m_Widgets[i]->SetLayout(layout, true);
+            m_Widgets[i]->SetLayout(layout);
             m_Widgets[i]->SetEnabled(true);
           }
           m_Widgets[i]->SetSliceIndex(orientation, i);
@@ -815,7 +815,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
           if (this->GetNodesInWindow(i) == 0 || !this->GetAccumulateWhenDropped())
           {
             m_Widgets[i]->SetGeometry(geometry.GetPointer());
-            m_Widgets[i]->SetLayout(layout, true);
+            m_Widgets[i]->SetLayout(layout);
             m_Widgets[i]->SetEnabled(true);
           }
           unsigned int maxSliceIndex = m_Widgets[i]->GetMaxSliceIndex(orientation);

@@ -669,11 +669,20 @@ void QmitkMIDASMultiViewWidget::SetViewNumber(int viewRows, int viewColumns, boo
   this->Update2DCursorVisibility();
   this->SetShow3DWindowInOrthoView(m_Show3DWindowInOrthoView);
 
-  // Make sure that if we are bound, we re-synch the geometry, or magnification.
   if (m_ControlPanel->AreViewGeometriesBound())
   {
-    this->UpdateBoundGeometry(true);
+    QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+    mitk::Geometry3D* geometry = selectedView->GetGeometry();
+
+    foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
+    {
+      if (otherView != selectedView)
+      {
+        otherView->SetBoundGeometry(geometry);
+      }
+    }
   }
+
   if (m_ControlPanel->AreViewMagnificationsBound())
   {
     this->UpdateBoundMagnification();
@@ -1094,6 +1103,19 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(QmitkMIDASSingleViewWidget* sele
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASMultiViewWidget::OnGeometryChanged(QmitkMIDASSingleViewWidget* /*selectedView*/, mitk::Geometry3D* geometry)
+{
+  if (m_ControlPanel->AreViewGeometriesBound())
+  {
+    foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
+    {
+      view->SetBoundGeometry(geometry);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnWindowCursorBindingChanged(bool bound)
 {
   for (int i = 0; i < m_SingleViewWidgets.size(); i++)
@@ -1172,7 +1194,7 @@ void QmitkMIDASMultiViewWidget::SetLayout(MIDASLayout layout)
   m_ControlPanel->SetLayout(layout);
 
   QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-  selectedView->SetLayout(layout, false);
+  selectedView->SetLayout(layout);
 
   if (layout == MIDAS_LAYOUT_AXIAL)
   {
@@ -1237,37 +1259,6 @@ void QmitkMIDASMultiViewWidget::Update2DCursorVisibility()
   }
 
   this->RequestUpdateAll();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::UpdateBoundGeometry(bool isBoundNow)
-{
-  QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-
-  mitk::Geometry3D::Pointer selectedGeometry = selectedView->GetGeometry();
-  MIDASOrientation orientation = selectedView->GetOrientation();
-  int sliceIndex = selectedView->GetSliceIndex(orientation);
-  int timeStep = selectedView->GetTimeStep();
-  double magnification = selectedView->GetMagnification();
-
-  selectedView->SetBoundGeometry(selectedGeometry);
-  selectedView->SetBoundGeometryActive(isBoundNow);
-  selectedView->SetMagnification(magnification);
-  selectedView->SetSliceIndex(orientation, sliceIndex);
-  selectedView->SetTimeStep(timeStep);
-
-  foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
-  {
-    if (otherView != selectedView)
-    {
-      otherView->SetBoundGeometry(selectedGeometry);
-      otherView->SetBoundGeometryActive(isBoundNow);
-      otherView->SetMagnification(magnification);
-      otherView->SetSliceIndex(orientation, sliceIndex);
-      otherView->SetTimeStep(timeStep);
-    }
-  }
 }
 
 
@@ -1602,7 +1593,7 @@ void QmitkMIDASMultiViewWidget::OnViewLayoutBindingChanged()
     {
       if (otherView != selectedView)
       {
-        otherView->SetLayout(layout, false);
+        otherView->SetLayout(layout);
       }
     }
   }
@@ -1631,14 +1622,24 @@ void QmitkMIDASMultiViewWidget::OnViewMagnificationBindingChanged()
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewWidget::OnViewGeometryBindingChanged()
 {
-  bool currentGeometryBound = m_SingleViewWidgets[0]->GetBoundGeometryActive();
-  bool requestedGeometryBound = m_ControlPanel->AreViewGeometriesBound();
-
-  if (currentGeometryBound != requestedGeometryBound)
+  if (m_ControlPanel->AreViewGeometriesBound())
   {
-    this->UpdateBoundGeometry(requestedGeometryBound);
-  }
+    QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
+    mitk::Geometry3D* geometry = selectedView->GetGeometry();
 
+    foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
+    {
+      view->SetBoundGeometry(geometry);
+      view->SetBoundGeometryActive(true);
+    }
+  }
+  else
+  {
+    foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
+    {
+      view->SetBoundGeometryActive(false);
+    }
+  }
 //  this->Update2DCursorVisibility();
 }
 

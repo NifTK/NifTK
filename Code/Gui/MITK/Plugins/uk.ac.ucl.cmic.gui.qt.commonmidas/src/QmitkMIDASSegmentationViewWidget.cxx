@@ -54,7 +54,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 
   m_AxialWindowRadioButton->setChecked(true);
 
-  this->ChangeLayout(true);
+  this->ChangeLayout();
 
   m_MagnificationSpinBox->setDecimals(2);
   m_MagnificationSpinBox->setSingleStep(1.0);
@@ -183,7 +183,7 @@ void QmitkMIDASSegmentationViewWidget::OnMultiWindowComboBoxIndexChanged()
 }
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
+void QmitkMIDASSegmentationViewWidget::ChangeLayout()
 {
   MIDASLayout nextLayout = MIDAS_LAYOUT_UNKNOWN;
 
@@ -282,7 +282,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout(bool isInitialising)
   if (nextLayout != MIDAS_LAYOUT_UNKNOWN && nextLayout != m_Layout)
   {
     m_Layout = nextLayout;
-    m_ViewerWidget->SetLayout(m_Layout, isInitialising);
+    m_ViewerWidget->SetLayout(m_Layout);
 
     double magnification = m_ViewerWidget->GetMagnification();
 
@@ -391,12 +391,12 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       m_VisibilityTracker->OnPropertyChanged(); // force update
 
       m_ViewerWidget->FitToDisplay();
-      this->ChangeLayout(true);
+      this->ChangeLayout();
     }
   }
   else if (mainWindowLayoutChanged)
   {
-    this->ChangeLayout(false);
+    this->ChangeLayout();
   }
 
   m_CurrentRenderer = focusedRenderer;

@@ -320,6 +320,9 @@ protected slots:
   /// \brief Called when the window layout of a view has changed.
   void OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout);
 
+  /// \brief Called when the geometry of a view has changed.
+  void OnGeometryChanged(QmitkMIDASSingleViewWidget* view, mitk::Geometry3D* geometry);
+
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
 

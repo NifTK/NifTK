@@ -819,7 +819,9 @@ void QmitkMIDASStdMultiWidget::FitToDisplay()
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
+    m_BlockDisplayGeometryEvents = true;
     renderWindows[i]->GetRenderer()->GetDisplayGeometry()->Fit();
+    m_BlockDisplayGeometryEvents = false;
   }
 }
 
@@ -1424,7 +1426,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, 
     mitk::Vector2D cursorPosition = this->GetCursorPosition(renderWindow);
 
     // cursor[0] <-> axial[0] <-> coronal[0]
-    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[1] <-> axial[1] <-> 1.0 - sagittal[0]
     // cursor[2] <-> sagittal[1] <-> coronal[1]
 
     if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
@@ -1528,7 +1530,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
     emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
 
     // cursor[0] <-> axial[0] <-> coronal[0]
-    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[1] <-> axial[1] <-> 1.0 - sagittal[0]
     // cursor[2] <-> sagittal[1] <-> coronal[1]
 
     mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
@@ -1563,7 +1565,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
       else// if (orientation == MIDAS_ORIENTATION_CORONAL)
       {
-        m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
+        m_CursorPosition[1] = 1.0 - cursorPositionOnSagittalDisplay[0];
       }
     }
     else// if (renderWindow == this->mitkWidget3)

@@ -221,7 +221,7 @@ public:
   /// The correspondence of the orientation axes is the following:
   ///
   ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> -sagittal[0]
+  ///     axial[1] <-> 1.0 - sagittal[0]
   ///     sagittal[1] <-> coronal[1]
   ///
   const mitk::Vector3D& GetCursorPosition() const;
@@ -237,7 +237,7 @@ public:
   /// The correspondence of the orientation axes is the following:
   ///
   ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> -sagittal[0]
+  ///     axial[1] <-> 1.0 - sagittal[0]
   ///     sagittal[1] <-> coronal[1]
   ///
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
