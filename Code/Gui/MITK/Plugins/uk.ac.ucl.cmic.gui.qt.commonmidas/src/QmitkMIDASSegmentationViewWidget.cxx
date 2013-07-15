@@ -43,6 +43,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 , m_NodeAddedSetter(NULL)
 , m_VisibilityTracker(NULL)
 , m_Magnification(0.0)
+, m_SingleWindowLayouts()
 {
   this->setupUi(parent);
 
@@ -52,7 +53,11 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_MultiWindowComboBox->addItem("2V");
   m_MultiWindowComboBox->addItem("2x2");
 
-  m_AxialWindowRadioButton->setChecked(true);
+  m_CoronalWindowRadioButton->setChecked(true);
+
+  m_SingleWindowLayouts[MIDAS_LAYOUT_AXIAL] = MIDAS_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[MIDAS_LAYOUT_SAGITTAL] = MIDAS_LAYOUT_CORONAL;
+  m_SingleWindowLayouts[MIDAS_LAYOUT_CORONAL] = MIDAS_LAYOUT_SAGITTAL;
 
   this->ChangeLayout();
 
@@ -85,10 +90,10 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_ViewerWidget->SetCursorPositionsBound(false);
   m_ViewerWidget->SetScaleFactorsBound(true);
 
-  connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
-  connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
-  connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
-  connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnLayoutRadioButtonToggled(bool)));
+  connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnAxialWindowRadioButtonToggled(bool)));
+  connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnSagittalWindowRadioButtonToggled(bool)));
+  connect(m_CoronalWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnCoronalWindowRadioButtonToggled(bool)));
+  connect(m_MultiWindowRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnMultiWindowRadioButtonToggled(bool)));
   connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
   connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnMagnificationChanged(double)));
@@ -166,7 +171,55 @@ void QmitkMIDASSegmentationViewWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnLayoutRadioButtonToggled(bool checked)
+void QmitkMIDASSegmentationViewWidget::OnAxialWindowRadioButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
+
+    if (::IsSingleWindowLayout(mainWindowLayout))
+    {
+      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_AXIAL;
+    }
+    this->ChangeLayout();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnSagittalWindowRadioButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
+
+    if (::IsSingleWindowLayout(mainWindowLayout))
+    {
+      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_SAGITTAL;
+    }
+    this->ChangeLayout();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnCoronalWindowRadioButtonToggled(bool checked)
+{
+  if (checked)
+  {
+    MIDASLayout mainWindowLayout = this->GetCurrentMainWindowLayout();
+
+    if (::IsSingleWindowLayout(mainWindowLayout))
+    {
+      m_SingleWindowLayouts[mainWindowLayout] = MIDAS_LAYOUT_CORONAL;
+    }
+    this->ChangeLayout();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -229,43 +282,27 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
       nextLayout = MIDAS_LAYOUT_ORTHO;
     }
   }
-  else
+  else if (::IsSingleWindowLayout(m_MainWindowLayout) && m_MainWindowLayout != MIDAS_LAYOUT_3D)
   {
-    if (m_MainWindowLayout == MIDAS_LAYOUT_AXIAL)
+    nextLayout = m_SingleWindowLayouts[m_MainWindowLayout];
+
+    QRadioButton* nextLayoutRadioButton = 0;
+    if (nextLayout == MIDAS_LAYOUT_AXIAL && !m_AxialWindowRadioButton->isChecked())
     {
-      if (m_SagittalWindowRadioButton->isChecked())
-      {
-        nextLayout = MIDAS_LAYOUT_SAGITTAL;
-      }
-      else
-      {
-        nextLayout = MIDAS_LAYOUT_CORONAL;
-        m_CoronalWindowRadioButton->setChecked(true);
-      }
+      nextLayoutRadioButton = m_AxialWindowRadioButton;
     }
-    else if (m_MainWindowLayout == MIDAS_LAYOUT_SAGITTAL)
+    else if (nextLayout == MIDAS_LAYOUT_SAGITTAL && !m_SagittalWindowRadioButton->isChecked())
     {
-      if (m_AxialWindowRadioButton->isChecked())
-      {
-        nextLayout = MIDAS_LAYOUT_AXIAL;
-      }
-      else
-      {
-        nextLayout = MIDAS_LAYOUT_CORONAL;
-        m_CoronalWindowRadioButton->setChecked(true);
-      }
+      nextLayoutRadioButton = m_SagittalWindowRadioButton;
     }
-    else if (m_MainWindowLayout == MIDAS_LAYOUT_CORONAL)
+    if (nextLayout == MIDAS_LAYOUT_CORONAL && !m_CoronalWindowRadioButton->isChecked())
     {
-      if (m_SagittalWindowRadioButton->isChecked())
-      {
-        nextLayout = MIDAS_LAYOUT_SAGITTAL;
-      }
-      else
-      {
-        nextLayout = MIDAS_LAYOUT_AXIAL;
-        m_AxialWindowRadioButton->setChecked(true);
-      }
+      nextLayoutRadioButton = m_CoronalWindowRadioButton;
+    }
+
+    if (nextLayoutRadioButton)
+    {
+      nextLayoutRadioButton->setChecked(true);
     }
   }
 
