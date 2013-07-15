@@ -1598,8 +1598,6 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
       this->RequestUpdate();
     }
-
-    emit CursorPositionChanged(m_CursorPosition);
   }
 }
 
