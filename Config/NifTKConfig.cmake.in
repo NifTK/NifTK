@@ -22,58 +22,58 @@
 ###############################################################################
 
 # Make all the right CMake macros are available.
-SET(NifTK_CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
-INCLUDE(mitkMacroEmptyExternalProject)
-INCLUDE(niftkMacroCreateApplication)
-INCLUDE(niftkMacroBuildCLI)
-INCLUDE(niftkMacroInstallCLI)
-INCLUDE(niftkMacroConfigureAndBuildCLI)
-INCLUDE(niftkMacroGetGitDateTime)
-INCLUDE(MacroParseArguments)
-INCLUDE(mitkFunctionCheckCompilerFlags)
-INCLUDE(mitkFunctionGetGccVersion)
-INCLUDE(mitkFunctionGetVersion)
-INCLUDE(mitkFunctionCheckMitkCompatibility)
-INCLUDE(mitkFunctionOrganizeSources)
-INCLUDE(mitkFunctionCreateWindowsBatchScript)
-INCLUDE(mitkFunctionInstallProvisioningFiles)
-INCLUDE(mitkFunctionInstallAutoLoadModules)
-INCLUDE(mitkMacroCreateModuleConf)
-INCLUDE(mitkMacroCreateModule)
-INCLUDE(mitkMacroCheckModule)
-INCLUDE(mitkMacroCreateModuleTests)
-INCLUDE(mitkFunctionAddCustomModuleTest)
-INCLUDE(mitkMacroUseModule)
-INCLUDE(mitkMacroMultiplexPicType)
-INCLUDE(mitkMacroInstall)
-INCLUDE(mitkMacroInstallHelperApp)
-INCLUDE(mitkMacroInstallTargets)
-INCLUDE(mitkMacroGenerateToolsLibrary)
-INCLUDE(mitkMacroCreateCTKPlugin)
+set(NifTK_CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
+include(mitkMacroEmptyExternalProject)
+include(niftkMacroCreateApplication)
+include(niftkMacroBuildCLI)
+include(niftkMacroInstallCLI)
+include(niftkMacroConfigureAndBuildCLI)
+include(niftkMacroGetGitDateTime)
+include(MacroParseArguments)
+include(mitkFunctionCheckCompilerFlags)
+include(mitkFunctionGetGccVersion)
+include(mitkFunctionGetVersion)
+include(mitkFunctionCheckMitkCompatibility)
+include(mitkFunctionOrganizeSources)
+include(mitkFunctionCreateWindowsBatchScript)
+include(mitkFunctionInstallProvisioningFiles)
+include(mitkFunctionInstallAutoLoadModules)
+include(mitkMacroCreateModuleConf)
+include(mitkMacroCreateModule)
+include(mitkMacroCheckModule)
+include(mitkMacroCreateModuleTests)
+include(mitkFunctionAddCustomModuleTest)
+include(mitkMacroUseModule)
+include(mitkMacroMultiplexPicType)
+include(mitkMacroInstall)
+include(mitkMacroInstallHelperApp)
+include(mitkMacroInstallTargets)
+include(mitkMacroGenerateToolsLibrary)
+include(mitkMacroCreateCTKPlugin)
 
 # Various config params for NifTK
-SET(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
-SET(NifTK_BUILD_MESHING "@BUILD_MESHING@")
-SET(NifTK_BUILD_GUI "@BUILD_GUI@")
-SET(NifTK_BUILD_IGI "@BUILD_IGI@")
-SET(NifTK_CUDA_FOUND "@CUDA_FOUND@")
-SET(NifTK_NIFTYLINK_DEV "@NIFTYLINK_DEV@")
-SET(NifTK_QT_FOUND "@QT_FOUND@")
-SET(NifTK_NVAPI_FOUND "@NVAPI_FOUND@")
-SET(NifTK_BOOST_FOUND "@Boost_FOUND@")
-SET(NifTK_ITK_FOUND "@ITK_FOUND@")
-SET(NifTK_VTK_FOUND "@VTK_FOUND@")
-SET(NifTK_MITK_FOUND "@MITK_FOUND@")
-SET(NifTK_NIFTYLINK_FOUND "@NiftyLink_FOUND@")
-SET(NifTK_ARUCO_FOUND "@aruco_FOUND@")
-SET(NifTK_NIFTYREG_FOUND "@NIFTYREG_FOUND@")
-SET(NifTK_NIFTYREC_FOUND "@NIFTYREC_FOUND@")
-SET(NifTK_NIFTYSEG_FOUND "@NIFTYSEG_FOUND@")
-SET(NifTK_NIFTYSIM_FOUND "@NIFTYSIM_FOUND@")
-SET(NifTK_SEM_FOUND "@SlicerExecutionModel_FOUND@")
+set(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
+set(NifTK_BUILD_MESHING "@BUILD_MESHING@")
+set(NifTK_BUILD_GUI "@BUILD_GUI@")
+set(NifTK_BUILD_IGI "@BUILD_IGI@")
+set(NifTK_CUDA_FOUND "@CUDA_FOUND@")
+set(NifTK_NIFTYLINK_DEV "@NIFTYLINK_DEV@")
+set(NifTK_QT_FOUND "@QT_FOUND@")
+set(NifTK_NVAPI_FOUND "@NVAPI_FOUND@")
+set(NifTK_BOOST_FOUND "@Boost_FOUND@")
+set(NifTK_ITK_FOUND "@ITK_FOUND@")
+set(NifTK_VTK_FOUND "@VTK_FOUND@")
+set(NifTK_MITK_FOUND "@MITK_FOUND@")
+set(NifTK_NIFTYLINK_FOUND "@NiftyLink_FOUND@")
+set(NifTK_ARUCO_FOUND "@aruco_FOUND@")
+set(NifTK_NIFTYREG_FOUND "@NIFTYREG_FOUND@")
+set(NifTK_NIFTYREC_FOUND "@NIFTYREC_FOUND@")
+set(NifTK_NIFTYSEG_FOUND "@NIFTYSEG_FOUND@")
+set(NifTK_NIFTYSIM_FOUND "@NIFTYSIM_FOUND@")
+set(NifTK_SEM_FOUND "@SlicerExecutionModel_FOUND@")
 
 # The NifTK include file directories.
-SET(NifTK_INCLUDE_DIRS
+set(NifTK_INCLUDE_DIRS
   @CUDA_INCLUDE_DIRECTORIES@
   @BOOST_INCLUDEDIR@
   @Poco_INCLUDE_DIR@
@@ -82,14 +82,14 @@ SET(NifTK_INCLUDE_DIRS
 )
 
 # The NifTK library directories.
-SET(NifTK_LIBRARY_DIRS
+set(NifTK_LIBRARY_DIRS
   @BOOST_LIBRARYDIR@
   @QMITK_LINK_DIRECTORIES@
   @CMAKE_BINARY_DIR@/bin
 )
 
 # A list of all libraries for NifTK.
-SET(NifTK_LIBRARIES
+set(NifTK_LIBRARIES
   @QMITK_LIBRARIES@
   niftkcommon
   niftkITK
@@ -110,49 +110,49 @@ ENDIF()
 
 # Set config file for each MITK library
 FOREACH(_module ann;ClippingTools;Connectomics;DiffusionCore;FiberTracking;glew;ImageExtraction;ImageStatistics;IpPicSupport;ipSegmentation;LegacyAdaptors;mbilog;mitkCameraCalibration;Mitk;MitkDeformableRegistration;MitkDeformableRegistrationUI;mitkDicomUI;MitkExt;MitkGraphAlgorithms;MitkIGT;MitkIGTUI;mitkIpFunc;mitkIpPic;mitkOpenCVVideoSupport;mitkOpenCVVideoSupportUI;MitkRigidRegistration;MitkRigidRegistrationUI;mitkToFHardware;mitkToFProcessing;mitkTOFUI;MitkUS;MitkUSUI;Overlays;pic2vtk;PlanarFigure;Properties;Qmitk;QmitkExt;qtsingleapplication;Quantification;qwt;qxt;SceneSerializationBase;SceneSerialization;Segmentation;tinyxml;vecmath)
-  SET(${_module}_CONFIG_FILE "@MITK_DIR@/modulesConf/${_module}Config.cmake")
+  set(${_module}_CONFIG_FILE "@MITK_DIR@/modulesConf/${_module}Config.cmake")
 ENDFOREACH()
 
 # Set config file for each NifTK library
 FOREACH(_module XnatRest;XnatRestWidgets;niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
-  SET(${_module}_CONFIG_FILE "@CMAKE_BINARY_DIR@/modulesConf/${_module}Config.cmake")
+  set(${_module}_CONFIG_FILE "@CMAKE_BINARY_DIR@/modulesConf/${_module}Config.cmake")
 ENDFOREACH()
 
 # The NifTK Library version number
-SET(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
-SET(NifTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
-SET(NifTK_VERSION_STRING "@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@")
-SET(NifTK_VERSION_HASH "@NIFTK_REVISION_SHORTID@")
-SET(NifTK_VERSION_DATE "@NIFTK_DATE_TIME@")
+set(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
+set(NifTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
+set(NifTK_VERSION_STRING "@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@")
+set(NifTK_VERSION_HASH "@NIFTK_REVISION_SHORTID@")
+set(NifTK_VERSION_DATE "@NIFTK_DATE_TIME@")
 
 # Other version numbers
-SET(NifTK_BOOST_VERSION "@NIFTK_VERSION_BOOST@")
-SET(NifTK_GDCM_VERSION "@NIFTK_VERSION_GDCM@")
-SET(NifTK_DCMTK_VERSION "@NIFTK_VERSION_DCMTK@")
-SET(NifTK_ITK_VERSION "@NIFTK_VERSION_ITK@")
-SET(NifTK_VTK_VERSION "@NIFTK_VERSION_VTK@")
-SET(NifTK_MITK_VERSION "@MITK_VERSION_STRING@_@NIFTK_VERSION_MITK@")
-SET(NifTK_QT_VERSION "@QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@")
-SET(NifTK_CTK_VERSION "@NIFTK_VERSION_CTK@")
-SET(NifTK_NIFTYLINK_VERSION "@NIFTK_VERSION_NIFTYLINK@")
+set(NifTK_BOOST_VERSION "@NIFTK_VERSION_BOOST@")
+set(NifTK_GDCM_VERSION "@NIFTK_VERSION_GDCM@")
+set(NifTK_DCMTK_VERSION "@NIFTK_VERSION_DCMTK@")
+set(NifTK_ITK_VERSION "@NIFTK_VERSION_ITK@")
+set(NifTK_VTK_VERSION "@NIFTK_VERSION_VTK@")
+set(NifTK_MITK_VERSION "@MITK_VERSION_STRING@_@NIFTK_VERSION_MITK@")
+set(NifTK_QT_VERSION "@QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@")
+set(NifTK_CTK_VERSION "@NIFTK_VERSION_CTK@")
+set(NifTK_NIFTYLINK_VERSION "@NIFTK_VERSION_NIFTYLINK@")
 
 # The location of the UseNiftyLink.cmake file.
-SET(NifTK_USE_FILE "@CMAKE_BINARY_DIR@/UseNifTK.cmake")
+set(NifTK_USE_FILE "@CMAKE_BINARY_DIR@/UseNifTK.cmake")
 
 # Additional documentation, to enable compliance with licenses.
 # (Most licenses say that you have to provide a copy of the license statement).
-SET(NifTK_README_FILE "@CMAKE_BINARY_DIR@/README.txt")
-SET(NifTK_LICENSE_FILE "@CMAKE_BINARY_DIR@/LICENSE.txt")
-SET(NifTK_CONTRIB_FILE "@CMAKE_BINARY_DIR@/CONTRIBUTORS.txt")
-SET(NifTK_INSTALL_FILE "@CMAKE_BINARY_DIR@/INSTALLATION.txt")
-SET(NifTK_LICENSE_GDCM "@CMAKE_SOURCE_DIR@/Doc/Licenses/GDCM.txt")
-SET(NifTK_LICENSE_ITK "@CMAKE_SOURCE_DIR@/Doc/Licenses/ITK.txt")
-SET(NifTK_LICENSE_NIFTYLINK "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyLink.txt")
-SET(NifTK_LICENSE_NIFTYREC "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyRec.txt")
-SET(NifTK_LICENSE_NIFTYREG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyReg.txt")
-SET(NifTK_LICENSE_NIFTYSIM "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySim.txt")
-SET(NifTK_LICENSE_NIFTYSEG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySeg.txt")
-SET(NifTK_LICENSE_OPENCV "@CMAKE_SOURCE_DIR@/Doc/Licenses/OpenCV.txt")
-SET(NifTK_LICENSE_Qt "@CMAKE_SOURCE_DIR@/Doc/Licenses/Qt.txt")
-SET(NifTK_LICENSE_SEM "@CMAKE_SOURCE_DIR@/Doc/Licenses/SlicerExecutionModel.txt")
-SET(NifTK_LICENSE_VTK "@CMAKE_SOURCE_DIR@/Doc/Licenses/VTK.txt")
+set(NifTK_README_FILE "@CMAKE_BINARY_DIR@/README.txt")
+set(NifTK_LICENSE_FILE "@CMAKE_BINARY_DIR@/LICENSE.txt")
+set(NifTK_CONTRIB_FILE "@CMAKE_BINARY_DIR@/CONTRIBUTORS.txt")
+set(NifTK_INSTALL_FILE "@CMAKE_BINARY_DIR@/INSTALLATION.txt")
+set(NifTK_LICENSE_GDCM "@CMAKE_SOURCE_DIR@/Doc/Licenses/GDCM.txt")
+set(NifTK_LICENSE_ITK "@CMAKE_SOURCE_DIR@/Doc/Licenses/ITK.txt")
+set(NifTK_LICENSE_NIFTYLINK "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyLink.txt")
+set(NifTK_LICENSE_NIFTYREC "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyRec.txt")
+set(NifTK_LICENSE_NIFTYREG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyReg.txt")
+set(NifTK_LICENSE_NIFTYSIM "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySim.txt")
+set(NifTK_LICENSE_NIFTYSEG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySeg.txt")
+set(NifTK_LICENSE_OPENCV "@CMAKE_SOURCE_DIR@/Doc/Licenses/OpenCV.txt")
+set(NifTK_LICENSE_Qt "@CMAKE_SOURCE_DIR@/Doc/Licenses/Qt.txt")
+set(NifTK_LICENSE_SEM "@CMAKE_SOURCE_DIR@/Doc/Licenses/SlicerExecutionModel.txt")
+set(NifTK_LICENSE_VTK "@CMAKE_SOURCE_DIR@/Doc/Licenses/VTK.txt")
