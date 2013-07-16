@@ -241,6 +241,12 @@ void TransformPointsByCameraToWorld(
     point[1] = transformedPoint[1];
     point[2] = transformedPoint[2];
   }
+  else
+  {
+    transformedPoint[0] = point[0];
+    transformedPoint[1] = point[1];
+    transformedPoint[2] = point[2];
+  }
 }
 
 } // end namespace

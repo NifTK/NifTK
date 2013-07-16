@@ -22,6 +22,7 @@
 #include <mitkVector.h>
 #include <mitkVector.h>
 #include <itkPoint.h>
+#include <mitkPointSet.h>
 
 namespace mitk
 {
@@ -83,6 +84,7 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
 
 /**
  * \brief Highly Experimental method to extract marker pairs, and compute surface normals for each extracted point.
+ * \return map of marker id and a 6D point containing the marker centre and its surface normal.
  */
 std::map<int, Point6D> DetectMarkerPairsAndNormals(
     cv::Mat& inImageLeft,
@@ -99,7 +101,8 @@ std::map<int, Point6D> DetectMarkerPairsAndNormals(
 
 
 /**
- * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL.
+ * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL,
+ * otherwise if matrix is NULL, will simply leave the point un-altered.
  */
 void TransformPointsByCameraToWorld(
     vtkMatrix4x4* cameraToWorld,

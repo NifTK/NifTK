@@ -49,8 +49,9 @@ public:
    * \param leftCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightCameraIntrinsics the camera intrinsic params, as calculated by the camera calibration routines.
    * \param rightToLeftRotationVector a [1x3] rotation vector as per the Rodrigues formulation.
-   * \param rightToLeftTranslationVector a [1x3] translation vector.
    * \param cameraToWorld if not null, all reconstructed points are multiplied by this transform.
+   * \param rightToLeftTranslationVector a [1x3] translation vector.
+   * \param surfaceNormals the surface normals for each tag.
    */
   void ExtractPoints(const mitk::Image::Pointer leftImage,
                      const mitk::Image::Pointer rightImage,
@@ -62,8 +63,9 @@ public:
                      const CvMat& rightCameraIntrinsics,
                      const CvMat& rightToLeftRotationVector,
                      const CvMat& rightToLeftTranslationVector,
+                     const vtkMatrix4x4* cameraToWorld,
                      mitk::PointSet::Pointer pointSet,
-                     const vtkMatrix4x4* cameraToWorld
+                     mitk::PointSet::Pointer surfaceNormals
                      );
 
   /**
@@ -75,8 +77,9 @@ public:
                      const float& maxSize,
                      const int& blockSize,
                      const int& offset,
+                     const vtkMatrix4x4* cameraToWorld,
                      mitk::PointSet::Pointer pointSet,
-                     const vtkMatrix4x4* cameraToWorld
+                     mitk::PointSet::Pointer surfaceNormals
                      );
 
 protected:
