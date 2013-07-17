@@ -14,6 +14,14 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
+if (BUILD_SLS_TRACKING_TESTING)
+
+  mitkAddCustomModuleTest(Handeye-Sensitivity mitkHandeyeSensitivityTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices Distances ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_Distances_Result.txt )
+
+  mitkAddCustomModuleTest(Tracking-Test mitkTrackingTest /home/home/thompson/Passport/SmartSurgery/TrackingTests/st/trackingtest/2013-07-17-14-03-59-348/QmitkIGINVidiaDataSource/capture-2013_7_17-13_3_59.avi)
+
+else(BUILD_SLS_TRACKING_TESTING)
+
 if(BUILD_SLS_TESTING)
 
   # Trac: 2207
@@ -32,3 +40,5 @@ mitkAddCustomModuleTest(Handeye-Calibration-AngleSort mitkHandeyeCalibrationTest
 # Trac: 2227
 # Using ARUCO and OpenCV we detect AR-Tag style markers.
 mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/Input/TagTracking/left.png ${NIFTK_DATA_DIR}/Input/TagTracking/right.png ${NIFTK_DATA_DIR}/Input/TagTracking/left.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/right.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.rot.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.trn.xml)
+
+endif(BUILD_SLS_TRACKING_TESTING)
