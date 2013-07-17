@@ -34,6 +34,7 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkPointsAndNormalsBasedRegistration.h>
 #include <mitkCoordinateAxesData.h>
+#include <mitkNodePredicateOr.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
 #include <vtkMatrix4x4.h>
@@ -127,12 +128,14 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   }
 
   mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
+  mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
+  mitk::NodePredicateOr::Pointer isPointSetOrIsSurface = mitk::NodePredicateOr::New(isPointSet, isSurface);
 
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   assert(dataStorage);
 
   m_RegistrationModelComboBox->SetDataStorage(dataStorage);
-  m_RegistrationModelComboBox->SetPredicate(isPointSet);
+  m_RegistrationModelComboBox->SetPredicate(isPointSetOrIsSurface);
   m_RegistrationModelComboBox->SetAutoSelectNewItems(false);
 
   this->RetrievePreferenceValues();
