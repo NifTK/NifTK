@@ -18,7 +18,7 @@ if (BUILD_SLS_TRACKING_TESTING)
 
   mitkAddCustomModuleTest(Handeye-Sensitivity mitkHandeyeSensitivityTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices Distances ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_Distances_Result.txt )
 
-  mitkAddCustomModuleTest(Tracking-Test mitkTrackingTest /home/home/thompson/Passport/SmartSurgery/TrackingTests/st/trackingtest/2013-07-17-14-03-59-348/QmitkIGINVidiaDataSource/capture-2013_7_17-13_3_59.avi)
+  mitkAddCustomModuleTest(Tracking-Test mitkTrackingTest /home/thompson/Passport/SmartSurgery/TrackingTests/st/trackingtest/2013-07-17-14-03-59-348/QmitkIGINVidiaDataSource/capture-2013_7_17-13_3_59.avi)
 
 else(BUILD_SLS_TRACKING_TESTING)
 
