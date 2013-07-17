@@ -24,5 +24,6 @@ set(CPP_FILES
   TrackedPointer/mitkTrackedPointerManager.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   PointBasedRegistration/mitkPointsAndNormalsBasedRegistration.cxx
+  TagTracking/mitkTagTrackingRegistrationManager.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
 )
