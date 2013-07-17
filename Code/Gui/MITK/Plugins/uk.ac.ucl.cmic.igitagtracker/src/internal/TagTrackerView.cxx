@@ -26,6 +26,7 @@
 #include <service/event/ctkEvent.h>
 #include <mitkImage.h>
 #include <mitkPointSet.h>
+#include <mitkSurface.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
@@ -33,10 +34,15 @@
 #include <mitkPointBasedRegistration.h>
 #include <mitkPointsAndNormalsBasedRegistration.h>
 #include <mitkCoordinateAxesData.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkIntArray.h>
+#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
 const std::string TagTrackerView::POINTSET_NODE_ID = "Tag Locations";
@@ -266,32 +272,33 @@ void TagTrackerView::UpdateTags()
     }
 
     // Retrieve the point set node from data storage, or create it if it does not exist.
-    mitk::PointSet::Pointer pointSet;
-    mitk::DataNode::Pointer pointSetNode = dataStorage->GetNamedNode(POINTSET_NODE_ID);
+    mitk::PointSet::Pointer tagNormals = mitk::PointSet::New();
+    mitk::PointSet::Pointer tagPointSet = NULL;
+    mitk::DataNode::Pointer tagPointSetNode = dataStorage->GetNamedNode(POINTSET_NODE_ID);
 
-    if (pointSetNode.IsNull())
+    if (tagPointSetNode.IsNull())
     {
-      pointSet = mitk::PointSet::New();
-      pointSetNode = mitk::DataNode::New();
-      pointSetNode->SetData( pointSet );
-      pointSetNode->SetProperty( "name", mitk::StringProperty::New(POINTSET_NODE_ID));
-      pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
-      pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
-      pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
-      pointSetNode->SetProperty( "pointsize", mitk::FloatProperty::New(5));
-      pointSetNode->SetBoolProperty("helper object", false);
-      pointSetNode->SetBoolProperty("show distant lines", false);
-      pointSetNode->SetBoolProperty("show distant points", false);
-      pointSetNode->SetBoolProperty("show distances", false);
-      pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
-      pointSetNode->SetColor( 1.0, 1.0, 0 );
-	    pointSetNode->SetVisibility(true);
-      dataStorage->Add(pointSetNode);
+      tagPointSet = mitk::PointSet::New();
+      tagPointSetNode = mitk::DataNode::New();
+      tagPointSetNode->SetData( tagPointSet );
+      tagPointSetNode->SetProperty( "name", mitk::StringProperty::New(POINTSET_NODE_ID));
+      tagPointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
+      tagPointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
+      tagPointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
+      tagPointSetNode->SetProperty( "pointsize", mitk::FloatProperty::New(5));
+      tagPointSetNode->SetBoolProperty("helper object", false);
+      tagPointSetNode->SetBoolProperty("show distant lines", false);
+      tagPointSetNode->SetBoolProperty("show distant points", false);
+      tagPointSetNode->SetBoolProperty("show distances", false);
+      tagPointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
+      tagPointSetNode->SetColor( 1.0, 1.0, 0 );
+      tagPointSetNode->SetVisibility(true);
+      dataStorage->Add(tagPointSetNode);
     }
     else
     {
-      pointSet = dynamic_cast<mitk::PointSet*>(pointSetNode->GetData());
-      if (pointSet.IsNull())
+      tagPointSet = dynamic_cast<mitk::PointSet*>(tagPointSetNode->GetData());
+      if (tagPointSet.IsNull())
       {
         // Give up, as the node has the wrong data.
         MITK_ERROR << "TagTrackerView::OnUpdate node " << POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
@@ -344,10 +351,10 @@ void TagTrackerView::UpdateTags()
           maxSize,
           blockSize,
           offset,
-          pointSet,
-          cameraToWorldMatrix
+          cameraToWorldMatrix,
+          tagPointSet
           );
-      pointSetNode->Modified();
+      tagPointSetNode->Modified();
     }
     else
     {
@@ -388,12 +395,13 @@ void TagTrackerView::UpdateTags()
           maxSize,
           blockSize,
           offset,
-          pointSet,
-          cameraToWorldMatrix
+          cameraToWorldMatrix,
+          tagPointSet,
+          tagNormals
           );
     } // end if mono/stereo
 
-    int numberOfTrackedPoints = pointSet->GetSize();
+    int numberOfTrackedPoints = tagPointSet->GetSize();
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
@@ -406,7 +414,7 @@ void TagTrackerView::UpdateTags()
 
     if (numberOfTrackedPoints > 0)
     {
-      mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
+      mitk::PointSet::DataType* itkPointSet = tagPointSet->GetPointSet(0);
       mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
       mitk::PointSet::PointsIterator pIt;
       mitk::PointSet::PointIdentifier pointID;
@@ -434,21 +442,85 @@ void TagTrackerView::UpdateTags()
         mitk::DataNode::Pointer modelNode = m_RegistrationModelComboBox->GetSelectedNode();
         if (modelNode.IsNotNull())
         {
-          mitk::PointSet::Pointer model = dynamic_cast<mitk::PointSet*>(modelNode->GetData());
-          if (model.IsNotNull())
+          bool modelIsPointSet = true;
+          mitk::PointSet::Pointer modelPointSet = dynamic_cast<mitk::PointSet*>(modelNode->GetData());
+          mitk::PointSet::Pointer modelNormals = mitk::PointSet::New();
+
+          if (modelPointSet.IsNull())
           {
-            if (m_RegistrationMethodPointsRadio->isChecked())
+            modelIsPointSet = false;
+
+            // model may be a vtk surface, which we need for surface normals.
+            mitk::Surface::Pointer surface = dynamic_cast<mitk::Surface*>(modelNode->GetData());
+            if (surface.IsNotNull())
+            {
+              // Here we assume that to register with Points+Normals, we need a VTK model,
+              // where the scalar value associated with each point == model ID, and the
+              // normal value is stored with each point.  We can convert this to 2 mitk::PointSet.
+              vtkPolyData *polyData = surface->GetVtkPolyData();
+              if (polyData != NULL)
+              {
+                vtkPoints *points = polyData->GetPoints();
+                vtkPointData * pointData = polyData->GetPointData();
+                if (pointData != NULL)
+                {
+                  vtkDataArray *vtkScalars = pointData->GetScalars();
+                  vtkDataArray *vtkNormals = pointData->GetNormals();
+
+                  if (vtkScalars == NULL || vtkNormals == NULL)
+                  {
+                    MITK_ERROR << "Surfaces must have scalars containing pointID and normals";
+                    return;
+                  }
+                  if (vtkScalars->GetNumberOfTuples() != vtkNormals->GetNumberOfTuples())
+                  {
+                    MITK_ERROR << "Surfaces must have same number of scalars and normals";
+                    return;
+                  }
+
+                  modelPointSet = mitk::PointSet::New();
+
+                  for (int i = 0; i < vtkScalars->GetNumberOfTuples(); ++i)
+                  {
+                    mitk::Point3D point;
+                    mitk::Point3D normal;
+                    int pointID = static_cast<int>(vtkScalars->GetTuple1(i));
+
+                    double tmp[3];
+                    points->GetPoint(i, tmp);
+
+                    point[0] = tmp[0];
+                    point[1] = tmp[1];
+                    point[2] = tmp[2];
+
+                    double *vtkNormal = vtkNormals->GetTuple3(i);
+
+                    normal[0] = vtkNormal[0];
+                    normal[1] = vtkNormal[1];
+                    normal[2] = vtkNormal[2];
+
+                    modelPointSet->InsertPoint(pointID, point);
+                    modelNormals->InsertPoint(pointID, normal);
+                  }
+                }
+              }
+            }
+          }
+
+          if (modelPointSet.IsNotNull())
+          {
+            if (m_RegistrationMethodPointsRadio->isChecked() || modelIsPointSet)
             {
               // do normal point based registration
               mitk::PointBasedRegistration::Pointer pointBasedRegistration = mitk::PointBasedRegistration::New();
               pointBasedRegistration->SetUsePointIDToMatchPoints(true);
-              pointBasedRegistration->Update(pointSet, model, *registrationMatrix);
+              pointBasedRegistration->Update(tagPointSet, modelPointSet, *registrationMatrix);
             }
             else
             {
               // do method that uses normals, and hence can cope with a minimum of only 2 points.
               mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
-              pointsAndNormalsRegistration->Update(pointSet, model, *registrationMatrix);
+              pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, *registrationMatrix);
             }
 
             // Also need to create and update a node in DataStorage.
@@ -488,8 +560,8 @@ void TagTrackerView::UpdateTags()
       }
     }
 
-    pointSetNode->Modified();
-    pointSet->Modified();
+    tagPointSetNode->Modified();
+    tagPointSet->Modified();
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
   } // end if we have at least one node specified

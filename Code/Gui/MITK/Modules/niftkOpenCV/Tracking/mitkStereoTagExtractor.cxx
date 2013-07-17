@@ -212,6 +212,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   }
   else
   {
+    surfaceNormals->Clear();
+
     std::map<int, mitk::Point6D> result = DetectMarkerPairsAndNormals(
         left,
         right,

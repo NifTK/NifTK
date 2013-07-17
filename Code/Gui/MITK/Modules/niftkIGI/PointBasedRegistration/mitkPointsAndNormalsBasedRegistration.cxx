@@ -35,8 +35,18 @@ PointsAndNormalsBasedRegistration::~PointsAndNormalsBasedRegistration()
 double PointsAndNormalsBasedRegistration::Update(
     const mitk::PointSet::Pointer fixedPointSet,
     const mitk::PointSet::Pointer movingPointSet,
+    const mitk::PointSet::Pointer fixedNormals,
+    const mitk::PointSet::Pointer movingNormals,
     vtkMatrix4x4& outputTransform) const
 {
+  assert(fixedPointSet);
+  assert(movingPointSet);
+  assert(fixedNormals);
+  assert(movingNormals);
+
+  outputTransform.Identity();
+
+
   return 0;
 }
 
