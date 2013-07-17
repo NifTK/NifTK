@@ -797,7 +797,6 @@ endif()
 if(NIFTK_USE_FFTW)
   find_package(FFTW)
   if(FFTW_FOUND)
-    include_directories(${FFTW_INCLUDE_DIR})
     set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${FFTW_INCLUDE_DIR})
     message("Found FFTW")
   else(FFTW_FOUND)
@@ -889,6 +888,46 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
     include(${SlicerExecutionModel_USE_FILE})
   else()
     message("Didn't find SlicerExecutionModel")
+  endif()
+endif()
+
+######################################################################
+# Configure prototype section, to get correct include path.
+######################################################################
+if (BUILD_PROTOTYPE)
+  set(PROTOTYPE_DIR ${CMAKE_SOURCE_DIR}/Prototype)
+
+  if (NOT EXISTS ${PROTOTYPE_DIR})
+    find_package(Subversion)
+    if (Subversion_FOUND)
+      message("Found Subversion")
+      message("Retrieving NiftyPrototype...")
+      execute_process(
+        COMMAND "${Subversion_SVN_EXECUTABLE}" checkout "${NIFTK_LOCATION_PROTOTYPE}" Prototype
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+    else()
+      message("Subversion not found. The Prototype project will not be built.")
+    endif()
+  endif()
+
+  if (EXISTS ${PROTOTYPE_DIR} AND IS_DIRECTORY ${PROTOTYPE_DIR})
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE
+        ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
+        ${CMAKE_SOURCE_DIR}/Prototype/CUDA
+
+        # Note that for these Insight Journal extensions, we dont compile the subpackage,
+        # but by adding them to the include path, you can use any templated classes easily.
+        # You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
+        # depending on which classes you use.
+
+        ${PROTOTYPE_DIR}/InsightJournal/Filters
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_120_ITKSkeleton
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source
+        ${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source
+    )
   endif()
 endif()
 
@@ -1001,6 +1040,8 @@ configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINAR
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
+configure_file(${CMAKE_SOURCE_DIR}/Config/UseNifTK.cmake.in ${CMAKE_BINARY_DIR}/UseNifTK.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
@@ -1124,42 +1165,9 @@ if(BUILD_TESTING)
   subdirs(Testing)
 endif(BUILD_TESTING)   
 
-if (BUILD_PROTOTYPE)
-  set(PROTOTYPE_DIR ${CMAKE_SOURCE_DIR}/Prototype)
-
-  if (NOT EXISTS ${PROTOTYPE_DIR})
-    find_package(Subversion)
-    if (Subversion_FOUND)
-      message("Found Subversion")
-      message("Retrieving NiftyPrototype...")
-      execute_process(
-        COMMAND "${Subversion_SVN_EXECUTABLE}" checkout "${NIFTK_LOCATION_PROTOTYPE}" Prototype
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
-    else()
-      message("Subversion not found. The Prototype project will not be built.")
-    endif()
-  endif()
-
-  if (EXISTS ${PROTOTYPE_DIR} AND IS_DIRECTORY ${PROTOTYPE_DIR})
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${CMAKE_SOURCE_DIR}/Prototype/CUDA)
-    include_directories(${CMAKE_SOURCE_DIR}/Prototype/CUDA)
-
-    # Note that for these Insight Journal extensions, we dont compile the subpackage,
-    # but by adding them to the include path, you can use any templated classes easily.
-    # You may however have to recompile your ITK using ITK_USE_REVIEW=ON and ITK_USE_OPTIMIZED_REGISTRATION_METHODS=ON
-    # depending on which classes you use.
-
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/Filters)
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/IJ_181_ITKbinaryThinningImageFilter3D/Source)
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/IJ_120_ITKSkeleton)
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/IJ_644_ITKLogDomainDemonsRegistration/LogDomainDemonsRegistration-0.0.4-Source/Code)
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshFieldSmoothingFilters/Source)
-    include_directories(${PROTOTYPE_DIR}/InsightJournal/IJ_687_ITKSphericalDemons/QuadEdgeMeshRigidRegistration/Source)
-
-    add_subdirectory(Prototype)
-  endif()
-endif()
+if(BUILD_PROTOTYPE)
+  subdirs(Prototype)
+endif(BUILD_PROTOTYPE)
 
 ######################################################################
 # Packaging code.
