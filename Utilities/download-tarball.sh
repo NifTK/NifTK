@@ -41,6 +41,7 @@ Supported projects:
     NiftyLink
     NifTKData
     IGSTK
+    NifTK
 "
   exit 1
 }
@@ -237,6 +238,9 @@ elif [ $project = NiftyLink ]
 then
   download_from_cmicdev $project $version
 elif [ $project = NifTKData ]
+then
+  download_from_cmicdev $project $version
+elif [ $project = NifTK ]
 then
   download_from_cmicdev $project $version
 elif [ $project = IGSTK ]
