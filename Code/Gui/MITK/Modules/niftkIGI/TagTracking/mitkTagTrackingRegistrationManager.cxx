@@ -145,18 +145,10 @@ void TagTrackingRegistrationManager::Update(
         return;
       }
       mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(coordinateAxesNode->GetData());
-      if (coordinateAxes.IsNull())
+      if (coordinateAxes.IsNotNull())
       {
-        coordinateAxes = mitk::CoordinateAxesData::New();
-
-        // We remove and add to trigger the NodeAdded event,
-        // which is not emmitted if the node was added with no data.
-        dataStorage->Remove(coordinateAxesNode);
-        coordinateAxesNode->SetData(coordinateAxes);
-        dataStorage->Add(coordinateAxesNode);
+        coordinateAxes->SetVtkMatrix(registrationMatrix);
       }
-      coordinateAxes->SetVtkMatrix(registrationMatrix);
-
     } // end if we have model
   } // end if we have node
 } // end Update method

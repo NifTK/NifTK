@@ -291,7 +291,7 @@ void TagTrackerView::UpdateTags()
       tagPointSetNode->SetBoolProperty("show distances", false);
       tagPointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
       tagPointSetNode->SetColor( 1.0, 1.0, 0 );
-      tagPointSetNode->SetVisibility(true);
+      tagPointSetNode->SetVisibility(false);
       dataStorage->Add(tagPointSetNode);
     }
     else
@@ -303,6 +303,21 @@ void TagTrackerView::UpdateTags()
         MITK_ERROR << "TagTrackerView::OnUpdate node " << POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
         return;
       }
+    }
+
+    // Similarly, create the transform node.
+    mitk::CoordinateAxesData::Pointer transformToUpdate = NULL;
+    mitk::DataNode::Pointer transformNode = dataStorage->GetNamedNode(TRANSFORM_NODE_ID);
+    if(transformNode.IsNull())
+    {
+      transformToUpdate = mitk::CoordinateAxesData::New();
+
+      transformNode = mitk::DataNode::New();
+      transformNode->SetData(transformToUpdate);
+      transformNode->SetProperty( "name", mitk::StringProperty::New(TRANSFORM_NODE_ID));
+      transformNode->SetVisibility(false);
+
+      dataStorage->Add(transformNode);
     }
 
     // Extract camera to world matrix to pass onto either mono or stereo.

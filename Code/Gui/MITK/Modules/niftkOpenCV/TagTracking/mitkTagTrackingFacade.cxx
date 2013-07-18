@@ -174,10 +174,10 @@ std::map<int, mitk::Point6D> DetectMarkerPairsAndNormals(
         std::vector<std::pair<cv::Point2f, cv::Point2f> > pairs;
         for (int k = 0; k < 4; k++)
         {
-          std::pair<cv::Point2f, cv::Point2f> pair(leftMarkers[i][k], rightMarkers[i][k]);
+          std::pair<cv::Point2f, cv::Point2f> pair(leftMarkers[i][k], rightMarkers[j][k]);
           pairs.push_back(pair);
         }
-        std::pair<cv::Point2f, cv::Point2f> centrePoint(leftMarkers[i].getCenter(), rightMarkers[i].getCenter());
+        std::pair<cv::Point2f, cv::Point2f> centrePoint(leftMarkers[i].getCenter(), rightMarkers[j].getCenter());
         pairs.push_back(centrePoint);
 
         std::vector<cv::Point3f> pointsIn3D = mitk::TriangulatePointPairs(
@@ -189,7 +189,9 @@ std::map<int, mitk::Point6D> DetectMarkerPairsAndNormals(
             );
 
         // Now we have 5 x 3D points. So, we need the surface normal and centre.
-        mitk::Point3D a, b, c, normal;
+        if (pointsIn3D.size() > 0)
+        {
+          mitk::Point3D a, b, c, normal;
         a[0] = pointsIn3D[0].x;
         a[1] = pointsIn3D[0].y;
         a[2] = pointsIn3D[0].z;
@@ -211,6 +213,8 @@ std::map<int, mitk::Point6D> DetectMarkerPairsAndNormals(
 
         // Store the result in the map.
         output.insert(std::pair<int, mitk::Point6D>(pointID, outputPoint));
+        }
+
 
       } // end if valid point
     } // end for each right marker
