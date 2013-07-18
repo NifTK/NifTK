@@ -22,6 +22,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <cv.h>
 #include <highgui.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 
 /*
@@ -64,6 +65,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
   cvNamedWindow( "Left Processed",CV_WINDOW_AUTOSIZE);
 
   int key = 0 ;
+  IplImage *framegrab;
   IplImage *leftframe;
   IplImage *rightframe;
   IplImage *smallleft;
@@ -84,10 +86,25 @@ int mitkTrackingTest ( int argc, char * argv[] )
   rightprocessed = cvCreateImage( cvSize(1920,540), 8, 1 );
   leftprocessed_temp = cvCreateImage( cvSize(1920,540), 8, 1 );
   rightprocessed_temp = cvCreateImage( cvSize(1920,540), 8, 1 );
+  rightframe = cvCreateImage( cvSize(1920,540), 8, 3 );
+  leftframe = cvCreateImage( cvSize(1920,540), 8, 3 );
+
+  double rho = 10.0;
+  double theta = 0.1;
+  int threshold = 10;
+  int linelength = 10;
+  int linegap = 2;
+  int nlines = 2; 
+  int * lines = new int [4 * nlines];
+  
+  int framecount=0;
   while ( key != 'q' )
   {
-    leftframe = cvQueryFrame(capture);
-    rightframe = cvQueryFrame(capture);
+    framegrab =  cvQueryFrame(capture);
+    cvCopyImage(framegrab,leftframe);
+    framegrab =  cvQueryFrame(capture);
+    cvCopyImage(framegrab,rightframe);
+    MITK_INFO << leftframe << " " << rightframe;
 
     cvCvtColor( leftframe, leftprocessed, CV_BGR2GRAY );
     cvCvtColor( rightframe, rightprocessed, CV_BGR2GRAY );
@@ -99,18 +116,55 @@ int mitkTrackingTest ( int argc, char * argv[] )
     rightprocessed = rightprocessed_temp;
                                               
 
-    //cvArr* leftCorners = new cvArr;
-    //cvPreCornerDetect (leftframe, leftCorners);
+   // cv::Mat dst;
+   // dst = cv::Mat::zeros (leftprocessed->size(), CV_32FC1);
     
+   // int blocksize=4;
+   // int apertureSize = 5;
+    //double k = 0.04;
+    IplImage *temp;
+    temp=cvCreateImage(cvSize(1920,540),32, 1);
+    IplImage *smalltemp;
+    smalltemp=cvCreateImage(cvSize(640,360),32, 1);
+   // cvCornerHarris ( leftprocessed, temp, 
+   //     blocksize, apertureSize, k);
+   // cvNormalize(temp, leftprocessed, 0 , 255, CV_L2);
+   // cvConvertScaleAbs (leftprocessed, leftprocessed_temp);
+  
+    cvCanny ( leftprocessed, leftprocessed_temp, 100 , 100 , 3 );
+    cvHoughLinesP (leftprocessed_temp, rho,theta, threshold, linelength , linegap , lines,nlines);
+  
+    for ( int i = 0 ; i < nlines ; i ++ ) 
+    {
+      cvLine(leftframe , cvPoint(lines[i*4+0], lines[i*4+1]),
+          cvPoint(lines[i*4+2],lines[i*4+3]), cvScalar(255,0,0));
+      cvLine(rightframe , cvPoint(lines[i*4+0], lines[i*4+1]),
+          cvPoint(lines[i*4+2],lines[i*4+3]), cvScalar(0,255,0));
+    }
+   /* cv::Mat leftprocMat (temp);
+    for ( int i = 50 ; i < leftprocMat.rows -50 ; i ++ )
+    {
+      for ( int j = 50 ; j < leftprocMat.cols -50; j ++ ) 
+      {
+        if ( leftprocMat.at<float>(i,j) > 0 ) 
+        {
+          MITK_INFO << "Got One at " << i << "," << j << "=" <<  leftprocMat.at<float>(i,j);
+        }
+      }
+    } */
     cvResize (leftframe, smallleft,CV_INTER_NN);
     cvResize (rightframe, smallright,CV_INTER_NN);
     
-    cvResize (leftprocessed, smallleftprocessed,CV_INTER_NN);
+    cvResize (leftprocessed_temp, smallleftprocessed,CV_INTER_NN);
+   // cvResize (temp, smalltemp,CV_INTER_NN);
 
     cvShowImage("Left Channel", smallleft);
     cvShowImage("Right Channel", smallright);
     cvShowImage("Left Processed", smallleftprocessed);
-    key = cvWaitKey (50);
+  //  cvShowImage("Left Processed", smalltemp);
+    key = cvWaitKey (1);
+  MITK_INFO << framecount++;
+ //   key = 'q';
   }
   
   cvDestroyWindow("Left Channel");
