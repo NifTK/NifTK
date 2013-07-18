@@ -81,6 +81,7 @@ void PointRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
 
     m_Controls->m_MatrixWidget->setEditable(false);
+    m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
     connect(m_Controls->m_PointBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));

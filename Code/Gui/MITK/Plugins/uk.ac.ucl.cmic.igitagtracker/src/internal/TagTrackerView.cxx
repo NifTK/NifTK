@@ -133,6 +133,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   m_RegistrationModelComboBox->SetDataStorage(dataStorage);
   m_RegistrationModelComboBox->SetPredicate(isPointSetOrIsSurface);
   m_RegistrationModelComboBox->SetAutoSelectNewItems(false);
+  m_RegistrationMatrix->setEditable(false);
+  m_RegistrationMatrix->setRange(-1e4, 1e4);
 
   this->RetrievePreferenceValues();
 

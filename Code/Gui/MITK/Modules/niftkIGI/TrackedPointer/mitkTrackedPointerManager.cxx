@@ -178,6 +178,7 @@ void TrackedPointerManager::Update(
         geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
         geometry->Modified();
       }
+      model->Modified();
     }
   }
 
