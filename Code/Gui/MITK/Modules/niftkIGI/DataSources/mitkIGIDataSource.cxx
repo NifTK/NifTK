@@ -187,7 +187,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
 
-  if (GetIsPlayingBack())
+  if (m_IsPlayingBack)
   {
     // no recording playback data
     assert(m_SavingMessages == false);
@@ -203,7 +203,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   }
   else
   {
-    if (GetIsPlayingBack())
+    if (m_IsPlayingBack)
     {
       m_BufferIterator = m_Buffer.begin();
     }
