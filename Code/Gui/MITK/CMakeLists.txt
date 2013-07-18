@@ -62,10 +62,25 @@ endmacro()
 include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
 set(_apps_fullpath )
 foreach(NIFTK_APP ${NIFTK_APPS})
-  list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")  
+  string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  set(target_info_list ${target_info})
+  list(GET target_info_list 1 option_name)
+  list(GET target_info_list 0 app_name)
+  if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+    list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
+  endif()
 endforeach()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
+
+# Force the IGI plugins to turn off/on.
+foreach(IGI_PLUGIN ${IGI_PLUGINS})
+  string(REPLACE ":" "\;" target_info ${IGI_PLUGIN})
+  set(target_info_list ${target_info})
+  list(GET target_info_list 0 plugin_name)
+  set(${PROJECT_NAME}_${plugin_name} ${BUILD_IGI} CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
+endforeach()
+
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      APPS ${_apps_fullpath} 
                      BUILD_OPTION_PREFIX ${PROJECT_NAME}_

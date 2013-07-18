@@ -196,7 +196,7 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
-  /// \brief Sets the world geometry that we are sampling.
+  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
   void SetGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
@@ -205,11 +205,12 @@ public:
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
   void SetBoundGeometry(mitk::Geometry3D::Pointer geometry);
 
-  /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
+  /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
+  /// this viewer will be bound to other viewers in the same multi viewer widget.
   void SetBoundGeometryActive(bool isBound);
 
-  /// \brief Returns the bound flag.
-  bool GetBoundGeometryActive();
+  /// \brief Returns true if the geometry of the viewer is bound to other viewers, otherwise false.
+  bool IsBoundGeometryActive();
 
   /// \brief Get the current slice index for a given orientation.
   unsigned int GetSliceIndex(MIDASOrientation orientation) const;
@@ -227,7 +228,7 @@ public:
   MIDASLayout GetLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetLayout(MIDASLayout layout, bool fitToDisplay = false);
+  void SetLayout(MIDASLayout layout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -340,6 +341,9 @@ signals:
   /// \brief Emitted when the window layout has changed in this view.
   void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
 
+  /// \brief Emitted when the geometry of this view has changed.
+  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::Geometry3D* geometry);
+
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
@@ -365,13 +369,10 @@ private:
                   mitk::DataStorage* dataStorage = 0
                  );
 
-  void SetActiveGeometry();
   inline int Index(int index) const
   {
-    return (index << 1) + m_IsBound;
+    return (index << 1) + m_IsBoundGeometryActive;
   }
-  void StorePosition();
-  void ResetCurrentPosition();
   void ResetRememberedPositions();
 
   /// \brief Used to move either anterior/posterior by a certain number of slices.
@@ -383,10 +384,9 @@ private:
   QGridLayout* m_GridLayout;
   QmitkMIDASStdMultiWidget* m_MultiWidget;
 
-  bool m_IsBound;
-  mitk::Geometry3D::Pointer m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::Geometry3D::Pointer m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
+  bool m_IsBoundGeometryActive;
+  mitk::Geometry3D::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.

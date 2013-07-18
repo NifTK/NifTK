@@ -1,0 +1,158 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+###############################################################################
+# NifTKConfig.cmake - NifTK CMake configuration file for external projects.
+#
+# This file is configured by NifTK and used by the UseNifTK.cmake module
+# to load NifTK settings for an external project.
+#
+# At this stage, we assume that NifTK is built with everything turned on.
+###############################################################################
+
+# Make all the right CMake macros are available.
+set(NifTK_CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
+include(mitkMacroEmptyExternalProject)
+include(niftkMacroCreateApplication)
+include(niftkMacroBuildCLI)
+include(niftkMacroInstallCLI)
+include(niftkMacroConfigureAndBuildCLI)
+include(niftkMacroGetGitDateTime)
+include(MacroParseArguments)
+include(mitkFunctionCheckCompilerFlags)
+include(mitkFunctionGetGccVersion)
+include(mitkFunctionGetVersion)
+include(mitkFunctionCheckMitkCompatibility)
+include(mitkFunctionOrganizeSources)
+include(mitkFunctionCreateWindowsBatchScript)
+include(mitkFunctionInstallProvisioningFiles)
+include(mitkFunctionInstallAutoLoadModules)
+include(mitkMacroCreateModuleConf)
+include(mitkMacroCreateModule)
+include(mitkMacroCheckModule)
+include(mitkMacroCreateModuleTests)
+include(mitkFunctionAddCustomModuleTest)
+include(mitkMacroUseModule)
+include(mitkMacroMultiplexPicType)
+include(mitkMacroInstall)
+include(mitkMacroInstallHelperApp)
+include(mitkMacroInstallTargets)
+include(mitkMacroGenerateToolsLibrary)
+include(mitkMacroCreateCTKPlugin)
+
+# Various config params for NifTK
+set(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
+set(NifTK_BUILD_MESHING "@BUILD_MESHING@")
+set(NifTK_BUILD_GUI "@BUILD_GUI@")
+set(NifTK_BUILD_IGI "@BUILD_IGI@")
+set(NifTK_CUDA_FOUND "@CUDA_FOUND@")
+set(NifTK_NIFTYLINK_DEV "@NIFTYLINK_DEV@")
+set(NifTK_QT_FOUND "@QT_FOUND@")
+set(NifTK_NVAPI_FOUND "@NVAPI_FOUND@")
+set(NifTK_BOOST_FOUND "@Boost_FOUND@")
+set(NifTK_ITK_FOUND "@ITK_FOUND@")
+set(NifTK_VTK_FOUND "@VTK_FOUND@")
+set(NifTK_MITK_FOUND "@MITK_FOUND@")
+set(NifTK_NIFTYLINK_FOUND "@NiftyLink_FOUND@")
+set(NifTK_ARUCO_FOUND "@aruco_FOUND@")
+set(NifTK_NIFTYREG_FOUND "@NIFTYREG_FOUND@")
+set(NifTK_NIFTYREC_FOUND "@NIFTYREC_FOUND@")
+set(NifTK_NIFTYSEG_FOUND "@NIFTYSEG_FOUND@")
+set(NifTK_NIFTYSIM_FOUND "@NIFTYSIM_FOUND@")
+set(NifTK_SEM_FOUND "@SlicerExecutionModel_FOUND@")
+
+# The NifTK include file directories.
+set(NifTK_INCLUDE_DIRS
+  @CUDA_INCLUDE_DIRECTORIES@
+  @BOOST_INCLUDEDIR@
+  @Poco_INCLUDE_DIR@
+  @QMITK_INCLUDE_DIRS@
+  @NIFTK_INCLUDE_DIRS_BUILD_TREE@
+)
+
+# The NifTK library directories.
+set(NifTK_LIBRARY_DIRS
+  @BOOST_LIBRARYDIR@
+  @QMITK_LINK_DIRECTORIES@
+  @CMAKE_BINARY_DIR@/bin
+)
+
+# A list of all libraries for NifTK.
+set(NifTK_LIBRARIES
+  @QMITK_LIBRARIES@
+  niftkcommon
+  niftkITK
+  niftkVTK
+  niftkCore
+  niftkCoreGui
+  niftkMIDAS
+  niftkMIDASGui
+  niftkXnatRest
+  niftkXnatRestWidgets
+)
+if(${NifTK_NVAPI_FOUND})
+  list(APPEND NifTK_LIBRARIES niftkNVidia;niftkNVidiaGui)
+endif()
+if(${NifTK_BUILD_IGI})
+  list(APPEND NifTK_LIBRARIES niftkIGI;niftkIGIGui;niftkIGIGuiManager;)
+endif()
+
+# Set config file for each MITK library
+foreach(_module ann;ClippingTools;Connectomics;DiffusionCore;FiberTracking;glew;ImageExtraction;ImageStatistics;IpPicSupport;ipSegmentation;LegacyAdaptors;mbilog;mitkCameraCalibration;Mitk;MitkDeformableRegistration;MitkDeformableRegistrationUI;mitkDicomUI;MitkExt;MitkGraphAlgorithms;MitkIGT;MitkIGTUI;mitkIpFunc;mitkIpPic;mitkOpenCVVideoSupport;mitkOpenCVVideoSupportUI;MitkRigidRegistration;MitkRigidRegistrationUI;mitkToFHardware;mitkToFProcessing;mitkTOFUI;MitkUS;MitkUSUI;Overlays;pic2vtk;PlanarFigure;Properties;Qmitk;QmitkExt;qtsingleapplication;Quantification;qwt;qxt;SceneSerializationBase;SceneSerialization;Segmentation;tinyxml;vecmath)
+  set(${_module}_CONFIG_FILE "@MITK_DIR@/modulesConf/${_module}Config.cmake")
+endforeach()
+
+# Set config file for each NifTK library
+foreach(_module XnatRest;XnatRestWidgets;niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
+  set(${_module}_CONFIG_FILE "@CMAKE_BINARY_DIR@/modulesConf/${_module}Config.cmake")
+endforeach()
+
+# The NifTK Library version number
+set(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
+set(NifTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
+set(NifTK_VERSION_STRING "@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@")
+set(NifTK_VERSION_HASH "@NIFTK_REVISION_SHORTID@")
+set(NifTK_VERSION_DATE "@NIFTK_DATE_TIME@")
+
+# Other version numbers
+set(NifTK_BOOST_VERSION "@NIFTK_VERSION_BOOST@")
+set(NifTK_GDCM_VERSION "@NIFTK_VERSION_GDCM@")
+set(NifTK_DCMTK_VERSION "@NIFTK_VERSION_DCMTK@")
+set(NifTK_ITK_VERSION "@NIFTK_VERSION_ITK@")
+set(NifTK_VTK_VERSION "@NIFTK_VERSION_VTK@")
+set(NifTK_MITK_VERSION "@MITK_VERSION_STRING@_@NIFTK_VERSION_MITK@")
+set(NifTK_QT_VERSION "@QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@")
+set(NifTK_CTK_VERSION "@NIFTK_VERSION_CTK@")
+set(NifTK_NIFTYLINK_VERSION "@NIFTK_VERSION_NIFTYLINK@")
+
+# The location of the UseNiftyLink.cmake file.
+set(NifTK_USE_FILE "@CMAKE_BINARY_DIR@/UseNifTK.cmake")
+
+# Additional documentation, to enable compliance with licenses.
+# (Most licenses say that you have to provide a copy of the license statement).
+set(NifTK_README_FILE "@CMAKE_BINARY_DIR@/README.txt")
+set(NifTK_LICENSE_FILE "@CMAKE_BINARY_DIR@/LICENSE.txt")
+set(NifTK_CONTRIB_FILE "@CMAKE_BINARY_DIR@/CONTRIBUTORS.txt")
+set(NifTK_INSTALL_FILE "@CMAKE_BINARY_DIR@/INSTALLATION.txt")
+set(NifTK_LICENSE_GDCM "@CMAKE_SOURCE_DIR@/Doc/Licenses/GDCM.txt")
+set(NifTK_LICENSE_ITK "@CMAKE_SOURCE_DIR@/Doc/Licenses/ITK.txt")
+set(NifTK_LICENSE_NIFTYLINK "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyLink.txt")
+set(NifTK_LICENSE_NIFTYREC "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyRec.txt")
+set(NifTK_LICENSE_NIFTYREG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftyReg.txt")
+set(NifTK_LICENSE_NIFTYSIM "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySim.txt")
+set(NifTK_LICENSE_NIFTYSEG "@CMAKE_SOURCE_DIR@/Doc/Licenses/NiftySeg.txt")
+set(NifTK_LICENSE_OPENCV "@CMAKE_SOURCE_DIR@/Doc/Licenses/OpenCV.txt")
+set(NifTK_LICENSE_Qt "@CMAKE_SOURCE_DIR@/Doc/Licenses/Qt.txt")
+set(NifTK_LICENSE_SEM "@CMAKE_SOURCE_DIR@/Doc/Licenses/SlicerExecutionModel.txt")
+set(NifTK_LICENSE_VTK "@CMAKE_SOURCE_DIR@/Doc/Licenses/VTK.txt")

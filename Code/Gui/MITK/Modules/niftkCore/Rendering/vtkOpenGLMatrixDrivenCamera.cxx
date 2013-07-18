@@ -34,6 +34,7 @@ vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 , m_ImageHeightInPixels(256)
 , m_WindowWidthInPixels(256)
 , m_WindowHeightInPixels(256)
+, m_PixelAspectRatio(1.0)
 , m_Fx(1)
 , m_Fy(1)
 , m_Cx(0)
@@ -45,10 +46,11 @@ vtkOpenGLMatrixDrivenCamera::vtkOpenGLMatrixDrivenCamera()
 
 
 //----------------------------------------------------------------------------
-void vtkOpenGLMatrixDrivenCamera::SetCalibratedImageSize(const int& width, const int& height)
+void vtkOpenGLMatrixDrivenCamera::SetCalibratedImageSize(const int& width, const int& height, double pixelaspect)
 {
   m_ImageWidthInPixels = width;
   m_ImageHeightInPixels = height;
+  m_PixelAspectRatio = pixelaspect;
   this->Modified();
 }
 
@@ -117,21 +119,21 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
   m_IntrinsicMatrix->SetElement(0, 0, 2*m_Fx/m_ImageWidthInPixels);
   m_IntrinsicMatrix->SetElement(0, 1, -2*0/m_ImageWidthInPixels);
   m_IntrinsicMatrix->SetElement(0, 2, (m_ImageWidthInPixels - 2*m_Cx)/m_ImageWidthInPixels);
-  m_IntrinsicMatrix->SetElement(1, 1, 2*m_Fy/m_ImageHeightInPixels);
-  m_IntrinsicMatrix->SetElement(1, 2, (-m_ImageHeightInPixels + 2*m_Cy)/m_ImageHeightInPixels);
+  m_IntrinsicMatrix->SetElement(1, 1, 2*(m_Fy / m_PixelAspectRatio) /(m_ImageHeightInPixels / m_PixelAspectRatio));
+  m_IntrinsicMatrix->SetElement(1, 2, (-(m_ImageHeightInPixels / m_PixelAspectRatio) + 2*(m_Cy/m_PixelAspectRatio))/(m_ImageHeightInPixels / m_PixelAspectRatio));
   m_IntrinsicMatrix->SetElement(2, 2, (-zfar-znear)/(zfar-znear));
   m_IntrinsicMatrix->SetElement(2, 3, -2*zfar*znear/(zfar-znear));
   m_IntrinsicMatrix->SetElement(3, 2, -1);
 
   double widthScale  = (double) m_WindowWidthInPixels  / (double) m_ImageWidthInPixels;
-  double heightScale  = (double) m_WindowHeightInPixels  / (double) m_ImageHeightInPixels;
+  double heightScale  = (double) m_WindowHeightInPixels  / ((double) m_ImageHeightInPixels / m_PixelAspectRatio);
 
   int vpw = m_WindowWidthInPixels;
   int vph = m_WindowHeightInPixels;
 
   if (widthScale < heightScale)
   {
-    vph = (int) ((double) m_ImageHeightInPixels * widthScale);
+    vph = (int) (((double) m_ImageHeightInPixels / m_PixelAspectRatio) * widthScale);
   }
   else
   {

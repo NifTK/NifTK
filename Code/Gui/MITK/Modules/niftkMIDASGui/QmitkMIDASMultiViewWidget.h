@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASMultiViewWidget_h
 #define QmitkMIDASMultiViewWidget_h
 
-#include <uk_ac_ucl_cmic_midaseditor_Export.h>
+#include <niftkMIDASGuiExports.h>
 
 #include <QColor>
 #include <QEvent>
@@ -66,7 +66,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
-class MIDASEDITOR_EXPORT QmitkMIDASMultiViewWidget : public QWidget
+class NIFTKMIDASGUI_EXPORT QmitkMIDASMultiViewWidget : public QWidget
 {
   Q_OBJECT
 
@@ -200,6 +200,9 @@ public:
   // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Will return the selected view or the first view if none is selected.
+  QmitkMIDASSingleViewWidget* GetSelectedView() const;
+
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
    */
@@ -280,8 +283,20 @@ protected slots:
   /// \brief Called when the number of views has been changed through the control panel.
   void OnViewNumberChanged(int rows, int columns);
 
-  /// \brief Called when the view binding type has been changed through the control panel.
-  void OnViewBindingChanged();
+  /// \brief Called when the view position binding has been changed through the control panel.
+  void OnViewPositionBindingChanged();
+
+  /// \brief Called when the view cursor binding has been changed through the control panel.
+  void OnViewCursorBindingChanged();
+
+  /// \brief Called when the view layout binding has been changed through the control panel.
+  void OnViewLayoutBindingChanged();
+
+  /// \brief Called when the view magnification binding has been changed through the control panel.
+  void OnViewMagnificationBindingChanged();
+
+  /// \brief Called when the view geometry binding has been changed through the control panel.
+  void OnViewGeometryBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(MIDASDropType dropType);
@@ -305,6 +320,9 @@ protected slots:
   /// \brief Called when the window layout of a view has changed.
   void OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout);
 
+  /// \brief Called when the geometry of a view has changed.
+  void OnGeometryChanged(QmitkMIDASSingleViewWidget* view, mitk::Geometry3D* geometry);
+
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
 
@@ -314,14 +332,6 @@ protected slots:
 protected:
 
 private:
-
-  /// \brief Utility method to get a list of views to update.
-  /// \param doAllVisible if true will ensure the returned vector contains all visible views, and if false will return just the currently selected view.
-  /// \return vector of integers corresponding to widget numbers.
-  QList<QmitkMIDASSingleViewWidget*> GetViewsToUpdate(bool doAllVisible) const;
-
-  /// \brief Will return the selected view or the first view if none is selected.
-  QmitkMIDASSingleViewWidget* GetSelectedView() const;
 
   /// \brief Will return the index of the selected view or 0 if none is selected.
   int GetSelectedViewIndex() const;
@@ -333,7 +343,7 @@ private:
   int GetColumnFromIndex(int i) const;
 
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
- int GetIndexFromRowAndColumn(int r, int c) const;
+  int GetIndexFromRowAndColumn(int r, int c) const;
 
   /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
   MIDASLayout GetDefaultLayoutForSegmentation() const;

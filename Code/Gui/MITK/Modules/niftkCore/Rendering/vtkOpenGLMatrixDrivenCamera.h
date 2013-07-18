@@ -52,8 +52,9 @@ public:
    * \brief Set the size of the image in pixels that was used while calibrating the camera model.
    * \param width in pixels.
    * \param height in pixels.
+   * \param pixelaspect is the width of a single pixel divided by its height.
    */
-  void SetCalibratedImageSize(const int& width, const int& height);
+  void SetCalibratedImageSize(const int& width, const int& height, double pixelaspect = 1.0);
 
   /**
    * \brief Set the window/widget size currently used.
@@ -88,6 +89,7 @@ private:
   int m_ImageHeightInPixels;
   int m_WindowWidthInPixels;
   int m_WindowHeightInPixels;
+  double m_PixelAspectRatio;
   double m_Fx;
   double m_Fy;
   double m_Cx;

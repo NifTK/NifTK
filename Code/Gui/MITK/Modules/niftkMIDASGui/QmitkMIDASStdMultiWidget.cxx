@@ -198,10 +198,10 @@ QmitkMIDASStdMultiWidget::QmitkMIDASStdMultiWidget(
   this->SetSelected(false);
 
   // Need each widget to signal when something is dropped, so connect signals to OnNodesDropped.
-  connect(this->mitkWidget1, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(this->mitkWidget2, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(this->mitkWidget3, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  connect(this->mitkWidget4, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  QObject::connect(this->mitkWidget1, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  QObject::connect(this->mitkWidget2, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  QObject::connect(this->mitkWidget3, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  QObject::connect(this->mitkWidget4, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
 
   // Register to listen to SliceNavigators, slice changed events.
   itk::ReceptorMemberCommand<QmitkMIDASStdMultiWidget>::Pointer onAxialSliceChangedCommand =
@@ -322,7 +322,15 @@ void QmitkMIDASStdMultiWidget::RemoveDisplayGeometryModificationObserver(QmitkRe
 //-----------------------------------------------------------------------------
 void QmitkMIDASStdMultiWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
+  // We have to block the display geometry events until the event is processed.
+  // Therefore, it is important that the event is processed synchronuously, right after
+  // emitting the signal. To achieve this, the signal has to be directly connected to the
+  // slots (Qt::DirectConnection). Another way of achieving this could be calling
+  // QApplication::processEvents() but that would process other pending signals as well
+  // what we might not want.
+  m_BlockDisplayGeometryEvents = true;
   emit NodesDropped(this, renderWindow, nodes);
+  m_BlockDisplayGeometryEvents = false;
 }
 
 
@@ -449,7 +457,7 @@ void QmitkMIDASStdMultiWidget::SetSelectedRenderWindow(QmitkRenderWindow* render
   }
   this->ForceImmediateUpdate();
 
-  if (!this->AreScaleFactorsBound())
+  if (renderWindow && !this->AreScaleFactorsBound())
   {
     m_Magnification = this->GetMagnification(renderWindow);
     m_ScaleFactor = this->GetScaleFactor(renderWindow);
@@ -811,7 +819,9 @@ void QmitkMIDASStdMultiWidget::FitToDisplay()
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
+    m_BlockDisplayGeometryEvents = true;
     renderWindows[i]->GetRenderer()->GetDisplayGeometry()->Fit();
+    m_BlockDisplayGeometryEvents = false;
   }
 }
 
@@ -1416,7 +1426,7 @@ void QmitkMIDASStdMultiWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, 
     mitk::Vector2D cursorPosition = this->GetCursorPosition(renderWindow);
 
     // cursor[0] <-> axial[0] <-> coronal[0]
-    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[1] <-> axial[1] <-> 1.0 - sagittal[0]
     // cursor[2] <-> sagittal[1] <-> coronal[1]
 
     if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
@@ -1520,7 +1530,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
     emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
 
     // cursor[0] <-> axial[0] <-> coronal[0]
-    // cursor[1] <-> axial[1] <-> -sagittal[0]
+    // cursor[1] <-> axial[1] <-> 1.0 - sagittal[0]
     // cursor[2] <-> sagittal[1] <-> coronal[1]
 
     mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
@@ -1555,7 +1565,7 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
       else// if (orientation == MIDAS_ORIENTATION_CORONAL)
       {
-        m_CursorPosition[1] = cursorPositionOnSagittalDisplay[0];
+        m_CursorPosition[1] = 1.0 - cursorPositionOnSagittalDisplay[0];
       }
     }
     else// if (renderWindow == this->mitkWidget3)
@@ -1588,8 +1598,6 @@ void QmitkMIDASStdMultiWidget::OnSelectedPositionChanged(MIDASOrientation orient
       }
       this->RequestUpdate();
     }
-
-    emit CursorPositionChanged(m_CursorPosition);
   }
 }
 

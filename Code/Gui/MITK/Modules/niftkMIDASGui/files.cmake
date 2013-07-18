@@ -22,6 +22,8 @@ set(CPP_FILES
   QmitkMIDASLayoutWidget.cxx
   QmitkMIDASStdMultiWidget.cxx
   QmitkMIDASMultiViewVisibilityManager.cxx
+  QmitkMIDASMultiViewWidget.cxx
+  QmitkMIDASMultiViewWidgetControlPanel.cxx
   QmitkMIDASSingleViewWidget.cxx
   QmitkMIDASSingleViewWidgetListManager.cxx
   QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
@@ -38,6 +40,8 @@ set(MOC_H_FILES
   QmitkMIDASPaintbrushToolGUI.h
   QmitkMIDASSlidersWidget.h
   QmitkMIDASLayoutWidget.h
+  QmitkMIDASMultiViewWidget.h
+  QmitkMIDASMultiViewWidgetControlPanel.h
   QmitkMIDASStdMultiWidget.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
@@ -49,7 +53,9 @@ set(UI_FILES
   Resources/UI/QmitkMIDASToolSelector.ui
   Resources/UI/QmitkMIDASLayoutWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui
+  Resources/UI/QmitkMIDASMultiViewWidgetControlPanel.ui
 )
 
 set(QRC_FILES
+  Resources/niftkMIDASGui.qrc
 )

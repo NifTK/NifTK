@@ -1,0 +1,38 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+###############################################################################
+# This file sets up include directories, link directories, and
+# compiler settings for a project to compile against NifTK.
+# It should not be included directly, but rather through the
+# NifTK_USE_FILE setting obtained from NifTKConfig.cmake.
+###############################################################################
+
+if(NifTK_BUILD_SETTINGS_FILE AND NOT SKIP_NifTK_BUILD_SETTINGS_FILE)
+  include(${CMAKE_ROOT}/Modules/CMakeImportBuildSettings.cmake)
+  CMAKE_IMPORT_BUILD_SETTINGS(${NifTK_BUILD_SETTINGS_FILE})
+endif()
+
+# Add compiler flags needed to use NifTK.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NifTK_REQUIRED_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NifTK_REQUIRED_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${NifTK_REQUIRED_LINK_FLAGS}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${NifTK_REQUIRED_LINK_FLAGS}")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${NifTK_REQUIRED_LINK_FLAGS}")
+
+# Add include directories needed to use NifTK.
+include_directories(BEFORE ${NifTK_INCLUDE_DIRS} )
+
+# Add link directories needed to use NifTK.
+link_directories(${NifTK_LIBRARY_DIRS})
