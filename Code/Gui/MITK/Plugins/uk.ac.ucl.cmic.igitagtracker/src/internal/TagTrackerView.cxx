@@ -143,6 +143,7 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   m_RegistrationGroupBox->setCollapsed(true);
   m_RegistrationEnabledCheckbox->setChecked(false);
   this->OnRegistrationEnabledChecked(false);
+  m_RegistrationMethodPointsRadio->setChecked(true);
 
   m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
