@@ -387,7 +387,7 @@ void TagTrackerView::UpdateTags()
         MITK_ERROR << "TagTrackerView::OnUpdate, stereo case, right image is NULL" << std::endl;
         return;
       }
-      if (leftNode->GetName() == rightNode->GetName())
+      if (leftNode->GetName() == rightNode->GetName() && this->IsVisible())
       {
         if(!m_ShownStereoSameNameWarning)
 		    {
