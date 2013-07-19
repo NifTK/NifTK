@@ -28,8 +28,6 @@ set(CPP_FILES
   DataSources/QmitkIGIDataSourceGui.cxx
   DataSources/QmitkIGILocalDataSource.cxx
   DataSources/QmitkIGILocalDataSourceGrabbingThread.cxx
-  DataSources/QmitkIGITrackerTool.cxx
-  DataSources/QmitkIGITrackerToolGui.cxx
   DataSources/QmitkIGITrackerSource.cxx
   DataSources/QmitkIGITrackerSourceGui.cxx
   DataSources/QmitkIGIUltrasonixTool.cxx
@@ -52,8 +50,6 @@ set(MOC_H_FILES
   DataSources/QmitkIGIDataSource.h
   DataSources/QmitkIGIDataSourceGui.h
   DataSources/QmitkIGILocalDataSource.h
-  DataSources/QmitkIGITrackerTool.h
-  DataSources/QmitkIGITrackerToolGui.h  
   DataSources/QmitkIGITrackerSource.h
   DataSources/QmitkIGITrackerSourceGui.h
   DataSources/QmitkIGIUltrasonixTool.h
@@ -69,7 +65,6 @@ set(UI_FILES
   Common/StereoCameraCalibrationSelectionWidget.ui
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
-  DataSources/QmitkIGITrackerToolGui.ui
   DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
   OverlayEditor/QmitkIGIOverlayEditor.ui
