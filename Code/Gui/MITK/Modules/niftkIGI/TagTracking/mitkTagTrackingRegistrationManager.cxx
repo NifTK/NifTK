@@ -22,9 +22,13 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDataArray.h>
+#include <limits>
 
 namespace mitk
 {
+
+const char* TagTrackingRegistrationManager::POINTSET_NODE_ID = "Tag Locations";
+const char* TagTrackingRegistrationManager::TRANSFORM_NODE_ID = "Tag Transform";
 
 //-----------------------------------------------------------------------------
 TagTrackingRegistrationManager::TagTrackingRegistrationManager()
@@ -39,7 +43,7 @@ TagTrackingRegistrationManager::~TagTrackingRegistrationManager()
 
 
 //-----------------------------------------------------------------------------
-void TagTrackingRegistrationManager::Update(
+double TagTrackingRegistrationManager::Update(
     mitk::DataStorage::Pointer& dataStorage,
     mitk::PointSet::Pointer& tagPointSet,
     mitk::PointSet::Pointer& tagNormals,
@@ -48,6 +52,8 @@ void TagTrackingRegistrationManager::Update(
     const bool useNormals,
     vtkMatrix4x4& registrationMatrix) const
 {
+
+  double fre = std::numeric_limits<double>::max();
 
   registrationMatrix.Identity();
 
@@ -81,12 +87,12 @@ void TagTrackingRegistrationManager::Update(
             if (vtkScalars == NULL || vtkNormals == NULL)
             {
               MITK_ERROR << "Surfaces must have scalars containing pointID and normals";
-              return;
+              return fre;
             }
             if (vtkScalars->GetNumberOfTuples() != vtkNormals->GetNumberOfTuples())
             {
               MITK_ERROR << "Surfaces must have same number of scalars and normals";
-              return;
+              return fre;
             }
 
             modelPointSet = mitk::PointSet::New();
@@ -125,13 +131,13 @@ void TagTrackingRegistrationManager::Update(
         // do normal point based registration
         mitk::PointBasedRegistration::Pointer pointBasedRegistration = mitk::PointBasedRegistration::New();
         pointBasedRegistration->SetUsePointIDToMatchPoints(true);
-        pointBasedRegistration->Update(tagPointSet, modelPointSet, registrationMatrix);
+        fre = pointBasedRegistration->Update(tagPointSet, modelPointSet, registrationMatrix);
       }
       else
       {
         // do method that uses normals, and hence can cope with a minimum of only 2 points.
         mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
-        pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, registrationMatrix);
+        fre = pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, registrationMatrix);
       }
 
       // Also need to create and update a node in DataStorage.
@@ -142,7 +148,7 @@ void TagTrackingRegistrationManager::Update(
       if (coordinateAxesNode.IsNull())
       {
         MITK_ERROR << "Can't find mitk::DataNode with name " << transformNodeToUpdate << std::endl;
-        return;
+        return fre;
       }
       mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(coordinateAxesNode->GetData());
       if (coordinateAxes.IsNotNull())
@@ -151,6 +157,9 @@ void TagTrackingRegistrationManager::Update(
       }
     } // end if we have model
   } // end if we have node
+
+  return fre;
+
 } // end Update method
 
 } // end namespace

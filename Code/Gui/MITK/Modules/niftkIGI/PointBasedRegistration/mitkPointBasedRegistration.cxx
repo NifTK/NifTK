@@ -63,13 +63,42 @@ double PointBasedRegistration::Update(
                                                             *filteredFixedPoints,
                                                             *filteredMovingPoints
                                                            );
+
+    std::cerr << "Matt, fixed filtered from " << fixedPointSet->GetSize() << ", to " << filteredFixedPoints->GetSize() << std::endl;
+    std::cerr << "Matt, moving filtered from " << movingPointSet->GetSize() << ", to " << filteredMovingPoints->GetSize() << std::endl;
+
     if (numberOfFilteredPoints >= 3)
     {
+
       mitk::NavigationDataLandmarkTransformFilter::Pointer matchedRegistration = mitk::NavigationDataLandmarkTransformFilter::New();
       matchedRegistration->SetUseICPInitialization(false);
       matchedRegistration->SetTargetLandmarks(filteredFixedPoints);
       matchedRegistration->SetSourceLandmarks(filteredMovingPoints);
       matchedRegistration->Update();
+
+      mitk::PointSet::DataType* itkPointSet = filteredFixedPoints->GetPointSet(0);
+      mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+      mitk::PointSet::PointsIterator pIt;
+      mitk::PointSet::PointIdentifier pointID;
+      mitk::PointSet::PointType point;
+
+      for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+      {
+        pointID = pIt->Index();
+        point = pIt->Value();
+        std::cerr << "Fixed PointID=" << pointID << ", point=" << point << std::endl;
+      }
+
+      itkPointSet = filteredMovingPoints->GetPointSet(0);
+      points = itkPointSet->GetPoints();
+
+      for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+      {
+        pointID = pIt->Index();
+        point = pIt->Value();
+        std::cerr << "Moving PointID=" << pointID << ", point=" << point << std::endl;
+      }
+
 
       MITK_INFO << "PointBasedRegistration: Matched FRE=" << matchedRegistration->GetFRE() << "mm (Std. Dev. " << matchedRegistration->GetFREStdDev() << ")" << std::endl;
       MITK_INFO << "PointBasedRegistration: Matched RMS=" << matchedRegistration->GetRMSError() << "mm " << std::endl;

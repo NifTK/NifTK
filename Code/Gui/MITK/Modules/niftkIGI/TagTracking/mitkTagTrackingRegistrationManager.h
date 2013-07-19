@@ -38,6 +38,17 @@ public:
   itkNewMacro(TagTrackingRegistrationManager);
 
   /**
+   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
+   */
+  static const char* POINTSET_NODE_ID;
+
+  /**
+   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
+   */
+  static const char* TRANSFORM_NODE_ID;
+
+
+  /**
    * \brief Main update method to compute the transform.
    * \param[In] dataStorage we look up nodes in data storage
    * \param[In] tagPointSet the reconstructed tag positions
@@ -46,7 +57,7 @@ public:
    * \param[In] transformNodeToUpdate in addition to passing back the outputTransform, this method can directly update an existing mitk::CoordinateAxesData node in Data Storage, this is the name of it.
    * \param[Out] outputTransform output transformation
    */
-  void Update(
+  double Update(
       mitk::DataStorage::Pointer& dataStorage,
       mitk::PointSet::Pointer& tagPointSet,
       mitk::PointSet::Pointer& tagNormals,

@@ -43,16 +43,6 @@ public:
   static const std::string VIEW_ID;
 
   /**
-   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
-   */
-  static const std::string POINTSET_NODE_ID;
-
-  /**
-   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
-   */
-  static const std::string TRANSFORM_NODE_ID;
-
-  /**
    * \brief Returns the view ID.
    */
 

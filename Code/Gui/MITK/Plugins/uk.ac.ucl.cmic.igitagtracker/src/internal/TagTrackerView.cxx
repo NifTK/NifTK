@@ -42,8 +42,6 @@
 #include <vtkSmartPointer.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
-const std::string TagTrackerView::POINTSET_NODE_ID = "Tag Locations";
-const std::string TagTrackerView::TRANSFORM_NODE_ID = "Tag Transform";
 
 //-----------------------------------------------------------------------------
 TagTrackerView::TagTrackerView()
@@ -59,13 +57,13 @@ TagTrackerView::~TagTrackerView()
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
 
-  mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(POINTSET_NODE_ID.c_str());
+  mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID);
   if (dataNode.IsNotNull())
   {
     dataStorage->Remove(dataNode);
   }
 
-  dataNode = dataStorage->GetNamedNode(TRANSFORM_NODE_ID.c_str());
+  dataNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID);
   if (dataNode.IsNotNull())
   {
     dataStorage->Remove(dataNode);
@@ -276,14 +274,14 @@ void TagTrackerView::UpdateTags()
     // Retrieve the point set node from data storage, or create it if it does not exist.
     mitk::PointSet::Pointer tagNormals = mitk::PointSet::New();
     mitk::PointSet::Pointer tagPointSet = NULL;
-    mitk::DataNode::Pointer tagPointSetNode = dataStorage->GetNamedNode(POINTSET_NODE_ID);
+    mitk::DataNode::Pointer tagPointSetNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID);
 
     if (tagPointSetNode.IsNull())
     {
       tagPointSet = mitk::PointSet::New();
       tagPointSetNode = mitk::DataNode::New();
       tagPointSetNode->SetData( tagPointSet );
-      tagPointSetNode->SetProperty( "name", mitk::StringProperty::New(POINTSET_NODE_ID));
+      tagPointSetNode->SetProperty( "name", mitk::StringProperty::New(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID));
       tagPointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
       tagPointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
       tagPointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
@@ -303,21 +301,21 @@ void TagTrackerView::UpdateTags()
       if (tagPointSet.IsNull())
       {
         // Give up, as the node has the wrong data.
-        MITK_ERROR << "TagTrackerView::OnUpdate node " << POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
+        MITK_ERROR << "TagTrackerView::OnUpdate node " << mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
         return;
       }
     }
 
     // Similarly, create the transform node.
     mitk::CoordinateAxesData::Pointer transformToUpdate = NULL;
-    mitk::DataNode::Pointer transformNode = dataStorage->GetNamedNode(TRANSFORM_NODE_ID);
+    mitk::DataNode::Pointer transformNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID);
     if(transformNode.IsNull())
     {
       transformToUpdate = mitk::CoordinateAxesData::New();
 
       transformNode = mitk::DataNode::New();
       transformNode->SetData(transformToUpdate);
-      transformNode->SetProperty( "name", mitk::StringProperty::New(TRANSFORM_NODE_ID));
+      transformNode->SetProperty( "name", mitk::StringProperty::New(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID));
       transformNode->SetVisibility(false);
 
       dataStorage->Add(transformNode);
@@ -467,7 +465,7 @@ void TagTrackerView::UpdateTags()
              tagPointSet,
              tagNormals,
              selectedNode,
-             TRANSFORM_NODE_ID,
+             mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
              m_RegistrationMethodPointsNormalsRadio->isChecked(),
              *registrationMatrix
             );
