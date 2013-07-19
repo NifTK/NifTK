@@ -67,9 +67,9 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
     ///
     virtual mitk::DataNode::Pointer GetNode(int index) const;
     ///
-    /// \brief Returns the selected _DataNode or 0 if there is none.
+    /// \brief Returns all selected nodes, or empty list if there are none.
     ///
-    virtual mitk::DataNode::Pointer GetSelectedNode() const;
+    virtual std::vector<mitk::DataNode*> GetSelectedNodes() const;
     ///
     /// \brief Returns all nodes that are stored in this combobox.
     ///
@@ -141,10 +141,6 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
 
   //#PROTECTED SETTER
   protected slots:
-    ///
-    /// \brief Slot for signal when the user selects another item.
-    ///
-    void OnCurrentIndexChanged(int);
 
   //#PUBLIC SETTER
   public slots:

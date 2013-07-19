@@ -86,12 +86,12 @@ namespace mitk
 
   /**
    * \brief Applies the given transformation to the given node.
-   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transfor anything.
+   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
    * \param[In] transform the VTK transformation
    * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
    * \return bool true if successful and false otherwise.
    */
-  NIFTKCORE_EXPORT bool ApplyToNode(const mitk::DataNode::Pointer& node, vtkMatrix4x4& transform, const bool& makeUndoAble);
+  NIFTKCORE_EXPORT bool ApplyToNode(mitk::DataNode::Pointer& node, const vtkMatrix4x4* transform, const bool& makeUndoAble);
 }
 
 #endif

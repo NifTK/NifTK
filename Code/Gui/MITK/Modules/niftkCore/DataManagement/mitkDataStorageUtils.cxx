@@ -354,6 +354,7 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
   return geometry;
 }
 
+
 //-----------------------------------------------------------------------------
 void LoadMatrixOrCreateDefault(
     const std::string& fileName,
@@ -403,12 +404,27 @@ void LoadMatrixOrCreateDefault(
 
 //-----------------------------------------------------------------------------
 bool ApplyToNode(
-    const mitk::DataNode::Pointer& node,
-    vtkMatrix4x4& transform,
+    mitk::DataNode::Pointer& node,
+    const vtkMatrix4x4* transform,
     const bool& makeUndoAble)
 {
   bool isSuccessful = false;
 
+  if (node.IsNotNull())
+  {
+    mitk::BaseData::Pointer baseData = node->GetData();
+    if (baseData.IsNotNull())
+    {
+      mitk::Geometry3D::Pointer geometry = baseData->GetGeometry();
+      if (geometry.IsNotNull())
+      {
+        vtkMatrix4x4 *nonConstTransform = const_cast<vtkMatrix4x4*>(transform);
+        geometry->SetIndexToWorldTransformByVtkMatrix(nonConstTransform);
+        geometry->Modified();
+        isSuccessful = true;
+      }
+    }
+  }
   return isSuccessful;
 }
 
