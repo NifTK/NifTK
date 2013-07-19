@@ -37,7 +37,22 @@ public:
   mitkClassMacro(TagTrackingRegistrationManager, itk::Object);
   itkNewMacro(TagTrackingRegistrationManager);
 
-  void Update(
+  /**
+   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
+   */
+  static const char* POINTSET_NODE_ID;
+
+  /**
+   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
+   */
+  static const char* TRANSFORM_NODE_ID;
+
+
+  /**
+   * \brief Main registration method.
+   * \return the fiducial registration error
+   */
+  double Update(
       mitk::DataStorage::Pointer& dataStorage,
       mitk::PointSet::Pointer& tagPointSet,
       mitk::PointSet::Pointer& tagNormals,
