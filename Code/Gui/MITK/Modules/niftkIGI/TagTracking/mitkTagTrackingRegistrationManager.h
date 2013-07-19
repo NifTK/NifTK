@@ -37,6 +37,15 @@ public:
   mitkClassMacro(TagTrackingRegistrationManager, itk::Object);
   itkNewMacro(TagTrackingRegistrationManager);
 
+  /**
+   * \brief Main update method to compute the transform.
+   * \param[In] dataStorage we look up nodes in data storage
+   * \param[In] tagPointSet the reconstructed tag positions
+   * \param[In] tagNormals the reconstructed surface normals for those positions
+   * \param[In] modelNode the model can be either a mitk::Surface which must have normals and scalars containing pointIDs, or a mitk::PointSet.
+   * \param[In] transformNodeToUpdate in addition to passing back the outputTransform, this method can directly update an existing mitk::CoordinateAxesData node in Data Storage, this is the name of it.
+   * \param[Out] outputTransform output transformation
+   */
   void Update(
       mitk::DataStorage::Pointer& dataStorage,
       mitk::PointSet::Pointer& tagPointSet,
