@@ -322,10 +322,9 @@ int main( int argc, char *argv[] )
     if ( flgAnonymiseImageLabel )
     {
 
-      // Determine if this is a left or right breast by calculating the CoM
-
       InputImageType::RegionType region;
       InputImageType::SizeType   size;
+      InputImageType::SizeType   scanSize;
       InputImageType::IndexType  start;
       InputImageType::IndexType  idx;
 
@@ -333,10 +332,23 @@ int main( int argc, char *argv[] )
 
       size = region.GetSize();
 
-      start[0] = size[0];
-      start[1] = size[1];
+
+    if ( labelSide == std::string( "Automatic" ) )
+    {
+
+      // Determine if this is a left or right breast by calculating the CoM
+
+      start[0] = size[0]/10;
+      start[1] = 0;
+
+      scanSize[0] = size[0]*8/10;
+      scanSize[1] = size[1];
+
+      region.SetSize(  scanSize  );
+      region.SetIndex( start );
 
       std::cout << "Image size: " << size << std::endl;
+      std::cout << "Region: " << region << std::endl;
 
       unsigned int iRow = 0;
       unsigned int nRows = 5;
@@ -393,6 +405,19 @@ int main( int argc, char *argv[] )
 	breastSide = LEFT_BREAST_SIDE;
 	std::cout << "LEFT breast (label on right-hand side)" << std::endl;
       }
+    }
+
+    else if ( labelSide == std::string( "Right" ) )
+    {
+    breastSide = LEFT_BREAST_SIDE;
+    std::cout << "Label on RIGHT-hand side (left breast)" << std::endl;
+    }
+
+    else if ( labelSide == std::string( "Left" ) )
+    {
+    breastSide = RIGHT_BREAST_SIDE;
+    std::cout << "Label on left-hand side (right breast)" << std::endl;
+    }
 
 
       // Set the label region to zero
