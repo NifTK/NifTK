@@ -16,7 +16,6 @@
 #include <mitkTestingMacros.h>
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
-#include <QmitkIGITrackerTool.h>
 #include <QmitkIGINiftyLinkDataType.h>
 #include <NiftyLinkTrackingDataMessage.h>
 #include <QmitkIGITrackerSource.h>

@@ -721,7 +721,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   else
   {
     igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-    m_CurrentTime = GetTimeInNanoSeconds(timeNow);
+    m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
   m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
