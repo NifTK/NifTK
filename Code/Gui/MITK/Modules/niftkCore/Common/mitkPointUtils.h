@@ -19,6 +19,7 @@
 #include <mitkVector.h>
 #include <mitkPositionEvent.h>
 #include <mitkPointSet.h>
+#include <vtkMatrix4x4.h>
 
 /**
  * \file mitkPointUtils.h
@@ -86,6 +87,15 @@ NIFTKCORE_EXPORT int FilterMatchingPoints(
     const mitk::PointSet& movingPointsIn,
     mitk::PointSet& fixedPointsOut,
     mitk::PointSet& movingPointsOut
+    );
+
+/**
+ * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL,
+ * otherwise if matrix is NULL, will simply leave the point un-altered.
+ */
+NIFTKCORE_EXPORT void TransformPointsByCameraToWorld(
+    vtkMatrix4x4* cameraToWorld,
+    mitk::Point3D& point
     );
 
 } // end namespace mitk

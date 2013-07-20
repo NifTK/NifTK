@@ -19,6 +19,7 @@
 #include <mitkImageWriteAccessor.h>
 #include <cv.h>
 #include <Undistortion.h>
+#include <mitkPointUtils.h>
 
 namespace mitk {
 

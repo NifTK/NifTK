@@ -99,16 +99,6 @@ std::map<int, Point6D> DetectMarkerPairsAndNormals(
     const double& offset = 7
     );
 
-
-/**
- * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL,
- * otherwise if matrix is NULL, will simply leave the point un-altered.
- */
-void TransformPointsByCameraToWorld(
-    vtkMatrix4x4* cameraToWorld,
-    mitk::Point3D& point
-    );
-
 } // end namespace
 
 #endif // mitkTagTrackingFacade_h

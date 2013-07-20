@@ -17,6 +17,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <cv.h>
+#include <mitkPointUtils.h>
 
 namespace mitk {
 
