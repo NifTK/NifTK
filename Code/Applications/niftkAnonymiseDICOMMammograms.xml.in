@@ -102,6 +102,17 @@
       <element>Lower</element>
     </string-enumeration>
 
+    <string-enumeration>
+      <name>labelSide</name>
+      <longflag>labelSide</longflag>
+      <description>The side that the label is on i.e. left or right .</description>
+      <label>Label sie</label>
+      <default>Automatic</default>
+      <element>Automatic</element>
+      <element>Left</element>
+      <element>Right</element>
+    </string-enumeration>
+
   </parameters>
 
   <parameters advanced="true">
