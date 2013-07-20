@@ -137,7 +137,7 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(timeCreated));
+  wrapper->SetTimeStampInNanoSeconds(timeCreated->GetTimeInNanoSeconds());
   wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
   this->AddData(wrapper.GetPointer());

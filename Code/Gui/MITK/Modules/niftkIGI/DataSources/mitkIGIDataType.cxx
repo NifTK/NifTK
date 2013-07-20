@@ -14,7 +14,7 @@
 
 #include "mitkIGIDataType.h"
 #include <itkObjectFactory.h>
-#include <NiftyLinkUtils.h>
+#include <igtlTimeStamp.h>
 
 namespace mitk
 {
@@ -40,16 +40,14 @@ IGIDataType::~IGIDataType()
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataType::GetTimeStampInNanoSeconds() const
 {
-  // Method in NiftyLink.
-  return GetTimeInNanoSeconds(m_TimeStamp);
+  return m_TimeStamp->GetTimeInNanoSeconds();
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataType::SetTimeStampInNanoSeconds(const igtlUint64& time)
 {
-  // Method in NiftyLink.
-  SetTimeInNanoSeconds(m_TimeStamp, time);
+  m_TimeStamp->SetTimeInNanoSeconds(time);
 }
 
 } // end namespace
