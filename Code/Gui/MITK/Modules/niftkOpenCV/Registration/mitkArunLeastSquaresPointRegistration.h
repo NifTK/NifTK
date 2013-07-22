@@ -56,10 +56,7 @@ protected:
 
 private:
 
-  cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points);
-  std::vector<cv::Point3d> Subtract(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& centroid);
   cv::Matx33d CalculateH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
-  bool IsCloseToZero(const double& value);
 
 }; // end class
 

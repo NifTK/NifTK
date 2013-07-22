@@ -87,6 +87,20 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
 
 
 //-----------------------------------------------------------------------------
+bool IsCloseToZero(const double& value)
+{
+  if (fabs(value) < 0.000001)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 } // end namespace
 
 

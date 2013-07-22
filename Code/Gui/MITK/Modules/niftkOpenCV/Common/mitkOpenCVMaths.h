@@ -40,6 +40,8 @@ std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> 
  */
 std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet);
 
+bool IsCloseToZero(const double& value);
+
 } // end namespace
 
 #endif

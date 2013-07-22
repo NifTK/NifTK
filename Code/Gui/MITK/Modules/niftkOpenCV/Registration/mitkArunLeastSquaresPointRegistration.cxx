@@ -53,20 +53,6 @@ cv::Matx33d ArunLeastSquaresPointRegistration::CalculateH(
 
 
 //-----------------------------------------------------------------------------
-bool ArunLeastSquaresPointRegistration::IsCloseToZero(const double& value)
-{
-  if (fabs(value) < 0.000001)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& fixedPoints,
                                                const std::vector<cv::Point3d>& movingPoints,
                                                cv::Matx44d& outputMatrix,
@@ -82,16 +68,16 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
   unsigned int numberOfPoints = fixedPoints.size();
 
   // Equation 4.
-  cv::Point3d pPrime = mitk::GetCentroid(movingPoints);
+  cv::Point3d pPrime = GetCentroid(movingPoints);
 
   // Equation 6.
-  cv::Point3d p = mitk::GetCentroid(fixedPoints);
+  cv::Point3d p = GetCentroid(fixedPoints);
 
   // Equation 7.
-  std::vector<cv::Point3d> q = mitk::SubtractPointFromPoints(fixedPoints, p);
+  std::vector<cv::Point3d> q = SubtractPointFromPoints(fixedPoints, p);
 
   // Equation 8.
-  std::vector<cv::Point3d> qPrime = mitk::SubtractPointFromPoints(movingPoints, pPrime);
+  std::vector<cv::Point3d> qPrime = SubtractPointFromPoints(movingPoints, pPrime);
 
   // Arun Equation 11.
   cv::Matx33d H = this->CalculateH(q, qPrime);
