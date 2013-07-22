@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkArunLeastSquaresPointRegistration.h"
+#include <mitkOpenCVMaths.h>
 
 namespace mitk {
 
@@ -27,50 +28,6 @@ ArunLeastSquaresPointRegistration::~ArunLeastSquaresPointRegistration()
 {
 }
 
-
-//-----------------------------------------------------------------------------
-cv::Point3d ArunLeastSquaresPointRegistration::GetCentroid(const std::vector<cv::Point3d>& points)
-{
-  cv::Point3d centroid;
-  centroid.x = 0;
-  centroid.y = 0;
-  centroid.z = 0;
-
-  unsigned int numberOfPoints = points.size();
-
-  for (unsigned int i = 0; i < numberOfPoints; ++i)
-  {
-    centroid.x += points[i].x;
-    centroid.y += points[i].y;
-    centroid.z += points[i].z;
-  }
-
-  centroid.x /= (double) numberOfPoints;
-  centroid.y /= (double) numberOfPoints;
-  centroid.z /= (double) numberOfPoints;
-
-  return centroid;
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<cv::Point3d> ArunLeastSquaresPointRegistration::Subtract(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& centroid)
-{
-  std::vector<cv::Point3d> result;
-
-  for (unsigned int i = 0; i < listOfPoints.size(); ++i)
-  {
-    cv::Point3d c;
-
-    c.x = listOfPoints[i].x - centroid.x;
-    c.y = listOfPoints[i].y - centroid.y;
-    c.z = listOfPoints[i].z - centroid.z;
-
-    result.push_back(c);
-  }
-
-  return result;
-}
 
 
 //-----------------------------------------------------------------------------
@@ -124,19 +81,17 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
   bool success = false;
   unsigned int numberOfPoints = fixedPoints.size();
 
-  fiducialRegistrationError = std::numeric_limits<double>::max();
+  // Equation 4.
+  cv::Point3d pPrime = mitk::GetCentroid(movingPoints);
 
-  // Arun Equation 4.
-  cv::Point3d pPrime = this->GetCentroid(fixedPoints);
+  // Equation 6.
+  cv::Point3d p = mitk::GetCentroid(fixedPoints);
 
-  // Arun Equation 6.
-  cv::Point3d p = this->GetCentroid(movingPoints);
+  // Equation 7.
+  std::vector<cv::Point3d> q = mitk::SubtractPointFromPoints(fixedPoints, p);
 
-  // Arun Equation 7.
-  std::vector<cv::Point3d> q = this->Subtract(movingPoints, p);
-
-  // Arun Equation 8.
-  std::vector<cv::Point3d> qPrime = this->Subtract(fixedPoints, pPrime);
+  // Equation 8.
+  std::vector<cv::Point3d> qPrime = mitk::SubtractPointFromPoints(movingPoints, pPrime);
 
   // Arun Equation 11.
   cv::Matx33d H = this->CalculateH(q, qPrime);

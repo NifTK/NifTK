@@ -15,6 +15,7 @@
 #include "mitkArunLeastSquaresPointRegistrationWrapper.h"
 #include "mitkArunLeastSquaresPointRegistration.h"
 #include <cv.h>
+#include <mitkOpenCVMaths.h>
 
 namespace mitk
 {
@@ -32,44 +33,14 @@ ArunLeastSquaresPointRegistrationWrapper::~ArunLeastSquaresPointRegistrationWrap
 
 
 //-----------------------------------------------------------------------------
-// Private method. Don't make this part of public API. ToDo: PIMPL pattern.
-//-----------------------------------------------------------------------------
-std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet)
-{
-  std::vector<cv::Point3d> result;
-
-  // This assumes that the pointID's come out ordered?
-  // ToDo: Check if that is the case, and if not, sort by ID.
-
-  mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
-  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
-  mitk::PointSet::PointsIterator pIt;
-  mitk::PointSet::PointType point;
-
-  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
-  {
-    point = pIt->Value();
-    cv::Point3d cvPoint;
-
-    cvPoint.x = point[0];
-    cvPoint.y = point[1];
-    cvPoint.z = point[2];
-    result.push_back(cvPoint);
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 bool ArunLeastSquaresPointRegistrationWrapper::Update(const mitk::PointSet::Pointer& fixedPoints,
                                                       const mitk::PointSet::Pointer& movingPoints,
                                                       vtkMatrix4x4& matrix,
                                                       double& fiducialRegistrationError
                                                      )
 {
-  std::vector<cv::Point3d> fixed = PointSetToVector(fixedPoints);
-  std::vector<cv::Point3d> moving = PointSetToVector(movingPoints);
+  std::vector<cv::Point3d> fixed = mitk::PointSetToVector(fixedPoints);
+  std::vector<cv::Point3d> moving = mitk::PointSetToVector(movingPoints);
   cv::Matx44d registrationMatrix;
 
   mitk::ArunLeastSquaresPointRegistration::Pointer registration = mitk::ArunLeastSquaresPointRegistration::New();
