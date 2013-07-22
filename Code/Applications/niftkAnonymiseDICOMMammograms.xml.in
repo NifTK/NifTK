@@ -70,7 +70,7 @@
       <name>labelWidth</name>
       <longflag>labelWidth</longflag>
       <description>The width of the label as a percentage of the image width.</description>
-      <label>Label width (% of image)</label>
+      <label>Label width (% of image).</label>
       <default>20</default>
       <constraints>
         <minimum>0</minimum>
@@ -83,7 +83,7 @@
       <name>labelHeight</name>
       <longflag>labelHeight</longflag>
       <description>The height of the label as a percentage of the image height.</description>
-      <label>Label height (% of image)</label>
+      <label>Label height (% of image).</label>
       <default>100</default>
       <constraints>
         <minimum>0</minimum>
@@ -105,8 +105,8 @@
     <string-enumeration>
       <name>labelSide</name>
       <longflag>labelSide</longflag>
-      <description>The side that the label is on i.e. left or right .</description>
-      <label>Label sie</label>
+      <description>The side that the label is on i.e. left or right. By default the program will use the horizontal center-of-mass to determine whether this is a left or right breast and then assume that the label is along the image edge opposite the chest wall.</description>
+      <label>Label side</label>
       <default>Automatic</default>
       <element>Automatic</element>
       <element>Left</element>
