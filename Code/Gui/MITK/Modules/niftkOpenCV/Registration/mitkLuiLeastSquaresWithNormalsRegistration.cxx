@@ -37,8 +37,13 @@ bool LuiLeastSquaresWithNormalsRegistration::Update(const std::vector<cv::Point3
                                                     cv::Matx44d& outputMatrix,
                                                     double &fiducialRegistrationError)
 {
+  assert(fixedPoints.size() == fixedNormals.size());
+  assert(fixedPoints.size() == movingPoints.size());
+  assert(fixedPoints.size() == movingNormals.size());
+
   bool success = false;
   unsigned int numberOfPoints = fixedPoints.size();
+
 
   return success;
 }
