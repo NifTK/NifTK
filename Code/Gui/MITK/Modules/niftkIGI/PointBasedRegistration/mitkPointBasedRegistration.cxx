@@ -66,7 +66,7 @@ double PointBasedRegistration::Update(
                                                             *filteredMovingPoints
                                                             );
 
-    if (numberOfFilteredPoints > 3)
+    if (numberOfFilteredPoints >= 3)
     {
       fixedPoints = filteredFixedPoints;
       movingPoints = filteredMovingPoints;
