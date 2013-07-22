@@ -62,7 +62,6 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
   niftk::Undistortion::LoadIntrinsicCalibration(argv[4], rightNode);
   niftk::Undistortion::LoadStereoRig(argv[5], rightNode);
 
-
   // Extract stereo points.
   vtkSmartPointer<vtkMatrix4x4> cameraToWorld = vtkMatrix4x4::New();
   cameraToWorld->Identity();
@@ -116,6 +115,7 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
 
   dataStorage->Add(transformNode);
 
+  // Testing the point based registration, no normals used.
   mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
   double fre = manager->Update(
       dataStorage,

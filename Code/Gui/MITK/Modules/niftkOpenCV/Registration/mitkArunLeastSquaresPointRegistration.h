@@ -39,11 +39,12 @@ public:
   itkNewMacro(ArunLeastSquaresPointRegistration);
 
   /**
-   * \brief The main method for the calculation, outputs a matrix, and returns the FRE.
+   * \brief The main method for the calculation, outputs a matrix, and FRE and returns true if calculation deemed OK, and false if failed.
    */
-  double Update(const std::vector<cv::Point3d>& fixedPoints,
-                const std::vector<cv::Point3d>& movingPoints,
-                cv::Matx44d& outputMatrix);
+  bool Update(const std::vector<cv::Point3d>& fixedPoints,
+              const std::vector<cv::Point3d>& movingPoints,
+              cv::Matx44d& outputMatrix,
+              double &fiducialRegistrationError);
 
 protected:
 
@@ -58,6 +59,7 @@ private:
   cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points);
   std::vector<cv::Point3d> Subtract(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& centroid);
   cv::Matx33d CalculateH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
+  bool IsCloseToZero(const double& value);
 
 }; // end class
 

@@ -17,6 +17,7 @@
 #include <mitkNavigationDataLandmarkTransformFilter.h>
 #include <mitkPointUtils.h>
 #include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+#include <limits>
 
 const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
 const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
@@ -47,7 +48,7 @@ double PointBasedRegistration::Update(
     vtkMatrix4x4& outputTransform) const
 {
 
-  double FRE = std::numeric_limits<double>::max();
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
   mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
@@ -79,7 +80,7 @@ double PointBasedRegistration::Update(
   if (fixedPoints->GetSize() < 3 || movingPoints->GetSize() < 3)
   {
     MITK_ERROR << "mitk::PointBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
-    return FRE;
+    return fiducialRegistrationError;
   }
 
   if (fixedPoints->GetSize() != movingPoints->GetSize() && !m_UseICPInitialisation && !m_UseSVDBasedMethod)
@@ -91,7 +92,12 @@ double PointBasedRegistration::Update(
   if (m_UseSVDBasedMethod)
   {
     mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer registration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-    FRE = registration->Update(fixedPoints, movingPoints, outputTransform);
+    bool success = registration->Update(fixedPoints, movingPoints, outputTransform, fiducialRegistrationError);
+
+    if (!success)
+    {
+      MITK_ERROR << "mitk::PointBasedRegistration: SVD method failed" << std::endl;
+    }
   }
   else
   {
@@ -112,7 +118,7 @@ double PointBasedRegistration::Update(
     MITK_INFO << "PointBasedRegistration: min=" << transformFilter->GetMinError() << "mm" << std::endl;
     MITK_INFO << "PointBasedRegistration: max=" << transformFilter->GetMaxError() << "mm" << std::endl;
 
-    FRE = transformFilter->GetFRE();
+    fiducialRegistrationError = transformFilter->GetFRE();
     transform = transformFilter->GetLandmarkTransform();
     rotationMatrix = transform->GetMatrix();
     translationVector = transform->GetOffset();
@@ -127,7 +133,7 @@ double PointBasedRegistration::Update(
     }
   }
 
-  return FRE;
+  return fiducialRegistrationError;
 }
 
 } // end namespace
