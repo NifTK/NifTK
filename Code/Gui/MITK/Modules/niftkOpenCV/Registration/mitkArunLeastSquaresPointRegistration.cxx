@@ -64,6 +64,8 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
   // Then:
   // http://tango.andrew.cmu.edu/~gustavor/42431-intro-bioimaging/readings/ch8.pdf
 
+  assert(fixedPoints.size() == movingPoints.size());
+
   bool success = false;
   unsigned int numberOfPoints = fixedPoints.size();
 
@@ -165,8 +167,6 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
                             + (f(2,0) - mPrime(2,0)) * (f(2,0) - mPrime(2,0))
                             ;
       fiducialRegistrationError += squaredError;
-
-      std::cerr << "Matt, error[" << i << "]=" << squaredError << ", f=" << f(0,0) << ", " << f(1,0) << ", " << f(2,0) << ", m=" << mPrime(0,0) << ", " << mPrime(1,0) << ", " << mPrime(2,0) << std::endl;
     }
     if (numberOfPoints > 0)
     {
@@ -177,12 +177,7 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
   }
   else
   {
-    // Essentially: we failed.
-    outputMatrix = cv::Matx44d::zeros();
-    outputMatrix(0,0) = 1;
-    outputMatrix(1,1) = 1;
-    outputMatrix(2,2) = 1;
-    outputMatrix(3,3) = 1;
+    MakeIdentity(outputMatrix);
   }
 
   return success;

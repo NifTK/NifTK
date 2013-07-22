@@ -101,6 +101,17 @@ bool IsCloseToZero(const double& value)
 
 
 //-----------------------------------------------------------------------------
+void MakeIdentity(cv::Matx44d& outputMatrix)
+{
+  // ToDo: Surely this is already implemented in OpenCV?
+  outputMatrix = cv::Matx44d::zeros();
+  outputMatrix(0,0) = 1;
+  outputMatrix(1,1) = 1;
+  outputMatrix(2,2) = 1;
+  outputMatrix(3,3) = 1;
+}
+
+//-----------------------------------------------------------------------------
 } // end namespace
 
 

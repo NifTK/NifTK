@@ -40,7 +40,15 @@ std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> 
  */
 std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet);
 
+/**
+ * \brief Returns true if fabs(value) is less than a small tolerance (see code).
+ */
 bool IsCloseToZero(const double& value);
+
+/**
+ * \brief Haven't found a direct method to do this yet.
+ */
+void MakeIdentity(cv::Matx44d& outputMatrix);
 
 } // end namespace
 
