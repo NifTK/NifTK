@@ -44,6 +44,7 @@ public:
   double Update(const std::vector<cv::Point3d>& fixedPoints,
                 const std::vector<cv::Point3d>& movingPoints,
                 cv::Matx44d& outputMatrix);
+
 protected:
 
   ArunLeastSquaresPointRegistration();

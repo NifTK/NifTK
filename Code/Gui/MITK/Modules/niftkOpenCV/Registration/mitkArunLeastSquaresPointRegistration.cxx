@@ -188,6 +188,7 @@ double ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>&
   {
     FRE /= (double)numberOfPoints;
   }
+  FRE = sqrt(FRE);
   return FRE;
 }
 
