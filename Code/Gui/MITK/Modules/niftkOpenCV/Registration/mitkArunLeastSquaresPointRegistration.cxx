@@ -98,7 +98,7 @@ cv::Matx33d ArunLeastSquaresPointRegistration::CalculateH(
 //-----------------------------------------------------------------------------
 bool ArunLeastSquaresPointRegistration::IsCloseToZero(const double& value)
 {
-  if (fabs(value) < 0.0001)
+  if (fabs(value) < 0.000001)
   {
     return true;
   }
@@ -116,56 +116,71 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
                                                double &fiducialRegistrationError
                                                  )
 {
+  // See:
+  // http://eecs.vanderbilt.edu/people/mikefitzpatrick/papers/2009_Medim_Fitzpatrick_TRE_FRE_uncorrelated_as_published.pdf
+  // Then:
+  // http://tango.andrew.cmu.edu/~gustavor/42431-intro-bioimaging/readings/ch8.pdf
+
   bool success = false;
   unsigned int numberOfPoints = fixedPoints.size();
 
   fiducialRegistrationError = std::numeric_limits<double>::max();
 
-  // Equation 4.
+  // Arun Equation 4.
   cv::Point3d pPrime = this->GetCentroid(fixedPoints);
 
-  // Equation 6.
+  // Arun Equation 6.
   cv::Point3d p = this->GetCentroid(movingPoints);
 
-  // Equation 7.
+  // Arun Equation 7.
   std::vector<cv::Point3d> q = this->Subtract(movingPoints, p);
 
-  // Equation 8.
+  // Arun Equation 8.
   std::vector<cv::Point3d> qPrime = this->Subtract(fixedPoints, pPrime);
 
-  // Equation 11.
+  // Arun Equation 11.
   cv::Matx33d H = this->CalculateH(q, qPrime);
 
-  // Equation 12.
+  // Arun Equation 12.
   cv::SVD::SVD svd(H);
 
-  // Equation 13.
+  // Arun Equation 13.
   cv::Mat X = svd.vt.t() * svd.u.t();
 
-  // Step 5.
-  double determinant =   X.at<double>(0,0)*(X.at<double>(1,1)*X.at<double>(2,2) - X.at<double>(2,1)*X.at<double>(1,2))
-                       - X.at<double>(0,1)*(X.at<double>(1,0)*X.at<double>(2,2) - X.at<double>(2,0)*X.at<double>(1,2))
-                       + X.at<double>(0,2)*(X.at<double>(1,0)*X.at<double>(2,1) - X.at<double>(2,0)*X.at<double>(1,1))
-                       ;
+  // Replace with Fitzpatrick, chapter 8, page 470.
+  cv::Mat VU = svd.vt.t() * svd.u;
+  double detVU = cv::determinant(VU);
+  cv::Matx33d diag = cv::Matx33d::zeros();
+  diag(0,0) = 1;
+  diag(1,1) = 1;
+  diag(2,2) = detVU;
+  cv::Mat diagonal(diag);
+  X = (svd.vt.t() * (diagonal * svd.u.t()));
 
+  // Arun Step 5.
+
+  double detX = cv::determinant(X);
   bool haveTriedToFixDeterminantIssue = false;
-  if (IsCloseToZero(svd.w.at<double>(0,0))
-    || IsCloseToZero(svd.w.at<double>(1,1))
-    || IsCloseToZero(svd.w.at<double>(2,2))
-    )
+
+  if ( detX < 0
+       && (   IsCloseToZero(svd.w.at<double>(0,0))
+           || IsCloseToZero(svd.w.at<double>(1,1))
+           || IsCloseToZero(svd.w.at<double>(2,2))
+          )
+     )
   {
     // Implement 2a in section VI in paper.
+
     cv::Mat VPrime = svd.vt.t();
     VPrime.at<double>(0,2) = -1.0 * VPrime.at<double>(0,2);
     VPrime.at<double>(1,2) = -1.0 * VPrime.at<double>(1,2);
     VPrime.at<double>(2,2) = -1.0 * VPrime.at<double>(2,2);
 
     X = VPrime * svd.u.t();
-
     haveTriedToFixDeterminantIssue = true;
   }
 
-  if (determinant > 0 || haveTriedToFixDeterminantIssue)
+  if (detX > 0 || haveTriedToFixDeterminantIssue)
   {
     // Equation 10.
     cv::Matx31d T, tmpP, tmpPPrime;
@@ -191,11 +206,6 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
     outputMatrix(3,2) = 0;
     outputMatrix(3,3) = 1;
 
-    // See:
-    // http://eecs.vanderbilt.edu/people/mikefitzpatrick/papers/2009_Medim_Fitzpatrick_TRE_FRE_uncorrelated_as_published.pdf
-    // Then:
-    // http://tango.andrew.cmu.edu/~gustavor/42431-intro-bioimaging/readings/ch8.pdf
-
     fiducialRegistrationError = 0;
     for (unsigned int i = 0; i < numberOfPoints; ++i)
     {
@@ -209,7 +219,7 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
       m(2,0) = movingPoints[i].z;
       m(3,0) = 1;
       mPrime = outputMatrix * m;
-      double squaredError = (f(0,0) - mPrime(0,0)) * (f(0,0) - mPrime(0,0))
+      double squaredError =   (f(0,0) - mPrime(0,0)) * (f(0,0) - mPrime(0,0))
                             + (f(1,0) - mPrime(1,0)) * (f(1,0) - mPrime(1,0))
                             + (f(2,0) - mPrime(2,0)) * (f(2,0) - mPrime(2,0))
                             ;

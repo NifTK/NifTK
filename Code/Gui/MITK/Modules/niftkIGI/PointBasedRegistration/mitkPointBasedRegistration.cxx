@@ -133,6 +133,11 @@ double PointBasedRegistration::Update(
     }
   }
 
+  std::cerr << "Matt, outputTransform=" << outputTransform.GetElement(0,0) << ", " << outputTransform.GetElement(0,1) << ", " << outputTransform.GetElement(0,2) << ", " << outputTransform.GetElement(0,3) << std::endl;
+  std::cerr << "Matt, outputTransform=" << outputTransform.GetElement(1,0) << ", " << outputTransform.GetElement(1,1) << ", " << outputTransform.GetElement(1,2) << ", " << outputTransform.GetElement(1,3) << std::endl;
+  std::cerr << "Matt, outputTransform=" << outputTransform.GetElement(2,0) << ", " << outputTransform.GetElement(2,1) << ", " << outputTransform.GetElement(2,2) << ", " << outputTransform.GetElement(2,3) << std::endl;
+  std::cerr << "Matt, outputTransform=" << outputTransform.GetElement(3,0) << ", " << outputTransform.GetElement(3,1) << ", " << outputTransform.GetElement(3,2) << ", " << outputTransform.GetElement(3,3) << std::endl;
+
   return fiducialRegistrationError;
 }
 
