@@ -48,6 +48,9 @@ double PointBasedRegistration::Update(
     vtkMatrix4x4& outputTransform) const
 {
 
+  assert(fixedPointSet);
+  assert(movingPointSet);
+
   double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
@@ -55,6 +58,7 @@ double PointBasedRegistration::Update(
   mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
   mitk::PointSet* fixedPoints = fixedPointSet;
   mitk::PointSet* movingPoints = movingPointSet;
+
   bool useICPInit = m_UseICPInitialisation;
 
   if (m_UsePointIDToMatchPoints)

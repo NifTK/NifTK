@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkPointsAndNormalsBasedRegistration.h"
-#include <mitkFileIOUtils.h>
-#include <mitkNavigationDataLandmarkTransformFilter.h>
+#include <mitkLiuLeastSquaresWithNormalsRegistrationWrapper.h>
+#include <limits>
 
 namespace mitk
 {
@@ -44,10 +44,18 @@ double PointsAndNormalsBasedRegistration::Update(
   assert(fixedNormals);
   assert(movingNormals);
 
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
+  mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer registration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
+  bool success = registration->Update(fixedPointSet, fixedNormals, movingPointSet, movingNormals, outputTransform, fiducialRegistrationError);
 
-  return 0;
+  if (!success)
+  {
+    MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: SVD method failed" << std::endl;
+  }
+
+  return fiducialRegistrationError;
 }
 
 } // end namespace
