@@ -43,8 +43,51 @@ cv::Mat LensToWorld (cv::Mat PointInLensCoordinates, cv::Mat TrackerToWorld,
 int mitkTrackingTest ( int argc, char * argv[] )
 {
   std::string inputVideo = argv[1];
+  argv ++; 
+  argc --; 
+  
+  //hough parameters
+  double rho = 10.0;
+  double theta = 0.1;
+  int threshold = 10;
+  int linelength = 10;
+  int linegap = 2;
 
+  //canny parameters
+  int lowThreshold = 100;
+  int highThreshold = 100;
+  int kernel = 3;
+  while ( argc > 1 )
+  {
+    bool ok = false; 
+    if ( ( ok == false ) && (strcmp ( argv[1] , "-hough" ) == 0) ) 
+    {
+      rho = atof(argv[2]); //10.0;
+      theta = atof (argv[3]); //0.1;
+      threshold = atoi (argv[4]); //10;
+      linelength = atoi (argv[5]); // 10;
+      linegap = atoi (argv[6]) ; //2;
+      argv += 6;
+      argc -= 6;
+      ok =true;
+    }
+    if (( ok ==false ) && strcmp ( argv[1] , "-canny" ) == 0 ) 
+    {
+      lowThreshold = atoi(argv[2]);
+      highThreshold = atoi(argv[3]);
+      kernel = atoi(argv[4]);
+      argv += 4;
+      argc -= 4;
+      ok =true;
+    }
+    if ( ok == false ) 
+    {
+      MITK_WARN << "Bad parameters.";
+      exit (1) ;
+    }
+  }
 
+      
   //get the video and show it
   CvCapture *capture = 0 ;
   MITK_INFO << "Opening " << inputVideo;
@@ -89,13 +132,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
   rightframe = cvCreateImage( cvSize(1920,540), 8, 3 );
   leftframe = cvCreateImage( cvSize(1920,540), 8, 3 );
 
-  double rho = 10.0;
-  double theta = 0.1;
-  int threshold = 10;
-  int linelength = 10;
-  int linegap = 2;
-  int nlines = 2; 
-  int * lines = new int [4 * nlines];
   
   int framecount=0;
   while ( key != 'q' )
@@ -115,43 +151,30 @@ int mitkTrackingTest ( int argc, char * argv[] )
     cvEqualizeHist( rightprocessed, rightprocessed_temp );
     rightprocessed = rightprocessed_temp;
                                               
-
-   // cv::Mat dst;
-   // dst = cv::Mat::zeros (leftprocessed->size(), CV_32FC1);
-    
-   // int blocksize=4;
-   // int apertureSize = 5;
-    //double k = 0.04;
     IplImage *temp;
     temp=cvCreateImage(cvSize(1920,540),32, 1);
     IplImage *smalltemp;
     smalltemp=cvCreateImage(cvSize(640,360),32, 1);
-   // cvCornerHarris ( leftprocessed, temp, 
-   //     blocksize, apertureSize, k);
-   // cvNormalize(temp, leftprocessed, 0 , 255, CV_L2);
-   // cvConvertScaleAbs (leftprocessed, leftprocessed_temp);
-  
-    cvCanny ( leftprocessed, leftprocessed_temp, 100 , 100 , 3 );
-    cvHoughLinesP (leftprocessed_temp, rho,theta, threshold, linelength , linegap , lines,nlines);
-  
-    for ( int i = 0 ; i < nlines ; i ++ ) 
+    
+    cv::Mat leftprocessedMat(leftprocessed);
+    cv::Mat leftprocessed_tempMat(leftprocessed_temp);
+    cv::blur ( leftprocessedMat, leftprocessed_tempMat, cv::Size(3,3));
+    leftprocessed_tempMat = leftprocessedMat;
+    cv::Canny ( leftprocessedMat, leftprocessed_tempMat, lowThreshold , highThreshold , kernel);
+    
+    cv::vector<cv::Vec4i> lines2;
+    cv::HoughLinesP (leftprocessed_tempMat, lines2,rho,theta, threshold, linelength , linegap);
+    MITK_INFO << "Frame " << framecount++ << " found " << lines2.size() << " lines"; 
+    for ( unsigned int i = 0 ; i < lines2.size() ; i ++ ) 
     {
-      cvLine(leftframe , cvPoint(lines[i*4+0], lines[i*4+1]),
-          cvPoint(lines[i*4+2],lines[i*4+3]), cvScalar(255,0,0));
-      cvLine(rightframe , cvPoint(lines[i*4+0], lines[i*4+1]),
-          cvPoint(lines[i*4+2],lines[i*4+3]), cvScalar(0,255,0));
+      cv::Vec4i l = lines2[i];
+      cv::Mat TL(leftframe);
+      cv::Mat TR (rightframe);
+      cv::line(TL , cvPoint(l[0], l[1]),
+          cvPoint(l[2],l[3]), cvScalar(255,0,0));
+      cv::line(TR , cvPoint(l[0], l[1]),
+          cvPoint(l[2],l[3]), cvScalar(0,255,0));
     }
-   /* cv::Mat leftprocMat (temp);
-    for ( int i = 50 ; i < leftprocMat.rows -50 ; i ++ )
-    {
-      for ( int j = 50 ; j < leftprocMat.cols -50; j ++ ) 
-      {
-        if ( leftprocMat.at<float>(i,j) > 0 ) 
-        {
-          MITK_INFO << "Got One at " << i << "," << j << "=" <<  leftprocMat.at<float>(i,j);
-        }
-      }
-    } */
     cvResize (leftframe, smallleft,CV_INTER_NN);
     cvResize (rightframe, smallright,CV_INTER_NN);
     
@@ -163,7 +186,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
     cvShowImage("Left Processed", smallleftprocessed);
   //  cvShowImage("Left Processed", smalltemp);
     key = cvWaitKey (1);
-  MITK_INFO << framecount++;
  //   key = 'q';
   }
   
