@@ -192,6 +192,19 @@ void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation,
 
 
 //-----------------------------------------------------------------------------
+void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix)
+{
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      vtkMatrix.SetElement(i, j, matrix(i,j));
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 } // end namespace
 
 

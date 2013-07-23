@@ -37,7 +37,8 @@ set(CPP_FILES
   Registration/mitkRegisterProbeModelToStereoPair.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
-  Registration/mitkLuiLeastSquaresWithNormalsRegistration.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
   TagTracking/mitkTagTrackingFacade.cxx
   TagTracking/mitkMonoTagExtractor.cxx
   TagTracking/mitkStereoTagExtractor.cxx

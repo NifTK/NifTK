@@ -17,6 +17,7 @@
 
 #include <cv.h>
 #include <mitkPointSet.h>
+#include <vtkMatrix4x4.h>
 
 /**
  * \file mitkOpenCVMaths.h
@@ -68,6 +69,11 @@ double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedP
  * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
  */
 void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix);
+
+/**
+ * \brief Copies matrix to vtkMatrix.
+ */
+void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix);
 
 } // end namespace
 

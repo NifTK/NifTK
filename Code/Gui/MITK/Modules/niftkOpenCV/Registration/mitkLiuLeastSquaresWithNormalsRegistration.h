@@ -28,13 +28,13 @@ namespace mitk {
  *
  * See also <a href="http://proceedings.spiedigitallibrary.org/proceeding.aspx?articleid=758228">this link</a>.
  */
-class LuiLeastSquaresWithNormalsRegistration : public itk::Object
+class LiuLeastSquaresWithNormalsRegistration : public itk::Object
 {
 
 public:
 
-  mitkClassMacro(LuiLeastSquaresWithNormalsRegistration, itk::Object);
-  itkNewMacro(LuiLeastSquaresWithNormalsRegistration);
+  mitkClassMacro(LiuLeastSquaresWithNormalsRegistration, itk::Object);
+  itkNewMacro(LiuLeastSquaresWithNormalsRegistration);
 
   /**
    * \brief The main method for the calculation, outputs a matrix, and FRE and returns true if calculation deemed OK, and false if failed.
@@ -48,11 +48,11 @@ public:
 
 protected:
 
-  LuiLeastSquaresWithNormalsRegistration();
-  virtual ~LuiLeastSquaresWithNormalsRegistration();
+  LiuLeastSquaresWithNormalsRegistration();
+  virtual ~LiuLeastSquaresWithNormalsRegistration();
 
-  LuiLeastSquaresWithNormalsRegistration(const LuiLeastSquaresWithNormalsRegistration&); // Purposefully not implemented.
-  LuiLeastSquaresWithNormalsRegistration& operator=(const LuiLeastSquaresWithNormalsRegistration&); // Purposefully not implemented.
+  LiuLeastSquaresWithNormalsRegistration(const LiuLeastSquaresWithNormalsRegistration&); // Purposefully not implemented.
+  LiuLeastSquaresWithNormalsRegistration& operator=(const LiuLeastSquaresWithNormalsRegistration&); // Purposefully not implemented.
 
 private:
 

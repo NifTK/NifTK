@@ -39,20 +39,14 @@ bool ArunLeastSquaresPointRegistrationWrapper::Update(const mitk::PointSet::Poin
                                                       double& fiducialRegistrationError
                                                      )
 {
-  std::vector<cv::Point3d> fixed = mitk::PointSetToVector(fixedPoints);
-  std::vector<cv::Point3d> moving = mitk::PointSetToVector(movingPoints);
+  std::vector<cv::Point3d> fP = PointSetToVector(fixedPoints);
+  std::vector<cv::Point3d> mP = PointSetToVector(movingPoints);
   cv::Matx44d registrationMatrix;
 
   mitk::ArunLeastSquaresPointRegistration::Pointer registration = mitk::ArunLeastSquaresPointRegistration::New();
-  bool result = registration->Update(fixed, moving, registrationMatrix, fiducialRegistrationError);
+  bool result = registration->Update(fP, mP, registrationMatrix, fiducialRegistrationError);
 
-  for (unsigned int i = 0; i < 4; ++i)
-  {
-    for (unsigned int j = 0; j < 4; j++)
-    {
-      matrix.SetElement(i, j, registrationMatrix(i,j));
-    }
-  }
+  CopyToVTK4x4Matrix(registrationMatrix, matrix);
 
   return result;
 }

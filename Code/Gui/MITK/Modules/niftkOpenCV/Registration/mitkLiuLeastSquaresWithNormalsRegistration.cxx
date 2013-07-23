@@ -12,25 +12,25 @@
 
 =============================================================================*/
 
-#include "mitkLuiLeastSquaresWithNormalsRegistration.h"
+#include "mitkLiuLeastSquaresWithNormalsRegistration.h"
 #include <mitkOpenCVMaths.h>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-LuiLeastSquaresWithNormalsRegistration::LuiLeastSquaresWithNormalsRegistration()
+LiuLeastSquaresWithNormalsRegistration::LiuLeastSquaresWithNormalsRegistration()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-LuiLeastSquaresWithNormalsRegistration::~LuiLeastSquaresWithNormalsRegistration()
+LiuLeastSquaresWithNormalsRegistration::~LiuLeastSquaresWithNormalsRegistration()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool LuiLeastSquaresWithNormalsRegistration::Update(const std::vector<cv::Point3d>& fixedPoints,
+bool LiuLeastSquaresWithNormalsRegistration::Update(const std::vector<cv::Point3d>& fixedPoints,
                                                     const std::vector<cv::Point3d>& fixedNormals,
                                                     const std::vector<cv::Point3d>& movingPoints,
                                                     const std::vector<cv::Point3d>& movingNormals,
