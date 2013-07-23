@@ -57,6 +57,9 @@ int mitkTrackingTest ( int argc, char * argv[] )
   int lowThreshold = 100;
   int highThreshold = 100;
   int kernel = 3;
+
+  //blurring parameters
+  int blurkernel = 3;
   while ( argc > 1 )
   {
     bool ok = false; 
@@ -79,6 +82,13 @@ int mitkTrackingTest ( int argc, char * argv[] )
       argv += 4;
       argc -= 4;
       ok =true;
+    }
+    if (( ok == false ) && strcmp ( argv[1], "-blur" ) == 0 )
+    {
+      blurkernel = atoi(argv[2]);
+      argv += 2;
+      argc -= 2;
+      ok = true;
     }
     if ( ok == false ) 
     {
@@ -140,7 +150,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
     cvCopyImage(framegrab,leftframe);
     framegrab =  cvQueryFrame(capture);
     cvCopyImage(framegrab,rightframe);
-    MITK_INFO << leftframe << " " << rightframe;
 
     cvCvtColor( leftframe, leftprocessed, CV_BGR2GRAY );
     cvCvtColor( rightframe, rightprocessed, CV_BGR2GRAY );
@@ -158,23 +167,41 @@ int mitkTrackingTest ( int argc, char * argv[] )
     
     cv::Mat leftprocessedMat(leftprocessed);
     cv::Mat leftprocessed_tempMat(leftprocessed_temp);
-    cv::blur ( leftprocessedMat, leftprocessed_tempMat, cv::Size(3,3));
+    cv::Mat rightprocessedMat(rightprocessed);
+    cv::Mat rightprocessed_tempMat(rightprocessed_temp);
+    cv::blur ( leftprocessedMat, leftprocessed_tempMat, cv::Size(blurkernel,blurkernel));
     leftprocessed_tempMat = leftprocessedMat;
+    cv::blur ( rightprocessedMat, rightprocessed_tempMat, cv::Size(blurkernel,blurkernel));
+    rightprocessed_tempMat = rightprocessedMat;
     cv::Canny ( leftprocessedMat, leftprocessed_tempMat, lowThreshold , highThreshold , kernel);
+    cv::Canny ( rightprocessedMat, rightprocessed_tempMat, lowThreshold , highThreshold , kernel);
+   // cv::blur ( leftprocessed_tempMat, leftprocessedMat, cv::Size(blurkernel,blurkernel));
+   // leftprocessed_tempMat = leftprocessedMat;
     
-    cv::vector<cv::Vec4i> lines2;
-    cv::HoughLinesP (leftprocessed_tempMat, lines2,rho,theta, threshold, linelength , linegap);
-    MITK_INFO << "Frame " << framecount++ << " found " << lines2.size() << " lines"; 
-    for ( unsigned int i = 0 ; i < lines2.size() ; i ++ ) 
+    cv::vector<cv::Vec4i> linesleft;
+    cv::vector<cv::Vec4i> linesright;
+    cv::HoughLinesP (leftprocessed_tempMat, linesleft,rho,theta, threshold, linelength , linegap);
+    cv::HoughLinesP (rightprocessed_tempMat, linesright,rho,theta, threshold, linelength , linegap);
+    if ( ( linesleft.size() == linesright.size() ) && ( linesright.size() == 2 ) )
     {
-      cv::Vec4i l = lines2[i];
+        MITK_INFO << "Frame " << framecount << " found 2 lines each frame"; 
+    }
+    framecount++;
+    for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ ) 
+    {
+      cv::Vec4i l = linesleft[i];
       cv::Mat TL(leftframe);
-      cv::Mat TR (rightframe);
       cv::line(TL , cvPoint(l[0], l[1]),
           cvPoint(l[2],l[3]), cvScalar(255,0,0));
+    }
+    for ( unsigned int i = 0 ; i < linesright.size() ; i ++ ) 
+    {
+      cv::Vec4i l = linesright[i];
+      cv::Mat TR (rightframe);
       cv::line(TR , cvPoint(l[0], l[1]),
           cvPoint(l[2],l[3]), cvScalar(0,255,0));
     }
+    
     cvResize (leftframe, smallleft,CV_INTER_NN);
     cvResize (rightframe, smallright,CV_INTER_NN);
     
