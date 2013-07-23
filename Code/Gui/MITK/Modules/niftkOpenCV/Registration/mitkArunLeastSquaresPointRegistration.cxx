@@ -29,29 +29,6 @@ ArunLeastSquaresPointRegistration::~ArunLeastSquaresPointRegistration()
 }
 
 
-
-//-----------------------------------------------------------------------------
-cv::Matx33d ArunLeastSquaresPointRegistration::CalculateH(
-    const std::vector<cv::Point3d>& q,
-    const std::vector<cv::Point3d>& qPrime)
-{
-  cv::Matx33d result = cv::Matx33d::zeros();
-
-  for (unsigned int i = 0; i < q.size(); ++i)
-  {
-    cv::Matx33d tmp(
-          q[i].x*qPrime[i].x, q[i].x*qPrime[i].y, q[i].x*qPrime[i].z,
-          q[i].y*qPrime[i].x, q[i].y*qPrime[i].y, q[i].y*qPrime[i].z,
-          q[i].z*qPrime[i].x, q[i].z*qPrime[i].y, q[i].z*qPrime[i].z
-        );
-
-    result += tmp;
-  }
-
-  return result;
-}
-
-
 //-----------------------------------------------------------------------------
 bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& fixedPoints,
                                                const std::vector<cv::Point3d>& movingPoints,
@@ -67,25 +44,24 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
   assert(fixedPoints.size() == movingPoints.size());
 
   bool success = false;
-  unsigned int numberOfPoints = fixedPoints.size();
 
   // Equation 4.
-  cv::Point3d pPrime = GetCentroid(movingPoints);
+  cv::Point3d pPrime = GetCentroid(fixedPoints);
 
   // Equation 6.
-  cv::Point3d p = GetCentroid(fixedPoints);
+  cv::Point3d p = GetCentroid(movingPoints);
 
   // Equation 7.
-  std::vector<cv::Point3d> q = SubtractPointFromPoints(fixedPoints, p);
+  std::vector<cv::Point3d> q = SubtractPointFromPoints(movingPoints, p);
 
   // Equation 8.
-  std::vector<cv::Point3d> qPrime = SubtractPointFromPoints(movingPoints, pPrime);
+  std::vector<cv::Point3d> qPrime = SubtractPointFromPoints(fixedPoints, pPrime);
 
   // Arun Equation 11.
-  cv::Matx33d H = this->CalculateH(q, qPrime);
+  cv::Matx33d H = CalculateCrossCovarianceH(q, qPrime);
 
   // Arun Equation 12.
-  cv::SVD::SVD svd(H);
+  cv::SVD svd(H);
 
   // Arun Equation 13.
   cv::Mat X = svd.vt.t() * svd.u.t();
@@ -136,43 +112,9 @@ bool ArunLeastSquaresPointRegistration::Update(const std::vector<cv::Point3d>& f
     tmpPPrime(2,0) = pPrime.z;
     T = tmpPPrime - R*tmpP;
 
-    for (unsigned int i = 0; i < 3; ++i)
-    {
-      for (unsigned int j = 0; j < 3; ++j)
-      {
-        outputMatrix(i,j) = R(i,j);
-      }
-      outputMatrix(i, 3) = T(i, 0);
-    }
-    outputMatrix(3,0) = 0;
-    outputMatrix(3,1) = 0;
-    outputMatrix(3,2) = 0;
-    outputMatrix(3,3) = 1;
+    Setup4x4Matrix(T, R, outputMatrix);
+    fiducialRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, outputMatrix);
 
-    fiducialRegistrationError = 0;
-    for (unsigned int i = 0; i < numberOfPoints; ++i)
-    {
-      cv::Matx41d f, m, mPrime;
-      f(0,0) = fixedPoints[i].x;
-      f(1,0) = fixedPoints[i].y;
-      f(2,0) = fixedPoints[i].z;
-      f(3,0) = 1;
-      m(0,0) = movingPoints[i].x;
-      m(1,0) = movingPoints[i].y;
-      m(2,0) = movingPoints[i].z;
-      m(3,0) = 1;
-      mPrime = outputMatrix * m;
-      double squaredError =   (f(0,0) - mPrime(0,0)) * (f(0,0) - mPrime(0,0))
-                            + (f(1,0) - mPrime(1,0)) * (f(1,0) - mPrime(1,0))
-                            + (f(2,0) - mPrime(2,0)) * (f(2,0) - mPrime(2,0))
-                            ;
-      fiducialRegistrationError += squaredError;
-    }
-    if (numberOfPoints > 0)
-    {
-      fiducialRegistrationError /= (double)numberOfPoints;
-    }
-    fiducialRegistrationError = sqrt(fiducialRegistrationError);
     success = true;
   }
   else

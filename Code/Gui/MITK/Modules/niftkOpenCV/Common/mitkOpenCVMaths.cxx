@@ -111,6 +111,86 @@ void MakeIdentity(cv::Matx44d& outputMatrix)
   outputMatrix(3,3) = 1;
 }
 
+
+
+//-----------------------------------------------------------------------------
+cv::Matx33d CalculateCrossCovarianceH(
+    const std::vector<cv::Point3d>& q,
+    const std::vector<cv::Point3d>& qPrime)
+{
+  cv::Matx33d result = cv::Matx33d::zeros();
+
+  for (unsigned int i = 0; i < q.size(); ++i)
+  {
+    cv::Matx33d tmp(
+          q[i].x*qPrime[i].x, q[i].x*qPrime[i].y, q[i].x*qPrime[i].z,
+          q[i].y*qPrime[i].x, q[i].y*qPrime[i].y, q[i].y*qPrime[i].z,
+          q[i].z*qPrime[i].x, q[i].z*qPrime[i].y, q[i].z*qPrime[i].z
+        );
+
+    result += tmp;
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedPoints,
+                                          const std::vector<cv::Point3d>& movingPoints,
+                                          const cv::Matx44d& matrix
+                                          )
+{
+  assert(fixedPoints.size() == movingPoints.size());
+
+  unsigned int numberOfPoints = fixedPoints.size();
+  double fiducialRegistrationError = 0;
+
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    cv::Matx41d f, m, mPrime;
+    f(0,0) = fixedPoints[i].x;
+    f(1,0) = fixedPoints[i].y;
+    f(2,0) = fixedPoints[i].z;
+    f(3,0) = 1;
+    m(0,0) = movingPoints[i].x;
+    m(1,0) = movingPoints[i].y;
+    m(2,0) = movingPoints[i].z;
+    m(3,0) = 1;
+    mPrime = matrix * m;
+    double squaredError =   (f(0,0) - mPrime(0,0)) * (f(0,0) - mPrime(0,0))
+                          + (f(1,0) - mPrime(1,0)) * (f(1,0) - mPrime(1,0))
+                          + (f(2,0) - mPrime(2,0)) * (f(2,0) - mPrime(2,0))
+                          ;
+    fiducialRegistrationError += squaredError;
+  }
+  if (numberOfPoints > 0)
+  {
+    fiducialRegistrationError /= (double)numberOfPoints;
+  }
+  fiducialRegistrationError = sqrt(fiducialRegistrationError);
+  return fiducialRegistrationError;
+}
+
+
+//-----------------------------------------------------------------------------
+void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
+{
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    for (unsigned int j = 0; j < 3; ++j)
+    {
+      matrix(i,j) = rotation(i,j);
+    }
+    matrix(i, 3) = translation(i, 0);
+  }
+  matrix(3,0) = 0;
+  matrix(3,1) = 0;
+  matrix(3,2) = 0;
+  matrix(3,3) = 1;
+}
+
+
 //-----------------------------------------------------------------------------
 } // end namespace
 

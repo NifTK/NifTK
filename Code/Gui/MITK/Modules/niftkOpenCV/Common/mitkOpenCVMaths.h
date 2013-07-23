@@ -50,6 +50,25 @@ bool IsCloseToZero(const double& value);
  */
 void MakeIdentity(cv::Matx44d& outputMatrix);
 
+/**
+ * \brief Calculates 1/N Sum (q_i * qPrime_i^t) where q_i and qPrime_i are column vectors, so the product is a 3x3 matrix.
+ * \see Least-Squares Fitting of two, 3-D Point Sets, Arun, 1987, DOI=10.1109/TPAMI.1987.4767965, matrix H.
+ */
+cv::Matx33d CalculateCrossCovarianceH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
+
+/**
+ * \brief Calculates Fiducial Registration Error by multiplying the movingPoints by the matrix, and comparing with fixedPoints.
+ */
+double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedPoints,
+                                          const std::vector<cv::Point3d>& movingPoints,
+                                          const cv::Matx44d& matrix
+                                          );
+
+/**
+ * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
+ */
+void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix);
+
 } // end namespace
 
 #endif

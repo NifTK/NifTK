@@ -54,10 +54,6 @@ protected:
   ArunLeastSquaresPointRegistration(const ArunLeastSquaresPointRegistration&); // Purposefully not implemented.
   ArunLeastSquaresPointRegistration& operator=(const ArunLeastSquaresPointRegistration&); // Purposefully not implemented.
 
-private:
-
-  cv::Matx33d CalculateH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
-
 }; // end class
 
 } // end namespace
