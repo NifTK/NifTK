@@ -21,7 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 
-namespace niftk
+namespace mitk
 {
 
 

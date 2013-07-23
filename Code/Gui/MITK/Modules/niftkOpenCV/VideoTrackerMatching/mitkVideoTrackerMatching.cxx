@@ -12,12 +12,16 @@
 
 =============================================================================*/
 
-#include "VideoTrackerMatching.h"
+#include "mitkVideoTrackerMatching.h"
 
 
-namespace niftk
+namespace mitk 
 {
+VideoTrackerMatching::VideoTrackerMatching () 
+{}
 
+VideoTrackerMatching::~VideoTrackerMatching () 
+{}
 
 
 } // namespace
