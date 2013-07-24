@@ -39,6 +39,9 @@ void VideoTrackerMatching::Initialise(std::string directory)
   else
   {
     MITK_INFO << "Found " << FrameMaps[0];
+    //now find tracking matrix time stamps
+
+
   }
 
 }
@@ -60,6 +63,29 @@ std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
         {
           ReturnStrings.push_back(it->path().c_str());
         }
+     }
+   }
+  return ReturnStrings;
+}
+std::vector<std::string> VideoTrackerMatching::FindTrackingMatrixDirectories()
+{
+  boost::filesystem::recursive_directory_iterator end_itr;
+  boost::regex IGITrackerFilter ( "(QmitkIGITrackerSource)");
+  std::vector<std::string> ReturnStrings;
+  for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
+      it != end_itr ; ++it)
+   {
+     if ( boost::filesystem::is_directory (it->status()) )
+     {
+       boost::filesystem::recursive_directory_iterator end_itr1;
+       for ( boost::filesystem::recursive_directory_iterator it1(it->path());
+                          it1 != end_itr ; ++it1)
+       {
+         if ( boost::filesystem::is_directory (it1->status()) )
+         {
+           ReturnStrings.push_back(it1->path().c_str());
+         }
+       }
      }
    }
   return ReturnStrings;

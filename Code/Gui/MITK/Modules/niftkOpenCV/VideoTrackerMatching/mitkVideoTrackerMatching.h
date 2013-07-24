@@ -30,6 +30,12 @@ class NIFTKOPENCV_EXPORT TrackingMatrices
 public:
   std::vector<cv::Mat> m_TrackingMatrices;
 };
+class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
+{
+public:
+  std::vector<unsigned long> m_TimeStamps;
+};
+
 /**
  * \brief A class to match video frames to tracking frames, when reading 
  * recorded tracking data. 
@@ -58,12 +64,14 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
 
 private:
-  std::vector<unsigned int>       m_FrameNumbers;
-  std::vector<TrackingMatrices>   m_TrackingMatrices; 
-  std::string                     m_Directory;
-  bool                            m_Ready;
+  std::vector<unsigned int>             m_FrameNumbers;
+  std::vector<TrackingMatrices>         m_TrackingMatrices; 
+  std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
+  std::string                           m_Directory;
+  bool                                  m_Ready;
 
   std::vector<std::string> FindFrameMaps();
+  std::vector<std::string> FindTrackingMatrixDirectories();
   
 };
 
