@@ -16,6 +16,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 
+#include <sstream>
+#include <fstream>
 namespace mitk 
 {
 VideoTrackerMatching::VideoTrackerMatching () 
@@ -39,8 +41,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
   else
   {
     MITK_INFO << "Found " << FrameMaps[0];
-    std::vector<std::string> TrackingDirectories = FindTrackingMatrixDirectories();
-    if ( TrackingDirectories.size() == 0 ) 
+    FindTrackingMatrixDirectories();
+    if ( m_TrackingMatrixDirectories.size() == 0 ) 
     {
       MITK_ERROR << "Found no tracking directories, VideoTrackerMatching failed to initiliase.";
       m_Ready=false;
@@ -48,23 +50,28 @@ void VideoTrackerMatching::Initialise(std::string directory)
     }
     else 
     {
-      for ( unsigned int i = 0 ; i < TrackingDirectories.size() ; i ++ ) 
+      for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        MITK_INFO << "Found tracking directory " << TrackingDirectories[i];
+        MITK_INFO << "Found tracking directory " << m_TrackingMatrixDirectories[i];
         //find all the files in it and stick em in a vector
         
-        TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(TrackingDirectories[i]);
+        TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped files";
-        long * delta = new  long();
-        MITK_INFO << tempTimeStamps.GetNearestTimeStamp(1374066239633717600, delta);
-        MITK_INFO << *delta;
+        m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
       }
     }
+  }
+
+  ProcessFrameMapFile(FrameMaps[0]);
+
+    //next stage, read through the framemap.log, getting time stamps for frame numbers, 
+    //find the closest time stamp in each m_TrackingMatrixTimeStamps
+    //and load the matrices into m_TrackingMatrices
 
     //now find tracking matrix time stamps
-
-
-  }
+        /*long * delta = new  long();
+        MITK_INFO << tempTimeStamps.GetNearestTimeStamp(1374066239633717600, delta);
+        MITK_INFO << *delta;*/
 
 }
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
@@ -89,11 +96,10 @@ std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
    }
   return ReturnStrings;
 }
-std::vector<std::string> VideoTrackerMatching::FindTrackingMatrixDirectories()
+void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
   boost::filesystem::recursive_directory_iterator end_itr;
   boost::regex IGITrackerFilter ( "(QmitkIGITrackerSource)");
-  std::vector<std::string> ReturnStrings;
   for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
    {
@@ -105,12 +111,12 @@ std::vector<std::string> VideoTrackerMatching::FindTrackingMatrixDirectories()
        {
          if ( boost::filesystem::is_directory (it1->status()) )
          {
-           ReturnStrings.push_back(it1->path().c_str());
+           m_TrackingMatrixDirectories.push_back(it1->path().c_str());
          }
        }
      }
    }
-  return ReturnStrings;
+  return;
 }
 TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::string directory)
 {
@@ -133,6 +139,48 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
   //sort the vector
   std::sort ( ReturnStamps.m_TimeStamps.begin() , ReturnStamps.m_TimeStamps.end());
   return ReturnStamps;
+}
+
+void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
+{
+  std::ifstream fin(filename.c_str());
+  if ( !fin )
+  {
+    MITK_WARN << "Failed to open frame map file " << filename;
+    return;
+  }
+
+  std::string line;
+  unsigned int frameNumber; 
+  unsigned int SequenceNumber;
+  unsigned int channel;
+  unsigned long TimeStamp;
+  unsigned int linenumber = 0;
+  while ( getline(fin,line) )
+  {
+    if ( line[0] != '#' )
+    {
+      std::stringstream linestream(line);
+      bool parseSuccess = linestream >> frameNumber >> SequenceNumber >> channel >> TimeStamp;
+      if ( parseSuccess )
+      {
+        m_FrameNumbers.push_back(frameNumber);
+        for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+        {
+        }
+        if ( frameNumber != linenumber++ )
+        {
+          MITK_WARN << "Skipped frame detected at line " << linenumber ;
+        }
+      }
+      else
+      {
+        MITK_WARN << "Parse failure at line " << linenumber;
+      }
+    }
+  }
+  MITK_INFO << "Read " << linenumber << " lines from " << filename;
+    
 }
 
 unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long timestamp,long * Delta)
@@ -169,5 +217,7 @@ unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long times
   }
   return returnValue;
 }
+
+
 
 } // namespace

@@ -68,12 +68,14 @@ private:
   std::vector<unsigned int>             m_FrameNumbers;
   std::vector<TrackingMatrices>         m_TrackingMatrices; 
   std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
+  std::vector<std::string>              m_TrackingMatrixDirectories;
   std::string                           m_Directory;
   bool                                  m_Ready;
 
   std::vector<std::string> FindFrameMaps();
-  std::vector<std::string> FindTrackingMatrixDirectories();
+  void                     FindTrackingMatrixDirectories();
   TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
+  void                     ProcessFrameMapFile(std::string filename);
   
 };
 
