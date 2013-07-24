@@ -167,6 +167,18 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
         m_FrameNumbers.push_back(frameNumber);
         for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
         {
+          long * timingError = new long;
+          unsigned long TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(TimeStamp,timingError);
+         // m_TrackingMatrices[i].m_TimingErrors.push_back( *timingError );
+          TrackingMatrices TempMatrices; 
+          TempMatrices.m_TimingErrors.push_back( *timingError );
+
+          char MatrixFileName[512];
+          sprintf (MatrixFileName, "%s/%ld.txt", m_TrackingMatrixDirectories[i].c_str(),
+              TargetTimeStamp);
+          MITK_INFO <<  frameNumber << " "  << TimeStamp << " " << TargetTimeStamp << " " << *timingError;
+          MITK_INFO << "Opening " << MatrixFileName;
+
         }
         if ( frameNumber != linenumber++ )
         {
@@ -199,7 +211,7 @@ unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long times
   else
   {
     deltaLower = timestamp - *(--lower);
-    if ( deltaLower < deltaUpper ) 
+    if ( abs(deltaLower) < abs(deltaUpper) ) 
     {
       returnValue = *lower;
       delta = timestamp - *lower;

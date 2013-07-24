@@ -29,6 +29,7 @@ class NIFTKOPENCV_EXPORT TrackingMatrices
 {
 public:
   std::vector<cv::Mat> m_TrackingMatrices;
+  std::vector<long>    m_TimingErrors;
 };
 class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
 {
