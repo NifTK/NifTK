@@ -51,6 +51,15 @@ void VideoTrackerMatching::Initialise(std::string directory)
       for ( unsigned int i = 0 ; i < TrackingDirectories.size() ; i ++ ) 
       {
         MITK_INFO << "Found tracking directory " << TrackingDirectories[i];
+        //find all the files in it and stick em in a vector
+        
+        TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(TrackingDirectories[i]);
+        MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped files";
+        for ( unsigned int i = tempTimeStamps.m_TimeStamps.size() - 10 ; i < tempTimeStamps.m_TimeStamps.size() ; i ++ ) 
+        {
+          MITK_INFO << i << "  " <<  tempTimeStamps.m_TimeStamps[i];
+        }
+
       }
     }
 
@@ -105,4 +114,25 @@ std::vector<std::string> VideoTrackerMatching::FindTrackingMatrixDirectories()
    }
   return ReturnStrings;
 }
+TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::string directory)
+{
+  boost::filesystem::directory_iterator end_itr;
+  boost::regex TimeStampFilter ( "([0-9]{19})(.txt)");
+  TrackingMatrixTimeStamps ReturnStamps;
+  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
+   {
+     if ( boost::filesystem::is_regular_file (it->status()) )
+     {
+       boost::cmatch what;
+      //  if ( it->path().extension() == ".framemap.log" )
+       const char *  stringthing = it->path().filename().c_str();
+        if ( boost::regex_match( stringthing,what , TimeStampFilter) )
+        {
+          ReturnStamps.m_TimeStamps.push_back(strtoul(it->path().filename().stem().c_str(),NULL,10));
+        }
+     }
+   }
+  return ReturnStamps;
+}
+
 } // namespace

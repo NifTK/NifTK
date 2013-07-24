@@ -72,6 +72,7 @@ private:
 
   std::vector<std::string> FindFrameMaps();
   std::vector<std::string> FindTrackingMatrixDirectories();
+  TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
   
 };
 
