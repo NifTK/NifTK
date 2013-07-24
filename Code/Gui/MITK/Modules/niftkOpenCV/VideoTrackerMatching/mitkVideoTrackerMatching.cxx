@@ -32,13 +32,28 @@ void VideoTrackerMatching::Initialise(std::string directory)
   
   if ( FrameMaps.size() != 1 ) 
   {
-    MITK_ERROR << "Found " << FrameMaps.size() << " framemap.log files, not VideoTrackerMatching failed to initialise.";
+    MITK_ERROR << "Found " << FrameMaps.size() << " framemap.log files, VideoTrackerMatching failed to initialise.";
     m_Ready=false;
     return;
   }
   else
   {
     MITK_INFO << "Found " << FrameMaps[0];
+    std::vector<std::string> TrackingDirectories = FindTrackingMatrixDirectories();
+    if ( TrackingDirectories.size() == 0 ) 
+    {
+      MITK_ERROR << "Found no tracking directories, VideoTrackerMatching failed to initiliase.";
+      m_Ready=false;
+      return;
+    }
+    else 
+    {
+      for ( unsigned int i = 0 ; i < TrackingDirectories.size() ; i ++ ) 
+      {
+        MITK_INFO << "Found tracking directory " << TrackingDirectories[i];
+      }
+    }
+
     //now find tracking matrix time stamps
 
 
