@@ -34,6 +34,7 @@ class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
 {
 public:
   std::vector<unsigned long> m_TimeStamps;
+  unsigned long GetNearestTimeStamp (unsigned long timestamp , long * delta = NULL );
 };
 
 /**

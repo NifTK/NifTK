@@ -55,11 +55,9 @@ void VideoTrackerMatching::Initialise(std::string directory)
         
         TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(TrackingDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped files";
-        for ( unsigned int i = tempTimeStamps.m_TimeStamps.size() - 10 ; i < tempTimeStamps.m_TimeStamps.size() ; i ++ ) 
-        {
-          MITK_INFO << i << "  " <<  tempTimeStamps.m_TimeStamps[i];
-        }
-
+        long * delta = new  long();
+        MITK_INFO << tempTimeStamps.GetNearestTimeStamp(1374066239633717600, delta);
+        MITK_INFO << *delta;
       }
     }
 
@@ -121,18 +119,55 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
   TrackingMatrixTimeStamps ReturnStamps;
   for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
    {
-     if ( boost::filesystem::is_regular_file (it->status()) )
-     {
-       boost::cmatch what;
+   if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
       //  if ( it->path().extension() == ".framemap.log" )
-       const char *  stringthing = it->path().filename().c_str();
-        if ( boost::regex_match( stringthing,what , TimeStampFilter) )
-        {
-          ReturnStamps.m_TimeStamps.push_back(strtoul(it->path().filename().stem().c_str(),NULL,10));
-        }
-     }
-   }
+      const char *  stringthing = it->path().filename().c_str();
+      if ( boost::regex_match( stringthing,what , TimeStampFilter) )
+      {
+        ReturnStamps.m_TimeStamps.push_back(strtoul(it->path().filename().stem().c_str(),NULL,10));
+      }
+    }
+  }
+  //sort the vector
+  std::sort ( ReturnStamps.m_TimeStamps.begin() , ReturnStamps.m_TimeStamps.end());
   return ReturnStamps;
+}
+
+unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long timestamp,long * Delta)
+{
+  std::vector<unsigned long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
+  std::vector<unsigned long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
+  long deltaUpper = *upper - timestamp ;
+  long deltaLower = timestamp - *lower ;
+  long returnValue;
+  long delta;
+  if ( deltaLower == 0 ) 
+  {
+    returnValue = *lower;
+    delta = 0;
+  }
+  else
+  {
+    deltaLower = timestamp - *(--lower);
+    if ( deltaLower < deltaUpper ) 
+    {
+      returnValue = *lower;
+      delta = timestamp - *lower;
+    }
+    else
+    {
+      returnValue = *upper;
+      delta = timestamp - *upper;
+    }
+  }
+
+  if ( Delta != NULL ) 
+  {
+    *Delta = delta;
+  }
+  return returnValue;
 }
 
 } // namespace
