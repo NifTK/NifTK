@@ -24,6 +24,7 @@ int mitkVideoTrackerMatchingTest(int argc, char** argv)
 {
 
   mitk::VideoTrackerMatching::Pointer Matcher = mitk::VideoTrackerMatching::New();
+  Matcher->Initialise(argv[1]);
 
   return EXIT_SUCCESS;
 }

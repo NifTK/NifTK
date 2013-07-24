@@ -683,7 +683,7 @@ endif (BUILD_MESHING)
 # Find Boost.
 ######################################################################
 #find_package( Boost 1.35.0 COMPONENTS filesystem system date_time REQUIRED)
-find_package( Boost COMPONENTS filesystem system date_time REQUIRED)
+find_package( Boost COMPONENTS filesystem system date_time regex REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})
