@@ -58,8 +58,12 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
 
 private:
-  std::vector<unsigned int> m_FrameNumbers;
-  std::vector<TrackingMatrices> m_TrackingMatrices; 
+  std::vector<unsigned int>       m_FrameNumbers;
+  std::vector<TrackingMatrices>   m_TrackingMatrices; 
+  std::string                     m_Directory;
+  bool                            m_Ready;
+
+  std::vector<std::string> FindFrameMaps();
   
 };
 

@@ -19,6 +19,7 @@
 namespace mitk 
 {
 VideoTrackerMatching::VideoTrackerMatching () 
+: m_Ready(false)
 {}
 
 VideoTrackerMatching::~VideoTrackerMatching () 
@@ -26,10 +27,27 @@ VideoTrackerMatching::~VideoTrackerMatching ()
 
 void VideoTrackerMatching::Initialise(std::string directory)
 {
+  m_Directory = directory;
+  std::vector<std::string> FrameMaps = FindFrameMaps();
+  
+  if ( FrameMaps.size() != 1 ) 
+  {
+    MITK_ERROR << "Found " << FrameMaps.size() << " framemap.log files, not VideoTrackerMatching failed to initialise.";
+    m_Ready=false;
+    return;
+  }
+  else
+  {
+    MITK_INFO << "Found " << FrameMaps[0];
+  }
+
+}
+std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
+{
   boost::filesystem::recursive_directory_iterator end_itr;
-  //boost::regex framelogfilter ( "(*)", boost::regex::basic);
   boost::regex framelogfilter ( "(.+)(framemap.log)");
-  for ( boost::filesystem::recursive_directory_iterator it(directory); 
+  std::vector<std::string> ReturnStrings;
+  for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
    {
      if ( boost::filesystem::is_regular_file (it->status()) )
@@ -40,11 +58,10 @@ void VideoTrackerMatching::Initialise(std::string directory)
 
         if ( boost::regex_match( stringthing,what , framelogfilter) )
         {
-          MITK_INFO << "Found " << it->path().filename();
+          ReturnStrings.push_back(it->path().c_str());
         }
      }
    }
-
-
+  return ReturnStrings;
 }
 } // namespace
