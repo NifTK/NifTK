@@ -53,11 +53,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
     {
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        MITK_INFO << "Found tracking directory " << m_TrackingMatrixDirectories[i];
-        //find all the files in it and stick em in a vector
-        
         TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
-        MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped files";
+        MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
       }
     }
