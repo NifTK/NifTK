@@ -563,6 +563,12 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   */
 std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
 
+/**
+  * \brief Load stereo camera parameters from a directory
+  */
+void LoadStereoCameraParametersFromDirectory (const std::string& directory);
+
+
  /**
  * \brief Flips the matrices in the vector from left handed coordinate 
  * system to right handed and vice versa
