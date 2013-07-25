@@ -65,15 +65,6 @@ void VideoTrackerMatching::Initialise(std::string directory)
 
   ProcessFrameMapFile(FrameMaps[0]);
 
-    //next stage, read through the framemap.log, getting time stamps for frame numbers, 
-    //find the closest time stamp in each m_TrackingMatrixTimeStamps
-    //and load the matrices into m_TrackingMatrices
-
-    //now find tracking matrix time stamps
-        /*long * delta = new  long();
-        MITK_INFO << tempTimeStamps.GetNearestTimeStamp(1374066239633717600, delta);
-        MITK_INFO << *delta;*/
-
 }
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 {
@@ -177,8 +168,8 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
           std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
           MatrixFileNameFull /= MatrixFileName;
-          MITK_INFO <<  frameNumber << " "  << TimeStamp << " " << TargetTimeStamp << " " << *timingError;
-          MITK_INFO << "Opening " << MatrixFileNameFull.c_str();
+
+          TempMatrices.m_TrackingMatrices.push_back(ReadTrackerMatrix(MatrixFileNameFull.c_str()));
 
         }
         if ( frameNumber != linenumber++ )
@@ -231,6 +222,22 @@ unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long times
   return returnValue;
 }
 
-
-
+cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
+{
+  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
+  std::ifstream fin(filename.c_str());
+  if ( !fin )
+  {
+    MITK_WARN << "Failed to open matrix file " << filename;
+    return TrackerMatrix;
+  }
+  for ( int row = 0 ; row < 4 ; row ++ )
+  {
+    for ( int col = 0 ; col < 4 ; col ++ ) 
+    {
+      fin >> TrackerMatrix.at<double>(row,col);
+    }
+  }
+  return TrackerMatrix;
+}
 } // namespace
