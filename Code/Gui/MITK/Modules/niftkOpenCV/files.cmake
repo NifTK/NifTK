@@ -22,8 +22,6 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
-  VideoProcessing/mitkTrackLapUSProcessor.cxx
-  VideoProcessing/mitkTrackLapUS.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
@@ -42,7 +40,5 @@ set(CPP_FILES
   TagTracking/mitkTagTrackingFacade.cxx
   TagTracking/mitkMonoTagExtractor.cxx
   TagTracking/mitkStereoTagExtractor.cxx
-  demo/mitkTestLineExtraction.cxx
-  demo/mitkTestCornerExtraction.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
 )
