@@ -11,7 +11,6 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-
 #include "mitkVideoTrackerMatching.h"
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -21,13 +20,16 @@
 #include <fstream>
 namespace mitk 
 {
+//---------------------------------------------------------------------------
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 {}
 
+//---------------------------------------------------------------------------
 VideoTrackerMatching::~VideoTrackerMatching () 
 {}
 
+//---------------------------------------------------------------------------
 void VideoTrackerMatching::Initialise(std::string directory)
 {
   m_Directory = directory;
@@ -73,6 +75,7 @@ void VideoTrackerMatching::Initialise(std::string directory)
   }
   return;
 }
+//---------------------------------------------------------------------------
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 {
   boost::filesystem::recursive_directory_iterator end_itr;
@@ -95,6 +98,7 @@ std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
    }
   return ReturnStrings;
 }
+//---------------------------------------------------------------------------
 void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
   boost::filesystem::recursive_directory_iterator end_itr;
@@ -120,6 +124,7 @@ void VideoTrackerMatching::FindTrackingMatrixDirectories()
    }
   return;
 }
+//---------------------------------------------------------------------------
 TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::string directory)
 {
   boost::filesystem::directory_iterator end_itr;
@@ -143,6 +148,7 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
   return ReturnStamps;
 }
 
+//---------------------------------------------------------------------------
 void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
 {
   std::ifstream fin(filename.c_str());
@@ -196,6 +202,7 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
     
 }
 
+//---------------------------------------------------------------------------
 unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long timestamp,long * Delta)
 {
   std::vector<unsigned long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
@@ -231,6 +238,7 @@ unsigned long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long times
   return returnValue;
 }
 
+//---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
 {
   cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
@@ -249,6 +257,7 @@ cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
   }
   return TrackerMatrix;
 }
+//---------------------------------------------------------------------------
 bool VideoTrackerMatching::CheckTimingErrorStats()
 {
   bool ok = true;
@@ -281,7 +290,6 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   {
     double mean = 0 ; 
     double absmean = 0 ; 
-    double stddev = 0 ;
     long minimum = m_TrackingMatrices[i].m_TimingErrors[0];
     long maximum = m_TrackingMatrices[i].m_TimingErrors[0];
 
@@ -305,4 +313,36 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 
   return ok;
 }
+
+cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , int * TimingError  ,unsigned int TrackerIndex  )
+{
+  cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  
+  if ( !m_Ready ) 
+  {
+    MITK_WARN << "Attempted to get tracking matrix when videoTrackerMatching not initialised.";
+    return returnMat;
+  }
+
+  if ( TrackerIndex >= m_TrackingMatrices.size () )
+  {
+    MITK_WARN << "Attempted to get tracking matrix with invalid TrackerIndex";
+    return returnMat;
+  }
+
+  if ( FrameNumber >= m_TrackingMatrices[TrackerIndex].m_TrackingMatrices.size() )
+  {
+    MITK_WARN << "Attempted to get tracking matrix with invalid frame index";
+    return returnMat;
+  }
+
+  returnMat=m_TrackingMatrices[TrackerIndex].m_TrackingMatrices[FrameNumber];
+  if ( TimingError != NULL ) 
+  {
+    *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
+  }
+
+  return returnMat;
+}
+
 } // namespace

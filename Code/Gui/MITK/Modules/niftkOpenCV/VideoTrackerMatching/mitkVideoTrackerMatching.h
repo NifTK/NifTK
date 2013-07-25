@@ -57,7 +57,12 @@ public:
   /**
    * \brief Return the tracking matrix for a given video frame number
    */
-  cv::Mat* GetTrackerMatrix ( int TrackerIndex = 0, int * TimingError = NULL ); 
+  cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, int * TimingError = NULL, unsigned int TrackerIndex = 0 );
+
+  /**
+   * \brief returns state of m_Ready
+   */
+  bool IsReady () { return m_Ready; } 
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();
