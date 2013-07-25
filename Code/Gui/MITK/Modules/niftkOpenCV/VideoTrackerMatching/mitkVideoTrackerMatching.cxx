@@ -314,7 +314,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   return ok;
 }
 
-cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , int * TimingError  ,unsigned int TrackerIndex  )
+cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long * TimingError  ,unsigned int TrackerIndex  )
 {
   cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
   
