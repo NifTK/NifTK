@@ -39,4 +39,5 @@ set(CPP_FILES
   Tracking/mitkStereoTagExtractor.cxx
   demo/mitkTestLineExtraction.cxx
   demo/mitkTestCornerExtraction.cxx
+  VideoTrackerMatching/mitkVideoTrackerMatching.cxx
 )
