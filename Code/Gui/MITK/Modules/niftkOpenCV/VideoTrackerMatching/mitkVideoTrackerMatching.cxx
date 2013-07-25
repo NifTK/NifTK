@@ -15,6 +15,7 @@
 #include "mitkVideoTrackerMatching.h"
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 #include <fstream>
@@ -172,10 +173,21 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
          // m_TrackingMatrices[i].m_TimingErrors.push_back( *timingError );
           TrackingMatrices TempMatrices; 
           TempMatrices.m_TimingErrors.push_back( *timingError );
-
-          char MatrixFileName[512];
-          sprintf (MatrixFileName, "%s/%ld.txt", m_TrackingMatrixDirectories[i].c_str(),
-              TargetTimeStamp);
+          //this will probably not work on windows, better off using 
+          //boost filesystem to do this
+          //maybe
+          //boost::filesystem::path p2(std::string(p.string()).append(".foo"));
+          //or 
+          //int main() {
+          //  boost::filesystem::path p (__FILE__);
+          //
+          //    std::string new_filename = p.leaf() + ".foo";
+          //      p.remove_leaf() /= new_filename;
+          //        std::cout << p << '\n';
+          //
+          //          return 0;
+          //          }
+          std::string MatrixFileName = m_TrackingMatrixDirectories[i] +boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           MITK_INFO <<  frameNumber << " "  << TimeStamp << " " << TargetTimeStamp << " " << *timingError;
           MITK_INFO << "Opening " << MatrixFileName;
 
