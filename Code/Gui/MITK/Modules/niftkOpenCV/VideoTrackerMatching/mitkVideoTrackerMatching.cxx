@@ -170,26 +170,15 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
         {
           long * timingError = new long;
           unsigned long TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(TimeStamp,timingError);
-         // m_TrackingMatrices[i].m_TimingErrors.push_back( *timingError );
+          
           TrackingMatrices TempMatrices; 
           TempMatrices.m_TimingErrors.push_back( *timingError );
-          //this will probably not work on windows, better off using 
-          //boost filesystem to do this
-          //maybe
-          //boost::filesystem::path p2(std::string(p.string()).append(".foo"));
-          //or 
-          //int main() {
-          //  boost::filesystem::path p (__FILE__);
-          //
-          //    std::string new_filename = p.leaf() + ".foo";
-          //      p.remove_leaf() /= new_filename;
-          //        std::cout << p << '\n';
-          //
-          //          return 0;
-          //          }
-          std::string MatrixFileName = m_TrackingMatrixDirectories[i] +boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
+
+          std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
+          boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
+          MatrixFileNameFull /= MatrixFileName;
           MITK_INFO <<  frameNumber << " "  << TimeStamp << " " << TargetTimeStamp << " " << *timingError;
-          MITK_INFO << "Opening " << MatrixFileName;
+          MITK_INFO << "Opening " << MatrixFileNameFull.c_str();
 
         }
         if ( frameNumber != linenumber++ )
