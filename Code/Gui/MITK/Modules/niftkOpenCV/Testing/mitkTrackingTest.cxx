@@ -60,6 +60,17 @@ int mitkTrackingTest ( int argc, char * argv[] )
 
   //blurring parameters
   int blurkernel = 3;
+
+  cv::Mat TrueWorldPoint = cv::Mat(1,3,CV_64FC1);
+  std::pair<cv::Point2f, cv::Point2f> PointPositionInFirstFrame;
+  cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
+  cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat leftCameraDistortion = cv::Mat(5,1,CV_64FC1);
+  cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightCameraDistortion = cv::Mat(5,1,CV_64FC1);
+  cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightToLeftTranslationVector = cv::Mat(1,3,CV_64FC1);
+  cv::Mat extrinsicMatrix = cv::Mat(4,4,CV_64FC1);
   while ( argc > 1 )
   {
     bool ok = false; 
@@ -90,6 +101,8 @@ int mitkTrackingTest ( int argc, char * argv[] )
       argc -= 2;
       ok = true;
     }
+    if (( ok == false ) && strcmp ( argv[1], "-leftintrinsics" ) == 0 )
+        {}
     if ( ok == false ) 
     {
       MITK_WARN << "Bad parameters.";
