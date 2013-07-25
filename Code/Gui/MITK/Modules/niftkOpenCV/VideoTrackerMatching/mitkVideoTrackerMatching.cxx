@@ -280,6 +280,32 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
     }
   }
 
+  for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i++ )
+  {
+    double mean = 0 ; 
+    double absmean = 0 ; 
+    double stddev = 0 ;
+    long minimum = m_TrackingMatrices[i].m_TimingErrors[0];
+    long maximum = m_TrackingMatrices[i].m_TimingErrors[0];
+
+    for (unsigned int j = 0 ; j < m_TrackingMatrices[i].m_TimingErrors.size() ; j ++ ) 
+    {
+      mean += static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]);
+      absmean += fabs(static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]));
+      minimum = m_TrackingMatrices[i].m_TimingErrors[j] < minimum ? m_TrackingMatrices[i].m_TimingErrors[j] : minimum;
+      maximum = m_TrackingMatrices[i].m_TimingErrors[j] > maximum ? m_TrackingMatrices[i].m_TimingErrors[j] : maximum;
+
+    }
+    mean /= m_TrackingMatrices[i].m_TimingErrors.size();
+    absmean /= m_TrackingMatrices[i].m_TimingErrors.size();
+    
+    MITK_INFO << "There are " << m_TrackingMatrices[i].m_TimingErrors.size() << " matched frames in data set " << i;
+    MITK_INFO << "Average timing error for set " << i << " = " << mean * 1e-6 << "ms";
+    MITK_INFO << "Average absolute timing error for set " << i << " = " << absmean * 1e-6 << "ms";
+    MITK_INFO << "Maximum timing error for set " << i << " = " << maximum * 1e-6 << "ms";
+    MITK_INFO << "Minimum timing error for set " << i << " = " << minimum * 1e-6 << "ms";
+  }
+
   return ok;
 }
 } // namespace
