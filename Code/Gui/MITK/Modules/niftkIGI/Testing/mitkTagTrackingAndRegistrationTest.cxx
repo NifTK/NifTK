@@ -127,7 +127,7 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
       *registrationMatrix
       );
 
-  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, 0.1),".. Testing FRE is just about equal to 0.1, when actually FRE=" << fre);
+  MITK_TEST_CONDITION_REQUIRED(fre < 1,".. Testing FRE is less than 1mm, when actually FRE=" << fre);
 
   MITK_TEST_END();
 }
