@@ -103,7 +103,7 @@ igtlUint64 IGIDataSource::GetRequestedTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  return GetTimeInNanoSeconds(m_RequestedTimeStamp);
+  return m_RequestedTimeStamp->GetTimeInNanoSeconds();
 }
 
 
@@ -112,7 +112,7 @@ igtlUint64 IGIDataSource::GetActualTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  return GetTimeInNanoSeconds(m_ActualTimeStamp);
+  return m_ActualTimeStamp->GetTimeInNanoSeconds();
 }
 
 
@@ -163,7 +163,7 @@ void IGIDataSource::CleanBuffer()
           && endIter != m_FrameRateBufferIterator
           && (*endIter).IsNotNull()
           && (!((*endIter)->GetShouldBeSaved()) || ((*endIter)->GetShouldBeSaved() && (*endIter)->GetIsSaved()))
-          && ((*endIter)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(this->m_ActualTimeStamp))
+          && ((*endIter)->GetTimeStampInNanoSeconds() < m_ActualTimeStamp->GetTimeInNanoSeconds())
         )
     {
       numberToDelete++;
@@ -185,7 +185,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
 
-  SetTimeInNanoSeconds(m_RequestedTimeStamp, requestedTimeStamp);
+  m_RequestedTimeStamp->SetTimeInNanoSeconds(requestedTimeStamp);
 
   if (GetIsPlayingBack())
   {
@@ -198,7 +198,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   if (m_Buffer.size() == 0)
   {
-    SetTimeInNanoSeconds(m_ActualTimeStamp, 0);
+    m_ActualTimeStamp->SetTimeInNanoSeconds(0);
     m_ActualData = NULL;
   }
   else
@@ -215,7 +215,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     {
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
-            && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < GetTimeInNanoSeconds(m_RequestedTimeStamp)
+            && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < m_RequestedTimeStamp->GetTimeInNanoSeconds()
             )
       {
         m_BufferIterator++;
@@ -232,7 +232,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
         m_BufferIterator--;
 
         igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
-        igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
+        igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeInNanoSeconds();
 
         // FIXME: this can under/overflow!
         igtlUint64 beforeToRequested = requestedTimeStamp - beforeTimeStamp;
@@ -246,7 +246,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     }
 
     m_ActualData = (*m_BufferIterator);
-    SetTimeInNanoSeconds(m_ActualTimeStamp, m_ActualData->GetTimeStampInNanoSeconds());
+    m_ActualTimeStamp->SetTimeInNanoSeconds(m_ActualData->GetTimeStampInNanoSeconds());
   }
 
   return m_ActualData;
@@ -258,8 +258,8 @@ bool IGIDataSource::IsWithinTimeTolerance() const
 {
   bool result = false;
 
-  igtlUint64 requestedTimeStamp = GetTimeInNanoSeconds(m_RequestedTimeStamp);
-  igtlUint64 actualTimeStamp = GetTimeInNanoSeconds(m_ActualTimeStamp);
+  igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeInNanoSeconds();
+  igtlUint64 actualTimeStamp = m_ActualTimeStamp->GetTimeInNanoSeconds();
 
   if (   m_ActualData != NULL
       && fabs((double)requestedTimeStamp - (double)actualTimeStamp) < m_TimeStampTolerance        // the data source can decide what to accept

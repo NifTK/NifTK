@@ -19,6 +19,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
+#include <igtlTimeStamp.h>
 #include <NiftyLinkMessage.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
@@ -98,7 +99,7 @@ void QmitkIGITrackerSource::InterpretMessage(NiftyLinkMessage::Pointer msg)
     {
       QmitkIGINiftyLinkDataType::Pointer wrapper = QmitkIGINiftyLinkDataType::New();
       wrapper->SetMessage(msg.data());
-      wrapper->SetTimeStampInNanoSeconds(GetTimeInNanoSeconds(msg->GetTimeCreated()));
+      wrapper->SetTimeStampInNanoSeconds(msg->GetTimeCreated()->GetTimeInNanoSeconds());
       wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
       this->AddData(wrapper.GetPointer());

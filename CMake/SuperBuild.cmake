@@ -121,7 +121,7 @@ set(EXTERNAL_PROJECTS
   DCMTK
   CTK
   NiftyLink
-# OpenCV is inserted here, just before MITK, if BUILD_OPENCV is ON
+# OpenCV is inserted here, just before MITK, if BUILD_IGI is ON
   MITK
   curl
   CGAL
@@ -132,16 +132,16 @@ set(EXTERNAL_PROJECTS
   NifTKData
 )
 
-if(BUILD_OPENCV)
+if(BUILD_IGI)
   list(FIND EXTERNAL_PROJECTS MITK MITK_POSITION_IN_EXTERNAL_PROJECTS)
   list(INSERT EXTERNAL_PROJECTS ${MITK_POSITION_IN_EXTERNAL_PROJECTS} OpenCV)
   if(OPENCV_WITH_CUDA)
     message("Beware: You are building with OPENCV_WITH_CUDA! This means OpenCV will have a hard dependency on CUDA and will not work without it!")
   endif(OPENCV_WITH_CUDA)
-endif(BUILD_OPENCV)
+endif(BUILD_IGI)
 
 if(BUILD_IGI)
-  # aruco depends on opencv. our root CMakeLists.txt should have taken care of validating BUILD_OPENCV.
+  # aruco depends on opencv. Our root CMakeLists.txt should have taken care of validating BUILD_IGI thereby turning on OpenCV.
   list(APPEND EXTERNAL_PROJECTS aruco)
 endif()
 
@@ -157,9 +157,9 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   set(proj NIFTK)
   set(proj_DEPENDENCIES ${BOOST_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
 
-  if(BUILD_OPENCV)
+  if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES ${OPENCV_DEPENDS})
-  endif(BUILD_OPENCV)
+  endif(BUILD_IGI)
   
   if(BUILD_GUI)
     list(APPEND proj_DEPENDENCIES curl)
@@ -207,7 +207,6 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
       -DBUILD_GUI:BOOL=${BUILD_GUI}
       -DBUILD_IGI:BOOL=${BUILD_IGI}
-	  -DBUILD_OPENCV:BOOL=${BUILD_OPENCV}
       -DBUILD_SLS_TESTING:BOOL=${BUILD_SLS_TESTING}
       -DBUILD_PROTOTYPE:BOOL=${BUILD_PROTOTYPE}
       -DBUILD_PROTOTYPE_JHH:BOOL=${BUILD_PROTOTYPE_JHH}
@@ -269,7 +268,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTYSEG_DIR:PATH=${EP_BASE}/Install/NIFTYSEG
       -DCURL_DIR:PATH=${EP_BASE}/Install/curl
       -Daruco_DIR:PATH=${aruco_DIR}
-	  -DOpenCV_DIR:PATH=${OpenCV_DIR}
+      -DOpenCV_DIR:PATH=${OpenCV_DIR}
       DEPENDS ${proj_DEPENDENCIES}
   )
 

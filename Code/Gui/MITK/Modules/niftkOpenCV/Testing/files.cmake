@@ -23,4 +23,5 @@ set(MODULE_CUSTOM_TESTS
   mitkHandeyeSensitivityTest.cxx
   mitkTrackingTest.cxx
   mitkTagTrackingTest.cxx
+  mitkVideoTrackerMatchingTest.cxx
 )
