@@ -55,8 +55,6 @@ if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
     # Add apps that DO depend on BUILD_IGI here.
-    niftkTestLineExtraction
-    niftkTestCornerExtraction
   )
 endif()
 
@@ -80,9 +78,7 @@ if(SlicerExecutionModel_FOUND)
       ${SLICER_HELPER_APPS}
       niftkCameraCalibration
       niftkCorrectVideoDistortion
-      niftkTrackLapUSProbe
       niftkProject3DPointsToStereoPair
-      niftkRegisterProbeModelToStereoPair
       niftkHandeyeCalibration
     )
   endif()  
