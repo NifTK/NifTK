@@ -17,10 +17,12 @@ set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
   mitkTrackedImageCommandTest.cxx
   mitkTrackedPointerManagerTest.cxx
+  mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
   mitkSurfaceBasedRegistrationTest.cxx
   mitkSurfaceBasedRegistrationTestRealData.cxx
+  mitkTagTrackingAndRegistrationTest.cxx
 )

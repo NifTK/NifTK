@@ -28,6 +28,10 @@ namespace mitk {
 /**
  * \class PointBasedRegistration
  * \brief Class to implement point based registration of two point sets.
+ *
+ * This class is called from both PointRegView and TagTrackerView.
+ * This is two different use-cases, and the usage is quite different.
+ * The code is kept here in one class for convenience to the user.
  */
 class NIFTKIGI_EXPORT PointBasedRegistration : public itk::Object
 {
@@ -37,9 +41,38 @@ public:
   itkNewMacro(PointBasedRegistration);
 
   /**
-   * \brief Stores the default value of whether to use ICP initialisation = false.
+   * \brief Stores the default value of UseICPInitialisation = false.
    */
   static const bool DEFAULT_USE_ICP_INITIALISATION;
+
+  /**
+   * \brief Stores the default value of UsePointIDToMatchPoints = false.
+   */
+  static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
+
+  /**
+   * \brief Stores the default value of UseSVDBasedMethod = true.
+   */
+  static const bool DEFAULT_USE_SVD_BASED_METHOD;
+
+  /**
+   * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
+   */
+  itkSetMacro(UsePointIDToMatchPoints, bool);
+  itkGetMacro(UsePointIDToMatchPoints, bool);
+
+  /**
+   * \brief If true, will use an SVD based match, so UseICPInitialisation is irrelevant, and if false will use MITK LandmarkTransformFilter.
+   */
+  itkSetMacro(UseSVDBasedMethod, bool);
+  itkGetMacro(UseSVDBasedMethod, bool);
+
+  /**
+   * \brief If true, points are assumed to be unordered, and so an closest point search is used.
+   * Not relevant if you are doing SVD.
+   */
+  itkSetMacro(UseICPInitialisation, bool);
+  itkGetMacro(UseICPInitialisation, bool);
 
   /**
    * \brief Main method to calculate the point based registration.
@@ -54,25 +87,7 @@ public:
    */
   double Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
-              const bool& useICPInitialisation,
               vtkMatrix4x4& outputTransform) const;
-
-  /**
-   * \brief Saves the given transformation to file.
-   * \param[In] fileName the full absolute path of the file to be saved to, which if it already exists will be silently over-written.
-   * \param[In] transform transformation matrix.
-   * \return bool true if successful and false otherwise.
-   */
-  bool SaveToFile(const std::string& fileName, const vtkMatrix4x4& transform) const;
-
-  /**
-   * \brief Applies the given transformation to the given node.
-   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transfor anything.
-   * \param[In] transform the VTK transformation
-   * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
-   * \return bool true if successful and false otherwise.
-   */
-  bool ApplyToNode(const mitk::DataNode::Pointer& node, vtkMatrix4x4& transform, const bool& makeUndoAble) const;
 
 protected:
 
@@ -83,6 +98,10 @@ protected:
   PointBasedRegistration& operator=(const PointBasedRegistration&); // Purposefully not implemented.
 
 private:
+
+  bool m_UseICPInitialisation;
+  bool m_UsePointIDToMatchPoints;
+  bool m_UseSVDBasedMethod;
 
 }; // end class
 

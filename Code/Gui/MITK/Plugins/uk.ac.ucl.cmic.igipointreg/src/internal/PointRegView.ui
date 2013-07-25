@@ -21,7 +21,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="m_FixedPointsLabel">
          <property name="text">
-          <string>fixed points</string>
+          <string>Fixed points</string>
          </property>
         </widget>
        </item>
@@ -35,7 +35,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="m_MovingPointsLabel">
          <property name="text">
-          <string>moving points</string>
+          <string>Moving points</string>
          </property>
         </widget>
        </item>
@@ -72,12 +72,12 @@
           <string>composes the transformation with the selected data set</string>
          </property>
          <property name="text">
-          <string>compose with data</string>
+          <string>Compose with data</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ComposeWithDataNode">
+        <widget class="QmitkDataStorageCheckableComboBox" name="m_ComposeWithDataNode">
          <property name="toolTip">
           <string>select a data set</string>
          </property>
@@ -89,7 +89,7 @@
           <string>saves the current transformation to file</string>
          </property>
          <property name="text">
-          <string>save to file</string>
+          <string>Save to file</string>
          </property>
         </widget>
        </item>
@@ -135,6 +135,11 @@
    <extends>QWidget</extends>
    <header>ctkMatrixWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageCheckableComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageCheckableComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -82,6 +82,16 @@ namespace mitk
    * \param helperObject if true the node is created in DataStorage as a helper object, and so by default will normally be invisible
    */
   NIFTKCORE_EXPORT void LoadMatrixOrCreateDefault(const std::string& fileName, const std::string& nodeName, const bool& helperObject, mitk::DataStorage* dataStorage);
+
+
+  /**
+   * \brief Applies the given transformation to the given node.
+   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \param[In] transform the VTK transformation
+   * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
+   * \return bool true if successful and false otherwise.
+   */
+  NIFTKCORE_EXPORT bool ApplyToNode(mitk::DataNode::Pointer& node, const vtkMatrix4x4* transform, const bool& makeUndoAble);
 }
 
 #endif

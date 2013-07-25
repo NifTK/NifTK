@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkOpenCVMaths.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
@@ -34,9 +35,13 @@ set(CPP_FILES
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx
   Registration/mitkRegisterProbeModelToStereoPair.cxx
-  Tracking/mitkTagTrackingFacade.cxx
-  Tracking/mitkMonoTagExtractor.cxx
-  Tracking/mitkStereoTagExtractor.cxx
+  Registration/mitkArunLeastSquaresPointRegistration.cxx
+  Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
+  TagTracking/mitkTagTrackingFacade.cxx
+  TagTracking/mitkMonoTagExtractor.cxx
+  TagTracking/mitkStereoTagExtractor.cxx
   demo/mitkTestLineExtraction.cxx
   demo/mitkTestCornerExtraction.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx

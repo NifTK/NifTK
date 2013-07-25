@@ -20,9 +20,10 @@
 #include <vtkMatrix4x4.h>
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkPointBasedRegistration.h>
-#include <mitkFileIOUtils.h>
+#include <mitkDataStorageUtils.h>
 #include <QMessageBox>
 #include <QtConcurrentRun>
+#include <QmitkIGIUtils.h>
 #include <vtkFunctions.h>
 #include <vtkDoubleArray.h>
 
@@ -105,7 +106,7 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
 
     connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
-
+    connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
     connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
 
     dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
@@ -261,76 +262,23 @@ void SurfaceRegView::OnCalculateButtonPressed()
   movingnode->Modified();
 }
 
+
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
-  mitk::BaseData::Pointer data = NULL;
-  mitk::DataNode* node = m_Controls->m_ComposeWithDataNode->GetSelectedNode();
-
-  if (node != NULL)
-  {
-    data = dynamic_cast<mitk::BaseData*>(node->GetData());
-  }
-
-  if (data.IsNull())
-  {
-    QMessageBox msgBox;
-    msgBox.setText("The data set is non-existent, does not contain data or is not-selected.");
-    msgBox.setInformativeText("Please select a valid data set.");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
-    return;
-  }
-
-  mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->ApplyToNode(node, *m_Matrix, true);
-
-  if (!successful)
-  {
-    QMessageBox msgBox;
-    msgBox.setText("Failed to apply transform.");
-    msgBox.setInformativeText("Please check the console.");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
-    return;
-  }
-
+  ApplyMatrixToNodes(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
+
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnSaveToFileButtonPressed()
 {
-  QString fileName = m_Controls->m_SaveToFilePathEdit->currentPath();
-  if (fileName.length() == 0)
-  {
-    QMessageBox msgBox;
-    msgBox.setText("The file name is empty.");
-    msgBox.setInformativeText("Please select a file name.");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
-    return;
-  }
-
-  mitk::PointBasedRegistration::Pointer controller = mitk::PointBasedRegistration::New();
-  bool successful = controller->SaveToFile(fileName.toStdString(), *m_Matrix);
-
-  if (!successful)
-  {
-    QMessageBox msgBox;
-    msgBox.setText("The file failed to save.");
-    msgBox.setInformativeText("Please check the location.");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
-    return;
-  }
+  SaveMatrixToFile(*m_Matrix, m_Controls->m_SaveToFilePathEdit->currentPath());
 }
+
 
 //-----------------------------------------------------------------------------
 void SurfaceRegView::SetFocus()
 {
-  // Set focus to a sensible widget for when the view is launched.
+  m_Controls->m_FixedSurfaceComboBox->setFocus();
 }
