@@ -78,7 +78,7 @@ private:
   TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
   void                     ProcessFrameMapFile(std::string filename);
   cv::Mat                  ReadTrackerMatrix(std::string filename);
-  void                     TimingErrorStats(std::vector<long> timingErrors);
+  bool                     CheckTimingErrorStats();
   
 };
 

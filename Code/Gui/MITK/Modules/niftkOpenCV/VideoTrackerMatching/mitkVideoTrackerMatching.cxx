@@ -64,7 +64,17 @@ void VideoTrackerMatching::Initialise(std::string directory)
   }
 
   ProcessFrameMapFile(FrameMaps[0]);
-
+  if ( CheckTimingErrorStats() )
+  { 
+    MITK_INFO << "VideoTrackerMatching initialised OK";
+    m_Ready=true;
+  }
+  else
+  {
+    MITK_WARN << "VideoTrackerMatching initialise FAILED";
+    m_Ready=false;
+  }
+  return;
 }
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 {
@@ -104,6 +114,9 @@ void VideoTrackerMatching::FindTrackingMatrixDirectories()
          if ( boost::filesystem::is_directory (it1->status()) )
          {
            m_TrackingMatrixDirectories.push_back(it1->path().c_str());
+           //need to init tracking matrix vector
+           TrackingMatrices TempMatrices; 
+           m_TrackingMatrices.push_back(TempMatrices);
          }
        }
      }
@@ -162,14 +175,13 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
           long * timingError = new long;
           unsigned long TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(TimeStamp,timingError);
           
-          TrackingMatrices TempMatrices; 
-          TempMatrices.m_TimingErrors.push_back( *timingError );
+          m_TrackingMatrices[i].m_TimingErrors.push_back(*timingError);
 
           std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
           MatrixFileNameFull /= MatrixFileName;
 
-          TempMatrices.m_TrackingMatrices.push_back(ReadTrackerMatrix(MatrixFileNameFull.c_str()));
+          m_TrackingMatrices[i].m_TrackingMatrices.push_back(ReadTrackerMatrix(MatrixFileNameFull.c_str()));
 
         }
         if ( frameNumber != linenumber++ )
@@ -239,5 +251,35 @@ cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
     }
   }
   return TrackerMatrix;
+}
+bool VideoTrackerMatching::CheckTimingErrorStats()
+{
+  bool ok = true;
+  //check sizes
+  if ( m_TrackingMatrices.size() != m_TrackingMatrixDirectories.size() )
+  {
+    MITK_ERROR << "Wrong number of tracking matrix dirtectories " << m_TrackingMatrices.size() 
+      << " != " <<  m_TrackingMatrixDirectories.size();
+    ok=false;
+  }
+  for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i ++ ) 
+  {
+    if ( m_TrackingMatrices[i].m_TrackingMatrices.size() != 
+        m_TrackingMatrices[i].m_TimingErrors.size() )
+    {
+      MITK_ERROR << "Wrong number of tracking matrices " << i << ": " << m_TrackingMatrices[i].m_TrackingMatrices.size() 
+        << " != " <<  m_TrackingMatrices[i].m_TimingErrors.size();
+      ok = false;
+    }
+    if ( m_TrackingMatrices[i].m_TrackingMatrices.size() != 
+        m_FrameNumbers.size() )
+    {
+      MITK_ERROR << "Wrong number of frame numbers " << i << ": " << m_TrackingMatrices[i].m_TrackingMatrices.size() 
+        << " != " <<  m_FrameNumbers.size();
+      ok = false;
+    }
+  }
+
+  return ok;
 }
 } // namespace
