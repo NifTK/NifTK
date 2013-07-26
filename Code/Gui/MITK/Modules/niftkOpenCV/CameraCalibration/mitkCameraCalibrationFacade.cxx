@@ -1931,22 +1931,23 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
     if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
-      const char *  stringthing = reinterpret_cast<const char*>(it->path().filename().c_str());
+      char *  stringthing;
+      strcpy (stringthing,it->path().filename().c_str());
       if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
       {
-        leftIntrinsicFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+        leftIntrinsicFiles.push_back(it->path().filename().c_str());
       }
       if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
       {
-        rightIntrinsicFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+        rightIntrinsicFiles.push_back(it->path().filename().c_str());
       }
       if ( boost::regex_match( stringthing,what,r2lFilter) )
       {
-        r2lFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+        r2lFiles.push_back(it->path().filename().c_str());
       }
       if ( boost::regex_match( stringthing,what,handeyeFilter) )
       {
-        handeyeFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+        handeyeFiles.push_back(it->path().filename().c_str());
       }
     }
   }
