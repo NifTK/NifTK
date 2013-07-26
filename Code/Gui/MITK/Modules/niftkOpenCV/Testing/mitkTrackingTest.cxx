@@ -79,6 +79,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
 
   cv::Mat TrueWorldPoint = cv::Mat(1,3,CV_64FC1);
   std::pair<cv::Point2f, cv::Point2f> PointPositionInFirstFrame;
+  bool WorldPointSet = false;
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
   cv::Mat leftCameraDistortion = cv::Mat(5,1,CV_64FC1);
@@ -126,6 +127,15 @@ int mitkTrackingTest ( int argc, char * argv[] )
       argv += 2; 
       argc -= 2; 
       ok = true;
+    }
+    if (( ok == false ) && strcmp ( argv[1], "-PointsInFirstFrame" ) == 0 )
+    {
+      PointPositionInFirstFrame.first.x = atof(argv[2]);
+      PointPositionInFirstFrame.first.y = atof(argv[2]);
+      PointPositionInFirstFrame.second.x = atof(argv[2]);
+      PointPositionInFirstFrame.second.y = atof(argv[2]);
+      
+      ok=true;
     }
     if ( ok == false ) 
     {
