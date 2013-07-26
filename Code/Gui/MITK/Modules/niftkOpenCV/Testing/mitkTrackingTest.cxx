@@ -47,15 +47,12 @@ int mitkTrackingTest ( int argc, char * argv[] )
   boost::filesystem::recursive_directory_iterator end_itr;
   for ( boost::filesystem::recursive_directory_iterator it(argv[1]);it != end_itr ; ++it)
   {
-    if ( it->path().extension().c_str() == "264" )
+    if ( it->path().extension().string() == ".264" )
     {
-      std::cerr << "checking "; 
-      inputVideo = it->path().filename().c_str();
-      it = end_itr;
+      inputVideo = it->path().string();
+      std::cerr << "got " << inputVideo << std::endl; 
     }
   }
-
-
 
   argv ++; 
   argc --; 

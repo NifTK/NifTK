@@ -1875,6 +1875,10 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
 {
   std::ifstream fin(filename.c_str());
+  if ( ! fin ) 
+  {
+    std::cerr << "HEY HEY" << std::endl;
+  }
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
@@ -1941,23 +1945,23 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
     if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
-      char *  stringthing;
-      strcpy (stringthing,it->path().filename().string());
+      char *  stringthing = new char [512] ;
+      strcpy (stringthing,it->path().string().c_str());
       if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
       {
-        leftIntrinsicFiles.push_back(it->path().filename().string());
+        leftIntrinsicFiles.push_back(it->path().string());
       }
       if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
       {
-        rightIntrinsicFiles.push_back(it->path().filename().string());
+        rightIntrinsicFiles.push_back(it->path().string());
       }
       if ( boost::regex_match( stringthing,what,r2lFilter) )
       {
-        r2lFiles.push_back(it->path().filename().string());
+        r2lFiles.push_back(it->path().string());
       }
       if ( boost::regex_match( stringthing,what,handeyeFilter) )
       {
-        handeyeFiles.push_back(it->path().filename().string());
+        handeyeFiles.push_back(it->path().string());
       }
     }
   }
