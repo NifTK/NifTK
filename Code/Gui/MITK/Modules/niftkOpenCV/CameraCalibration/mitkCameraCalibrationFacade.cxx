@@ -1512,6 +1512,7 @@ cv::Point3d IterativeTriangulatePoint(
   return result;
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
@@ -1587,6 +1588,7 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   return myMatrices;
 }
 
+
 //------------------------------------------------------------------------------
 void LoadResult (const std::string& FileName, cv::Mat& result,
     std::vector<double>& residuals)
@@ -1653,6 +1655,7 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
   return myMatrices;
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
 {
@@ -1685,6 +1688,8 @@ std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
   }
   return OutMatrices;
 }
+
+
 //-----------------------------------------------------------------------------
 std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
 {
@@ -1742,6 +1747,8 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
   }
   return index;
 }
+
+
 //-----------------------------------------------------------------------------
 std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
 {
@@ -1800,11 +1807,10 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
       index[counter] = CurrentIndex;
     }
     startIndex = CurrentIndex;
-
-   
   }
   return index;
 }
+
 
 //-----------------------------------------------------------------------------
 double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
@@ -1819,6 +1825,7 @@ double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
       + q1.at<double>(2,0) * q2.at<double>(2,0));
 
 }
+
 
 //-----------------------------------------------------------------------------
 cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
@@ -1842,6 +1849,7 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
   return q;
 }
 
+
 //-----------------------------------------------------------------------------
 double ModifiedSignum(double value)
 {
@@ -1851,6 +1859,8 @@ double ModifiedSignum(double value)
   }
   return 1.0;
 }
+
+
 //-----------------------------------------------------------------------------
 double SafeSQRT(double value)
 {
@@ -1932,22 +1942,22 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
     {
       boost::cmatch what;
       char *  stringthing;
-      strcpy (stringthing,it->path().filename().c_str());
+      strcpy (stringthing,it->path().filename().string());
       if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
       {
-        leftIntrinsicFiles.push_back(it->path().filename().c_str());
+        leftIntrinsicFiles.push_back(it->path().filename().string());
       }
       if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
       {
-        rightIntrinsicFiles.push_back(it->path().filename().c_str());
+        rightIntrinsicFiles.push_back(it->path().filename().string());
       }
       if ( boost::regex_match( stringthing,what,r2lFilter) )
       {
-        r2lFiles.push_back(it->path().filename().c_str());
+        r2lFiles.push_back(it->path().filename().string());
       }
       if ( boost::regex_match( stringthing,what,handeyeFilter) )
       {
-        handeyeFiles.push_back(it->path().filename().c_str());
+        handeyeFiles.push_back(it->path().filename().string());
       }
     }
   }

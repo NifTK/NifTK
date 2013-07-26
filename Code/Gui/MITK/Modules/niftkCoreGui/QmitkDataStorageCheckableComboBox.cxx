@@ -73,10 +73,22 @@ mitk::DataNode::Pointer QmitkDataStorageCheckableComboBox::GetNode( int index ) 
   return (this->HasIndex(index))? m_Nodes.at(index): 0;
 }
 
-mitk::DataNode::Pointer QmitkDataStorageCheckableComboBox::GetSelectedNode() const
+std::vector<mitk::DataNode*> QmitkDataStorageCheckableComboBox::GetSelectedNodes() const
 {
-  int _CurrentIndex = this->currentIndex();
-  return (_CurrentIndex >= 0)? this->GetNode(_CurrentIndex): 0;
+  std::vector<mitk::DataNode*> nodes;
+  mitk::DataNode* node = NULL;
+
+  QModelIndexList indexes = this->checkedIndexes();
+
+  foreach (QModelIndex item, indexes)
+  {
+    node = this->GetNode(item.row());
+    if (node != NULL)
+    {
+      nodes.push_back(node);
+    }
+  }
+  return nodes;
 }
 
 mitk::DataStorage::SetOfObjects::ConstPointer QmitkDataStorageCheckableComboBox::GetNodes() const
@@ -280,14 +292,6 @@ int QmitkDataStorageCheckableComboBox::Find( const mitk::DataNode* _DataNode ) c
   return index;
 }
 
-//#PROTECTED SETTER
-void QmitkDataStorageCheckableComboBox::OnCurrentIndexChanged(int index)
-{
-  if(index >= 0 && index < this->count())
-    emit OnSelectionChanged(this->GetSelectedNode());
-  if(index == -1)
-    emit OnSelectionChanged(NULL);
-}
 
 void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNode* _DataNode)
 {

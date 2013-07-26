@@ -28,14 +28,14 @@ namespace mitk
 class NIFTKOPENCV_EXPORT TrackingMatrices
 {
 public:
-  std::vector<cv::Mat> m_TrackingMatrices;
-  std::vector<long>    m_TimingErrors;
+  std::vector<cv::Mat>   m_TrackingMatrices;
+  std::vector<long long> m_TimingErrors;
 };
 class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
 {
 public:
-  std::vector<unsigned long> m_TimeStamps;
-  unsigned long GetNearestTimeStamp (unsigned long timestamp , long * delta = NULL );
+  std::vector<unsigned long long> m_TimeStamps;
+  unsigned long long GetNearestTimeStamp (unsigned long long timestamp , long long * delta = NULL );
 };
 
 /**
@@ -57,7 +57,7 @@ public:
   /**
    * \brief Return the tracking matrix for a given video frame number
    */
-  cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, long * TimingError = NULL, unsigned int TrackerIndex = 0 );
+  cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 );
 
   /**
    * \brief returns state of m_Ready

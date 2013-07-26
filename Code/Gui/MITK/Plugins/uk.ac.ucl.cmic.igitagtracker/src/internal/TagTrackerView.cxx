@@ -26,16 +26,22 @@
 #include <service/event/ctkEvent.h>
 #include <mitkImage.h>
 #include <mitkPointSet.h>
+#include <mitkSurface.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkMonoTagExtractor.h>
 #include <mitkStereoTagExtractor.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkPointBasedRegistration.h>
+#include <mitkPointsAndNormalsBasedRegistration.h>
+#include <mitkCoordinateAxesData.h>
+#include <mitkNodePredicateOr.h>
+#include <mitkTagTrackingRegistrationManager.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 const std::string TagTrackerView::VIEW_ID = "uk.ac.ucl.cmic.igitagtracker";
-const std::string TagTrackerView::NODE_ID = "Tag Locations";
 
 //-----------------------------------------------------------------------------
 TagTrackerView::TagTrackerView()
@@ -49,6 +55,20 @@ TagTrackerView::TagTrackerView()
 //-----------------------------------------------------------------------------
 TagTrackerView::~TagTrackerView()
 {
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID);
+  if (dataNode.IsNotNull())
+  {
+    dataStorage->Remove(dataNode);
+  }
+
+  dataNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID);
+  if (dataNode.IsNotNull())
+  {
+    dataStorage->Remove(dataNode);
+  }
+
 }
 
 
@@ -89,6 +109,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   assert(ok);
   ok = connect(m_MaxSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
+  ok = connect(m_RegistrationEnabledCheckbox, SIGNAL(toggled(bool)), this, SLOT(OnRegistrationEnabledChecked(bool)));
+  assert(ok);
 
   ctkServiceReference ref = mitk::TagTrackerViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
   if (ref)
@@ -99,10 +121,31 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
   }
 
+  mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
+  mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
+  mitk::NodePredicateOr::Pointer isPointSetOrIsSurface = mitk::NodePredicateOr::New(isPointSet, isSurface);
+
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  assert(dataStorage);
+
+  m_RegistrationModelComboBox->SetDataStorage(dataStorage);
+  m_RegistrationModelComboBox->SetPredicate(isPointSetOrIsSurface);
+  m_RegistrationModelComboBox->SetAutoSelectNewItems(false);
+  m_RegistrationMatrix->setEditable(false);
+  m_RegistrationMatrix->setRange(-1e4, 1e4);
+
   this->RetrievePreferenceValues();
+
+  m_InformationGroupBox->setCollapsed(true);
+  m_TrackingParametersGroupBox->setCollapsed(true);
+  m_RegistrationGroupBox->setCollapsed(true);
+  m_RegistrationEnabledCheckbox->setChecked(false);
+  this->OnRegistrationEnabledChecked(false);
+  m_RegistrationMethodPointsRadio->setChecked(true);
 
   m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
+
 }
 
 
@@ -142,6 +185,15 @@ void TagTrackerView::RetrievePreferenceValues()
 void TagTrackerView::SetFocus()
 {
   m_StereoImageAndCameraSelectionWidget->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnRegistrationEnabledChecked(bool isChecked)
+{
+  m_RegistrationModelComboBox->setEnabled(isChecked);
+  m_RegistrationMethodPointsRadio->setEnabled(isChecked);
+  m_RegistrationMethodPointsNormalsRadio->setEnabled(isChecked);
 }
 
 
@@ -220,37 +272,53 @@ void TagTrackerView::UpdateTags()
     }
 
     // Retrieve the point set node from data storage, or create it if it does not exist.
-    mitk::PointSet::Pointer pointSet;
-    mitk::DataNode::Pointer pointSetNode = dataStorage->GetNamedNode(NODE_ID);
+    mitk::PointSet::Pointer tagNormals = mitk::PointSet::New();
+    mitk::PointSet::Pointer tagPointSet = NULL;
+    mitk::DataNode::Pointer tagPointSetNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID);
 
-    if (pointSetNode.IsNull())
+    if (tagPointSetNode.IsNull())
     {
-      pointSet = mitk::PointSet::New();
-      pointSetNode = mitk::DataNode::New();
-      pointSetNode->SetData( pointSet );
-      pointSetNode->SetProperty( "name", mitk::StringProperty::New(NODE_ID));
-      pointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
-      pointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
-      pointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
-      pointSetNode->SetProperty( "pointsize", mitk::FloatProperty::New(5));
-      pointSetNode->SetBoolProperty("helper object", false);
-      pointSetNode->SetBoolProperty("show distant lines", false);
-      pointSetNode->SetBoolProperty("show distant points", false);
-      pointSetNode->SetBoolProperty("show distances", false);
-      pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
-      pointSetNode->SetColor( 1.0, 1.0, 0 );
-	    pointSetNode->SetVisibility(true);
-      dataStorage->Add(pointSetNode);
+      tagPointSet = mitk::PointSet::New();
+      tagPointSetNode = mitk::DataNode::New();
+      tagPointSetNode->SetData( tagPointSet );
+      tagPointSetNode->SetProperty( "name", mitk::StringProperty::New(mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID));
+      tagPointSetNode->SetProperty( "opacity", mitk::FloatProperty::New(1));
+      tagPointSetNode->SetProperty( "point line width", mitk::IntProperty::New(1));
+      tagPointSetNode->SetProperty( "point 2D size", mitk::IntProperty::New(5));
+      tagPointSetNode->SetProperty( "pointsize", mitk::FloatProperty::New(5));
+      tagPointSetNode->SetBoolProperty("helper object", false);
+      tagPointSetNode->SetBoolProperty("show distant lines", false);
+      tagPointSetNode->SetBoolProperty("show distant points", false);
+      tagPointSetNode->SetBoolProperty("show distances", false);
+      tagPointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
+      tagPointSetNode->SetColor( 1.0, 1.0, 0 );
+      tagPointSetNode->SetVisibility(false);
+      dataStorage->Add(tagPointSetNode);
     }
     else
     {
-      pointSet = dynamic_cast<mitk::PointSet*>(pointSetNode->GetData());
-      if (pointSet.IsNull())
+      tagPointSet = dynamic_cast<mitk::PointSet*>(tagPointSetNode->GetData());
+      if (tagPointSet.IsNull())
       {
         // Give up, as the node has the wrong data.
-        MITK_ERROR << "TagTrackerView::OnUpdate node " << NODE_ID << " does not contain an mitk::PointSet" << std::endl;
+        MITK_ERROR << "TagTrackerView::OnUpdate node " << mitk::TagTrackingRegistrationManager::POINTSET_NODE_ID << " does not contain an mitk::PointSet" << std::endl;
         return;
       }
+    }
+
+    // Similarly, create the transform node.
+    mitk::CoordinateAxesData::Pointer transformToUpdate = NULL;
+    mitk::DataNode::Pointer transformNode = dataStorage->GetNamedNode(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID);
+    if(transformNode.IsNull())
+    {
+      transformToUpdate = mitk::CoordinateAxesData::New();
+
+      transformNode = mitk::DataNode::New();
+      transformNode->SetData(transformToUpdate);
+      transformNode->SetProperty( "name", mitk::StringProperty::New(mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID));
+      transformNode->SetVisibility(false);
+
+      dataStorage->Add(transformNode);
     }
 
     // Extract camera to world matrix to pass onto either mono or stereo.
@@ -298,10 +366,10 @@ void TagTrackerView::UpdateTags()
           maxSize,
           blockSize,
           offset,
-          pointSet,
-          cameraToWorldMatrix
+          cameraToWorldMatrix,
+          tagPointSet
           );
-      pointSetNode->Modified();
+      tagPointSetNode->Modified();
     }
     else
     {
@@ -342,12 +410,13 @@ void TagTrackerView::UpdateTags()
           maxSize,
           blockSize,
           offset,
-          pointSet,
-          cameraToWorldMatrix
+          cameraToWorldMatrix,
+          tagPointSet,
+          tagNormals
           );
     } // end if mono/stereo
 
-    int numberOfTrackedPoints = pointSet->GetSize();
+    int numberOfTrackedPoints = tagPointSet->GetSize();
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
@@ -355,9 +424,10 @@ void TagTrackerView::UpdateTags()
     m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
     m_TagPositionDisplay->clear();
 
+    // Update text box to display all points.
     if (numberOfTrackedPoints > 0)
     {
-      mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
+      mitk::PointSet::DataType* itkPointSet = tagPointSet->GetPointSet(0);
       mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
       mitk::PointSet::PointsIterator pIt;
       mitk::PointSet::PointIdentifier pointID;
@@ -380,8 +450,41 @@ void TagTrackerView::UpdateTags()
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
     }
-    pointSetNode->Modified();
-    pointSet->Modified();
+
+    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+    registrationMatrix->Identity();
+
+    if (numberOfTrackedPoints > 0)
+    {
+      if (m_RegistrationEnabledCheckbox->isChecked())
+      {
+        mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
+        mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
+        registrationManager->Update(
+             dataStorage,
+             tagPointSet,
+             tagNormals,
+             selectedNode,
+             mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
+             m_RegistrationMethodPointsNormalsRadio->isChecked(),
+             *registrationMatrix
+            );
+
+      } // end if we are doing registration
+    } // end if number tracked points > 0
+
+    // Always update registration matrix contained within the view - just for visual feedback.
+    for (int i = 0; i < 4; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        m_RegistrationMatrix->setValue(i, j, registrationMatrix->GetElement(i, j));
+      }
+    }
+
+    tagPointSetNode->Modified();
+    tagPointSet->Modified();
     mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
   } // end if we have at least one node specified
 }

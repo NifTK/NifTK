@@ -14,6 +14,7 @@
 
 #include "mitkTagTrackingFacade.h"
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkPointUtils.h>
 #include <aruco/aruco.h>
 
 namespace mitk
@@ -30,7 +31,6 @@ std::map<int, cv::Point2f> DetectMarkers(
     const bool& drawCentre
     )
 {
-  cv::Size size(inImage.rows, inImage.cols);
   aruco::CameraParameters cameraParams;
 
   std::vector<aruco::Marker> markers;
@@ -125,26 +125,103 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
 
 
 //-----------------------------------------------------------------------------
-void TransformPointsByCameraToWorld(
-    vtkMatrix4x4* cameraToWorld,
-    mitk::Point3D& point
-    )
+std::map<int, mitk::Point6D> DetectMarkerPairsAndNormals(
+   cv::Mat& inImageLeft,
+   cv::Mat& inImageRight,
+   const cv::Mat& intrinsicParamsLeft,
+   const cv::Mat& intrinsicParamsRight,
+   const cv::Mat& rightToLeftRotationVector,
+   const cv::Mat& rightToLeftTranslationVector,
+   const float& minSize,
+   const float& maxSize,
+   const double& blockSize,
+   const double& offset
+   )
 {
-  double transformedPoint[4] = {0, 0, 0, 1};
+  // Output map, containing point ID, and a 6-tuple of point and normal.
+  std::map<int, mitk::Point6D> output;
 
-  if(cameraToWorld != NULL)
+  // First detect all markers
+  aruco::CameraParameters cameraParams;
+
+  std::vector<aruco::Marker> leftMarkers;
+  aruco::MarkerDetector leftDetector;
+
+  leftDetector.setMinMaxSize(minSize, maxSize);
+  leftDetector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  leftDetector.setThresholdParams(blockSize, offset);
+  leftDetector.detect(inImageLeft, leftMarkers, cameraParams);
+
+  std::vector<aruco::Marker> rightMarkers;
+  aruco::MarkerDetector rightDetector;
+
+  rightDetector.setMinMaxSize(minSize, maxSize);
+  rightDetector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  rightDetector.setThresholdParams(blockSize, offset);
+  rightDetector.detect(inImageRight, rightMarkers, cameraParams);
+
+  // Now we find corresponding markers
+  for (unsigned int i = 0; i < leftMarkers.size(); ++i)
   {
-    transformedPoint[0] = point[0];
-    transformedPoint[1] = point[1];
-    transformedPoint[2] = point[2];
-    transformedPoint[3] = 1;
+    int pointID = leftMarkers[i].id;
 
-    cameraToWorld->MultiplyPoint(transformedPoint, transformedPoint);
+    for (unsigned int j = 0; j < rightMarkers.size(); ++j)
+    {
+      // Check if we have valid points detected in both left and right views.
+      if (rightMarkers[j].id == pointID && leftMarkers[i].isValid() && rightMarkers[j].isValid())
+      {
+        // Extract corresponding points. Assuming that each marker has ordered points???
+        std::vector<std::pair<cv::Point2f, cv::Point2f> > pairs;
+        for (int k = 0; k < 4; k++)
+        {
+          std::pair<cv::Point2f, cv::Point2f> pair(leftMarkers[i][k], rightMarkers[j][k]);
+          pairs.push_back(pair);
+        }
+        std::pair<cv::Point2f, cv::Point2f> centrePoint(leftMarkers[i].getCenter(), rightMarkers[j].getCenter());
+        pairs.push_back(centrePoint);
 
-    point[0] = transformedPoint[0];
-    point[1] = transformedPoint[1];
-    point[2] = transformedPoint[2];
-  }
+        std::vector<cv::Point3f> pointsIn3D = mitk::TriangulatePointPairs(
+            pairs,
+            intrinsicParamsLeft,
+            intrinsicParamsRight,
+            rightToLeftRotationVector,
+            rightToLeftTranslationVector
+            );
+
+        // Now we have 5 x 3D points. So, we need the surface normal and centre.
+        if (pointsIn3D.size() > 0)
+        {
+          mitk::Point3D a, b, c, normal;
+        a[0] = pointsIn3D[0].x;
+        a[1] = pointsIn3D[0].y;
+        a[2] = pointsIn3D[0].z;
+        b[0] = pointsIn3D[1].x;
+        b[1] = pointsIn3D[1].y;
+        b[2] = pointsIn3D[1].z;
+        c[0] = pointsIn3D[2].x;
+        c[1] = pointsIn3D[2].y;
+        c[2] = pointsIn3D[2].z;
+        mitk::ComputeNormalFromPoints(a, b, c, normal);
+
+        mitk::Point6D outputPoint;
+        outputPoint[0] = pointsIn3D[4].x;
+        outputPoint[1] = pointsIn3D[4].y;
+        outputPoint[2] = pointsIn3D[4].z;
+        outputPoint[3] = normal[0];
+        outputPoint[4] = normal[1];
+        outputPoint[5] = normal[2];
+
+        // Store the result in the map.
+        output.insert(std::pair<int, mitk::Point6D>(pointID, outputPoint));
+        }
+
+
+      } // end if valid point
+    } // end for each right marker
+  } // end for each left marker
+
+  return output;
 }
 
+//-----------------------------------------------------------------------------
 } // end namespace

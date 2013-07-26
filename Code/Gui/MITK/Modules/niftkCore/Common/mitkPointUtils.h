@@ -19,6 +19,7 @@
 #include <mitkVector.h>
 #include <mitkPositionEvent.h>
 #include <mitkPointSet.h>
+#include <vtkMatrix4x4.h>
 
 /**
  * \file mitkPointUtils.h
@@ -57,9 +58,45 @@ NIFTKCORE_EXPORT double Length(mitk::Point3D& vector);
 NIFTKCORE_EXPORT void Normalise(mitk::Point3D& vector);
 
 /**
+ * \brief Copies a into b.
+ */
+NIFTKCORE_EXPORT void CopyValues(const mitk::Point3D& a, mitk::Point3D& b);
+
+/**
+ * \brief Computes c = a x b, and will normalise a and b to unit length first.
+ */
+NIFTKCORE_EXPORT void CrossProduct(const mitk::Point3D& a, const mitk::Point3D& b, mitk::Point3D& c);
+
+/**
+ * \brief Computes the normal by calculating cross product of (a-b) and (c-b).
+ */
+NIFTKCORE_EXPORT void ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& b, const mitk::Point3D& c, mitk::Point3D& output);
+
+/**
  * \brief Copies input to output, i.e. the output is erased, and re-populated.
  */
 NIFTKCORE_EXPORT int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output);
+
+/**
+ * \brief Takes fixed and moving points, and scans for matching ID's and returns 2 point sets with
+ * ordered and corresponding points.
+ * \return the number of points in the output
+ */
+NIFTKCORE_EXPORT int FilterMatchingPoints(
+    const mitk::PointSet& fixedPointsIn,
+    const mitk::PointSet& movingPointsIn,
+    mitk::PointSet& fixedPointsOut,
+    mitk::PointSet& movingPointsOut
+    );
+
+/**
+ * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL,
+ * otherwise if matrix is NULL, will simply leave the point un-altered.
+ */
+NIFTKCORE_EXPORT void TransformPointsByCameraToWorld(
+    vtkMatrix4x4* cameraToWorld,
+    mitk::Point3D& point
+    );
 
 } // end namespace mitk
 

@@ -23,8 +23,10 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateOr.h>
 #include <mitkImage.h>
 #include <mitkSurface.h>
+#include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkTrackedPointerManager.h>
@@ -74,7 +76,10 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_TrackedPointerManager->SetDataStorage(dataStorage);
 
     mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
-    m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurface);
+    mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
+    mitk::NodePredicateOr::Pointer isSurfaceOrPointSet = mitk::NodePredicateOr::New(isSurface, isPointSet);
+
+    m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurfaceOrPointSet);
     m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
     m_Controls->m_ProbeSurfaceNode->SetAutoSelectNewItems(false);
 
@@ -164,7 +169,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
 {
   Q_UNUSED(event);
 
-  mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
+  mitk::DataNode::Pointer probeModel = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
 
@@ -180,7 +185,7 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
 
     m_TrackedPointerManager->Update(m_TipToProbeTransform,
                                     probeToWorldTransform,
-                                    surfaceNode,             // The Geometry on this gets updated.
+                                    probeModel,              // The Geometry on this gets updated, so we surface model moving
                                     tipCoordinate            // This gets updated.
                                    );
 
