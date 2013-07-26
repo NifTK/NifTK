@@ -53,16 +53,15 @@ bool CheckTrackerMatrix (cv::Mat matrix)
 
 
 //-----------------------------------------------------------------------------
-int mitkVideoTrackerMatchingTest(int argc, char** argv)
+int mitkVideoTrackerMatchingTest(int argc, char * argv[])
 {
-
   mitk::VideoTrackerMatching::Pointer Matcher = mitk::VideoTrackerMatching::New();
   Matcher->Initialise(argv[1]);
 
   //check it initialised, check it gets the right matrix with the right time error
   MITK_TEST_CONDITION_REQUIRED (Matcher->IsReady() , "Testing that VideoTrackerMatcherInitialised OK"); 
   
-  long *TimingError = new long;
+  long long *TimingError = new long long;
   cv::Mat TrackingMatrix = Matcher->GetTrackerMatrix(20, TimingError, 0);
 
   //1374066239681720400-1374066239683720400 = -2000000
