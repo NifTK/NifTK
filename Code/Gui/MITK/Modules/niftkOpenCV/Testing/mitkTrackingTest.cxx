@@ -23,7 +23,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <boost/filesystem.hpp>
 
 /*
  * This is going to read in a video stream showing a sequence of views of an
@@ -42,7 +42,21 @@ cv::Mat LensToWorld (cv::Mat PointInLensCoordinates, cv::Mat TrackerToWorld,
 
 int mitkTrackingTest ( int argc, char * argv[] )
 {
-  std::string inputVideo = argv[1];
+
+  std::string inputVideo;
+  boost::filesystem::recursive_directory_iterator end_itr;
+  for ( boost::filesystem::recursive_directory_iterator it(argv[1]);it != end_itr ; ++it)
+  {
+    if ( it->path().extension().c_str() == "264" )
+    {
+      std::cerr << "checking "; 
+      inputVideo = it->path().filename().c_str();
+      it = end_itr;
+    }
+  }
+
+
+
   argv ++; 
   argc --; 
   
@@ -70,7 +84,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
   cv::Mat rightCameraDistortion = cv::Mat(5,1,CV_64FC1);
   cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
   cv::Mat rightToLeftTranslationVector = cv::Mat(1,3,CV_64FC1);
-  cv::Mat extrinsicMatrix = cv::Mat(4,4,CV_64FC1);
+  cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1); //handeye
   while ( argc > 1 )
   {
     bool ok = false; 
@@ -101,8 +115,16 @@ int mitkTrackingTest ( int argc, char * argv[] )
       argc -= 2;
       ok = true;
     }
-    if (( ok == false ) && strcmp ( argv[1], "-leftintrinsics" ) == 0 )
-        {}
+    if (( ok == false ) && strcmp ( argv[1], "-CameraParameters" ) == 0 )
+    {
+      mitk::LoadStereoCameraParametersFromDirectory (argv[2],
+        &leftCameraIntrinsic,&leftCameraDistortion,&rightCameraIntrinsic,
+        &rightCameraDistortion,&rightToLeftRotationMatrix,
+        &rightToLeftTranslationVector,&leftCameraToTracker);
+      argv += 2; 
+      argc -= 2; 
+      ok = true;
+    }
     if ( ok == false ) 
     {
       MITK_WARN << "Bad parameters.";
