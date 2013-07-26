@@ -75,9 +75,9 @@ IGIDataSource::~IGIDataSource()
 std::string IGIDataSource::GetSaveDirectoryName()
 {
   boost::filesystem::path slash("/");
-  std::string preferredSlash = slash.make_preferred().native();
+  std::string preferredSlash = slash.make_preferred().string();
 
-  return m_SavePrefix + preferredSlash + m_Name + "_" + niftk::ConvertToString(m_Identifier);
+  return m_SavePrefix + preferredSlash + m_Name + "_" + niftk::ConvertToString((int)m_Identifier);
 }
 
 

@@ -280,7 +280,7 @@ bool QmitkIGITrackerSource::SaveData(mitk::IGIDataType* data, std::string& outpu
       NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGITrackerSource") + QDir::separator() + QString::fromStdString(this->m_Description);
+        QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName()) + QDir::separator() + QString::fromStdString(this->m_Description);
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
