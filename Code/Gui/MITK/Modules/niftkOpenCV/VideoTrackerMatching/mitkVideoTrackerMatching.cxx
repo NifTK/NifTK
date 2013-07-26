@@ -75,29 +75,32 @@ void VideoTrackerMatching::Initialise(std::string directory)
   }
   return;
 }
+
 //---------------------------------------------------------------------------
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 {
   boost::filesystem::recursive_directory_iterator end_itr;
   boost::regex framelogfilter ( "(.+)(framemap.log)");
-  std::vector<std::string> ReturnStrings;
+  std::vector<std::string> returnStrings;
+
   for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
    {
      if ( boost::filesystem::is_regular_file (it->status()) )
      {
        boost::cmatch what;
-      //  if ( it->path().extension() == ".framemap.log" )
-       const char *  stringthing = it->path().filename().c_str();
+       //  if ( it->path().extension() == ".framemap.log" )
+       const char *  stringthing = reinterpret_cast<const char*>(it->path().filename().c_str());
 
-        if ( boost::regex_match( stringthing,what , framelogfilter) )
-        {
-          ReturnStrings.push_back(it->path().c_str());
-        }
+       if ( boost::regex_match( stringthing, what, framelogfilter) )
+       {
+         returnStrings.push_back(reinterpret_cast<const char*>(it->path().c_str()));
+       }
      }
    }
-  return ReturnStrings;
+  return returnStrings;
 }
+
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
@@ -114,7 +117,7 @@ void VideoTrackerMatching::FindTrackingMatrixDirectories()
        {
          if ( boost::filesystem::is_directory (it1->status()) )
          {
-           m_TrackingMatrixDirectories.push_back(it1->path().c_str());
+           m_TrackingMatrixDirectories.push_back(reinterpret_cast<const char*>(it1->path().c_str()));
            //need to init tracking matrix vector
            TrackingMatrices TempMatrices; 
            m_TrackingMatrices.push_back(TempMatrices);
@@ -136,14 +139,14 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
     {
       boost::cmatch what;
       //  if ( it->path().extension() == ".framemap.log" )
-      const char *  stringthing = it->path().filename().c_str();
+      const char *  stringthing = reinterpret_cast<const char*>(it->path().filename().c_str());
       if ( boost::regex_match( stringthing,what , TimeStampFilter) )
       {
-        ReturnStamps.m_TimeStamps.push_back(strtoul(it->path().filename().stem().c_str(),NULL,10));
+        ReturnStamps.m_TimeStamps.push_back(strtoul(reinterpret_cast<const char*>(it->path().filename().stem().c_str()),NULL,10));
       }
     }
   }
-  //sort the vector
+  //sort the vectorreinterpret_cast<const char*>
   std::sort ( ReturnStamps.m_TimeStamps.begin() , ReturnStamps.m_TimeStamps.end());
   return ReturnStamps;
 }
@@ -184,7 +187,7 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
           MatrixFileNameFull /= MatrixFileName;
 
-          m_TrackingMatrices[i].m_TrackingMatrices.push_back(ReadTrackerMatrix(MatrixFileNameFull.c_str()));
+          m_TrackingMatrices[i].m_TrackingMatrices.push_back(ReadTrackerMatrix(reinterpret_cast<const char*>(MatrixFileNameFull.c_str())));
 
         }
         if ( frameNumber != linenumber++ )
