@@ -324,7 +324,8 @@ bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint6
   igtlUint64    lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
+
   // FIXME: check for QmitkIGITrackerSource too!
   QDir directory(directoryPath);
   if (directory.exists())
@@ -370,7 +371,7 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
   ClearBuffer();
 
   // needs to match what SaveData() does
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
   QDir directory(directoryPath);
   if (directory.exists())
   {
@@ -419,6 +420,7 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
   {
     // this will find us the timestamp right after the requested one
     BOOST_AUTO(i, t->second.upper_bound(requestedTimeStamp));
+
     // so we need to pick the previous
     // FIXME: not sure if the non-existing-else here ever applies!
     if (i != t->second.begin())
