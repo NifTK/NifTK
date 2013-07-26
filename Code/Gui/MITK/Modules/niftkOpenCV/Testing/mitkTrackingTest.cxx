@@ -20,6 +20,7 @@
 #include <mitkLogMacros.h>
 #include <mitkHandeyeCalibrate.h>
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkVideoTrackerMatching.h>
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -53,6 +54,10 @@ int mitkTrackingTest ( int argc, char * argv[] )
       std::cerr << "got " << inputVideo << std::endl; 
     }
   }
+
+  //set up frame to name mathcing
+  mitk::VideoTrackerMatching::Pointer Matcher = mitk::VideoTrackerMatching::New();
+  Matcher->Initialise(argv[1]);
 
   argv ++; 
   argc --; 
@@ -128,7 +133,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
       exit (1) ;
     }
   }
-
+  
       
   //get the video and show it
   CvCapture *capture = 0 ;
