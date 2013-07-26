@@ -20,6 +20,9 @@
 #include <cv.h>
 #include <highgui.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
+
 namespace mitk {
 
 //-----------------------------------------------------------------------------
@@ -1544,6 +1547,7 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
 }
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName)
 {
@@ -1856,5 +1860,127 @@ double SafeSQRT(double value)
   }
   return sqrt(value);
 }
+//-----------------------------------------------------------------------------
+void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
+    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> CameraIntrinsic->at<double>(row,col);
+    }
+  } 
+  for ( int col = 0 ; col < 5 ; col++ )
+  {
+    fin >> CameraDistortion->at<double>(0,col);
+  }
+}
+//-----------------------------------------------------------------------------
+void LoadStereoTransformsFromPlainText (const std::string& filename,
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> rightToLeftRotationMatrix->at<double>(row,col);
+    }
+  } 
+  for ( int col = 0 ; col < 3 ; col++ )
+  {
+    fin >> rightToLeftTranslationVector->at<double>(0,col);
+  }
+}
+//-----------------------------------------------------------------------------
+void LoadHandeyeFromPlainText (const std::string& filename,
+    cv::Mat* leftCameraToTracker)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 4; row ++ )
+  {
+    for ( int col = 0; col < 4; col ++ )
+    {
+       fin >> leftCameraToTracker->at<double>(row,col);
+    }
+  } 
+  
+}
+
+void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
+  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDistortion, 
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+  cv::Mat* leftCameraToTracker)
+{
+  boost::filesystem::directory_iterator end_itr;
+  boost::regex leftIntrinsicFilter ("(.+)(left.intrinsic.txt)");
+  boost::regex rightIntrinsicFilter ("(.+)(right.intrinsic.txt)");
+  boost::regex r2lFilter ("(.+)(r2l.txt)");
+  boost::regex handeyeFilter ("(.+)(left.handeye.txt)");
+
+  std::vector<std::string> leftIntrinsicFiles;
+  std::vector<std::string> rightIntrinsicFiles;
+  std::vector<std::string> r2lFiles;
+  std::vector<std::string> handeyeFiles;
+
+  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      const char *  stringthing = reinterpret_cast<const char*>(it->path().filename().c_str());
+      if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
+      {
+        leftIntrinsicFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+      }
+      if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
+      {
+        rightIntrinsicFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+      }
+      if ( boost::regex_match( stringthing,what,r2lFilter) )
+      {
+        r2lFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+      }
+      if ( boost::regex_match( stringthing,what,handeyeFilter) )
+      {
+        handeyeFiles.push_back(reinterpret_cast<const char*>(it->path().filename().c_str()));
+      }
+    }
+  }
+
+  if ( leftIntrinsicFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of left intrinsic files");
+  }
+
+  if ( rightIntrinsicFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of right intrinsic files");
+  }
+
+  if ( r2lFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of right to left files");
+  }
+  
+  if ( handeyeFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of handeye files");
+  }
+
+  std::cout << "Loading left intrinsics from  " << leftIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (leftIntrinsicFiles[0],leftCameraIntrinsic, leftCameraDistortion);
+  std::cout << "Loading right intrinsics from  " << rightIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (rightIntrinsicFiles[0],rightCameraIntrinsic, rightCameraDistortion);
+  std::cout << "Loading right to left from  " << r2lFiles[0] << std::endl;
+  LoadStereoTransformsFromPlainText (r2lFiles[0],rightToLeftRotationMatrix, rightToLeftTranslationVector);
+  std::cout << "Loading handeye from  " << handeyeFiles[0] << std::endl;
+  LoadHandeyeFromPlainText (handeyeFiles[0],leftCameraToTracker);
+
+}
+
 
 } // end namespace

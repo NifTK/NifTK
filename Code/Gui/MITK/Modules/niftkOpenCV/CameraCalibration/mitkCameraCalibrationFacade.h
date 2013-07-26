@@ -566,10 +566,34 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
 /**
   * \brief Load stereo camera parameters from a directory
   */
-void LoadStereoCameraParametersFromDirectory (const std::string& directory);
+void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+    cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion, 
+    cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion, 
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+    cv::Mat* leftCameraToTracker);
 
+/**
+ * \brief Load camera intrinsics from a plain text file and return results as
+ * cv::Mat
+ */
+void LoadCameraIntrinsicsFromPlainText ( const std::string& filename, 
+    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion); 
 
- /**
+/**
+ * \brief Load stereo camera parameters from a plain text file
+ * cv::Mat
+ */
+void LoadStereoTransformsFromPlainText ( const std::string& filename, 
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
+
+/**
+ * \brief Load the handeye matrix from a plain text file
+ * cv::Mat
+ */
+void LoadHandeyeFromPlainText ( const std::string& filename, 
+    cv::Mat* leftCameraToTracker);
+
+/**
  * \brief Flips the matrices in the vector from left handed coordinate 
  * system to right handed and vice versa
  */
