@@ -8,13 +8,15 @@
 #include <ctkXnatException.h>
 #include <ctkXnatObject.h>
 
-#include "XnatModel.h"
+#include "ctkXnatTreeModel.h"
 #include "XnatNameDialog.h"
+
+#include <QDebug>
 
 class XnatTreeViewPrivate
 {
 public:
-//  XnatModel* xnatModel;
+//  ctkXnatTreeModel* xnatModel;
 };
 
 XnatTreeView::XnatTreeView(QWidget* parent)
@@ -28,7 +30,7 @@ XnatTreeView::XnatTreeView(QWidget* parent)
 XnatTreeView::~XnatTreeView()
 {
   // clean up models in tree view
-  XnatModel* xnatModel = this->xnatModel();
+  ctkXnatTreeModel* xnatModel = this->xnatModel();
   if (xnatModel)
   {
     delete xnatModel;
@@ -43,12 +45,15 @@ XnatTreeView::~XnatTreeView()
 
 void XnatTreeView::initialize(ctkXnatConnection* connection)
 {
-  XnatModel* xnatModel = this->xnatModel();
+  ctkXnatTreeModel* xnatModel = this->xnatModel();
   if (xnatModel)
   {
     delete xnatModel;
   }
-  xnatModel = new XnatModel(connection);
+  xnatModel = new ctkXnatTreeModel();
+  ctkXnatServer::Pointer server = connection->server();
+  xnatModel->addServer (server);
+
   this->setModel(xnatModel);
 
 //  QItemSelectionModel* selectionModel = this->selectionModel();
@@ -59,74 +64,84 @@ void XnatTreeView::initialize(ctkXnatConnection* connection)
   this->setExpanded(QModelIndex(), false);
 }
 
-XnatModel* XnatTreeView::xnatModel()
+ctkXnatTreeModel* XnatTreeView::xnatModel()
 {
-  return dynamic_cast<XnatModel*>(model());
+  return dynamic_cast<ctkXnatTreeModel*>(model());
 }
 
-const ctkXnatObject* XnatTreeView::currentObject()
+const ctkXnatObject::Pointer XnatTreeView::currentObject()
 {
-  return static_cast<const ctkXnatObject*>(this->selectionModel()->currentIndex().internalPointer());
+  return getObject (this->selectionModel()->currentIndex());
 }
 
-const ctkXnatObject* XnatTreeView::getObject(const QModelIndex& index)
+const ctkXnatObject::Pointer XnatTreeView::getObject(const QModelIndex& index)
 {
-  return static_cast<const ctkXnatObject*>(index.internalPointer());
+
+  ctkXnatTreeItem* item = static_cast<ctkXnatTreeItem*>(index.internalPointer());
+  ctkXnatObject::Pointer xnatObject = item->xnatObject();
+
+  return xnatObject;
 }
 
 void XnatTreeView::refreshRows()
 {
   QModelIndex index = this->selectionModel()->currentIndex();
-  XnatModel* model = (XnatModel*) this->model();
+  ctkXnatTreeModel* model = (ctkXnatTreeModel*) this->model();
   model->removeAllRows(index);
   model->fetchMore(index);
 }
 
 void XnatTreeView::createNewRow()
 {
-  QModelIndex index = this->selectionModel()->currentIndex();
-  XnatModel* model = this->xnatModel();
 
-  // get kind of new entry, e.g., reconstruction or resource
-  QString childKind = model->data(index, XnatModel::ModifiableChildKind).toString();
-  if ( childKind.isEmpty() )
-  {
-    QMessageBox::warning(this, tr("Create New Error"), tr("Unknown child kind"));
-    return;
-  }
+  /**
+     nt: for the moment we don't allow write-access to the tree model
 
-  // get parent name, e.g., experiment name for new reconstruction, or
-  //                        reconstruction name for new resource
-  QString parentName = model->data(index, XnatModel::ModifiableParentName).toString();
-  if ( parentName.isEmpty() )
-  {
-    QMessageBox::warning(this, tr("Create New Error"), tr("Unknown parent name"));
-    return;
-  }
-
-  // get name of new child in parent from user, e.g.,
-  //             name of new reconstruction in experiment, or
-  //             name of new resource in reconstruction
-  XnatNameDialog nameDialog(this, childKind, parentName);
-  if ( nameDialog.exec() )
-  {
-    QString name = nameDialog.getNewName();
-
-    try
-    {
-      // create new child in parent, e.g., new reconstruction in experiment, or
-      //                                   new resource in reconstruction
-      model->addEntry(index, name);
-
-      // refresh display
-      model->removeAllRows(index);
-      model->fetchMore(index);
-    }
-    catch (ctkXnatException& e)
-    {
-      QMessageBox::warning(this, tr("Create New Error"), tr(e.what()));
-    }
-  }
+     QModelIndex index = this->selectionModel()->currentIndex();
+     ctkXnatTreeModel* model = this->xnatModel();
+     
+     // get kind of new entry, e.g., reconstruction or resource
+     QString childKind = model->data(index, ctkXnatTreeModel::ModifiableChildKind).toString();
+     if ( childKind.isEmpty() )
+     {
+     QMessageBox::warning(this, tr("Create New Error"), tr("Unknown child kind"));
+     return;
+     }
+     
+     // get parent name, e.g., experiment name for new reconstruction, or
+     //                        reconstruction name for new resource
+     QString parentName = model->data(index, ctkXnatTreeModel::ModifiableParentName).toString();
+     if ( parentName.isEmpty() )
+     {
+     QMessageBox::warning(this, tr("Create New Error"), tr("Unknown parent name"));
+     return;
+     }
+     
+     // get name of new child in parent from user, e.g.,
+     //             name of new reconstruction in experiment, or
+     //             name of new resource in reconstruction
+     XnatNameDialog nameDialog(this, childKind, parentName);
+     if ( nameDialog.exec() )
+     {
+     QString name = nameDialog.getNewName();
+     
+     try
+     {
+     // create new child in parent, e.g., new reconstruction in experiment, or
+     //                                   new resource in reconstruction
+     model->addEntry(index, name);
+     
+     // refresh display
+     model->removeAllRows(index);
+     model->fetchMore(index);
+     }
+     catch (ctkXnatException& e)
+     {
+     QMessageBox::warning(this, tr("Create New Error"), tr(e.what()));
+     }
+     }
+     
+  */
 }
 
 void XnatTreeView::deleteCurrentRow()
@@ -139,7 +154,7 @@ void XnatTreeView::deleteCurrentRow()
 void XnatTreeView::deleteRow(const QModelIndex& index)
 {
   // get name in row to be deleted
-  XnatModel* model = this->xnatModel();
+  ctkXnatTreeModel* model = this->xnatModel();
 //  QString name = model->name(index);
   QString name = model->data(index, Qt::DisplayRole).toString();
 

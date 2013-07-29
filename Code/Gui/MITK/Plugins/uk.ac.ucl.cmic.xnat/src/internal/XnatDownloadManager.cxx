@@ -17,7 +17,7 @@ extern "C"
 #include <ctkXnatSettings.h>
 
 #include "XnatDownloadDialog.h"
-#include "XnatModel.h"
+#include "ctkXnatTreeModel.h"
 #include "XnatTreeView.h"
 
 class XnatDownloadManagerPrivate
@@ -63,7 +63,7 @@ void XnatDownloadManager::downloadFile()
 
   // get name of file to be downloaded
   QModelIndex index = d->xnatTreeView->currentIndex();
-  XnatModel* model = d->xnatTreeView->xnatModel();
+  ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
   QString filename = model->data(index, Qt::DisplayRole).toString();
   if ( filename.isEmpty() )
   {
@@ -216,7 +216,7 @@ void XnatDownloadManager::downloadAllFiles()
 
   // get name of file group to be downloaded
   QModelIndex index = d->xnatTreeView->selectionModel()->currentIndex();
-  XnatModel* model = d->xnatTreeView->xnatModel();
+  ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
 //  QString groupname = model->name(index);
   QString groupname = model->data(index, Qt::DisplayRole).toString();
   if ( groupname.isEmpty() )
@@ -456,7 +456,7 @@ bool XnatDownloadManager::startFileDownload(const QString& zipFilename)
   try
   {
     QModelIndex index = d->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = d->xnatTreeView->xnatModel();
+    ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
     model->downloadFile(index, zipFilename);
   }
   catch (ctkXnatException& e)

@@ -18,9 +18,11 @@
 #include <QTreeView>
 #include <QModelIndex>
 
+#include "ctkXnatObject.h"
+
+
 class ctkXnatConnection;
-class XnatModel;
-class ctkXnatObject;
+class ctkXnatTreeModel;
 class XnatTreeViewPrivate;
 
 class XnatTreeView : public QTreeView
@@ -33,10 +35,10 @@ public:
 
   void initialize(ctkXnatConnection* connection);
 
-  XnatModel* xnatModel();
+  ctkXnatTreeModel* xnatModel();
 
-  const ctkXnatObject* getObject(const QModelIndex& index);
-  const ctkXnatObject* currentObject();
+  const ctkXnatObject::Pointer getObject(const QModelIndex& index);
+  const ctkXnatObject::Pointer currentObject();
 
 public slots:
   void refreshRows();

@@ -14,7 +14,7 @@ extern "C"
 #include <ctkXnatException.h>
 #include <ctkXnatSettings.h>
 
-#include "XnatModel.h"
+#include "ctkXnatTreeModel.h"
 #include "XnatTreeView.h"
 #include "XnatUploadDialog.h"
 
@@ -253,7 +253,7 @@ bool XnatUploadManager::startFileUpload(const QString& zipFilename)
   try
   {
     QModelIndex index = d->xnatTreeView->selectionModel()->currentIndex();
-    XnatModel* model = d->xnatTreeView->xnatModel();
+    ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
     model->uploadFile(index, zipFilename);
   }
   catch (ctkXnatException& e)

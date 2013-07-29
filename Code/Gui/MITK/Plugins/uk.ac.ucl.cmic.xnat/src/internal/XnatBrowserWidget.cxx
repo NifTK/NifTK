@@ -15,12 +15,13 @@
 #include "XnatBrowserWidget.h"
 
 #include <ctkXnatConnection.h>
+#include <ctkXnatConnectionFactory.h>
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
 #include <ctkXnatSettings.h>
 
 #include "XnatDownloadManager.h"
-#include "XnatModel.h"
+#include "ctkXnatTreeModel.h"
 #include "XnatNameDialog.h"
 #include "XnatTreeView.h"
 #include "XnatUploadManager.h"
@@ -35,6 +36,8 @@
 #include <QTextBrowser>
 
 #include <mitkDataNodeFactory.h>
+
+#include <QDebug>
 
 class XnatBrowserWidgetPrivate
 {
@@ -193,7 +196,7 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-  ctkXnatLoginDialog* loginDialog = new ctkXnatLoginDialog(ctkXnatConnectionFactory::instance(), this);
+  ctkXnatLoginDialog* loginDialog = new ctkXnatLoginDialog(new ctkXnatConnectionFactory());
   loginDialog->setSettings(d->settings);
   if (loginDialog->exec())
   {
@@ -228,7 +231,7 @@ void XnatBrowserWidget::importFile()
 
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->currentIndex();
-  XnatModel* model = ui->xnatTreeView->xnatModel();
+  ctkXnatTreeModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
@@ -292,7 +295,7 @@ void XnatBrowserWidget::importFiles()
 
   // get name of file to be downloaded
   QModelIndex index = ui->xnatTreeView->currentIndex();
-  XnatModel* model = ui->xnatTreeView->xnatModel();
+  ctkXnatTreeModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
   if ( xnatFilename.isEmpty() )
   {
@@ -352,15 +355,22 @@ void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QString
 void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
   Q_D(XnatBrowserWidget);
+  
+  const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
+  qDebug() << "object is " << object;
+  qDebug() << "object is file ? " << object->isFile();
+  qDebug() << "object holds files ? " << object->holdsFiles();
+  qDebug() << "object receives files ? " << object->receivesFiles();
+  qDebug() << "object modifiable ? " << object->isModifiable();
+  qDebug() << "object deletable ? " << object->isDeletable();
 
-  const ctkXnatObject* object = ui->xnatTreeView->getObject(index);
   ui->downloadButton->setEnabled(object->isFile());
   ui->downloadAllButton->setEnabled(object->holdsFiles());
   ui->importButton->setEnabled(object->isFile());
   ui->importAllButton->setEnabled(object->holdsFiles());
   ui->uploadButton->setEnabled(object->receivesFiles());
   ui->saveAndUploadButton->setEnabled(object->receivesFiles() && d->saveAndUploadAction->isEnabled());
-  ui->createButton->setEnabled(object->isModifiable(index.row()));
+  ui->createButton->setEnabled(object->isModifiable());
   ui->deleteButton->setEnabled(object->isDeletable());
 }
 
@@ -368,7 +378,7 @@ void XnatBrowserWidget::setSaveAndUploadButtonEnabled()
 {
   Q_D(XnatBrowserWidget);
 
-  const ctkXnatObject* object = ui->xnatTreeView->currentObject();
+  const ctkXnatObject::Pointer object = ui->xnatTreeView->currentObject();
   ui->saveAndUploadButton->setEnabled(object->receivesFiles() && d->saveAndUploadAction->isEnabled());
 }
 
@@ -379,7 +389,7 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   const QModelIndex& index = ui->xnatTreeView->indexAt(position);
   if ( index.isValid() )
   {
-    const ctkXnatObject* object = ui->xnatTreeView->getObject(index);
+    const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
     QList<QAction*> actions;
     if ( object->isFile() )
     {
@@ -403,7 +413,7 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
         actions.append(d->saveAndUploadAction);
       }
     }
-    if ( object->isModifiable(index.row()) )
+    if ( object->isModifiable() )
     {
       actions.append(d->createAction);
     }

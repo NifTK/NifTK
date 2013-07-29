@@ -20,7 +20,7 @@ set(INTERNAL_CPP_FILES
   XnatBrowserWidget.cxx
   XnatDownloadDialog.cxx
   XnatDownloadManager.cxx
-  XnatModel.cxx
+#  XnatModel.cxx
   XnatNameDialog.cxx
   XnatPluginActivator.cxx
   XnatPluginPreferencePage.cxx
@@ -41,7 +41,7 @@ set(MOC_H_FILES
   src/internal/XnatBrowserWidget.h
   src/internal/XnatDownloadDialog.h
   src/internal/XnatDownloadManager.h
-  src/internal/XnatModel.h
+#  src/internal/XnatModel.h
   src/internal/XnatNameDialog.h
   src/internal/XnatPluginActivator.h
   src/internal/XnatPluginPreferencePage.h
