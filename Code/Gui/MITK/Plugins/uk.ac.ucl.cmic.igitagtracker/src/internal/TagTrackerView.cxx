@@ -481,10 +481,5 @@ void TagTrackerView::UpdateTags()
         m_RegistrationMatrix->setValue(i, j, registrationMatrix->GetElement(i, j));
       }
     }
-
-    tagPointSetNode->Modified();
-    tagPointSet->Modified();
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-
   } // end if we have at least one node specified
 }
