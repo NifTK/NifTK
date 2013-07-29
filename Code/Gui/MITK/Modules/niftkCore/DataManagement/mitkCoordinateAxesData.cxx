@@ -80,7 +80,7 @@ bool CoordinateAxesData::VerifyRequestedRegion()
 
 
 //-----------------------------------------------------------------------------
-void CoordinateAxesData::SetRequestedRegion(itk::DataObject *data)
+void CoordinateAxesData::SetRequestedRegion(const itk::DataObject *data)
 {
   // Deliberately blank, as nothing to do.
 }
