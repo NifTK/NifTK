@@ -11,12 +11,26 @@
   
   <parameters>
     <label>IO</label>
-    <description><![CDATA[Output parameters]]></description>
+    <description><![CDATA[Input/Output file parameters]]></description>
+    <file fileExtensions="*.txt">
+      <name>inputPointIDs</name>
+      <longflag>inputPointIDs</longflag>
+      <description>Input generated point IDs.</description>
+      <label>Input Point IDs</label>
+      <channel>input</channel>
+    </file>
     <file fileExtensions="*.vtk">
-      <name>outputModel</name>
-      <longflag>outputModel</longflag>
-      <description>Output VTK file (vtkPolyData).</description>
-      <label>Output Model</label>
+      <name>outputTrackingModel</name>
+      <longflag>outputTrackingModel</longflag>
+      <description>Output VTK file (vtkPolyData) for matching/tracking.</description>
+      <label>Output Tracking Model</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.vtk">
+      <name>outputVisualisationModel</name>
+      <longflag>outputVisualisationModel</longflag>
+      <description>Output VTK file (vtkPolyData) for visualisation.</description>
+      <label>Output Visualisation Model</label>
       <channel>output</channel>
     </file>
   </parameters>
@@ -60,11 +74,6 @@
         <step>0.1</step>
       </constraints>
     </float>
-  </parameters>
-
-  <parameters>
-    <label>Grid Parameters</label>
-    <description><![CDATA[Parameters for grid pattern]]></description>
     <integer>
       <name>numberSquares</name>
       <longflag>numberSquares</longflag>
@@ -76,18 +85,30 @@
         <maximum>20</maximum>
         <step>1</step>
       </constraints>
-    </integer>      
-    <integer>
-      <name>dpi</name>
-      <longflag>dpi</longflag>
-      <description>The number of dots per inch to print at</description>
-      <label>DPI</label>
-      <default>300</default>
+    </integer>
+    <float>
+      <name>tipYOffset</name>
+      <longflag>tipYOffset</longflag>
+      <description>Offset in Y axis of tip.</description>
+      <label>Y Offset</label>
+      <default>2</default>
       <constraints>
-        <minimum>1</minimum>
-        <maximum>1000</maximum>
-        <step>1</step>
+        <minimum>0.1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
       </constraints>
-    </integer>      
+    </float>
+    <float>
+      <name>tipZOffset</name>
+      <longflag>tipZOffset</longflag>
+      <description>Offset in Z axis of tip.</description>
+      <label>Z Offset</label>
+      <default>2</default>
+      <constraints>
+        <minimum>0.1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
   </parameters>
 </executable>

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <niftkMakeLapUSProbeModelCLP.h>
+#include <niftkMakeLapUSProbeARTagModelCLP.h>
 #include <cmath>
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
@@ -20,16 +20,17 @@
 #include <vtkDoubleArray.h>
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
+#include <vtkFunctions.h>
 
 /**
- * \brief Generates a Generates a VTK model to match the ARTag board created by aruco_create_board.
+ * \brief Generates a VTK model to match the ARTag board created by aruco_create_board.
  */
 int main(int argc, char** argv)
 {
   // To parse command line args.
   PARSE_ARGS;
 
-  if ( outputModel.length() == 0)
+  if ( outputTrackingModel.length() == 0)
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
@@ -37,116 +38,82 @@ int main(int argc, char** argv)
 
   double pi = 3.14159265358979;
   double mmPerInch = 25.4;
-  double width = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
+  int printerDotsPerInch = 300;
 
-  double theoreticalPixelsX = (width/mmPerInch * dpi);
-  double theoreticalPixelsY = (length/mmPerInch * dpi);
-  double pixSize = length / theoreticalPixelsY;
-  int pixelsX = (int)(theoreticalPixelsX);
-  int pixelsY = (int)(theoreticalPixelsY);
-  int actualWidth = static_cast<int>(pixelsX * pixSize);
+  double printerDotsPerMillimetre = (printerDotsPerInch / mmPerInch);
+  int numberOfPixelsAlongLength = (int)(length*printerDotsPerMillimetre);
 
-  std::vector<int> xboundaries;
-  std::vector<int> yboundaries;
+  // numberSquares * pixelsPerTagSquare + (numberSquares - 1)*pixelsPerTagSquare*0.2 = numberOfPixelsAlongLength
+  // numberSquares * pixelsPerTagSquare + numberSquares*pixelsPerTagSquare*0.2 - pixelsPerTagSquare*0.2  = numberOfPixelsAlongLength
+  // pixelsPerTagSquare*(numberSquares + numberSquares*0.2 - 0.2) = numberOfPixelsAlongLength
+  // pixelsPerTagSquare = numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2)
 
-  double multiplierX = GenerateBoundaryArray(dpi, squareSize, pixelsX, numberX, xboundaries);
-  double multiplierY = GenerateBoundaryArray(dpi, squareSize, pixelsY, numberY, yboundaries);
+  int pixelsPerTagSquare = (int)(numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2));
+  int actualLengthInPixels = pixelsPerTagSquare*numberSquares + (numberSquares-1)*(pixelsPerTagSquare*0.2);
+  double actualLengthInMillimetres = actualLengthInPixels / printerDotsPerMillimetre;
 
-  double probeRadius = diameter/2.0;
-  double phiInRadians = actualWidth / (diameter/2.0);
-  double phiInDegrees = phiInRadians / (2.0*pi) * 360;
-  double theta = 2.0*pi - phiInRadians;
-  double maxPhi = pi+ (pi/2.0 - theta/2.0);
-  double minPhi = - (pi/2.0 - theta/2.0);
-  int    dotRadiusInPixels = static_cast<int>(dotRadius / pixSize);
+  double maxCircumferenceInMillimetres = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
+  int maxCircumferenceInPixels = maxCircumferenceInMillimetres * printerDotsPerMillimetre;
+  int numberSquaresAlongWidth = (maxCircumferenceInPixels / (pixelsPerTagSquare*1.2));
+  int actualWidthInPixels = numberSquaresAlongWidth*pixelsPerTagSquare + (numberSquaresAlongWidth-1)*(pixelsPerTagSquare*0.2);
+  double actualWidthInMillimetres = actualWidthInPixels / printerDotsPerMillimetre;
+  double tagSquareSizeInMillimetres = pixelsPerTagSquare / printerDotsPerMillimetre;
 
-  std::cout << "Distance around circ=" << width << " (mm)" << std::endl;
-  std::cout << "Pixels x = " << pixelsX << std::endl;
-  std::cout << "Pixels y = " << pixelsY << std::endl;
-  std::cout << "Pixel size = " << pixSize << std::endl;
-  std::cout << "Multiplier x = " << multiplierX << std::endl;
-  std::cout << "Multiplier y = " << multiplierY << std::endl;
-  std::cout << "Width = " << width << " (mm)" << std::endl;
-  std::cout << "Radius of probe = " << probeRadius << " (mm)" << std::endl;
-  std::cout << "Phi = " << phiInDegrees << " degrees " << std::endl;
-  std::cout << "Max phi = " << maxPhi/pi*180 << " degrees " << std::endl;
-  std::cout << "Min phi = " << minPhi/pi*180 << " degrees " << std::endl;
-  std::cout << "Dot radius = " << dotRadiusInPixels << " pixels " << std::endl;
-  std::cout << "Write colours = " << writeColours << std::endl;
-  std::cout << "Black background = " << blackBackground << std::endl;
+  std::cout << "dots per inch to print at   = " << printerDotsPerInch << std::endl;
+  std::cout << "dots per millimetres        = " << printerDotsPerMillimetre << std::endl;
+  std::cout << "length in millimetres       = " << length << std::endl;
+  std::cout << "required number squares     = " << numberSquares << std::endl;
+  std::cout << "number of pixels per square = " << pixelsPerTagSquare << std::endl;
+  std::cout << "size of square in (mm)      = " << tagSquareSizeInMillimetres << std::endl;
+  std::cout << "max circ. millimetres       = " << maxCircumferenceInMillimetres << std::endl;
+  std::cout << "max circ. pixels            = " << maxCircumferenceInPixels << std::endl;
+  std::cout << "number squares along width  = " << numberSquaresAlongWidth << std::endl;
+  std::cout << "actual width in pixels      = " << actualWidthInPixels << std::endl;
+  std::cout << "actual length in pixels     = " << actualLengthInPixels << std::endl;
+  std::cout << "actual width (mm)           = " << actualWidthInMillimetres << std::endl;
+  std::cout << "actual length (mm)          = " << actualLengthInMillimetres << std::endl << std::endl;
 
-  double threeSigma = 3 * gaussianSigma;
-  double halfThreeSigma = threeSigma/2.0;
-  double stepSizeMM = halfThreeSigma / gaussianWindowSize;
-  double stepSizePix = stepSizeMM / pixSize;
-
-  std::cout << "Gaussian sigma = " << gaussianSigma << std::endl;
-  std::cout << "Gaussian window = " << gaussianWindowSize << std::endl;
-  std::cout << "Gaussian threeSigma = " << threeSigma << std::endl;
-  std::cout << "Gaussian stepSizeMM = " << stepSizeMM << std::endl;
-  std::cout << "Gaussian stepSizePix = " << stepSizePix << std::endl;
-
-  SizeType size;
-  size[0] = pixelsX;
-  size[1] = pixelsY;
-  IndexType imageIndex;
-  IndexType offsetIndex;
-  IndexType nextImageIndexX;
-  IndexType nextImageIndexY;
-  imageIndex[0] = 0;
-  imageIndex[1] = 0;
-  RegionType region;
-  region.SetSize(size);
-  region.SetIndex(imageIndex);
-
-  ImageType::Pointer checkerBoardImage = ImageType::New();
-  checkerBoardImage->SetRegions(region);
-  checkerBoardImage->Allocate();
-  checkerBoardImage->FillBuffer(blackPixel);
-
-  ImageType::Pointer dotImage = ImageType::New();
-  dotImage->SetRegions(region);
-  dotImage->Allocate();
-  if (blackBackground)
+  if (inputPointIDs.length() == 0)
   {
-    dotImage->FillBuffer(blackPixel);
-  }
-  else
-  {
-    dotImage->FillBuffer(whitePixel);
+    std::cout << "Run: aruco_create_board " << numberSquaresAlongWidth << ":" << numberSquares << " board.png board.yml " << pixelsPerTagSquare << std::endl;
+    std::cout << "Print at: " <<  printerDotsPerInch << " dpi" << std::endl << std::endl;
+    std::cout << "Then extract pointIDs from .yml file with: cat board.yml | grep id | cut -f 2 -d \":\" | cut -f 1 -d \",\" > pointIDs.txt " << std::endl;
+    std::cout << "Then re-run this program passing in pointIDs.txt with: --inputPointIDs pointIDs.txt" << std::endl;
+    return EXIT_SUCCESS;
   }
 
-  for (int x = 0; x < pixelsX; x++)
+  double circumferenceInMillimetres = pi*diameter;
+  double proportionOfCircle = actualWidthInMillimetres/circumferenceInMillimetres;
+  double angleAroundCircle = 2*pi*proportionOfCircle;
+  double angleNotAroundCircle = 2*pi - angleAroundCircle;
+  double halfAngleNotAroundCircle = angleNotAroundCircle/2.0;
+  double radius = diameter/2.0;
+  double offsetOfOriginFromCentre = 1.0 * radius * cos(halfAngleNotAroundCircle);
+  double offSetOfOrigin = radius - offsetOfOriginFromCentre;
+
+  std::cout << "radius                      = " << radius << std::endl;
+  std::cout << "offsetOfOriginFromCentre    = " << offsetOfOriginFromCentre << std::endl;
+  std::cout << "offSetOfOrigin              = " << offSetOfOrigin << std::endl;
+
+  std::vector<int> pointIDs;
+  if(inputPointIDs.size() > 0)
   {
-    for (int y = 0; y < pixelsY; y++)
+    ifstream myfile(inputPointIDs.c_str());
+    if (myfile.is_open())
     {
-      imageIndex[0] = pixelsX - 1 - x; // Flip image in x, to make it suitable for right handed probe.
-      imageIndex[1] = y;
-
-      bool xEven = IsOnEvenSquare(xboundaries, x);
-      bool yEven = IsOnEvenSquare(yboundaries, y);
-
-      if ((xEven && !yEven) || (yEven && !xEven))
+      while(!myfile.eof() && (int)pointIDs.size() < numberSquaresAlongWidth*numberSquares)
       {
-        checkerBoardImage->SetPixel(imageIndex, whitePixel);
-      }
-      else
-      {
-        checkerBoardImage->SetPixel(imageIndex, blackPixel);
+        int tmp;
+        myfile >> tmp;
+        pointIDs.push_back(tmp);
       }
     }
   }
-
-  // Calculate point set. First, iterate through image.
-  // When we find a corner, calculate the millimetre coordinate of that corner in image space.
-  // The y-coordinate in the image, is along the probe, so defines the z-coordinate of the 3D geometry.
-  // The x-coordinate in the image, is around circumference, so we can calculate a distance around the edge,
-  // convert that to a number of degrees, then add that onto the calculated minPhi, then convert polar coordinates to
-  // cartesian coordinates. This also means that if we want to sample in a region, we can pre-calculate
-  // a Gaussian weighted window in image space, and do similar conversion into probe space.
-
-  Point2DType cornerPointInImageSpace;
-  Point2DType offSetPoint;
+  if ((int)pointIDs.size() != numberSquaresAlongWidth*numberSquares)
+  {
+    std::cerr << "ERROR: Incorrect number of Point IDs supplied. Got " << pointIDs.size() << " but was expecting " << numberSquaresAlongWidth*numberSquares << std::endl;
+    return EXIT_FAILURE;
+  }
 
   vtkPolyData *polyData = vtkPolyData::New();
 
@@ -159,155 +126,70 @@ int main(int argc, char** argv)
   normals->SetName("Normals");
   normals->Initialize();
 
-  vtkDoubleArray *weights = vtkDoubleArray::New();
-  weights->SetNumberOfComponents(1);
-  weights->SetName("Weights");
-  weights->Initialize();
-
-  vtkUnsignedCharArray *colourScalars = vtkUnsignedCharArray::New();
-  colourScalars->SetNumberOfComponents(3);
-  colourScalars->SetName("Colours");
-  colourScalars->Initialize();
+  vtkIntArray *pointIDArray = vtkIntArray::New();
+  pointIDArray->SetNumberOfComponents(1);
+  pointIDArray->SetName("Point IDs");
+  pointIDArray->Initialize();
 
   vtkCellArray *vertices = vtkCellArray::New();
   vertices->Initialize();
 
   int pointCounter = 0;
-  for (int x = 0; x < pixelsX-1; x++)
+  for (int j = 0; j < numberSquares; ++j)
   {
-    for (int y = 0; y < pixelsY-1; y++)
+    for (int i = 0; i < numberSquaresAlongWidth; ++i)
     {
-      imageIndex[0] = x;
-      imageIndex[1] = y;
+      double distanceAroundCircumference = (0.5 + i*1.2)*tagSquareSizeInMillimetres;
+      double proportionAroundCircumference = distanceAroundCircumference/actualWidthInMillimetres;
 
-      nextImageIndexX[0] = x + 1;
-      nextImageIndexX[1] = y;
+      double normal[3];
+      double normalised[3];
+      double centre[3];
+      double point[3];
 
-      nextImageIndexY[0] = x;
-      nextImageIndexY[1] = y + 1;
+      point[0] = radius * sin(halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle);
+      point[1] = radius * cos(pi + halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle) + radius - offSetOfOrigin;
+      point[2] = (0.5 + j*1.2)*tagSquareSizeInMillimetres;
 
-      // Its a corner if the pixel to the right and pixel to the left are different colour.
-      if (   checkerBoardImage->GetPixel(imageIndex) != checkerBoardImage->GetPixel(nextImageIndexX)
-          && checkerBoardImage->GetPixel(imageIndex) != checkerBoardImage->GetPixel(nextImageIndexY)
-         )
-      {
-        // And half to get the intersection of pixels.
-        cornerPointInImageSpace[0] = x + 0.5;
-        cornerPointInImageSpace[1] = y + 0.5;
+      centre[0] = point[0];
+      centre[1] = offSetOfOrigin;
+      centre[2] = point[2];
 
-        // Add point to output
-        double weight = 1;
-        AddPoint(cornerPointInImageSpace,
-            pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
-            points, normals, weights, vertices
-            );
+      normal[0] = point[0] - centre[0];
+      normal[1] = point[1] - centre[1];
+      normal[2] = point[2] - centre[2];
 
-        int colourNumber = pointCounter % 6;
+      NormaliseToUnitLength(normal, normalised);
 
-        // Add dots, if rendering dots.
-        if (writeDots && dotRadiusInPixels > 0)
-        {
-          AddColor(colourScalars, colourNumber, colours, writeColours, blackBackground);
+      points->InsertNextPoint(point[0], point[1], point[2]);
+      normals->InsertNextTuple3(normal[0], normal[1], normal[2]);
+      pointIDArray->InsertNextTuple1(pointIDs[pointCounter]);
+      pointCounter++;
 
-          for (int i = -dotRadiusInPixels; i <= dotRadiusInPixels; i++)
-          {
-            for (int j = -dotRadiusInPixels; j <= dotRadiusInPixels; j++)
-            {
-              double distance = sqrt(static_cast<double>(i*i + j*j));
-              if (distance < dotRadiusInPixels)
-              {
-                if (i < 0)
-                {
-                  offsetIndex[0] = (int)(cornerPointInImageSpace[0] + i + 0.5);
-                }
-                else
-                {
-                  offsetIndex[0] = (int)(cornerPointInImageSpace[0] + i - 0.5);
-                }
-                if (j < 0)
-                {
-                  offsetIndex[1] = (int)(cornerPointInImageSpace[1] + j + 0.5);
-                }
-                else
-                {
-                  offsetIndex[1] = (int)(cornerPointInImageSpace[1] + j - 0.5);
-                }
-
-                UCRGBPixelType colour = GetColor(colourNumber, colours, writeColours, blackBackground);
-                dotImage->SetPixel(offsetIndex, colour);
-
-              } // end if (distance < dotRadiusInPixels)
-            } // end for j
-          } // end for i
-        } // end if writeDots...
-
-        pointCounter++;
-
-        // If we are doing weighted point cloud, we iterate around a square window,
-        // calculating a weighting based on millimetre distance, but pass the image
-        // coordinate to the AddPoint function.
-
-        if (gaussianSigma > 0 && gaussianWindowSize > 0)
-        {
-          for (int i = -gaussianWindowSize; i <= gaussianWindowSize; i++)
-          {
-            for (int j = -gaussianWindowSize; j <= gaussianWindowSize; j++)
-            {
-              if (i != 0 && j != 0)
-              {
-                offSetPoint[0] = cornerPointInImageSpace[0] + i *  stepSizePix;
-                offSetPoint[1] = cornerPointInImageSpace[1] + j *  stepSizePix;
-
-                double distance = sqrt((i*stepSizeMM)*(i*stepSizeMM) + (j*stepSizeMM)*(j*stepSizeMM));
-                weight = exp(-(distance*distance/(2*gaussianSigma*gaussianSigma)));
-
-                AddPoint(offSetPoint,
-                    pixelsX, pixSize, phiInRadians, phiInRadians, probeRadius, weight,
-                    points, normals, weights, vertices
-                    );
-
-                AddColor(colourScalars, colourNumber, colours, writeColours, blackBackground);
-              }
-            }
-          }
-        } // end if gaussian
-      } // end if on corner
-    } // end for y
-  } // end for x
+      vertices->InsertNextCell(1);
+      vertices->InsertCellPoint(pointIDArray->GetSize() - 1);
+    }
+  }
 
   polyData->SetPoints(points);
   polyData->SetVerts(vertices);
   polyData->GetPointData()->SetNormals(normals);
-  if (writeDots)
-  {
-    polyData->GetPointData()->AddArray(weights);
-    polyData->GetPointData()->AddArray(colourScalars);
-    polyData->GetPointData()->SetActiveScalars("Weights");
-  }
-  else
-  {
-    polyData->GetPointData()->SetScalars(weights);
-  }
+  polyData->GetPointData()->SetScalars(pointIDArray);
 
   vtkPolyDataWriter *polyWriter = vtkPolyDataWriter::New();
-  polyWriter->SetFileName(outputPoints.c_str());
+  polyWriter->SetFileName(outputTrackingModel.c_str());
   polyWriter->SetInput(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 
-  // Write out image.
-  ImageWriterType::Pointer writer = ImageWriterType::New();
-  if (!writeDots)
-  {
-    writer->SetInput(checkerBoardImage);
-  }
-  else
-  {
-    writer->SetInput(dotImage);
-  }
-  writer->SetFileName(outputImage);
-  writer->Update();
+  std::cout << "written to                  = " << outputTrackingModel << std::endl;
 
-  // Ta da.
+  // So, if outputVisualisationModel is supplied we also output a VTK surface model just
+  // for overlay purposes onto a video overlay. Here we just create a cyclinder.
+  if (outputVisualisationModel.size() > 0)
+  {
+
+  }
+
   return EXIT_SUCCESS;
 }
