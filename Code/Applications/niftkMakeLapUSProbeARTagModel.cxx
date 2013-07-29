@@ -14,6 +14,7 @@
 
 #include <niftkMakeLapUSProbeARTagModelCLP.h>
 #include <cmath>
+#include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkPoints.h>
@@ -21,6 +22,11 @@
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
 #include <vtkFunctions.h>
+#include <vtkSphereSource.h>
+#include <vtkAppendPolyData.h>
+#include <vtkCylinderSource.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransform.h>
 
 /**
  * \brief Generates a VTK model to match the ARTag board created by aruco_create_board.
@@ -93,7 +99,7 @@ int main(int argc, char** argv)
 
   std::cout << "radius                      = " << radius << std::endl;
   std::cout << "offsetOfOriginFromCentre    = " << offsetOfOriginFromCentre << std::endl;
-  std::cout << "offSetOfOrigin              = " << offSetOfOrigin << std::endl;
+  std::cout << "offSetOfOrigin              = " << offSetOfOrigin << std::endl << std::endl;
 
   std::vector<int> pointIDs;
   if(inputPointIDs.size() > 0)
@@ -115,23 +121,23 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  vtkPolyData *polyData = vtkPolyData::New();
+  vtkSmartPointer<vtkPolyData> polyData = vtkPolyData::New();
 
   vtkPoints *points = vtkPoints::New();
   points->SetDataTypeToDouble();
   points->Initialize();
 
-  vtkDoubleArray *normals = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> normals = vtkDoubleArray::New();
   normals->SetNumberOfComponents(3);
   normals->SetName("Normals");
   normals->Initialize();
 
-  vtkIntArray *pointIDArray = vtkIntArray::New();
+  vtkSmartPointer<vtkIntArray> pointIDArray = vtkIntArray::New();
   pointIDArray->SetNumberOfComponents(1);
   pointIDArray->SetName("Point IDs");
   pointIDArray->Initialize();
 
-  vtkCellArray *vertices = vtkCellArray::New();
+  vtkSmartPointer<vtkCellArray> vertices = vtkCellArray::New();
   vertices->Initialize();
 
   int pointCounter = 0;
@@ -167,7 +173,7 @@ int main(int argc, char** argv)
       pointCounter++;
 
       vertices->InsertNextCell(1);
-      vertices->InsertCellPoint(pointIDArray->GetSize() - 1);
+      vertices->InsertCellPoint(points->GetNumberOfPoints() - 1);
     }
   }
 
@@ -176,19 +182,53 @@ int main(int argc, char** argv)
   polyData->GetPointData()->SetNormals(normals);
   polyData->GetPointData()->SetScalars(pointIDArray);
 
-  vtkPolyDataWriter *polyWriter = vtkPolyDataWriter::New();
+  vtkSmartPointer<vtkPolyDataWriter> polyWriter = vtkPolyDataWriter::New();
   polyWriter->SetFileName(outputTrackingModel.c_str());
   polyWriter->SetInput(polyData);
   polyWriter->SetFileTypeToASCII();
   polyWriter->Write();
 
-  std::cout << "written to                  = " << outputTrackingModel << std::endl;
+  std::cout << "written tracking model to      = " << outputTrackingModel << std::endl;
 
   // So, if outputVisualisationModel is supplied we also output a VTK surface model just
   // for overlay purposes onto a video overlay. Here we just create a cyclinder.
   if (outputVisualisationModel.size() > 0)
   {
+    vtkSmartPointer<vtkSphereSource> sphereSource = vtkSphereSource::New();
+    sphereSource->SetRadius(radius);
+    sphereSource->SetCenter(0, offsetOfOriginFromCentre, tipZOffset);
+    sphereSource->SetThetaResolution(36);
+    sphereSource->SetPhiResolution(36);
+    sphereSource->SetStartPhi(90);
+    sphereSource->SetEndPhi(180);
 
+    vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkCylinderSource::New();
+    cylinderSource->SetCenter(0, length/2.0, -offsetOfOriginFromCentre);
+    cylinderSource->SetRadius(radius);
+    cylinderSource->SetHeight(length);
+    cylinderSource->SetResolution(36);
+    cylinderSource->SetCapping(false);
+
+    vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
+    transform->Identity();
+    transform->RotateX(90);
+
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
+    transformFilter->SetInput(cylinderSource->GetOutput());
+    transformFilter->SetTransform(transform);
+
+    vtkSmartPointer<vtkAppendPolyData> appender = vtkAppendPolyData::New();
+    appender->AddInput(sphereSource->GetOutput());
+    appender->AddInput(transformFilter->GetOutput());
+
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkPolyDataWriter::New();
+    writer->SetInput(appender->GetOutput());
+    writer->SetFileName(outputVisualisationModel.c_str());
+    writer->Update();
+
+    std::cout << "written visualisation model to = " << outputVisualisationModel << std::endl;
+
+    std::cout << "tip origin                     = (0, 0, " << tipZOffset - radius << ")" << std::endl;
   }
 
   return EXIT_SUCCESS;
