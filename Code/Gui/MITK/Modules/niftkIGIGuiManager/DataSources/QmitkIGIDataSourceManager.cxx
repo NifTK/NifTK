@@ -804,7 +804,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
     // Make sure scene rendered.
     mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
-    renderer->RequestUpdateAll();
+    renderer->ForceImmediateUpdateAll();
 
     emit UpdateGuiFinishedFinishedRendering(idNow);
 
