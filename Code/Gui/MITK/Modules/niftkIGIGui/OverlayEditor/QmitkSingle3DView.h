@@ -202,6 +202,11 @@ private:
    */
   void NodeRemoved(const mitk::DataNode* node);
 
+  /**
+   * \brief Called when a DataStorage Change Event was emitted.
+   */
+  void NodeChanged(const mitk::DataNode* node);
+
   mitk::DataStorage::Pointer                    m_DataStorage;
   QmitkRenderWindow                            *m_RenderWindow;
   QGridLayout                                  *m_Layout;

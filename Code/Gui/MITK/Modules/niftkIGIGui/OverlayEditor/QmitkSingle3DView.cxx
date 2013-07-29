@@ -107,6 +107,10 @@ void QmitkSingle3DView::DeRegisterDataStorageListeners()
     m_DataStorage->RemoveNodeEvent.RemoveListener
       (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
        (this, &QmitkSingle3DView::NodeRemoved ) );
+
+    m_DataStorage->ChangedNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
+      (this, &QmitkSingle3DView::NodeChanged ) );
   }
 }
 
@@ -126,6 +130,10 @@ void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* dataStorage )
     m_DataStorage->RemoveNodeEvent.AddListener
       (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
        (this, &QmitkSingle3DView::NodeRemoved ) );
+
+    m_DataStorage->ChangedNodeEvent.AddListener
+      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
+      (this, &QmitkSingle3DView::NodeChanged ) );
   }
 
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetDataStorage(dataStorage);
@@ -143,6 +151,16 @@ void QmitkSingle3DView::NodeRemoved (const mitk::DataNode * node )
   if ( node == m_ImageNode )
   {
     this->SetImageNode(NULL);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingle3DView::NodeChanged(const mitk::DataNode* node)
+{
+  if (m_ImageNode.IsNotNull())
+  {
+    this->Update();
   }
 }
 
