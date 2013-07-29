@@ -239,7 +239,7 @@ bool QmitkIGIOpenCVDataSource::ProbeRecordedData(const std::string& path, igtlUi
   igtlUint64    lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
   QDir directory(directoryPath);
   if (directory.exists())
   {
@@ -271,7 +271,7 @@ void QmitkIGIOpenCVDataSource::StartPlayback(const std::string& path, igtlUint64
   ClearBuffer();
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
   QDir directory(directoryPath);
   if (directory.exists())
   {
@@ -346,7 +346,7 @@ bool QmitkIGIOpenCVDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     const IplImage* imageFrame = dataType->GetImage();
     if (imageFrame != NULL)
     {
-      QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGIOpenCVDataSource");
+      QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
       QDir directory(directoryPath);
       if (directory.mkpath(directoryPath))
       {
