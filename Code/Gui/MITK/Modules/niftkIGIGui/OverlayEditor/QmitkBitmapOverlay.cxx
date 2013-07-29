@@ -55,8 +55,6 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 QmitkBitmapOverlay::~QmitkBitmapOverlay()
 {
 
-  this->DeRegisterDataStorageListeners();
-
   if ( m_RenderWindow != NULL )
   {
     if ( this->IsEnabled() )
@@ -93,50 +91,9 @@ QmitkBitmapOverlay::~QmitkBitmapOverlay()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::DeRegisterDataStorageListeners()
-{
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-      (this, &QmitkBitmapOverlay::NodeAdded ) );
-
-    m_DataStorage->RemoveNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-       (this, &QmitkBitmapOverlay::NodeRemoved ) );
-
-    m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-      (this, &QmitkBitmapOverlay::NodeChanged ) );
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 {
-  if (m_DataStorage.IsNotNull() && m_DataStorage != dataStorage)
-  {
-    this->DeRegisterDataStorageListeners();
-  }
-
   m_DataStorage = dataStorage;
-
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-       (this, &QmitkBitmapOverlay::NodeAdded ) );
-
-    m_DataStorage->RemoveNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-       (this, &QmitkBitmapOverlay::NodeRemoved ) );
-
-    m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkBitmapOverlay, const mitk::DataNode*>
-      (this, &QmitkBitmapOverlay::NodeChanged ) );
-  }
-
   this->Modified();
 }
 
