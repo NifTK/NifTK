@@ -1298,5 +1298,5 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 } // namespace
 
-#endif // __itkBSplineTransform_txx
+#endif // __itkDeformableTransform_txx
 

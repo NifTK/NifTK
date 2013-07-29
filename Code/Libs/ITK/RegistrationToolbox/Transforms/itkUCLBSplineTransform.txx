@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBSplineTransform_txx
-#define __itkBSplineTransform_txx
+#ifndef __itkUCLBSplineTransform_txx
+#define __itkUCLBSplineTransform_txx
 
 #include <itkNumericTraits.h>
 #include <itkMatrixOffsetTransformBase.h>
@@ -28,8 +28,8 @@ namespace itk
 {
 // Constructor with default arguments
 template<class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
-::BSplineTransform()
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+::UCLBSplineTransform()
 {
   this->m_Grid = GridImageType::New();
   this->m_OldGrid = GridImageType::New();
@@ -58,20 +58,20 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
           this->m_Lookup2ndDerivative[i][j] = this->B(j, 2, u);          
         }
     }  
-  niftkitkDebugMacro(<< "BSplineTransform():Constructed, static LUT size (" << s_LookupTableRows << "," << s_LookupTableCols << ")");
+  niftkitkDebugMacro(<< "UCLBSplineTransform():Constructed, static LUT size (" << s_LookupTableRows << "," << s_LookupTableCols << ")");
 }
 
 // Destructor
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
-::~BSplineTransform()
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+::~UCLBSplineTransform()
 {
   return;
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::PrintSelf(std::ostream &os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);  
@@ -79,8 +79,8 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-typename BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::OutputPointType
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+typename UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::OutputPointType
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::TransformPoint(const InputPointType  &point ) const
 {
   OutputPointType result;
@@ -117,7 +117,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::SetIdentity( void )
 {
   niftkitkDebugMacro(<< "SetIdentity():Started");
@@ -136,7 +136,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void 
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::InitializeGrid(FixedImagePointer fixedImage, 
     GridRegionType gridRegion,
     GridSpacingType gridSpacing,
@@ -203,7 +203,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void 
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::Initialize(FixedImagePointer image, GridSpacingType gridSpacingInMillimetres, int numberOfLevels)
 {
   niftkitkDebugMacro(<< "Initialize():Started, final spacing=" << gridSpacingInMillimetres \
@@ -246,7 +246,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::SetParameters(const ParametersType & parameters)
 {
   niftkitkDebugMacro(<< "SetParameters():Starting with:" << parameters.GetSize() << " parameters, and parameters object:" << &parameters);
@@ -285,7 +285,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 ::InterpolateDeformationField2D()
 {
 
@@ -398,7 +398,7 @@ BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 ::InterpolateDeformationField3DMarc()
 {
   // Store these locally for performance reasons.
@@ -640,7 +640,7 @@ BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 ::InterpolateDeformationField3DDaniel()
 {
   
@@ -759,8 +759,8 @@ BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-typename BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType 
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+typename UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType 
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergy()
 {
   MeasureType bendingEnergy = 0;
@@ -823,8 +823,8 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-typename BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>::MeasureType
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+typename UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>::MeasureType
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergy2D(TScalarType divisor) const
 {
   niftkitkDebugMacro(<< "GetBendingEnergy2D():Started");
@@ -939,8 +939,8 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-typename BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+typename UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergy3DDaniel(TScalarType divisor) const
 {
   niftkitkDebugMacro(<< "GetBendingEnergy3DDaniel():Started");
@@ -1076,8 +1076,8 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-typename BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+typename UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>::MeasureType
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergy3DMarc(TScalarType divisor) const
 {
   niftkitkDebugMacro(<< "GetBendingEnergy3DMarc():Started");
@@ -1357,7 +1357,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
   
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 TScalarType 
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetNewOrigin(TScalarType oldSize, TScalarType oldSpacing, TScalarType oldOrigin, TScalarType newSize, TScalarType newSpacing)
 {
   TScalarType result = 0;//((oldSize-1)*oldSpacing/2.0 + oldOrigin) - ((newSize-1)*newSpacing/2.0);
@@ -1366,7 +1366,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::InterpolateNextGrid(FixedImagePointer image)
 {
   niftkitkDebugMacro(<< "InterpolateNextGrid():Starting");
@@ -1506,7 +1506,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::InterpolateNextGrid2D(GridImagePointer& oldGrid, GridImagePointer &newGrid)
 {
   unsigned int x, y, i1, j1, i2, j2;
@@ -1574,7 +1574,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
 ::InterpolateNextGrid3D(GridImagePointer& oldGrid, GridImagePointer &newGrid)
 {
   unsigned int x, y, z, i1, j1, k1, i2, j2, k2;
@@ -1659,7 +1659,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
 }
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::WriteControlPointImage(std::string filename)
 {
   niftkitkDebugMacro(<< "WriteControlPointImage():filename:" << filename);
@@ -1683,7 +1683,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergyDerivativeDaniel(DerivativeType & derivative)
 {
   niftkitkDebugMacro(<< "GetBendingEnergyDerivativeDaniel():Started");
@@ -1715,7 +1715,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergyDerivativeMarc(DerivativeType & derivative)
 {
   niftkitkDebugMacro(<< "GetBendingEnergyDerivativeMarc():Started");
@@ -1974,7 +1974,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void
-BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 ::GetBendingEnergyDerivative(DerivativeType & derivative)
 {
   niftkitkDebugMacro(<< "GetBendingEnergyDerivative():Started with:" << derivative.GetSize() << " parameters");
@@ -1997,8 +1997,8 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
 }
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
-const typename BSplineTransform<TFixedImage, TScalarType, NDimensions,TDeformationScalar>::ParametersType& 
-BSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
+const typename UCLBSplineTransform<TFixedImage, TScalarType, NDimensions,TDeformationScalar>::ParametersType& 
+UCLBSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
 ::GetFixedParameters(void) const 
 {
   // Get a copy of Fixed parameters from base class.
@@ -2049,7 +2049,7 @@ BSplineTransform<TFixedImage, TScalarType,NDimensions,TDeformationScalar>
 
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 void 
-BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
+UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 ::SetFixedParameters(const ParametersType& parameters)
 {
   // First we collect the parameters for the deformation field.
@@ -2143,5 +2143,5 @@ BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 
 } // namespace
 
-#endif // __itkBSplineTransform_txx
+#endif // __itkUCLBSplineTransform_txx
 

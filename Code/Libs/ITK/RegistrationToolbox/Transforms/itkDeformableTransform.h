@@ -29,7 +29,7 @@ namespace itk
  * \class DeformableTransform
  * \brief Base class for deformable transforms
  * 
- * For both BSplineTransform and FluidDeformableTransform, the transformation
+ * For both UCLBSplineTransform and FluidDeformableTransform, the transformation
  * is represented as an image of vectors, one vector per voxel. Its parameterisation
  * depends on derived classes. So, for Fluid, you are actually working at
  * the voxel level, and for BSpline/FFD based transformation, the transformation
@@ -59,7 +59,7 @@ namespace itk
  * out your affine transform, resampling, and then just doing deformable stuff on 
  * pre-registered images.       
  * 
- * \sa BSplineTransform, FluidDeformableTransform.  
+ * \sa UCLBSplineTransform, FluidDeformableTransform.  
  */
 template <
     class TFixedImage,                   // Templated over the image type.

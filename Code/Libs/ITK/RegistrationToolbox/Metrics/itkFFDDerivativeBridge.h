@@ -20,7 +20,7 @@
 #include <itkRegistrationForceFilter.h>
 #include <itkBSplineSmoothVectorFieldFilter.h>
 #include <itkInterpolateVectorFieldFilter.h>
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 
 namespace itk
 {
@@ -53,14 +53,14 @@ public:
   itkStaticConstMacro(Dimension, unsigned int, TFixedImage::ImageDimension);
   
   /** Typedefs. */
-  typedef typename Superclass::SimilarityMeasureType         SimilarityMeasureType;
-  typedef typename Superclass::SimilarityMeasurePointer      SimilarityMeasurePointer;
-  typedef typename Superclass::DerivativeType                DerivativeType;
-  typedef typename Superclass::ParametersType                ParametersType;
-  typedef BSplineTransform<TFixedImage, double, Dimension>   BSplineTransformType;
-  typedef typename BSplineTransformType::Pointer             BSplineTransformPointer;
-  typedef typename BSplineTransformType::GridImageType       GridImageType;
-  typedef typename GridImageType::Pointer                    GridImagePointer;
+  typedef typename Superclass::SimilarityMeasureType            SimilarityMeasureType;
+  typedef typename Superclass::SimilarityMeasurePointer         SimilarityMeasurePointer;
+  typedef typename Superclass::DerivativeType                   DerivativeType;
+  typedef typename Superclass::ParametersType                   ParametersType;
+  typedef UCLBSplineTransform<TFixedImage, double, Dimension>   UCLBSplineTransformType;
+  typedef typename UCLBSplineTransformType::Pointer             UCLBSplineTransformPointer;
+  typedef typename UCLBSplineTransformType::GridImageType       GridImageType;
+  typedef typename GridImageType::Pointer                       GridImagePointer;
   
   /** FFD Pipeline as follows: First generate the force. */
   typedef RegistrationForceFilter<TFixedImage, TMovingImage> ForceFilterType;
