@@ -41,7 +41,7 @@ public:
   typedef SmartPointer<const Self>                                             ConstPointer;
   typedef double                                                               MeasureType;
   typedef typename Superclass::FrequencyContainerType                          FrequencyContainerType;
-  typedef typename Superclass::FrequencyType                                   FrequencyType;
+  typedef typename Superclass::AbsoluteFrequencyType                           FrequencyType;
   typedef typename Superclass::IndexType                                       IndexType;
   typedef typename Superclass::SizeType                                        SizeType;
   typedef typename Superclass::ConstIterator                                   IteratorType;
