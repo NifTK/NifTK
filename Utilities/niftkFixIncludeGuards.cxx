@@ -12,7 +12,7 @@
 
 =============================================================================*/
 #include <iostream>
-#include <fstream.h>
+#include <fstream>
 #include <cstdlib>
 #include <vector>
 #include <itksys/SystemTools.hxx>
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   std::string singleLine;
 
   // Read whole file in a line at a time into a buffer.
-  ifstream myfile(argv[1]);
+  std::ifstream myfile(argv[1]);
   while (std::getline(myfile, singleLine))
   {
     completeFileByLine.push_back(singleLine);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
   }
 
   // Print file to overwrite file.
-  ofstream outfile(argv[1]);
+  std::ofstream outfile(argv[1]);
   for (unsigned int i = 0; i < completeFileByLine.size(); ++i)
   {
     outfile << completeFileByLine[i] << std::endl;
