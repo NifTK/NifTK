@@ -34,7 +34,7 @@ namespace itk
 // Constructor with default arguments
 template <class TFixedImage, class TScalarType, unsigned int NDimensions, class TDeformationScalar>
 DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
-::DeformableTransform():Superclass(SpaceDimension, 1)
+::DeformableTransform():Superclass(1)
 {
   this->m_DeformationField = DeformationFieldType::New();
   this->m_JacobianFilter = JacobianDeterminantFilterType::New();

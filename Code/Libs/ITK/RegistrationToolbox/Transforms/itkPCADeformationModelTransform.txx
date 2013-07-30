@@ -25,7 +25,7 @@ namespace itk
 //
 template<class ScalarType, unsigned int NDimensions>
 PCADeformationModelTransform<ScalarType, NDimensions>::
-PCADeformationModelTransform() : Superclass(NDimensions, 0)
+PCADeformationModelTransform() : Superclass(0)
 {
   this->m_meanCoefficient = 0;
   this->m_NumberOfFields = 0;

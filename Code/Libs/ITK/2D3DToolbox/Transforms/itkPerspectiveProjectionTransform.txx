@@ -25,7 +25,7 @@ namespace itk
 // Constructor with default arguments
 template<class TScalarType>
 PerspectiveProjectionTransform<TScalarType>::
-PerspectiveProjectionTransform() : Superclass(SpaceDimension,ParametersDimension)
+PerspectiveProjectionTransform() : Superclass(ParametersDimension)
 {
   this->m_Parameters[0] = 1000.;
   this->m_Parameters[1] = 0.;
