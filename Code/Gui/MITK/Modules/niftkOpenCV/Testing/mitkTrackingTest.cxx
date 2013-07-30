@@ -89,7 +89,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
   cv::Mat rightCameraDistortion = cv::Mat(5,1,CV_32FC1);
   cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_32FC1);
   cv::Mat rightToLeftTranslationVector = cv::Mat(1,3,CV_32FC1);
-  cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1); //handeye
+  cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_32FC1); //handeye
   while ( argc > 1 )
   {
     bool ok = false; 
@@ -219,6 +219,16 @@ int mitkTrackingTest ( int argc, char * argv[] )
             rightToLeftRotationMatrix, rightToLeftTranslationVector);
         MITK_INFO << "Point in camera coordinates = (" <<
           PointInCameraCoords;
+
+        //now get it in world coordinates, using the handeye and the
+        //tracking matrix
+        cv::Mat TrackerToWorld = Matcher->GetTrackerMatrix(ScreenPointSetFrame);
+        cv::Point3f PointInWorldCoords = mitk::LeftLensToWorld (
+            PointInCameraCoords, leftCameraToTracker,
+            TrackerToWorld);
+        MITK_INFO << "Point in world coordinates = (" <<
+          PointInWorldCoords;
+
 
   }
   int framecount=0;
