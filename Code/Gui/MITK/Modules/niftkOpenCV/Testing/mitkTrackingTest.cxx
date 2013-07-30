@@ -79,7 +79,9 @@ int mitkTrackingTest ( int argc, char * argv[] )
 
   cv::Mat TrueWorldPoint = cv::Mat(1,3,CV_64FC1);
   std::pair<cv::Point2f, cv::Point2f> PointPositionInFirstFrame;
+  int ScreenPointSetFrame;
   bool WorldPointSet = false;
+  bool ScreenPointSet = false;
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
   cv::Mat leftCameraDistortion = cv::Mat(5,1,CV_64FC1);
@@ -130,11 +132,14 @@ int mitkTrackingTest ( int argc, char * argv[] )
     }
     if (( ok == false ) && strcmp ( argv[1], "-PointsInFirstFrame" ) == 0 )
     {
-      PointPositionInFirstFrame.first.x = atof(argv[2]);
-      PointPositionInFirstFrame.first.y = atof(argv[2]);
-      PointPositionInFirstFrame.second.x = atof(argv[2]);
-      PointPositionInFirstFrame.second.y = atof(argv[2]);
-      
+      ScreenPointSetFrame = atoi (argv[2]);
+      PointPositionInFirstFrame.first.x = atof(argv[3]);
+      PointPositionInFirstFrame.first.y = atof(argv[4]);
+      PointPositionInFirstFrame.second.x = atof(argv[5]);
+      PointPositionInFirstFrame.second.y = atof(argv[6]);
+      argv += 6;
+      argc -= 6;
+      ScreenPointSet = true;
       ok=true;
     }
     if ( ok == false ) 
@@ -189,7 +194,26 @@ int mitkTrackingTest ( int argc, char * argv[] )
   rightframe = cvCreateImage( cvSize(1920,540), 8, 3 );
   leftframe = cvCreateImage( cvSize(1920,540), 8, 3 );
 
+  std::pair<cv::Point2f, cv::Point2f> UndistortedPointPositionInFirstFrame;
   
+  if ( ScreenPointSet ) 
+  {
+    //use intrinsics from first frame to determine the position of the point in 
+    //world coordinates
+    mitk::UndistortPoint ( PointPositionInFirstFrame.first,leftCameraIntrinsic ,
+      leftCameraDistortion,UndistortedPointPositionInFirstFrame.first);
+    mitk::UndistortPoint ( PointPositionInFirstFrame.second,rightCameraIntrinsic ,
+      rightCameraDistortion,UndistortedPointPositionInFirstFrame.second);
+
+    MITK_INFO << "Undistorting points (" << 
+       PointPositionInFirstFrame.first.x << "," << PointPositionInFirstFrame.first.y <<
+       ") => (" << UndistortedPointPositionInFirstFrame.first.x << "," << 
+       UndistortedPointPositionInFirstFrame.first.y << ") : (" <<
+       PointPositionInFirstFrame.second.x << "," << PointPositionInFirstFrame.second.y <<
+       ") => (" << UndistortedPointPositionInFirstFrame.second.x << "," << 
+       UndistortedPointPositionInFirstFrame.second.y << ")";
+
+  }
   int framecount=0;
   while ( key != 'q' )
   {
@@ -249,6 +273,10 @@ int mitkTrackingTest ( int argc, char * argv[] )
           cvPoint(l[2],l[3]), cvScalar(0,255,0));
     }
     
+    if ( WorldPointSet ==  true )
+    {
+
+    }    
     cvResize (leftframe, smallleft,CV_INTER_NN);
     cvResize (rightframe, smallright,CV_INTER_NN);
     
