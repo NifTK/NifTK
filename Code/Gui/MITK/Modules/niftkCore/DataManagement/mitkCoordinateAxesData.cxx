@@ -51,6 +51,14 @@ CoordinateAxesData::~CoordinateAxesData()
 
 
 //-----------------------------------------------------------------------------
+void CoordinateAxesData::UpdateOutputInformation()
+{
+  Superclass::UpdateOutputInformation();
+  this->GetTimeSlicedGeometry()->UpdateInformation();
+}
+
+
+//-----------------------------------------------------------------------------
 void CoordinateAxesData::SetRequestedRegionToLargestPossibleRegion()
 {
   // Deliberately blank, as nothing to do.

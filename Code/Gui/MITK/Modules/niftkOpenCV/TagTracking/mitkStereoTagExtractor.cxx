@@ -156,8 +156,11 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                       )
 {
   pointSet->Clear();
-  surfaceNormals->Clear();
-
+  if (surfaceNormals.IsNotNull())
+  {
+    surfaceNormals->Clear();
+  }
+  
   mitk::ImageWriteAccessor  leftAccess(leftImage);
   void* leftPointer = leftAccess.GetData();
 
@@ -211,6 +214,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
       pointSet->InsertPoint((*iter).first, outputPoint);
     }
+    pointSet->UpdateOutputInformation();
   }
   else
   {
@@ -255,6 +259,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       pointSet->InsertPoint((*iter).first, outputPoint);
       surfaceNormals->InsertPoint((*iter).first, outputPoint);
     }
+    pointSet->UpdateOutputInformation();
   }
 }
 
