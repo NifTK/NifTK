@@ -194,7 +194,10 @@ void QmitkBitmapOverlay::AutoSelectDataNode(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkBitmapOverlay::NodeAdded (const mitk::DataNode * node)
 {
-  this->AutoSelectDataNode(node);
+  if (m_ImageDataNode.IsNull())
+  {
+    this->AutoSelectDataNode(node);
+  }
 }
 
 
