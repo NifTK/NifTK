@@ -79,6 +79,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
 
   cv::Mat TrueWorldPoint = cv::Mat(1,3,CV_64FC1);
   std::pair<cv::Point2f, cv::Point2f> PointPositionInFirstFrame;
+  cv::Point3f PointInWorldCoords;
   int ScreenPointSetFrame;
   bool WorldPointSet = false;
   bool ScreenPointSet = false;
@@ -206,30 +207,30 @@ int mitkTrackingTest ( int argc, char * argv[] )
       rightCameraDistortion,UndistortedPointPositionInFirstFrame.second);
 
     MITK_INFO << "Undistorting points (" << 
-       PointPositionInFirstFrame.first.x << "," << PointPositionInFirstFrame.first.y <<
-       ") => (" << UndistortedPointPositionInFirstFrame.first.x << "," << 
-       UndistortedPointPositionInFirstFrame.first.y << ") : (" <<
-       PointPositionInFirstFrame.second.x << "," << PointPositionInFirstFrame.second.y <<
-       ") => (" << UndistortedPointPositionInFirstFrame.second.x << "," << 
-       UndistortedPointPositionInFirstFrame.second.y << ")";
+      PointPositionInFirstFrame.first.x << "," << PointPositionInFirstFrame.first.y <<
+      ") => (" << UndistortedPointPositionInFirstFrame.first.x << "," << 
+      UndistortedPointPositionInFirstFrame.first.y << ") : (" <<
+      PointPositionInFirstFrame.second.x << "," << PointPositionInFirstFrame.second.y <<
+      ") => (" << UndistortedPointPositionInFirstFrame.second.x << "," << 
+      UndistortedPointPositionInFirstFrame.second.y << ")";
       
-        cv::Point3f PointInCameraCoords = mitk::TriangulatePointPair(
-            UndistortedPointPositionInFirstFrame, leftCameraIntrinsic,
-            rightCameraIntrinsic, 
-            rightToLeftRotationMatrix, rightToLeftTranslationVector);
-        MITK_INFO << "Point in camera coordinates = (" <<
-          PointInCameraCoords;
+    cv::Point3f PointInCameraCoords = mitk::TriangulatePointPair(
+      UndistortedPointPositionInFirstFrame, leftCameraIntrinsic,
+      rightCameraIntrinsic, 
+      rightToLeftRotationMatrix, rightToLeftTranslationVector);
+    MITK_INFO << "Point in camera coordinates = (" <<
+     PointInCameraCoords;
 
-        //now get it in world coordinates, using the handeye and the
-        //tracking matrix
-        cv::Mat TrackerToWorld = Matcher->GetTrackerMatrix(ScreenPointSetFrame);
-        cv::Point3f PointInWorldCoords = mitk::LeftLensToWorld (
-            PointInCameraCoords, leftCameraToTracker,
-            TrackerToWorld);
-        MITK_INFO << "Point in world coordinates = (" <<
-          PointInWorldCoords;
-
-
+    //now get it in world coordinates, using the handeye and the
+    //tracking matrix
+    cv::Mat TrackerToWorld = Matcher->GetTrackerMatrix(ScreenPointSetFrame);
+    PointInWorldCoords = mitk::LeftLensToWorld (
+      PointInCameraCoords, leftCameraToTracker,
+      TrackerToWorld);
+    MITK_INFO << "Point in world coordinates = (" <<
+      PointInWorldCoords;
+        
+    WorldPointSet = true;
   }
   int framecount=0;
   while ( key != 'q' )
@@ -274,7 +275,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
     {
         MITK_INFO << "Frame " << framecount << " found 2 lines each frame"; 
     }
-    framecount++;
     for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ ) 
     {
       cv::Vec4i l = linesleft[i];
@@ -292,6 +292,56 @@ int mitkTrackingTest ( int argc, char * argv[] )
     
     if ( WorldPointSet ==  true )
     {
+       cv::Mat LeftTrackerToWorld = Matcher->GetTrackerMatrix(framecount);
+       cv::Mat RightTrackerToWorld = Matcher->GetTrackerMatrix(framecount+1);
+    
+        cv::Point3f PointInLensCoords = mitk::WorldToLeftLens 
+        ( PointInWorldCoords, leftCameraToTracker, LeftTrackerToWorld);
+        //now get point pair in screen coordinates
+        cv::Mat leftCameraWorldPoints = cv::Mat (1,3,CV_32FC1);
+        cv::Mat leftCameraWorldNormals = cv::Mat (1,3,CV_32FC1);
+        cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat (1,3,CV_32FC1);
+        leftCameraWorldPoints.at<float>(0,0) = PointInLensCoords.x;
+        leftCameraWorldPoints.at<float>(0,1) = PointInLensCoords.y;
+        leftCameraWorldPoints.at<float>(0,2) = PointInLensCoords.z;
+        leftCameraWorldNormals.at<float>(0,0) = 0.0;
+        leftCameraWorldNormals.at<float>(0,1) = 0.0;
+        leftCameraWorldNormals.at<float>(0,2) = -1.0;
+        leftCameraPositionToFocalPointUnitVector.at<float>(0,0) = 0.0;
+        leftCameraPositionToFocalPointUnitVector.at<float>(0,1) = 0.0;
+        leftCameraPositionToFocalPointUnitVector.at<float>(0,2) = 1.0;
+        CvMat* outputLeftCameraWorldPointsIn3D = NULL;
+        CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
+        CvMat* output2DPointsLeft = NULL ;
+        CvMat* output2DPointsRight = NULL;
+       
+        cv::Mat rightToLeftTransVect = cv::Mat (3,1,CV_32FC1);
+        for ( int i = 0 ; i < 3 ; i ++ )
+        {
+          rightToLeftTransVect.at<float>(i,0) = rightToLeftTranslationVector.at<float>(0,i);
+        }
+        std::vector<int> Points = mitk::ProjectVisible3DWorldPointsToStereo2D
+          ( leftCameraWorldPoints,leftCameraWorldNormals,
+            leftCameraPositionToFocalPointUnitVector,
+            leftCameraIntrinsic,leftCameraDistortion,
+            rightCameraIntrinsic,rightCameraDistortion,
+            rightToLeftRotationMatrix,rightToLeftTransVect,
+            outputLeftCameraWorldPointsIn3D,
+            outputLeftCameraWorldNormalsIn3D,
+            output2DPointsLeft,
+            output2DPointsRight);
+
+        cv::Mat TL(leftframe);
+        cv::Mat TR(rightframe);
+        cv::Mat tl(output2DPointsLeft);
+        cv::Mat tr(output2DPointsRight);
+          MITK_INFO << "Frame : " << framecount << ": Point In lens " << PointInLensCoords << tl << tr;
+          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,0);
+          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,1);
+          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,2);
+        cv::circle(TL , cvPoint(tl.at<float>(0,0),tl.at<float>(0,1)), 10,  cvScalar(255,0,0), 3, 8, 0 );
+        cv::circle(TR , cvPoint(tr.at<float>(0,0),tr.at<float>(0,1)), 10 , cvScalar(0,255,0), 3, 8, 0);
+
 
     }    
     cvResize (leftframe, smallleft,CV_INTER_NN);
@@ -305,7 +355,12 @@ int mitkTrackingTest ( int argc, char * argv[] )
     cvShowImage("Left Processed", smallleftprocessed);
   //  cvShowImage("Left Processed", smalltemp);
     key = cvWaitKey (1);
- //   key = 'q';
+    if ( framecount >= ScreenPointSetFrame ) 
+     {
+       
+       key = cvWaitKey(0);
+     }
+    framecount += 2;
   }
   
   cvDestroyWindow("Left Channel");
