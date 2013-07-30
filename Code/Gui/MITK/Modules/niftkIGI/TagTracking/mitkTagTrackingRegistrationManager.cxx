@@ -154,6 +154,7 @@ double TagTrackingRegistrationManager::Update(
       if (coordinateAxes.IsNotNull())
       {
         coordinateAxes->SetVtkMatrix(registrationMatrix);
+        coordinateAxesNode->Modified();
       }
     } // end if we have model
   } // end if we have node

@@ -179,6 +179,7 @@ void TrackedPointerManager::Update(
         geometry->Modified();
       }
       model->Modified();
+      probeModel->Modified();
     }
   }
 
