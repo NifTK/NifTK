@@ -86,8 +86,10 @@ public:
   typedef typename Superclass::ScalarType                     ScalarType;
   
   /** Standard parameters container. */
-  typedef Array<double>                                       ParametersType;
-  typedef Array<double>                                       DerivativeType;
+  typedef typename Superclass::NumberOfParametersType         NumberOfParametersType;
+  typedef typename Superclass::ParametersType                 ParametersType;
+  typedef typename Superclass::ParametersValueType            ParametersValueType;
+  typedef Array<ParametersValueType>                          DerivativeType;
   
   /** Standard coordinate point type for this class. */
   typedef typename Superclass::OutputPointType                OutputPointType;
@@ -168,7 +170,7 @@ public:
   /** 
    * Return the number of parameters that completely define the Transfom
    */
-  virtual unsigned int GetNumberOfParameters(void) const { return this->m_Parameters.Size(); }
+  virtual NumberOfParametersType GetNumberOfParameters(void) const { return this->m_Parameters.Size(); }
 
   /**
    * Sets the transformation parameters from an image.
