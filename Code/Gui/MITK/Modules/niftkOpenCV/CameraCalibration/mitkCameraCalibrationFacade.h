@@ -648,6 +648,21 @@ std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
 void LoadResult(const std::string& Filename, cv::Mat& Result,
       std::vector<double>& residuals);
 
+ /** 
+  * \brief Transforms a point relative to the left camera lens to 
+  * world coordinates using the handeye and tracking matrices
+  */
+cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
+      cv::Mat& Handeye, cv::Mat& Tracker );
+ 
+/** 
+  * \brief Transforms a point in world coordinates to a point 
+  * relative to the left lens using
+  * world coordinates using the handeye and tracking matrices
+  */
+cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
+      cv::Mat& Handeye, cv::Mat& Tracker );
+
 } // end namespace
 
 #endif // MITKCAMERACALIBRATIONFACADE_H
