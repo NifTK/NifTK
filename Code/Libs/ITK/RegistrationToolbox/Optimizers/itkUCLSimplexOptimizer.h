@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLSimplexOptimizer_h
-#define __itkUCLSimplexOptimizer_h
+#ifndef itkUCLSimplexOptimizer_h
+#define itkUCLSimplexOptimizer_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

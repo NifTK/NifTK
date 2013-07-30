@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkSurfaceReconstruction_h
-#define niftkSurfaceReconstruction_h
+#ifndef SurfaceReconstruction_h
+#define SurfaceReconstruction_h
 
 #include "niftkIGIExports.h"
 #include <mitkDataStorage.h>

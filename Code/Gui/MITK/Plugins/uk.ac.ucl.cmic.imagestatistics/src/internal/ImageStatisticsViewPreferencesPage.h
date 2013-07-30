@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
-#define _IMAGESTATISTICSVIEWPREFERENCESPAGE_H_INCLUDED
+#ifndef ImageStatisticsViewPreferencesPage_h
+#define ImageStatisticsViewPreferencesPage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>

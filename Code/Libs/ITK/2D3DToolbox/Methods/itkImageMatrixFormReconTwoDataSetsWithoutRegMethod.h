@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
-#define __itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
+#ifndef itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
+#define itkImageMatrixFormReconTwoDataSetsWithoutRegMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

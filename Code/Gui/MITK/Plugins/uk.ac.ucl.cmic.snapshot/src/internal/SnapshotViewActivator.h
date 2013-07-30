@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef SNAPSHOTVIEWACTIVATOR_H
-#define SNAPSHOTVIEWACTIVATOR_H
+#ifndef SnapshotViewActivator_h
+#define SnapshotViewActivator_h
 
 #include <ctkPluginActivator.h>
 

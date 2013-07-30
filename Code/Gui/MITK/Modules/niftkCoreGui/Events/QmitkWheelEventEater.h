@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKWHEELEVENTEATER_H_
-#define QMITKWHEELEVENTEATER_H_
+#ifndef QmitkWheelEventEater_h
+#define QmitkWheelEventEater_h
 
 #include "niftkCoreGuiExports.h"
 #include <QWidget>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef PointSetUpdate_h
-#define PointSetUpdate_h
+#ifndef mitkPointSetUpdate_h
+#define mitkPointSetUpdate_h
 
 #include "niftkCoreExports.h"
 #include <mitkOperation.h>

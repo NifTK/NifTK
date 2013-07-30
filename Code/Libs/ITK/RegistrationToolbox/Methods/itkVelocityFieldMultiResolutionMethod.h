@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkVelocityFieldMultiResolutionMethod_h
-#define __itkVelocityFieldMultiResolutionMethod_h
+#ifndef itkVelocityFieldMultiResolutionMethod_h
+#define itkVelocityFieldMultiResolutionMethod_h
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
 #include <itkBSplineTransform.h>

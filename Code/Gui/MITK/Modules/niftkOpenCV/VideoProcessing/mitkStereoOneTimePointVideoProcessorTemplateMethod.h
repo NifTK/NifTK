@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREOONETIMEPOINTVIDEOPROCESSORTEMPLATEMETHOD_H
-#define MITKSTEREOONETIMEPOINTVIDEOPROCESSORTEMPLATEMETHOD_H
+#ifndef mitkStereoOneTimePointVideoProcessorTemplateMethod_h
+#define mitkStereoOneTimePointVideoProcessorTemplateMethod_h
 
 #include "niftkOpenCVExports.h"
 #include "mitkStereoVideoProcessorTemplateMethod.h"

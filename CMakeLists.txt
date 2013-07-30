@@ -148,6 +148,7 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
+option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -1160,6 +1161,10 @@ endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
 subdirs(Doc)
 subdirs(Code)
+
+if(BUILD_UTILITIES)
+  subdirs(Utilities)
+endif(BUILD_UTILITIES)
 
 if(BUILD_TESTING) 
   subdirs(Testing)

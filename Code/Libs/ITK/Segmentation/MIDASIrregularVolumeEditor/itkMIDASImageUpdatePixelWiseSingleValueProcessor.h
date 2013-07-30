@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
-#define ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
+#ifndef itkMIDASImageUpdatePixelWiseSingleValueProcessor_h
+#define itkMIDASImageUpdatePixelWiseSingleValueProcessor_h
 
 #include "itkMIDASImageUpdateProcessor.h"
 

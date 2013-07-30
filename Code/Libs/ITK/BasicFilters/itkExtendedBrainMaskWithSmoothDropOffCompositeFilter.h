@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
-#define __itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
+#ifndef itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
+#define itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
 
 
 #include <itkImageToImageFilter.h>

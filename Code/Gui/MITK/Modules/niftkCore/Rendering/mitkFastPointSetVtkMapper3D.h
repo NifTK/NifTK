@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef FastPointSetVtkMapper3D_h
-#define FastPointSetVtkMapper3D_h
+#ifndef mitkFastPointSetVtkMapper3D_h
+#define mitkFastPointSetVtkMapper3D_h
 
 #include "niftkCoreExports.h"
 

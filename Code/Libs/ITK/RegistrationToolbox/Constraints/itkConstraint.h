@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkConstraint_h
-#define __itkConstraint_h
+#ifndef itkConstraint_h
+#define itkConstraint_h
 
 #include <itkObject.h>
 #include <itkObjectFactory.h>

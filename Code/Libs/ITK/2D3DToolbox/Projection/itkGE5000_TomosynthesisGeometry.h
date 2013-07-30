@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkGE5000_TomosynthesisGeometry_h
-#define __itkGE5000_TomosynthesisGeometry_h
+#ifndef itkGE5000_TomosynthesisGeometry_h
+#define itkGE5000_TomosynthesisGeometry_h
 
 #include "itkProjectionGeometry.h"
 

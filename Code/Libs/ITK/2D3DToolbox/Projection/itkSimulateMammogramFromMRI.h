@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSimulateMammogramFromMRI_h
-#define __itkSimulateMammogramFromMRI_h
+#ifndef itkSimulateMammogramFromMRI_h
+#define itkSimulateMammogramFromMRI_h
 
 #include "itkForwardImageProjector3Dto2D.h"
 

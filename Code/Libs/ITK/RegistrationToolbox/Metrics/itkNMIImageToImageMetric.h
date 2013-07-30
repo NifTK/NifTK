@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkNMIImageToImageMetric_h
-#define __itkNMIImageToImageMetric_h
+#ifndef itkNMIImageToImageMetric_h
+#define itkNMIImageToImageMetric_h
 
 #include "itkHistogramSimilarityMeasure.h"
 

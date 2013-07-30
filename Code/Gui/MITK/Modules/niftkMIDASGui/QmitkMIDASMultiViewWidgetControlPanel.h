@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
-#define QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
+#ifndef QmitkMIDASMultiViewWidgetControlPanel_h
+#define QmitkMIDASMultiViewWidgetControlPanel_h
 
 #include <QWidget>
 #include "ui_QmitkMIDASMultiViewWidgetControlPanel.h"

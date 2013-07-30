@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_PointUtils_h
-#define mitk_PointUtils_h
+#ifndef mitkPointUtils_h
+#define mitkPointUtils_h
 
 #include "niftkCoreExports.h"
 #include <mitkVector.h>

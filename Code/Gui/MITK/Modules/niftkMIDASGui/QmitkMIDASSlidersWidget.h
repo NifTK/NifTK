@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSLIDERSWIDGET_H
-#define QMITKMIDASSLIDERSWIDGET_H
+#ifndef QmitkMIDASSlidersWidget_h
+#define QmitkMIDASSlidersWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include "ui_QmitkMIDASSlidersWidget.h"

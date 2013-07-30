@@ -20,8 +20,8 @@
  * This is an interface to vtkIterativeClosestPointTransform.
  */
 
-#ifndef __niftkVTKIterativeClosestPoint_h
-#define __niftkVTKIterativeClosestPoint_h
+#ifndef niftkVTKIterativeClosestPoint_h
+#define niftkVTKIterativeClosestPoint_h
 
 
 #include <NifTKConfigure.h>

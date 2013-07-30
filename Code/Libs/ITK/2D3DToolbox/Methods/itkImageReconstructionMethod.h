@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageReconstructionMethod_h
-#define __itkImageReconstructionMethod_h
+#ifndef itkImageReconstructionMethod_h
+#define itkImageReconstructionMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

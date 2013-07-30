@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef DataStorageVisibilityTracker_h
-#define DataStorageVisibilityTracker_h
+#ifndef mitkDataStorageVisibilityTracker_h
+#define mitkDataStorageVisibilityTracker_h
 
 #include "niftkCoreExports.h"
 #include "mitkDataStoragePropertyListener.h"

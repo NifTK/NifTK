@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkLogNonZeroIntensitiesImageFilter_h
-#define __itkLogNonZeroIntensitiesImageFilter_h
+#ifndef itkLogNonZeroIntensitiesImageFilter_h
+#define itkLogNonZeroIntensitiesImageFilter_h
 
 #include <itkUnaryFunctorImageFilter.h>
 #include <vnl/vnl_math.h>

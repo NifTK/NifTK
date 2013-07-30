@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkIGILocalDataSourecGrabbingThread_h
-#define QmitkIGILocalDataSourecGrabbingThread_h
+#ifndef QmitkIGILocalDataSourceGrabbingThread_h
+#define QmitkIGILocalDataSourceGrabbingThread_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGITimerBasedThread.h"

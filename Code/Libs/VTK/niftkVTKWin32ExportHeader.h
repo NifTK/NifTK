@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __NIFTKVTKWIN32EXPORTHEADER_H
-#define __NIFTKVTKWIN32EXPORTHEADER_H
+#ifndef niftkVTKWin32ExportHeader_h
+#define niftkVTKWin32ExportHeader_h
 
 #include <NifTKConfigure.h>
 

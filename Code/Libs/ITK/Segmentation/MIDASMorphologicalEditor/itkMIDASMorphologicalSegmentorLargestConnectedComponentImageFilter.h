@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASMORPHOLOGICALSEGMENTORLARGESTCONNECTEDCOMPONENTIMAGEFILTER_H_
-#define ITKMIDASMORPHOLOGICALSEGMENTORLARGESTCONNECTEDCOMPONENTIMAGEFILTER_H_
+#ifndef itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter_h
+#define itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter_h
 
 #include <vector>
 #include <stack>

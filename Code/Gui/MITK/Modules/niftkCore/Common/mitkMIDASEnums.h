@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASEnums_h
-#define MIDASEnums_h
+#ifndef mitkMIDASEnums_h
+#define mitkMIDASEnums_h
 
 /*!
  * \file mitkMIDASEnums.h

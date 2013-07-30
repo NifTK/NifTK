@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __QmitkBaseView_h
-#define __QmitkBaseView_h
+#ifndef QmitkBaseView_h
+#define QmitkBaseView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 

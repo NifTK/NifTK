@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKBOUNDARYSHIFTINTEGRALCALCULATOR_H_
-#define ITKBOUNDARYSHIFTINTEGRALCALCULATOR_H_
+#ifndef itkBoundaryShiftIntegralCalculator_h
+#define itkBoundaryShiftIntegralCalculator_h
 
 #include <itkImage.h>
 #include <itkObject.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef XNATPLUGINACTIVATOR_H
-#define XNATPLUGINACTIVATOR_H
+#ifndef XnatPluginActivator_h
+#define XnatPluginActivator_h
 
 #include <ctkPluginActivator.h>
 

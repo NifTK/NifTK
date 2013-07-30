@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkGaussianCurvatureImageFilter_h
-#define __itkGaussianCurvatureImageFilter_h
+#ifndef itkGaussianCurvatureImageFilter_h
+#define itkGaussianCurvatureImageFilter_h
 #include "itkBasicFiniteDifferenceBaseClassImageFilter.h"
 
 namespace itk

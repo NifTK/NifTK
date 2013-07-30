@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkINRImageIO_h
-#define __itkINRImageIO_h
+#ifndef itkINRImageIO_h
+#define itkINRImageIO_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )

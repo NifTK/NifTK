@@ -25,8 +25,8 @@
  * defining the point data.
  */
 
-#ifndef __niftkvtk4PointsReader_h
-#define __niftkvtk4PointsReader_h
+#ifndef niftkvtk4PointsReader_h
+#define niftkvtk4PointsReader_h
 
 #include <NifTKConfigure.h>
 #include "niftkVTKWin32ExportHeader.h"

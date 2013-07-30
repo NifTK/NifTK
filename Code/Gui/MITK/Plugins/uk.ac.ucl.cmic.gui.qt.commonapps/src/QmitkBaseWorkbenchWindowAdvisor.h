@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKBASEWORKBENCHWINDOWADVISOR_H_
-#define QMITKBASEWORKBENCHWINDOWADVISOR_H_
+#ifndef QmitkBaseWorkbenchWindowAdvisor_h
+#define QmitkBaseWorkbenchWindowAdvisor_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <QmitkExtWorkbenchWindowAdvisor.h>

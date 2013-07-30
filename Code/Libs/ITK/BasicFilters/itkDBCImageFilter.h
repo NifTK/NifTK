@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKDBCImageFilter_H_
-#define ITKDBCImageFilter_H_
+#ifndef itkDBCImageFilter_h
+#define itkDBCImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <vector>

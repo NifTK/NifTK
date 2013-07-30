@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMULTIPLEERODEIMAGEFILTER_H_
-#define ITKMULTIPLEERODEIMAGEFILTER_H_
+#ifndef itkMultipleErodeImageFilter_h
+#define itkMultipleErodeImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkBinaryCrossStructuringElement.h>

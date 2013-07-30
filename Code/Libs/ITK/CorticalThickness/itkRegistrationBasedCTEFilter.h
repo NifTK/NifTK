@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkRegistrationBasedCTEFilter_h
-#define __itkRegistrationBasedCTEFilter_h
+#ifndef itkRegistrationBasedCTEFilter_h
+#define itkRegistrationBasedCTEFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkVector.h>

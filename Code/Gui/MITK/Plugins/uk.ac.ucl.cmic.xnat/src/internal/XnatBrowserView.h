@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _XNATBROWSERVIEW_H_INCLUDED
-#define _XNATBROWSERVIEW_H_INCLUDED
+#ifndef XnatBrowserView_h
+#define XnatBrowserView_h
 
 #include "ui_XnatBrowserView.h"
 

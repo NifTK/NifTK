@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkFiniteDifferenceVoxel_h
-#define __itkFiniteDifferenceVoxel_h
+#ifndef itkFiniteDifferenceVoxel_h
+#define itkFiniteDifferenceVoxel_h
 #include <itkContinuousIndex.h>
 #include <itkPoint.h>
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASDisplayInteractor_h
-#define mitk_MIDASDisplayInteractor_h
+#ifndef mitkMIDASDisplayInteractor_h
+#define mitkMIDASDisplayInteractor_h
 
 #include <niftkMIDASExports.h>
 

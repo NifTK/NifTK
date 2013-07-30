@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkIntegrateStreamlinesFilter_h
-#define __itkIntegrateStreamlinesFilter_h
+#ifndef itkIntegrateStreamlinesFilter_h
+#define itkIntegrateStreamlinesFilter_h
 
 #include <itkImage.h>
 #include <itkVector.h>

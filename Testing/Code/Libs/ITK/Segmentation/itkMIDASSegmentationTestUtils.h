@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASSEGMENTATIONTESTUTILS_H
-#define ITKMIDASSEGMENTATIONTESTUTILS_H
+#ifndef itkMIDASSegmentationTestUtils_h
+#define itkMIDASSegmentationTestUtils_h
 
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )

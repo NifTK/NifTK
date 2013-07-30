@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITK_EXPONENTIALDECAYFUNCTION_H
-#define ITK_EXPONENTIALDECAYFUNCTION_H
+#ifndef itkExponentialDecayFunction_h
+#define itkExponentialDecayFunction_h
 
 #include <vnl/vnl_least_squares_function.h>
 

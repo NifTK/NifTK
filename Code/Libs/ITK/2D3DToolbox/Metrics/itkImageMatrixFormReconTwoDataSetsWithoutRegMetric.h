@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_h
-#define __itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_h
+#ifndef itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_h
+#define itkImageMatrixFormReconTwoDataSetsWithoutRegMetric_h
 
 #include <itkConceptChecking.h>
 #include <itkSingleValuedCostFunction.h>

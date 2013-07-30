@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkThresholdImageWithRespectToPlane_h
-#define __itkThresholdImageWithRespectToPlane_h
+#ifndef itkThresholdImageWithRespectToPlane_h
+#define itkThresholdImageWithRespectToPlane_h
 
 #include <itkImageToImageFilter.h>
 

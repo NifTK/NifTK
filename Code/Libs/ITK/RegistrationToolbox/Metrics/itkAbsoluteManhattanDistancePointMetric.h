@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkAbsoluteManhattanDistancePointMetric_h
-#define __itkAbsoluteManhattanDistancePointMetric_h
+#ifndef itkAbsoluteManhattanDistancePointMetric_h
+#define itkAbsoluteManhattanDistancePointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
 #include <itkCovariantVector.h>

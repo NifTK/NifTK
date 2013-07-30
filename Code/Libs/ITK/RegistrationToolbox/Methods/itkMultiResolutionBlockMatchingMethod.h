@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMultiResolutionBlockMatchingMethod_h
-#define __itkMultiResolutionBlockMatchingMethod_h
+#ifndef itkMultiResolutionBlockMatchingMethod_h
+#define itkMultiResolutionBlockMatchingMethod_h
 
 #include "itkMultiResolutionImageRegistrationWrapper.h"
 #include <ConversionUtils.h>

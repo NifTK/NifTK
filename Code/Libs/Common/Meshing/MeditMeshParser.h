@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MEDITMESHPARSER_H
-#define MEDITMESHPARSER_H
+#ifndef MeditMeshParser_h
+#define MeditMeshParser_h
 
 #include <string>
 #include <vector>

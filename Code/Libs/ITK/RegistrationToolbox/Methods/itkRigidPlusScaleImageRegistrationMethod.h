@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkRigidPlusScaleImageRegistrationMethod_h
-#define __itkRigidPlusScaleImageRegistrationMethod_h
+#ifndef itkRigidPlusScaleImageRegistrationMethod_h
+#define itkRigidPlusScaleImageRegistrationMethod_h
 
 
 #include "itkMultiStageImageRegistrationMethod.h"

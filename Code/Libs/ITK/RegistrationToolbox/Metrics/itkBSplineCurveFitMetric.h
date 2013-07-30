@@ -13,8 +13,8 @@
 =============================================================================*/
 
 
-#ifndef __itkBSplineCurveFitMetric_h
-#define __itkBSplineCurveFitMetric_h
+#ifndef itkBSplineCurveFitMetric_h
+#define itkBSplineCurveFitMetric_h
 
 #include <vector>
 

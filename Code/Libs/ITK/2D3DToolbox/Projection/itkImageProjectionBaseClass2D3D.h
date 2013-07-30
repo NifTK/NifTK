@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageProjectionBaseClass2D3D_h
-#define __itkImageProjectionBaseClass2D3D_h
+#ifndef itkImageProjectionBaseClass2D3D_h
+#define itkImageProjectionBaseClass2D3D_h
 
 #include <itkImageToImageFilter.h>
 #include <itkConceptChecking.h>

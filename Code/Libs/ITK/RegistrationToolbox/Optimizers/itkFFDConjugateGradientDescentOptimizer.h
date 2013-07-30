@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKFFDCONJUGATEGRADIENTDESCENTOPTIMIZER_H_
-#define ITKFFDCONJUGATEGRADIENTDESCENTOPTIMIZER_H_
+#ifndef itkFFDConjugateGradientDescentOptimizer_h
+#define itkFFDConjugateGradientDescentOptimizer_h
 
 
 #include "itkFFDGradientDescentOptimizer.h"

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSSDImageToImageMetric_h
-#define __itkSSDImageToImageMetric_h
+#ifndef itkSSDImageToImageMetric_h
+#define itkSSDImageToImageMetric_h
 
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"
 

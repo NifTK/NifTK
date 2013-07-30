@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMatrixBasedSimulReconRegnMethod_h
-#define __itkMatrixBasedSimulReconRegnMethod_h
+#ifndef itkMatrixBasedSimulReconRegnMethod_h
+#define itkMatrixBasedSimulReconRegnMethod_h
 
 #include <itkProcessObject.h>
 

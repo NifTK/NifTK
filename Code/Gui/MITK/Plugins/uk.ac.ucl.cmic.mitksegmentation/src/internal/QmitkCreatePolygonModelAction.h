@@ -13,8 +13,8 @@ A PARTICULAR PURPOSE.
 See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
-#ifndef QMITKCREATEPOLYGONMODELACTION_H
-#define QMITKCREATEPOLYGONMODELACTION_H
+#ifndef QmitkCreatePolygonModelAction_h
+#define QmitkCreatePolygonModelAction_h
 
 // Parent classes
 #include <QObject>

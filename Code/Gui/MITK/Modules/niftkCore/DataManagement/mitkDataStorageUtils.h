@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_DataStorageUtils_h
-#define mitk_DataStorageUtils_h
+#ifndef mitkDataStorageUtils_h
+#define mitkDataStorageUtils_h
 
 #include "niftkCoreExports.h"
 #include <mitkDataNode.h>

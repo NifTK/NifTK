@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIOFACTORY_H
-#define ITKDRCANALYZEIMAGEIOFACTORY_H
+#ifndef itkDRCAnalyzeImageIOFactory_h
+#define itkDRCAnalyzeImageIOFactory_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

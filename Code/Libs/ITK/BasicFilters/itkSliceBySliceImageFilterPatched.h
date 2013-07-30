@@ -15,8 +15,8 @@
 
 =========================================================================*/
 
-#ifndef __itkSliceBySliceImageFilter_h
-#define __itkSliceBySliceImageFilter_h
+#ifndef itkSliceBySliceImageFilterPatched_h
+#define itkSliceBySliceImageFilterPatched_h
 
 #include <itkImageToImageFilter.h>
 
@@ -177,7 +177,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include <itkSliceBySliceImageFilter.txx>
+#include <itkSliceBySliceImageFilterPatched.txx>
 #endif
 
 #endif

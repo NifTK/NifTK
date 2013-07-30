@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBinaryThresholdSurfaceVoxelImageFunction_h
-#define __itkBinaryThresholdSurfaceVoxelImageFunction_h
+#ifndef itkBinaryThresholdSurfaceVoxelImageFunction_h
+#define itkBinaryThresholdSurfaceVoxelImageFunction_h
 
 #include <itkImageFunction.h>
 

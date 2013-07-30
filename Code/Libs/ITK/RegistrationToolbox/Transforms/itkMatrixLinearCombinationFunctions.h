@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMatrixLinearCombinationFunctions_h
-#define __itkMatrixLinearCombinationFunctions_h
+#ifndef itkMatrixLinearCombinationFunctions_h
+#define itkMatrixLinearCombinationFunctions_h
 #include <algorithm>
 #include <ConversionUtils.h>
 

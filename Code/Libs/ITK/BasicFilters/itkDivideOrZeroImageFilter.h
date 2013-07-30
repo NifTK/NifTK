@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkDivideOrZeroImageFilter_h
-#define __itkDivideOrZeroImageFilter_h
+#ifndef itkDivideOrZeroImageFilter_h
+#define itkDivideOrZeroImageFilter_h
 
 #include <itkBinaryFunctorImageFilter.h>
 #include <itkNumericTraits.h>

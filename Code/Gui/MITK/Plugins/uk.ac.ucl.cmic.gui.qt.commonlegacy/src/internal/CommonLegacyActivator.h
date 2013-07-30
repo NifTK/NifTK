@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef COMMONLEGACYACTIVATOR_H
-#define COMMONLEGACYACTIVATOR_H
+#ifndef CommonLegacyActivator_h
+#define CommonLegacyActivator_h
 
 #include <ctkPluginActivator.h>
 

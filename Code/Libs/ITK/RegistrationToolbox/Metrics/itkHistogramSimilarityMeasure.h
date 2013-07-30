@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkHistogramSimilarityMeasure_h
-#define __itkHistogramSimilarityMeasure_h
+#ifndef itkHistogramSimilarityMeasure_h
+#define itkHistogramSimilarityMeasure_h
 
 #include "itkUCLHistogram.h"
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkLeastTrimmedSquaresPointMetric_h
-#define __itkLeastTrimmedSquaresPointMetric_h
+#ifndef itkLeastTrimmedSquaresPointMetric_h
+#define itkLeastTrimmedSquaresPointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
 #include <itkCovariantVector.h>

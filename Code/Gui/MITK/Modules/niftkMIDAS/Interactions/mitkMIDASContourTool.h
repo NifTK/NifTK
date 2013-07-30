@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASContourTool_h
-#define mitk_MIDASContourTool_h
+#ifndef mitkMIDASContourTool_h
+#define mitkMIDASContourTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASContourToolEventInterface.h"

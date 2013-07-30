@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkDasGradientFilter_h
-#define __itkDasGradientFilter_h
+#ifndef itkDasGradientFilter_h
+#define itkDasGradientFilter_h
 
 #include <itkVector.h>
 #include <itkImage.h>

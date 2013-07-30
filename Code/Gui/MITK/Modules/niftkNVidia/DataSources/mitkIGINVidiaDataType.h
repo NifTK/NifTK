@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGINVIDIADATATYPE_H
-#define MITKIGINVIDIADATATYPE_H
+#ifndef mitkIGINVidiaDataType_h
+#define mitkIGINVidiaDataType_h
 
 #include "niftkNVidiaExports.h"
 #include <mitkIGIDataType.h>
