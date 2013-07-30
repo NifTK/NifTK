@@ -1108,7 +1108,25 @@ void UndistortPoint(const cv::Point2f& inputPoint,
   outputPoint = outputPoints[0];
 }
 
+//-----------------------------------------------------------------------------
+cv::Point3f  TriangulatePointPair(
+    const std::pair<cv::Point2f, cv::Point2f>& inputUndistortedPoint,
+    const cv::Mat& leftCameraIntrinsicParams,
+    const cv::Mat& rightCameraIntrinsicParams,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector
+    )
+{
+  cv::Mat rightToLeftRotationVector = cv::Mat(1,3,CV_32FC1);
+  cv::Rodrigues(rightToLeftRotationMatrix,rightToLeftRotationVector);
 
+  std::vector < std::pair<cv::Point2f, cv::Point2f> > inputUndistortedPoints;
+  inputUndistortedPoints.push_back(inputUndistortedPoint);
+  std::vector <cv::Point3f> returnVector = TriangulatePointPairs(
+      inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
+      rightToLeftRotationVector, rightToLeftTranslationVector);
+  return returnVector[0];
+}
 
 //-----------------------------------------------------------------------------
 std::vector< cv::Point3f > TriangulatePointPairs(
@@ -1121,7 +1139,6 @@ std::vector< cv::Point3f > TriangulatePointPairs(
 {
   std::vector< cv::Point3f > outputPoints;
   int numberOfPoints = inputUndistortedPoints.size();
-
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat R2LRot32 = cv::Mat(3, 3, CV_32FC1);
@@ -1151,7 +1168,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
   K2Inv = K2.inv();
-
+  
   // Set up some working matrices...
   cv::Mat p1                = cv::Mat(3, 1, CV_64FC1);
   cv::Mat p2                = cv::Mat(3, 1, CV_64FC1);
@@ -1274,6 +1291,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
       outputPoints.push_back(midPoint);
     }
   }
+  
   return outputPoints;
 }
 
@@ -1889,20 +1907,16 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
 {
   std::ifstream fin(filename.c_str());
-  if ( ! fin ) 
-  {
-    std::cerr << "HEY HEY" << std::endl;
-  }
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
     {
-       fin >> CameraIntrinsic->at<double>(row,col);
+       fin >> CameraIntrinsic->at<float>(row,col);
     }
   } 
   for ( int col = 0 ; col < 5 ; col++ )
   {
-    fin >> CameraDistortion->at<double>(0,col);
+    fin >> CameraDistortion->at<float>(0,col);
   }
 }
 //-----------------------------------------------------------------------------
@@ -1914,12 +1928,12 @@ void LoadStereoTransformsFromPlainText (const std::string& filename,
   {
     for ( int col = 0; col < 3; col ++ )
     {
-       fin >> rightToLeftRotationMatrix->at<double>(row,col);
+       fin >> rightToLeftRotationMatrix->at<float>(row,col);
     }
   } 
   for ( int col = 0 ; col < 3 ; col++ )
   {
-    fin >> rightToLeftTranslationVector->at<double>(0,col);
+    fin >> rightToLeftTranslationVector->at<float>(0,col);
   }
 }
 //-----------------------------------------------------------------------------
@@ -1931,7 +1945,7 @@ void LoadHandeyeFromPlainText (const std::string& filename,
   {
     for ( int col = 0; col < 4; col ++ )
     {
-       fin >> leftCameraToTracker->at<double>(row,col);
+       fin >> leftCameraToTracker->at<float>(row,col);
     }
   } 
   

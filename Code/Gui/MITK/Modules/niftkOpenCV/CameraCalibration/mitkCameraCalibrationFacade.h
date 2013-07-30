@@ -445,6 +445,22 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     const cv::Mat& rightToLeftTranslationVector
     );
 
+/**
+ * \brief Triangulates an undistorted (i.e. already correction for distortion) 2D point pair back into 3D.
+ *
+ * Taken from: http://geomalgorithms.com/a07-_distance.html
+ *
+ * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
+ * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ */
+cv::Point3f TriangulatePointPair(
+    const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
+    const cv::Mat& leftCameraIntrinsicParams,
+    const cv::Mat& rightCameraIntrinsicParams,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector
+    );
+
 
 /**
  * \brief C Wrapper for the other TriangulatePointPairs.
