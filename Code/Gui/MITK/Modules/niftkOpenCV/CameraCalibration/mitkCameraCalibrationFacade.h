@@ -414,6 +414,20 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
     std::vector<cv::Point2f>& outputIdealPoints
     );
 
+/**
+ * \brief Takes an image point, and undistorts it to ideal locations, which is a C++ wrapper for the above method.
+ * \param inputObservedPoints vector of (x,y) points, as observed in a distorted image
+ * \param cameraIntrinsics3x3 [3x3] matrix of camera intrisic parameters.
+ * \param cameraDistortionParams5x1 [5x1] camera distortion params.
+ * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
+ */
+void UndistortPoint(const cv::Point2f& inputObservedPoint,
+    const cv::Mat& cameraIntrinsics3x3,
+    const cv::Mat& cameraDistortionParams5x1,
+    cv::Point2f& outputIdealPoint
+    );
+
+
 
 /**
  * \brief Triangulates a vector of un-distorted (i.e. already correction for distortion) 2D point pairs back into 3D.

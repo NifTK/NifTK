@@ -1094,6 +1094,20 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputPoints,
 {
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
 }
+//-----------------------------------------------------------------------------
+void UndistortPoint(const cv::Point2f& inputPoint,
+    const cv::Mat& cameraIntrinsics,
+    const cv::Mat& cameraDistortionParams,
+    cv::Point2f& outputPoint
+    )
+{
+  std::vector<cv::Point2f> inputPoints;
+  std::vector<cv::Point2f> outputPoints;
+  inputPoints.push_back (inputPoint);
+  cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+  outputPoint = outputPoints[0];
+}
+
 
 
 //-----------------------------------------------------------------------------
