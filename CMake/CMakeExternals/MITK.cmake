@@ -440,8 +440,10 @@ if(NOT DEFINED MITK_DIR)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
 
     ExternalProject_Add(${proj}
-      URL ${NIFTK_LOCATION_MITK}
-      URL_MD5 ${NIFTK_CHECKSUM_MITK}
+#      URL ${NIFTK_LOCATION_MITK}
+#      URL_MD5 ${NIFTK_CHECKSUM_MITK}
+      GIT_REPOSITORY git@github.com:NifTK/MITK
+      GIT_TAG d02cfa228e
       BINARY_DIR ${proj}-build
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
       INSTALL_COMMAND ""
