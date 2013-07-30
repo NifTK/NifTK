@@ -335,10 +335,7 @@ int mitkTrackingTest ( int argc, char * argv[] )
         cv::Mat TR(rightframe);
         cv::Mat tl(output2DPointsLeft);
         cv::Mat tr(output2DPointsRight);
-          MITK_INFO << "Frame : " << framecount << ": Point In lens " << PointInLensCoords << tl << tr;
-          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,0);
-          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,1);
-          MITK_INFO << CV_MAT_ELEM(*outputLeftCameraWorldPointsIn3D, float, 0 ,2);
+        MITK_INFO << "Frame : " << framecount << ": Point In lens " << PointInLensCoords << tl << tr;
         cv::circle(TL , cvPoint(tl.at<float>(0,0),tl.at<float>(0,1)), 10,  cvScalar(255,0,0), 3, 8, 0 );
         cv::circle(TR , cvPoint(tr.at<float>(0,0),tr.at<float>(0,1)), 10 , cvScalar(0,255,0), 3, 8, 0);
 
@@ -355,11 +352,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
     cvShowImage("Left Processed", smallleftprocessed);
   //  cvShowImage("Left Processed", smalltemp);
     key = cvWaitKey (1);
-    if ( framecount >= ScreenPointSetFrame ) 
-     {
-       
-       key = cvWaitKey(0);
-     }
     framecount += 2;
   }
   
