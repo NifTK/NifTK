@@ -117,7 +117,7 @@ public:
    * */
   virtual const JacobianType & GetJacobian(const InputPointType & point ) const;
   virtual void ComputeJacobianWithRespectToParameters(const InputPointType & point,
-                                                                      JacobianType & jacobian ) const;
+                                                      JacobianType & jacobian ) const;
   
   /** To get the inverse. Returns false, if transform is non-invertable. */
   virtual bool GetInv(UCLBaseTransform< TScalarType, NInputDimensions, NOutputDimensions >* inverse) const;
