@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkCurveFitRegistrationMethod_h
-#define __itkCurveFitRegistrationMethod_h
+#ifndef itkCurveFitRegistrationMethod_h
+#define itkCurveFitRegistrationMethod_h
 
 #include <itkImageToImageFilter.h>
 

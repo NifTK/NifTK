@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKTHUMBNAILRENDERWINDOW_H_
-#define QMITKTHUMBNAILRENDERWINDOW_H_
+#ifndef QmitkThumbnailRenderWindow_h
+#define QmitkThumbnailRenderWindow_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QColor>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CoordinateAxesDataWriterFactory_h
-#define CoordinateAxesDataWriterFactory_h
+#ifndef mitkCoordinateAxesDataWriterFactory_h
+#define mitkCoordinateAxesDataWriterFactory_h
 
 #include "niftkCoreExports.h"
 #include <itkObjectFactoryBase.h>

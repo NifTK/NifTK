@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkCorrectGMUsingNeighbourhoodFilter_h
-#define __itkCorrectGMUsingNeighbourhoodFilter_h
+#ifndef itkCorrectGMUsingNeighbourhoodFilter_h
+#define itkCorrectGMUsingNeighbourhoodFilter_h
 
 #include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"

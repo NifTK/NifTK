@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBackwardImageProjector2Dto3D_h
-#define __itkBackwardImageProjector2Dto3D_h
+#ifndef itkBackwardImageProjector2Dto3D_h
+#define itkBackwardImageProjector2Dto3D_h
 
 #include "itkRay.h"
 #include "itkImageProjectionBaseClass2D3D.h"

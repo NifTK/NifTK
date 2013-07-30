@@ -35,8 +35,8 @@
  *         The University of Iowa 2002
  */
 
-#ifndef AnalyzeImageIO3160_h
-#define AnalyzeImageIO3160_h
+#ifndef itkAnalyzeImageIO3160_h
+#define itkAnalyzeImageIO3160_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )

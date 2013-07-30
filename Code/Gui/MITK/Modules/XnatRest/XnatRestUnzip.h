@@ -40,8 +40,8 @@
 
 */
 
-#ifndef _unz64_H
-#define _unz64_H
+#ifndef XnatRestUnzip_h
+#define XnatRestUnzip_h
 
 #ifdef __cplusplus
 extern "C" {

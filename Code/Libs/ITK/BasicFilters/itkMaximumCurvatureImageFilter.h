@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMaximumCurvatureImageFilter_h
-#define __itkMaximumCurvatureImageFilter_h
+#ifndef itkMaximumCurvatureImageFilter_h
+#define itkMaximumCurvatureImageFilter_h
 
 #include <itkBinaryFunctorImageFilter.h>
 #include <itkNumericTraits.h>

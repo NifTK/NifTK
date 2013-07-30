@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMSDImageToImageMetric_h
-#define __itkMSDImageToImageMetric_h
+#ifndef itkMSDImageToImageMetric_h
+#define itkMSDImageToImageMetric_h
 
 #include "itkJacobianGradientSimilarityMeasure.h"
 

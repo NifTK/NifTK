@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBreastMaskSegmForModelling_h
-#define __itkBreastMaskSegmForModelling_h
+#ifndef itkBreastMaskSegmForModelling_h
+#define itkBreastMaskSegmForModelling_h
 
 #include "itkBreastMaskSegmentationFromMRI.h"
 

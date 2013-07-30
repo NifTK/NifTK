@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKBINARYINTERSECTWITHPADDINGIMAGE_H_
-#define ITKBINARYINTERSECTWITHPADDINGIMAGE_H_
+#ifndef itkBinaryIntersectWithPaddingImageFilter_h
+#define itkBinaryIntersectWithPaddingImageFilter_h
 
 #include <itkBinaryFunctorImageFilter.h>
 

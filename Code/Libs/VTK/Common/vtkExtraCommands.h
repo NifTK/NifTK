@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef VTKEXTRACOMMANDS_H
-#define VTKEXTRACOMMANDS_H
+#ifndef vtkExtraCommands_h
+#define vtkExtraCommands_h
 
 #include <NifTKConfigure.h>
 #include <niftkVTKWin32ExportHeader.h>

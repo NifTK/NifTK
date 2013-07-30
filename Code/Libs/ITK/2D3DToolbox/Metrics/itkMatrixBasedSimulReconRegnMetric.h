@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMatrixBasedSimulReconRegnMetric_h
-#define __itkMatrixBasedSimulReconRegnMetric_h
+#ifndef itkMatrixBasedSimulReconRegnMetric_h
+#define itkMatrixBasedSimulReconRegnMetric_h
 
 #include <itkConceptChecking.h>
 #include <itkSingleValuedCostFunction.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef COMMONACTIVATOR_H
-#define COMMONACTIVATOR_H
+#ifndef CommonActivator_h
+#define CommonActivator_h
 
 #include <ctkPluginActivator.h>
 

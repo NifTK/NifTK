@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASImageUtils_h
-#define mitk_MIDASImageUtils_h
+#ifndef mitkMIDASImageUtils_h
+#define mitkMIDASImageUtils_h
 
 #include "niftkCoreExports.h"
 #include <itkConversionUtils.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkAffineTransform2D3D_h
-#define __itkAffineTransform2D3D_h
+#ifndef itkAffineTransform2D3D_h
+#define itkAffineTransform2D3D_h
 
 #include <iostream>
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLHistogram_h
-#define __itkUCLHistogram_h
+#ifndef itkUCLHistogram_h
+#define itkUCLHistogram_h
 
 #include <itkHistogram.h>
 

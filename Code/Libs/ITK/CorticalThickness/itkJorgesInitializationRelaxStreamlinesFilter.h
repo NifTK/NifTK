@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkJorgesInitializationRelaxStreamlinesFilter_h
-#define __itkJorgesInitializationRelaxStreamlinesFilter_h
+#ifndef itkJorgesInitializationRelaxStreamlinesFilter_h
+#define itkJorgesInitializationRelaxStreamlinesFilter_h
 
 #include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
 

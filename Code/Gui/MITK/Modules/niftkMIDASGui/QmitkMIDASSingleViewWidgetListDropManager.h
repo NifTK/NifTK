@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSINGLEVIEWWIDGETLISTDROPMANAGER_H_
-#define QMITKMIDASSINGLEVIEWWIDGETLISTDROPMANAGER_H_
+#ifndef QmitkMIDASSingleViewWidgetListDropManager_h
+#define QmitkMIDASSingleViewWidgetListDropManager_h
 
 #include <niftkMIDASGuiExports.h>
 #include <vector>

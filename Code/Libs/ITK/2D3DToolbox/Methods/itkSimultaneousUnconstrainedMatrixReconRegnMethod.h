@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
-#define __itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
+#ifndef itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
+#define itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

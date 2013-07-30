@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKMIDASGENERALSEGMENTORCOMMANDS_H
-#define MITKMIDASGENERALSEGMENTORCOMMANDS_H
+#ifndef MIDASGeneralSegmentorViewCommands_h
+#define MIDASGeneralSegmentorViewCommands_h
 
 #include <mitkOperation.h>
 #include <mitkDataNode.h>

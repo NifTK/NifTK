@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYIGIAPPWORKBENCHADVISOR_H_
-#define QMITKNIFTYIGIAPPWORKBENCHADVISOR_H_
+#ifndef QmitkNiftyIGIAppWorkbenchAdvisor_h
+#define QmitkNiftyIGIAppWorkbenchAdvisor_h
 
 #ifdef __MINGW32__
 // We need to inlclude winbase.h here in order to declare

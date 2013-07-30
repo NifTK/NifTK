@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBlockMatchingMethod_h
-#define __itkBlockMatchingMethod_h
+#ifndef itkBlockMatchingMethod_h
+#define itkBlockMatchingMethod_h
 
 
 #include "itkMaskedImageRegistrationMethod.h"

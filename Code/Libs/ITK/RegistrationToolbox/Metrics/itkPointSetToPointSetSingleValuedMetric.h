@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkPointSetToPointSetSingleValuedMetric_h
-#define __itkPointSetToPointSetSingleValuedMetric_h
+#ifndef itkPointSetToPointSetSingleValuedMetric_h
+#define itkPointSetToPointSetSingleValuedMetric_h
 
 #include <itkImageBase.h>
 #include <itkTransform.h>

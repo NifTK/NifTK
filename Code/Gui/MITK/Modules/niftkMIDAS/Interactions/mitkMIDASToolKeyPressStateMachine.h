@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASToolKeyPressStateMachine_h
-#define mitk_MIDASToolKeyPressStateMachine_h
+#ifndef mitkMIDASToolKeyPressStateMachine_h
+#define mitkMIDASToolKeyPressStateMachine_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASToolKeyPressResponder.h"

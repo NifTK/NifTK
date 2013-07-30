@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMULTIVIEWVISIBILITYMANAGER_H_
-#define QMITKMIDASMULTIVIEWVISIBILITYMANAGER_H_
+#ifndef QmitkMIDASMultiViewVisibilityManager_h
+#define QmitkMIDASMultiViewVisibilityManager_h
 
 #include <niftkMIDASGuiExports.h>
 #include <mitkMIDASEnums.h>

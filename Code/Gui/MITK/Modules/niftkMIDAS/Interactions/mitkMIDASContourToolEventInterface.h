@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASContourToolEventInterface_h
-#define mitk_MIDASContourToolEventInterface_h
+#ifndef mitkMIDASContourToolEventInterface_h
+#define mitkMIDASContourToolEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>

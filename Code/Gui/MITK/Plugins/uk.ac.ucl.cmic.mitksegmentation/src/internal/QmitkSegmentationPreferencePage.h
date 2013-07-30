@@ -15,8 +15,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 
-#ifndef QmitkSegmentationPreferencePage_h_included
-#define QmitkSegmentationPreferencePage_h_included
+#ifndef QmitkSegmentationPreferencePage_h
+#define QmitkSegmentationPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>

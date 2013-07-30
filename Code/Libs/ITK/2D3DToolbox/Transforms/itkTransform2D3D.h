@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkTransform2D3D_h
-#define __itkTransform2D3D_h
+#ifndef itkTransform2D3D_h
+#define itkTransform2D3D_h
 
 #include <itkExceptionObject.h>
 #include <iostream>

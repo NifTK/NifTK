@@ -37,8 +37,8 @@
 
 */
 
-#ifndef _zip12_H
-#define _zip12_H
+#ifndef XnatRestZip_h
+#define XnatRestZip_h
 
 #ifdef __cplusplus
 extern "C" {

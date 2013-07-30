@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkEulerAffineTransform_h
-#define __itkEulerAffineTransform_h
+#ifndef itkEulerAffineTransform_h
+#define itkEulerAffineTransform_h
 
 #include "itkSwitchableAffineTransform.h"
 #include <itkMacro.h>

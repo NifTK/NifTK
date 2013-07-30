@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASViewKeyPressStateMachine_h
-#define mitk_MIDASViewKeyPressStateMachine_h
+#ifndef mitkMIDASViewKeyPressStateMachine_h
+#define mitkMIDASViewKeyPressStateMachine_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASViewKeyPressResponder.h"

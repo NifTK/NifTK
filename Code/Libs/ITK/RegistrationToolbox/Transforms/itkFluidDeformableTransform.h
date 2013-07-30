@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKFLUIDDEFORMABLETRANSFORM_H_
-#define ITKFLUIDDEFORMABLETRANSFORM_H_
+#ifndef itkFluidDeformableTransform_h
+#define itkFluidDeformableTransform_h
 
 #include "itkDeformableTransform.h"
 #include <itkImage.h>

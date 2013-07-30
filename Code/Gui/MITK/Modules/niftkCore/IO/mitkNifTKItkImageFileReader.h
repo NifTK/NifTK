@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef NifTKItkImageFileReader_h
-#define NifTKItkImageFileReader_h
+#ifndef mitkNifTKItkImageFileReader_h
+#define mitkNifTKItkImageFileReader_h
 
 #include "niftkCoreExports.h"
 #include <mitkCommon.h>

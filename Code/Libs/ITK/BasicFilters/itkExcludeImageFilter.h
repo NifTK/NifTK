@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKEXCLUDEIMAGEFILTER_H_
-#define ITKEXCLUDEIMAGEFILTER_H_
+#ifndef itkExcludeImageFilter_h
+#define itkExcludeImageFilter_h
 #include <itkBinaryFunctorImageFilter.h>
 #include <itkNumericTraits.h>
 

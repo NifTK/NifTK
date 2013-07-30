@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftk_Undistortion_h
-#define niftk_Undistortion_h
+#ifndef Undistortion_h
+#define Undistortion_h
 
 #include "niftkOpenCVExports.h"
 #include <mitkDataStorage.h>

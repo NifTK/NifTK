@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CoordinateAxesDataReaderFactory_h
-#define CoordinateAxesDataReaderFactory_h
+#ifndef mitkCoordinateAxesDataReaderFactory_h
+#define mitkCoordinateAxesDataReaderFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )

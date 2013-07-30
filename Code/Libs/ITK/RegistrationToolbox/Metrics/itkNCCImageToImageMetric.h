@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkNCCImageToImageMetric_h
-#define __itkNCCImageToImageMetric_h
+#ifndef itkNCCImageToImageMetric_h
+#define itkNCCImageToImageMetric_h
 
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"
 

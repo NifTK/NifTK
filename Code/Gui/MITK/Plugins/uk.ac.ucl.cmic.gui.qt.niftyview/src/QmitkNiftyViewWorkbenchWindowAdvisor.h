@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
-#define QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_
+#ifndef QmitkNiftyViewWorkbenchWindowAdvisor_h
+#define QmitkNiftyViewWorkbenchWindowAdvisor_h
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
 #include <QmitkBaseWorkbenchWindowAdvisor.h>

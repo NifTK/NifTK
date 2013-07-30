@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkNIFTKTransformIO_h
-#define __itkNIFTKTransformIO_h
+#ifndef itkNIFTKTransformIO_h
+#define itkNIFTKTransformIO_h
 #include <niftkITKWin32ExportHeader.h>
 #include <itkTransformIOBase.h>
 

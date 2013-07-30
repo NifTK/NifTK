@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
-#define QMITKCOMMONAPPSAPPLICATIONPLUGIN_H_
+#ifndef QmitkCommonAppsApplicationPlugin_h
+#define QmitkCommonAppsApplicationPlugin_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <ctkPluginActivator.h>

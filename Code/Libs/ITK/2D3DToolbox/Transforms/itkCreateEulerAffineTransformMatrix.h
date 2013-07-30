@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkCreateEulerAffineTransformMatrix_h
-#define __itkCreateEulerAffineTransformMatrix_h
+#ifndef itkCreateEulerAffineTransformMatrix_h
+#define itkCreateEulerAffineTransformMatrix_h
 
 #include "itkCreateEulerAffineTransformMatrixBaseClass.h"
 #include <itkEulerAffineTransform.h>

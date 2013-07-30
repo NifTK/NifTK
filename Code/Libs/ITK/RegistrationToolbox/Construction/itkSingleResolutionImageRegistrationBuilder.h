@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSingleResolutionImageRegistrationBuilder_h
-#define __itkSingleResolutionImageRegistrationBuilder_h
+#ifndef itkSingleResolutionImageRegistrationBuilder_h
+#define itkSingleResolutionImageRegistrationBuilder_h
 
 
 #include <itkObject.h>

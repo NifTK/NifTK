@@ -35,8 +35,8 @@
  *         The University of Iowa 2002
  */
 
-#ifndef NiftiImageIO3201_h
-#define NiftiImageIO3201_h
+#ifndef itkNiftiImageIO3201_h
+#define itkNiftiImageIO3201_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSumLogJacobianDeterminantConstraint_h
-#define __itkSumLogJacobianDeterminantConstraint_h
+#ifndef itkSumLogJacobianDeterminantConstraint_h
+#define itkSumLogJacobianDeterminantConstraint_h
 
 #include "itkConstraint.h"
 #include <itkBSplineTransform.h>

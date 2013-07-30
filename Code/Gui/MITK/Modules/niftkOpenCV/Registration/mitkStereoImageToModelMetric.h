@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREOIMAGETOMODELMETRIC_H
-#define MITKSTEREOIMAGETOMODELMETRIC_H
+#ifndef mitkStereoImageToModelMetric_h
+#define mitkStereoImageToModelMetric_h
 
 #include <itkExceptionObject.h>
 #include <itkSingleValuedCostFunction.h>

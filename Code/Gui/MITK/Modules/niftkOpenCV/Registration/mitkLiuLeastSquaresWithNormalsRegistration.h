@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkLuiLeastSquaresWithNormalsRegistration_h
-#define mitkLuiLeastSquaresWithNormalsRegistration_h
+#ifndef mitkLiuLeastSquaresWithNormalsRegistration_h
+#define mitkLiuLeastSquaresWithNormalsRegistration_h
 
 #include <mitkCommon.h>
 #include <itkObject.h>
