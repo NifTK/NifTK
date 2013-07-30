@@ -175,7 +175,6 @@ void QmitkSingle3DView::NodeChanged(const mitk::DataNode* node)
   if (m_ImageNode.IsNotNull())
   {
     m_BitmapOverlay->NodeChanged(node);
-    this->Update();
   }
 }
 
