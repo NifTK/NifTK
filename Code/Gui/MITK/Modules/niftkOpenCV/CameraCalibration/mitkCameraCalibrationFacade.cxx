@@ -2056,5 +2056,37 @@ cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
 
   return returnPoint;
 }
+//-----------------------------------------------------------------------------------------
+cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
+          cv::Mat& Handeye, cv::Mat& Tracker )
+{
+  cv::Mat lensToTracker    = cv::Mat(4, 4, CV_64FC1);
+  cv::Mat trackerToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat lensToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat pointInLens      = cv::Mat(4,1,CV_64FC1);
+  cv::Mat pointInWorld     = cv::Mat(4,1,CV_64FC1);
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      lensToTracker.at<double>(i,j) = Handeye.at<float>(i,j);
+      trackerToWorld.at<double>(i,j) = Tracker.at<float>(i,j);
+    }
+  }
+  pointInWorld.at<double>(0,0) = PointInWorldCS.x;
+  pointInWorld.at<double>(1,0) = PointInWorldCS.y;
+  pointInWorld.at<double>(2,0) = PointInWorldCS.z;
+  pointInWorld.at<double>(3,0) = 1.0;
+
+  lensToWorld = lensToTracker * trackerToWorld;
+  pointInLens = lensToWorld.inv() * pointInWorld;
+  
+  cv::Point3f returnPoint;
+  returnPoint.x = pointInLens.at<double>(0,0);
+  returnPoint.y = pointInLens.at<double>(1,0);
+  returnPoint.z = pointInLens.at<double>(2,0);
+
+  return returnPoint;
+}
   
 } // end namespace
