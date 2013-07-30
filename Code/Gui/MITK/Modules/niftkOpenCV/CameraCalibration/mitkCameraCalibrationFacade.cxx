@@ -2024,14 +2024,15 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
   LoadHandeyeFromPlainText (handeyeFiles[0],leftCameraToTracker);
 
 }
+//-----------------------------------------------------------------------------------------
 cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
           cv::Mat& Handeye, cv::Mat& Tracker )
 {
   cv::Mat lensToTracker    = cv::Mat(4, 4, CV_64FC1);
   cv::Mat trackerToWorld   = cv::Mat(4,4,CV_64FC1);
   cv::Mat lensToWorld   = cv::Mat(4,4,CV_64FC1);
-  cv::Mat pointInLens      = cv::Mat(1,4,CV_64FC1);
-  cv::Mat pointInWorld     = cv::Mat(1,4,CV_64FC1);
+  cv::Mat pointInLens      = cv::Mat(4,1,CV_64FC1);
+  cv::Mat pointInWorld     = cv::Mat(4,1,CV_64FC1);
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
@@ -2041,20 +2042,19 @@ cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
     }
   }
   pointInLens.at<double>(0,0) = PointInLensCS.x;
-  pointInLens.at<double>(0,1) = PointInLensCS.y;
-  pointInLens.at<double>(0,2) = PointInLensCS.z;
-  pointInLens.at<double>(0,3) = 1.0;
+  pointInLens.at<double>(1,0) = PointInLensCS.y;
+  pointInLens.at<double>(2,0) = PointInLensCS.z;
+  pointInLens.at<double>(3,0) = 1.0;
 
   lensToWorld = lensToTracker * trackerToWorld;
-  pointInWorld = pointInLens * lensToWorld;
+  pointInWorld = lensToWorld * pointInLens;
   
   cv::Point3f returnPoint;
   returnPoint.x = pointInWorld.at<double>(0,0);
-  returnPoint.y = pointInWorld.at<double>(0,1);
-  returnPoint.z = pointInWorld.at<double>(0,2);
+  returnPoint.y = pointInWorld.at<double>(1,0);
+  returnPoint.z = pointInWorld.at<double>(2,0);
+
   return returnPoint;
 }
   
-
-
 } // end namespace

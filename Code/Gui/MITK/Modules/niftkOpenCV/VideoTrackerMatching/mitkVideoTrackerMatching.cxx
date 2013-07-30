@@ -246,7 +246,7 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
 {
-  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
+  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_32FC1);
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
@@ -257,7 +257,7 @@ cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
   {
     for ( int col = 0 ; col < 4 ; col ++ ) 
     {
-      fin >> TrackerMatrix.at<double>(row,col);
+      fin >> TrackerMatrix.at<float>(row,col);
     }
   }
   return TrackerMatrix;
@@ -321,7 +321,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
-  cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  cv::Mat returnMat = cv::Mat(4,4,CV_32FC1);
   
   if ( !m_Ready ) 
   {
