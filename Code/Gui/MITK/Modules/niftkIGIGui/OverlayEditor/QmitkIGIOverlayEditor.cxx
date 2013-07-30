@@ -245,7 +245,5 @@ void QmitkIGIOverlayEditor::DisableGradientBackground()
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::Update()
 {
-  // This method is called from the event bus.
-  // However, we now set the m_OverlayViewer to recalculate based on listening to DataStorage->ChangedNodeEvent.
-  // m_OverlayViewer->Update();
+  m_OverlayViewer->Update();
 }
