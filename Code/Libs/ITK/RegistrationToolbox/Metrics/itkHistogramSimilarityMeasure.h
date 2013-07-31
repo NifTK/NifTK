@@ -59,7 +59,7 @@ public:
   typedef typename HistogramType::Pointer                 HistogramPointer;
   typedef typename HistogramType::SizeType                HistogramSizeType;
   typedef typename HistogramType::MeasurementVectorType   HistogramMeasurementVectorType;
-  typedef typename HistogramType::FrequencyType           HistogramFrequencyType;
+  typedef typename HistogramType::AbsoluteFrequencyType   HistogramFrequencyType;
   typedef typename HistogramType::Iterator                HistogramIteratorType;
   
   /** Initializes the metric. */

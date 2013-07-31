@@ -127,9 +127,9 @@ HistogramSimilarityMeasure<TFixedImage,TMovingImage>
                     {
                       sample[0] = t;
                       sample[1] = r;
-                      double coeff =  GetParzenValue((double)t-fixedValue)
+                      HistogramFrequencyType coeff =  GetParzenValue((double)t-fixedValue)
                                      *GetParzenValue((double)r-movingValue);
-                      this->m_Histogram->IncreaseFrequency(sample, coeff);    
+                      this->m_Histogram->IncreaseFrequencyOfMeasurement(sample, coeff);    
                       
 //                      std::cout << "Matt:   coeff=" << coeff << std::endl;
                     }
@@ -139,7 +139,7 @@ HistogramSimilarityMeasure<TFixedImage,TMovingImage>
     }
   else
     {
-      this->m_Histogram->IncreaseFrequency(sample, 1);    
+      this->m_Histogram->IncreaseFrequencyOfMeasurement(sample, 1);    
     }
 }
 
