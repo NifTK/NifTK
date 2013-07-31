@@ -194,7 +194,7 @@ endforeach()
 ##############################################################
 set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkAbsImageFilter
-  #niftkAffine
+  niftkAffine
   niftkAnd
   niftkAtlasStatistics
   niftkAverage
