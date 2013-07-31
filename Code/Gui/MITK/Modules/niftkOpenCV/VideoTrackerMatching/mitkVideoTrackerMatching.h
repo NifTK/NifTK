@@ -62,7 +62,19 @@ public:
   /**
    * \brief returns state of m_Ready
    */
-  bool IsReady () { return m_Ready; } 
+  bool IsReady () 
+  { 
+    return m_Ready;
+  } 
+
+  /**
+   * \get the frame count
+   */
+  int GetNumberOfFrames () 
+  {
+    return m_FrameNumbers.size();
+  }
+
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();
