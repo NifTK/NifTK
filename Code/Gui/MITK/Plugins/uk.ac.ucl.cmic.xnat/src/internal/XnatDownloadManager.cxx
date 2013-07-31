@@ -282,7 +282,7 @@ void XnatDownloadManager::downloadData()
   Q_D(XnatDownloadManager);
 
   unsigned long numBytes;
-  XnatRestStatus status;
+//  XnatRestStatus status;
 
   // check if user has canceled download
   if ( d->downloadDialog->wasDownloadCanceled() )
@@ -312,16 +312,16 @@ void XnatDownloadManager::downloadData()
   // download more data from XNAT
 //  status = moveXnatRestAsynData(&numBytes, &d->finished);
   d->finished = true;
-  status = XNATREST_OK;
+//  status = XNATREST_OK;
   numBytes = 0;
 
-  if ( status != XNATREST_OK )
-  {
-    d->downloadDialog->close();
-    QMessageBox::warning(d->xnatTreeView, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
-    emit done();
-    return;
-  }
+//  if ( status != XNATREST_OK )
+//  {
+//    d->downloadDialog->close();
+//    QMessageBox::warning(d->xnatTreeView, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+//    emit done();
+//    return;
+//  }
 
   // update number of bytes downloaded
   if ( numBytes > 0 )
@@ -338,7 +338,7 @@ void XnatDownloadManager::downloadDataBlocking()
   Q_D(XnatDownloadManager);
 
   unsigned long numBytes;
-  XnatRestStatus status;
+//  XnatRestStatus status;
 
   while (true)
   {
@@ -370,16 +370,16 @@ void XnatDownloadManager::downloadDataBlocking()
     // download more data from XNAT
 //    status = moveXnatRestAsynData(&numBytes, &d->finished);
     d->finished = true;
-    status = XNATREST_OK;
+//    status = XNATREST_OK;
     numBytes = 0;
 
-    if ( status != XNATREST_OK )
-    {
-      d->downloadDialog->close();
-      QMessageBox::warning(d->xnatTreeView, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
-      emit done();
-      break;
-    }
+//    if ( status != XNATREST_OK )
+//    {
+//      d->downloadDialog->close();
+//      QMessageBox::warning(d->xnatTreeView, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+//      emit done();
+//      break;
+//    }
 
     // update number of bytes downloaded
     if ( numBytes > 0 )

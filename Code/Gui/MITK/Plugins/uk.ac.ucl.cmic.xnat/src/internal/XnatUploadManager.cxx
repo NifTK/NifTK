@@ -192,7 +192,7 @@ void XnatUploadManager::uploadData()
   Q_D(XnatUploadManager);
 
   unsigned long numBytes;
-  XnatRestStatus status;
+//  XnatRestStatus status;
 
   // check if user has canceled upload
   if ( d->uploadDialog->wasUploadCanceled() )
@@ -213,15 +213,15 @@ void XnatUploadManager::uploadData()
   // upload more data to XNAT
 //  status = moveXnatRestAsynData(&numBytes, &d->finished);
   d->finished = true;
-  status = XNATREST_OK;
+//  status = XNATREST_OK;
   numBytes = 0;
 
-  if ( status != XNATREST_OK )
-  {
-    d->uploadDialog->close();
-    QMessageBox::warning(d->xnatTreeView, tr("Upload File Error"), tr(getXnatRestStatusMsg(status)));
-    return;
-  }
+//  if ( status != XNATREST_OK )
+//  {
+//    d->uploadDialog->close();
+//    QMessageBox::warning(d->xnatTreeView, tr("Upload File Error"), tr(getXnatRestStatusMsg(status)));
+//    return;
+//  }
 
   // check if upload is finished
   if ( d->finished == true )

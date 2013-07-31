@@ -115,48 +115,6 @@ XnatRestStatus unzipXnatRestFile( const char *zipFilename, const char *outputDir
   return miniunzXnatRestFile( zipFilename, outputDir );
 }
 
-/* unzip downloaded files without directories */
-XnatRestStatus unzipXnatRestFileNoDirs( const char *zipFilename, const char *outputDirectory )
-{
-  char outputDir[MAXFILENAME];
-  int outputDirLen;
-  char *cp;
-
-  /* check input zip filename */
-  if ( zipFilename == NULL )
-  {
-    return XNATREST_UNZ_NOZIPNAME;
-  }
-
-  /* check name of output directory */
-  if ( outputDirectory == NULL || *outputDirectory == '\0' )
-  {
-    *outputDir = '\0';
-  }
-  else
-  {
-    outputDirLen = strlen( outputDirectory );
-    if ( outputDirLen < ( MAXFILENAME - 1 ) )
-    {
-      strcpy( outputDir, outputDirectory );
-      /* add (back)slash to end of output directory name, if not present */
-      cp = outputDir + outputDirLen - 1;
-      if ( *cp != OS_PATH_SLASH )
-      {
-        *++cp = OS_PATH_SLASH;
-        *++cp = '\0';
-      }
-    }
-    else
-    {
-      return XNATREST_UNZ_BADOUTDIR;
-    }
-  }
-
-  /* unzip zip file into output directory */
-  return miniunzXnatRestFileNoDirs( zipFilename, outputDir );
-}
-
 /* zip files for upload */
 XnatRestStatus zipXnatRestFile( const char *zipFilename, const char *inputDirectory,
                                 int numFilenames, char const * const *filenames )

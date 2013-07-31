@@ -20,12 +20,6 @@ XnatRest_EXPORT const char *getXnatRestStatusMsg( const XnatRestStatus status );
 /* returns: XnatRest status */
 XnatRest_EXPORT XnatRestStatus unzipXnatRestFile( const char *zipFilename, const char *outputDirectory );
 
-/* unzip downloaded files; ignore directories included with filenames in zip file */
-/* input: zip filename and name of existing directory where */
-/*        files extracted from zip file will be put */
-/* returns: XnatRest status */
-XnatRest_EXPORT XnatRestStatus unzipXnatRestFileNoDirs( const char *zipFilename, const char *outputDirectory );
-
 /* zip files for upload */
 /* input: zip filename, name of existing directory containing files to be zipped, */
 /*        number of files to be zipped, and array of names of files to be zipped */
