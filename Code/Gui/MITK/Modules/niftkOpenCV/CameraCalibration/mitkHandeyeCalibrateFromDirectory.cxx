@@ -22,6 +22,8 @@
 #include <highgui.h>
 #include <FileHelper.h>
 
+#include <boost/filesystem.hpp>
+
 namespace mitk {
 
 //-----------------------------------------------------------------------------
@@ -43,6 +45,54 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 {
 
 }
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrateFromDirectory::InitialiseVideo()
+{
+  std::vector<std::string> filenames = FindVideoData();
+  if ( filenames.size() == 0 ) 
+  {
+    MITK_ERROR << "Failed to find any video files";
+    m_VideoInitialised = false;
+    return;
+  }
+  if ( filenames.size() > 1 ) 
+  {
+    MITK_ERROR << "Found too many video files. ";
+    for ( unsigned int  i = 0 ; i < filenames.size() ; i++ )
+    {
+      MITK_ERROR << filenames[i];
+    }
+    m_VideoInitialised = false;
+    return;
+  }
+
+  MITK_INFO << "Loading video frames from " << filenames[0];
+  LoadVideoData (filenames[0]);
+  return;
+    
+}
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
+{
+  boost::filesystem::recursive_directory_iterator end_itr;
+  std::vector<std::string> returnStrings;
+
+  for ( boost::filesystem::recursive_directory_iterator it(m_Directory);
+            it != end_itr ; ++it)
+  {
+    if (  it->path().extension() == ".264" )
+    {
+      returnStrings.push_back(it->path().string());
+    }
+  }
+  return returnStrings;
+}
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
+{
 
 
 //-----------------------------------------------------------------------------

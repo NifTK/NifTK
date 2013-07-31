@@ -47,12 +47,14 @@ public:
       const std::string& ExtrinsicFileDirectoryOrFile,
       const std::string GroundTruthSolution = "");
 
+  void InitialiseVideo ();
      
   itkSetMacro(FlipTracking, bool);
   itkSetMacro(FlipExtrinsic, bool);
   itkSetMacro(SortByDistance, bool);
   itkSetMacro(SortByAngle, bool);
   itkSetMacro(FramesToUse, int);
+  itkSetMacro(Directory, std::string);
 
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
@@ -83,8 +85,8 @@ private:
   std::vector <cv::Mat> m_LeftCameraVideoFrames;
   std::vector <cv::Mat> m_RightCameraVideoFrames;
 
-  std::string      FindVideoData();
-  void      LoadVideoData(std::string filename);
+  std::vector<std::string>      FindVideoData();
+  void             LoadVideoData(std::string filename);
 
   /**
    * \brief As video processing can be time consuming allow for saving and loading 
