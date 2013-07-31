@@ -32,6 +32,7 @@ int mitkHandeyeFromDirectoryTest ( int argc, char * argv[] )
   bool ok = false;
   mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();
   Calibrator->SetDirectory(argv[1]);
+  Calibrator->SetTrackerIndex(2);
   Calibrator->InitialiseVideo();
   return ok;
 }

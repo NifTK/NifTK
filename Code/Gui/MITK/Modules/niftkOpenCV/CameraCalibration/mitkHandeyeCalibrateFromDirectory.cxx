@@ -36,6 +36,8 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
+, m_TrackerIndex(0)
+, m_AbsTrackerTimingError(20e6) // 20 milliseconds
 {
 }
 
@@ -101,18 +103,59 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     return;
   }
   
+  if ( m_Matcher.IsNull() )
+  {
+    MITK_INFO << "Initialising Video Tracker Matcher";
+    m_Matcher = mitk::VideoTrackerMatching::New();
+  }
+  if ( ! m_Matcher->IsReady() )
+  {
+    m_Matcher->Initialise (m_Directory);
+  }
+
   //get frame count doesn't work for 264 files, which are just 
   //raw data get the frame count from the framemap log
-  double numberofframes = capture.get(CV_CAP_PROP_FRAME_COUNT);
+  int numberOfFrames = m_Matcher->GetNumberOfFrames();
   double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
   double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
   
-  double filesize = numberofframes * framewidth * frameheight * 4 / 1e6;
-  MITK_INFO << numberofframes << "frames in video : " << framewidth << "x" << frameheight;;
-  MITK_INFO << filesize << "megabytes required to store";
+  double filesize = numberOfFrames * framewidth * frameheight * 4 / 1e9;
+  MITK_INFO << numberOfFrames << "frames in video : " << framewidth << "x" << frameheight;;
+  MITK_INFO << filesize << "gigabytes required to store";
   
-  double frameNumber = 10;
-  capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
+  //go through data set, randomly selecting frames from a uniform distribution until 
+  //sufficient frames are found.
+  //First check tracking data is ok (based on timing error threshold)
+  //Then try and extract corners in both left and right frames.
+  //std::default_random_engine generator;
+  //std::uniform_int_distribution<int> distribution (0, numberOfFrames/2);
+
+  std::srand(0);
+  int goodFrames = 0 ; 
+  while ( goodFrames < m_FramesToUse )
+  {
+    int FrameToUse =  std::rand()%(numberOfFrames/2);
+    MITK_INFO << "Trying frame " << FrameToUse;
+    
+    long long int*  LeftTimingError = new long long;
+    long long int *  RightTimingError = new long long;
+    cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
+        LeftTimingError, m_TrackerIndex );
+    cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
+        RightTimingError, m_TrackerIndex );
+    if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
+        std::abs(*RightTimingError) > m_AbsTrackerTimingError ) 
+    {
+      MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
+        std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+    }
+    else
+    {
+      //timing error OK, now check if we can extract corners
+      goodFrames++;
+    }
+  }
+  //capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
 /*  int framecount = 0 ; 
   while (framecount < 1000)
   {

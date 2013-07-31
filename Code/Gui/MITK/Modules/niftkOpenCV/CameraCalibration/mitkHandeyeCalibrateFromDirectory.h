@@ -57,6 +57,8 @@ public:
   itkSetMacro(SortByAngle, bool);
   itkSetMacro(FramesToUse, int);
   itkSetMacro(Directory, std::string);
+  itkSetMacro(TrackerIndex,int);
+  itkSetMacro(AbsTrackerTimingError,long long);
 
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
@@ -79,6 +81,9 @@ private:
 
   bool                                m_VideoInitialised;
   bool                                m_TrackingDataInitialised;
+
+  int                                 m_TrackerIndex;
+  long long                           m_AbsTrackerTimingError;
 
   std::string                         m_Directory;
 
