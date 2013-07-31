@@ -202,7 +202,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   #niftkBasicImageFeatures
   #niftkBasicImageFeatures3D
   niftkBilateralImageFilter
-  #niftkBlockMatching
+  niftkBlockMatching
   #niftkBreastDicomSeriesReadImageWrite
   niftkBSI
   niftkCombineSegmentations
