@@ -13,11 +13,11 @@
 =============================================================================*/
 
 #include "mitkPointBasedRegistration.h"
-#include <mitkFileIOUtils.h>
-#include <mitkNavigationDataLandmarkTransformFilter.h>
-#include <mitkPointUtils.h>
-#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
 #include <limits>
+#include <mitkPointUtils.h>
+#include <mitkNavigationDataLandmarkTransformFilter.h>
+#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+
 
 const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
 const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
@@ -78,6 +78,7 @@ double PointBasedRegistration::Update(
     else
     {
       MITK_ERROR << "mitk::PointBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
+      return fiducialRegistrationError;
     }
   }
 
