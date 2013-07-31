@@ -80,8 +80,10 @@ private:
 
   std::string           m_Directory;
 
-  // lets store the video data it'll chew up memory but will probably be the most efficient 
-  // method in most cases
+  // Not possible to store the frames in memory, will need to process them on the fly
+  // First init videotrackermatching
+  // use this to get the number of frames (stored in the framemap.log
+  // Process frames, either sequencially of more likely by random selection
   std::vector <cv::Mat> m_LeftCameraVideoFrames;
   std::vector <cv::Mat> m_RightCameraVideoFrames;
 

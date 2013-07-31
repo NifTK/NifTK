@@ -18,7 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 #include <highgui.h>
 #include <FileHelper.h>
 
@@ -93,8 +93,39 @@ std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 {
+  cv::VideoCapture capture = cv::VideoCapture(filename) ; 
+  
+  if ( ! capture.isOpened() ) 
+  {
+    MITK_ERROR << "Failed to open " << filename;
+    return;
+  }
+  
+  //get frame count doesn't work for 264 files, which are just 
+  //raw data get the frame count from the framemap log
+  double numberofframes = capture.get(CV_CAP_PROP_FRAME_COUNT);
+  double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+  double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+  
+  double filesize = numberofframes * framewidth * frameheight * 4 / 1e6;
+  MITK_INFO << numberofframes << "frames in video : " << framewidth << "x" << frameheight;;
+  MITK_INFO << filesize << "megabytes required to store";
+  
 
+  capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber)
+/*  int framecount = 0 ; 
+  while (framecount < 1000)
+  {
+    cv::Mat NewLeftFrame;
+    capture >> NewLeftFrame;
 
+    m_LeftCameraVideoFrames.push_back(NewLeftFrame);
+    cv::Mat NewRightFrame;
+    capture >> NewRightFrame;
+    m_RightCameraVideoFrames.push_back(NewRightFrame);
+    MITK_INFO << "Reading frame " << framecount ++;
+  }*/ 
+}
 //-----------------------------------------------------------------------------
 std::vector<double> HandeyeCalibrateFromDirectory::Calibrate(const std::string& TrackingFileDirectory,
   const std::string& ExtrinsicFileDirectoryOrFile,
