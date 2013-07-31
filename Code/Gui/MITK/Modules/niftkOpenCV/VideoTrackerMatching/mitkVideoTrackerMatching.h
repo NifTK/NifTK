@@ -93,6 +93,7 @@ private:
   std::vector<std::string> FindFrameMaps();
   void                     FindTrackingMatrixDirectories();
   TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
+  bool                     CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                     ProcessFrameMapFile(std::string filename);
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
