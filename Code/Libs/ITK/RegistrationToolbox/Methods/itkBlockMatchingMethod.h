@@ -418,7 +418,7 @@ private:
   RegionOfInterestFilterPointer                m_FixedImageRegionFilter;
   
   ImageTypeListAdaptorPointer                  m_FixedImageListAdaptor;
-  ImageTypeCovarianceSampleFilterPointer         m_FixedImageCovarianceSampleFilter;
+  ImageTypeCovarianceSampleFilterPointer       m_FixedImageCovarianceSampleFilter;
 
   GradientMagnitudeFilterPointer               m_GradientMagnitudeImageFilter;
   GradientImageTypeListAdaptorPointer          m_GradientMagnitudeListAdaptor;
