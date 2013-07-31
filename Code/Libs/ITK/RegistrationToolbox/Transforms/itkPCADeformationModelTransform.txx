@@ -250,7 +250,7 @@ TransformPoint(const InputPointType &point) const
 // Compute the Jacobian of the transformation
 // It follows the same order of Parameters vector 
 template<class ScalarType, unsigned int NDimensions>
-const typename PCADeformationModelTransform<ScalarType, NDimensions>::JacobianType &
+const typename PCADeformationModelTransform<ScalarType, NDimensions>::JacobianType
 PCADeformationModelTransform<ScalarType, NDimensions>
 ::GetJacobian( const InputPointType & p ) const
 {

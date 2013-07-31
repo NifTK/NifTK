@@ -120,7 +120,8 @@ JacobianGradientSimilarityMeasure<TFixedImage, TMovingImage>
               if (movingValue >= this->GetMovingLowerBound() && movingValue <= this->GetMovingUpperBound())
                 {
                   this->m_NumberOfPixelsCounted++;
-                  const TransformJacobianType & jacobian = this->m_Transform->GetJacobian( inputPoint ); 
+                  TransformJacobianType jacobian;
+                  this->m_Transform->ComputeJacobianWithRespectToPosition( inputPoint, jacobian ); 
                   
                   // Get the gradient by NearestNeighboorInterpolation: 
                   // which is equivalent to round up the point components.
