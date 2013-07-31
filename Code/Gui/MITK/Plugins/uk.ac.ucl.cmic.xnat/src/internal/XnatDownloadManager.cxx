@@ -30,7 +30,7 @@ public:
 
   QString currDir;
   QString zipFilename;
-  XnatRestAsynStatus finished;
+  bool finished;
   unsigned long totalBytes;
 
   QString xnatFilename;
@@ -164,7 +164,7 @@ void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QStri
   }
 
   // initialize download variables
-  d->finished = XNATRESTASYN_NOTDONE;
+  d->finished = false;
   d->totalBytes = 0;
   connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
@@ -184,7 +184,7 @@ void XnatDownloadManager::startDownload()
   }
 
   // initialize download variables
-  d->finished = XNATRESTASYN_NOTDONE;
+  d->finished = false;
   d->totalBytes = 0;
   connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
@@ -204,7 +204,7 @@ void XnatDownloadManager::startGroupDownload()
   }
 
   // initialize download variables
-  d->finished = XNATRESTASYN_NOTDONE;
+  d->finished = false;
   d->totalBytes = 0;
 
   QTimer::singleShot(0, this, SLOT(downloadData()));
@@ -270,7 +270,7 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   }
 
   // initialize download variables
-  d->finished = XNATRESTASYN_NOTDONE;
+  d->finished = false;
   d->totalBytes = 0;
   connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
@@ -302,7 +302,7 @@ void XnatDownloadManager::downloadData()
   }
 
   // check if download is finished
-  if ( d->finished == XNATRESTASYN_DONE )
+  if ( d->finished == true )
   {
     d->downloadDialog->showUnzipInProgress();
     QTimer::singleShot(0, this, SLOT(unzipData()));
@@ -311,7 +311,7 @@ void XnatDownloadManager::downloadData()
 
   // download more data from XNAT
 //  status = moveXnatRestAsynData(&numBytes, &d->finished);
-  d->finished = XNATRESTASYN_DONE;
+  d->finished = true;
   status = XNATREST_OK;
   numBytes = 0;
 
@@ -360,7 +360,7 @@ void XnatDownloadManager::downloadDataBlocking()
     }
 
     // check if download is finished
-    if ( d->finished == XNATRESTASYN_DONE )
+    if ( d->finished == true )
     {
       d->downloadDialog->showUnzipInProgress();
       unzipData();
@@ -369,7 +369,7 @@ void XnatDownloadManager::downloadDataBlocking()
 
     // download more data from XNAT
 //    status = moveXnatRestAsynData(&numBytes, &d->finished);
-    d->finished = XNATRESTASYN_DONE;
+    d->finished = true;
     status = XNATREST_OK;
     numBytes = 0;
 

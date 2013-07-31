@@ -5,15 +5,6 @@
 
 #include "XnatRestStatus.h"
 
-enum XnatRestAsynStatusCodes
-{
-  XNATRESTASYN_DONE,    /* set when asynchronous file upload/download is finished */
-  XNATRESTASYN_NOTDONE
-};
-
-typedef enum XnatRestAsynStatusCodes XnatRestAsynStatus;
-
-
 /* ======== BASIC FUNCTIONS ======== */
 
 /* get message for XnatRest status */

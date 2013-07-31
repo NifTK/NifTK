@@ -30,7 +30,7 @@ public:
   QString currDir;
   QStringList userFilePaths;
   QString zipFilename;
-  XnatRestAsynStatus finished;
+  bool finished;
   unsigned long totalBytes;
 };
 
@@ -181,7 +181,7 @@ void XnatUploadManager::startUpload()
   }
 
   // initialize variables for uploading data
-  d->finished = XNATRESTASYN_NOTDONE;
+  d->finished = false;
   d->totalBytes = 0;
 
   QTimer::singleShot(0, this, SLOT(uploadData()));
@@ -212,7 +212,7 @@ void XnatUploadManager::uploadData()
 
   // upload more data to XNAT
 //  status = moveXnatRestAsynData(&numBytes, &d->finished);
-  d->finished = XNATRESTASYN_DONE;
+  d->finished = true;
   status = XNATREST_OK;
   numBytes = 0;
 
@@ -224,7 +224,7 @@ void XnatUploadManager::uploadData()
   }
 
   // check if upload is finished
-  if ( d->finished == XNATRESTASYN_DONE )
+  if ( d->finished == true )
   {
     d->uploadDialog->close();
     if ( !QFile::remove(d->zipFilename) )
