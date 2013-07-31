@@ -111,8 +111,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   MITK_INFO << numberofframes << "frames in video : " << framewidth << "x" << frameheight;;
   MITK_INFO << filesize << "megabytes required to store";
   
-
-  capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber)
+  double frameNumber = 10;
+  capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
 /*  int framecount = 0 ; 
   while (framecount < 1000)
   {

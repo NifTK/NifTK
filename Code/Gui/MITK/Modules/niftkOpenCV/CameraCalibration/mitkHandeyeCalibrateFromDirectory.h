@@ -22,6 +22,8 @@
 #include <mitkCommon.h>
 #include <cv.h>
 
+#include <mitkVideoTrackerMatching.h>
+
 namespace mitk {
 
 /**
@@ -68,17 +70,19 @@ protected:
   HandeyeCalibrateFromDirectory& operator=(const HandeyeCalibrateFromDirectory&); // Purposefully not implemented.
 
 private:
-  bool                  m_FlipTracking;
-  bool                  m_FlipExtrinsic;
-  bool                  m_SortByDistance;
-  bool                  m_SortByAngle;
-  int                   m_FramesToUse;
-  bool                  m_SaveProcessedVideoData;
+  bool                                m_FlipTracking;
+  bool                                m_FlipExtrinsic;
+  bool                                m_SortByDistance;
+  bool                                m_SortByAngle;
+  int                                 m_FramesToUse;
+  bool                                m_SaveProcessedVideoData;
 
-  bool                  m_VideoInitialised;
-  bool                  m_TrackingDataInitialised;
+  bool                                m_VideoInitialised;
+  bool                                m_TrackingDataInitialised;
 
-  std::string           m_Directory;
+  std::string                         m_Directory;
+
+  mitk::VideoTrackerMatching::Pointer m_Matcher;
 
   // Not possible to store the frames in memory, will need to process them on the fly
   // First init videotrackermatching
@@ -95,6 +99,8 @@ private:
    * of pre-processed video data
    */
   std::string      CheckForExistingData();
+
+
 
 
 }; // end class
