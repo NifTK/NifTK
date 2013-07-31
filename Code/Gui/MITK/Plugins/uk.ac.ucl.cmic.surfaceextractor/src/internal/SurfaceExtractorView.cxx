@@ -79,12 +79,12 @@ public:
     }
 
     mitk::PixelType pixelType = image->GetPixelType();
-    mitk::PixelType::ItkIOPixelType itkPixelTypeId = pixelType.GetPixelTypeId();
-    const std::type_info& pixelTypeId = pixelType.GetTypeId();
-    if (itkPixelTypeId == itk::ImageIOBase::SCALAR && (pixelTypeId == typeid(char) || pixelTypeId == typeid(unsigned char)))
+    if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR
+        && (pixelType.GetComponentType() == itk::ImageIOBase::CHAR || pixelType.GetComponentType() == itk::ImageIOBase::UCHAR))
     {
       return true;
     }
+
     return false;
   }
 };
