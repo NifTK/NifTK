@@ -194,35 +194,35 @@ endforeach()
 ##############################################################
 set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkAbsImageFilter
-  niftkAffine
+  #niftkAffine
   niftkAnd
   niftkAtlasStatistics
   niftkAverage
-  niftkBackProject2Dto3D
-  niftkBasicImageFeatures
-  niftkBasicImageFeatures3D
+  #niftkBackProject2Dto3D
+  #niftkBasicImageFeatures
+  #niftkBasicImageFeatures3D
   niftkBilateralImageFilter
-  niftkBlockMatching
-  niftkBreastDicomSeriesReadImageWrite
+  #niftkBlockMatching
+  #niftkBreastDicomSeriesReadImageWrite
   niftkBSI
   niftkCombineSegmentations
   niftkComposeITKAffineTransformations
   niftkComputeImageHistogram
-  niftkComputeJointHistogram
-  niftkComputeMeanTransformation
+  #niftkComputeJointHistogram
+  #niftkComputeMeanTransformation
   niftkConnectedComponents
-  niftkContourExtractor2DImageFilter
+  #niftkContourExtractor2DImageFilter
   #niftkConvertDofToFsl
   niftkConvertMidasStrToNii
-  niftkConvertToMidasStr
-  niftkConvertTransformToRIREFormat
+  #niftkConvertToMidasStr
+  #niftkConvertTransformToRIREFormat
   niftkCreateAffineTransform
   niftkCreateMaskFromLabels
-  niftkCreateTransformation
+  #niftkCreateTransformation
   niftkCTEAcosta2009Subsampling
   niftkCTEAssignAtlasValues
-  niftkCTEBourgeat2008
-  niftkCTEDas2009
+  #niftkCTEBourgeat2008
+  #niftkCTEDas2009
   niftkCTEExtractGMWMBoundaryFromLabelImage
   niftkCTEHighRes
   niftkCTEHuttonLayering
@@ -233,7 +233,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCurveFitRegistration
   niftkDecomposeAffineMatrix
   niftkDeformationFieldTargetRegistrationError
-  niftkDicomSeriesReadImageWrite
+  #niftkDicomSeriesReadImageWrite
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
@@ -242,7 +242,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkExtractRegion
   niftkExtractScalp
   niftkExtractZeroCrossing
-  niftkFFD
+  #niftkFFD
   niftkFillHoles
   niftkForwardAndBackProjectionDifferenceFilter
   niftkForwardProject3Dto2D
@@ -252,37 +252,37 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkImageReconstruction
   niftkInject
   niftkInvertAffineTransform
-  niftkInvertTransformation
+  #niftkInvertTransformation
   niftkITKAffineResampleImage
   niftkJacobianStatistics
   niftkKMeansWindowBSI
   niftkKMeansWindowWithLinearRegressionNormalisationBSI
   niftkKNDoubleWindowBSI
-  niftkMTPDbc
-  niftkMultiplyTransformation
+  #niftkMTPDbc
+  #niftkMultiplyTransformation
   niftkMultiScaleHessianImageEnhancement2D
   niftkMultiScaleHessianImageEnhancement3D
   niftkPadImage
   niftkProjectionGeometry
-  niftkReorientateImage
+  #niftkReorientateImage
   niftkRescale
   niftkResetDirectionField
   niftkResetVoxelDimensionsField
   niftkSegmentationStatistics
-  niftkSeriesReadVolumeWrite
+  #niftkSeriesReadVolumeWrite
   niftkSetBorderPixel
   niftkShiftProb
   niftkShiftScale
   niftkShrinkImage
   niftkSTAPLE
-  niftkSubsampleImage
+  #niftkSubsampleImage
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
   niftkThreshold
-  niftkTransformation
-  niftkTransformPoint3Dto2D
+  #niftkTransformation
+  #niftkTransformPoint3Dto2D
   niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
@@ -307,9 +307,9 @@ if(VTK_FOUND)
   # Add new programs to this list.
   ##############################################################
   set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
-    niftkBreastMaskSegmentationFromMRI
+    #niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
-    niftkConvertNiftiVectorImage
+    #niftkConvertNiftiVectorImage
     niftkDecimatePolyData
     niftkGradientVectorField
     niftkMapVolumeDataToPolyDataVertices
