@@ -416,15 +416,19 @@ void TagTrackerView::UpdateTags()
           );
     } // end if mono/stereo
 
+    m_TagPositionDisplay->clear();
+
+    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+    registrationMatrix->Identity();
+
     int numberOfTrackedPoints = tagPointSet->GetSize();
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
 
-    m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
-    m_TagPositionDisplay->clear();
+    QString labelText;
+    labelText = modeName + QString(" tags ") + numberString;
 
-    // Update text box to display all points.
     if (numberOfTrackedPoints > 0)
     {
       mitk::PointSet::DataType* itkPointSet = tagPointSet->GetPointSet(0);
@@ -449,18 +453,12 @@ void TagTrackerView::UpdateTags()
 
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
-    }
 
-    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
-    registrationMatrix->Identity();
-
-    if (numberOfTrackedPoints > 0)
-    {
       if (m_RegistrationEnabledCheckbox->isChecked())
       {
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
         mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
-        registrationManager->Update(
+        double fiducialRegistrationError = registrationManager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
@@ -470,8 +468,14 @@ void TagTrackerView::UpdateTags()
              *registrationMatrix
             );
 
+        QString fiducialRegistrationErrorString;
+        fiducialRegistrationErrorString.setNum(fiducialRegistrationError);
+
+        labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+
       } // end if we are doing registration
-    } // end if number tracked points > 0
+
+    } // end if we had some tracked points
 
     // Always update registration matrix contained within the view - just for visual feedback.
     for (int i = 0; i < 4; i++)
@@ -482,9 +486,7 @@ void TagTrackerView::UpdateTags()
       }
     }
 
-    tagPointSetNode->Modified();
-    tagPointSet->Modified();
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    m_NumberOfTagsLabel->setText(labelText);
 
   } // end if we have at least one node specified
 }

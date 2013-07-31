@@ -156,7 +156,11 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                       )
 {
   pointSet->Clear();
-
+  if (surfaceNormals.IsNotNull())
+  {
+    surfaceNormals->Clear();
+  }
+  
   mitk::ImageWriteAccessor  leftAccess(leftImage);
   void* leftPointer = leftAccess.GetData();
 
@@ -210,11 +214,10 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
       pointSet->InsertPoint((*iter).first, outputPoint);
     }
+    pointSet->UpdateOutputInformation();
   }
   else
   {
-    surfaceNormals->Clear();
-
     std::map<int, mitk::Point6D> result = DetectMarkerPairsAndNormals(
         left,
         right,
@@ -256,9 +259,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       pointSet->InsertPoint((*iter).first, outputPoint);
       surfaceNormals->InsertPoint((*iter).first, outputPoint);
     }
-    surfaceNormals->Modified();
+    pointSet->UpdateOutputInformation();
   }
-  pointSet->Modified();
 }
 
 

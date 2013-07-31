@@ -117,5 +117,4 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
 void QmitkIGIOpenCVDataSourceGui::OnUpdateDisplay()
 {
   m_Background->UpdateVideo();
-  m_RenderingManager->RequestUpdateAll();
 }

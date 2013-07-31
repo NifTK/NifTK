@@ -103,6 +103,7 @@ if(SlicerExecutionModel_FOUND)
     #-------------------------------------------------------------
     set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK
       niftkMakeLapUSProbeModel
+      niftkMakeLapUSProbeARTagModel
       niftkVTKIterativeClosestPointRegister
       niftkVTKDistanceToSurface
     )

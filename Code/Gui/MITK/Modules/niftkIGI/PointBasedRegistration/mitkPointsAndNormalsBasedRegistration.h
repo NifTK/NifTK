@@ -39,6 +39,17 @@ public:
   itkNewMacro(PointsAndNormalsBasedRegistration);
 
   /**
+   * \brief Stores the default value of UsePointIDToMatchPoints = true.
+   */
+  static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
+
+  /**
+   * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
+   */
+  itkSetMacro(UsePointIDToMatchPoints, bool);
+  itkGetMacro(UsePointIDToMatchPoints, bool);
+
+  /**
    * \brief Main method to calculate the point based registration.
    * \param[In] fixedPointSet a point set
    * \param[In] movingPointSet a point set
@@ -62,6 +73,8 @@ protected:
   PointsAndNormalsBasedRegistration& operator=(const PointsAndNormalsBasedRegistration&); // Purposefully not implemented.
 
 private:
+
+  bool m_UsePointIDToMatchPoints;
 
 }; // end class
 
