@@ -143,7 +143,7 @@ int main(int argc, char** argv)
   int pointCounter = 0;
   for (int j = 0; j < numberSquares; ++j)
   {
-    for (int i = 0; i < numberSquaresAlongWidth; ++i)
+    for (int i = numberSquaresAlongWidth-1; i >= 0; --i)
     {
       double distanceAroundCircumference = (0.5 + i*1.2)*tagSquareSizeInMillimetres;
       double proportionAroundCircumference = distanceAroundCircumference/actualWidthInMillimetres;
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
       point[1] = radius * cos(pi + halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle) + radius - offSetOfOrigin;
       point[2] = (0.5 + j*1.2)*tagSquareSizeInMillimetres;
 
-      centre[0] = point[0];
+      centre[0] = 0;
       centre[1] = offSetOfOrigin;
       centre[2] = point[2];
 
