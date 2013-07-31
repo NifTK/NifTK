@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   mitkSurfaceBasedRegistrationTest.cxx
   mitkSurfaceBasedRegistrationTestRealData.cxx
   mitkTagTrackingAndRegistrationTest.cxx
+  mitkTagTrackingNormalsTest.cxx
 )
