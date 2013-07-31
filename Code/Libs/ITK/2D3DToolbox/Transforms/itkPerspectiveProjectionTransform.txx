@@ -148,15 +148,23 @@ TransformPoint(const InputPointType &point) const
  
 // Compute the Jacobian in one position 
 template<class TScalarType >
-const typename PerspectiveProjectionTransform<TScalarType>::JacobianType & 
+const typename PerspectiveProjectionTransform<TScalarType>::JacobianType 
 PerspectiveProjectionTransform< TScalarType >::
-GetJacobian( const InputPointType &) const
+GetJacobian( const InputPointType &p) const
 {
-  this->m_Jacobian.Fill( 0.0 );
+  JacobianType tmp;
+  this->ComputeJacobianWithRespectToParameters( p, tmp );
+  return tmp;	
+}
+ 
+template<class TScalarType>
+void
+PerspectiveProjectionTransform<TScalarType>
+::ComputeJacobianWithRespectToParameters( const InputPointType &p, JacobianType &jacobian ) const
+{
+  jacobian.Fill( 0.0 );
 
   // TODO
-
-  return this->m_Jacobian;
 }
 
 
