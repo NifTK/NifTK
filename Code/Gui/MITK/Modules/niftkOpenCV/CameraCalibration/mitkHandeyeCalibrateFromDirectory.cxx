@@ -31,8 +31,10 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SortByDistance(false)
 , m_SortByAngle(false)
 , m_FramesToUse(40)
+, m_SaveProcessedVideoData(true)
+, m_VideoInitialised(false)
+, m_TrackingDataInitialised(false)
 {
-
 }
 
 

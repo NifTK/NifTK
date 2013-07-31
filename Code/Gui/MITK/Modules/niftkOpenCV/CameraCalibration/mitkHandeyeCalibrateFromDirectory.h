@@ -71,6 +71,7 @@ private:
   bool                  m_SortByDistance;
   bool                  m_SortByAngle;
   int                   m_FramesToUse;
+  bool                  m_SaveProcessedVideoData;
 
   bool                  m_VideoInitialised;
   bool                  m_TrackingDataInitialised;
@@ -84,6 +85,13 @@ private:
 
   std::string      FindVideoData();
   void      LoadVideoData(std::string filename);
+
+  /**
+   * \brief As video processing can be time consuming allow for saving and loading 
+   * of pre-processed video data
+   */
+  std::string      CheckForExistingData();
+
 
 }; // end class
 
