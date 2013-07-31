@@ -570,7 +570,7 @@ public:
    * 
    * Note that the size of this will depend on how many parameters being optimised.
    * */
-  virtual const JacobianType & GetJacobian(const InputPointType & point ) const = 0;
+  virtual const JacobianType GetJacobian(const InputPointType & point ) const = 0;
   
   /** 
    * Create inverse of an affine transformation. 
