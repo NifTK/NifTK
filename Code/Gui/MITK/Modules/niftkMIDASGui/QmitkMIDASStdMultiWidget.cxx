@@ -931,15 +931,15 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
     permutedMatrix.set_identity();
 
     // permutedMatrix(column) = inverseTransformMatrix(row) * flippedAxes
-    permutedMatrix[0][0] = inverseTransformMatrix[0][0] * flippedAxes[0];
-    permutedMatrix[1][0] = inverseTransformMatrix[0][1] * flippedAxes[0];
-    permutedMatrix[2][0] = inverseTransformMatrix[0][2] * flippedAxes[0];
-    permutedMatrix[0][1] = inverseTransformMatrix[1][0] * flippedAxes[1];
-    permutedMatrix[1][1] = inverseTransformMatrix[1][1] * flippedAxes[1];
-    permutedMatrix[2][1] = inverseTransformMatrix[1][2] * flippedAxes[1];
-    permutedMatrix[0][2] = inverseTransformMatrix[2][0] * flippedAxes[2];
-    permutedMatrix[1][2] = inverseTransformMatrix[2][1] * flippedAxes[2];
-    permutedMatrix[2][2] = inverseTransformMatrix[2][2] * flippedAxes[2];
+    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * flippedAxes[0];
+    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * flippedAxes[0];
+    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * flippedAxes[0];
+    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * flippedAxes[1];
+    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * flippedAxes[1];
+    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * flippedAxes[1];
+    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * flippedAxes[2];
+    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * flippedAxes[2];
+    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * flippedAxes[2];
 
     m_OrientationToAxisMap.clear();
     m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_AXIAL,    dominantAxisSI));
