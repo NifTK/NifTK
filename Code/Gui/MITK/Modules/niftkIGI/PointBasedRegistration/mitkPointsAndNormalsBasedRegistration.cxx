@@ -63,7 +63,6 @@ double PointsAndNormalsBasedRegistration::Update(
 
   if (m_UsePointIDToMatchPoints)
   {
-
     int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPointSet,
                                                             *movingPointSet,
                                                             *filteredFixedPoints,
@@ -75,7 +74,6 @@ double PointsAndNormalsBasedRegistration::Update(
                                                              *filteredFixedNormals,
                                                              *filteredMovingNormals
                                                             );
-
     if (numberOfFilteredPoints >= 2)
     {
       fixedPoints = filteredFixedPoints;
@@ -112,7 +110,7 @@ double PointsAndNormalsBasedRegistration::Update(
   }
 
   mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer registration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
-  bool success = registration->Update(fixedPointSet, fixedNorms, movingPointSet, movingNorms, outputTransform, fiducialRegistrationError);
+  bool success = registration->Update(fixedPoints, fixedNorms, movingPoints, movingNorms, outputTransform, fiducialRegistrationError);
 
   if (!success)
   {
