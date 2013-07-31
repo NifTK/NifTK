@@ -185,7 +185,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
  
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
-const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType
+const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType 
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetJacobian( const InputPointType &p ) const
 {
