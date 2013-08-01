@@ -141,7 +141,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   std::vector <int> RightFramesToUse;
   while ( LeftFramesToUse.size() < m_FramesToUse * m_BadFrameFactor )
   {
-    int FrameToUse =  std::rand()%(numberOfFrames/2);
+    int FrameToUse =  std::rand()%(numberOfFrames/20);
     MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
     long long int*  LeftTimingError = new long long;
@@ -167,7 +167,13 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
   //now go through video and extract frames to use
   int FrameNumber = 0 ;
-  while ( FrameNumber < numberOfFrames )
+
+  std::vector<cv::Mat>  allLeftImagePoints;
+  std::vector<cv::Mat>  allLeftObjectPoints;
+  std::vector<cv::Mat>  allRightImagePoints;
+  std::vector<cv::Mat>  allRightObjectPoints;
+
+  while ( FrameNumber < numberOfFrames/10 )
   {
     cv::Mat TempFrame;
     cv::Mat LeftFrame;
@@ -202,7 +208,10 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         {
 
           MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
-
+          allLeftImagePoints.push_back(cv::Mat(*leftImageCorners,true));
+          allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
+          allRightImagePoints.push_back(cv::Mat(*rightImageCorners,true));
+          allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
         }
         else
         {
@@ -224,7 +233,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       }
       else
       {
-        MITK_ERROR << "Left right frame mistmatch" ;
+        MITK_ERROR << "Left right frame mismatch" ;
         return;
       }
     }
@@ -233,6 +242,53 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     FrameNumber++;
   }
   MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
+  /*for ( unsigned int i = 0  ; i < LeftFramesToUse.size() ; i ++ )
+  {
+    MITK_INFO << "Left Image Points " << allLeftImagePoints[i];
+    MITK_INFO << "Left Object Points " << allLeftObjectPoints[i];
+    MITK_INFO << "Right Image Points " << allRightImagePoints[i];
+    MITK_INFO << "Right Object Points " << allRightObjectPoints[i];
+  }*/
+
+  cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_32FC1);
+  cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_32FC1);
+  cv::Mat rightImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_32FC1);
+  cv::Mat rightObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_32FC1);
+
+  for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i++ )
+  {
+    for ( unsigned int j = 0 ; j < m_NumberCornersWidth * m_NumberCornersHeight ; j ++ ) 
+    {
+      leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allLeftImagePoints[i].at<float>(j,0);
+      leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allLeftImagePoints[i].at<float>(j,1);
+      
+      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allLeftObjectPoints[i].at<float>(j,0);
+      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allLeftObjectPoints[i].at<float>(j,1);
+      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
+        allLeftObjectPoints[i].at<float>(j,2);
+
+      rightImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allRightImagePoints[i].at<float>(j,0);
+      rightImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allRightImagePoints[i].at<float>(j,1);
+      
+      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allRightObjectPoints[i].at<float>(j,0);
+      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allRightObjectPoints[i].at<float>(j,1);
+      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
+        allRightObjectPoints[i].at<float>(j,2);
+
+    }
+  }
+
+//
+//
+
 /*  int framecount = 0 ; 
   while (framecount < 1000)
   {
