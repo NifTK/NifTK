@@ -211,7 +211,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       outputPoint[0] = extractedPoint.x;
       outputPoint[1] = -extractedPoint.y;
       outputPoint[2] = -extractedPoint.z;
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
       pointSet->InsertPoint((*iter).first, outputPoint);
     }
     pointSet->UpdateOutputInformation();
@@ -234,12 +234,6 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
     mitk::Point6D point;
     mitk::PointSet::PointType outputPoint;
     mitk::PointSet::PointType outputNormal;
-    mitk::PointSet::PointType transformedOrigin;
-
-    transformedOrigin[0] = 0;
-    transformedOrigin[1] = 0;
-    transformedOrigin[2] = 0;
-    TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), transformedOrigin);
 
     std::map<int, mitk::Point6D>::iterator iter;
     for (iter = result.begin(); iter != result.end(); ++iter)
@@ -251,11 +245,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       outputNormal[0] = point[3];
       outputNormal[1] = -point[4];
       outputNormal[2] = -point[5];
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputNormal);
-      outputNormal[0] = outputNormal[0] - transformedOrigin[0];
-      outputNormal[1] = outputNormal[1] - transformedOrigin[1];
-      outputNormal[2] = outputNormal[2] - transformedOrigin[2];
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), true, outputNormal);
       pointSet->InsertPoint((*iter).first, outputPoint);
       surfaceNormals->InsertPoint((*iter).first, outputNormal);
     }
