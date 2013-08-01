@@ -168,7 +168,7 @@ int main(int argc, char** argv)
       NormaliseToUnitLength(normal, normalised);
 
       points->InsertNextPoint(point[0], point[1], point[2]);
-      normals->InsertNextTuple3(normal[0], normal[1], normal[2]);
+      normals->InsertNextTuple3(normalised[0], normalised[1], normalised[2]);
       pointIDArray->InsertNextTuple1(pointIDs[pointCounter]);
       pointCounter++;
 
