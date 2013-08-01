@@ -200,7 +200,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkAverage
   niftkBackProject2Dto3D
   niftkBasicImageFeatures
-  #niftkBasicImageFeatures3D
+  niftkBasicImageFeatures3D
   niftkBilateralImageFilter
   niftkBlockMatching
   #niftkBreastDicomSeriesReadImageWrite
