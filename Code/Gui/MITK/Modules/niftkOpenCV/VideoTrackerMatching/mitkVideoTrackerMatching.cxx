@@ -12,6 +12,7 @@
 
 =============================================================================*/
 #include "mitkVideoTrackerMatching.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -25,6 +26,7 @@ namespace mitk
 //---------------------------------------------------------------------------
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
+, m_FlipMatrices(false)
 {}
 
 //---------------------------------------------------------------------------
@@ -346,8 +348,19 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   {
     *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
   }
-
-  return returnMat;
+  
+  if ( m_FlipMatrices )
+  {
+    //flip the matrix between left and right handed coordinate systems
+    std::vector<cv::Mat> theseMats;
+    theseMats.push_back(returnMat);
+    std::vector<cv::Mat> flippedMats = mitk::FlipMatrices(theseMats);
+    return flippedMats[0];
+  }
+  else
+  {
+    return returnMat;
+  }
 }
 
 } // namespace
