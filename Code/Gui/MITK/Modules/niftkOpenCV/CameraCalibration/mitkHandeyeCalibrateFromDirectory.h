@@ -62,6 +62,10 @@ public:
 
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
+  
+  itkSetMacro(NumberCornersWidth, int);
+  itkSetMacro(NumberCornersHeight, int);
+  itkSetMacro(SquareSizeInMillimetres, double);
 
 protected:
 
@@ -84,7 +88,10 @@ private:
 
   int                                 m_TrackerIndex;
   long long                           m_AbsTrackerTimingError;
-
+  
+  int                                 m_NumberCornersWidth;
+  int                                 m_NumberCornersHeight;
+  double                              m_SquareSizeInMillimetres;
   std::string                         m_Directory;
 
   mitk::VideoTrackerMatching::Pointer m_Matcher;

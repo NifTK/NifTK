@@ -23,6 +23,7 @@
 #include <FileHelper.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace mitk {
 
@@ -38,6 +39,9 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_TrackingDataInitialised(false)
 , m_TrackerIndex(0)
 , m_AbsTrackerTimingError(20e6) // 20 milliseconds
+, m_NumberCornersWidth(14)
+, m_NumberCornersHeight(10)
+, m_SquareSizeInMillimetres(3.0)
 {
 }
 
@@ -152,10 +156,28 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     else
     {
       //timing error OK, now check if we can extract corners
+
+      capture.set(CV_CAP_PROP_POS_FRAMES, FrameToUse * 2);
+      cv::Mat LeftFrame;
+      capture >> LeftFrame;
+      cv::Mat RightFrame;
+      capture >> RightFrame;
+
+      std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
+      std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
+      mitk::ExtractChessBoardPoints (
+          LeftFrame, m_NumberCornersWidth,
+          m_NumberCornersHeight, 
+          true, m_SquareSizeInMillimetres,
+          leftImageCorners, leftObjectCorners);
+      MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES) << " got " << leftImageCorners->size() << " corners";
+
+      std::string filename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameToUse*2) + ".jpg";
+      MITK_INFO << "Writing image to " << filename;
+      cv::imwrite( filename, LeftFrame );
       goodFrames++;
     }
   }
-  //capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
 /*  int framecount = 0 ; 
   while (framecount < 1000)
   {
