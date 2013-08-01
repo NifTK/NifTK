@@ -79,6 +79,51 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   std::cout << "Chess board images are (" << width << ", " << height << ") pixels" << std::endl;
 }
 
+//-----------------------------------------------------------------------------
+void ExtractChessBoardPoints(const cv::Mat image,
+                             const int& numberCornersWidth,
+                             const int& numberCornersHeight,
+                             const bool& drawCorners,
+                             const double& squareSizeInMillimetres,
+                             std::vector <cv::Point2f>& corners,
+                             std::vector <cv::Point3f>& objectPoints
+                             )
+{
+
+  unsigned int numberOfCorners = numberCornersWidth * numberCornersHeight;
+  cv::Size boardSize = cvSize(numberCornersWidth, numberCornersHeight);
+
+  std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
+
+  bool found = cv::findChessboardCorners(image, boardSize, corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+
+  // Get sub-pixel accuracy.
+  // FIX THIS
+  cv::Mat greyImage;
+  cv::cvtColor(image, greyImage, CV_BGR2GRAY);
+  cv::cornerSubPix(greyImage, corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+//END FIX
+  if (drawCorners)
+  {
+    cv::drawChessboardCorners(image, boardSize, corners, found);
+  }
+
+  // If we got the right number of corners, add it to our data.
+  if (found  && corners.size() == ( unsigned int)numberOfCorners)
+  {
+    for ( int k=0; k<(int)numberOfCorners; ++k)
+    {
+      cv::Point3f objectCorner;
+      objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
+      objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
+      objectCorner.z = 0; 
+      objectPoints.push_back(objectCorner);
+    }
+  }
+
+}
+
+
 
 //-----------------------------------------------------------------------------
 void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
