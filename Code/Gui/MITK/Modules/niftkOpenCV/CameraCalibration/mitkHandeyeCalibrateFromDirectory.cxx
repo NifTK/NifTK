@@ -34,6 +34,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SortByDistance(false)
 , m_SortByAngle(false)
 , m_FramesToUse(40)
+, m_BadFrameFactor(2.0)
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
@@ -135,11 +136,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //std::uniform_int_distribution<int> distribution (0, numberOfFrames/2);
 
   std::srand(0);
-  int goodFrames = 0 ; 
-  while ( goodFrames < m_FramesToUse )
+  std::vector <int> LeftFramesToUse;
+  std::vector <int> RightFramesToUse;
+  while ( LeftFramesToUse.size() < m_FramesToUse * m_BadFrameFactor )
   {
     int FrameToUse =  std::rand()%(numberOfFrames/2);
-    MITK_INFO << "Trying frame " << FrameToUse;
+    MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
     long long int*  LeftTimingError = new long long;
     long long int *  RightTimingError = new long long;
@@ -156,28 +158,71 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     else
     {
       //timing error OK, now check if we can extract corners
+     
+      LeftFramesToUse.push_back (FrameToUse *2);
+      RightFramesToUse.push_back (FrameToUse * 2 + 1);
 
-      capture.set(CV_CAP_PROP_POS_FRAMES, FrameToUse * 2);
-      cv::Mat LeftFrame;
-      capture >> LeftFrame;
-      cv::Mat RightFrame;
-      capture >> RightFrame;
+    }
+  }
+  //now go through video and extract frames to use
+  int FrameNumber = 0 ;
+  while ( FrameNumber < numberOfFrames )
+  {
+    cv::Mat LeftFrame;
+    capture >> LeftFrame;
+    cv::Mat RightFrame;
+    capture >> RightFrame;
+    if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber) != LeftFramesToUse.end()) ) 
+    {
+      if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
+      { 
 
-      std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
-      std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
-      mitk::ExtractChessBoardPoints (
+        MITK_INFO << "Using frame pair" << FrameNumber << "," <<FrameNumber+1;
+        std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
+        std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
+        mitk::ExtractChessBoardPoints (
           LeftFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres,
           leftImageCorners, leftObjectCorners);
-      MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES) << " got " << leftImageCorners->size() << " corners";
+        std::vector <cv::Point2f>* rightImageCorners = new std::vector<cv::Point2f>;
+        std::vector <cv::Point3f>* rightObjectCorners = new std::vector<cv::Point3f>;
+        mitk::ExtractChessBoardPoints (
+          RightFrame, m_NumberCornersWidth,
+          m_NumberCornersHeight, 
+          true, m_SquareSizeInMillimetres,
+          rightImageCorners, rightObjectCorners);
 
-      std::string filename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameToUse*2) + ".jpg";
-      MITK_INFO << "Writing image to " << filename;
-      cv::imwrite( filename, LeftFrame );
-      goodFrames++;
+        if ( leftImageCorners->size() == m_NumberCornersWidth * m_NumberCornersHeight &&
+            rightImageCorners->size() == m_NumberCornersWidth * m_NumberCornersHeight )
+        {
+
+          MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
+
+          std::string filename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
+          MITK_INFO << "Writing image to " << filename;
+          cv::imwrite( filename, LeftFrame );
+        }
+        else
+        {
+          MITK_INFO << "Frame " <<  capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer";
+          std::vector<int>::iterator newEnd = std::remove(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber);
+          LeftFramesToUse.erase(newEnd, LeftFramesToUse.end());
+          newEnd = std::remove(RightFramesToUse.begin(), RightFramesToUse.end(), FrameNumber+1);
+          RightFramesToUse.erase(newEnd, RightFramesToUse.end());
+        }
+      }
+      else
+      {
+        MITK_ERROR << "Left right frame mistmatch" ;
+        return;
+      }
     }
+    
+    FrameNumber++;
+    FrameNumber++;
   }
+  MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
 /*  int framecount = 0 ; 
   while (framecount < 1000)
   {

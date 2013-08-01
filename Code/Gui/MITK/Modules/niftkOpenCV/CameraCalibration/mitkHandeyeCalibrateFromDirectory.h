@@ -55,7 +55,7 @@ public:
   itkSetMacro(FlipExtrinsic, bool);
   itkSetMacro(SortByDistance, bool);
   itkSetMacro(SortByAngle, bool);
-  itkSetMacro(FramesToUse, int);
+  itkSetMacro(FramesToUse, unsigned int);
   itkSetMacro(Directory, std::string);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
@@ -63,8 +63,8 @@ public:
   itkGetMacro(VideoInitialised, bool);
   itkGetMacro(TrackingDataInitialised, bool);
   
-  itkSetMacro(NumberCornersWidth, int);
-  itkSetMacro(NumberCornersHeight, int);
+  itkSetMacro(NumberCornersWidth, unsigned int);
+  itkSetMacro(NumberCornersHeight, unsigned int);
   itkSetMacro(SquareSizeInMillimetres, double);
 
 protected:
@@ -80,7 +80,8 @@ private:
   bool                                m_FlipExtrinsic;
   bool                                m_SortByDistance;
   bool                                m_SortByAngle;
-  int                                 m_FramesToUse;
+  unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
+  float                               m_BadFrameFactor; //how many extra frames to stick in buffer
   bool                                m_SaveProcessedVideoData;
 
   bool                                m_VideoInitialised;
@@ -89,8 +90,8 @@ private:
   int                                 m_TrackerIndex;
   long long                           m_AbsTrackerTimingError;
   
-  int                                 m_NumberCornersWidth;
-  int                                 m_NumberCornersHeight;
+  unsigned int                        m_NumberCornersWidth;
+  unsigned int                        m_NumberCornersHeight;
   double                              m_SquareSizeInMillimetres;
   std::string                         m_Directory;
 
