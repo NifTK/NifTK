@@ -156,25 +156,36 @@ void mitk::ComputeNormalFromPoints(const mitk::Point3D& a, const mitk::Point3D& 
 
 
 //-----------------------------------------------------------------------------
-void mitk::TransformPointsByCameraToWorld(
-    vtkMatrix4x4* cameraToWorld,
+void mitk::TransformPointByVtkMatrix(
+    vtkMatrix4x4* matrix,
+    const bool& isNormal,
     mitk::Point3D& point
     )
 {
   double transformedPoint[4] = {0, 0, 0, 1};
 
-  if(cameraToWorld != NULL)
+  if(matrix != NULL)
   {
     transformedPoint[0] = point[0];
     transformedPoint[1] = point[1];
     transformedPoint[2] = point[2];
     transformedPoint[3] = 1;
 
-    cameraToWorld->MultiplyPoint(transformedPoint, transformedPoint);
+    matrix->MultiplyPoint(transformedPoint, transformedPoint);
 
     point[0] = transformedPoint[0];
     point[1] = transformedPoint[1];
     point[2] = transformedPoint[2];
+
+    if (isNormal)
+    {
+      double transformedOrigin[4] = {0, 0, 0, 1};
+      matrix->MultiplyPoint(transformedOrigin, transformedOrigin);
+
+      point[0] = point[0] - transformedOrigin[0];
+      point[1] = point[1] - transformedOrigin[1];
+      point[2] = point[2] - transformedOrigin[2];
+    }
   }
   else
   {

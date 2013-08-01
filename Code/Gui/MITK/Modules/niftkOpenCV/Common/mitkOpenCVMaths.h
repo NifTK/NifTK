@@ -58,6 +58,17 @@ void MakeIdentity(cv::Matx44d& outputMatrix);
 cv::Matx33d CalculateCrossCovarianceH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
 
 /**
+ * \brief Helper method to do the main point based registration, and handle error conditions.
+ */
+bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
+                                 const std::vector<cv::Point3d>& movingPoints,
+                                 cv::Matx33d& H,
+                                 cv::Point3d &p,
+                                 cv::Point3d& pPrime,
+                                 cv::Matx44d& outputMatrix,
+                                 double &fiducialRegistrationError);
+
+/**
  * \brief Calculates Fiducial Registration Error by multiplying the movingPoints by the matrix, and comparing with fixedPoints.
  */
 double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedPoints,
