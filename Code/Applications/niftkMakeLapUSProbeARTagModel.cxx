@@ -54,14 +54,14 @@ int main(int argc, char** argv)
   // pixelsPerTagSquare*(numberSquares + numberSquares*0.2 - 0.2) = numberOfPixelsAlongLength
   // pixelsPerTagSquare = numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2)
 
-  int pixelsPerTagSquare = (int)(numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2));
-  int actualLengthInPixels = pixelsPerTagSquare*numberSquares + (numberSquares-1)*(pixelsPerTagSquare*0.2);
+  int pixelsPerTagSquare = static_cast<int>(numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2));
+  int actualLengthInPixels = static_cast<int>(pixelsPerTagSquare*numberSquares + (numberSquares-1)*(pixelsPerTagSquare*0.2));
   double actualLengthInMillimetres = actualLengthInPixels / printerDotsPerMillimetre;
 
   double maxCircumferenceInMillimetres = pi * diameter * ((pi - asin(surface/diameter))/pi); // distance around probe; ie. section of circumference
-  int maxCircumferenceInPixels = maxCircumferenceInMillimetres * printerDotsPerMillimetre;
-  int numberSquaresAlongWidth = (maxCircumferenceInPixels / (pixelsPerTagSquare*1.2));
-  int actualWidthInPixels = numberSquaresAlongWidth*pixelsPerTagSquare + (numberSquaresAlongWidth-1)*(pixelsPerTagSquare*0.2);
+  int maxCircumferenceInPixels = static_cast<int>(maxCircumferenceInMillimetres * printerDotsPerMillimetre);
+  int numberSquaresAlongWidth = static_cast<int>(maxCircumferenceInPixels / (pixelsPerTagSquare*1.2));
+  int actualWidthInPixels = static_cast<int>(numberSquaresAlongWidth*pixelsPerTagSquare + (numberSquaresAlongWidth-1)*(pixelsPerTagSquare*0.2));
   double actualWidthInMillimetres = actualWidthInPixels / printerDotsPerMillimetre;
   double tagSquareSizeInMillimetres = pixelsPerTagSquare / printerDotsPerMillimetre;
 
