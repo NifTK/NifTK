@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkRigidPCADeformationModelTransform_h
-#define __itkRigidPCADeformationModelTransform_h
+#ifndef itkRigidPCADeformationModelTransform_h
+#define itkRigidPCADeformationModelTransform_h
 
 #include <iostream>
 #include <itkImage.h>

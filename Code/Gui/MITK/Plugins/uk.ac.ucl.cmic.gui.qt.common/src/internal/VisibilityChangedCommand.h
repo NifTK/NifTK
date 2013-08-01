@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __VisibilityChangedCommand_h
-#define __VisibilityChangedCommand_h
+#ifndef VisibilityChangedCommand_h
+#define VisibilityChangedCommand_h
 
 #include <itkCommand.h>
 

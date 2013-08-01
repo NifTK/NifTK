@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MORPHOLOGICALSEGMENTORPIPELINE_H_INCLUDED
-#define _MORPHOLOGICALSEGMENTORPIPELINE_H_INCLUDED
+#ifndef MorphologicalSegmentorPipeline_h
+#define MorphologicalSegmentorPipeline_h
 
 #include "MorphologicalSegmentorPipelineParams.h"
 #include "MorphologicalSegmentorPipelineInterface.h"

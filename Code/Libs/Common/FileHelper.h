@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __NIFTK_FILEHELPER_H
-#define __NIFTK_FILEHELPER_H
+#ifndef FileHelper_h
+#define FileHelper_h
 
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"

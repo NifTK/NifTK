@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMultiResolutionImageRegistrationWrapper_h
-#define __itkMultiResolutionImageRegistrationWrapper_h
+#ifndef itkMultiResolutionImageRegistrationWrapper_h
+#define itkMultiResolutionImageRegistrationWrapper_h
 
 #include <itkProcessObject.h>
 #include <itkNumericTraits.h>

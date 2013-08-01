@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMetricDerivativeBridge_h
-#define __itkMetricDerivativeBridge_h
+#ifndef itkMetricDerivativeBridge_h
+#define itkMetricDerivativeBridge_h
 
 #include <itkObject.h>
 #include "itkImageToImageMetricWithConstraint.h"

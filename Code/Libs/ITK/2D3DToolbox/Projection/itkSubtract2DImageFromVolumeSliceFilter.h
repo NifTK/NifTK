@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSubtract2DImageFromVolumeSliceFilter_h
-#define __itkSubtract2DImageFromVolumeSliceFilter_h
+#ifndef itkSubtract2DImageFromVolumeSliceFilter_h
+#define itkSubtract2DImageFromVolumeSliceFilter_h
 
 #include <itkInPlaceImageFilter.h>
 

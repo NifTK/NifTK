@@ -16,8 +16,8 @@
 
  ============================================================================*/
 
-#ifndef PROPAGATESEGMENTATIONALONGTIMEACTION_H
-#define PROPAGATESEGMENTATIONALONGTIMEACTION_H
+#ifndef PropagateSegmentationAlongTimeAction_h
+#define PropagateSegmentationAlongTimeAction_h
 
 #include <mitkIContextMenuAction.h>
 

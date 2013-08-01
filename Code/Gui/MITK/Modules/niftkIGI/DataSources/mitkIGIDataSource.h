@@ -161,6 +161,11 @@ public:
   itkThreadSafeGetConstMacro(ActualData, mitk::IGIDataType::Pointer);
 
   /**
+   * \brief Concatenates the SavePrefix, Name and Identifier to a Unique directory name.
+   */
+  std::string GetSaveDirectoryName();
+
+  /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
    */
   virtual float UpdateFrameRate();
@@ -203,15 +208,12 @@ public:
   /**
    * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
    */
-  // FIXME: should these be virtual? derived class may need to do some special setup/teardown
   void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   /**
    * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
    */
-  // FIXME: should these be virtual? derived class may need to do some special setup/teardown
   void StopRecording();
-
 
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
@@ -363,6 +365,7 @@ private:
   {
     bool operator()(const mitk::IGIDataType::Pointer& a, const mitk::IGIDataType::Pointer& b);
   };
+
   typedef std::set<mitk::IGIDataType::Pointer, TimeStampComparator>    BufferType;
   BufferType              m_Buffer;
   BufferType::iterator    m_BufferIterator;

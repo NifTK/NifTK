@@ -16,6 +16,9 @@
 #include <itkObjectFactory.h>
 #include <itkMutexLockHolder.h>
 #include <igtlTimeStamp.h>
+#include <boost/filesystem.hpp>
+#include <cstdlib>
+#include <ConversionUtils.h>
 
 namespace mitk
 {
@@ -65,6 +68,16 @@ IGIDataSource::~IGIDataSource()
       m_DataStorage->Remove(*iter);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSource::GetSaveDirectoryName()
+{
+  boost::filesystem::path slash("/");
+  std::string preferredSlash = slash.make_preferred().string();
+
+  return m_SavePrefix + preferredSlash + m_Name + "_" + niftk::ConvertToString((int)m_Identifier);
 }
 
 
@@ -187,7 +200,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   m_RequestedTimeStamp->SetTimeInNanoSeconds(requestedTimeStamp);
 
-  if (GetIsPlayingBack())
+  if (m_IsPlayingBack)
   {
     // no recording playback data
     assert(m_SavingMessages == false);
@@ -203,7 +216,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   }
   else
   {
-    if (GetIsPlayingBack())
+    if (m_IsPlayingBack)
     {
       m_BufferIterator = m_Buffer.begin();
     }

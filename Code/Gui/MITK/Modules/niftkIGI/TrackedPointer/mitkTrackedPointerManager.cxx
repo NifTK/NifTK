@@ -142,7 +142,7 @@ void TrackedPointerManager::ExecuteOperation(mitk::Operation* operation)
 void TrackedPointerManager::Update(
          const vtkMatrix4x4* tipToPointerTransform,
          const mitk::DataNode::Pointer pointerToWorldNode,
-         const mitk::DataNode::Pointer surfaceNode,
+         const mitk::DataNode::Pointer probeModel,
          mitk::Point3D& tipCoordinate
          )
 {
@@ -167,14 +167,19 @@ void TrackedPointerManager::Update(
 
   combinedTransform->Multiply4x4(pointerToWorldTransform, tipToPointerTransform, combinedTransform);
 
-  mitk::Surface::Pointer surface = dynamic_cast<mitk::Surface*>(surfaceNode->GetData());
-  if (surface.IsNotNull())
+  if (probeModel.IsNotNull())
   {
-    mitk::Geometry3D::Pointer geometry = surface->GetGeometry();
-    if (geometry.IsNotNull())
+    mitk::BaseData::Pointer model = dynamic_cast<mitk::BaseData*>(probeModel->GetData());
+    if (model.IsNotNull())
     {
-      geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
-      geometry->Modified();
+      mitk::Geometry3D::Pointer geometry = model->GetGeometry();
+      if (geometry.IsNotNull())
+      {
+        geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+        geometry->Modified();
+      }
+      model->Modified();
+      probeModel->Modified();
     }
   }
 

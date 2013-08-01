@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREOIMAGETOMODELSSD_H
-#define MITKSTEREOIMAGETOMODELSSD_H
+#ifndef mitkStereoImageToModelSSD_h
+#define mitkStereoImageToModelSSD_h
 
 #include "mitkStereoImageToModelMetric.h"
 

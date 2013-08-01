@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkUCLMultiResolutionPyramidImageFilter_h
-#define __itkUCLMultiResolutionPyramidImageFilter_h
+#ifndef itkUCLMultiResolutionPyramidImageFilter_h
+#define itkUCLMultiResolutionPyramidImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkArray2D.h>

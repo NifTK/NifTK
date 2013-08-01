@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKBASEAPPLICATION_H_
-#define QMITKBASEAPPLICATION_H_
+#ifndef QmitkBaseApplication_h
+#define QmitkBaseApplication_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIApplication.h>

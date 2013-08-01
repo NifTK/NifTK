@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkScalarImageToNormalizedGradientVectorImageFilter_h
-#define __itkScalarImageToNormalizedGradientVectorImageFilter_h
+#ifndef itkScalarImageToNormalizedGradientVectorImageFilter_h
+#define itkScalarImageToNormalizedGradientVectorImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkVector.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkOrderedTraversalStreamlinesFilter_h
-#define __itkOrderedTraversalStreamlinesFilter_h
+#ifndef itkOrderedTraversalStreamlinesFilter_h
+#define itkOrderedTraversalStreamlinesFilter_h
 
 #include <itkImage.h>
 #include <itkVector.h>

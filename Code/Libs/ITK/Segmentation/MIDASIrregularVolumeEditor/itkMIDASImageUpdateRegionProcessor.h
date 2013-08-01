@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
-#define ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
+#ifndef itkMIDASImageUpdateRegionProcessor_h
+#define itkMIDASImageUpdateRegionProcessor_h
 
 #include "itkMIDASImageUpdateProcessor.h"
 #include <itkExtractImageFilter.h>

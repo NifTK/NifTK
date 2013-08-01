@@ -111,6 +111,22 @@ public:
    */
   void SetupCamera();
 
+  /**
+   * \brief Called from QmitkSingle3DView when a DataStorage Change Event was emitted.
+   */
+  void NodeChanged(const mitk::DataNode* node);
+
+  /**
+   * \brief Called from QmitkSingle3DView when a DataStorage Node Added Event was emitted.
+   */
+  void NodeAdded(const mitk::DataNode* node);
+
+  /**
+   * \brief Called from QmitkSingle3DView when a DataStorage Node Removed Event was emitted.
+   */
+  void NodeRemoved(const mitk::DataNode* node);
+
+
 protected:
 
   QmitkBitmapOverlay(); // Purposefully hidden.
@@ -122,29 +138,9 @@ protected:
 private:
 
   /**
-   * \brief Called when a DataStorage Change Event was emitted.
-   */
-  void NodeChanged(const mitk::DataNode* node);
-
-  /**
-   * \brief Called when a DataStorage Node Added Event was emitted.
-   */
-  void NodeAdded(const mitk::DataNode* node);
-
-  /**
-   * \brief Called when a DataStorage Node Removed Event was emitted.
-   */
-  void NodeRemoved(const mitk::DataNode* node);
-
-  /**
    * \brief Checks if a node is a valid image to be auto-selected.
    */
   void AutoSelectDataNode(const mitk::DataNode* node);
-
-  /**
-   * \brief Utility method to deregister data storage listeners.
-   */
-  void DeRegisterDataStorageListeners();
 
   // We don't own this, so neither do we delete this.
   vtkRenderWindow*            m_RenderWindow;

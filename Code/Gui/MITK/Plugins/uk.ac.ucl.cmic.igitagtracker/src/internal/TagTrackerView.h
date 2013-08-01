@@ -43,11 +43,6 @@ public:
   static const std::string VIEW_ID;
 
   /**
-   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
-   */
-  static const std::string NODE_ID;
-
-  /**
    * \brief Returns the view ID.
    */
 
@@ -85,6 +80,11 @@ private slots:
    * \brief if any spin box pressed, we update.
    */
   void OnSpinBoxPressed();
+
+  /**
+   * \brief We can toggle, whether or not to update the registration.
+   */
+  void OnRegistrationEnabledChecked(bool isChecked);
 
 private:
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLBaseTransform_h
-#define __itkUCLBaseTransform_h
+#ifndef itkUCLBaseTransform_h
+#define itkUCLBaseTransform_h
 
 #include <itkTransform.h>
 

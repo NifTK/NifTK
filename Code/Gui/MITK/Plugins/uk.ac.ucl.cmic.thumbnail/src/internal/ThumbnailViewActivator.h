@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef THUMBNAILVIEWACTIVATOR_H
-#define THUMBNAILVIEWACTIVATOR_H
+#ifndef ThumbnailViewActivator_h
+#define ThumbnailViewActivator_h
 
 #include <ctkPluginActivator.h>
 

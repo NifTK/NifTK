@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkJonesThicknessFilter_h
-#define __itkJonesThicknessFilter_h
+#ifndef itkJonesThicknessFilter_h
+#define itkJonesThicknessFilter_h
 #include <itkImageToImageFilter.h>
 #include <itkVector.h>
 #include "itkCheckForThreeLevelsFilter.h"

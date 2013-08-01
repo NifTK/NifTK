@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkIGINVidiaDataSourceImpl_H
-#define QmitkIGINVidiaDataSourceImpl_H
+#ifndef QmitkIGINVidiaDataSourceImpl_h
+#define QmitkIGINVidiaDataSourceImpl_h
 
 #include <QThread>
 #include <QMutex>

@@ -20,9 +20,13 @@
 #include <iostream>
 #include <vtkMatrix4x4.h>
 #include <mitkVector.h>
+#include <mitkVector.h>
+#include <itkPoint.h>
+#include <mitkPointSet.h>
 
 namespace mitk
 {
+  typedef itk::Point<mitk::ScalarType,6> Point6D;
 
 /**
  * \brief Detect the AR-Tag style markers in distortion-corrected colour RGB images.
@@ -77,12 +81,22 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
     const bool& drawCentre = false
     );
 
+
 /**
- * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL.
+ * \brief Highly Experimental method to extract marker pairs, and compute surface normals for each extracted point.
+ * \return map of marker id and a 6D point containing the marker centre and its surface normal.
  */
-void TransformPointsByCameraToWorld(
-    vtkMatrix4x4* cameraToWorld,
-    mitk::Point3D& point
+std::map<int, Point6D> DetectMarkerPairsAndNormals(
+    cv::Mat& inImageLeft,
+    cv::Mat& inImageRight,
+    const cv::Mat& intrinsicParamsLeft,
+    const cv::Mat& intrinsicParamsRight,
+    const cv::Mat& rightToLeftRotationVector,
+    const cv::Mat& rightToLeftTranslationVector,
+    const float& minSize = 0.01,
+    const float& maxSize = 0.125,
+    const double& blockSize = 7,
+    const double& offset = 7
     );
 
 } // end namespace

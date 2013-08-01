@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make Laparoscopic Ultrasound Probe Model</title>
+  <description><![CDATA[Generates a VTK model to match the ARTag board created by aruco_create_board.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/Output file parameters]]></description>
+    <file fileExtensions="*.txt">
+      <name>inputPointIDs</name>
+      <longflag>inputPointIDs</longflag>
+      <description>Input generated point IDs.</description>
+      <label>Input Point IDs</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions="*.vtk">
+      <name>outputTrackingModel</name>
+      <longflag>outputTrackingModel</longflag>
+      <description>Output VTK file (vtkPolyData) for matching/tracking.</description>
+      <label>Output Tracking Model</label>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions="*.vtk">
+      <name>outputVisualisationModel</name>
+      <longflag>outputVisualisationModel</longflag>
+      <description>Output VTK file (vtkPolyData) for visualisation.</description>
+      <label>Output Visualisation Model</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Probe Parameters</label>
+    <description><![CDATA[Parameters for probe geometry]]></description>  
+    <float>
+      <name>diameter</name>
+      <longflag>diameter</longflag>
+      <description>The diameter of the probe (mm).</description>
+      <label>Probe Diameter</label>
+      <default>10</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <float>
+      <name>length</name>
+      <longflag>length</longflag>
+      <description>The length of the probe (mm).</description>
+      <label>Probe Length</label>
+      <default>63</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>    
+    <float>
+      <name>surface</name>
+      <longflag>surface</longflag>
+      <description>The width of the flat probe sensor (mm).</description>
+      <label>Probe Sensor</label>
+      <default>8</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <integer>
+      <name>numberSquares</name>
+      <longflag>numberSquares</longflag>
+      <description>The number of squares along the probe.</description>
+      <label>Number Squares</label>
+      <default>9</default>
+      <constraints>
+        <minimum>2</minimum>
+        <maximum>20</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <float>
+      <name>tipZOffset</name>
+      <longflag>tipZOffset</longflag>
+      <description>Offset in Z axis of tip.</description>
+      <label>Z Offset</label>
+      <default>0</default>
+      <constraints>
+        <minimum>-99</minimum>
+        <maximum>99</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+  </parameters>
+</executable>

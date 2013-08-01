@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkNondirectionalDerivativeOperator_h
-#define __itkNondirectionalDerivativeOperator_h
+#ifndef itkNondirectionalDerivativeOperator_h
+#define itkNondirectionalDerivativeOperator_h
 
 #include <itkNeighborhood.h>
 #include <itkVector.h>

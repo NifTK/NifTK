@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkParzenWindowNMIDerivativeForceGenerator_h
-#define __itkParzenWindowNMIDerivativeForceGenerator_h
+#ifndef itkParzenWindowNMIDerivativeForceGenerator_h
+#define itkParzenWindowNMIDerivativeForceGenerator_h
 
 #include "itkRegistrationForceFilter.h"
 #include "itkLinearlyInterpolatedDerivativeFilter.h"

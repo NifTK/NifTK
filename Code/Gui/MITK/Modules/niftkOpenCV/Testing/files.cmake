@@ -21,4 +21,5 @@ set(MODULE_CUSTOM_TESTS
   mitkCameraCalibrationTest.cxx
   mitkHandeyeCalibrationTest.cxx
   mitkTagTrackingTest.cxx
+  mitkVideoTrackerMatchingTest.cxx
 )

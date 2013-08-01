@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageMatrixFormReconstructionMethod_h
-#define __itkImageMatrixFormReconstructionMethod_h
+#ifndef itkImageMatrixFormReconstructionMethod_h
+#define itkImageMatrixFormReconstructionMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

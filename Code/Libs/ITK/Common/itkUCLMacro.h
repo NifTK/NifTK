@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __ITKUCLMACRO_H
-#define __ITKUCLMACRO_H
+#ifndef itkUCLMacro_h
+#define itkUCLMacro_h
 
 #include <NifTKConfigure.h>
 #include <niftkCommonWin32ExportHeader.h>

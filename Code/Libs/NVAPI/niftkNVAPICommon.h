@@ -11,8 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef NIFTKNVAPICOMMON_H
-#define NIFTKNVAPICOMMON_H
+#ifndef niftkNVAPICommon_h
+#define niftkNVAPICommon_h
 
 #include <NifTKConfigure.h>
 #include "niftkNVAPIWin32ExportHeader.h"

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef AffineTransformDataNodeProperty_h
-#define AffineTransformDataNodeProperty_h
+#ifndef mitkAffineTransformDataNodeProperty_h
+#define mitkAffineTransformDataNodeProperty_h
 
 #include "niftkCoreExports.h"
 #include <mitkBaseProperty.h>

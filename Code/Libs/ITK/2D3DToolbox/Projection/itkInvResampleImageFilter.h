@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkInvResampleImageFilter_h
-#define __itkInvResampleImageFilter_h
+#ifndef itkInvResampleImageFilter_h
+#define itkInvResampleImageFilter_h
 
 // First make sure that the configuration is available.
 // This line can be removed once the optimized versions

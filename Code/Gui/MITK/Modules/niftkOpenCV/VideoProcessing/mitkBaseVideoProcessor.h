@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKBASEVIDEOPROCESSOR_H
-#define MITKBASEVIDEOPROCESSOR_H
+#ifndef mitkBaseVideoProcessor_h
+#define mitkBaseVideoProcessor_h
 
 #include "niftkOpenCVExports.h"
 

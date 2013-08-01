@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkKnownCorEuclideanDistancePointMetric_h
-#define __itkKnownCorEuclideanDistancePointMetric_h
+#ifndef itkKnownCorEuclideanDistancePointMetric_h
+#define itkKnownCorEuclideanDistancePointMetric_h
 
 #include <itkPointSetToPointSetMetric.h>
 #include <itkCovariantVector.h>

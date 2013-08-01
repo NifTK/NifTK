@@ -14,8 +14,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#ifndef _vtk_Logo_Rendering_h_
-#define _vtk_Logo_Rendering_h_
+#ifndef QmitkCmicLogo_h
+#define QmitkCmicLogo_h
 
 #include <mitkBaseData.h>
 #include "niftkCoreGuiExports.h"

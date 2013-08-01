@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
-#define QMITKNIFTYVIEWMIDASPERSPECTIVE_H_
+#ifndef QmitkNiftyViewMIDASPerspective_h
+#define QmitkNiftyViewMIDASPerspective_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIPerspectiveFactory.h>

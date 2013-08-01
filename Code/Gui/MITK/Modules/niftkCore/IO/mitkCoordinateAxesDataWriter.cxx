@@ -135,6 +135,10 @@ void CoordinateAxesDataWriter::GenerateData()
 
     MITK_INFO << "CoordinateAxesData written";
   }
+  if (!m_Success)
+  {
+    MITK_ERROR << "Failed to write mitk::CoordinateAxesData to " << m_FileName << std::endl;
+  }
 }
 
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkTranslationPCADeformationModelTransform_h
-#define __itkTranslationPCADeformationModelTransform_h
+#ifndef itkTranslationPCADeformationModelTransform_h
+#define itkTranslationPCADeformationModelTransform_h
 
 #include <iostream>
 #include <itkImage.h>

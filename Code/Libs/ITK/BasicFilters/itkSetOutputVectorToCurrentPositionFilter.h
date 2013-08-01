@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSetOutputVectorToCurrentPositionFilter_h
-#define __itkSetOutputVectorToCurrentPositionFilter_h
+#ifndef itkSetOutputVectorToCurrentPositionFilter_h
+#define itkSetOutputVectorToCurrentPositionFilter_h
 
 #include <itkInPlaceImageFilter.h>
 #include <itkVector.h>

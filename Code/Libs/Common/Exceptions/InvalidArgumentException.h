@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef INVALIDARGUMENTEXCEPTION_H_
-#define INVALIDARGUMENTEXCEPTION_H_
+#ifndef InvalidArgumentException_h
+#define InvalidArgumentException_h
 
 #include "ExceptionObject.h"
 

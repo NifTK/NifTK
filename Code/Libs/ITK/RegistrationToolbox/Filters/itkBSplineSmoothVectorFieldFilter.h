@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBSplineSmoothVectorFieldFilter_h
-#define __itkBSplineSmoothVectorFieldFilter_h
+#ifndef itkBSplineSmoothVectorFieldFilter_h
+#define itkBSplineSmoothVectorFieldFilter_h
 #include "itkSmoothVectorFieldFilter.h"
 #include <itkVectorNeighborhoodOperatorImageFilter.h>
 #include "itkBSplineOperator.h"

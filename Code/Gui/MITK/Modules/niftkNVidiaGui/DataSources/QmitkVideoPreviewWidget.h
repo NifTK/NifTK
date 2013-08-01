@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKVIDEOPREVIEWWIDGET_H
-#define QMITKVIDEOPREVIEWWIDGET_H
+#ifndef QmitkVideoPreviewWidget_h
+#define QmitkVideoPreviewWidget_h
 
 #include <QObject>
 #include <QMetaType>

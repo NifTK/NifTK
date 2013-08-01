@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBasicImageFeaturesImageFilter_h
-#define __itkBasicImageFeaturesImageFilter_h
+#ifndef itkBasicImageFeaturesImageFilter_h
+#define itkBasicImageFeaturesImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include "itkLewisGriffinRecursiveGaussianImageFilter.h"

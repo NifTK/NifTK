@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkJacobianGradientSimilarityMeasure_h
-#define __itkJacobianGradientSimilarityMeasure_h
+#ifndef itkJacobianGradientSimilarityMeasure_h
+#define itkJacobianGradientSimilarityMeasure_h
 
 #include "itkSimilarityMeasure.h"
 

@@ -16,8 +16,8 @@
 
  ============================================================================*/
 
-#ifndef ITKPROCESSOBSERVER_H_
-#define ITKPROCESSOBSERVER_H_
+#ifndef ItkProcessObserver_h
+#define ItkProcessObserver_h
 
 namespace itk {
 class ProcessObject;

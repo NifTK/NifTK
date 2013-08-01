@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkOpenCVMaths.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
@@ -21,8 +22,6 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
-  VideoProcessing/mitkTrackLapUSProcessor.cxx
-  VideoProcessing/mitkTrackLapUS.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
@@ -34,9 +33,12 @@ set(CPP_FILES
   Registration/mitkStereoImageToModelMetric.cxx
   Registration/mitkStereoImageToModelSSD.cxx
   Registration/mitkRegisterProbeModelToStereoPair.cxx
-  Tracking/mitkTagTrackingFacade.cxx
-  Tracking/mitkMonoTagExtractor.cxx
-  Tracking/mitkStereoTagExtractor.cxx
-  demo/mitkTestLineExtraction.cxx
-  demo/mitkTestCornerExtraction.cxx
+  Registration/mitkArunLeastSquaresPointRegistration.cxx
+  Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
+  TagTracking/mitkTagTrackingFacade.cxx
+  TagTracking/mitkMonoTagExtractor.cxx
+  TagTracking/mitkStereoTagExtractor.cxx
+  VideoTrackerMatching/mitkVideoTrackerMatching.cxx
 )

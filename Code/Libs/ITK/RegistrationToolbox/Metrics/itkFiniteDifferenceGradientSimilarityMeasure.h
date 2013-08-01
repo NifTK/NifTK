@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkFiniteDifferenceGradientSimilarityMeasure_h
-#define __itkFiniteDifferenceGradientSimilarityMeasure_h
+#ifndef itkFiniteDifferenceGradientSimilarityMeasure_h
+#define itkFiniteDifferenceGradientSimilarityMeasure_h
 
 #include "itkSimilarityMeasure.h"
 

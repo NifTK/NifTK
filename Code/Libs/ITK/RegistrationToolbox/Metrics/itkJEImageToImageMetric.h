@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkJEImageToImageMetric_h
-#define __itkJEImageToImageMetric_h
+#ifndef itkJEImageToImageMetric_h
+#define itkJEImageToImageMetric_h
 
 #include "itkHistogramSimilarityMeasure.h"
 

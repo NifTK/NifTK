@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkRelaxStreamlinesFilter_h
-#define __itkRelaxStreamlinesFilter_h
+#ifndef itkRelaxStreamlinesFilter_h
+#define itkRelaxStreamlinesFilter_h
 
 #include <itkImage.h>
 #include <itkVector.h>

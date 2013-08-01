@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef LOOKUPTABLECONTAINER_H
-#define LOOKUPTABLECONTAINER_H
+#ifndef LookupTableContainer_h
+#define LookupTableContainer_h
 
 #include <niftkCoreGuiExports.h>
 #include <QString>

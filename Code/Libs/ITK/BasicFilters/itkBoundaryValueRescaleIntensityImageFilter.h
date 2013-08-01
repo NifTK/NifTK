@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBoundaryValueRescaleIntensityImageFilter_h
-#define __itkBoundaryValueRescaleIntensityImageFilter_h
+#ifndef itkBoundaryValueRescaleIntensityImageFilter_h
+#define itkBoundaryValueRescaleIntensityImageFilter_h
 #include <itkImageToImageFilter.h>
 #include <itkBinaryThresholdImageFilter.h>
 

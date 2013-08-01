@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKCORRECTIMAGEDISTORTION_H
-#define MITKCORRECTIMAGEDISTORTION_H
+#ifndef mitkCorrectImageDistortion_h
+#define mitkCorrectImageDistortion_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKBASICIMAGECOMPARISONFUNCTIONS_H_
-#define ITKBASICIMAGECOMPARISONFUNCTIONS_H_
+#ifndef itkBasicImageComparisonFunctions_h
+#define itkBasicImageComparisonFunctions_h
 
 namespace itk
 {

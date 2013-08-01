@@ -286,7 +286,7 @@
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
           <property name="sortingEnabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="columnCount">
            <number>6</number>

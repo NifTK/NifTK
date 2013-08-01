@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageRegistrationFilter_h
-#define __itkImageRegistrationFilter_h
+#ifndef itkImageRegistrationFilter_h
+#define itkImageRegistrationFilter_h
 
 
 #include <itkImageToImageFilter.h>

@@ -68,9 +68,16 @@ public:
     matrix->Identity();
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-    mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
-    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, 7, 7, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, pointSet, matrix);
+    mitk::PointSet::Pointer normals = mitk::PointSet::New();
 
+    mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
+
+    // First test normal stereo.
+    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, 7, 7, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, matrix, pointSet, NULL);
+    MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
+
+    // Then test stereo with surface normals.
+    extractor->ExtractPoints(leftMitkImage, rightMitkImage, 0.01, 0.125, 7, 7, *leftIntMat, *rightIntMat, *r2lRotMat, *r2lTrnMat, matrix, pointSet, normals);
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 2,".. Testing we got 2 points out, and we got " << pointSet->GetSize());
 
     cvReleaseMat(&leftIntMat);
@@ -92,7 +99,7 @@ public:
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::MonoTagExtractor::Pointer extractor = mitk::MonoTagExtractor::New();
-    extractor->ExtractPoints(mitkImage, 0.01, 0.125,  7, 7, pointSet, NULL);
+    extractor->ExtractPoints(mitkImage, 0.01, 0.125,  7, 7, NULL, pointSet);
 
     MITK_TEST_CONDITION_REQUIRED(pointSet->GetSize() == 5,".. Testing we got 5 points out, and we got " << pointSet->GetSize());
     MITK_TEST_OUTPUT(<< "Finished TestMono...");

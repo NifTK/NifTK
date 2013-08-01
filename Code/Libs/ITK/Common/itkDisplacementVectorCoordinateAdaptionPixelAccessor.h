@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_
-#define ITKDISPLACEMENTVECTORCOORDINATEADAPTIONPIXELACCESSOR_H_
+#ifndef itkDisplacementVectorCoordinateAdaptionPixelAccessor_h
+#define itkDisplacementVectorCoordinateAdaptionPixelAccessor_h
 
 #include <itkVector.h>
 #include <itkMatrix.h>

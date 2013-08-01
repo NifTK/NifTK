@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _MORPHOLOGICALSEGMENTORPIPELINEPARAMS_H
-#define _MORPHOLOGICALSEGMENTORPIPELINEPARAMS_H
+#ifndef MorphologicalSegmentorPipelineParams_h
+#define MorphologicalSegmentorPipelineParams_h
 
 /**
  * \class MorphologicalSegmentorPipelineParams

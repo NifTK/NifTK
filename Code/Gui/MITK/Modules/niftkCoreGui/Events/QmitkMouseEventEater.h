@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMOUSEEVENTEATER_H_
-#define QMITKMOUSEEVENTEATER_H_
+#ifndef QmitkMouseEventEater_h
+#define QmitkMouseEventEater_h
 
 #include "niftkCoreGuiExports.h"
 #include <QWidget>

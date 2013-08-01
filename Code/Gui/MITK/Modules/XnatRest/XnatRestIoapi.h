@@ -18,8 +18,8 @@
 
 */
 
-#ifndef _ZLIBIOAPI64_H
-#define _ZLIBIOAPI64_H
+#ifndef XnatRestIoapi_h
+#define XnatRestIoapi_h
 
 #if (!defined(_WIN32)) && (!defined(WIN32))
 

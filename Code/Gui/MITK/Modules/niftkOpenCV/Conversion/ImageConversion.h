@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkImageConversion_h
-#define niftkImageConversion_h
+#ifndef ImageConversion_h
+#define ImageConversion_h
 
 #include "niftkOpenCVExports.h"
 #include <mitkITKImageImport.txx>

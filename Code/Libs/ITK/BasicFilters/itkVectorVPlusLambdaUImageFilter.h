@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkVectorVPlusLambdaUImageFilter_h
-#define __itkVectorVPlusLambdaUImageFilter_h
+#ifndef itkVectorVPlusLambdaUImageFilter_h
+#define itkVectorVPlusLambdaUImageFilter_h
 
 #include <itkVector.h>
 #include <itkImage.h>

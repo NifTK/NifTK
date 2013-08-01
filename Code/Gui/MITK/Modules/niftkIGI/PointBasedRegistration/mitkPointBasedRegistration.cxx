@@ -13,16 +13,24 @@
 =============================================================================*/
 
 #include "mitkPointBasedRegistration.h"
-#include <mitkFileIOUtils.h>
+#include <limits>
+#include <mitkPointUtils.h>
 #include <mitkNavigationDataLandmarkTransformFilter.h>
+#include <mitkArunLeastSquaresPointRegistrationWrapper.h>
+
 
 const bool mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION(false);
+const bool mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(false);
+const bool mitk::PointBasedRegistration::DEFAULT_USE_SVD_BASED_METHOD(true);
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
 PointBasedRegistration::PointBasedRegistration()
+: m_UseICPInitialisation(DEFAULT_USE_ICP_INITIALISATION)
+, m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
+, m_UseSVDBasedMethod(DEFAULT_USE_SVD_BASED_METHOD)
 {
 }
 
@@ -37,65 +45,100 @@ PointBasedRegistration::~PointBasedRegistration()
 double PointBasedRegistration::Update(
     const mitk::PointSet::Pointer fixedPointSet,
     const mitk::PointSet::Pointer movingPointSet,
-    const bool& useICPInitialisation,
     vtkMatrix4x4& outputTransform) const
 {
 
-  mitk::NavigationDataLandmarkTransformFilter::Pointer filter = mitk::NavigationDataLandmarkTransformFilter::New();
-  filter->SetUseICPInitialization(useICPInitialisation);
-  filter->SetTargetLandmarks(fixedPointSet);
-  filter->SetSourceLandmarks(movingPointSet);
-  filter->Update();
+  assert(fixedPointSet);
+  assert(movingPointSet);
 
-  MITK_INFO << "PointBasedRegistration: FRE=" << filter->GetFRE() << "mm (Std. Dev. " << filter->GetFREStdDev() << ")" << std::endl;
-  MITK_INFO << "PointBasedRegistration: RMS=" << filter->GetRMSError() << "mm " << std::endl;
-  MITK_INFO << "PointBasedRegistration: min=" << filter->GetMinError() << "mm" << std::endl;
-  MITK_INFO << "PointBasedRegistration: max=" << filter->GetMaxError() << "mm" << std::endl;
-
-  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::ConstPointer transform = filter->GetLandmarkTransform();
-  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::MatrixType rotationMatrix = transform->GetMatrix();
-  mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::OffsetType translationVector = transform->GetOffset();
-
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
-  for (int i = 0; i < 3; ++i)
+
+  mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer filteredMovingPoints = mitk::PointSet::New();
+  mitk::PointSet* fixedPoints = fixedPointSet;
+  mitk::PointSet* movingPoints = movingPointSet;
+
+  bool useICPInit = m_UseICPInitialisation;
+
+  if (m_UsePointIDToMatchPoints)
   {
-    for (int j = 0; j < 3; ++j)
+
+    int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPointSet,
+                                                            *movingPointSet,
+                                                            *filteredFixedPoints,
+                                                            *filteredMovingPoints
+                                                            );
+
+    if (numberOfFilteredPoints >= 3)
     {
-      outputTransform.SetElement(i, j, rotationMatrix[i][j]);
+      fixedPoints = filteredFixedPoints;
+      movingPoints = filteredMovingPoints;
     }
-    outputTransform.SetElement(i, 3, translationVector[i]);
+    else
+    {
+      MITK_ERROR << "mitk::PointBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
+      return fiducialRegistrationError;
+    }
   }
-  double error = filter->GetFRE();
-  return error;
-}
 
-
-//-----------------------------------------------------------------------------
-bool PointBasedRegistration::SaveToFile(const std::string& fileName, const vtkMatrix4x4& transform) const
-{
-  bool isSuccessful = false;
-  if (fileName.length() > 0)
+  if (fixedPoints->GetSize() < 3 || movingPoints->GetSize() < 3)
   {
-    isSuccessful = mitk::SaveVtkMatrix4x4ToFile(fileName, transform);
+    MITK_ERROR << "mitk::PointBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
+    return fiducialRegistrationError;
   }
-  return isSuccessful;
+
+  if (fixedPoints->GetSize() != movingPoints->GetSize() && !m_UseICPInitialisation && !m_UseSVDBasedMethod)
+  {
+    MITK_ERROR << "mitk::PointBasedRegistration: Switching to use ICP Initialisation for mitk::NavigationDataLandmarkTransformFilter";
+    useICPInit = true;
+  }
+
+  if (m_UseSVDBasedMethod)
+  {
+    mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer registration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
+    bool success = registration->Update(fixedPoints, movingPoints, outputTransform, fiducialRegistrationError);
+
+    if (!success)
+    {
+      MITK_ERROR << "mitk::PointBasedRegistration: SVD method failed" << std::endl;
+    }
+  }
+  else
+  {
+    mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::ConstPointer transform = NULL;
+    mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::MatrixType rotationMatrix;
+    mitk::NavigationDataLandmarkTransformFilter::LandmarkTransformType::OffsetType translationVector;
+    rotationMatrix.SetIdentity();
+    translationVector.Fill(0);
+
+    mitk::NavigationDataLandmarkTransformFilter::Pointer transformFilter = mitk::NavigationDataLandmarkTransformFilter::New();
+    transformFilter->SetUseICPInitialization(m_UseICPInitialisation);
+    transformFilter->SetTargetLandmarks(fixedPoints);
+    transformFilter->SetSourceLandmarks(movingPoints);
+    transformFilter->Update();
+
+    MITK_INFO << "PointBasedRegistration: FRE=" << transformFilter->GetFRE() << "mm (Std. Dev. " << transformFilter->GetFREStdDev() << ")" << std::endl;
+    MITK_INFO << "PointBasedRegistration: RMS=" << transformFilter->GetRMSError() << "mm " << std::endl;
+    MITK_INFO << "PointBasedRegistration: min=" << transformFilter->GetMinError() << "mm" << std::endl;
+    MITK_INFO << "PointBasedRegistration: max=" << transformFilter->GetMaxError() << "mm" << std::endl;
+
+    fiducialRegistrationError = transformFilter->GetFRE();
+    transform = transformFilter->GetLandmarkTransform();
+    rotationMatrix = transform->GetMatrix();
+    translationVector = transform->GetOffset();
+
+    for (int i = 0; i < 3; ++i)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
+        outputTransform.SetElement(i, j, rotationMatrix[i][j]);
+      }
+      outputTransform.SetElement(i, 3, translationVector[i]);
+    }
+  }
+  return fiducialRegistrationError;
 }
-
-
-//-----------------------------------------------------------------------------
-bool PointBasedRegistration::ApplyToNode(
-    const mitk::DataNode::Pointer& node,
-    vtkMatrix4x4& transform,
-    const bool& makeUndoAble) const
-{
-  bool isSuccessful = false;
-
-  // Possiby should put the implementation of this method in something more generic like mitk::DataStorageUtils.h
-  // Maybe ignore makeUndoAble for now, and just get the apply to node bit working.
-
-  return isSuccessful;
-}
-
 
 } // end namespace
 

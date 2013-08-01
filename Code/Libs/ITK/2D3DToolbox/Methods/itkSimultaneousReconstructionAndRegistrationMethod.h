@@ -13,8 +13,8 @@
 =============================================================================*/
 
 
-#ifndef __itkSimultaneousReconstructionAndRegistrationMethod_h
-#define __itkSimultaneousReconstructionAndRegistrationMethod_h
+#ifndef itkSimultaneousReconstructionAndRegistrationMethod_h
+#define itkSimultaneousReconstructionAndRegistrationMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

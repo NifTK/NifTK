@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREOCAMERACALIBRATIONFROMTWODIRECTORIES_H
-#define MITKSTEREOCAMERACALIBRATIONFROMTWODIRECTORIES_H
+#ifndef mitkStereoCameraCalibrationFromTwoDirectories_h
+#define mitkStereoCameraCalibrationFromTwoDirectories_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

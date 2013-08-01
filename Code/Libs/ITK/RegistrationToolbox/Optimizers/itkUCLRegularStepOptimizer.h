@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLRegularStepOptimizer_h
-#define __itkUCLRegularStepOptimizer_h
+#ifndef itkUCLRegularStepOptimizer_h
+#define itkUCLRegularStepOptimizer_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

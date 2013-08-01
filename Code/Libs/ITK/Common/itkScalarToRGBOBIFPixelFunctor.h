@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkScalarToRGBOBIFPixelFunctor_h
-#define __itkScalarToRGBOBIFPixelFunctor_h
+#ifndef itkScalarToRGBOBIFPixelFunctor_h
+#define itkScalarToRGBOBIFPixelFunctor_h
 
 #include <itkRGBPixel.h>
 

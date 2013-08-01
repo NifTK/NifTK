@@ -51,6 +51,14 @@ CoordinateAxesData::~CoordinateAxesData()
 
 
 //-----------------------------------------------------------------------------
+void CoordinateAxesData::UpdateOutputInformation()
+{
+  Superclass::UpdateOutputInformation();
+  this->GetTimeSlicedGeometry()->UpdateInformation();
+}
+
+
+//-----------------------------------------------------------------------------
 void CoordinateAxesData::SetRequestedRegionToLargestPossibleRegion()
 {
   // Deliberately blank, as nothing to do.
@@ -97,7 +105,7 @@ const CoordinateAxesData::RegionType& CoordinateAxesData::GetRequestedRegion() c
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 {
-  mitk::TimeSlicedGeometry::ConstPointer geometry = this->GetTimeSlicedGeometry();
+  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
   if (geometry.IsNotNull())
   {
     mitk::AffineTransform3D::ConstPointer itkTrans = geometry->GetIndexToWorldTransform();
@@ -125,6 +133,7 @@ void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&matrix));
     geometry->Modified();
+    this->UpdateOutputInformation();
     this->Modified();
   }
 }

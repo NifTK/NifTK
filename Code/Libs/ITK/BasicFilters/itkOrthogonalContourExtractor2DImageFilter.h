@@ -29,8 +29,8 @@
 
 =========================================================================*/
 
-#ifndef __itkOrthogonalContourExtractor2DImageFilter_h
-#define __itkOrthogonalContourExtractor2DImageFilter_h
+#ifndef itkOrthogonalContourExtractor2DImageFilter_h
+#define itkOrthogonalContourExtractor2DImageFilter_h
 
 #include <itkImageToPathFilter.h>
 #include <itkNumericTraits.h>

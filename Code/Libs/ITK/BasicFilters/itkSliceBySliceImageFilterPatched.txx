@@ -18,7 +18,7 @@
 #ifndef __itkSliceBySliceImageFilter_txx
 #define __itkSliceBySliceImageFilter_txx
 
-#include <itkSliceBySliceImageFilter.h>
+#include <itkSliceBySliceImageFilterPatched.h>
 #include <itkImageRegionIterator.h>
 #include <itkProgressReporter.h>
 

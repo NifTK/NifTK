@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkIsocentricConeBeamRotationGeometry_h
-#define __itkIsocentricConeBeamRotationGeometry_h
+#ifndef itkIsocentricConeBeamRotationGeometry_h
+#define itkIsocentricConeBeamRotationGeometry_h
 
 #include "itkProjectionGeometry.h"
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKREGISTRATIONHELPER_H
-#define MITKREGISTRATIONHELPER_H
+#ifndef mitkRegistrationHelper_h
+#define mitkRegistrationHelper_h
 
 #include <cv.h>
 #include <cstdlib>

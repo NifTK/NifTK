@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkIterationUpdateCommand_h
-#define __itkIterationUpdateCommand_h
+#ifndef itkIterationUpdateCommand_h
+#define itkIterationUpdateCommand_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkTranslateRotateScaleImageRegistrationMethod_h
-#define __itkTranslateRotateScaleImageRegistrationMethod_h
+#ifndef itkTranslateRotateScaleImageRegistrationMethod_h
+#define itkTranslateRotateScaleImageRegistrationMethod_h
 
 
 #include "itkMultiStageImageRegistrationMethod.h"

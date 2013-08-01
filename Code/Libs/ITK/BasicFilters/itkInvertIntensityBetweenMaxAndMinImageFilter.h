@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkInvertIntensityBetweenMaxAndMinImageFilter_h
-#define __itkInvertIntensityBetweenMaxAndMinImageFilter_h
+#ifndef itkInvertIntensityBetweenMaxAndMinImageFilter_h
+#define itkInvertIntensityBetweenMaxAndMinImageFilter_h
 
 #include "itkUnaryFunctorImageFilter.h"
 

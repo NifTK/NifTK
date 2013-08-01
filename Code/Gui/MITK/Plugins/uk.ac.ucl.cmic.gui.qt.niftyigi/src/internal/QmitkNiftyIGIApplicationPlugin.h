@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYIGIAPPLICATIONPLUGIN_H_
-#define QMITKNIFTYIGIAPPLICATIONPLUGIN_H_
+#ifndef QmitkNiftyIGIApplicationPlugin_h
+#define QmitkNiftyIGIApplicationPlugin_h
 
 #include <berryAbstractUICTKPlugin.h>
 #include <QmitkCommonAppsApplicationPlugin.h>

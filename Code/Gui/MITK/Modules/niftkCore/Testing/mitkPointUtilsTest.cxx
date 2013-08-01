@@ -145,6 +145,8 @@ public:
   //-----------------------------------------------------------------------------
   static void TestNormalise()
   {
+    MITK_TEST_OUTPUT(<< "Starting TestNormalise...");
+
     // Implictly testing GetLength().
     mitk::Point3D a;
     a[0] = 1; a[1] = 1; a[2] = 1;
@@ -174,6 +176,81 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[0], 0),".. Testing TestNormalise a[0] = 0");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[1], 0),".. Testing TestNormalise a[1] = 0");
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(a[2], 0),".. Testing TestNormalise a[2] = 0");
+
+    MITK_TEST_OUTPUT(<< "Finished TestNormalise...");
+  }
+
+  //-----------------------------------------------------------------------------
+  static void TestComputeNormalFromPoints()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestComputeNormalFromPoints...");
+
+    // Implicitly tests CrossProduct and CopyValues
+    mitk::Point3D a, b, c, output;
+    a[0] = 0;
+    a[1] = 0;
+    a[2] = 0;
+    b[0] = 2;
+    b[1] = 0;
+    b[2] = 0;
+    c[0] = 2;
+    c[1] = 2;
+    c[2] = 0;
+    mitk::ComputeNormalFromPoints(a, b, c, output);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[0], 0),".. Testing TestComputeNormalFromPoints output[0] = 0, and it equals:" << output[0]);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[1], 0),".. Testing TestComputeNormalFromPoints output[1] = 0, and it equals:" << output[1]);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(output[2], -1),".. Testing TestComputeNormalFromPoints output[2] = 1, and it equals:" << output[2]);
+
+    MITK_TEST_OUTPUT(<< "Finished TestComputeNormalFromPoints...");
+  }
+
+
+  //-----------------------------------------------------------------------------
+  static void TestFilterMatchingPoints()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestFilterMatchingPoints...");
+
+    mitk::PointSet::Pointer fixedPoints = mitk::PointSet::New();
+    mitk::PointSet::Pointer movingPoints = mitk::PointSet::New();
+
+    mitk::Point3D p1;
+    mitk::Point3D p2;
+    mitk::Point3D p3;
+
+    p1[0] = 0;
+    p1[1] = 1;
+    p1[2] = 2;
+
+    p2[0] = 3;
+    p2[1] = 4;
+    p2[2] = 5;
+
+    p3[0] = 6;
+    p3[1] = 7;
+    p3[2] = 8;
+
+    fixedPoints->InsertPoint(1, p1);
+    fixedPoints->InsertPoint(2, p2);
+    movingPoints->InsertPoint(1, p1);
+    movingPoints->InsertPoint(3, p3);
+
+    mitk::PointSet::Pointer outputFixedPoints = mitk::PointSet::New();
+    mitk::PointSet::Pointer outputMovingPoints = mitk::PointSet::New();
+    int matchedPoints = mitk::FilterMatchingPoints(*fixedPoints, *movingPoints, *outputFixedPoints, *outputMovingPoints);
+
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(outputFixedPoints->GetSize(), 1),".. Testing output fixed points has size=1, and it has:" << outputFixedPoints->GetSize());
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(outputMovingPoints->GetSize(), 1),".. Testing output fixed points has size=1, and it has:" << outputMovingPoints->GetSize());
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matchedPoints, 1),".. Testing output fixed points reports size=1, and it has matchedPoints:" << matchedPoints);
+
+    mitk::Point3D p4 = outputFixedPoints->GetPoint(1);
+    mitk::Point3D p5 = outputMovingPoints->GetPoint(1);
+
+    for (int i = 0; i < 3; i++)
+    {
+      MITK_TEST_CONDITION_REQUIRED(mitk::Equal(p4[i], p5[i]),".. Testing outputs equal,  p4[" << i << "]==" << p4[i] << ", p5[" << i << "]=" << p5[i]);
+    }
+
+    MITK_TEST_OUTPUT(<< "Finished TestFilterMatchingPoints...");
   }
 
 };
@@ -191,6 +268,8 @@ int mitkPointUtilsTest(int argc, char * argv[])
   mitkPointUtilsTestClass::TestGetSquaredDistanceBetweenPoints();
   mitkPointUtilsTestClass::TestGetDifference();
   mitkPointUtilsTestClass::TestNormalise();
+  mitkPointUtilsTestClass::TestComputeNormalFromPoints();
+  mitkPointUtilsTestClass::TestFilterMatchingPoints();
 
   MITK_TEST_END();
 }

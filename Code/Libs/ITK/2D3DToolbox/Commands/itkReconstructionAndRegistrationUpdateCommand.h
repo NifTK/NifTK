@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkReconstructionAndRegistrationUpdateCommand_h
-#define __itkReconstructionAndRegistrationUpdateCommand_h
+#ifndef itkReconstructionAndRegistrationUpdateCommand_h
+#define itkReconstructionAndRegistrationUpdateCommand_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

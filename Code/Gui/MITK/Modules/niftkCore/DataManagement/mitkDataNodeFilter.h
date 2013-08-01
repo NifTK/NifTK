@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKDATANODEFILTER_H
-#define MITKDATANODEFILTER_H
+#ifndef mitkDataNodeFilter_h
+#define mitkDataNodeFilter_h
 
 #include "niftkCoreExports.h"
 #include <mitkDataNode.h>

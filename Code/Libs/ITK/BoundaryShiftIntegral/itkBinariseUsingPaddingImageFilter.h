@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKBINARISEUSINGPADDINGIMAGEFILTER_H_
-#define ITKBINARISEUSINGPADDINGIMAGEFILTER_H_
+#ifndef itkBinariseUsingPaddingImageFilter_h
+#define itkBinariseUsingPaddingImageFilter_h
 
 #include <itkUnaryFunctorImageFilter.h>
 

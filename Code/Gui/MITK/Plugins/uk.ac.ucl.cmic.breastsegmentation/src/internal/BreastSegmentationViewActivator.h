@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef uk_ac_ucl_cmic_breastsegmentation_Activator_h
-#define uk_ac_ucl_cmic_breastsegmentation_Activator_h
+#ifndef BreastSegmentationViewActivator_h
+#define BreastSegmentationViewActivator_h
 
 #include <ctkPluginActivator.h>
 

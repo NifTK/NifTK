@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CGALMESHERBACKEND_H_
-#define CGALMESHERBACKEND_H_
+#ifndef CGALMesherBackEnd_h
+#define CGALMesherBackEnd_h
 
 #include <stdexcept>
 #include <string>

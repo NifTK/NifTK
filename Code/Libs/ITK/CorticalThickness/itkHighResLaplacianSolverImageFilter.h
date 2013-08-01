@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkHighResLaplacianSolverImageFilter_h
-#define __itkHighResLaplacianSolverImageFilter_h
+#ifndef itkHighResLaplacianSolverImageFilter_h
+#define itkHighResLaplacianSolverImageFilter_h
 
 #include "itkLaplacianSolverImageFilter.h"
 #include <itkNearestNeighborInterpolateImageFunction.h>

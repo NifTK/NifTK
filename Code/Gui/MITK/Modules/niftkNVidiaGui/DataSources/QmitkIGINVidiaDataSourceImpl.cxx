@@ -613,7 +613,7 @@ void QmitkIGINVidiaDataSourceImpl::OnTimeoutImpl()
         }
 
         igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-        fi.id = GetTimeInNanoSeconds(timeCreated);//->GetTimeUint64();
+        fi.id = timeCreated->GetTimeInNanoSeconds();
 
         int newest_slot = sdiin->get_current_ringbuffer_slot();
         // whatever we had in this slot is now obsolete

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYIGIAPPLICATION_H_
-#define QMITKNIFTYIGIAPPLICATION_H_
+#ifndef QmitkNiftyIGIApplication_h
+#define QmitkNiftyIGIApplication_h
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyigi_Export.h>
 #include <QmitkBaseApplication.h>

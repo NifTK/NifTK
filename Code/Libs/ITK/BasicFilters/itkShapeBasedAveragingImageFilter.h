@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKSHAPEBASEDAVERAGINGIMAGEFILTER_H_
-#define ITKSHAPEBASEDAVERAGINGIMAGEFILTER_H_
+#ifndef itkShapeBasedAveragingImageFilter_h
+#define itkShapeBasedAveragingImageFilter_h
  
 #include <itkImageToImageFilter.h>
 #include <stdlib.h>
