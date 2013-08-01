@@ -257,7 +257,7 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       outputNormal[1] = outputNormal[1] - transformedOrigin[1];
       outputNormal[2] = outputNormal[2] - transformedOrigin[2];
       pointSet->InsertPoint((*iter).first, outputPoint);
-      surfaceNormals->InsertPoint((*iter).first, outputPoint);
+      surfaceNormals->InsertPoint((*iter).first, outputNormal);
     }
     pointSet->UpdateOutputInformation();
   }
