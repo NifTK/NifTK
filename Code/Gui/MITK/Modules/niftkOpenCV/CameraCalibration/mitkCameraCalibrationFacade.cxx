@@ -97,8 +97,10 @@ void ExtractChessBoardPoints(const cv::Mat image,
 
   bool found = cv::findChessboardCorners(image, boardSize, *corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
-  // Get sub-pixel accuracy.
-  // FIX THIS
+  if ( corners->size() == 0 )
+  {
+    return;
+  }
   cv::Mat greyImage;
   cv::cvtColor(image, greyImage, CV_BGR2GRAY);
   cv::cornerSubPix(greyImage, *corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
