@@ -198,8 +198,8 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkAnd
   niftkAtlasStatistics
   niftkAverage
-  #niftkBackProject2Dto3D
-  #niftkBasicImageFeatures
+  niftkBackProject2Dto3D
+  niftkBasicImageFeatures
   #niftkBasicImageFeatures3D
   niftkBilateralImageFilter
   niftkBlockMatching

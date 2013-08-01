@@ -95,8 +95,7 @@ public:
 
   typedef float InternalRealType;
 
-  typedef Image< InternalRealType, 
-                 ::itk::GetImageDimension<TInputImage>::ImageDimension > RealImageType;
+  typedef Image< InternalRealType, TInputImage::ImageDimension > RealImageType;
 
   typedef typename RealImageType::Pointer RealImagePointer;
 
