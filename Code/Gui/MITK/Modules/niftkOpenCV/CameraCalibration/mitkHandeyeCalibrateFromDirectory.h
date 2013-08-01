@@ -66,6 +66,7 @@ public:
   itkSetMacro(NumberCornersWidth, unsigned int);
   itkSetMacro(NumberCornersHeight, unsigned int);
   itkSetMacro(SquareSizeInMillimetres, double);
+  itkSetMacro(WriteOutChessboards,bool);
 
 protected:
 
@@ -94,6 +95,7 @@ private:
   unsigned int                        m_NumberCornersHeight;
   double                              m_SquareSizeInMillimetres;
   std::string                         m_Directory;
+  bool                                m_WriteOutChessboards;
 
   mitk::VideoTrackerMatching::Pointer m_Matcher;
 

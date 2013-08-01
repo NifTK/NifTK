@@ -43,6 +43,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_NumberCornersWidth(14)
 , m_NumberCornersHeight(10)
 , m_SquareSizeInMillimetres(3.0)
+, m_WriteOutChessboards(false)
 {
 }
 
@@ -168,10 +169,13 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   int FrameNumber = 0 ;
   while ( FrameNumber < numberOfFrames )
   {
+    cv::Mat TempFrame;
     cv::Mat LeftFrame;
-    capture >> LeftFrame;
     cv::Mat RightFrame;
-    capture >> RightFrame;
+    capture >> TempFrame;
+    LeftFrame = TempFrame.clone();
+    capture >> TempFrame;
+    RightFrame = TempFrame.clone();
     if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber) != LeftFramesToUse.end()) ) 
     {
       if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
@@ -199,17 +203,23 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
           MITK_INFO << "Frame " << capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
 
-          std::string filename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
-          MITK_INFO << "Writing image to " << filename;
-          cv::imwrite( filename, LeftFrame );
         }
         else
         {
-          MITK_INFO << "Frame " <<  capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer";
+          MITK_INFO << "Frame " <<  capture.get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
           std::vector<int>::iterator newEnd = std::remove(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber);
           LeftFramesToUse.erase(newEnd, LeftFramesToUse.end());
           newEnd = std::remove(RightFramesToUse.begin(), RightFramesToUse.end(), FrameNumber+1);
           RightFramesToUse.erase(newEnd, RightFramesToUse.end());
+        }
+        
+        if ( m_WriteOutChessboards )
+        {
+          std::string leftfilename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
+          std::string rightfilename = m_Directory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".jpg";
+          MITK_INFO << "Writing image to " << leftfilename;
+          cv::imwrite( leftfilename, LeftFrame );
+          cv::imwrite( rightfilename, RightFrame );
         }
       }
       else
