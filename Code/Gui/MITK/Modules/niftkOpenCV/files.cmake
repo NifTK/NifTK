@@ -30,6 +30,7 @@ set(CPP_FILES
   CameraCalibration/mitkHandeyeCalibrate.cxx
   CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
   CameraCalibration/Undistortion.cxx
+  CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
