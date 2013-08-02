@@ -80,7 +80,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
 }
 
 //-----------------------------------------------------------------------------
-void ExtractChessBoardPoints(const cv::Mat image,
+bool ExtractChessBoardPoints(const cv::Mat image,
                              const int& numberCornersWidth,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
@@ -99,7 +99,7 @@ void ExtractChessBoardPoints(const cv::Mat image,
 
   if ( corners->size() == 0 )
   {
-    return;
+    return false;
   }
   cv::Mat greyImage;
   cv::cvtColor(image, greyImage, CV_BGR2GRAY);
@@ -122,7 +122,7 @@ void ExtractChessBoardPoints(const cv::Mat image,
       objectPoints->push_back(objectCorner);
     }
   }
-
+  return found;
 }
 
 

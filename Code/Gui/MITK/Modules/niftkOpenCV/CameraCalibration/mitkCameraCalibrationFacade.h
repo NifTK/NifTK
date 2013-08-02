@@ -86,7 +86,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
  * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is 1 x 1, with each entry containing
  * the number N.
  */
-void ExtractChessBoardPoints(const cv::Mat  image,
+bool ExtractChessBoardPoints(const cv::Mat  image,
                              const int& numberCornersWidth,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
