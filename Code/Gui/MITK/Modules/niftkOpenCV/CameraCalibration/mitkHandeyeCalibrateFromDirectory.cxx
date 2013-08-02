@@ -142,27 +142,30 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   while ( LeftFramesToUse.size() < m_FramesToUse * m_BadFrameFactor )
   {
     int FrameToUse =  std::rand()%(numberOfFrames/2);
-    MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
+    //first check it's not already in array
+    if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameToUse * 2 ) == LeftFramesToUse.end()) ) 
+    {
+      MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
-    long long int*  LeftTimingError = new long long;
-    long long int *  RightTimingError = new long long;
-    cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
+      long long int*  LeftTimingError = new long long;
+      long long int *  RightTimingError = new long long;
+      cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
         LeftTimingError, m_TrackerIndex );
-    cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
+      cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
         RightTimingError, m_TrackerIndex );
-    if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
+      if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
         std::abs(*RightTimingError) > m_AbsTrackerTimingError ) 
-    {
-      MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
-        std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
-    }
-    else
-    {
-      //timing error OK, now check if we can extract corners
+      {
+        MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
+          std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+      }
+      else
+      {
+        //timing error OK, now check if we can extract corners
      
-      LeftFramesToUse.push_back (FrameToUse *2);
-      RightFramesToUse.push_back (FrameToUse * 2 + 1);
-
+        LeftFramesToUse.push_back (FrameToUse *2);
+        RightFramesToUse.push_back (FrameToUse * 2 + 1);
+      }
     }
   }
   //now go through video and extract frames to use
@@ -245,13 +248,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     FrameNumber++;
   }
   MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
-  /*for ( unsigned int i = 0  ; i < LeftFramesToUse.size() ; i ++ )
-  {
-    MITK_INFO << "Left Image Points " << allLeftImagePoints[i];
-    MITK_INFO << "Left Object Points " << allLeftObjectPoints[i];
-    MITK_INFO << "Right Image Points " << allRightImagePoints[i];
-    MITK_INFO << "Right Object Points " << allRightObjectPoints[i];
-  }*/
 
   cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_32FC1);
   cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_32FC1);
@@ -260,6 +256,15 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   
   cv::Mat leftPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
   cv::Mat rightPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
+
+  if  (  allLeftImagePoints.size() !=  LeftFramesToUse.size() || 
+           allLeftObjectPoints.size() !=  LeftFramesToUse.size() || 
+           allRightImagePoints.size() !=  LeftFramesToUse.size() || 
+           allRightObjectPoints.size() !=  LeftFramesToUse.size() )
+  {
+    MITK_ERROR << "Detected unequal matrix sizes";
+    return;
+  }
   for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i++ )
   {
     for ( unsigned int j = 0 ; j < m_NumberCornersWidth * m_NumberCornersHeight ; j ++ ) 
@@ -268,7 +273,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         allLeftImagePoints[i].at<float>(j,0);
       leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
         allLeftImagePoints[i].at<float>(j,1);
-      
+     
       leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
         allLeftObjectPoints[i].at<float>(j,0);
       leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
@@ -292,7 +297,36 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     leftPointCounts.at<int>(i,0) = m_NumberCornersWidth * m_NumberCornersHeight;
     rightPointCounts.at<int>(i,0) = m_NumberCornersWidth * m_NumberCornersHeight;
   }
+  if ( true )
+  {
+    std::string leftimagePointsfilename = m_Directory + "/LeftImagePoints.xml";
+    std::string leftObjectPointsfilename = m_Directory + "/LeftObjectPoints.xml";
+    std::string rightimagePointsfilename = m_Directory + "/RightImagePoints.xml";
+    std::string rightObjectPointsfilename = m_Directory + "/RightObjectPoints.xml";
+    std::string leftPointCountfilename = m_Directory + "/LeftPointCount.xml";
+    std::string rightPointCountfilename = m_Directory + "/RightPointCount.xml";
+    cv::FileStorage fs1;
+    fs1.open(leftimagePointsfilename, cv::FileStorage::WRITE);
+    cv::FileStorage fs2(leftObjectPointsfilename, cv::FileStorage::WRITE);
+    cv::FileStorage fs3(rightimagePointsfilename, cv::FileStorage::WRITE);
+    cv::FileStorage fs4(rightObjectPointsfilename, cv::FileStorage::WRITE);
+    cv::FileStorage fs5(leftPointCountfilename, cv::FileStorage::WRITE);
+    cv::FileStorage fs6(rightPointCountfilename, cv::FileStorage::WRITE);
+    fs1 <<  "leftimagepoints" << leftImagePoints;
+    fs2 <<  "leftobjectpoints" << leftObjectPoints;
+    fs3 <<  "rightimagepoints" << rightImagePoints;
+    fs4 <<  "rightobjectpoints" << rightObjectPoints;
+    fs5 <<  "leftpointcounts" << leftPointCounts;
+    fs6 <<  "rightpointcounts" << rightPointCounts;
+    fs1.release();
+    fs2.release();
+    fs3.release();
+    fs4.release();
+    fs5.release();
+    fs6.release();
+  }
 
+  MITK_INFO << "Starting intrinisic calibration";
   CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_32FC1);
   CvMat* outputDistortionCoefficientsLeft = cvCreateMat(5,1,CV_32FC1);
   CvMat* outputRotationVectorsLeft = cvCreateMat(LeftFramesToUse.size(),3,CV_32FC1);
