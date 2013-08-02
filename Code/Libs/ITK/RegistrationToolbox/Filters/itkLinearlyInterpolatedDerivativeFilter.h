@@ -37,8 +37,8 @@ template< class TFixedImage, class TMovingImage, class TScalarType, class TDefor
 class ITK_EXPORT LinearlyInterpolatedDerivativeFilter :
   public ImageToImageFilter<TFixedImage, 
                             Image<  
-                              Vector< TDeformationScalar, ::itk::GetImageDimension<TFixedImage>::ImageDimension>, 
-                              ::itk::GetImageDimension<TFixedImage>::ImageDimension> >
+                              Vector< TDeformationScalar, TFixedImage::ImageDimension>, 
+                              TFixedImage::ImageDimension> >
 {
 public:
 
@@ -46,8 +46,8 @@ public:
   typedef LinearlyInterpolatedDerivativeFilter                                          Self;
   typedef ImageToImageFilter<TFixedImage, 
                              Image<  
-                               Vector< TDeformationScalar, ::itk::GetImageDimension<TFixedImage>::ImageDimension>, 
-                               ::itk::GetImageDimension<TFixedImage>::ImageDimension> > Superclass;
+                               Vector< TDeformationScalar, TFixedImage::ImageDimension>, 
+                               TFixedImage::ImageDimension> > Superclass;
   typedef SmartPointer<Self>                                                            Pointer;
   typedef SmartPointer<const Self>                                                      ConstPointer;
 
