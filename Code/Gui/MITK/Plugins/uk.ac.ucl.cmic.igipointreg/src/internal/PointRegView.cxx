@@ -22,6 +22,7 @@
 #include <mitkNodePredicateDataType.h>
 #include <QMessageBox>
 #include <QmitkIGIUtils.h>
+#include <limits>
 
 const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
 
@@ -189,7 +190,8 @@ void PointRegView::OnCalculateButtonPressed()
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
   registration->SetUseICPInitialisation(m_UseICPInitialisation);
   registration->SetUsePointIDToMatchPoints(false);
-  double error = registration->Update(fixedPoints, movingPoints, *m_Matrix);
+  double fiducialRegistrationError = std::numeric_limits<double>::max();
+  bool isSuccessful = registration->Update(fixedPoints, movingPoints, *m_Matrix, fiducialRegistrationError);
 
   for (int i = 0; i < 4; i++)
   {
@@ -199,8 +201,15 @@ void PointRegView::OnCalculateButtonPressed()
     }
   }
 
-  QString formattedDouble = QString::number(error);
-  m_Controls->m_RMSError->setText(QString("FRE = ") + formattedDouble);
+  if (isSuccessful)
+  {
+    QString formattedDouble = QString::number(fiducialRegistrationError);
+    m_Controls->m_RMSError->setText(QString("FRE = ") + formattedDouble);
+  }
+  else
+  {
+    m_Controls->m_RMSError->setText(QString("Registration FAILED"));
+  }
 }
 
 

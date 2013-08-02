@@ -458,20 +458,29 @@ void TagTrackerView::UpdateTags()
       {
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
         mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
-        double fiducialRegistrationError = registrationManager->Update(
+        double fiducialRegistrationError = std::numeric_limits<double>::max();
+        bool isSuccessful = registrationManager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
              selectedNode,
              mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
              m_RegistrationMethodPointsNormalsRadio->isChecked(),
-             *registrationMatrix
+             *registrationMatrix,
+             fiducialRegistrationError
             );
 
         QString fiducialRegistrationErrorString;
         fiducialRegistrationErrorString.setNum(fiducialRegistrationError);
 
-        labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+        if (isSuccessful)
+        {
+          labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+        }
+        else
+        {
+          labelText += (QString(", registration FAILED"));
+        }
 
       } // end if we are doing registration
 

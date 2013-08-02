@@ -56,15 +56,17 @@ public:
    * \param[In] modelNode the model can be either a mitk::Surface which must have normals and scalars containing pointIDs, or a mitk::PointSet.
    * \param[In] transformNodeToUpdate in addition to passing back the outputTransform, this method can directly update an existing mitk::CoordinateAxesData node in Data Storage, this is the name of it.
    * \param[Out] outputTransform output transformation
+   * \param[Out] fiducialRegistrationError the Fiducial Registration Error
    */
-  double Update(
+  bool Update(
       mitk::DataStorage::Pointer& dataStorage,
       mitk::PointSet::Pointer& tagPointSet,
       mitk::PointSet::Pointer& tagNormals,
       mitk::DataNode::Pointer& modelNode,
       const std::string& transformNodeToUpdate,
       const bool useNormals,
-      vtkMatrix4x4& outputTransform) const;
+      vtkMatrix4x4& outputTransform,
+      double& fiducialRegistrationError) const;
 
 protected:
 

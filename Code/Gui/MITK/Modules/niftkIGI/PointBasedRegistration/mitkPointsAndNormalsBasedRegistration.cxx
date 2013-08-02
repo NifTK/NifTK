@@ -39,19 +39,22 @@ PointsAndNormalsBasedRegistration::~PointsAndNormalsBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-double PointsAndNormalsBasedRegistration::Update(
+bool PointsAndNormalsBasedRegistration::Update(
     const mitk::PointSet::Pointer fixedPointSet,
     const mitk::PointSet::Pointer movingPointSet,
     const mitk::PointSet::Pointer fixedNormals,
     const mitk::PointSet::Pointer movingNormals,
-    vtkMatrix4x4& outputTransform) const
+    vtkMatrix4x4& outputTransform,
+    double& fiducialRegistrationError) const
 {
   assert(fixedPointSet);
   assert(movingPointSet);
   assert(fixedNormals);
   assert(movingNormals);
 
-  double fiducialRegistrationError = std::numeric_limits<double>::max();
+  bool isSuccessful = false;
+
+  fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
   mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
@@ -85,7 +88,7 @@ double PointsAndNormalsBasedRegistration::Update(
     else
     {
       MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
-      return fiducialRegistrationError;
+      return isSuccessful;
     }
 
     if (numberOfFilteredNormals >= 2)
@@ -96,20 +99,20 @@ double PointsAndNormalsBasedRegistration::Update(
     else
     {
       MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: filteredFixedNormals size=" << filteredFixedNormals->GetSize() << ", filteredMovingNormals size=" << filteredMovingNormals->GetSize() << ", abandoning use of filtered data sets.";
-      return fiducialRegistrationError;
+      return isSuccessful;
     }
 
     if (numberOfFilteredPoints != numberOfFilteredNormals)
     {
       MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: numberOfFilteredPoints=" << numberOfFilteredPoints << ", numberOfFilteredNormals=" << numberOfFilteredNormals << ", abandoning use of filtered data sets.";
-      return fiducialRegistrationError;
+      return isSuccessful;
     }
   }
 
   if (fixedPoints->GetSize() < 2 || movingPoints->GetSize() < 2)
   {
     MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
-    return fiducialRegistrationError;
+    return isSuccessful;
   }
 
   // Two pass registration.
@@ -152,11 +155,11 @@ double PointsAndNormalsBasedRegistration::Update(
   arunMatrix->Identity();
   double arunFudicialRegistrationError = std::numeric_limits<double>::max();
   mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer arunRegistration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-  bool success = arunRegistration->Update(augmentedFixedPoints, augmentedMovingPoints, *arunMatrix, arunFudicialRegistrationError);
-  if (!success)
+  isSuccessful = arunRegistration->Update(augmentedFixedPoints, augmentedMovingPoints, *arunMatrix, arunFudicialRegistrationError);
+  if (!isSuccessful)
   {
     MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: First point based SVD failed" << std::endl;
-    return fiducialRegistrationError;
+    return isSuccessful;
   }
 
   // Transform moving points and normals according to arunMatrix.
@@ -184,11 +187,12 @@ double PointsAndNormalsBasedRegistration::Update(
   liuMatrix->Identity();
   double liuFudicialRegistrationError = std::numeric_limits<double>::max();
   mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer liuRegistration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
-  success = liuRegistration->Update(fixedPoints, fixedNorms, transformedMovingPoints, transformedMovingNormals, *liuMatrix, liuFudicialRegistrationError);
+  isSuccessful = liuRegistration->Update(fixedPoints, fixedNorms, transformedMovingPoints, transformedMovingNormals, *liuMatrix, liuFudicialRegistrationError);
 
-  if (!success)
+  if (!isSuccessful)
   {
     MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: Second point based SVD failed" << std::endl;
+    return isSuccessful;
   }
 
   MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: FRE=" << arunFudicialRegistrationError << ", then " << liuFudicialRegistrationError << std::endl;
@@ -207,7 +211,7 @@ double PointsAndNormalsBasedRegistration::Update(
     MITK_WARN << "mitk::PointsAndNormalsBasedRegistration: Falling back to just Arun's method" << std::endl;
   }
 
-  return fiducialRegistrationError;
+  return isSuccessful;
 }
 
 } // end namespace

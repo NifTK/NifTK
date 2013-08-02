@@ -85,7 +85,7 @@ int mitkPointBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
   registration->SetUseICPInitialisation(false);
   registration->SetUsePointIDToMatchPoints(false);
-  fre = registration->Update(fixedPoints, movingPoints, *matrix);
+  registration->Update(fixedPoints, movingPoints, *matrix, fre);
 
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, 0),".. Testing fre=0, and it equals:" << fre);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing x translation=-1 and it equals:" << matrix->GetElement(0,3));
@@ -97,7 +97,7 @@ int mitkPointBasedRegistrationTest(int /*argc*/, char* /*argv*/[])
   movingPoints->InsertPoint(7, m5); // We just need a different ID for each of these points
   registration->SetUseICPInitialisation(false);
   registration->SetUsePointIDToMatchPoints(true);
-  fre2 = registration->Update(fixedPoints, movingPoints, *matrix);
+  registration->Update(fixedPoints, movingPoints, *matrix, fre2);
 
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, fre2),".. Testing fre==fre2,and fre=" << fre << ", fre2=" << fre2);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing x translation=-1 and it equals:" << matrix->GetElement(0,3));
