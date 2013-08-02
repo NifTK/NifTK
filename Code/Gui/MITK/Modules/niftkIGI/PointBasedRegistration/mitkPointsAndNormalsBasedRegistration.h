@@ -55,14 +55,17 @@ public:
    * \param[In] movingPointSet a point set
    * \param[In] fixedNormals a point set containing the corresponding normals for fixedPointSet.
    * \param[In] movingNormals a point set containing the corresponding normals for movingPointSet.
-   * \param[In,Out] the transformation to transform the moving point set into the coordinate system of the fixed point set.
-   * \return Returns the Fiducial Registration Error
+   * \param[Out] outputTransform the transformation to transform the moving point set into the coordinate system of the fixed point set.
+   * \param[Out] fiducialRegistrationError the Fiducial Registration Error
+   * \return returns true if the registration was successful and false otherwise. By successful, we mean
+   * the computation was deemed valid, and we are not saying whether the Fiducial Registration Error is "acceptable" or not.
    */
-  double Update(const mitk::PointSet::Pointer fixedPointSet,
+  bool Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
               const mitk::PointSet::Pointer fixedNormals,
               const mitk::PointSet::Pointer movingNormals,
-              vtkMatrix4x4& outputTransform) const;
+              vtkMatrix4x4& outputTransform,
+              double& fiducialRegistrationError) const;
 
 protected:
 

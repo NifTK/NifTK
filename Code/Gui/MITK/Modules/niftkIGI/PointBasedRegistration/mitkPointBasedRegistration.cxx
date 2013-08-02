@@ -42,16 +42,20 @@ PointBasedRegistration::~PointBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-double PointBasedRegistration::Update(
+bool PointBasedRegistration::Update(
     const mitk::PointSet::Pointer fixedPointSet,
     const mitk::PointSet::Pointer movingPointSet,
-    vtkMatrix4x4& outputTransform) const
+    vtkMatrix4x4& outputTransform,
+    double& fiducialRegistrationError) const
+
 {
 
   assert(fixedPointSet);
   assert(movingPointSet);
 
-  double fiducialRegistrationError = std::numeric_limits<double>::max();
+  bool isSuccessful = false;
+
+  fiducialRegistrationError = std::numeric_limits<double>::max();
   outputTransform.Identity();
 
   mitk::PointSet::Pointer filteredFixedPoints = mitk::PointSet::New();
@@ -97,9 +101,9 @@ double PointBasedRegistration::Update(
   if (m_UseSVDBasedMethod)
   {
     mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer registration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-    bool success = registration->Update(fixedPoints, movingPoints, outputTransform, fiducialRegistrationError);
+    isSuccessful = registration->Update(fixedPoints, movingPoints, outputTransform, fiducialRegistrationError);
 
-    if (!success)
+    if (!isSuccessful)
     {
       MITK_ERROR << "mitk::PointBasedRegistration: SVD method failed" << std::endl;
     }
@@ -136,8 +140,12 @@ double PointBasedRegistration::Update(
       }
       outputTransform.SetElement(i, 3, translationVector[i]);
     }
+
+    // The ICP method doesn't really have an accept / fail criteria.
+    // For now we are mainly using the SVD method above. So, we just assume this bit is always successful.
+    isSuccessful = true;
   }
-  return fiducialRegistrationError;
+  return isSuccessful;
 }
 
 } // end namespace

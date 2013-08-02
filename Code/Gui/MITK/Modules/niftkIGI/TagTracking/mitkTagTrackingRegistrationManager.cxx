@@ -43,18 +43,19 @@ TagTrackingRegistrationManager::~TagTrackingRegistrationManager()
 
 
 //-----------------------------------------------------------------------------
-double TagTrackingRegistrationManager::Update(
+bool TagTrackingRegistrationManager::Update(
     mitk::DataStorage::Pointer& dataStorage,
     mitk::PointSet::Pointer& tagPointSet,
     mitk::PointSet::Pointer& tagNormals,
     mitk::DataNode::Pointer& modelNode,
     const std::string& transformNodeToUpdate,
     const bool useNormals,
-    vtkMatrix4x4& registrationMatrix) const
+    vtkMatrix4x4& registrationMatrix,
+    double &fiducialRegistrationError) const
 {
 
-  double fre = std::numeric_limits<double>::max();
-
+  bool isSuccessful = false;
+  fiducialRegistrationError = std::numeric_limits<double>::max();
   registrationMatrix.Identity();
 
   if (modelNode.IsNotNull())
@@ -87,12 +88,12 @@ double TagTrackingRegistrationManager::Update(
             if (vtkScalars == NULL || vtkNormals == NULL)
             {
               MITK_ERROR << "Surfaces must have scalars containing pointID and normals";
-              return fre;
+              return isSuccessful;
             }
             if (vtkScalars->GetNumberOfTuples() != vtkNormals->GetNumberOfTuples())
             {
               MITK_ERROR << "Surfaces must have same number of scalars and normals";
-              return fre;
+              return isSuccessful;
             }
 
             modelPointSet = mitk::PointSet::New();
@@ -131,35 +132,38 @@ double TagTrackingRegistrationManager::Update(
         // do normal point based registration
         mitk::PointBasedRegistration::Pointer pointBasedRegistration = mitk::PointBasedRegistration::New();
         pointBasedRegistration->SetUsePointIDToMatchPoints(true);
-        fre = pointBasedRegistration->Update(tagPointSet, modelPointSet, registrationMatrix);
+        isSuccessful = pointBasedRegistration->Update(tagPointSet, modelPointSet, registrationMatrix, fiducialRegistrationError);
       }
       else
       {
         // do method that uses normals, and hence can cope with a minimum of only 2 points.
         mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
-        fre = pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, registrationMatrix);
+        isSuccessful = pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, registrationMatrix, fiducialRegistrationError);
       }
 
-      // Also need to create and update a node in DataStorage.
-      // We create a mitk::CoordinateAxesData, just like the tracker tools do.
-      // So, this makes this plugin function just like a tracker.
-      // So, the Tracked Image and Tracked Pointer plugin should be usable by selecting this matrix.
-      mitk::DataNode::Pointer coordinateAxesNode = dataStorage->GetNamedNode(transformNodeToUpdate);
-      if (coordinateAxesNode.IsNull())
+      if (isSuccessful)
       {
-        MITK_ERROR << "Can't find mitk::DataNode with name " << transformNodeToUpdate << std::endl;
-        return fre;
-      }
-      mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(coordinateAxesNode->GetData());
-      if (coordinateAxes.IsNotNull())
-      {
-        coordinateAxes->SetVtkMatrix(registrationMatrix);
-        coordinateAxesNode->Modified();
+        // Also need to create and update a node in DataStorage.
+        // We create a mitk::CoordinateAxesData, just like the tracker tools do.
+        // So, this makes this plugin function just like a tracker.
+        // So, the Tracked Image and Tracked Pointer plugin should be usable by selecting this matrix.
+        mitk::DataNode::Pointer coordinateAxesNode = dataStorage->GetNamedNode(transformNodeToUpdate);
+        if (coordinateAxesNode.IsNull())
+        {
+          MITK_ERROR << "Can't find mitk::DataNode with name " << transformNodeToUpdate << std::endl;
+          return isSuccessful;
+        }
+        mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(coordinateAxesNode->GetData());
+        if (coordinateAxes.IsNotNull())
+        {
+          coordinateAxes->SetVtkMatrix(registrationMatrix);
+          coordinateAxesNode->Modified();
+        }
       }
     } // end if we have model
   } // end if we have node
 
-  return fre;
+  return isSuccessful;
 
 } // end Update method
 
