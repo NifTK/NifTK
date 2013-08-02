@@ -43,8 +43,7 @@ public:
       const std::string& intrinsicLeftFileName,
       const std::string& intrinsicRightFileName,
       const std::string& rightToLeftRotationFileName,
-      const std::string& rightToLeftTranslationFileName,
-      const std::string& goldStandard3DPointsFileName
+      const std::string& rightToLeftTranslationFileName
       );
 
 protected:

@@ -1311,8 +1311,9 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     sc = (b*e - c*d) / (a*c - b*b);
     tc = (a*e - b*d) / (a*c - b*b);
 
-    if (sc > 0 && tc > 0)
-    {
+    std::cerr << "Matt, sc=" << sc << ", tc=" << tc << std::endl;
+//    if (sc > 0 && tc > 0)
+//    {
       Psc.x = P0.x + sc*u.x;
       Psc.y = P0.y + sc*u.y;
       Psc.z = P0.z + sc*u.z;
@@ -1338,7 +1339,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
       */
 
       outputPoints.push_back(midPoint);
-    }
+//    }
   }
   
   return outputPoints;

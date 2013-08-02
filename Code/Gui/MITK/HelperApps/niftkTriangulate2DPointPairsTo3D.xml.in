@@ -47,12 +47,5 @@
       <label>Right to left camera translation parameters</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt">
-      <name>output3DPoints</name>
-      <longflag>output3DPoints</longflag>
-      <description>Output 3D Points</description>
-      <label>Output 3D Points</label>
-      <channel>output</channel>
-    </file>
   </parameters>
 </executable>
