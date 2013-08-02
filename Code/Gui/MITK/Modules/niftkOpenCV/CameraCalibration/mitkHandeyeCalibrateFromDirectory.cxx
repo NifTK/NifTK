@@ -265,8 +265,29 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     MITK_ERROR << "Detected unequal matrix sizes";
     return;
   }
+  for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i ++  ) 
+  {
+    unsigned int size1 = allLeftImagePoints[i].size().height;
+    //FIX ME
+    unsigned int size2 = allLeftObjectPoints[0].size().height;
+    unsigned int size3 = allRightImagePoints[i].size().height;
+    unsigned int size4 = allRightObjectPoints[i].size().height;
+    MITK_INFO << i << " " << size1 << ", " << size2 << ", " << size3 << ", " << size4;
+  
+    if ( size1 != m_NumberCornersWidth * m_NumberCornersHeight ||
+          size2 != m_NumberCornersWidth * m_NumberCornersHeight ||
+          size3 != m_NumberCornersWidth * m_NumberCornersHeight ||
+          size4 != m_NumberCornersWidth * m_NumberCornersHeight)
+    {
+      MITK_ERROR << "Detected unequal matrix sizes";
+      return;
+    }
+  }
+
+
   for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i++ )
   {
+    MITK_INFO << "Filling "  << i;
     for ( unsigned int j = 0 ; j < m_NumberCornersWidth * m_NumberCornersHeight ; j ++ ) 
     {
       leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
@@ -275,11 +296,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         allLeftImagePoints[i].at<float>(j,1);
      
       leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allLeftObjectPoints[i].at<float>(j,0);
+        allLeftObjectPoints[0].at<float>(j,0);
       leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allLeftObjectPoints[i].at<float>(j,1);
+        allLeftObjectPoints[0].at<float>(j,1);
       leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
-        allLeftObjectPoints[i].at<float>(j,2);
+        allLeftObjectPoints[0].at<float>(j,2);
 
       rightImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
         allRightImagePoints[i].at<float>(j,0);
@@ -361,23 +382,78 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       *outputRightToLeftTranslation,
       *outputEssentialMatrix,
       *outputFundamentalMatrix);
+  
+  //write it out
+  std::string leftIntrinsic = m_Directory + "/calib.left.intrinsic";
+  std::string rightIntrinsic = m_Directory + "/calib.right.intrinsic";
+  std::string rightToLeft = m_Directory + "/calib.r2l";
+  std::string extrinsic = m_Directory + "/leftextrinsics.txt";
 
+  std::ofstream fs_leftIntrinsic;
+  std::ofstream fs_rightIntrinsic;
+  std::ofstream fs_r2l;
+  std::ofstream fs_ext;
 
-//
-//
+  fs_leftIntrinsic.open(leftIntrinsic.c_str(), std::ios::out);
+  fs_rightIntrinsic.open(rightIntrinsic.c_str(), std::ios::out);
+  fs_r2l.open(rightToLeft.c_str(), std::ios::out);
+  fs_ext.open(extrinsic.c_str(), std::ios::out);
 
-/*  int framecount = 0 ; 
-  while (framecount < 1000)
+  for ( int row = 0 ; row < 3 ; row ++ ) 
   {
-    cv::Mat NewLeftFrame;
-    capture >> NewLeftFrame;
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      fs_leftIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixLeft, float, row,col) << " ";
+      fs_rightIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixRight, float, row,col) << " ";
+      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, float , row,col);
+    }
+    fs_leftIntrinsic << std::endl;
+    fs_rightIntrinsic << std::endl;
+    fs_r2l << std::endl;
+  }
+  for ( int i = 0 ; i < 5 ; i ++ )  
+  {
+    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, float , i, 0 ) << " ";
+  }
+  for ( int i = 0 ; i < 3 ; i ++ )  
+  {
+    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, float , i, 0 ) << " ";
+  }
 
-    m_LeftCameraVideoFrames.push_back(NewLeftFrame);
-    cv::Mat NewRightFrame;
-    capture >> NewRightFrame;
-    m_RightCameraVideoFrames.push_back(NewRightFrame);
-    MITK_INFO << "Reading frame " << framecount ++;
-  }*/ 
+  fs_leftIntrinsic.close();
+  fs_rightIntrinsic.close();
+  fs_r2l.close();
+  for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
+  {
+    for ( int i = 0 ; i < 3 ; i ++ ) 
+    {
+      fs_ext << CV_MAT_ELEM ( *outputRotationVectorsLeft , float  , view, i);
+    }
+    for ( int i = 0 ; i < 3 ; i ++ ) 
+    {
+      fs_ext << CV_MAT_ELEM ( *outputTranslationVectorsLeft , float  , view, i);
+    }
+    
+    cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
+        NULL, m_TrackerIndex );
+
+    std::string trackerFilename = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) + "/" + boost::lexical_cast<std::string>(view) + ".txt";
+    
+    std::ofstream fs_tracker;
+    fs_tracker.open(trackerFilename.c_str(), std::ios::out);
+    for ( int row = 0 ; row < 4 ; row ++ ) 
+    {
+      for ( int col = 0 ; col < 4 ; col ++ ) 
+      {
+        fs_tracker << LeftTrackingMatrix.at<double>(row,col) << " " ;
+      }
+      fs_tracker << std::endl;
+    }
+    fs_tracker.close();
+  }
+  fs_ext.close();
+
+  Calibrate ( m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic); 
 }
 //-----------------------------------------------------------------------------
 std::vector<double> HandeyeCalibrateFromDirectory::Calibrate(const std::string& TrackingFileDirectory,
