@@ -123,14 +123,16 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
 
   // Now we register, using normals.
   mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
-  double fre = manager->Update(
+  double fre;
+  manager->Update(
       dataStorage,
       tagCentres,
       tagNormals,
       modelNode,
       mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
       true,
-      *registrationMatrix
+      *registrationMatrix,
+      fre
       );
 
   MITK_TEST_CONDITION_REQUIRED(fre < 1,".. Testing FRE is less than 1mm, when actually FRE=" << fre);
