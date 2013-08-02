@@ -221,6 +221,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
       point.z = numbersOnLine[2];
       pointsIn3D.push_back(point);
     }
+    reader.close();
 
     unsigned int numberOfPoints = pointsIn3D.size();
 

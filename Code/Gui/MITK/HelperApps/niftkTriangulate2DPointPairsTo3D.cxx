@@ -21,14 +21,12 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
-  double reprojectionError = std::numeric_limits<double>::max();
 
   if ( inputPointPairs.length() == 0
   || intrinsicLeft.length() == 0
   || intrinsicRight.length() == 0
   || rightToLeftRotation.length() == 0
   || rightToLeftTranslation.length() == 0
-  || output3DPoints.length() == 0
   )
   {
     commandLine.getOutput()->usage(commandLine);
@@ -43,8 +41,7 @@ int main(int argc, char** argv)
                   intrinsicLeft,
                   intrinsicRight,
                   rightToLeftRotation,
-                  rightToLeftTranslation,
-                  output3DPoints
+                  rightToLeftTranslation
                   );
 
     returnStatus = EXIT_SUCCESS;
@@ -60,6 +57,6 @@ int main(int argc, char** argv)
     returnStatus = -2;
   }
 
-  std::cout << "Reprojection error=" << reprojectionError << ", return status = " << returnStatus << std::endl;
+
   return returnStatus;
 }
