@@ -162,6 +162,7 @@ option(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK d
 option(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
 
 ######################################################################
 # Meshing module-related checks and options
@@ -319,6 +320,7 @@ mark_as_advanced(NIFTK_USE_CUDA)
 mark_as_advanced(BUILD_SLS_TESTING)
 mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
+mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 
 ######################################################################
 # Make sure Git is available.
