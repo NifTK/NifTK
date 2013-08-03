@@ -391,6 +391,8 @@ endif(CUDA_FOUND)
 # necessary libraries for the command line apps to work.
 ##############################################################
 if(NOT BUILD_GUI)
-  NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_all_command_line_apps})
+  if(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
+    NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_all_command_line_apps})
+  endif()
 endif()
 
