@@ -41,8 +41,8 @@ if(QT_FOUND)
 #      URL ${NIFTK_LOCATION_CTK}
 #      URL_MD5 ${NIFTK_CHECKSUM_CTK}
 #      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
-      GIT_REPOSITORY git@github.com:NifTK/CTK
-      GIT_TAG 01ae206eff
+      GIT_REPOSITORY http://github.com/NifTK/CTK
+      GIT_TAG c8396db36d
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
