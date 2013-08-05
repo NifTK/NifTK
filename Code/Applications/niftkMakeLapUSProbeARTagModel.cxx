@@ -145,7 +145,7 @@ int main(int argc, char** argv)
   {
     for (int i = numberSquaresAlongWidth-1; i >= 0; --i)
     {
-      double distanceAroundCircumference = (0.5 + (i+squareOffset)*1.2)*tagSquareSizeInMillimetres;
+      double distanceAroundCircumference = (0.5 + (i-squareOffset)*1.2)*tagSquareSizeInMillimetres;
       double proportionAroundCircumference = distanceAroundCircumference/actualWidthInMillimetres;
 
       double normal[3];
