@@ -14,9 +14,10 @@
 
 project(uk_ac_ucl_cmic_affinetransform)
 
-# Temporary workaround until the qRestAPI lib directory is not exposed properly to
-# projects depending on CTK. Should be removed as soon as this is fixed in CTK.
-link_directories(${CTK_DIR}/qRestAPI-build)
+# Temporary workaround for CTK bug of not exposing external project library dirs.
+# Should be removed as soon as this is fixed in CTK. (espakm)
+include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
+link_directories(${qRestAPI_LIBRARY_DIRS})
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE AFFINETRANSFORM_EXPORT
