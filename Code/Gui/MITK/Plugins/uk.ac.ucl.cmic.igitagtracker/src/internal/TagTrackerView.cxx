@@ -488,7 +488,24 @@ void TagTrackerView::UpdateTags()
 
         if (isSuccessful)
         {
-          labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+          double pi = 3.14159265359;
+          double cosRx = registrationMatrix->GetElement(0,0);
+          double rx = acos(cosRx) * 180.0 / pi;
+          double cosRy = registrationMatrix->GetElement(1,1);
+          double ry = acos(cosRy) * 180.0 / pi;
+          double cosRz = registrationMatrix->GetElement(2,2);
+          double rz = acos(cosRz) * 180.0 / pi;
+
+          QString rxString;
+          rxString.setNum(rx);
+
+          QString ryString;
+          ryString.setNum(ry);
+
+          QString rzString;
+          rzString.setNum(rz);
+
+          labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
           m_CurrentRegistrationMatrix->DeepCopy(registrationMatrix);
         }
         else
