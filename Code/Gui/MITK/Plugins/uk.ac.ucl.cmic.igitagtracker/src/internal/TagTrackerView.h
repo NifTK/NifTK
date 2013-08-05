@@ -137,7 +137,7 @@ private:
   vtkSmartPointer<vtkMatrix4x4> m_CurrentRegistrationMatrix;
 
   /**
-   * \brief THis is made a member variable, so we can use the same one each time to compute relative transformations, as the tracking proceeds.
+   * \brief This is made a member variable, so we can use the same one each time to compute relative transformations, as the tracking proceeds.
    */
   mitk::TagTrackingRegistrationManager::Pointer m_TagTrackingRegistrationManager;
 
