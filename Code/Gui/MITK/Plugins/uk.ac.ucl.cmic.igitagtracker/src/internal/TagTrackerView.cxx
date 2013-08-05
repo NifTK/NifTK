@@ -236,6 +236,12 @@ void TagTrackerView::OnManualUpdate()
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnSpinBoxPressed()
 {
+    m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
   this->UpdateTags();
 }
 

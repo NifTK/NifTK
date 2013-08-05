@@ -160,6 +160,8 @@ std::map<int, mitk::Point6D> DetectMarkerPairsAndNormals(
   rightDetector.setThresholdParams(blockSize, offset);
   rightDetector.detect(inImageRight, rightMarkers, cameraParams);
 
+  std::cerr << "Matt, detected left=" << leftMarkers.size() << ", right=" << rightMarkers.size() << std::endl;
+
   // Now we find corresponding markers
   for (unsigned int i = 0; i < leftMarkers.size(); ++i)
   {
