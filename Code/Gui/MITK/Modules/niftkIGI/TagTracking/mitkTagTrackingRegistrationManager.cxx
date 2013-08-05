@@ -195,7 +195,7 @@ bool TagTrackingRegistrationManager::Update(
         affine->SetIdentity();
         affine->SetParameters(params);
         euler->SetParametersFromTransform(affine);
-        std::cerr << "Matt, Transformation parameters are:" << euler->GetParameters() << std::endl;
+        //std::cerr << "Matt, Transformation parameters are:" << euler->GetParameters() << std::endl;
       }
     } // end if we have model
   } // end if we have node

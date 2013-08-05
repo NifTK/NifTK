@@ -140,6 +140,8 @@ private:
    * \brief THis is made a member variable, so we can use the same one each time to compute relative transformations, as the tracking proceeds.
    */
   mitk::TagTrackingRegistrationManager::Pointer m_TagTrackingRegistrationManager;
+
+  double m_RangesOfRotationalParams[6];
 };
 
 #endif // TagTrackerView_h

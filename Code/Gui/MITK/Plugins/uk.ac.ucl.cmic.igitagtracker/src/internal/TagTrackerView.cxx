@@ -53,6 +53,12 @@ TagTrackerView::TagTrackerView()
   m_CurrentRegistrationMatrix = vtkMatrix4x4::New();
   m_CurrentRegistrationMatrix->Identity();
   m_TagTrackingRegistrationManager = mitk::TagTrackingRegistrationManager::New();
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
 }
 
 
@@ -505,8 +511,35 @@ void TagTrackerView::UpdateTags()
           QString rzString;
           rzString.setNum(rz);
 
+          if (rx < m_RangesOfRotationalParams[0])
+          {
+            m_RangesOfRotationalParams[0] = rx;
+          }
+          if (ry < m_RangesOfRotationalParams[2])
+          {
+            m_RangesOfRotationalParams[2] = ry;
+          }
+          if (rz < m_RangesOfRotationalParams[4])
+          {
+            m_RangesOfRotationalParams[4] = rz;
+          }
+          if (rx > m_RangesOfRotationalParams[1])
+          {
+            m_RangesOfRotationalParams[1] = rx;
+          }
+          if (ry > m_RangesOfRotationalParams[3])
+          {
+            m_RangesOfRotationalParams[3] = ry;
+          }
+          if (rz > m_RangesOfRotationalParams[5])
+          {
+            m_RangesOfRotationalParams[5] = rz;
+          }
+
           labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
           m_CurrentRegistrationMatrix->DeepCopy(registrationMatrix);
+
+          std::cerr << "Matt, range rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
         }
         else
         {
