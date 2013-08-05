@@ -23,7 +23,6 @@
 #include <vtkFloatArray.h>
 #include <vtkDataArray.h>
 #include <limits>
-#include <itkEulerAffineTransform.h>
 
 namespace mitk
 {
@@ -172,6 +171,9 @@ bool TagTrackingRegistrationManager::Update(
         }
 
         // Output the matrix parameters, useful for measuring stuff.
+/*
+        #include <itkEulerAffineTransform.h>  (move this).
+
         typedef itk::EulerAffineTransform<double, 3, 3> EulerTransform ;
         EulerTransform::Pointer euler = EulerTransform::New();
         EulerTransform::FullAffineTransformType::Pointer affine = EulerTransform::FullAffineTransformType::New();
@@ -195,7 +197,10 @@ bool TagTrackingRegistrationManager::Update(
         affine->SetIdentity();
         affine->SetParameters(params);
         euler->SetParametersFromTransform(affine);
+
         //std::cerr << "Matt, Transformation parameters are:" << euler->GetParameters() << std::endl;
+*/
+
       }
     } // end if we have model
   } // end if we have node
