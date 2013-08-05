@@ -34,12 +34,22 @@ const char* TagTrackingRegistrationManager::TRANSFORM_NODE_ID = "Tag Transform";
 //-----------------------------------------------------------------------------
 TagTrackingRegistrationManager::TagTrackingRegistrationManager()
 {
+  m_ReferenceMatrix = vtkMatrix4x4::New();
+  m_ReferenceMatrix->Identity();
 }
 
 
 //-----------------------------------------------------------------------------
 TagTrackingRegistrationManager::~TagTrackingRegistrationManager()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackingRegistrationManager::SetReferenceMatrix(vtkMatrix4x4& referenceMatrix)
+{
+  m_ReferenceMatrix->DeepCopy(&referenceMatrix);
+  this->Modified();
 }
 
 
@@ -167,13 +177,20 @@ bool TagTrackingRegistrationManager::Update(
         EulerTransform::FullAffineTransformType::Pointer affine = EulerTransform::FullAffineTransformType::New();
         EulerTransform::FullAffineTransformType::ParametersType params;
         params.SetSize(affine->GetParameters().GetSize());
+
+        vtkSmartPointer<vtkMatrix4x4> inverseOfReference = vtkMatrix4x4::New();
+        vtkMatrix4x4::Invert(m_ReferenceMatrix, inverseOfReference);
+
+        vtkSmartPointer<vtkMatrix4x4> offset = vtkMatrix4x4::New();
+        vtkMatrix4x4::Multiply4x4(&registrationMatrix, inverseOfReference, offset);
+
         for (int i = 0; i < 3; i++)
         {
           for (int j = 0; j < 3; j++)
           {
-            params[i*3+j] = registrationMatrix.GetElement(i, j);
+            params[i*3+j] = offset->GetElement(i, j);
           }
-          params[9+i] = registrationMatrix.GetElement(i,3);
+          params[9+i] = offset->GetElement(i,3);
         }
         affine->SetIdentity();
         affine->SetParameters(params);

@@ -118,6 +118,7 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
   // Testing the point based registration, no normals used.
   mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
   double fre;
+  manager->SetReferenceMatrix(*registrationMatrix);
   manager->Update(
       dataStorage,
       tagCentres,

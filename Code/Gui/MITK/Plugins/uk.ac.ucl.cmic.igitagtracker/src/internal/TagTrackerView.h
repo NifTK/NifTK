@@ -18,6 +18,9 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <mitkDataNode.h>
+#include <mitkTagTrackingRegistrationManager.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include "ui_TagTrackerViewControls.h"
 #include <cv.h>
 
@@ -86,6 +89,11 @@ private slots:
    */
   void OnRegistrationEnabledChecked(bool isChecked);
 
+  /**
+   * \brief Used to copy the current tracking transformation to the reference.
+   */
+  void OnGrabReferencePressed();
+
 private:
 
   /**
@@ -117,6 +125,21 @@ private:
    * \brief to make sure we only show dialog box once.
    */
   bool m_ShownStereoSameNameWarning;
+
+  /**
+   * \brief Store a reference matrix, copied from whatever the current registration is.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_ReferenceMatrix;
+
+  /**
+   * \brief This gets updated at each successful registration.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_CurrentRegistrationMatrix;
+
+  /**
+   * \brief THis is made a member variable, so we can use the same one each time to compute relative transformations, as the tracking proceeds.
+   */
+  mitk::TagTrackingRegistrationManager::Pointer m_TagTrackingRegistrationManager;
 };
 
 #endif // TagTrackerView_h

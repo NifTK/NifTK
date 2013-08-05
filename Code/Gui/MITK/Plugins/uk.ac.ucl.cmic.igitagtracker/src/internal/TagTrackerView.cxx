@@ -35,7 +35,6 @@
 #include <mitkPointsAndNormalsBasedRegistration.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkNodePredicateOr.h>
-#include <mitkTagTrackingRegistrationManager.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
 #include <vtkMatrix4x4.h>
@@ -49,6 +48,11 @@ TagTrackerView::TagTrackerView()
 , m_MonoLeftCameraOnly(false)
 , m_ShownStereoSameNameWarning(false)
 {
+  m_ReferenceMatrix = vtkMatrix4x4::New();
+  m_ReferenceMatrix->Identity();
+  m_CurrentRegistrationMatrix = vtkMatrix4x4::New();
+  m_CurrentRegistrationMatrix->Identity();
+  m_TagTrackingRegistrationManager = mitk::TagTrackingRegistrationManager::New();
 }
 
 
@@ -100,7 +104,8 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
   assert(ok);
-
+  ok = connect(m_GrabReferenceButton, SIGNAL(pressed()), this, SLOT(OnGrabReferencePressed()));
+  assert(ok);
   ok = connect(m_BlockSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
   ok = connect(m_OffsetSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
@@ -185,6 +190,14 @@ void TagTrackerView::RetrievePreferenceValues()
 void TagTrackerView::SetFocus()
 {
   m_StereoImageAndCameraSelectionWidget->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackerView::OnGrabReferencePressed()
+{
+  m_ReferenceMatrix->DeepCopy(m_CurrentRegistrationMatrix);
+  m_TagTrackingRegistrationManager->SetReferenceMatrix(*m_ReferenceMatrix);
 }
 
 
@@ -457,9 +470,9 @@ void TagTrackerView::UpdateTags()
       if (m_RegistrationEnabledCheckbox->isChecked())
       {
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
-        mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
         double fiducialRegistrationError = std::numeric_limits<double>::max();
-        bool isSuccessful = registrationManager->Update(
+
+        bool isSuccessful = m_TagTrackingRegistrationManager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
@@ -476,6 +489,7 @@ void TagTrackerView::UpdateTags()
         if (isSuccessful)
         {
           labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+          m_CurrentRegistrationMatrix->DeepCopy(registrationMatrix);
         }
         else
         {
