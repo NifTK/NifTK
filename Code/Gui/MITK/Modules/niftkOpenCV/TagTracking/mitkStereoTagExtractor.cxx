@@ -20,6 +20,8 @@
 #include <cv.h>
 #include <Undistortion.h>
 #include <mitkPointUtils.h>
+#include <mitkGeometry3D.h>
+#include <mitkMIDASImageUtils.h>
 
 namespace mitk {
 
@@ -186,6 +188,9 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   cv::Mat r2lRot(&rightToLeftRotationVector);
   cv::Mat r2lTran(&rightToLeftTranslationVector);
 
+  // Check scaling, as image may have anisotropic voxels.
+  mitk::Vector3D aspect = mitk::GetXYAspectRatio(leftImage);
+
   if (surfaceNormals.IsNull())
   {
     std::map<int, cv::Point3f> result = mitk::DetectMarkerPairs(
@@ -195,6 +200,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       rightInt,
       r2lRot,
       r2lTran,
+      aspect[0],
+      aspect[1],
       minSize,
       maxSize,
       blockSize,
@@ -225,6 +232,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
         rightInt,
         r2lRot,
         r2lTran,
+        aspect[0],
+        aspect[1],
         minSize,
         maxSize,
         blockSize,

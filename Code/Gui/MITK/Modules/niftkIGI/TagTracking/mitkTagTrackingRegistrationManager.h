@@ -16,6 +16,7 @@
 #define mitkTagTrackingRegistrationManager_h
 
 #include "niftkIGIExports.h"
+#include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
@@ -68,6 +69,12 @@ public:
       vtkMatrix4x4& outputTransform,
       double& fiducialRegistrationError) const;
 
+  /**
+   * \brief We store a reference matrix that represents an initial transform matric, such that
+   * any subsequent measures of change in registration are computed relative to this.
+   */
+  void SetReferenceMatrix(vtkMatrix4x4& referenceMatrix);
+
 protected:
 
   TagTrackingRegistrationManager(); // Purposefully hidden.
@@ -77,6 +84,8 @@ protected:
   TagTrackingRegistrationManager& operator=(const TagTrackingRegistrationManager&); // Purposefully not implemented.
 
 private:
+
+  vtkSmartPointer<vtkMatrix4x4> m_ReferenceMatrix;
 
 }; // end class
 

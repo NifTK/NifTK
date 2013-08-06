@@ -122,8 +122,8 @@ int mitkTagTrackingTest(int argc, char * argv[])
   std::string rightToLeftRotationVector = argv[5];
   std::string rightToLeftTranslationVector = argv[6];
 
-  TagTrackingTest::Test3DReconstruction(leftImage, rightImage, leftIntrinsics, rightIntrinsics, rightToLeftRotationVector, rightToLeftTranslationVector);
   TagTrackingTest::TestMono(leftImage);
+  TagTrackingTest::Test3DReconstruction(leftImage, rightImage, leftIntrinsics, rightIntrinsics, rightToLeftRotationVector, rightToLeftTranslationVector);
 
   MITK_TEST_END();
 }

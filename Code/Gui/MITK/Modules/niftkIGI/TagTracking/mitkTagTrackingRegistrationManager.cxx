@@ -33,12 +33,22 @@ const char* TagTrackingRegistrationManager::TRANSFORM_NODE_ID = "Tag Transform";
 //-----------------------------------------------------------------------------
 TagTrackingRegistrationManager::TagTrackingRegistrationManager()
 {
+  m_ReferenceMatrix = vtkMatrix4x4::New();
+  m_ReferenceMatrix->Identity();
 }
 
 
 //-----------------------------------------------------------------------------
 TagTrackingRegistrationManager::~TagTrackingRegistrationManager()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void TagTrackingRegistrationManager::SetReferenceMatrix(vtkMatrix4x4& referenceMatrix)
+{
+  m_ReferenceMatrix->DeepCopy(&referenceMatrix);
+  this->Modified();
 }
 
 
@@ -138,6 +148,8 @@ bool TagTrackingRegistrationManager::Update(
       {
         // do method that uses normals, and hence can cope with a minimum of only 2 points.
         mitk::PointsAndNormalsBasedRegistration::Pointer pointsAndNormalsRegistration = mitk::PointsAndNormalsBasedRegistration::New();
+        pointsAndNormalsRegistration->SetUsePointIDToMatchPoints(true);
+        pointsAndNormalsRegistration->SetUseExhaustiveSearch(true);
         isSuccessful = pointsAndNormalsRegistration->Update(tagPointSet, modelPointSet, tagNormals, modelNormals, registrationMatrix, fiducialRegistrationError);
       }
 

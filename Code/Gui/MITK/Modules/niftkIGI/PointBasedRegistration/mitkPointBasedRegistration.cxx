@@ -81,20 +81,20 @@ bool PointBasedRegistration::Update(
     }
     else
     {
-      MITK_ERROR << "mitk::PointBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
-      return fiducialRegistrationError;
+      MITK_DEBUG << "mitk::PointBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
+      return isSuccessful;
     }
   }
 
   if (fixedPoints->GetSize() < 3 || movingPoints->GetSize() < 3)
   {
-    MITK_ERROR << "mitk::PointBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
-    return fiducialRegistrationError;
+    MITK_DEBUG << "mitk::PointBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
+    return isSuccessful;
   }
 
   if (fixedPoints->GetSize() != movingPoints->GetSize() && !m_UseICPInitialisation && !m_UseSVDBasedMethod)
   {
-    MITK_ERROR << "mitk::PointBasedRegistration: Switching to use ICP Initialisation for mitk::NavigationDataLandmarkTransformFilter";
+    MITK_DEBUG << "mitk::PointBasedRegistration: Switching to use ICP Initialisation for mitk::NavigationDataLandmarkTransformFilter";
     useICPInit = true;
   }
 
@@ -106,6 +106,7 @@ bool PointBasedRegistration::Update(
     if (!isSuccessful)
     {
       MITK_ERROR << "mitk::PointBasedRegistration: SVD method failed" << std::endl;
+      return isSuccessful;
     }
   }
   else

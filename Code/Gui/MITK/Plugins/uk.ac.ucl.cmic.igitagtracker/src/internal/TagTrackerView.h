@@ -18,6 +18,9 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <mitkDataNode.h>
+#include <mitkTagTrackingRegistrationManager.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include "ui_TagTrackerViewControls.h"
 #include <cv.h>
 
@@ -117,6 +120,11 @@ private:
    * \brief to make sure we only show dialog box once.
    */
   bool m_ShownStereoSameNameWarning;
+
+  /**
+   * \brief We store the min/max range of rotation parameters, just for some debugging information.
+   */
+  double m_RangesOfRotationalParams[6];
 };
 
 #endif // TagTrackerView_h

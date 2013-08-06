@@ -35,7 +35,6 @@
 #include <mitkPointsAndNormalsBasedRegistration.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkNodePredicateOr.h>
-#include <mitkTagTrackingRegistrationManager.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
 #include <vtkMatrix4x4.h>
@@ -49,6 +48,12 @@ TagTrackerView::TagTrackerView()
 , m_MonoLeftCameraOnly(false)
 , m_ShownStereoSameNameWarning(false)
 {
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
 }
 
 
@@ -100,7 +105,6 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
   assert(ok);
-
   ok = connect(m_BlockSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
   ok = connect(m_OffsetSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
@@ -216,7 +220,13 @@ void TagTrackerView::OnManualUpdate()
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnSpinBoxPressed()
-{
+{ 
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
   this->UpdateTags();
 }
 
@@ -457,9 +467,10 @@ void TagTrackerView::UpdateTags()
       if (m_RegistrationEnabledCheckbox->isChecked())
       {
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
-        mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
         double fiducialRegistrationError = std::numeric_limits<double>::max();
-        bool isSuccessful = registrationManager->Update(
+
+        mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
+        bool isSuccessful = manager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
@@ -475,7 +486,51 @@ void TagTrackerView::UpdateTags()
 
         if (isSuccessful)
         {
-          labelText += (QString(", FRE=") + fiducialRegistrationErrorString);
+          double pi = 3.14159265359;
+          double cosRx = registrationMatrix->GetElement(0,0);
+          double rx = acos(cosRx) * 180.0 / pi;
+          double cosRy = registrationMatrix->GetElement(1,1);
+          double ry = acos(cosRy) * 180.0 / pi;
+          double cosRz = registrationMatrix->GetElement(2,2);
+          double rz = acos(cosRz) * 180.0 / pi;
+
+          QString rxString;
+          rxString.setNum(rx);
+
+          QString ryString;
+          ryString.setNum(ry);
+
+          QString rzString;
+          rzString.setNum(rz);
+
+          if (rx < m_RangesOfRotationalParams[0])
+          {
+            m_RangesOfRotationalParams[0] = rx;
+          }
+          if (ry < m_RangesOfRotationalParams[2])
+          {
+            m_RangesOfRotationalParams[2] = ry;
+          }
+          if (rz < m_RangesOfRotationalParams[4])
+          {
+            m_RangesOfRotationalParams[4] = rz;
+          }
+          if (rx > m_RangesOfRotationalParams[1])
+          {
+            m_RangesOfRotationalParams[1] = rx;
+          }
+          if (ry > m_RangesOfRotationalParams[3])
+          {
+            m_RangesOfRotationalParams[3] = ry;
+          }
+          if (rz > m_RangesOfRotationalParams[5])
+          {
+            m_RangesOfRotationalParams[5] = rz;
+          }
+
+          labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
+
+          MITK_INFO << "Tag Tracking range, rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
         }
         else
         {

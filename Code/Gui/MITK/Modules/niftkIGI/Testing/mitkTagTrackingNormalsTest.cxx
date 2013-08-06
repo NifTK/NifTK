@@ -86,7 +86,7 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
       tagNormals
       );
 
-  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(tagCentres->GetSize(), 3),".. Testing 3 points extracted, when actually points=" << tagCentres->GetSize());
+  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(tagCentres->GetSize(), 5),".. Testing 5 points extracted, when actually points=" << tagCentres->GetSize());
 
   // output point list
   mitk::PointSet::DataType* itkPointSet = tagCentres->GetPointSet(0);
@@ -135,7 +135,7 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
       fre
       );
 
-  MITK_TEST_CONDITION_REQUIRED(fre < 1,".. Testing FRE is less than 1mm, when actually FRE=" << fre);
+  MITK_TEST_CONDITION_REQUIRED(fre < 2.9,".. Testing FRE is less than 2.9mm, when actually FRE=" << fre);
 
   MITK_TEST_END();
 }

@@ -44,10 +44,32 @@ public:
   static const bool DEFAULT_USE_POINT_ID_TO_MATCH;
 
   /**
+   * \brief Stores the default value of UseTwoPhase = true.
+   */
+  static const bool DEFAULT_USE_TWO_PHASE;
+
+  /**
+   * \brief Stores the default value of UseExhaustiveSearch = true.
+   */
+  static const bool DEFAULT_USE_EXHAUSTIVE_SEARCH;
+
+  /**
    * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.
    */
   itkSetMacro(UsePointIDToMatchPoints, bool);
   itkGetMacro(UsePointIDToMatchPoints, bool);
+
+  /**
+   * \brief If true, do two phase registration, just point based, and then points and normals.
+   */
+  itkSetMacro(UseTwoPhase, bool);
+  itkGetMacro(UseTwoPhase, bool);
+
+  /**
+   * \brief If true, will also do an exhaustive search for best fit of 2 or more points.
+   */
+  itkSetMacro(UseExhaustiveSearch, bool);
+  itkGetMacro(UseExhaustiveSearch, bool);
 
   /**
    * \brief Main method to calculate the point based registration.
@@ -78,6 +100,8 @@ protected:
 private:
 
   bool m_UsePointIDToMatchPoints;
+  bool m_UseTwoPhase;
+  bool m_UseExhaustiveSearch;
 
 }; // end class
 
