@@ -65,11 +65,6 @@ struct Match
 //-----------------------------------------------------------------------------
 static bool CheckBorder(const Match& m, int bx, int by, int w, int h)
 {
-  assert(m.p0.x >= 0);
-  assert(m.p0.y >= 0);
-  assert(m.p1.x >= 0);
-  assert(m.p1.y >= 0);
-
   if ((m.p0.x < bx    ) || 
       (m.p0.x > w - bx) || 
       (m.p0.y < by    ) || 
