@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   mitkHandeyeFromDirectoryTest.cxx
   mitkTagTrackingTest.cxx
   mitkVideoTrackerMatchingTest.cxx
+  mitkReprojectionTest.cxx
 )
