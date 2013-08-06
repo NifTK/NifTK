@@ -20,7 +20,7 @@ if (BUILD_SLS_TRACKING_TESTING)
 
   mitkAddCustomModuleTest(Tracking-Test mitkTrackingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy -CameraParameters ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/CameraParameters -PointsInFirstFrame 46 243 206 328 221)
 
-else(BUILD_SLS_TRACKING_TESTING)
+endif(BUILD_SLS_TRACKING_TESTING)
 
 if(BUILD_SLS_TESTING)
 
@@ -43,7 +43,6 @@ mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/In
 
 mitkAddCustomModuleTest(Video-Tracker_Matching mitkVideoTrackerMatchingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy)
 
-endif(BUILD_SLS_TRACKING_TESTING)
 if(OPENCV_WITH_FFMPEG)
 	mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory)
 
