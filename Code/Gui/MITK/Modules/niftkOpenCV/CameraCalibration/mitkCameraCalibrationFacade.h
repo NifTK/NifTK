@@ -593,6 +593,11 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
  */
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
 
+/**
+ * \brief find the average of a vector of 4x4 matrices
+ */
+cv::Mat AverageMatrices(std::vector<cv::Mat> Matrices);
+
  /**
  * \brief Sorts the matrices based on the translations , and returns the order
  */

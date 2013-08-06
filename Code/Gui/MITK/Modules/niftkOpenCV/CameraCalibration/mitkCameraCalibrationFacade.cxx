@@ -1915,5 +1915,51 @@ double SafeSQRT(double value)
   }
   return sqrt(value);
 }
+//-----------------------------------------------------------------------------
+cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+{
+  cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
+ 
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
+  {
+    for ( int row = 0 ; row < 3 ; row++ )
+    {
+      for ( int col = 0 ; col < 3 ; col++ ) 
+      {
+        temp.at<double>(row,col) += Matrices[i].at<double>(row,col);
+      }
+      temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
+    }
+  }
+  
+  temp_T = temp_T /Matrices.size();
+  temp = temp / Matrices.size();
 
+  cv::Mat rtr = temp.t() * temp;
+
+  cv::Mat eigenvectors = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat eigenvalues = cvCreateMat(3,1,CV_64FC1);
+  cv::eigen(rtr , eigenvalues, eigenvectors);
+  cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
+  for ( int i = 0 ; i < 3 ; i ++ ) 
+  {
+    rootedEigenValues.at<double>(i,i) = sqrt(1/eigenvalues.at<double>(i,0));
+  }
+
+  cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
+  cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
+  temp2 = temp * ( eigenvectors * rootedEigenValues * eigenvectors.t() );
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      returnMat.at<double>(row,col) = temp2.at<double>(row,col);
+    }
+    returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
+  }
+  
+  return returnMat;
+    
+} 
 } // end namespace
