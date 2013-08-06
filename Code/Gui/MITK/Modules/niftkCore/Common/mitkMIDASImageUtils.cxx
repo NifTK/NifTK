@@ -580,5 +580,23 @@ void DumpImage(const mitk::Image *image, const std::string& fileName)
 }
 
 
+
+//-----------------------------------------------------------------------------
+mitk::Vector3D GetXYAspectRatio(const mitk::Image::Pointer image)
+{
+  mitk::Vector3D spacing = image->GetGeometry()->GetSpacing();
+  if (spacing[1] > spacing[0])
+  {
+    spacing[1] = spacing[1]/spacing[0];
+    spacing[0] = 1;
+  }
+  else
+  {
+    spacing[0] = spacing[0]/spacing[1];
+    spacing[1] = 1;
+  }
+  return spacing;
+}
+
 } // end namespace
 
