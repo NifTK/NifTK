@@ -287,7 +287,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
 
   if ( m_DoGridToWorld ) 
   {
-    MITK_INFO << "Finding the average Grid to World Transform";
+    std::vector<cv::Mat> gridToWorlds;
     for ( int i = 0; i < NumberOfViews - 1; i ++ )
     {
       cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
@@ -295,9 +295,10 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
 
       cameraToWorld =  MarkerToWorld[i]*CameraToMarker; 
       gridToWorld = cameraToWorld *GridToCamera[i].inv();
-      MITK_INFO << "View " << i << "gridToWorld" << std::endl << gridToWorld;
+      gridToWorlds.push_back(gridToWorld);
     }
-   
+    cv::Mat AverageMatrix = mitk::AverageMatrices (gridToWorlds);
+    MITK_INFO << "Average Grid to World Transform" << std::endl << AverageMatrix;
   }
   if ( GroundTruthSolution.length() > 0  )
   {
