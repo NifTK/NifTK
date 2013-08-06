@@ -127,20 +127,8 @@ private:
   bool m_ShownStereoSameNameWarning;
 
   /**
-   * \brief Store a reference matrix, copied from whatever the current registration is.
+   * \brief We store the min/max range of rotation parameters, just for some debugging information.
    */
-  vtkSmartPointer<vtkMatrix4x4> m_ReferenceMatrix;
-
-  /**
-   * \brief This gets updated at each successful registration.
-   */
-  vtkSmartPointer<vtkMatrix4x4> m_CurrentRegistrationMatrix;
-
-  /**
-   * \brief This is made a member variable, so we can use the same one each time to compute relative transformations, as the tracking proceeds.
-   */
-  mitk::TagTrackingRegistrationManager::Pointer m_TagTrackingRegistrationManager;
-
   double m_RangesOfRotationalParams[6];
 };
 

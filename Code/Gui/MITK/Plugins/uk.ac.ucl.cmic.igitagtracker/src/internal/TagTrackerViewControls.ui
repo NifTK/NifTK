@@ -197,19 +197,6 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QPushButton" name="m_GrabReferenceButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>grab reference</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="m_UpdateButton">
          <property name="text">
           <string>update</string>

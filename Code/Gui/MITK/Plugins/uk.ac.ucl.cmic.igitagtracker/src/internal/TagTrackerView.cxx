@@ -48,16 +48,11 @@ TagTrackerView::TagTrackerView()
 , m_MonoLeftCameraOnly(false)
 , m_ShownStereoSameNameWarning(false)
 {
-  m_ReferenceMatrix = vtkMatrix4x4::New();
-  m_ReferenceMatrix->Identity();
-  m_CurrentRegistrationMatrix = vtkMatrix4x4::New();
-  m_CurrentRegistrationMatrix->Identity();
-  m_TagTrackingRegistrationManager = mitk::TagTrackingRegistrationManager::New();
   m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
 }
 
@@ -109,8 +104,6 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
 
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
-  assert(ok);
-  ok = connect(m_GrabReferenceButton, SIGNAL(pressed()), this, SLOT(OnGrabReferencePressed()));
   assert(ok);
   ok = connect(m_BlockSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
@@ -200,14 +193,6 @@ void TagTrackerView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TagTrackerView::OnGrabReferencePressed()
-{
-  m_ReferenceMatrix->DeepCopy(m_CurrentRegistrationMatrix);
-  m_TagTrackingRegistrationManager->SetReferenceMatrix(*m_ReferenceMatrix);
-}
-
-
-//-----------------------------------------------------------------------------
 void TagTrackerView::OnRegistrationEnabledChecked(bool isChecked)
 {
   m_RegistrationModelComboBox->setEnabled(isChecked);
@@ -235,12 +220,12 @@ void TagTrackerView::OnManualUpdate()
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnSpinBoxPressed()
-{
-    m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+{ 
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
   this->UpdateTags();
 }
@@ -484,7 +469,8 @@ void TagTrackerView::UpdateTags()
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
         double fiducialRegistrationError = std::numeric_limits<double>::max();
 
-        bool isSuccessful = m_TagTrackingRegistrationManager->Update(
+        mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
+        bool isSuccessful = manager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
@@ -543,9 +529,8 @@ void TagTrackerView::UpdateTags()
           }
 
           labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
-          m_CurrentRegistrationMatrix->DeepCopy(registrationMatrix);
 
-          std::cerr << "Matt, range rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
+          MITK_INFO << "Tag Tracking range, rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
         }
         else
         {
