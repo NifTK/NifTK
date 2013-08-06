@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkIterativeReconstructionAndRegistrationMethod_h
-#define __itkIterativeReconstructionAndRegistrationMethod_h
+#ifndef itkIterativeReconstructionAndRegistrationMethod_h
+#define itkIterativeReconstructionAndRegistrationMethod_h
 
 #include <itkProcessObject.h>
 #include "itkImageReconstructionMethod.h"

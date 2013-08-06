@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkForwardAndBackProjectionDifferenceFilter_h
-#define __itkForwardAndBackProjectionDifferenceFilter_h
+#ifndef itkForwardAndBackProjectionDifferenceFilter_h
+#define itkForwardAndBackProjectionDifferenceFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkConceptChecking.h>

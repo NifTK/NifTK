@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBSplineTransform_h
-#define __itkBSplineTransform_h
+#ifndef itkBSplineTransform_h
+#define itkBSplineTransform_h
 
 #include <iostream>
 #include "itkDeformableTransform.h"

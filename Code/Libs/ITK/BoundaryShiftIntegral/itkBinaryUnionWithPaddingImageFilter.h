@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKBINARYUNIONWITHPADDINGIMAGE_H_
-#define ITKBINARYUNIONWITHPADDINGIMAGE_H_
+#ifndef itkBinaryUnionWithPaddingImageFilter_h
+#define itkBinaryUnionWithPaddingImageFilter_h
 
 #include <itkBinaryFunctorImageFilter.h>
 

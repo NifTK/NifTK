@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkAddUpdateToTimeVaryingVelocityFieldFilter_h
-#define __itkAddUpdateToTimeVaryingVelocityFieldFilter_h
+#ifndef itkAddUpdateToTimeVaryingVelocityFieldFilter_h
+#define itkAddUpdateToTimeVaryingVelocityFieldFilter_h
 
 #include <itkVector.h>
 #include <itkImage.h>

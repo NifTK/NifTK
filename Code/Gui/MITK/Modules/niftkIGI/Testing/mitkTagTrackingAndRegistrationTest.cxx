@@ -66,7 +66,7 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
   vtkSmartPointer<vtkMatrix4x4> cameraToWorld = vtkMatrix4x4::New();
   cameraToWorld->Identity();
   mitk::PointSet::Pointer tagCentres = mitk::PointSet::New();
-  mitk::PointSet::Pointer tagNormals = mitk::PointSet::New();
+  mitk::PointSet::Pointer tagNormals = NULL;
   mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(leftNode->GetData());
   mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(rightNode->GetData());
 
@@ -83,7 +83,7 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
       tagNormals
       );
 
-  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(tagCentres->GetSize(), 32),".. Testing 32 points extracted, when actually points=" << tagCentres->GetSize());
+  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(tagCentres->GetSize(), 33),".. Testing 33 points extracted, and the number of points extracted was=" << tagCentres->GetSize());
 
   // output point list
   mitk::PointSet::DataType* itkPointSet = tagCentres->GetPointSet(0);
@@ -117,14 +117,17 @@ int mitkTagTrackingAndRegistrationTest(int argc, char* argv[])
 
   // Testing the point based registration, no normals used.
   mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
-  double fre = manager->Update(
+  double fre;
+  manager->SetReferenceMatrix(*registrationMatrix);
+  manager->Update(
       dataStorage,
       tagCentres,
       tagNormals,
       modelNode,
       mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
       false,
-      *registrationMatrix
+      *registrationMatrix,
+      fre
       );
 
   MITK_TEST_CONDITION_REQUIRED(fre < 1,".. Testing FRE is less than 1mm, when actually FRE=" << fre);

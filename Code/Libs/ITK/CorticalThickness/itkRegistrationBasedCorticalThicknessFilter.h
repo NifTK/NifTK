@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkRegistrationBasedCorticalThicknessFilter_h
-#define __itkRegistrationBasedCorticalThicknessFilter_h
+#ifndef itkRegistrationBasedCorticalThicknessFilter_h
+#define itkRegistrationBasedCorticalThicknessFilter_h
 
 #include <itkImageToImageFilter.h>
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H
-#define ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H
+#ifndef itkMIDASImageUpdatePasteRegionProcessor_h
+#define itkMIDASImageUpdatePasteRegionProcessor_h
 
 #include "itkMIDASImageUpdateRegionProcessor.h"
 

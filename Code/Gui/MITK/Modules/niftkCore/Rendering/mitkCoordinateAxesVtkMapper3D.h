@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CoordinateAxesVtkMapper3D_h
-#define CoordinateAxesVtkMapper3D_h
+#ifndef mitkCoordinateAxesVtkMapper3D_h
+#define mitkCoordinateAxesVtkMapper3D_h
 
 #include "niftkCoreExports.h"
 

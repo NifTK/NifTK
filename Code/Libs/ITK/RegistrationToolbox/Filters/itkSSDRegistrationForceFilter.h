@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSSDRegistrationForceFilter_h
-#define __itkSSDRegistrationForceFilter_h
+#ifndef itkSSDRegistrationForceFilter_h
+#define itkSSDRegistrationForceFilter_h
 #include <itkHistogramSimilarityMeasure.h>
 #include <itkImageToImageFilter.h>
 #include <itkVector.h>

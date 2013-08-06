@@ -280,7 +280,7 @@ bool QmitkIGITrackerSource::SaveData(mitk::IGIDataType* data, std::string& outpu
       NiftyLinkTrackingDataMessage* trMsg = static_cast<NiftyLinkTrackingDataMessage*>(pointerToMessage);
       if (trMsg != NULL)
       {
-        QString directoryPath = QString::fromStdString(this->m_SavePrefix) + QDir::separator() + QString("QmitkIGITrackerSource") + QDir::separator() + QString::fromStdString(this->m_Description);
+        QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName()) + QDir::separator() + QString::fromStdString(this->m_Description);
         QDir directory(directoryPath);
         if (directory.mkpath(directoryPath))
         {
@@ -324,7 +324,8 @@ bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint6
   igtlUint64    lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
+
   // FIXME: check for QmitkIGITrackerSource too!
   QDir directory(directoryPath);
   if (directory.exists())
@@ -370,7 +371,7 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
   ClearBuffer();
 
   // needs to match what SaveData() does
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGITrackerTool");
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
   QDir directory(directoryPath);
   if (directory.exists())
   {
@@ -419,6 +420,7 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
   {
     // this will find us the timestamp right after the requested one
     BOOST_AUTO(i, t->second.upper_bound(requestedTimeStamp));
+
     // so we need to pick the previous
     // FIXME: not sure if the non-existing-else here ever applies!
     if (i != t->second.begin())

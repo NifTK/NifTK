@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _SurfaceExtractorPreferencePage_h
-#define _SurfaceExtractorPreferencePage_h
+#ifndef SurfaceExtractorPreferencePage_h
+#define SurfaceExtractorPreferencePage_h
 
 #include <QObject>
 #include <berryIQtPreferencePage.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousReconAndRegnUpdateCommand_h
-#define __itkSimultaneousReconAndRegnUpdateCommand_h
+#ifndef itkSimultaneousReconAndRegnUpdateCommand_h
+#define itkSimultaneousReconAndRegnUpdateCommand_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

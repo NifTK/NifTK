@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMeanCurvatureImageFilter_h
-#define __itkMeanCurvatureImageFilter_h
+#ifndef itkMeanCurvatureImageFilter_h
+#define itkMeanCurvatureImageFilter_h
 #include "itkBasicFiniteDifferenceBaseClassImageFilter.h"
 
 namespace itk

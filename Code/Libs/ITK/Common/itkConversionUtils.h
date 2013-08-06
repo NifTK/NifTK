@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkConversionUtils_h
-#define __itkConversionUtils_h
+#ifndef itkConversionUtils_h
+#define itkConversionUtils_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIDATASOURCEMANAGERCLEARDOWNTHREAD_H
-#define QMITKIGIDATASOURCEMANAGERCLEARDOWNTHREAD_H
+#ifndef QmitkIGIDataSourceManagerClearDownThread_h
+#define QmitkIGIDataSourceManagerClearDownThread_h
 
 #include "niftkIGIGuiManagerExports.h"
 #include <QmitkIGITimerBasedThread.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKREGISTERPROBEMODELTOSTEREOPAIR_H
-#define MITKREGISTERPROBEMODELTOSTEREOPAIR_H
+#ifndef mitkRegisterProbeModelToStereoPair_h
+#define mitkRegisterProbeModelToStereoPair_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

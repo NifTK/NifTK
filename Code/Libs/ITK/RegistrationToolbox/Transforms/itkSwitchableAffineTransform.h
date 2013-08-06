@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSwitchableAffineTransform_h
-#define __itkSwitchableAffineTransform_h
+#ifndef itkSwitchableAffineTransform_h
+#define itkSwitchableAffineTransform_h
 
 #include <iostream>
 #include <itkMatrix.h>

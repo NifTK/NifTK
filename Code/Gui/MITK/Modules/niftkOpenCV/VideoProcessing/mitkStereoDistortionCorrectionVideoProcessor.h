@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREODISTORTIONCORRECTIONVIDEOPROCESSOR_H
-#define MITKSTEREODISTORTIONCORRECTIONVIDEOPROCESSOR_H
+#ifndef mitkStereoDistortionCorrectionVideoProcessor_h
+#define mitkStereoDistortionCorrectionVideoProcessor_h
 
 #include "niftkOpenCVExports.h"
 #include "mitkStereoOneTimePointVideoProcessorTemplateMethod.h"

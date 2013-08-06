@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkDasTransformImageFilter_h
-#define __itkDasTransformImageFilter_h
+#ifndef itkDasTransformImageFilter_h
+#define itkDasTransformImageFilter_h
 #include <itkVector.h>
 #include <itkImage.h>
 #include <itkImageToImageFilter.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASPolyToolOpAddToFeedbackContour_h
-#define mitk_MIDASPolyToolOpAddToFeedbackContour_h
+#ifndef mitkMIDASPolyToolOpAddToFeedbackContour_h
+#define mitkMIDASPolyToolOpAddToFeedbackContour_h
 
 #include "niftkMIDASExports.h"
 #include <mitkOperation.h>

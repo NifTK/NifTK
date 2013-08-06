@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef NIFTYSEGPLUGINACTIVATOR_H
-#define NIFTYSEGPLUGINACTIVATOR_H
+#ifndef NiftySegPluginActivator_h
+#define NiftySegPluginActivator_h
 
 #include <ctkPluginActivator.h>
 

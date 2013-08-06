@@ -35,7 +35,6 @@
 #include <mitkPointsAndNormalsBasedRegistration.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkNodePredicateOr.h>
-#include <mitkTagTrackingRegistrationManager.h>
 #include <Undistortion.h>
 #include <SurfaceReconstruction.h>
 #include <vtkMatrix4x4.h>
@@ -49,6 +48,12 @@ TagTrackerView::TagTrackerView()
 , m_MonoLeftCameraOnly(false)
 , m_ShownStereoSameNameWarning(false)
 {
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
 }
 
 
@@ -100,7 +105,6 @@ void TagTrackerView::CreateQtPartControl( QWidget *parent )
   bool ok = false;
   ok = connect(m_UpdateButton, SIGNAL(pressed()), this, SLOT(OnManualUpdate()));
   assert(ok);
-
   ok = connect(m_BlockSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
   assert(ok);
   ok = connect(m_OffsetSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxPressed()));
@@ -216,7 +220,13 @@ void TagTrackerView::OnManualUpdate()
 
 //-----------------------------------------------------------------------------
 void TagTrackerView::OnSpinBoxPressed()
-{
+{ 
+  m_RangesOfRotationalParams[0] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
+  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
+  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
   this->UpdateTags();
 }
 
@@ -416,15 +426,19 @@ void TagTrackerView::UpdateTags()
           );
     } // end if mono/stereo
 
+    m_TagPositionDisplay->clear();
+
+    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
+    registrationMatrix->Identity();
+
     int numberOfTrackedPoints = tagPointSet->GetSize();
 
     QString numberString;
     numberString.setNum(numberOfTrackedPoints);
 
-    m_NumberOfTagsLabel->setText(modeName + QString(" tags ") + numberString);
-    m_TagPositionDisplay->clear();
+    QString labelText;
+    labelText = modeName + QString(" tags ") + numberString;
 
-    // Update text box to display all points.
     if (numberOfTrackedPoints > 0)
     {
       mitk::PointSet::DataType* itkPointSet = tagPointSet->GetPointSet(0);
@@ -449,29 +463,83 @@ void TagTrackerView::UpdateTags()
 
         m_TagPositionDisplay->appendPlainText(QString("point [") + pointIdString + "]=(" + xNum + ", " + yNum + ", " + zNum + ")");
       }
-    }
 
-    vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
-    registrationMatrix->Identity();
-
-    if (numberOfTrackedPoints > 0)
-    {
       if (m_RegistrationEnabledCheckbox->isChecked())
       {
         mitk::DataNode::Pointer selectedNode = m_RegistrationModelComboBox->GetSelectedNode();
-        mitk::TagTrackingRegistrationManager::Pointer registrationManager = mitk::TagTrackingRegistrationManager::New();
-        registrationManager->Update(
+        double fiducialRegistrationError = std::numeric_limits<double>::max();
+
+        mitk::TagTrackingRegistrationManager::Pointer manager = mitk::TagTrackingRegistrationManager::New();
+        bool isSuccessful = manager->Update(
              dataStorage,
              tagPointSet,
              tagNormals,
              selectedNode,
              mitk::TagTrackingRegistrationManager::TRANSFORM_NODE_ID,
              m_RegistrationMethodPointsNormalsRadio->isChecked(),
-             *registrationMatrix
+             *registrationMatrix,
+             fiducialRegistrationError
             );
 
+        QString fiducialRegistrationErrorString;
+        fiducialRegistrationErrorString.setNum(fiducialRegistrationError);
+
+        if (isSuccessful)
+        {
+          double pi = 3.14159265359;
+          double cosRx = registrationMatrix->GetElement(0,0);
+          double rx = acos(cosRx) * 180.0 / pi;
+          double cosRy = registrationMatrix->GetElement(1,1);
+          double ry = acos(cosRy) * 180.0 / pi;
+          double cosRz = registrationMatrix->GetElement(2,2);
+          double rz = acos(cosRz) * 180.0 / pi;
+
+          QString rxString;
+          rxString.setNum(rx);
+
+          QString ryString;
+          ryString.setNum(ry);
+
+          QString rzString;
+          rzString.setNum(rz);
+
+          if (rx < m_RangesOfRotationalParams[0])
+          {
+            m_RangesOfRotationalParams[0] = rx;
+          }
+          if (ry < m_RangesOfRotationalParams[2])
+          {
+            m_RangesOfRotationalParams[2] = ry;
+          }
+          if (rz < m_RangesOfRotationalParams[4])
+          {
+            m_RangesOfRotationalParams[4] = rz;
+          }
+          if (rx > m_RangesOfRotationalParams[1])
+          {
+            m_RangesOfRotationalParams[1] = rx;
+          }
+          if (ry > m_RangesOfRotationalParams[3])
+          {
+            m_RangesOfRotationalParams[3] = ry;
+          }
+          if (rz > m_RangesOfRotationalParams[5])
+          {
+            m_RangesOfRotationalParams[5] = rz;
+          }
+
+          labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
+
+          MITK_INFO << "Tag Tracking range, rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
+        }
+        else
+        {
+          labelText += (QString(", registration FAILED"));
+        }
+
       } // end if we are doing registration
-    } // end if number tracked points > 0
+
+    } // end if we had some tracked points
 
     // Always update registration matrix contained within the view - just for visual feedback.
     for (int i = 0; i < 4; i++)
@@ -482,9 +550,7 @@ void TagTrackerView::UpdateTags()
       }
     }
 
-    tagPointSetNode->Modified();
-    tagPointSet->Modified();
-    mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+    m_NumberOfTagsLabel->setText(labelText);
 
   } // end if we have at least one node specified
 }

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMultiStageImageRegistrationMethod_h
-#define __itkMultiStageImageRegistrationMethod_h
+#ifndef itkMultiStageImageRegistrationMethod_h
+#define itkMultiStageImageRegistrationMethod_h
 
 
 #include "itkMaskedImageRegistrationMethod.h"

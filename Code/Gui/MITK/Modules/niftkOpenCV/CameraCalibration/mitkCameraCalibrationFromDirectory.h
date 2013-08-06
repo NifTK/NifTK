@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKCAMERACALIBRATIONFROMDIRECTORY_H
-#define MITKCAMERACALIBRATIONFROMDIRECTORY_H
+#ifndef mitkCameraCalibrationFromDirectory_h
+#define mitkCameraCalibrationFromDirectory_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

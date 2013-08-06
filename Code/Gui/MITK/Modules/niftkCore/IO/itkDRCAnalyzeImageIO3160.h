@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef DRCAnalyzeImageIO3160_h
-#define DRCAnalyzeImageIO3160_h
+#ifndef itkDRCAnalyzeImageIO3160_h
+#define itkDRCAnalyzeImageIO3160_h
 
 #include "niftkCoreExports.h"
 #include "itkAnalyzeImageIO3160.h"

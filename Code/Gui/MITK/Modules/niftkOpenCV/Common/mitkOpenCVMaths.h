@@ -15,6 +15,7 @@
 #ifndef mitkOpenCVMaths_h
 #define mitkOpenCVMaths_h
 
+#include "niftkOpenCVExports.h"
 #include <cv.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -58,12 +59,30 @@ void MakeIdentity(cv::Matx44d& outputMatrix);
 cv::Matx33d CalculateCrossCovarianceH(const std::vector<cv::Point3d>& q, const std::vector<cv::Point3d>& qPrime);
 
 /**
+ * \brief Helper method to do the main point based registration, and handle error conditions.
+ */
+bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
+                                 const std::vector<cv::Point3d>& movingPoints,
+                                 cv::Matx33d& H,
+                                 cv::Point3d &p,
+                                 cv::Point3d& pPrime,
+                                 cv::Matx44d& outputMatrix,
+                                 double &fiducialRegistrationError);
+
+/**
  * \brief Calculates Fiducial Registration Error by multiplying the movingPoints by the matrix, and comparing with fixedPoints.
  */
 double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedPoints,
                                           const std::vector<cv::Point3d>& movingPoints,
                                           const cv::Matx44d& matrix
                                           );
+
+/**
+ * \brief Converts format of input to call the other CalculateFiducialRegistrationError method.
+ */
+NIFTKOPENCV_EXPORT double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPointSet,
+                                                             const mitk::PointSet::Pointer& movingPointSet,
+                                                             vtkMatrix4x4& vtkMatrix);
 
 /**
  * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
@@ -74,6 +93,11 @@ void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation,
  * \brief Copies matrix to vtkMatrix.
  */
 void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix);
+
+/**
+ * \brief Copies matrix to openCVMatrix.
+ */
+void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix);
 
 } // end namespace
 

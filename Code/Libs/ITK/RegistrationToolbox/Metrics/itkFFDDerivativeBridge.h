@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkFFDDerivativeBridge_h
-#define __itkFFDDerivativeBridge_h
+#ifndef itkFFDDerivativeBridge_h
+#define itkFFDDerivativeBridge_h
 
 
 #include "itkMetricDerivativeBridge.h"

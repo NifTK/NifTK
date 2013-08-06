@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageRegistrationFactory_h
-#define __itkImageRegistrationFactory_h
+#ifndef itkImageRegistrationFactory_h
+#define itkImageRegistrationFactory_h
 
 #include <itkProcessObject.h>
 #include <itkConstantBoundaryCondition.h>

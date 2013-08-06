@@ -21,6 +21,7 @@
 #include <vtkgluPickMatrix.h>
 #include <vtkOpenGL.h>
 #include <math.h>
+#include <cassert>
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
 vtkStandardNewMacro(vtkOpenGLMatrixDrivenCamera);
@@ -143,6 +144,8 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
   int vpx = m_WindowWidthInPixels  / 2 - vpw / 2;
   int vpy = m_WindowHeightInPixels / 2 - vph / 2;
 
+  assert(glGetError() == GL_NO_ERROR);
+
   glViewport(vpx, vpy, vpw, vph);
   glEnable( GL_SCISSOR_TEST );
   glScissor(vpx,vpy, vpw, vph);
@@ -161,6 +164,8 @@ void vtkOpenGLMatrixDrivenCamera::Render(vtkRenderer *ren)
   matrix->Transpose();
 
   glMultMatrixd(matrix->Element[0]);
+
+  assert(glGetError() == GL_NO_ERROR);
 
   if ((ren->GetRenderWindow())->GetErase() && ren->GetErase() && !ren->GetIsPicking())
   {

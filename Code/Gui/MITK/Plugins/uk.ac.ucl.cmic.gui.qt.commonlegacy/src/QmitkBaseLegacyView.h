@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKBASELEGACYVIEW_H
-#define QMITKBASELEGACYVIEW_H
+#ifndef QmitkBaseLegacyView_h
+#define QmitkBaseLegacyView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonlegacy_Export.h>
 

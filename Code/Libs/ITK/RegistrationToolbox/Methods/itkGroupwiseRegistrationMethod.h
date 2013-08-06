@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkGroupwiseRegistrationMethod_h
-#define __itkGroupwiseRegistrationMethod_h
+#ifndef itkGroupwiseRegistrationMethod_h
+#define itkGroupwiseRegistrationMethod_h
 
 #include <itkProcessObject.h>
 #include <itkImage.h>

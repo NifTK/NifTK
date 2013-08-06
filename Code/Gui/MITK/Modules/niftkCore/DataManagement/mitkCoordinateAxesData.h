@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_CoordinateAxesData_h
-#define mitk_CoordinateAxesData_h
+#ifndef mitkCoordinateAxesData_h
+#define mitkCoordinateAxesData_h
 
 #include "niftkCoreExports.h"
 #include <itkImageRegion.h>
@@ -53,6 +53,7 @@ public:
   void SetRequestedRegion(itk::DataObject *data);
   const RegionType& GetLargestPossibleRegion() const;
   virtual const RegionType& GetRequestedRegion() const;
+  virtual void UpdateOutputInformation();
 
   void GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const;
   void SetVtkMatrix(const vtkMatrix4x4& matrix);

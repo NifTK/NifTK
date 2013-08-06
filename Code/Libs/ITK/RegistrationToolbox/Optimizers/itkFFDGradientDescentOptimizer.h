@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKFFDGRADIENTDESCENTOPTIMIZER_H_
-#define ITKFFDGRADIENTDESCENTOPTIMIZER_H_
+#ifndef itkFFDGradientDescentOptimizer_h
+#define itkFFDGradientDescentOptimizer_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

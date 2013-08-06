@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkVectorPhiPlusDeltaTTimesVFilter_h
-#define __itkVectorPhiPlusDeltaTTimesVFilter_h
+#ifndef itkVectorPhiPlusDeltaTTimesVFilter_h
+#define itkVectorPhiPlusDeltaTTimesVFilter_h
 
 #include <itkVector.h>
 #include <itkImage.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CoordinateAxesDataReader_h
-#define CoordinateAxesDataReader_h
+#ifndef mitkCoordinateAxesDataReader_h
+#define mitkCoordinateAxesDataReader_h
 
 #include "niftkCoreExports.h"
 #include <mitkCommon.h>

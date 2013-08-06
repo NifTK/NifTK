@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASTOOLSELECTORWIDGET_H
-#define QMITKMIDASTOOLSELECTORWIDGET_H
+#ifndef QmitkMIDASToolSelectorWidget_h
+#define QmitkMIDASToolSelectorWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QWidget>

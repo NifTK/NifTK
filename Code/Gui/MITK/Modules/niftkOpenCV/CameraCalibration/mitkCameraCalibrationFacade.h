@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKCAMERACALIBRATIONFACADE_H
-#define MITKCAMERACALIBRATIONFACADE_H
+#ifndef mitkCameraCalibrationFacade_h
+#define mitkCameraCalibrationFacade_h
 
 #include <cv.h>
 #include <cstdlib>

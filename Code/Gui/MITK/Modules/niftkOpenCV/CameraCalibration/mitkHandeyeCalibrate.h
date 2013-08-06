@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __mitkHandeyeCalibrate_h
-#define __mitkHandeyeCalibrate_h
+#ifndef mitkHandeyeCalibrate_h
+#define mitkHandeyeCalibrate_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

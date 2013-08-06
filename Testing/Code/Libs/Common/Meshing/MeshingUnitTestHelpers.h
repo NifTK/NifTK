@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MESHINGUNITTESTHELPERS_H_
-#define MESHINGUNITTESTHELPERS_H_
+#ifndef MeshingUnitTestHelpers_h
+#define MeshingUnitTestHelpers_h
 
 #define niftkMeshingAssert(COND) \
      {\

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIMAGETONIFTI_HEADER_INCLUDED
-#define MITKIMAGETONIFTI_HEADER_INCLUDED
+#ifndef mitkImageToNifti_h
+#define mitkImageToNifti_h
 
 #include <mitkImage.h>
 #include <mitkImageDataItem.h>

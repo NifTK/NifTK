@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_QmitkMIDASSegmentationViewWidget_h
-#define mitk_QmitkMIDASSegmentationViewWidget_h
+#ifndef QmitkMIDASSegmentationViewWidget_h
+#define QmitkMIDASSegmentationViewWidget_h
 
 #include "ui_QmitkMIDASSegmentationViewWidget.h"
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>

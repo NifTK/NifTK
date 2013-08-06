@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASDataNodeNameStringFilter_h
-#define mitk_MIDASDataNodeNameStringFilter_h
+#ifndef mitkMIDASDataNodeNameStringFilter_h
+#define mitkMIDASDataNodeNameStringFilter_h
 
 #include "niftkMIDASExports.h"
 #include <mitkDataNodeStringPropertyFilter.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkProjectionGeometry_h
-#define __itkProjectionGeometry_h
+#ifndef itkProjectionGeometry_h
+#define itkProjectionGeometry_h
 
 #include <itkImage.h>
 #include <itkPerspectiveProjectionTransform.h>

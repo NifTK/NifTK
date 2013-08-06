@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkNegateImageFilter_h
-#define __itkNegateImageFilter_h
+#ifndef itkNegateImageFilter_h
+#define itkNegateImageFilter_h
 
 #include <itkUnaryFunctorImageFilter.h>
 #include <itkConceptChecking.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASActivator_h
-#define mitk_MIDASActivator_h
+#ifndef MIDASActivator_h
+#define MIDASActivator_h
 
 #include <ctkPluginActivator.h>
 

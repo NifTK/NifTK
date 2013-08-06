@@ -20,6 +20,8 @@
 #include <cv.h>
 #include <Undistortion.h>
 #include <mitkPointUtils.h>
+#include <mitkGeometry3D.h>
+#include <mitkMIDASImageUtils.h>
 
 namespace mitk {
 
@@ -156,7 +158,11 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                       )
 {
   pointSet->Clear();
-
+  if (surfaceNormals.IsNotNull())
+  {
+    surfaceNormals->Clear();
+  }
+  
   mitk::ImageWriteAccessor  leftAccess(leftImage);
   void* leftPointer = leftAccess.GetData();
 
@@ -182,6 +188,9 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
   cv::Mat r2lRot(&rightToLeftRotationVector);
   cv::Mat r2lTran(&rightToLeftTranslationVector);
 
+  // Check scaling, as image may have anisotropic voxels.
+  mitk::Vector3D aspect = mitk::GetXYAspectRatio(leftImage);
+
   if (surfaceNormals.IsNull())
   {
     std::map<int, cv::Point3f> result = mitk::DetectMarkerPairs(
@@ -191,6 +200,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       rightInt,
       r2lRot,
       r2lTran,
+      aspect[0],
+      aspect[1],
       minSize,
       maxSize,
       blockSize,
@@ -207,14 +218,13 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       outputPoint[0] = extractedPoint.x;
       outputPoint[1] = -extractedPoint.y;
       outputPoint[2] = -extractedPoint.z;
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
       pointSet->InsertPoint((*iter).first, outputPoint);
     }
+    pointSet->UpdateOutputInformation();
   }
   else
   {
-    surfaceNormals->Clear();
-
     std::map<int, mitk::Point6D> result = DetectMarkerPairsAndNormals(
         left,
         right,
@@ -222,6 +232,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
         rightInt,
         r2lRot,
         r2lTran,
+        aspect[0],
+        aspect[1],
         minSize,
         maxSize,
         blockSize,
@@ -231,12 +243,6 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
     mitk::Point6D point;
     mitk::PointSet::PointType outputPoint;
     mitk::PointSet::PointType outputNormal;
-    mitk::PointSet::PointType transformedOrigin;
-
-    transformedOrigin[0] = 0;
-    transformedOrigin[1] = 0;
-    transformedOrigin[2] = 0;
-    TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), transformedOrigin);
 
     std::map<int, mitk::Point6D>::iterator iter;
     for (iter = result.begin(); iter != result.end(); ++iter)
@@ -248,17 +254,13 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
       outputNormal[0] = point[3];
       outputNormal[1] = -point[4];
       outputNormal[2] = -point[5];
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
-      TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputNormal);
-      outputNormal[0] = outputNormal[0] - transformedOrigin[0];
-      outputNormal[1] = outputNormal[1] - transformedOrigin[1];
-      outputNormal[2] = outputNormal[2] - transformedOrigin[2];
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
+      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), true, outputNormal);
       pointSet->InsertPoint((*iter).first, outputPoint);
-      surfaceNormals->InsertPoint((*iter).first, outputPoint);
+      surfaceNormals->InsertPoint((*iter).first, outputNormal);
     }
-    surfaceNormals->Modified();
+    pointSet->UpdateOutputInformation();
   }
-  pointSet->Modified();
 }
 
 

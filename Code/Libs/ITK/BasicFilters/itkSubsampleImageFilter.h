@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSubsampleImageFilter_h
-#define __itkSubsampleImageFilter_h
+#ifndef itkSubsampleImageFilter_h
+#define itkSubsampleImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkMacro.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKLOCALSIMILARITYMEASUREGRADIENTDESCENTOPTIMIZER_H_
-#define ITKLOCALSIMILARITYMEASUREGRADIENTDESCENTOPTIMIZER_H_
+#ifndef itkLocalSimilarityMeasureGradientDescentOptimizer_h
+#define itkLocalSimilarityMeasureGradientDescentOptimizer_h
 
 #include <NifTKConfigure.h>
 #include <itkSingleValuedNonLinearOptimizer.h>

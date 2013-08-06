@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkSequentialCpuQds_h
-#define mitkSequentialCpuQds_h
+#ifndef SequentialCpuQds_h
+#define SequentialCpuQds_h
 
 #include "niftkIGIExports.h"
 #include "QDSCommon.h"

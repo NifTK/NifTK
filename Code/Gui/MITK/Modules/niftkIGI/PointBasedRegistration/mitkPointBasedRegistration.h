@@ -78,16 +78,15 @@ public:
    * \brief Main method to calculate the point based registration.
    * \param[In] fixedPointSet a point set
    * \param[In] movingPointSet a point set
-   * \param[In,Out] useICPInitialisation if true, will compute closest point pairs, so the
-   * number of points in each data set can be different, but does require at least 6 points in
-   * each data set, and if false will assume that the point sets are ordered, of equal size,
-   * and with points corresponding.
-   * \param[In,Out] the transformation to transform the moving point set into the coordinate system of the fixed point set.
-   * \return Returns the Fiducial Registration Error
+   * \param[Out] outputTransform the transformation to transform the moving point set into the coordinate system of the fixed point set.
+   * \param[Out] fiducialRegistrationError the Fiducial Registration Error
+   * \return returns true if the registration was successful and false otherwise. By successful, we mean
+   * the computation was deemed valid, and we are not saying whether the Fiducial Registration Error is "acceptable" or not.
    */
-  double Update(const mitk::PointSet::Pointer fixedPointSet,
+  bool Update(const mitk::PointSet::Pointer fixedPointSet,
               const mitk::PointSet::Pointer movingPointSet,
-              vtkMatrix4x4& outputTransform) const;
+              vtkMatrix4x4& outputTransform,
+              double& fiducialRegistrationError) const;
 
 protected:
 

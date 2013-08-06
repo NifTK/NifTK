@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __ITKLOGHELPER_H
-#define __ITKLOGHELPER_H
+#ifndef itkLogHelper_h
+#define itkLogHelper_h
 
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>

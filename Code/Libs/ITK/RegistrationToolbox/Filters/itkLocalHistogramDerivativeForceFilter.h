@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkLocalHistogramDerivativeForceFilter_h
-#define __itkLocalHistogramDerivativeForceFilter_h
+#ifndef itkLocalHistogramDerivativeForceFilter_h
+#define itkLocalHistogramDerivativeForceFilter_h
 
 #include "itkRegistrationForceFilter.h"
 

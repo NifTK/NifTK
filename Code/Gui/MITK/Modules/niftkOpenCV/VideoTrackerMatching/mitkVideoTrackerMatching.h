@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkVideoTrackerMatching_h
-#define niftkVideoTrackerMatching_h
+#ifndef mitkVideoTrackerMatching_h
+#define mitkVideoTrackerMatching_h
 
 #include "niftkOpenCVExports.h"
 #include <cv.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageAndArray_h
-#define __itkImageAndArray_h
+#ifndef itkImageAndArray_h
+#define itkImageAndArray_h
 
 #include <itkImage.h>
 #include <itkArray.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASNodeAddedVisibilitySetter_h
-#define mitk_MIDASNodeAddedVisibilitySetter_h
+#ifndef mitkMIDASNodeAddedVisibilitySetter_h
+#define mitkMIDASNodeAddedVisibilitySetter_h
 
 #include "niftkMIDASExports.h"
 #include <vector>

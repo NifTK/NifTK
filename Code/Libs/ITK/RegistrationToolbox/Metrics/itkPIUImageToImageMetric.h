@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkPIUImageToImageMetric_h
-#define __itkPIUmageToImageMetric_h
+#ifndef itkPIUImageToImageMetric_h
+#define itkPIUImageToImageMetric_h
 
 #include "itkHistogramSimilarityMeasure.h"
 

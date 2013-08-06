@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSimilarityMeasure_h
-#define __itkSimilarityMeasure_h
+#ifndef itkSimilarityMeasure_h
+#define itkSimilarityMeasure_h
 
 #include <itkUCLBaseTransform.h>
 #include "itkImageToImageMetricWithConstraint.h"

@@ -37,7 +37,7 @@ target_link_libraries(niftkcommon
   ITKCommon  
   ITKIO  
   ITKBasicFilters 
-  ITKAlgorithms  
+  ITKAlgorithms
   vtkCommon
   vtkIO
   ${Boost_LIBRARIES}   

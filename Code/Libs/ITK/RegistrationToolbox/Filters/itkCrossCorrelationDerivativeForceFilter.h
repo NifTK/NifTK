@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkCrossCorrelationDerivativeForceFilter_h
-#define __itkCrossCorrelationDerivativeForceFilter_h
+#ifndef itkCrossCorrelationDerivativeForceFilter_h
+#define itkCrossCorrelationDerivativeForceFilter_h
 
 #include "itkRegistrationForceFilter.h"
 

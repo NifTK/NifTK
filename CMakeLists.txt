@@ -150,6 +150,7 @@ option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_SLS_TESTING "Build Smart Liver Surgery additional tests." OFF)
 option(BUILD_SLS_TRACKING_TESTING "Build Smart Liver Surgery tracking tests, this will turn off other tests within niftkopencv" OFF)
 option(BUILD_OPENCV "Build and use OpenCV for NifTK and MITK." ON)
+option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
@@ -163,6 +164,7 @@ option(NIFTK_VERBOSE_COMPILER_WARNINGS "Add in all the warning flags that MITK d
 option(NIFTK_USE_FFTW "Use FFTW. Warning FFTW is GPL, so for binary external releases we can't use this. This is used for Kelvin's Fluid registration implementation." OFF)
 option(NIFTK_USE_CUDA "Use CUDA. Experimental. " OFF)
 option(NIFTK_NIFTYLINK_DEV "Build NiftyLink development branch" OFF)
+option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command line apps, we compute all library dependencies and install them" ON)
 
 ######################################################################
 # Meshing module-related checks and options
@@ -200,9 +202,9 @@ set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-set(NIFTK_VERSION_DATA_GIT "25a857c064" CACHE STRING "Version of NifTKData in git" FORCE)
+set(NIFTK_VERSION_DATA_GIT "a38d2504e1" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-set(NIFTK_VERSION_DATA_TAR "25a857c064" CACHE STRING "Version of NifTKData in tarball" FORCE)
+set(NIFTK_VERSION_DATA_TAR "a38d2504e1" CACHE STRING "Version of NifTKData in tarball" FORCE)
 set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -321,6 +323,7 @@ mark_as_advanced(BUILD_SLS_TESTING)
 mark_as_advanced(BUILD_SLS_TRACKING_TESTING)
 mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
+mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 
 ######################################################################
 # Make sure Git is available.
@@ -455,6 +458,8 @@ set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
 mark_as_advanced(OPENCV_WITH_CUDA)
+set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
+mark_as_advanced(OPENCV_WITH_FFMPEG)
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -1163,6 +1168,10 @@ endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
 subdirs(Doc)
 subdirs(Code)
+
+if(BUILD_UTILITIES)
+  subdirs(Utilities)
+endif(BUILD_UTILITIES)
 
 if(BUILD_TESTING) 
   subdirs(Testing)

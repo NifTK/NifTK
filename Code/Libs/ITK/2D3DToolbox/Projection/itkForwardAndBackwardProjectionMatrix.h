@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkForwardAndBackwardProjectionMatrix_h
-#define __itkForwardAndBackwardProjectionMatrix_h
+#ifndef itkForwardAndBackwardProjectionMatrix_h
+#define itkForwardAndBackwardProjectionMatrix_h
 
 #include "itkRay.h"
 #include <itkImage.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkSmoothVectorFieldFilter_h
-#define __itkSmoothVectorFieldFilter_h
+#ifndef itkSmoothVectorFieldFilter_h
+#define itkSmoothVectorFieldFilter_h
 #include <itkImage.h>
 #include <itkVector.h>
 #include <itkInPlaceImageFilter.h>

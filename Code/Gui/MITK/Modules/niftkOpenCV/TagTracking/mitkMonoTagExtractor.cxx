@@ -18,6 +18,8 @@
 #include <mitkImageWriteAccessor.h>
 #include <cv.h>
 #include <mitkPointUtils.h>
+#include <mitkGeometry3D.h>
+#include <mitkMIDASImageUtils.h>
 
 namespace mitk {
 
@@ -57,7 +59,11 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
   cv::Mat leftGrey;
   cv::cvtColor(leftColour, leftGrey, CV_RGBA2GRAY);
 
-  std::map<int, cv::Point2f> result = mitk::DetectMarkers(leftGrey, minSize, maxSize, blockSize, offset);
+  // Check scaling, as image may have anisotropic voxels.
+  mitk::Vector3D aspect = mitk::GetXYAspectRatio(image);
+
+  // Detect markers, which only copes with isotropic voxels.
+  std::map<int, cv::Point2f> result = mitk::DetectMarkers(leftGrey, aspect[0], aspect[1], minSize, maxSize, blockSize, offset);
 
   cv::Point2f extractedPoint;
   mitk::PointSet::PointType outputPoint;
@@ -69,7 +75,7 @@ void MonoTagExtractor::ExtractPoints(const mitk::Image::Pointer image,
     outputPoint[0] = extractedPoint.x;
     outputPoint[1] = extractedPoint.y;
     outputPoint[2] = 0;
-    TransformPointsByCameraToWorld(const_cast<vtkMatrix4x4*>(cameraToWorld), outputPoint);
+    TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
     pointSet->InsertPoint((*iter).first, outputPoint);
   }
 

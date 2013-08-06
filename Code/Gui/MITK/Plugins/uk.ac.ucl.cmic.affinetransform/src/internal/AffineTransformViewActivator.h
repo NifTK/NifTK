@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef AFFINETRANSFORMVIEWACTIVATOR_H
-#define AFFINETRANSFORMVIEWACTIVATOR_H
+#ifndef AffineTransformViewActivator_h
+#define AffineTransformViewActivator_h
 
 #include <ctkPluginActivator.h>
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkBSplineOperator_h
-#define __itkBSplineOperator_h
+#ifndef itkBSplineOperator_h
+#define itkBSplineOperator_h
 
 #include <itkNeighborhoodOperator.h>
 #include <math.h>

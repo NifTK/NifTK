@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASVIEWKEYPRESSRESPONDER
-#define MIDASVIEWKEYPRESSRESPONDER
+#ifndef mitkMIDASViewKeyPressResponder_h
+#define mitkMIDASViewKeyPressResponder_h
 
 #include "niftkMIDASExports.h"
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASImageUtils_h
-#define mitk_MIDASImageUtils_h
+#ifndef mitkMIDASImageUtils_h
+#define mitkMIDASImageUtils_h
 
 #include "niftkCoreExports.h"
 #include <itkConversionUtils.h>
@@ -218,6 +218,19 @@ namespace mitk
    * \brief Writes the image to file.
    */
   NIFTKCORE_EXPORT void DumpImage(const mitk::Image *input, const std::string& fileName);
+
+  /**
+   * \brief Utility method to calculate the aspect ratio.
+   *
+   * Retrieves the image scaling, and if X dimension has largest voxels e.g. 2.1mm compared with Y having 1.1mm,
+   * will calculate the aspect ratio for X, so that you can rescale the number of pixels in the
+   * X direction and leave Y un-altered. And vice-versa for Y.
+   *
+   * eg. given X = 2.2mm, Y = 1.1mm, will return mitk::Vector3D with vector[0]=2 and vector[1] = 1;
+   *
+   * i.e. the x axis is twice as big as the y axis.
+   */
+  NIFTKCORE_EXPORT mitk::Vector3D GetXYAspectRatio(const mitk::Image::Pointer image);
 
 }
 

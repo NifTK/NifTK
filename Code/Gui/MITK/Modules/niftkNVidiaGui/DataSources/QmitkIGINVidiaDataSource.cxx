@@ -470,7 +470,7 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     SYSTEMTIME  now;
     GetSystemTime(&now);
 
-    std::string directoryPath = this->m_SavePrefix + '/' + "QmitkIGINVidiaDataSource";
+    std::string directoryPath = this->GetSaveDirectoryName();
     QDir directory(QString::fromStdString(directoryPath));
     if (directory.mkpath(QString::fromStdString(directoryPath)))
     {

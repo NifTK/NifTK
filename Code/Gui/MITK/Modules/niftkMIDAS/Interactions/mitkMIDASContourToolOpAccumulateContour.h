@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASContourToolOpAccumulateContour_h
-#define mitk_MIDASContourToolOpAccumulateContour_h
+#ifndef mitkMIDASContourToolOpAccumulateContour_h
+#define mitkMIDASContourToolOpAccumulateContour_h
 
 #include "niftkMIDASExports.h"
 #include <mitkOperation.h>

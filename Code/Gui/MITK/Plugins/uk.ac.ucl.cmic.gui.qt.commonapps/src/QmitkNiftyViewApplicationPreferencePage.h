@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
-#define QMITKNIFTYVIEWAPPLICATIONPREFERENCEPAGE_H_
+#ifndef QmitkNiftyViewApplicationPreferencePage_h
+#define QmitkNiftyViewApplicationPreferencePage_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <berryIQtPreferencePage.h>

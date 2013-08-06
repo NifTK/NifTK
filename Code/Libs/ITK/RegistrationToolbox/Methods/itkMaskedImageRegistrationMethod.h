@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMaskedImageRegistrationMethod_h
-#define __itkMaskedImageRegistrationMethod_h
+#ifndef itkMaskedImageRegistrationMethod_h
+#define itkMaskedImageRegistrationMethod_h
 
 
 #include "itkSingleResolutionImageRegistrationMethod.h"

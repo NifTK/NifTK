@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASRETAINMARKSNOTHRESHOLDINGPROCESSOR_H
-#define ITKMIDASRETAINMARKSNOTHRESHOLDINGPROCESSOR_H
+#ifndef itkMIDASRetainMarksNoThresholdingProcessor_h
+#define itkMIDASRetainMarksNoThresholdingProcessor_h
 
 #include <itkObject.h>
 #include "itkMIDASImageUpdateCopyRegionProcessor.h"

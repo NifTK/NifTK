@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_PointUtils_h
-#define mitk_PointUtils_h
+#ifndef mitkPointUtils_h
+#define mitkPointUtils_h
 
 #include "niftkCoreExports.h"
 #include <mitkVector.h>
@@ -90,12 +90,14 @@ NIFTKCORE_EXPORT int FilterMatchingPoints(
     );
 
 /**
- * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if it is not NULL,
- * otherwise if matrix is NULL, will simply leave the point un-altered.
+ * \brief Simple method to multiply a mitk::Point3D by a vtkMatrix, if the matrix is not NULL,
+ * and otherwise if matrix is NULL, will simply leave the point un-altered.
+ * \param isNormal if true, will transform the mitk::Point3D as if it was a surface normal.
  */
-NIFTKCORE_EXPORT void TransformPointsByCameraToWorld(
-    vtkMatrix4x4* cameraToWorld,
-    mitk::Point3D& point
+NIFTKCORE_EXPORT void TransformPointByVtkMatrix(
+    vtkMatrix4x4* matrix,
+    const bool& isNormal,
+    mitk::Point3D& pointOrNormal
     );
 
 } // end namespace mitk
