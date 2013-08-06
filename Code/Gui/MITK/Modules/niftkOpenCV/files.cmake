@@ -30,10 +30,6 @@ set(CPP_FILES
   CameraCalibration/mitkHandeyeCalibrate.cxx
   CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
   CameraCalibration/Undistortion.cxx
-  Registration/mitkRegistrationHelper.cxx
-  Registration/mitkStereoImageToModelMetric.cxx
-  Registration/mitkStereoImageToModelSSD.cxx
-  Registration/mitkRegisterProbeModelToStereoPair.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
