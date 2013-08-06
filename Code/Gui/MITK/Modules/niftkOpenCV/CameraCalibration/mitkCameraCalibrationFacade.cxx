@@ -1958,7 +1958,7 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
     }
     returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
   }
-  
+  returnMat.at<double>(3,3)  = 1.0;
   return returnMat;
     
 } 
