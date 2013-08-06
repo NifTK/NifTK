@@ -13,9 +13,10 @@
 =============================================================================*/
 
 #ifndef mitkHandeyeCalibrateFromDirectory_h
-#define mitkHandeyeCalibrate_h
+#define mitkHandeyeCalibrateFromDirectory_h
 
 #include "niftkOpenCVExports.h"
+#include "mitkHandeyeCalibrate.h"
 #include <string>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
@@ -32,7 +33,7 @@ namespace mitk {
  * data, using TSAI's least squares method. The class searches the directory for 
  * a suitable video file, frame map and tracking data. 
  */
-class NIFTKOPENCV_EXPORT HandeyeCalibrateFromDirectory : public itk::Object
+class NIFTKOPENCV_EXPORT HandeyeCalibrateFromDirectory : public mitk::HandeyeCalibrate
 {
 
 public:
@@ -40,21 +41,8 @@ public:
   mitkClassMacro(HandeyeCalibrateFromDirectory, itk::Object);
   itkNewMacro(HandeyeCalibrateFromDirectory);
   
-  /**
-   * \brief Calibration function that returns the residual errors, rotation and 
-   * translational. If a ground truth solution is passed it returns a vector of 
-   * differences for testing.
-   */
-  std::vector<double> Calibrate (const std::string& TrackingFileDirectory,
-      const std::string& ExtrinsicFileDirectoryOrFile,
-      const std::string GroundTruthSolution = "");
-
   void InitialiseVideo ();
      
-  itkSetMacro(FlipTracking, bool);
-  itkSetMacro(FlipExtrinsic, bool);
-  itkSetMacro(SortByDistance, bool);
-  itkSetMacro(SortByAngle, bool);
   itkSetMacro(FramesToUse, unsigned int);
   itkSetMacro(Directory, std::string);
   itkSetMacro(TrackerIndex,int);
@@ -77,10 +65,6 @@ protected:
   HandeyeCalibrateFromDirectory& operator=(const HandeyeCalibrateFromDirectory&); // Purposefully not implemented.
 
 private:
-  bool                                m_FlipTracking;
-  bool                                m_FlipExtrinsic;
-  bool                                m_SortByDistance;
-  bool                                m_SortByAngle;
   unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
   float                               m_BadFrameFactor; //how many extra frames to stick in buffer
   bool                                m_SaveProcessedVideoData;

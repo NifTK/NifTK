@@ -26,6 +26,10 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrate::HandeyeCalibrate()
+: m_FlipTracking(true)
+, m_FlipExtrinsic(false)
+, m_SortByDistance(false)
+, m_SortByAngle(false)
 {
 
 }
@@ -41,10 +45,6 @@ HandeyeCalibrate::~HandeyeCalibrate()
 //-----------------------------------------------------------------------------
 std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileDirectory,
   const std::string& ExtrinsicFileDirectoryOrFile,
-  bool FlipTracking,
-  bool FlipExtrinsic,
-  bool SortByDistance,
-  bool SortByAngle,
   const std::string GroundTruthSolution)
 {
 
@@ -73,25 +73,25 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   int NumberOfViews = MarkerToWorld.size();
  
 
-  if ( FlipTracking )
+  if ( m_FlipTracking )
   {
     MarkerToWorld = mitk::FlipMatrices(MarkerToWorld);
   }
-  if ( FlipExtrinsic )
+  if ( m_FlipExtrinsic )
   {
     GridToCamera = mitk::FlipMatrices(GridToCamera);
   }
 
   std::vector<int> indexes;
   //if SortByDistance and SortByAngle are both true, we'll sort by distance only
-  if ( SortByDistance )
+  if ( m_SortByDistance )
   {
     indexes = mitk::SortMatricesByDistance(MarkerToWorld);
     std::cout << "Sorted by distances " << std::endl;
   }
   else
   {
-    if ( SortByAngle )
+    if ( m_SortByAngle )
     {
       indexes = mitk::SortMatricesByAngle(MarkerToWorld);
       std::cout << "Sorted by angles " << std::endl;
