@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calibrate US Probe</title>
+  <description><![CDATA[Calibrates a US probe using a single Pin method.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>pointDirectory</name>
+      <longflag>pointDirectory</longflag>
+      <description>Directory containing point locations in plain text files.</description>
+      <label>Points Directory</label>
+    </directory>
+    <file fileExtensions="*.txt">
+      <name>outputMatrix</name>
+      <longflag>outputMatrix</longflag>
+      <description>Output matrix filename.</description>
+      <label>Output Matrix</label>
+      <default>calib.4x4</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    <integer>
+      <name>xorigin</name>
+      <longflag>xorigin</longflag>
+      <description>X pixel index of origin.</description>
+      <label>X origin</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+    <integer>
+      <name>yorigin</name>
+      <longflag>yorigin</longflag>
+      <description>Y pixel index of origin.</description>
+      <label>Y origin</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+  </parameters>
+
+</executable>

@@ -29,8 +29,9 @@ UltrasoundPinCalibration::~UltrasoundPinCalibration()
 
 
 //-----------------------------------------------------------------------------
-double UltrasoundPinCalibration::Calibrate(const std::string& leftDirectoryName,
-    const std::string& rightDirectoryName
+double UltrasoundPinCalibration::Calibrate(const std::string& matrixDirectory,
+    const std::string& pointDirectory,
+    const std::string& outputFileName
     )
 {
   double residualError = 0;

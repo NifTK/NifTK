@@ -38,8 +38,9 @@ public:
   /**
    * \brief Calibration function that returns the residual (basically the spread of the reconstructed points).
    */
-  double Calibrate(const std::string& leftDirectoryName,
-      const std::string& rightDirectoryName
+  double Calibrate(const std::string& matrixDirectory,
+      const std::string& pointDirectory,
+      const std::string& outputFileName
       );
 
 protected:
