@@ -89,11 +89,6 @@ private slots:
    */
   void OnRegistrationEnabledChecked(bool isChecked);
 
-  /**
-   * \brief Used to copy the current tracking transformation to the reference.
-   */
-  void OnGrabReferencePressed();
-
 private:
 
   /**

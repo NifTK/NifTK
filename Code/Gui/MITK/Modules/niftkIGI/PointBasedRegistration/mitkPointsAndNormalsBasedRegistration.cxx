@@ -87,7 +87,7 @@ bool PointsAndNormalsBasedRegistration::Update(
     }
     else
     {
-      MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
+      MITK_DEBUG << "mitk::PointsAndNormalsBasedRegistration: filteredFixedPoints size=" << filteredFixedPoints->GetSize() << ", filteredMovingPoints size=" << filteredMovingPoints->GetSize() << ", abandoning use of filtered data sets.";
       return isSuccessful;
     }
 
@@ -98,20 +98,20 @@ bool PointsAndNormalsBasedRegistration::Update(
     }
     else
     {
-      MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: filteredFixedNormals size=" << filteredFixedNormals->GetSize() << ", filteredMovingNormals size=" << filteredMovingNormals->GetSize() << ", abandoning use of filtered data sets.";
+      MITK_DEBUG << "mitk::PointsAndNormalsBasedRegistration: filteredFixedNormals size=" << filteredFixedNormals->GetSize() << ", filteredMovingNormals size=" << filteredMovingNormals->GetSize() << ", abandoning use of filtered data sets.";
       return isSuccessful;
     }
 
     if (numberOfFilteredPoints != numberOfFilteredNormals)
     {
-      MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: numberOfFilteredPoints=" << numberOfFilteredPoints << ", numberOfFilteredNormals=" << numberOfFilteredNormals << ", abandoning use of filtered data sets.";
+      MITK_DEBUG << "mitk::PointsAndNormalsBasedRegistration: numberOfFilteredPoints=" << numberOfFilteredPoints << ", numberOfFilteredNormals=" << numberOfFilteredNormals << ", abandoning use of filtered data sets.";
       return isSuccessful;
     }
   }
 
   if (fixedPoints->GetSize() < 2 || movingPoints->GetSize() < 2)
   {
-    MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
+    MITK_DEBUG << "mitk::PointsAndNormalsBasedRegistration:: fixedPoints size=" << fixedPoints->GetSize() << ", movingPoints size=" << movingPoints->GetSize() << ", abandoning point based registration";
     return isSuccessful;
   }
 
