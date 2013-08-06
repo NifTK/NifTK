@@ -38,20 +38,19 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   std::vector<double> Residuals;
   if ( sort == "Distances" )
   {
-    Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
-        true, false, true, false,result);
+    Calibrator->SetSortByDistance(true);
+    Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,result);
   }
   else 
   {
     if ( sort == "Angles" ) 
     {
-      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
-        true, false, false, true,result);
+      Calibrator->SetSortByAngle(true);
+      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,result);
     }
     else 
     {
-      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,
-        true, false, false, false,result);
+      Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,result);
     }
   }
 

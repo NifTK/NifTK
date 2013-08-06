@@ -62,7 +62,19 @@ public:
   /**
    * \brief returns state of m_Ready
    */
-  bool IsReady () { return m_Ready; } 
+  bool IsReady () 
+  { 
+    return m_Ready;
+  } 
+
+  /**
+   * \get the frame count
+   */
+  int GetNumberOfFrames () 
+  {
+    return m_FrameNumbers.size();
+  }
+
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();
@@ -81,6 +93,7 @@ private:
   std::vector<std::string> FindFrameMaps();
   void                     FindTrackingMatrixDirectories();
   TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
+  bool                     CheckIfDirectoryContainsTrackingMatrices(std::string directory);
   void                     ProcessFrameMapFile(std::string filename);
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
