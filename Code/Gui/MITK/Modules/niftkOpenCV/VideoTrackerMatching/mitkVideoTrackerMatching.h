@@ -66,6 +66,7 @@ public:
   { 
     return m_Ready;
   } 
+  itkSetMacro (FlipMatrices, bool);
 
   /**
    * \get the frame count
@@ -89,6 +90,7 @@ private:
   std::vector<std::string>              m_TrackingMatrixDirectories;
   std::string                           m_Directory;
   bool                                  m_Ready;
+  bool                                  m_FlipMatrices;
 
   std::vector<std::string> FindFrameMaps();
   void                     FindTrackingMatrixDirectories();

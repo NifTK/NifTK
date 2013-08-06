@@ -435,6 +435,20 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
     std::vector<cv::Point2f>& outputIdealPoints
     );
 
+/**
+ * \brief Takes an image point, and undistorts it to ideal locations, which is a C++ wrapper for the above method.
+ * \param inputObservedPoints vector of (x,y) points, as observed in a distorted image
+ * \param cameraIntrinsics3x3 [3x3] matrix of camera intrisic parameters.
+ * \param cameraDistortionParams5x1 [5x1] camera distortion params.
+ * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
+ */
+void UndistortPoint(const cv::Point2f& inputObservedPoint,
+    const cv::Mat& cameraIntrinsics3x3,
+    const cv::Mat& cameraDistortionParams5x1,
+    cv::Point2f& outputIdealPoint
+    );
+
+
 
 /**
  * \brief Triangulates a vector of un-distorted (i.e. already correction for distortion) 2D point pairs back into 3D.
@@ -449,6 +463,22 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
     const cv::Mat& rightToLeftRotationVector,
+    const cv::Mat& rightToLeftTranslationVector
+    );
+
+/**
+ * \brief Triangulates an undistorted (i.e. already correction for distortion) 2D point pair back into 3D.
+ *
+ * Taken from: http://geomalgorithms.com/a07-_distance.html
+ *
+ * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
+ * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ */
+cv::Point3f TriangulatePointPair(
+    const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
+    const cv::Mat& leftCameraIntrinsicParams,
+    const cv::Mat& rightCameraIntrinsicParams,
+    const cv::Mat& rightToLeftRotationMatrix,
     const cv::Mat& rightToLeftTranslationVector
     );
 
@@ -587,7 +617,37 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   */
 std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
 
- /**
+/**
+  * \brief Load stereo camera parameters from a directory
+  */
+void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+    cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion, 
+    cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion, 
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+    cv::Mat* leftCameraToTracker);
+
+/**
+ * \brief Load camera intrinsics from a plain text file and return results as
+ * cv::Mat
+ */
+void LoadCameraIntrinsicsFromPlainText ( const std::string& filename, 
+    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion); 
+
+/**
+ * \brief Load stereo camera parameters from a plain text file
+ * cv::Mat
+ */
+void LoadStereoTransformsFromPlainText ( const std::string& filename, 
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
+
+/**
+ * \brief Load the handeye matrix from a plain text file
+ * cv::Mat
+ */
+void LoadHandeyeFromPlainText ( const std::string& filename, 
+    cv::Mat* leftCameraToTracker);
+
+/**
  * \brief Flips the matrices in the vector from left handed coordinate 
  * system to right handed and vice versa
  */
@@ -613,6 +673,21 @@ std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
   */
 void LoadResult(const std::string& Filename, cv::Mat& Result,
       std::vector<double>& residuals);
+
+ /** 
+  * \brief Transforms a point relative to the left camera lens to 
+  * world coordinates using the handeye and tracking matrices
+  */
+cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
+      cv::Mat& Handeye, cv::Mat& Tracker );
+ 
+/** 
+  * \brief Transforms a point in world coordinates to a point 
+  * relative to the left lens using
+  * world coordinates using the handeye and tracking matrices
+  */
+cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
+      cv::Mat& Handeye, cv::Mat& Tracker );
 
 } // end namespace
 

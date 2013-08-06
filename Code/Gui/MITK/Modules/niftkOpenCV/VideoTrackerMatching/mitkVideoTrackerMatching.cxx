@@ -12,6 +12,7 @@
 
 =============================================================================*/
 #include "mitkVideoTrackerMatching.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -25,6 +26,7 @@ namespace mitk
 //---------------------------------------------------------------------------
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
+, m_FlipMatrices(false)
 {}
 
 //---------------------------------------------------------------------------
@@ -260,7 +262,7 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
 {
-  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
+  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_32FC1);
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
@@ -271,7 +273,7 @@ cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
   {
     for ( int col = 0 ; col < 4 ; col ++ ) 
     {
-      fin >> TrackerMatrix.at<double>(row,col);
+      fin >> TrackerMatrix.at<float>(row,col);
     }
   }
   return TrackerMatrix;
@@ -335,7 +337,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
-  cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  cv::Mat returnMat = cv::Mat(4,4,CV_32FC1);
   
   if ( !m_Ready ) 
   {
@@ -360,8 +362,19 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   {
     *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
   }
-
-  return returnMat;
+  
+  if ( m_FlipMatrices )
+  {
+    //flip the matrix between left and right handed coordinate systems
+    std::vector<cv::Mat> theseMats;
+    theseMats.push_back(returnMat);
+    std::vector<cv::Mat> flippedMats = mitk::FlipMatrices(theseMats);
+    return flippedMats[0];
+  }
+  else
+  {
+    return returnMat;
+  }
 }
 
 } // namespace

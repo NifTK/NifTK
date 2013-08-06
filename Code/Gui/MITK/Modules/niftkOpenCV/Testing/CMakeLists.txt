@@ -14,6 +14,14 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
+if (BUILD_SLS_TRACKING_TESTING)
+
+  mitkAddCustomModuleTest(Handeye-Sensitivity mitkHandeyeSensitivityTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices Distances ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_Distances_Result.txt )
+
+  mitkAddCustomModuleTest(Tracking-Test mitkTrackingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy -CameraParameters ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/CameraParameters -PointsInFirstFrame 46 243 206 328 221)
+
+endif(BUILD_SLS_TRACKING_TESTING)
+
 if(BUILD_SLS_TESTING)
 
   # Trac: 2207
