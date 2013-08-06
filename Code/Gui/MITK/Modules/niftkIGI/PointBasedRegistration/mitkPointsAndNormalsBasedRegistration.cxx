@@ -137,7 +137,9 @@ bool PointsAndNormalsBasedRegistration::Update(
   mitk::PointSet::DataType* itkPointSet = NULL;
   mitk::PointSet::PointsContainer* points = NULL;
   mitk::PointSet::PointsIterator pIt;
+  mitk::PointSet::PointsIterator pIt2;
   mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointIdentifier pointID2;
   mitk::PointSet::PointType fixedPoint, fixedNormal, movingPoint, movingNormal, additionalFixedPoint, additionalMovingPoint;
 
   if (m_UseTwoPhase)
@@ -217,10 +219,66 @@ bool PointsAndNormalsBasedRegistration::Update(
 
   MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: Liu, Fitzpatrick method, FRE=" << liuFudicialRegistrationError << std::endl;
 
-  // Additional exhaustive search for best of 3 points.
+  // Additional exhaustive search for best of 2 points.
   if (m_UseExhaustiveSearch)
   {
+    double bestSoFarRegistrationError = std::numeric_limits<double>::max();
+    vtkSmartPointer<vtkMatrix4x4> bestSoFarRegistrationMatrix = vtkMatrix4x4::New();
+    bestSoFarRegistrationMatrix->Identity();
 
+    mitk::PointSet::PointIdentifier bestSoFarPointID1;
+    mitk::PointSet::PointIdentifier bestSoFarPointID2;
+
+    itkPointSet = fixedPoints->GetPointSet(0);
+    points = itkPointSet->GetPoints();
+
+    for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+    {
+      for (pIt2 = pIt, pIt2++; pIt2 != points->End(); ++pIt2)
+      {
+        pointID = pIt->Index();
+        pointID2 = pIt2->Index();
+
+        bool tmpIsSuccessful = false;
+        double tmpRegistrationError = std::numeric_limits<double>::max();
+        vtkSmartPointer<vtkMatrix4x4> tmpRegistrationMatrix = vtkMatrix4x4::New();
+        tmpRegistrationMatrix->Identity();
+
+        mitk::PointSet::Pointer tmpFixedPoints = mitk::PointSet::New();
+        mitk::PointSet::Pointer tmpFixedNormals = mitk::PointSet::New();
+
+        mitk::PointSet::Pointer tmpMovingPoints = mitk::PointSet::New();
+        mitk::PointSet::Pointer tmpMovingNormals = mitk::PointSet::New();
+
+        tmpFixedPoints->InsertPoint(pointID, fixedPoints->GetPoint(pointID));
+        tmpFixedNormals->InsertPoint(pointID, fixedNorms->GetPoint(pointID));
+        tmpMovingPoints->InsertPoint(pointID, transformedMovingPoints->GetPoint(pointID));
+        tmpMovingNormals->InsertPoint(pointID, transformedMovingNormals->GetPoint(pointID));
+
+        tmpFixedPoints->InsertPoint(pointID2, fixedPoints->GetPoint(pointID2));
+        tmpFixedNormals->InsertPoint(pointID2, fixedNorms->GetPoint(pointID2));
+        tmpMovingPoints->InsertPoint(pointID2, transformedMovingPoints->GetPoint(pointID2));
+        tmpMovingNormals->InsertPoint(pointID2, transformedMovingNormals->GetPoint(pointID2));
+
+        mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer liuRegistration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
+        tmpIsSuccessful = liuRegistration->Update(tmpFixedPoints, tmpFixedNormals, tmpMovingPoints, tmpMovingNormals, *tmpRegistrationMatrix, tmpRegistrationError);
+
+        if (tmpIsSuccessful && tmpRegistrationError < bestSoFarRegistrationError)
+        {
+          bestSoFarPointID1 = pointID;
+          bestSoFarPointID2 = pointID2;
+          bestSoFarRegistrationError = tmpRegistrationError;
+          bestSoFarRegistrationMatrix->DeepCopy(tmpRegistrationMatrix);
+        }
+      }
+    }
+
+    if (bestSoFarRegistrationError < liuFudicialRegistrationError)
+    {
+      MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: Exhaustive search, FRE=" << bestSoFarRegistrationError << std::endl;
+      liuFudicialRegistrationError = bestSoFarRegistrationError;
+      liuMatrix->DeepCopy(bestSoFarRegistrationMatrix);
+    }
   }
 
   if (m_UseTwoPhase && liuFudicialRegistrationError > arunFudicialRegistrationError)
