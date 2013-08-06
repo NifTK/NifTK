@@ -32,6 +32,23 @@ int mitkHandeyeFromDirectoryTest ( int argc, char * argv[] )
   bool ok = false;
   mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();
   Calibrator->SetDirectory(argv[1]);
+  argv++;
+  argc--;
+  while ( argc > 1 )
+  {
+    bool argok = false;
+    if (( argok == false ) && strcmp ( argv[1], "-NoVideoSupport" ) == 0 ) 
+    {
+      MITK_WARN << "Test with No video support not implemented.";
+      exit(0);
+    }
+    if ( argok == false )
+    {
+      MITK_WARN << "Bad parameters.";
+      exit (1) ;
+    }
+  }
+                          
   Calibrator->SetTrackerIndex(2);
   Calibrator->SetAbsTrackerTimingError(40e6);
   Calibrator->SetFramesToUse(30);
