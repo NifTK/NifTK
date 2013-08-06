@@ -169,38 +169,6 @@ bool TagTrackingRegistrationManager::Update(
           coordinateAxes->SetVtkMatrix(registrationMatrix);
           coordinateAxesNode->Modified();
         }
-
-        // Output the matrix parameters, useful for measuring stuff.
-/*
-        #include <itkEulerAffineTransform.h>  (move this).
-
-        typedef itk::EulerAffineTransform<double, 3, 3> EulerTransform ;
-        EulerTransform::Pointer euler = EulerTransform::New();
-        EulerTransform::FullAffineTransformType::Pointer affine = EulerTransform::FullAffineTransformType::New();
-        EulerTransform::FullAffineTransformType::ParametersType params;
-        params.SetSize(affine->GetParameters().GetSize());
-
-        vtkSmartPointer<vtkMatrix4x4> inverseOfReference = vtkMatrix4x4::New();
-        vtkMatrix4x4::Invert(m_ReferenceMatrix, inverseOfReference);
-
-        vtkSmartPointer<vtkMatrix4x4> offset = vtkMatrix4x4::New();
-        vtkMatrix4x4::Multiply4x4(&registrationMatrix, inverseOfReference, offset);
-
-        for (int i = 0; i < 3; i++)
-        {
-          for (int j = 0; j < 3; j++)
-          {
-            params[i*3+j] = offset->GetElement(i, j);
-          }
-          params[9+i] = offset->GetElement(i,3);
-        }
-        affine->SetIdentity();
-        affine->SetParameters(params);
-        euler->SetParametersFromTransform(affine);
-
-        //std::cerr << "Matt, Transformation parameters are:" << euler->GetParameters() << std::endl;
-*/
-
       }
     } // end if we have model
   } // end if we have node

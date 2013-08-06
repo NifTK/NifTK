@@ -21,6 +21,8 @@
 #include <vtkMatrix4x4.h>
 
 const bool mitk::PointsAndNormalsBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(true);
+const bool mitk::PointsAndNormalsBasedRegistration::DEFAULT_USE_TWO_PHASE(true);
+const bool mitk::PointsAndNormalsBasedRegistration::DEFAULT_USE_EXHAUSTIVE_SEARCH(true);
 
 namespace mitk
 {
@@ -28,6 +30,8 @@ namespace mitk
 //-----------------------------------------------------------------------------
 PointsAndNormalsBasedRegistration::PointsAndNormalsBasedRegistration()
 : m_UsePointIDToMatchPoints(DEFAULT_USE_POINT_ID_TO_MATCH)
+, m_UseTwoPhase(DEFAULT_USE_TWO_PHASE)
+, m_UseExhaustiveSearch(DEFAULT_USE_EXHAUSTIVE_SEARCH)
 {
 }
 
@@ -115,58 +119,76 @@ bool PointsAndNormalsBasedRegistration::Update(
     return isSuccessful;
   }
 
-  // Two pass registration.
-
-  // First create augmented data set.
+  // Working data.
   mitk::PointSet::Pointer augmentedFixedPoints = mitk::PointSet::New();
   mitk::PointSet::Pointer augmentedMovingPoints = mitk::PointSet::New();
 
-  mitk::PointSet::DataType* itkPointSet = fixedPoints->GetPointSet(0);
-  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+  mitk::PointSet::Pointer transformedMovingPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer transformedMovingNormals = mitk::PointSet::New();
+
+  double arunFudicialRegistrationError = std::numeric_limits<double>::max();
+  vtkSmartPointer<vtkMatrix4x4> arunMatrix = vtkMatrix4x4::New();
+  arunMatrix->Identity();
+
+  double liuFudicialRegistrationError = std::numeric_limits<double>::max();
+  vtkSmartPointer<vtkMatrix4x4> liuMatrix = vtkMatrix4x4::New();
+  liuMatrix->Identity();
+
+  mitk::PointSet::DataType* itkPointSet = NULL;
+  mitk::PointSet::PointsContainer* points = NULL;
   mitk::PointSet::PointsIterator pIt;
   mitk::PointSet::PointIdentifier pointID;
   mitk::PointSet::PointType fixedPoint, fixedNormal, movingPoint, movingNormal, additionalFixedPoint, additionalMovingPoint;
 
-  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+  if (m_UseTwoPhase)
   {
-    pointID = pIt->Index();
+    // We 'augment' the point sets, by creating fake points based on surface normals.
+    // We then treat these fake points as if they were real points, and do a
+    // standard SVD based point registration.
+    itkPointSet = fixedPoints->GetPointSet(0);
+    points = itkPointSet->GetPoints();
 
-    fixedPoint = fixedPoints->GetPoint(pointID);
-    fixedNormal = fixedNorms->GetPoint(pointID);
-    movingPoint = movingPoints->GetPoint(pointID);
-    movingNormal = movingNorms->GetPoint(pointID);
-
-    augmentedFixedPoints->InsertPoint(pointID, fixedPoint);
-    augmentedMovingPoints->InsertPoint(pointID, movingPoint);
-
-    double scaleFactor = 10;
-    int pointIDOffset = 1024;
-    for (int i = 0; i < 3; i++)
+    for (pIt = points->Begin(); pIt != points->End(); ++pIt)
     {
-      additionalFixedPoint[i] = fixedPoint[i] + scaleFactor*fixedNormal[i];
-      additionalMovingPoint[i] = movingPoint[i] + scaleFactor*movingNormal[i];
-    }
-    augmentedFixedPoints->InsertPoint(pointID+pointIDOffset, additionalFixedPoint);
-    augmentedMovingPoints->InsertPoint(pointID+pointIDOffset, additionalMovingPoint);
-  }
+      pointID = pIt->Index();
 
-  // Then do 'normal', SVD, point based registration.
-  vtkSmartPointer<vtkMatrix4x4> arunMatrix = vtkMatrix4x4::New();
-  arunMatrix->Identity();
-  double arunFudicialRegistrationError = std::numeric_limits<double>::max();
-  mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer arunRegistration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
-  isSuccessful = arunRegistration->Update(augmentedFixedPoints, augmentedMovingPoints, *arunMatrix, arunFudicialRegistrationError);
-  if (!isSuccessful)
-  {
-    MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: First point based SVD failed" << std::endl;
-    return isSuccessful;
+      fixedPoint = fixedPoints->GetPoint(pointID);
+      fixedNormal = fixedNorms->GetPoint(pointID);
+      movingPoint = movingPoints->GetPoint(pointID);
+      movingNormal = movingNorms->GetPoint(pointID);
+
+      augmentedFixedPoints->InsertPoint(pointID, fixedPoint);
+      augmentedMovingPoints->InsertPoint(pointID, movingPoint);
+
+      double scaleFactor = 10;
+      int pointIDOffset = 1024;
+      for (int i = 0; i < 3; i++)
+      {
+        additionalFixedPoint[i] = fixedPoint[i] + scaleFactor*fixedNormal[i];
+        additionalMovingPoint[i] = movingPoint[i] + scaleFactor*movingNormal[i];
+      }
+      augmentedFixedPoints->InsertPoint(pointID+pointIDOffset, additionalFixedPoint);
+      augmentedMovingPoints->InsertPoint(pointID+pointIDOffset, additionalMovingPoint);
+    }
+
+    // Then do 'normal', SVD, point based registration.
+    mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer arunRegistration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
+    isSuccessful = arunRegistration->Update(augmentedFixedPoints, augmentedMovingPoints, *arunMatrix, arunFudicialRegistrationError);
+    if (!isSuccessful)
+    {
+      MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: Arun's' point based SVD failed" << std::endl;
+      return isSuccessful;
+    }
+
+    MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: Arun's method, FRE=" << arunFudicialRegistrationError << std::endl;
   }
 
   // Transform moving points and normals according to arunMatrix.
-  mitk::PointSet::Pointer transformedMovingPoints = mitk::PointSet::New();
-  mitk::PointSet::Pointer transformedMovingNormals = mitk::PointSet::New();
+  // Therefore if m_UseTwoPhase is false, arunMatrix will be Identity.
+
   itkPointSet = movingPoints->GetPointSet(0);
   points = itkPointSet->GetPoints();
+
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     pointID = pIt->Index();
@@ -182,33 +204,37 @@ bool PointsAndNormalsBasedRegistration::Update(
     transformedMovingNormals->InsertPoint(pointID, movingNormal);
   }
 
-  // Now do SVD, point based registration, encorporating surface normals.
-  vtkSmartPointer<vtkMatrix4x4> liuMatrix = vtkMatrix4x4::New();
-  liuMatrix->Identity();
-  double liuFudicialRegistrationError = std::numeric_limits<double>::max();
+  // Now do SVD, point based registration, encorporating surface normals, a la Liu and Fitzpatrick paper.
+
   mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer liuRegistration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
   isSuccessful = liuRegistration->Update(fixedPoints, fixedNorms, transformedMovingPoints, transformedMovingNormals, *liuMatrix, liuFudicialRegistrationError);
 
   if (!isSuccessful)
   {
-    MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: Second point based SVD failed" << std::endl;
+    MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: Liu's' point based SVD failed" << std::endl;
     return isSuccessful;
   }
 
-  MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: FRE=" << arunFudicialRegistrationError << ", then " << liuFudicialRegistrationError << std::endl;
+  MITK_INFO << "mitk::PointsAndNormalsBasedRegistration: Liu, Fitzpatrick method, FRE=" << liuFudicialRegistrationError << std::endl;
 
-  // Combine the two transformations, and report the final error.
-  if (liuFudicialRegistrationError < arunFudicialRegistrationError)
+  // Additional exhaustive search for best of 3 points.
+  if (m_UseExhaustiveSearch)
   {
-    vtkMatrix4x4::Multiply4x4(liuMatrix, arunMatrix, &outputTransform);
-    fiducialRegistrationError = liuFudicialRegistrationError;
+
   }
-  else
+
+  if (m_UseTwoPhase && liuFudicialRegistrationError > arunFudicialRegistrationError)
   {
     // Fallback to just Arun method, using Normals as fake points.
     outputTransform.DeepCopy(arunMatrix);
     fiducialRegistrationError = arunFudicialRegistrationError;
-    MITK_WARN << "mitk::PointsAndNormalsBasedRegistration: Falling back to just Arun's method" << std::endl;
+    MITK_WARN << "mitk::PointsAndNormalsBasedRegistration: Liu's method was used, but falling back to just Arun's method" << std::endl;
+  }
+  else
+  {
+    // Combine the two transformations, and report the final error.
+    vtkMatrix4x4::Multiply4x4(liuMatrix, arunMatrix, &outputTransform);
+    fiducialRegistrationError = liuFudicialRegistrationError;
   }
 
   return isSuccessful;
