@@ -31,6 +31,8 @@ namespace mitk
 /**
  * \brief Detect the AR-Tag style markers in distortion-corrected colour RGB images.
  * \param inImage colour RGB image.
+ * \param scaleFactorX used to rescale the image, see cv::rescale
+ * \param scaleFactorY used to rescale the image, see cv::rescale
  * \param minSize set the minimum size of the marker, as a fraction of the maximum(number rows, number columns).
  * \param maxSize set the maximum size of the marker, as a fraction of the maximum(number rows, number columns).
  * \param blockSize block size for adaptive thresholding
@@ -41,10 +43,12 @@ namespace mitk
  */
 std::map<int, cv::Point2f> DetectMarkers(
     cv::Mat& inImage,
-    const float& minSize = 0.01,
-    const float& maxSize = 0.125,
-    const double& blockSize = 7,
-    const double& offset = 7,
+    const float& scaleFactorX,
+    const float& scaleFactorY,
+    const float& minSize,
+    const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines = false,
     const bool& drawCentre = false
     );
@@ -58,6 +62,8 @@ std::map<int, cv::Point2f> DetectMarkers(
  * \param intrinsicParamsRight matrix of camera intrinsic parameters \see mitk::CameraCalibrationFacade.
  * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ * \param scaleFactorX used to rescale the image, see cv::rescale
+ * \param scaleFactorY used to rescale the image, see cv::rescale
  * \param minSize set the minimum size of the marker, as a fraction of the maximum(number rows, number columns).
  * \param maxSize set the maximum size of the marker, as a fraction of the maximum(number rows, number columns).
  * \param blockSize block size for adaptive thresholding
@@ -73,10 +79,12 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
     const cv::Mat& intrinsicParamsRight,
     const cv::Mat& rightToLeftRotationVector,
     const cv::Mat& rightToLeftTranslationVector,
-    const float& minSize = 0.01,
-    const float& maxSize = 0.125,
-    const double& blockSize = 7,
-    const double& offset = 7,
+    const float& scaleFactorX,
+    const float& scaleFactorY,
+    const float& minSize,
+    const float& maxSize,
+    const double& blockSize,
+    const double& offset,
     const bool& drawOutlines = false,
     const bool& drawCentre = false
     );
@@ -84,6 +92,18 @@ std::map<int, cv::Point3f> DetectMarkerPairs(
 
 /**
  * \brief Highly Experimental method to extract marker pairs, and compute surface normals for each extracted point.
+ * \param inImageLeft colour RGB image.
+ * \param inImageRight colour RGB image.
+ * \param intrinsicParamsLeft matrix of camera intrinsic parameters \see mitk::CameraCalibrationFacade.
+ * \param intrinsicParamsRight matrix of camera intrinsic parameters \see mitk::CameraCalibrationFacade.
+ * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
+ * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ * \param scaleFactorX used to rescale the image, see cv::rescale
+ * \param scaleFactorY used to rescale the image, see cv::rescale
+ * \param minSize set the minimum size of the marker, as a fraction of the maximum(number rows, number columns).
+ * \param maxSize set the maximum size of the marker, as a fraction of the maximum(number rows, number columns).
+ * \param blockSize block size for adaptive thresholding
+ * \param offset amount below mean for adaptive thresholding
  * \return map of marker id and a 6D point containing the marker centre and its surface normal.
  */
 std::map<int, Point6D> DetectMarkerPairsAndNormals(
@@ -93,10 +113,12 @@ std::map<int, Point6D> DetectMarkerPairsAndNormals(
     const cv::Mat& intrinsicParamsRight,
     const cv::Mat& rightToLeftRotationVector,
     const cv::Mat& rightToLeftTranslationVector,
-    const float& minSize = 0.01,
-    const float& maxSize = 0.125,
-    const double& blockSize = 7,
-    const double& offset = 7
+    const float& scaleFactorX,
+    const float& scaleFactorY,
+    const float& minSize,
+    const float& maxSize,
+    const double& blockSize,
+    const double& offset
     );
 
 } // end namespace
