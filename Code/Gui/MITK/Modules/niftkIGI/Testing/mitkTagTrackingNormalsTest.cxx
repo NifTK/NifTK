@@ -135,7 +135,7 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
       fre
       );
 
-  MITK_TEST_CONDITION_REQUIRED(fre < 1.475,".. Testing FRE is less than 1.475mm, when actually FRE=" << fre);
+  MITK_TEST_CONDITION_REQUIRED(fre < 2.9,".. Testing FRE is less than 2.9mm, when actually FRE=" << fre);
 
   MITK_TEST_END();
 }

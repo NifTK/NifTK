@@ -259,6 +259,21 @@ double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedP
 
 
 //-----------------------------------------------------------------------------
+double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPointSet,
+                                          const mitk::PointSet::Pointer& movingPointSet,
+                                          vtkMatrix4x4& vtkMatrix)
+{
+  std::vector<cv::Point3d> fixedPoints = PointSetToVector(fixedPointSet);
+  std::vector<cv::Point3d> movingPoints = PointSetToVector(movingPointSet);
+  cv::Matx44d matrix;
+  CopyToOpenCVMatrix(vtkMatrix, matrix);
+
+  double fiducialRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, matrix);
+  return fiducialRegistrationError;
+}
+
+
+//-----------------------------------------------------------------------------
 void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
 {
   for (unsigned int i = 0; i < 3; ++i)
@@ -284,6 +299,19 @@ void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix)
     for (unsigned int j = 0; j < 4; ++j)
     {
       vtkMatrix.SetElement(i, j, matrix(i,j));
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
+{
+  for (unsigned int i = 0; i < 4; ++i)
+  {
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+      openCVMatrix(i, j) = matrix.GetElement(i, j);
     }
   }
 }

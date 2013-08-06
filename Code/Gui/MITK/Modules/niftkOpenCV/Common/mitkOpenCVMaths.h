@@ -77,6 +77,13 @@ double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedP
                                           );
 
 /**
+ * \brief Converts format of input to call the other CalculateFiducialRegistrationError method.
+ */
+double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPointSet,
+                                          const mitk::PointSet::Pointer& movingPointSet,
+                                          vtkMatrix4x4& vtkMatrix);
+
+/**
  * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
  */
 void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix);
@@ -85,6 +92,11 @@ void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation,
  * \brief Copies matrix to vtkMatrix.
  */
 void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix);
+
+/**
+ * \brief Copies matrix to openCVMatrix.
+ */
+void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix);
 
 } // end namespace
 

@@ -19,6 +19,7 @@
 #include <mitkArunLeastSquaresPointRegistrationWrapper.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkOpenCVMaths.h>
 
 const bool mitk::PointsAndNormalsBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH(true);
 const bool mitk::PointsAndNormalsBasedRegistration::DEFAULT_USE_TWO_PHASE(true);
@@ -176,6 +177,10 @@ bool PointsAndNormalsBasedRegistration::Update(
     // Then do 'normal', SVD, point based registration.
     mitk::ArunLeastSquaresPointRegistrationWrapper::Pointer arunRegistration = mitk::ArunLeastSquaresPointRegistrationWrapper::New();
     isSuccessful = arunRegistration->Update(augmentedFixedPoints, augmentedMovingPoints, *arunMatrix, arunFudicialRegistrationError);
+
+    // Actually need to calculate FRE on the original points, not the additional fake ones.
+    arunFudicialRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, *arunMatrix);
+
     if (!isSuccessful)
     {
       MITK_ERROR << "mitk::PointsAndNormalsBasedRegistration: Arun's' point based SVD failed" << std::endl;
@@ -262,6 +267,9 @@ bool PointsAndNormalsBasedRegistration::Update(
 
         mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::Pointer liuRegistration = mitk::LiuLeastSquaresWithNormalsRegistrationWrapper::New();
         tmpIsSuccessful = liuRegistration->Update(tmpFixedPoints, tmpFixedNormals, tmpMovingPoints, tmpMovingNormals, *tmpRegistrationMatrix, tmpRegistrationError);
+
+        // Actually need to calculate FRE on original points, not just the two we have picked.
+        tmpRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, *tmpRegistrationMatrix);
 
         if (tmpIsSuccessful && tmpRegistrationError < bestSoFarRegistrationError)
         {
