@@ -49,6 +49,7 @@ public:
   itkSetMacro(FlipExtrinsic, bool);
   itkSetMacro(SortByDistance, bool);
   itkSetMacro(SortByAngle, bool);
+  itkSetMacro(DoGridToWorld, bool);
 
 protected:
 
@@ -62,6 +63,7 @@ protected:
   bool  m_FlipExtrinsic;
   bool  m_SortByDistance;
   bool  m_SortByAngle;
+  bool  m_DoGridToWorld;
 
 private: 
 

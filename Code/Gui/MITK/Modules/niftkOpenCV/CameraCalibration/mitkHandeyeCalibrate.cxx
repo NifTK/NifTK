@@ -30,6 +30,7 @@ HandeyeCalibrate::HandeyeCalibrate()
 , m_FlipExtrinsic(false)
 , m_SortByDistance(false)
 , m_SortByAngle(false)
+, m_DoGridToWorld(true)
 {
 
 }
@@ -284,6 +285,20 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
 
+  if ( m_DoGridToWorld ) 
+  {
+    MITK_INFO << "Finding the average Grid to World Transform";
+    for ( int i = 0; i < NumberOfViews - 1; i ++ )
+    {
+      cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
+      cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
+
+      cameraToWorld =  MarkerToWorld[i]*CameraToMarker; 
+      gridToWorld = cameraToWorld *GridToCamera[i].inv();
+      MITK_INFO << "View " << i << "gridToWorld" << std::endl << gridToWorld;
+    }
+   
+  }
   if ( GroundTruthSolution.length() > 0  )
   {
     std::vector<double> ResultResiduals;
