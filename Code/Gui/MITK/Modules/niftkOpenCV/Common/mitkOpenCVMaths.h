@@ -15,6 +15,7 @@
 #ifndef mitkOpenCVMaths_h
 #define mitkOpenCVMaths_h
 
+#include "niftkOpenCVExports.h"
 #include <cv.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
@@ -79,9 +80,9 @@ double CalculateFiducialRegistrationError(const std::vector<cv::Point3d>& fixedP
 /**
  * \brief Converts format of input to call the other CalculateFiducialRegistrationError method.
  */
-double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPointSet,
-                                          const mitk::PointSet::Pointer& movingPointSet,
-                                          vtkMatrix4x4& vtkMatrix);
+NIFTKOPENCV_EXPORT double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPointSet,
+                                                             const mitk::PointSet::Pointer& movingPointSet,
+                                                             vtkMatrix4x4& vtkMatrix);
 
 /**
  * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
