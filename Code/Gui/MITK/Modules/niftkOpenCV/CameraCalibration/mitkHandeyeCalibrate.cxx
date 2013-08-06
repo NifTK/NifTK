@@ -26,6 +26,11 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrate::HandeyeCalibrate()
+: m_FlipTracking(true)
+, m_FlipExtrinsic(false)
+, m_SortByDistance(false)
+, m_SortByAngle(false)
+, m_DoGridToWorld(true)
 {
 
 }
@@ -41,10 +46,6 @@ HandeyeCalibrate::~HandeyeCalibrate()
 //-----------------------------------------------------------------------------
 std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileDirectory,
   const std::string& ExtrinsicFileDirectoryOrFile,
-  bool FlipTracking,
-  bool FlipExtrinsic,
-  bool SortByDistance,
-  bool SortByAngle,
   const std::string GroundTruthSolution)
 {
 
@@ -73,25 +74,25 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   int NumberOfViews = MarkerToWorld.size();
  
 
-  if ( FlipTracking )
+  if ( m_FlipTracking )
   {
     MarkerToWorld = mitk::FlipMatrices(MarkerToWorld);
   }
-  if ( FlipExtrinsic )
+  if ( m_FlipExtrinsic )
   {
     GridToCamera = mitk::FlipMatrices(GridToCamera);
   }
 
   std::vector<int> indexes;
   //if SortByDistance and SortByAngle are both true, we'll sort by distance only
-  if ( SortByDistance )
+  if ( m_SortByDistance )
   {
     indexes = mitk::SortMatricesByDistance(MarkerToWorld);
     std::cout << "Sorted by distances " << std::endl;
   }
   else
   {
-    if ( SortByAngle )
+    if ( m_SortByAngle )
     {
       indexes = mitk::SortMatricesByAngle(MarkerToWorld);
       std::cout << "Sorted by angles " << std::endl;
@@ -284,6 +285,21 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
 
+  if ( m_DoGridToWorld ) 
+  {
+    std::vector<cv::Mat> gridToWorlds;
+    for ( int i = 0; i < NumberOfViews - 1; i ++ )
+    {
+      cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
+      cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
+
+      cameraToWorld =  MarkerToWorld[i]*CameraToMarker; 
+      gridToWorld = cameraToWorld *GridToCamera[i].inv();
+      gridToWorlds.push_back(gridToWorld);
+    }
+    cv::Mat AverageMatrix = mitk::AverageMatrices (gridToWorlds);
+    MITK_INFO << "Average Grid to World Transform" << std::endl << AverageMatrix;
+  }
   if ( GroundTruthSolution.length() > 0  )
   {
     std::vector<double> ResultResiduals;

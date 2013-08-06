@@ -22,6 +22,7 @@ set(MODULE_CUSTOM_TESTS
   mitkHandeyeCalibrationTest.cxx
   mitkHandeyeSensitivityTest.cxx
   mitkTrackingTest.cxx
+  mitkHandeyeFromDirectoryTest.cxx
   mitkTagTrackingTest.cxx
   mitkVideoTrackerMatchingTest.cxx
 )

@@ -38,15 +38,19 @@ int main(int argc, char** argv)
   try
   {
     mitk::HandeyeCalibrate::Pointer calibrationObject = mitk::HandeyeCalibrate::New();
+    calibrationObject->SetFlipTracking(FlipTracking);
+    calibrationObject->SetFlipExtrinsic(FlipExtrin);
+    calibrationObject->SetSortByDistance(SortByDistance);
+    calibrationObject->SetSortByAngle(SortByAngle);
     if ( extrinsicInputDirectory.length() == 0 )
     {
       ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,
-        extrinsicInputFile,FlipTracking, FlipExtrin, SortByDistance, SortByAngle);
+        extrinsicInputFile);
     }
     else
     {
       ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,
-        extrinsicInputDirectory,FlipTracking, FlipExtrin, SortByDistance, SortByAngle);
+        extrinsicInputDirectory);
     }
 
     returnStatus = EXIT_SUCCESS;

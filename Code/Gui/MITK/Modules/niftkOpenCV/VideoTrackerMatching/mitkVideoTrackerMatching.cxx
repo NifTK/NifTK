@@ -108,24 +108,19 @@ std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
+  //need to work in this
   boost::filesystem::recursive_directory_iterator end_itr;
-  boost::regex IGITrackerFilter ( "(QmitkIGITrackerSource)");
   for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
    {
      if ( boost::filesystem::is_directory (it->status()) )
      {
-       boost::filesystem::recursive_directory_iterator end_itr1;
-       for ( boost::filesystem::recursive_directory_iterator it1(it->path());
-                          it1 != end_itr ; ++it1)
+       if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
        {
-         if ( boost::filesystem::is_directory (it1->status()) )
-         {
-           m_TrackingMatrixDirectories.push_back(it1->path().string());
-           //need to init tracking matrix vector
-           TrackingMatrices TempMatrices; 
-           m_TrackingMatrices.push_back(TempMatrices);
-         }
+          m_TrackingMatrixDirectories.push_back(it->path().string());
+          //need to init tracking matrix vector
+          TrackingMatrices TempMatrices; 
+          m_TrackingMatrices.push_back(TempMatrices);
        }
      }
    }
@@ -142,7 +137,6 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
    if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
-      //  if ( it->path().extension() == ".framemap.log" )
       std::string stringthing = it->path().filename().string();
       if ( boost::regex_match( stringthing.c_str(),what , TimeStampFilter) )
       {
@@ -154,6 +148,26 @@ TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::strin
   std::sort ( ReturnStamps.m_TimeStamps.begin() , ReturnStamps.m_TimeStamps.end());
   return ReturnStamps;
 }
+//---------------------------------------------------------------------------
+bool VideoTrackerMatching::CheckIfDirectoryContainsTrackingMatrices(std::string directory)
+{
+  boost::filesystem::directory_iterator end_itr;
+  boost::regex TimeStampFilter ( "([0-9]{19})(.txt)");
+  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
+   {
+   if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      std::string stringthing = it->path().filename().string();
+      if ( boost::regex_match( stringthing.c_str(),what , TimeStampFilter) )
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)

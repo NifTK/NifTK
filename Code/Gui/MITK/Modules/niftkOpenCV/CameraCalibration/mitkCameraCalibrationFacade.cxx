@@ -82,6 +82,53 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   std::cout << "Chess board images are (" << width << ", " << height << ") pixels" << std::endl;
 }
 
+//-----------------------------------------------------------------------------
+bool ExtractChessBoardPoints(const cv::Mat image,
+                             const int& numberCornersWidth,
+                             const int& numberCornersHeight,
+                             const bool& drawCorners,
+                             const double& squareSizeInMillimetres,
+                             std::vector <cv::Point2f>*& corners,
+                             std::vector <cv::Point3f>*& objectPoints
+                             )
+{
+
+  unsigned int numberOfCorners = numberCornersWidth * numberCornersHeight;
+  cv::Size boardSize = cvSize(numberCornersWidth, numberCornersHeight);
+
+  std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
+
+  bool found = cv::findChessboardCorners(image, boardSize, *corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+
+  if ( corners->size() == 0 )
+  {
+    return false;
+  }
+  cv::Mat greyImage;
+  cv::cvtColor(image, greyImage, CV_BGR2GRAY);
+  cv::cornerSubPix(greyImage, *corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+//END FIX
+  if (drawCorners)
+  {
+    cv::drawChessboardCorners(image, boardSize, *corners, found);
+  }
+
+  // If we got the right number of corners, add it to our data.
+  if (found  && corners->size() == ( unsigned int)numberOfCorners)
+  {
+    for ( int k=0; k<(int)numberOfCorners; ++k)
+    {
+      cv::Point3f objectCorner;
+      objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
+      objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
+      objectCorner.z = 0; 
+      objectPoints->push_back(objectCorner);
+    }
+  }
+  return found;
+}
+
+
 
 //-----------------------------------------------------------------------------
 void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
@@ -2089,4 +2136,50 @@ cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
   return returnPoint;
 }
   
+cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+{
+  cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
+ 
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
+  {
+    for ( int row = 0 ; row < 3 ; row++ )
+    {
+      for ( int col = 0 ; col < 3 ; col++ ) 
+      {
+        temp.at<double>(row,col) += Matrices[i].at<double>(row,col);
+      }
+      temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
+    }
+  }
+  
+  temp_T = temp_T /Matrices.size();
+  temp = temp / Matrices.size();
+
+  cv::Mat rtr = temp.t() * temp;
+
+  cv::Mat eigenvectors = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat eigenvalues = cvCreateMat(3,1,CV_64FC1);
+  cv::eigen(rtr , eigenvalues, eigenvectors);
+  cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
+  for ( int i = 0 ; i < 3 ; i ++ ) 
+  {
+    rootedEigenValues.at<double>(i,i) = sqrt(1/eigenvalues.at<double>(i,0));
+  }
+
+  cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
+  cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
+  temp2 = temp * ( eigenvectors * rootedEigenValues * eigenvectors.t() );
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      returnMat.at<double>(row,col) = temp2.at<double>(row,col);
+    }
+    returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
+  }
+  returnMat.at<double>(3,3)  = 1.0;
+  return returnMat;
+    
+} 
 } // end namespace
