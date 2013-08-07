@@ -24,4 +24,5 @@ set(MODULE_CUSTOM_TESTS
   mitkTagTrackingTest.cxx
   mitkVideoTrackerMatchingTest.cxx
   mitkReprojectionTest.cxx
+  mitkUltrasoundPinCalibrationTest.cxx
 )
