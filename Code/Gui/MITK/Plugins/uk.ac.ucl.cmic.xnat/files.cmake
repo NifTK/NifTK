@@ -25,8 +25,6 @@ set(INTERNAL_CPP_FILES
   XnatPluginPreferencePage.cxx
   XnatPluginSettings.cxx
   XnatTreeView.cxx
-  XnatUploadDialog.cxx
-  XnatUploadManager.cxx
 )
 
 set(UI_FILES
@@ -44,8 +42,6 @@ set(MOC_H_FILES
   src/internal/XnatPluginActivator.h
   src/internal/XnatPluginPreferencePage.h
   src/internal/XnatTreeView.h
-  src/internal/XnatUploadDialog.h
-  src/internal/XnatUploadManager.h
 )
 
 set(CACHED_RESOURCE_FILES

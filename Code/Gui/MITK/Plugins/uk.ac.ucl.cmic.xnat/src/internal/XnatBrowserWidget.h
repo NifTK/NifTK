@@ -47,7 +47,6 @@ private slots:
   void importFile();
   void importFiles();
   void setButtonEnabled(const QModelIndex& index);
-  void setSaveAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);
 
 private:
