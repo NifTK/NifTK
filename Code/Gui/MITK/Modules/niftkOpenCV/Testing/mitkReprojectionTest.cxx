@@ -221,11 +221,11 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 1e-3 , "Testing x error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_m1 < 1.0 , "Testing RMS error value for c method");
-  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 1e-3 , "Testing x error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 1e-3 , "Testing y error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 1e-3 , "Testing z error mean value for c++ method");
-  MITK_TEST_CONDITION (errorRMS_m2 < 1.0 , "Testing RMS error value for c++ method");
+  MITK_TEST_CONDITION (errorRMS_m1 < 1e-3 , "Testing RMS error value for c method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 0.5 , "Testing x error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 0.5 , "Testing y error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 0.5 , "Testing z error mean value for c++ method");
+  MITK_TEST_CONDITION (errorRMS_m2 < 2.0 , "Testing RMS error value for c++ method");
 
   MITK_TEST_END();
 }
