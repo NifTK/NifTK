@@ -955,15 +955,17 @@ void Project3DModelPositionsToStereo2D(
     CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 2);
   }
 
+  CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_32FC1);
+  cvInv(&rightToLeftRotationMatrix, leftToRightRotationMatrix);
   CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);        // So, [3xN] matrix.
-  cvGEMM(&rightToLeftRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
+  cvGEMM(leftToRightRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
 
   // Add translation again, to get 3D model points into 3D camera coordinates for right camera.
   for (int i = 0; i < modelPointsIn3D.rows; i++)
   {
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
   }
 
   // Now project those points to 2D
