@@ -20,8 +20,6 @@ set(MODULE_TESTS
 set(MODULE_CUSTOM_TESTS
   mitkCameraCalibrationTest.cxx
   mitkHandeyeCalibrationTest.cxx
-  mitkHandeyeSensitivityTest.cxx
-  mitkTrackingTest.cxx
   mitkHandeyeFromDirectoryTest.cxx
   mitkTagTrackingTest.cxx
   mitkVideoTrackerMatchingTest.cxx
