@@ -38,10 +38,10 @@
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
     <integer>
-      <name>xorigin</name>
-      <longflag>xorigin</longflag>
+      <name>xOrigin</name>
+      <longflag>xOrigin</longflag>
       <description>X pixel index of origin.</description>
-      <label>X origin</label>
+      <label>X Origin</label>
       <default>0</default>
       <constraints>
         <minimum>0</minimum>
@@ -50,8 +50,8 @@
       </constraints>
     </integer>
     <integer>
-      <name>yorigin</name>
-      <longflag>yorigin</longflag>
+      <name>yOrigin</name>
+      <longflag>yOrigin</longflag>
       <description>Y pixel index of origin.</description>
       <label>Y origin</label>
       <default>0</default>
@@ -61,6 +61,30 @@
         <step>1</step>
       </constraints>
     </integer>
+    <float>
+      <name>xMillimetresPerPixel</name>
+      <longflag>xMillimetresPerPixel</longflag>
+      <description>Millimetres per Pixel in X (horizontal) direction.</description>
+      <label>X mm/pix</label>
+      <default>1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10000</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>
+    <float>
+      <name>yMillimetresPerPixel</name>
+      <longflag>yMillimetresPerPixel</longflag>
+      <description>Millimetres per Pixel in Y (vertical) direction.</description>
+      <label>Y mm/pix</label>
+      <default>1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>10000</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>
   </parameters>
 
 </executable>
