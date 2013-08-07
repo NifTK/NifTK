@@ -1965,8 +1965,11 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     {
        fin >> CameraIntrinsic->at<float>(row,col);
     }
-  } 
-  for ( int col = 0 ; col < 5 ; col++ )
+  }
+
+  int distortionVectorLength = CameraDistortion->size().height * CameraDistortion->size().width;
+
+  for ( int col = 0 ; col < distortionVectorLength ; col++ )
   {
     fin >> CameraDistortion->at<float>(0,col);
   }
