@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef vtkEnums_h
-#define vtkEnums_h
+#ifndef niftkVTKEnums_h
+#define niftkVTKEnums_h
 
 /**
  * Compare this with enum SLICE_ORIENTATION_XY/XZ/YZ in vtkImageViewer2.
