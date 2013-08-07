@@ -16,10 +16,11 @@
 #pragma warning ( disable : 4786 )
 #endif
 
+#include <niftkVTKIterativeClosestPoint.h>
+#include <niftkVTKFunctions.h>
+
 #include <iostream>
 #include <cstdlib>
-#include <niftkVTKIterativeClosestPoint.h>
-#include <vtkFunctions.h>
 #include <vtkPolyDataReader.h>
 #include <vtkMinimalStandardRandomSequence.h>
 #include <vtkBoxMuellerRandomSequence.h>
@@ -30,14 +31,14 @@
  * Runs ICP registration a known data set and checks the error
  */
 
-int VTKIterativeClosestPointTest ( int argc, char * argv[] )
+int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
 {
   if ( argc != 4 )
   {
-    std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
+    std::cerr << "Usage niftkVTKIterativeClosestPointTest source target" << std::endl;
     return EXIT_FAILURE;
   }
-  niftkVTKIterativeClosestPoint *  icp = new niftkVTKIterativeClosestPoint();
+  niftk::VTKIterativeClosestPoint *  icp = new niftk::VTKIterativeClosestPoint();
   std::string strTarget = argv[1];
   std::string strSource = argv[2];
 
@@ -69,8 +70,8 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   Uni_Rand->SetSeed(2);
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
-  RandomTransform ( StartTrans, 20.0 , 20.0 , 20.0, 10.0 , 10.0, 10.0 , Uni_Rand);
-  TranslatePolyData ( source , StartTrans);
+  niftk::RandomTransform ( StartTrans, 20.0 , 20.0 , 20.0, 10.0 , 10.0, 10.0 , Uni_Rand);
+  niftk::TranslatePolyData ( source , StartTrans);
 
   vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
   StartTrans->GetInverse(Trans_In);
@@ -83,7 +84,7 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
 
     vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
     Gauss_Rand->SetUniformSequence(Uni_Rand2);
-    PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
+    niftk::PerturbPolyData(source, 1.0, 1.0 , 1.0, Gauss_Rand);
   }
 
   if ( ! icp->Run() )
@@ -123,11 +124,11 @@ int VTKIterativeClosestPointTest ( int argc, char * argv[] )
   }
 }
 
-int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
+int niftkVTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
 {
   if ( argc != 3 )
   {
-    std::cerr << "Usage VTKIterativeClosestPointTest source target" << std::endl;
+    std::cerr << "Usage niftkVTKIterativeClosestPointRepeatTest source target" << std::endl;
     return EXIT_FAILURE;
   }
   std::string strTarget = argv[1];
@@ -157,7 +158,7 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
   double *Errors = new double [Repeats];
   double MeanError = 0.0;
   double MaxError = 0.0;
-  niftkVTKIterativeClosestPoint *  icp = new niftkVTKIterativeClosestPoint();
+  niftk::VTKIterativeClosestPoint *  icp = new niftk::VTKIterativeClosestPoint();
   icp->SetMaxLandmarks(300);
   icp->SetMaxIterations(1000);
   double *StartPoint = new double[4];
@@ -172,10 +173,10 @@ int VTKIterativeClosestPointRepeatTest ( int argc, char * argv[] )
     icp->SetTarget(target);
 
     vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
-    RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
-    TranslatePolyData ( source , StartTrans);
+    niftk::RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 , Uni_Rand);
+    niftk::TranslatePolyData ( source , StartTrans);
 
-    PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
+    niftk::PerturbPolyData(target, 1.0, 1.0 , 1.0, Gauss_Rand);
     vtkSmartPointer<vtkMatrix4x4> Trans_In = vtkSmartPointer<vtkMatrix4x4>::New();
     StartTrans->GetInverse(Trans_In);
     if ( ! icp->Run() )

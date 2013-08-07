@@ -21,11 +21,11 @@
 
 void RegisterTests()
 {
-  REGISTER_TEST(VTKIterativeClosestPointTest);
-  REGISTER_TEST(VTKIterativeClosestPointRepeatTest);
-  REGISTER_TEST(VTK3PointReaderTest);
-  REGISTER_TEST(VTK4PointReaderTest);
-  REGISTER_TEST(VTKDistanceToSurfaceTest);
-  REGISTER_TEST(VTKDistanceToSurfaceTestSinglePoint);
+  REGISTER_TEST(niftkVTKIterativeClosestPointTest);
+  REGISTER_TEST(niftkVTKIterativeClosestPointRepeatTest);
+  REGISTER_TEST(niftkVTK3PointReaderTest);
+  REGISTER_TEST(niftkVTK4PointReaderTest);
+  REGISTER_TEST(niftkVTKDistanceToSurfaceTest);
+  REGISTER_TEST(niftkVTKDistanceToSurfaceTestSinglePoint);
 }
 

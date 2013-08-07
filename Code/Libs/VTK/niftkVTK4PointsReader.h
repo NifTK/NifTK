@@ -16,7 +16,7 @@
 #define niftkVTK4PointsReader_h
 
 #include "niftkVTKWin32ExportHeader.h"
-#include <NifTKConfigure.h>
+
 #include <vtkPolyDataAlgorithm.h>
 
 namespace niftk

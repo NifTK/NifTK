@@ -22,10 +22,10 @@
 
 #include <sstream>
 
-vtkStandardNewMacro(VTK4PointsReader);
-
 namespace niftk
 {
+
+vtkStandardNewMacro(VTK4PointsReader);
 
 //----------------------------------------------------------------------------
 VTK4PointsReader::VTK4PointsReader()

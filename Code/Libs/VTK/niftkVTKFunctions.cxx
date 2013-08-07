@@ -15,7 +15,7 @@
 #include <math.h>
 #include <iostream>
 #include <ConversionUtils.h>
-#include "vtkFunctions.h"
+#include "niftkVTKFunctions.h"
 #include <vtkSmartPointer.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkBoxMuellerRandomSequence.h>

@@ -21,5 +21,5 @@
 
 void RegisterTests()
 {
-  REGISTER_TEST(VTKLoadSaveMatrix4x4Test);
+  REGISTER_TEST(niftkVTKLoadSaveMatrix4x4Test);
 }

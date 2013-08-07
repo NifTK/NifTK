@@ -15,8 +15,8 @@
 #ifndef niftkVTKFunctions_h
 #define niftkVTKFunctions_h
 
-#include <NifTKConfigure.h>
 #include <niftkVTKWin32ExportHeader.h>
+
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
