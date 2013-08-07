@@ -16,8 +16,10 @@ project(uk_ac_ucl_cmic_affinetransform)
 
 # Temporary workaround for CTK bug of not exposing external project library dirs.
 # Should be removed as soon as this is fixed in CTK. (espakm)
-include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
-link_directories(${qRestAPI_LIBRARY_DIRS})
+if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
+  include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
+  link_directories(${qRestAPI_LIBRARY_DIRS})
+endif()
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE AFFINETRANSFORM_EXPORT
