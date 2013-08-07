@@ -33,13 +33,13 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_DrawLines(false)
 , m_InitOK(false)
 , m_ProjectOK(false)
-, leftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, leftDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, rightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, rightDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, rightToLeftRotationMatrix (new cv::Mat(3,3,CV_32FC1))
-, rightToLeftTranslationVector (new cv::Mat(3,1,CV_32FC1))
-, leftCameraToTracker (new cv::Mat(4,4,CV_32FC1))
+, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
+, m_LeftDistortionVector (new cv::Mat(5,1,CV_32FC1))
+, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
+, m_RightDistortionVector (new cv::Mat(5,1,CV_32FC1))
+, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_32FC1))
+, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_32FC1))
+, m_LeftCameraToTracker (new cv::Mat(4,4,CV_32FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
 {
@@ -63,9 +63,9 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
   {
     mitk::LoadStereoCameraParametersFromDirectory
       ( calibrationParameterDirectory,
-      leftIntrinsicMatrix,leftDistortionVector,rightIntrinsicMatrix,
-      rightDistortionVector,rightToLeftRotationMatrix,
-      rightToLeftTranslationVector,leftCameraToTracker);
+      m_LeftIntrinsicMatrix,m_LeftDistortionVector,m_RightIntrinsicMatrix,
+      m_RightDistortionVector,m_RightToLeftRotationMatrix,
+      m_RightToLeftTranslationVector,m_LeftCameraToTracker);
   }
   catch ( int e )
   {
@@ -73,9 +73,15 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     m_InitOK = false;
     return;
   }
-
-  m_TrackerMatcher = mitk::VideoTrackerMatching::New();
-  m_TrackerMatcher->Initialise(m_Directory);
+  
+  if ( m_TrackerMatcher == NULL  )
+  {
+    m_TrackerMatcher = mitk::VideoTrackerMatching::New();
+  }
+  if ( ! m_TrackerMatcher->IsReady() )
+  {
+    m_TrackerMatcher->Initialise(m_Directory);
+  }
   if ( ! m_TrackerMatcher->IsReady() )
   {
     MITK_ERROR << "Failed to initialise tracker matcher";
@@ -85,27 +91,30 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
 
   if ( m_Visualise || m_SaveVideo ) 
   {
-    std::vector <std::string> videoFiles = FindVideoData();
-    if ( videoFiles.size() == 0 ) 
+    if ( m_Capture == NULL ) 
     {
-      MITK_ERROR << "Failed to find any video files";
-      m_InitOK = false;
+      std::vector <std::string> videoFiles = FindVideoData();
+      if ( videoFiles.size() == 0 ) 
+      {
+        MITK_ERROR << "Failed to find any video files";
+        m_InitOK = false;
+        return;
+      }
+      if ( videoFiles.size() > 1 ) 
+      {
+        MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
+      }
+      m_VideoIn = videoFiles[0];
+   
+      m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
+    }
+  
+    if ( ! m_Capture )
+    {
+      MITK_ERROR << "Failed to open " << m_VideoIn;
+      m_InitOK=false;
       return;
     }
-    if ( videoFiles.size() > 1 ) 
-    {
-      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-    }
-    m_VideoIn = videoFiles[0];
-  }
-
-  m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-
-  if ( ! m_Capture )
-  {
-    MITK_ERROR << "Failed to open " << m_VideoIn;
-    m_InitOK=false;
-    return;
   }
 
   m_InitOK = true;
@@ -138,6 +147,32 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::Project()
 {
+  m_ProjectOK = false;
+  m_ProjectedPoints.clear();
+  m_PointsInLeftLensCS.clear();
+  if ( m_WorldPoints.size() == 0 ) 
+  {
+    MITK_WARN << "Called project with nothing to project";
+    return;
+  }
+
+  if ( m_Visualise ) 
+  {
+    cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
+  }
+  int framenumber = 0 ;
+  while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() )
+  {
+    //put the world points into the coordinates of the left hand camera.
+    //worldtotracker * trackertocamera
+    //in general the tracker matrices are trackertoworld
+    cv::Mat WorldToLeftCamera = 
+      m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex).inv() 
+      * m_LeftCameraToTracker->inv();
+    
+  }
+
 }
 //-----------------------------------------------------------------------------
 std::vector<std::string> ProjectPointsOnStereoVideo::FindVideoData()

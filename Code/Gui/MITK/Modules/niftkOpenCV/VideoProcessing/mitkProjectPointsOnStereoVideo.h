@@ -110,13 +110,13 @@ private:
   bool                          m_ProjectOK;
 
   //the camera calibration parameters
-  cv::Mat* leftIntrinsicMatrix;
-  cv::Mat* leftDistortionVector;
-  cv::Mat* rightIntrinsicMatrix;
-  cv::Mat* rightDistortionVector;
-  cv::Mat* rightToLeftRotationMatrix;
-  cv::Mat* rightToLeftTranslationVector;
-  cv::Mat* leftCameraToTracker;
+  cv::Mat* m_LeftIntrinsicMatrix;
+  cv::Mat* m_LeftDistortionVector;
+  cv::Mat* m_RightIntrinsicMatrix;
+  cv::Mat* m_RightDistortionVector;
+  cv::Mat* m_RightToLeftRotationMatrix;
+  cv::Mat* m_RightToLeftTranslationVector;
+  cv::Mat* m_LeftCameraToTracker;
 
   std::vector < std::pair<cv::Point2f, cv::Point2f> > 
                                 m_ProjectedPoints; // the projected points
