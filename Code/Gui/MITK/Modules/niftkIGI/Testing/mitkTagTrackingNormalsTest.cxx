@@ -105,10 +105,6 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
     pointArray[pointCounter++] = point;
   }
 
-  // FYI.
-  std::cerr << "Distance between point[0] and point[1] = " << sqrt(mitk::GetSquaredDistanceBetweenPoints(pointArray[0], pointArray[1])) << std::endl;
-  std::cerr << "Distance between point[1] and point[2] = " << sqrt(mitk::GetSquaredDistanceBetweenPoints(pointArray[1], pointArray[2])) << std::endl;
-
   // Create some input data.
   vtkSmartPointer<vtkMatrix4x4> registrationMatrix = vtkMatrix4x4::New();
   registrationMatrix->Identity();
