@@ -20,7 +20,6 @@
 #include <mitkLogMacros.h>
 #include <mitkCameraCalibrationFacade.h>
 
-
 /**
  * Test for stereo trianglulation and projection. Start with a realistic set
  * of 3D points defined relative to the left lens. Project them to screen space, 
@@ -52,15 +51,20 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   CvMat* output2DPointsLeft = NULL ;
   CvMat* output2DPointsRight = NULL;
   
-  cv::Mat leftCameraWorldPoints = cv::Mat (25,3,CV_32FC1);
-  cv::Mat leftCameraWorldNormals = cv::Mat (25,3,CV_32FC1);
+  int numberOfPoints = 25;
+  cv::Mat leftCameraWorldPoints = cv::Mat (numberOfPoints,3,CV_32FC1);
+  cv::Mat leftCameraWorldNormals = cv::Mat (numberOfPoints,3,CV_32FC1);
+  
+  CvMat* leftCameraTriangulatedWorldPoints_m1 = cvCreateMat (numberOfPoints,3,CV_32FC1);
+  cv::Mat leftScreenPoints = cv::Mat (numberOfPoints,2,CV_32FC1);
+  cv::Mat rightScreenPoints = cv::Mat (numberOfPoints,2,CV_32FC1);
   
   for ( int row = 0 ; row < 5 ; row ++ ) 
   {
     for ( int col = 0 ; col < 5 ; col ++ )
     {
-      leftCameraWorldPoints.at<float>(row * 5 + col, 0) = -100 + (col * 50);
-      leftCameraWorldPoints.at<float>(row * 5 + col, 1) = -100 + (row * 50);
+      leftCameraWorldPoints.at<float>(row * 5 + col, 0) = -50 + (col * 25);
+      leftCameraWorldPoints.at<float>(row * 5 + col, 1) = -30 + (row * 15);
       leftCameraWorldPoints.at<float>(row * 5 + col, 2) = 150 + (row + col) * 1.0;
       leftCameraWorldNormals.at<float>(row*5 + col, 0 ) = 0;
       leftCameraWorldNormals.at<float>(row*5 + col, 1 ) = 0;
@@ -78,6 +82,71 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       output2DPointsLeft,
       output2DPointsRight);
 
+  mitk::UndistortPoints(output2DPointsLeft, 
+      leftCameraIntrinsic,leftCameraDistortion,
+      leftScreenPoints);
+
+  mitk::UndistortPoints(output2DPointsRight, 
+      rightCameraIntrinsic,rightCameraDistortion,
+      rightScreenPoints);
+
+  //check it with the c Wrapper function
+  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+  
+  rightCameraTranslationVector = rightToLeftTranslationVector * -1;
+  cv::Rodrigues ( rightToLeftRotationMatrix.inv(), rightCameraRotationVector  );
+  
+  MITK_INFO << leftCameraTranslationVector;
+  MITK_INFO << leftCameraRotationVector;
+  MITK_INFO << rightCameraTranslationVector;
+  MITK_INFO << rightCameraRotationVector;
+
+  CvMat leftScreenPointsMat = leftScreenPoints;// cvCreateMat(numberOfPoints,2,CV_32FC1;
+  CvMat rightScreenPointsMat= rightScreenPoints; 
+  CvMat leftCameraIntrinsicMat= leftCameraIntrinsic;
+  CvMat leftCameraRotationVectorMat= leftCameraRotationVector; 
+  CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
+  CvMat rightCameraIntrinsicMat = rightCameraIntrinsic;
+  CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
+  CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
+
+  mitk::TriangulatePointPairs(
+    leftScreenPointsMat,
+    rightScreenPointsMat,
+    leftCameraIntrinsicMat,
+    leftCameraRotationVectorMat,
+    leftCameraTranslationVectorMat,
+    rightCameraIntrinsicMat,
+    rightCameraRotationVectorMat,
+    rightCameraTranslationVectorMat,
+    *leftCameraTriangulatedWorldPoints_m1);
+
+  std::vector < std::pair<cv::Point2f, cv::Point2f> > inputUndistortedPoints;
+  for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
+  {
+    std::pair <cv::Point2f, cv::Point2f > pointPair; 
+    pointPair.first.x = leftScreenPoints.at<float>(i,0);
+    pointPair.first.y = leftScreenPoints.at<float>(i,1);
+    pointPair.second.x = rightScreenPoints.at<float>(i,0);
+    pointPair.second.y = rightScreenPoints.at<float>(i,1);
+    inputUndistortedPoints.push_back(pointPair);
+  }
+  cv::Mat rightToLeftRotationVector(3,1,CV_32FC1);
+  cv::Rodrigues( rightToLeftRotationMatrix, rightToLeftRotationVector);
+  std::vector <cv::Point3f> leftCameraTriangulatedWorldPoints_m2 = 
+    mitk::TriangulatePointPairs(
+        inputUndistortedPoints, 
+        leftCameraIntrinsic,
+        rightCameraIntrinsic,
+        rightToLeftRotationVector,
+        rightToLeftTranslationVector);
+
+  MITK_INFO << leftCameraTriangulatedWorldPoints_m2.size();
+
+    
   for ( int row = 0 ; row < 5 ; row ++ ) 
   {
     for ( int col = 0 ; col < 5 ; col ++ )
@@ -88,7 +157,12 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         << CV_MAT_ELEM (*output2DPointsLeft ,float, row*5 + col,0) << "," 
         << CV_MAT_ELEM (*output2DPointsLeft, float,row*5 + col,1) << ") (" 
         << CV_MAT_ELEM (*output2DPointsRight,float,row*5 + col,0) << "," 
-        << CV_MAT_ELEM (*output2DPointsRight,float,row*5 + col,1) << ") => "; 
+        << CV_MAT_ELEM (*output2DPointsRight,float,row*5 + col,1) << ") => "
+        << " [" 
+        << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,float, row* 5 + col, 0) << ","
+        << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,float, row* 5 + col, 1) << ","
+        << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,float, row* 5 + col, 2) << "] " 
+        << leftCameraTriangulatedWorldPoints_m2[row*5 + col]; 
     }
   }
 
