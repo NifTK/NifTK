@@ -443,7 +443,7 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
  */
-void UndistortPoint(const cv::Point2f& inputObservedPoint,
+extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObservedPoint,
     const cv::Mat& cameraIntrinsics3x3,
     const cv::Mat& cameraDistortionParams5x1,
     cv::Point2f& outputIdealPoint
