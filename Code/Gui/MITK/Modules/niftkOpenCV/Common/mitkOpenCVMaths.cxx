@@ -207,7 +207,7 @@ bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
     tmpPPrime(2,0) = pPrime.z;
     T = tmpPPrime - R*tmpP;
 
-    Setup4x4Matrix(T, R, outputMatrix);
+    ConstructAffineMatrix(T, R, outputMatrix);
     fiducialRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, outputMatrix);
 
     success = true;
@@ -274,7 +274,7 @@ double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPo
 
 
 //-----------------------------------------------------------------------------
-void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
+void ConstructAffineMatrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -318,56 +318,67 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
 
 
 //-----------------------------------------------------------------------------
-void GenerateEulerRxMatrix(const double& rx, cv::Matx33d& matrix3x3)
+cv::Matx33d ConstructEulerRxMatrix(const double& rx)
 {
+  cv::Matx33d result;
+
   double cosRx = cos(rx);
   double sinRx = sin(rx);
-  matrix3x3.eye();
-  matrix3x3(1, 1) = cosRx;
-  matrix3x3(1, 2) = sinRx;
-  matrix3x3(2, 1) = -sinRx;
-  matrix3x3(2, 2) = cosRx;
+  result.eye();
+  result(1, 1) = cosRx;
+  result(1, 2) = sinRx;
+  result(2, 1) = -sinRx;
+  result(2, 2) = cosRx;
+
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void GenerateEulerRyMatrix(const double& ry, cv::Matx33d& matrix3x3)
+cv::Matx33d ConstructEulerRyMatrix(const double& ry)
 {
+  cv::Matx33d result;
+
   double cosRy = cos(ry);
   double sinRy = sin(ry);
-  matrix3x3.eye();
-  matrix3x3(0, 0) = cosRy;
-  matrix3x3(0, 2) = -sinRy;
-  matrix3x3(2, 0) = sinRy;
-  matrix3x3(2, 2) = cosRy;
+  result.eye();
+  result(0, 0) = cosRy;
+  result(0, 2) = -sinRy;
+  result(2, 0) = sinRy;
+  result(2, 2) = cosRy;
+
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void GenerateEulerRzMatrix(const double& rz, cv::Matx33d& matrix3x3)
+cv::Matx33d ConstructEulerRzMatrix(const double& rz)
 {
+  cv::Matx33d result;
+
   double cosRz = cos(rz);
   double sinRz = sin(rz);
-  matrix3x3.eye();
-  matrix3x3(0, 0) = cosRz;
-  matrix3x3(0, 1) = sinRz;
-  matrix3x3(1, 0) = -sinRz;
-  matrix3x3(1, 1) = cosRz;
+  result.eye();
+  result(0, 0) = cosRz;
+  result(0, 1) = sinRz;
+  result(1, 0) = -sinRz;
+  result(1, 1) = cosRz;
+
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void GenerateEulerRotationMatrix(const double& rx, const double& ry, const double& rz, cv::Matx33d& matrix3x3)
+cv::Matx33d ConstructEulerRotationMatrix(const double& rx, const double& ry, const double& rz)
 {
-  cv::Matx33d rotationAboutX;
-  cv::Matx33d rotationAboutY;
-  cv::Matx33d rotationAboutZ;
+  cv::Matx33d result;
 
-  GenerateEulerRxMatrix(rx, rotationAboutX);
-  GenerateEulerRyMatrix(ry, rotationAboutY);
-  GenerateEulerRzMatrix(rz, rotationAboutZ);
+  cv::Matx33d rotationAboutX = ConstructEulerRxMatrix(rx);
+  cv::Matx33d rotationAboutY = ConstructEulerRyMatrix(ry);
+  cv::Matx33d rotationAboutZ = ConstructEulerRzMatrix(rz);
 
-  matrix3x3 = (rotationAboutZ * (rotationAboutY * rotationAboutX));
+  result = (rotationAboutZ * (rotationAboutY * rotationAboutX));
+  return result;
 }
 
 
@@ -378,11 +389,9 @@ cv::Matx13d ConvertEulerToRodrigues(
     const double& rz
     )
 {
-
-  cv::Matx33d rotationMatrix;
   cv::Matx13d rotationVector;
 
-  GenerateEulerRotationMatrix(rx, ry, rz, rotationMatrix);
+  cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
   cv::Rodrigues(rotationMatrix, rotationVector);
 
   return rotationVector;
@@ -390,7 +399,7 @@ cv::Matx13d ConvertEulerToRodrigues(
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d Construct4x4TransformationMatrix(
+cv::Matx44d ConstructRigidTransformationMatrix(
     const double& rx,
     const double& ry,
     const double& rz,
@@ -400,11 +409,9 @@ cv::Matx44d Construct4x4TransformationMatrix(
     )
 {
   cv::Matx44d transformation;
-  cv::Matx33d rotationMatrix;
-
-  GenerateEulerRotationMatrix(rx, ry, rz, rotationMatrix);
-
   transformation.eye();
+
+  cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
 
   for (int i = 0; i < 3; i++)
   {
@@ -422,7 +429,7 @@ cv::Matx44d Construct4x4TransformationMatrix(
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d Construct4x4TransformationMatrixFromDegrees(
+cv::Matx44d ConstructRigidTransformationMatrixUsingDegrees(
     const double& rx,
     const double& ry,
     const double& rz,
@@ -438,7 +445,46 @@ cv::Matx44d Construct4x4TransformationMatrixFromDegrees(
   radians[1] = ry * pi / 180;
   radians[2] = rz * pi / 180;
 
-  return Construct4x4TransformationMatrix(radians[0], radians[1], radians[2], tx, ty, tz);
+  return ConstructRigidTransformationMatrix(radians[0], radians[1], radians[2], tx, ty, tz);
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
+{
+  cv::Matx44d scaling;
+  scaling.eye();
+
+  scaling(0,0) = sx;
+  scaling(1,1) = sy;
+  scaling(2,2) = sz;
+
+  return scaling;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructSimilarityTransformationMatrixUsingDegrees(
+    const double& rx,
+    const double& ry,
+    const double& rz,
+    const double& tx,
+    const double& ty,
+    const double& tz,
+    const double& sx,
+    const double& sy,
+    const double& sz
+    )
+{
+  cv::Matx44d scaling;
+  cv::Matx44d rigid;
+  cv::Matx44d result;
+
+  rigid = ConstructRigidTransformationMatrixUsingDegrees(rx, ry, rz, tx, ty, tz);
+  scaling = ConstructScalingTransformation(sx, sy, sz);
+
+  result = scaling * rigid;
+  return result;
 }
 
 //-----------------------------------------------------------------------------

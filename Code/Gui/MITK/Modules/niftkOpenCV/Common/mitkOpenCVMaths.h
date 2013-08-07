@@ -98,7 +98,7 @@ extern "C++" NIFTKOPENCV_EXPORT double CalculateFiducialRegistrationError(const 
 /**
  * \brief Simply copies the translation vector and rotation matrix into the 4x4 matrix.
  */
-extern "C++" NIFTKOPENCV_EXPORT void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix);
+extern "C++" NIFTKOPENCV_EXPORT void ConstructAffineMatrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix);
 
 
 /**
@@ -118,7 +118,7 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& matr
  * \param rx angle in radians
  * \param matrix3x3 pre-allocated [3x3] matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRxMatrix(const double& rx, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT void ConstructEulerRxMatrix(const double& rx, cv::Matx33d& matrix3x3);
 
 
 /**
@@ -126,15 +126,15 @@ extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRxMatrix(const double& rx, cv:
  * \param ry angle in radians
  * \param matrix3x3 pre-allocated [3x3] matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRyMatrix(const double& ry, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT void ConstructEulerRyMatrix(const double& ry, cv::Matx33d& matrix3x3);
 
 
 /**
  * \brief Generates a rotation about Z-axis, given a Euler angle in radians.
  * \param rz angle in radians
- * \param matrix3x3 pre-allocated [3x3] matrix
+ * \return a new [3x3] rotation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRzMatrix(const double& rz, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx33d ConstructEulerRzMatrix(const double& rz);
 
 
 /**
@@ -142,9 +142,9 @@ extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRzMatrix(const double& rz, cv:
  * \param rx angle in radians
  * \param ry angle in radians
  * \param rz angle in radians
- * \param matrix3x3 pre-allocated [3x3] matrix
+ * \return a new [3x3] rotation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void GenerateEulerRotationMatrix(const double& rx, const double& ry, const double& rz, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx33d ConstructEulerRotationMatrix(const double& rx, const double& ry, const double& rz);
 
 
 /**
@@ -171,7 +171,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
  * \param tz translation in millimetres along z-axis
  * \return a new [4x4] matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d Construct4x4TransformationMatrix(
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrix(
   const double& rx,
   const double& ry,
   const double& rz,
@@ -185,7 +185,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d Construct4x4TransformationMatrix(
  * \brief From rotations in degrees (+/- 180), converts to radians, then passes on to Construct4x4TransformationMatrix.
  * \return a new [4x4] matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d Construct4x4TransformationMatrixFromDegrees(
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrixUsingDegrees(
   const double& rx,
   const double& ry,
   const double& rz,
@@ -194,6 +194,29 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d Construct4x4TransformationMatrixFrom
   const double& tz
   );
 
+
+/**
+ * \brief Constructs a scaling matrix from sx, sy, sz where the scale factors simply appear on the diagonal.
+ * \return a new [4x4] matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz = 1);
+
+
+/**
+ * \brief Constructs an affine transformation, without skew using the specified parameters, where rotations are in degrees.
+ * \return a new [4x4] matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMatrixUsingDegrees(
+    const double& rx,
+    const double& ry,
+    const double& rz,
+    const double& tx,
+    const double& ty,
+    const double& tz,
+    const double& sx,
+    const double& sy,
+    const double& sz
+    );
 } // end namespace
 
 #endif
