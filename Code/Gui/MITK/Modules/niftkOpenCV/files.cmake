@@ -22,6 +22,7 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
+  VideoProcessing/mitkProjectPointsOnStereoVideo.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
