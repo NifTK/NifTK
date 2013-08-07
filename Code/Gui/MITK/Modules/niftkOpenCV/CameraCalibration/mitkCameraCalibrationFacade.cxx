@@ -1375,12 +1375,12 @@ void TriangulatePointPairs(
   for (int i = 0; i < numberOfPoints; i++)
   {
     leftPoint.x = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 0);
-    leftPoint.y = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 0);
+    leftPoint.y = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 1);
     rightPoint.x = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 0);
-    rightPoint.y = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 0);
+    rightPoint.y = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 1);
+    inputPairs.push_back( std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
   }
 
-  inputPairs.push_back( std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
 
   // Call the other, more C++ like method.
   outputPoints = TriangulatePointPairs(
@@ -1440,17 +1440,20 @@ std::vector< cv::Point3f > TriangulatePointPairs(
   // E2 = Object to Right Camera = Right Camera Extrinsics.
   // K1 = Copy of Left Camera intrinsics.
   // K2 = Copy of Right Camera intrinsics.
+  // Copy data into cv::Mat data types.
+  // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
+  // These triangulation routines need 64 bit data.
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
     {
-      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<double>(i,j);
-      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<double>(i,j);
-      E1.at<double>(i,j) = R1.at<double>(i,j);
-      E2.at<double>(i,j) = R2.at<double>(i,j);
+      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<float>(i,j);
+      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<float>(i,j);
+      E1.at<double>(i,j) = R1.at<float>(i,j);
+      E2.at<double>(i,j) = R2.at<float>(i,j);
     }
-    E1.at<double>(i,3) = leftCameraTranslationVector.at<double>(0,i);
-    E2.at<double>(i,3) = rightCameraTranslationVector.at<double>(0,i);
+    E1.at<double>(i,3) = leftCameraTranslationVector.at<float>(0,i);
+    E2.at<double>(i,3) = rightCameraTranslationVector.at<float>(0,i);
   }
   E1.at<double>(3,0) = 0;
   E1.at<double>(3,1) = 0;
