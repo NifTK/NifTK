@@ -30,6 +30,8 @@
  * \brief Various VTK functions that need sorting into a more sensible arrangement.
  */
 
+namespace niftk {
+
 /** Returns the Euclidean distance between two 3D points, so a and b must be arrays of length 3. */
 extern "C++" NIFTKVTK_WINEXPORT double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b);
 
@@ -72,7 +74,7 @@ extern "C++" NIFTKVTK_WINEXPORT double GetBoundingBoxDiagonalLength(const double
 /** Copies n doubles from a to b, which must be allocated, and at least of length n. */
 extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, double *b);
 
-/** 
+/**
  * \brief Perturbs the points in a polydata object by random values, using existing random number generator
  * \param polydata the polydata
  * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
@@ -82,8 +84,8 @@ extern "C++" NIFTKVTK_WINEXPORT void CopyDoubleVector(int n, const double *a, do
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
         double xerr, double yerr, double zerr, vtkRandomSequence * rng);
 
-/** 
- * \brief Perturbs the points in a polydata object by with random values, intialising and using it's own random number generator 
+/**
+ * \brief Perturbs the points in a polydata object by with random values, intialising and using it's own random number generator
  * \param polydata the polydata
  * \param xerr,yerr,zerr the multipliers for the random number generator in each direction.
  * \return void
@@ -91,7 +93,7 @@ extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
 extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
         double xerr, double yerr, double zerr);
 
-/** 
+/**
  * \brief Translates a polydata object using a transform.
  * \param polydata the polydata
  * \param transform the transform
@@ -100,7 +102,7 @@ extern "C++" NIFTKVTK_WINEXPORT void PerturbPolyData(vtkPolyData * polydata,
 extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
   (vtkPolyData  * polydata, vtkTransform * transform);
 
-/** 
+/**
  * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
  * \param transform the transform to hold the result
  * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
@@ -112,7 +114,7 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
   vtkRandomSequence * rng);
 
-/** 
+/**
  * \brief Creates a randomly determined vtktransform, using it's own random number generator
  * \param transform the transform to hold the result
  * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
@@ -122,16 +124,16 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   (vtkTransform  * transform,
   double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot);
 
-/** 
- * \brief Normalises the values returned by a vtk random sequence to be centred on zero 
+/**
+ * \brief Normalises the values returned by a vtk random sequence to be centred on zero
  * \param rng the random number sequence
  * \return The normalised value
  * */
 extern "C++" NIFTKVTK_WINEXPORT double NormalisedRNG (vtkRandomSequence * rng);
 
-/** 
- * \brief Measures the euclidean distances between the points in two polydata, and sets the 
- * \brief scalars in both polydata to a color map to show the differences, min distance red, 
+/**
+ * \brief Measures the euclidean distances between the points in two polydata, and sets the
+ * \brief scalars in both polydata to a color map to show the differences, min distance red,
  * \brief max distance is blue. Mid distance is green
  * \param source,target the two polydata, they need the same number of points
  * \return true if Ok, false if error
@@ -152,13 +154,13 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double  point[3] , vt
  * on a polydata mesh
  * \param point the point
  * \param targetLocator a vtkCellLocator, built from the polydata
- * \param cell  and optionally a vtkGenericCell 
+ * \param cell  and optionally a vtkGenericCell
  * \return the euclidean distance
  */
 extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vtkCellLocator * targetLocator  , vtkGenericCell * cell = NULL );
 
 /**
- * \brief Calculates the euclidean distance (in 3D) between each point in the 
+ * \brief Calculates the euclidean distance (in 3D) between each point in the
  * source polydata and the closest point on the target polydata mesh.
  * The result are stored the distances in the scalar values of the source
  * \param source,target the source and target polydata.
@@ -166,7 +168,7 @@ extern "C++" NIFTKVTK_WINEXPORT double DistanceToSurface ( double point [3] , vt
 extern "C++" NIFTKVTK_WINEXPORT void DistanceToSurface (vtkPolyData * source, vtkPolyData * target);
 
 /**
- * \brief Calculates the euclidean distance (in 3D) between each point in the 
+ * \brief Calculates the euclidean distance (in 3D) between each point in the
  * source polydata and the closest point on the target polydata mesh.
  * The result distances are stored in the scalar values passed in.
  * \param source,target the source and target polydata.
@@ -217,8 +219,11 @@ extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
     );
 
 /**
- * \brief Randomly removes points from the passed polydata until the passed number of points 
+ * \brief Randomly removes points from the passed polydata until the passed number of points
  * Any cells or surfaces will be deleted as part of the process, leaving only points.
  */
 extern "C++" NIFTKVTK_WINEXPORT bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points = 200);
-#endif // vtkFunctions_h
+
+} // end namespace
+
+#endif

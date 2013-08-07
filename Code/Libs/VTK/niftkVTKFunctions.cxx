@@ -26,6 +26,8 @@
 #include <vtkPointData.h>
 #include <vtkGenericCell.h>
 
+namespace niftk {
+
 //-----------------------------------------------------------------------------
 double GetEuclideanDistanceBetweenTwo3DPoints(const double *a, const double *b)
 {
@@ -199,7 +201,7 @@ void RandomTransform ( vtkTransform * transform,
   double z;
   x=xtrans * NormalisedRNG ( rng ) ;
   rng->Next();
-  y=ytrans * NormalisedRNG ( rng ); 
+  y=ytrans * NormalisedRNG ( rng );
   rng->Next();
   z=ztrans * NormalisedRNG ( rng );
   rng->Next();
@@ -236,7 +238,7 @@ void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
 
 
 //-----------------------------------------------------------------------------
-void PerturbPolyData(vtkPolyData* polydata, 
+void PerturbPolyData(vtkPolyData* polydata,
     double xerr, double yerr, double zerr, vtkRandomSequence* rng)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -247,11 +249,11 @@ void PerturbPolyData(vtkPolyData* polydata,
     points->GetPoint(i, p);
     double perturb[3];
     rng->Next();
-    perturb[0] = NormalisedRNG(rng) * xerr ; 
+    perturb[0] = NormalisedRNG(rng) * xerr ;
     rng->Next();
-    perturb[1] = NormalisedRNG(rng) * yerr ; 
+    perturb[1] = NormalisedRNG(rng) * yerr ;
     rng->Next();
-    perturb[2] = NormalisedRNG(rng) * zerr ; 
+    perturb[2] = NormalisedRNG(rng) * zerr ;
     rng->Next();
     for(unsigned int j = 0; j < 3; j++)
     {
@@ -264,7 +266,7 @@ void PerturbPolyData(vtkPolyData* polydata,
 
 
 //-----------------------------------------------------------------------------
-void PerturbPolyData(vtkPolyData* polydata, 
+void PerturbPolyData(vtkPolyData* polydata,
     double xerr, double yerr, double zerr)
 {
    vtkSmartPointer<vtkBoxMuellerRandomSequence> Gauss_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
@@ -286,13 +288,13 @@ void RandomTransform ( vtkTransform * transform,
 
 
 //-----------------------------------------------------------------------------
-double NormalisedRNG (vtkRandomSequence* rng) 
+double NormalisedRNG (vtkRandomSequence* rng)
 {
-  if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 ) 
+  if  ( rng->IsA("vtkMinimalStandardRandomSequence") == 1 )
   {
     return rng->GetValue() - 0.5;
   }
-  if ( rng->IsA("vtkBoxMuellerRandomSequence") == 1 ) 
+  if ( rng->IsA("vtkBoxMuellerRandomSequence") == 1 )
   {
     return rng->GetValue();
   }
@@ -376,7 +378,7 @@ double DistanceToSurface (  double point[3],  vtkPolyData * target )
 
 
 //-----------------------------------------------------------------------------
-double DistanceToSurface (  double point[3], 
+double DistanceToSurface (  double point[3],
      vtkCellLocator * targetLocator, vtkGenericCell * cell )
 {
   double NearestPoint [3];
@@ -384,7 +386,7 @@ double DistanceToSurface (  double point[3],
   int SubID;
   double DistanceSquared;
 
-  if ( cell != NULL ) 
+  if ( cell != NULL )
   {
     targetLocator->FindClosestPoint(point, NearestPoint, cell,
         cellID, SubID, DistanceSquared);
@@ -434,7 +436,7 @@ void DistanceToSurface ( vtkPolyData * source, vtkPolyData * target )
 bool SaveMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix, const bool& silent)
 {
   bool successful = false;
-  
+
   ofstream myfile(fileName.c_str());
   if (myfile.is_open())
   {
@@ -490,7 +492,7 @@ vtkMatrix4x4* LoadMatrix4x4FromFile(const std::string& fileName, const bool& sil
       }
     }
   }
- 
+
   return result;
 }
 
@@ -597,7 +599,7 @@ bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
 {
   vtkSmartPointer<vtkMinimalStandardRandomSequence> rng = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   rng->SetSeed(time(NULL));
-  
+
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkPoints> pointsout = vtkSmartPointer<vtkPoints>::New();
   points->ShallowCopy(PolyData->GetPoints());
@@ -611,5 +613,8 @@ bool CropPointsFromPolyData(vtkPolyData* PolyData, int Points)
   PolyData->SetPoints(pointsout);
   return true;
 }
+
+//-----------------------------------------------------------------------------
+} // end namespace
 
 
