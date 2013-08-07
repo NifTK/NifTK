@@ -21,6 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <cv.h>
+#include <highgui.h>
 #include <mitkVideoTrackerMatching.h>
 
 namespace mitk {
@@ -80,8 +81,8 @@ public:
     (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPointPairs, 
      unsigned int FrameNumber);
 
-  itkSetMacro ( Visualise, bool);
-  itkSetMacro ( SaveVideo, bool);
+  void SetVisualise( bool) ;
+  void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
 
@@ -122,6 +123,9 @@ private:
   std::vector <cv::Point3f>     m_PointsInLeftLensCS; // the points in left lens coordinates.
 
   std::vector<std::string> FindVideoData();
+
+  CvCapture*                    m_Capture;
+  CvVideoWriter*                m_Writer;
 }; // end class
 
 } // end namespace
