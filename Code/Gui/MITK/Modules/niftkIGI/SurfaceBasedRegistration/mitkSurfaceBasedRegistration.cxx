@@ -21,7 +21,7 @@
 #include <mitkFileIOUtils.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 
 namespace mitk
 {
@@ -52,7 +52,7 @@ void SurfaceBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
                                       vtkPolyData* movingPoly,
                                       vtkMatrix4x4 * transformMovingToFixed)
 {
-  niftkVTKIterativeClosestPoint * icp = new  niftkVTKIterativeClosestPoint();
+  niftk::VTKIterativeClosestPoint * icp = new  niftk::VTKIterativeClosestPoint();
   icp->SetMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
   icp->SetMaxIterations(m_MaximumIterations);
   icp->SetSource(movingPoly);

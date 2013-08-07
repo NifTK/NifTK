@@ -27,14 +27,14 @@
 #include <itkLogHelper.h>
 #include <ConversionUtils.h>
 #include <niftkVTKDistanceToSurfaceCLP.h>
+#include <niftkVTK4PointsReader.h>
+#include <niftkVTKFunctions.h>
+
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
-#include <niftkvtk4PointsReader.h>
-#include <vtkFunctions.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkSortDataArray.h>
-
 #include <vtkActor.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkPolyData> source = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> target = vtkSmartPointer<vtkPolyData>::New();
 
-  vtkSmartPointer<niftkvtk4PointsReader> sourceReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
+  vtkSmartPointer<niftk::VTK4PointsReader> sourceReader = vtkSmartPointer<niftk::VTK4PointsReader>::New();
   sourceReader->SetFileName(sourcePoints.c_str());
   sourceReader->Setm_ReadWeights(false);
   sourceReader->Update();
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
   target->ShallowCopy (targetReader->GetOutput());
   std::cout << "Loaded PolyData:" << targetPolyData << std::endl;
   
-  DistanceToSurface(source, target);
+  niftk::DistanceToSurface(source, target);
 
   vtkSmartPointer<vtkDoubleArray> distancesArray = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkUnsignedIntArray> idarray = vtkSmartPointer<vtkUnsignedIntArray>::New();

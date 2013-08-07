@@ -25,19 +25,19 @@
 *
 */
 
-#include <itkLogHelper.h>
-#include <ConversionUtils.h>
 #include <niftkVTKIterativeClosestPointRegisterCLP.h>
+#include <niftkVTKIterativeClosestPoint.h>
+#include <niftkVTK4PointsReader.h>
+#include <niftkVTKFunctions.h>
+
+#include <ConversionUtils.h>
+#include <itkLogHelper.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
-#include <niftkVTKIterativeClosestPoint.h>
-#include <niftkvtk4PointsReader.h>
-#include <vtkFunctions.h>
-
 #include <vtkActor.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 
   if ( boost::algorithm::ends_with(args.sourcePolyDataFile , ".txt") )
   {
-    vtkSmartPointer<niftkvtk4PointsReader> sourceReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
+    vtkSmartPointer<niftk::VTK4PointsReader> sourceReader = vtkSmartPointer<niftk::VTK4PointsReader>::New();
     sourceReader->SetFileName(args.sourcePolyDataFile.c_str());
     sourceReader->SetClippingOn(2,50, 200);
     sourceReader->Update();
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 
   if ( boost::algorithm::ends_with(args.targetPolyDataFile , ".txt") )
   {
-    vtkSmartPointer<niftkvtk4PointsReader> targetReader = vtkSmartPointer<niftkvtk4PointsReader>::New();
+    vtkSmartPointer<niftk::VTK4PointsReader> targetReader = vtkSmartPointer<niftk::VTK4PointsReader>::New();
     targetReader->SetFileName(args.targetPolyDataFile.c_str());
     targetReader->SetClippingOn(2,50, 200);
     targetReader->Update();
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
     std::cout << "Loaded PolyData:" << args.targetPolyDataFile << std::endl;
   }
 
-  niftkVTKIterativeClosestPoint * icp = new niftkVTKIterativeClosestPoint();
+  niftk::VTKIterativeClosestPoint * icp = new niftk::VTKIterativeClosestPoint();
   icp->SetMaxLandmarks(args.maxPoints);
   icp->SetMaxIterations(args.maxIterations);
   icp->SetSource(source);
@@ -204,12 +204,12 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
   if ( args.randomTransform )
   {
-    RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
-    TranslatePolyData ( source , StartTrans);
+    niftk::RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
+    niftk::TranslatePolyData ( source , StartTrans);
   }
   if ( args.perturbTarget )
   {
-    PerturbPolyData(target, 1.0, 1.0 , 1.0);
+    niftk::PerturbPolyData(target, 1.0, 1.0 , 1.0);
   }
   icp->Run();
 
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
     std::cout << "Residual Error = "  << MagError << std::endl;
     std::cout << "Residual Transform = " << *Residual;
     //do a difference image
-    DistancesToColorMap(c_source, solution);
+    niftk::DistancesToColorMap(c_source, solution);
 
   }
 

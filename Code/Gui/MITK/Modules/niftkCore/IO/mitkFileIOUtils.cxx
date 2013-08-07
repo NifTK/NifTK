@@ -13,14 +13,14 @@
 =============================================================================*/
 
 #include <mitkFileIOUtils.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
 vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string& fileName)
 {
-  return LoadMatrix4x4FromFile(fileName, true);
+  return niftk::LoadMatrix4x4FromFile(fileName, true);
 }
 
 
@@ -30,7 +30,7 @@ bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& ma
   bool isSuccessful = false;
   if (fileName.length() > 0)
   {
-    isSuccessful = SaveMatrix4x4ToFile(fileName, matrix);
+    isSuccessful = niftk::SaveMatrix4x4ToFile(fileName, matrix);
   }
   return isSuccessful;
 }

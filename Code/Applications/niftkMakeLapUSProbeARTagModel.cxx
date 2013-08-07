@@ -21,7 +21,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 #include <vtkSphereSource.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCylinderSource.h>
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
       normal[1] = point[1] - centre[1];
       normal[2] = point[2] - centre[2];
 
-      NormaliseToUnitLength(normal, normalised);
+      niftk::NormaliseToUnitLength(normal, normalised);
 
       points->InsertNextPoint(point[0], point[1], point[2]);
       normals->InsertNextTuple3(normalised[0], normalised[1], normalised[2]);
