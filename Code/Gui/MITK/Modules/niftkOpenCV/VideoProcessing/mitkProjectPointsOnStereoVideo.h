@@ -98,6 +98,7 @@ private:
   bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
+  std::string                   m_Directory; //the directory containing the data
   std::vector<cv::Point3f>      m_WorldPoints;  //the world points to project
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
@@ -108,17 +109,19 @@ private:
   bool                          m_ProjectOK;
 
   //the camera calibration parameters
-  CvMat* leftIntrinsicMatrix;
-  CvMat* leftDistortionVector;
-  CvMat* rightIntrinsicMatrix;
-  CvMat* rightDistortionVector;
-  CvMat* rightToLeftRotationMatrix;
-  CvMat* rightToLeftTranslationVector;
-  CvMat* leftHandeye;
+  cv::Mat* leftIntrinsicMatrix;
+  cv::Mat* leftDistortionVector;
+  cv::Mat* rightIntrinsicMatrix;
+  cv::Mat* rightDistortionVector;
+  cv::Mat* rightToLeftRotationMatrix;
+  cv::Mat* rightToLeftTranslationVector;
+  cv::Mat* leftCameraToTracker;
 
   std::vector < std::pair<cv::Point2f, cv::Point2f> > 
                                 m_ProjectedPoints; // the projected points
   std::vector <cv::Point3f>     m_PointsInLeftLensCS; // the points in left lens coordinates.
+
+  std::vector<std::string> FindVideoData();
 }; // end class
 
 } // end namespace
