@@ -33,9 +33,11 @@ namespace mitk {
  * \param images output parameter containing pointers to the images, which the caller must take responsibility for and de-allocate appropriately.
  * \param fileNames output vector containing the corresponding filenames.
  */
- void LoadChessBoardsFromDirectory(const std::string& fullDirectoryName,
-                                   std::vector<IplImage*>& images,
-                                   std::vector<std::string>& fileNames);
+extern "C++" NIFTKOPENCV_EXPORT void LoadChessBoardsFromDirectory(
+  const std::string& fullDirectoryName,
+  std::vector<IplImage*>& images,
+  std::vector<std::string>& fileNames
+  );
 
 
 /**
@@ -44,7 +46,9 @@ namespace mitk {
  * \param width output parameter containing the image width for all the images.
  * \param height output parameter containing the image height for all the images.
  */
-void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& height);
+extern "C++" NIFTKOPENCV_EXPORT void CheckConstImageSize(
+  const std::vector<IplImage*>& images, int& width, int& height
+  );
 
 
 /**
@@ -63,18 +67,21 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
  * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is M x 1, with each entry containing
  * the number N.
  */
-void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
-                             const std::vector<std::string>& fileNames,
-                             const int& numberCornersWidth,
-                             const int& numberCornersHeight,
-                             const bool& drawCorners,
-                             const double& squareSizeInMillimetres,
-                             std::vector<IplImage*>& outputImages,
-                             std::vector<std::string>& outputFileNames,
-                             CvMat*& outputImagePoints,
-                             CvMat*& outputObjectPoints,
-                             CvMat*& outputPointCounts
-                             );
+extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
+  const std::vector<IplImage*>& images,
+  const std::vector<std::string>& fileNames,
+  const int& numberCornersWidth,
+  const int& numberCornersHeight,
+  const bool& drawCorners,
+  const double& squareSizeInMillimetres,
+  std::vector<IplImage*>& outputImages,
+  std::vector<std::string>& outputFileNames,
+  CvMat*& outputImagePoints,
+  CvMat*& outputObjectPoints,
+  CvMat*& outputPointCounts
+  );
+
+
 /**
  * \brief Extracts the chess board points, using OpenCV routines.
  * \param images is a single image.
@@ -87,15 +94,15 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
  * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is 1 x 1, with each entry containing
  * the number N.
  */
-bool ExtractChessBoardPoints(const cv::Mat  image,
-                             const int& numberCornersWidth,
-                             const int& numberCornersHeight,
-                             const bool& drawCorners,
-                             const double& squareSizeInMillimetres,
-                             std::vector<cv::Point2f>*& outputImagePoints,
-                             std::vector<cv::Point3f>*& outputObjectPoints
-                             );
-
+extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
+  const cv::Mat  image,
+  const int& numberCornersWidth,
+  const int& numberCornersHeight,
+  const bool& drawCorners,
+  const double& squareSizeInMillimetres,
+  std::vector<cv::Point2f>*& outputImagePoints,
+  std::vector<cv::Point3f>*& outputObjectPoints
+  );
 
 
 /**
@@ -108,15 +115,15 @@ bool ExtractChessBoardPoints(const cv::Mat  image,
  * \param flags A bit-wise OR, of zero, CV_CALIB_USE_INTRINSIC_GUESS, CV_CALIB_FIX_PRINCIPAL_POINT, CV_CALIB_FIX_ASPECT_RATIO,
  * CV_CALIB_FIX_FOCAL_LENGTH, CV_CALIB_FIXK1, CV_CALIB_FIXK2, CV_CALIB_FIXK3 and CV_CALIB_ZERO_TANGENT_DIST.
  */
-double CalibrateSingleCameraIntrinsicParameters(
-       const CvMat& objectPoints,
-       const CvMat& imagePoints,
-       const CvMat& pointCounts,
-       const CvSize& imageSize,
-       CvMat& outputIntrinsicMatrix,
-       CvMat& outputDistortionCoefficients,
-       const int& flags=0
-       );
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicParameters(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvSize& imageSize,
+  CvMat& outputIntrinsicMatrix,
+  CvMat& outputDistortionCoefficients,
+  const int& flags=0
+  );
 
 
 /**
@@ -128,14 +135,14 @@ double CalibrateSingleCameraIntrinsicParameters(
  * \param outputIntrinsicMatrix \see CalibrateSingleCameraIntrinsicParameters
  * \param outputDistortionCoefficients \see CalibrateSingleCameraIntrinsicParameters
  */
-double CalibrateSingleCameraIntrinsicUsing3Passes(
-       const CvMat& objectPoints,
-       const CvMat& imagePoints,
-       const CvMat& pointCounts,
-       const CvSize& imageSize,
-       CvMat& outputIntrinsicMatrix,
-       CvMat& outputDistortionCoefficients
-       );
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraIntrinsicUsing3Passes(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvSize& imageSize,
+  CvMat& outputIntrinsicMatrix,
+  CvMat& outputDistortionCoefficients
+  );
 
 
 /**
@@ -147,14 +154,14 @@ double CalibrateSingleCameraIntrinsicUsing3Passes(
  * \param outputRotationMatrix [3x3] rotation matrix - see OpenCV docs - for this function its a 3x3 not a 1x3.
  * \param outputTranslationVector [1x3] translation vector.
  */
-void CalibrateSingleCameraExtrinsicParameters(
-     const CvMat& objectPoints,
-     const CvMat& imagePoints,
-     const CvMat& intrinsicMatrix,
-     const CvMat& distortionCoefficients,
-     CvMat& outputRotationMatrix,
-     CvMat& outputTranslationVector
-     );
+extern "C++" NIFTKOPENCV_EXPORT void CalibrateSingleCameraExtrinsicParameters(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  CvMat& outputRotationMatrix,
+  CvMat& outputTranslationVector
+  );
 
 
 /**
@@ -167,16 +174,16 @@ void CalibrateSingleCameraExtrinsicParameters(
  * \param outputRotationMatrix an [Mx3] matrix of rotation vectors, see also cvRodrigues2 to convert from a rotation vector to a rotation matrix.
  * \param outputTranslationVector an [Mx3] matrix of translation vectors.
  */
-double CalibrateSingleCameraParameters(
-     const CvMat& objectPoints,
-     const CvMat& imagePoints,
-     const CvMat& pointCounts,
-     const CvSize& imageSize,
-     CvMat& outputIntrinsicMatrix,
-     CvMat& outputDistortionCoefficients,
-     CvMat& outputRotationVectors,
-     CvMat& outputTranslationVectors
-     );
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateSingleCameraParameters(
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvSize& imageSize,
+  CvMat& outputIntrinsicMatrix,
+  CvMat& outputDistortionCoefficients,
+  CvMat& outputRotationVectors,
+  CvMat& outputTranslationVectors
+  );
 
 
 /**
@@ -187,26 +194,27 @@ double CalibrateSingleCameraParameters(
  * \param viewNumber which view to extract, where 0 <= viewNumber < M, and viewNumber is unvalidated (unchecked).
  * \param outputExtrinsicMatrix the output matrix, which should be a pre-allocated 4x4 matrix
  */
-void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
-    const CvMat& rotationVectors,
-    const CvMat& translationVectors,
-    const int& viewNumber,
-    CvMat& outputExtrinsicMatrix
-    );
+extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
+  const CvMat& rotationVectors,
+  const CvMat& translationVectors,
+  const int& viewNumber,
+  CvMat& outputExtrinsicMatrix
+  );
 
 
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
  * right cameras, and compute transformations from right to left.
  */
-void ComputeRightToLeftTransformations(
-    const CvMat& rotationVectorsLeft,
-    const CvMat& translationVectorsLeft,
-    const CvMat& rotationVectorsRight,
-    const CvMat& translationVectorsRight,
-    const CvMat& rotationVectorsRightToLeft,
-    const CvMat& translationVectorsRightToLeft
-    );
+extern "C++" NIFTKOPENCV_EXPORT void ComputeRightToLeftTransformations(
+  const CvMat& rotationVectorsLeft,
+  const CvMat& translationVectorsLeft,
+  const CvMat& rotationVectorsRight,
+  const CvMat& translationVectorsRight,
+  const CvMat& rotationVectorsRightToLeft,
+  const CvMat& translationVectorsRightToLeft
+  );
+
 
 /**
  * \brief Bulk method to project all points for all calibrations back to 2D, useful for validating calibration.
@@ -219,64 +227,65 @@ void ComputeRightToLeftTransformations(
  * \param translationVectors an [Mx3] matrix of translation vectors.
  * \param outputImagePoints [(MxN)x2] list of 2D image points generated by calling cvProjectPoints2.
  */
-void ProjectAllPoints(
-    const int& numberSuccessfulViews,
-    const int& pointCount,
-    const CvMat& objectPoints,
-    const CvMat& intrinsicMatrix,
-    const CvMat& distortionCoeffictions,
-    const CvMat& rotationVectors,
-    const CvMat& translationVectors,
-    CvMat& outputImagePoints
-    );
+extern "C++" NIFTKOPENCV_EXPORT void ProjectAllPoints(
+  const int& numberSuccessfulViews,
+  const int& pointCount,
+  const CvMat& objectPoints,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoeffictions,
+  const CvMat& rotationVectors,
+  const CvMat& translationVectors,
+  CvMat& outputImagePoints
+  );
 
 
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
  * and also outputs the rotation and translation vector between the two cameras.
  */
-double CalibrateStereoCameraParameters(
-    const CvMat& objectPointsLeft,
-    const CvMat& imagePointsLeft,
-    const CvMat& pointCountsLeft,
-    const CvSize& imageSize,
-    const CvMat& objectPointsRight,
-    const CvMat& imagePointsRight,
-    const CvMat& pointCountsRight,
-    CvMat& outputIntrinsicMatrixLeft,
-    CvMat& outputDistortionCoefficientsLeft,
-    CvMat& outputRotationVectorsLeft,
-    CvMat& outputTranslationVectorsLeft,
-    CvMat& outputIntrinsicMatrixRight,
-    CvMat& outputDistortionCoefficientsRight,
-    CvMat& outputRotationVectorsRight,
-    CvMat& outputTranslationVectorsRight,
-    CvMat& outputRightToLeftRotation,
-    CvMat& outputRightToLeftTranslation,
-    CvMat& outputEssentialMatrix,
-    CvMat& outputFundamentalMatrix
-    );
+extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
+  const CvMat& objectPointsLeft,
+  const CvMat& imagePointsLeft,
+  const CvMat& pointCountsLeft,
+  const CvSize& imageSize,
+  const CvMat& objectPointsRight,
+  const CvMat& imagePointsRight,
+  const CvMat& pointCountsRight,
+  CvMat& outputIntrinsicMatrixLeft,
+  CvMat& outputDistortionCoefficientsLeft,
+  CvMat& outputRotationVectorsLeft,
+  CvMat& outputTranslationVectorsLeft,
+  CvMat& outputIntrinsicMatrixRight,
+  CvMat& outputDistortionCoefficientsRight,
+  CvMat& outputRotationVectorsRight,
+  CvMat& outputTranslationVectorsRight,
+  CvMat& outputRightToLeftRotation,
+  CvMat& outputRightToLeftTranslation,
+  CvMat& outputEssentialMatrix,
+  CvMat& outputFundamentalMatrix
+  );
+
 
 /**
  * \brief Utility method to dump output to a stream.
  */
-void OutputCalibrationData(
-    std::ostream& outputStream,
-    const std::string intrinsicFlatFileName,
-    const CvMat& objectPoints,
-    const CvMat& imagePoints,
-    const CvMat& pointCounts,
-    const CvMat& intrinsicMatrix,
-    const CvMat& distortionCoefficients,
-    const CvMat& rotationVectors,
-    const CvMat& translationVectors,
-    const float& projectionError,
-    const int& sizeX,
-    const int& sizeY,
-    const int& cornersX,
-    const int& cornersY,
-    std::vector<std::string>& fileNames
-    );
+extern "C++" NIFTKOPENCV_EXPORT void OutputCalibrationData(
+  std::ostream& outputStream,
+  const std::string intrinsicFlatFileName,
+  const CvMat& objectPoints,
+  const CvMat& imagePoints,
+  const CvMat& pointCounts,
+  const CvMat& intrinsicMatrix,
+  const CvMat& distortionCoefficients,
+  const CvMat& rotationVectors,
+  const CvMat& translationVectors,
+  const float& projectionError,
+  const int& sizeX,
+  const int& sizeY,
+  const int& cornersX,
+  const int& cornersY,
+  std::vector<std::string>& fileNames
+  );
 
 
 /**
@@ -284,58 +293,59 @@ void OutputCalibrationData(
  * to the output. Assumes that both the intrinsic camera params and distortion coefficients
  * are in OpenCV's xml format.
  */
-void CorrectDistortionInImageFile(
-    const std::string& inputImageFileName,
-    const std::string& inputIntrinsicsFileName,
-    const std::string& inputDistortionCoefficientsFileName,
-    const std::string& outputImageFileName
-    );
+extern "C++" NIFTKOPENCV_EXPORT void CorrectDistortionInImageFile(
+  const std::string& inputImageFileName,
+  const std::string& inputIntrinsicsFileName,
+  const std::string& inputDistortionCoefficientsFileName,
+  const std::string& outputImageFileName
+  );
+
 
 /**
  * \brief Method that reads a single image (eg. png, jpg or anything that OpenCV recognises)
  * and corrects it using the intrinsic params and distortion co-efficients, and writes
  * it to the output file.
  */
-void CorrectDistortionInImageFile(
-    const std::string& inputFileName,
-    const CvMat& intrinsicParams,
-    const CvMat& distortionCoefficients,
-    const std::string& outputFileName
-    );
+extern "C++" NIFTKOPENCV_EXPORT void CorrectDistortionInImageFile(
+  const std::string& inputFileName,
+  const CvMat& intrinsicParams,
+  const CvMat& distortionCoefficients,
+  const std::string& outputFileName
+  );
 
 
 /**
  * \brief Assuming image is pre-allocated, will take the intrinsic and distortion parameters
  * and calculate a pixel-wise undistortion map, and apply it to image.
  */
-void CorrectDistortionInSingleImage(
-    const CvMat& intrinsicParams,
-    const CvMat& distortionCoefficients,
-    IplImage &image
-    );
+extern "C++" NIFTKOPENCV_EXPORT void CorrectDistortionInSingleImage(
+  const CvMat& intrinsicParams,
+  const CvMat& distortionCoefficients,
+  IplImage &image
+  );
 
 
 /**
  * \brief Assumes all image buffers are pre-allocated and the same size,
  * and applies mapX and mapY to image.
  */
-void UndistortImageUsingDistortionMap(
-    const IplImage &mapX,
-    const IplImage &mapY,
-    IplImage &image
-    );
+extern "C++" NIFTKOPENCV_EXPORT void UndistortImageUsingDistortionMap(
+  const IplImage &mapX,
+  const IplImage &mapY,
+  IplImage &image
+  );
 
 
 /**
  * \brief Assumes all image buffers are pre-allocated and the same size,
  * and applies mapX and mapY to the inputImage, and writes to outputImage.
  */
-void ApplyDistortionCorrectionMap(
-    const IplImage &mapX,
-    const IplImage &mapY,
-    const IplImage &inputImage,
-    IplImage &outputImage
-    );
+extern "C++" NIFTKOPENCV_EXPORT void ApplyDistortionCorrectionMap(
+  const IplImage &mapX,
+  const IplImage &mapY,
+  const IplImage &inputImage,
+  IplImage &outputImage
+  );
 
 
 /**
@@ -356,19 +366,19 @@ void ApplyDistortionCorrectionMap(
  * \param output2DPointsLeft [Nx3] matrix of the 2D pixel location in left camera
  * \param output2DPointsRight [Nx3] matrix of the 2D pixel location in right camera
  */
-void Project3DModelPositionsToStereo2D(
-    const CvMat& modelPointsIn3D,
-    const CvMat& leftCameraIntrinsic,
-    const CvMat& leftCameraDistortion,
-    const CvMat& leftCameraRotationVector,
-    const CvMat& leftCameraTranslationVector,
-    const CvMat& rightCameraIntrinsic,
-    const CvMat& rightCameraDistortion,
-    const CvMat& rightToLeftRotationMatrix,
-    const CvMat& rightToLeftTranslationVector,
-    CvMat& output2DPointsLeft,
-    CvMat& output2DPointsRight
-    );
+extern "C++" NIFTKOPENCV_EXPORT void Project3DModelPositionsToStereo2D(
+  const CvMat& modelPointsIn3D,
+  const CvMat& leftCameraIntrinsic,
+  const CvMat& leftCameraDistortion,
+  const CvMat& leftCameraRotationVector,
+  const CvMat& leftCameraTranslationVector,
+  const CvMat& rightCameraIntrinsic,
+  const CvMat& rightCameraDistortion,
+  const CvMat& rightToLeftRotationMatrix,
+  const CvMat& rightToLeftTranslationVector,
+  CvMat& output2DPointsLeft,
+  CvMat& output2DPointsRight
+  );
 
 
 /**
@@ -393,20 +403,20 @@ void Project3DModelPositionsToStereo2D(
  * \param output2DPointsRight [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in right camera
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
-    const CvMat& leftCameraWorldPointsIn3D,
-    const CvMat& leftCameraWorldNormalsIn3D,
-    const CvMat& leftCameraPositionToFocalPointUnitVector,
-    const CvMat& leftCameraIntrinsic,
-    const CvMat& leftCameraDistortion,
-    const CvMat& rightCameraIntrinsic,
-    const CvMat& rightCameraDistortion,
-    const CvMat& rightToLeftRotationMatrix,
-    const CvMat& rightToLeftTranslationVector,
-    CvMat*& outputLeftCameraWorldPointsIn3D,
-    CvMat*& outputLeftCameraWorldNormalsIn3D,
-    CvMat*& output2DPointsLeft,
-    CvMat*& output2DPointsRight
-    );
+  const CvMat& leftCameraWorldPointsIn3D,
+  const CvMat& leftCameraWorldNormalsIn3D,
+  const CvMat& leftCameraPositionToFocalPointUnitVector,
+  const CvMat& leftCameraIntrinsic,
+  const CvMat& leftCameraDistortion,
+  const CvMat& rightCameraIntrinsic,
+  const CvMat& rightCameraDistortion,
+  const CvMat& rightToLeftRotationMatrix,
+  const CvMat& rightToLeftTranslationVector,
+  CvMat*& outputLeftCameraWorldPointsIn3D,
+  CvMat*& outputLeftCameraWorldNormalsIn3D,
+  CvMat*& output2DPointsLeft,
+  CvMat*& output2DPointsRight
+  );
 
 
 /**
@@ -417,10 +427,10 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToSt
  * \param outputIdealPointsNx2 [Nx2] matrix of (x,y) points, as ideal locations in an undistorted image.
  */
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
-    const cv::Mat& cameraIntrinsics3x3,
-    const cv::Mat& cameraDistortionParams5x1,
-    cv::Mat& outputIdealPointsNx2
-    );
+  const cv::Mat& cameraIntrinsics3x3,
+  const cv::Mat& cameraDistortionParams5x1,
+  cv::Mat& outputIdealPointsNx2
+  );
 
 
 /**
@@ -430,11 +440,12 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObserve
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
  */
-void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
-    const cv::Mat& cameraIntrinsics3x3,
-    const cv::Mat& cameraDistortionParams5x1,
-    std::vector<cv::Point2f>& outputIdealPoints
-    );
+extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
+  const cv::Mat& cameraIntrinsics3x3,
+  const cv::Mat& cameraDistortionParams5x1,
+  std::vector<cv::Point2f>& outputIdealPoints
+  );
+
 
 /**
  * \brief Takes an image point, and undistorts it to ideal locations, which is a C++ wrapper for the above method.
@@ -444,11 +455,10 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
  */
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObservedPoint,
-    const cv::Mat& cameraIntrinsics3x3,
-    const cv::Mat& cameraDistortionParams5x1,
-    cv::Point2f& outputIdealPoint
-    );
-
+  const cv::Mat& cameraIntrinsics3x3,
+  const cv::Mat& cameraDistortionParams5x1,
+  cv::Point2f& outputIdealPoint
+  );
 
 
 /**
@@ -459,13 +469,14 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObse
  * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-std::vector< cv::Point3f > TriangulatePointPairs(
-    const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
-    const cv::Mat& leftCameraIntrinsicParams,
-    const cv::Mat& rightCameraIntrinsicParams,
-    const cv::Mat& rightToLeftRotationVector,
-    const cv::Mat& rightToLeftTranslationVector
-    );
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs(
+  const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
+  const cv::Mat& leftCameraIntrinsicParams,
+  const cv::Mat& rightCameraIntrinsicParams,
+  const cv::Mat& rightToLeftRotationVector,
+  const cv::Mat& rightToLeftTranslationVector
+  );
+
 
 /**
  * \brief Triangulates an undistorted (i.e. already correction for distortion) 2D point pair back into 3D.
@@ -476,28 +487,28 @@ std::vector< cv::Point3f > TriangulatePointPairs(
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3f TriangulatePointPair(
-    const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
-    const cv::Mat& leftCameraIntrinsicParams,
-    const cv::Mat& rightCameraIntrinsicParams,
-    const cv::Mat& rightToLeftRotationMatrix,
-    const cv::Mat& rightToLeftTranslationVector
-    );
+  const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
+  const cv::Mat& leftCameraIntrinsicParams,
+  const cv::Mat& rightCameraIntrinsicParams,
+  const cv::Mat& rightToLeftRotationMatrix,
+  const cv::Mat& rightToLeftTranslationVector
+  );
 
 
 /**
  * \brief C Wrapper for the other TriangulatePointPairs.
  */
-void TriangulatePointPairs(
-    const CvMat& leftCameraUndistortedImagePoints,
-    const CvMat& rightCameraUndistortedImagePoints,
-    const CvMat& leftCameraIntrinsicParams,
-    const CvMat& leftCameraRotationVector,
-    const CvMat& leftCameraTranslationVector,
-    const CvMat& rightCameraIntrinsicParams,
-    const CvMat& rightCameraRotationVector,
-    const CvMat& rightCameraTranslationVector,
-    CvMat& output3DPoints
-    );
+extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
+  const CvMat& leftCameraUndistortedImagePoints,
+  const CvMat& rightCameraUndistortedImagePoints,
+  const CvMat& leftCameraIntrinsicParams,
+  const CvMat& leftCameraRotationVector,
+  const CvMat& leftCameraTranslationVector,
+  const CvMat& rightCameraIntrinsicParams,
+  const CvMat& rightCameraRotationVector,
+  const CvMat& rightCameraTranslationVector,
+  CvMat& output3DPoints
+  );
 
 
 /**
@@ -519,15 +530,15 @@ void TriangulatePointPairs(
  * \param rightCameraTranslationVector [1x3] matrix for the extrinsic parameters translation vector.
  * \param outputPoints reconstructed 3D points, but only reconstructed up to a an indeterminant scale factor.
  */
-std::vector< cv::Point3f > TriangulatePointPairs(
-    const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
-    const cv::Mat& leftCameraIntrinsicParams,
-    const cv::Mat& leftCameraRotationVector,
-    const cv::Mat& leftCameraTranslationVector,
-    const cv::Mat& rightCameraIntrinsicParams,
-    const cv::Mat& rightCameraRotationVector,
-    const cv::Mat& rightCameraTranslationVector
-    );
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs(
+  const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
+  const cv::Mat& leftCameraIntrinsicParams,
+  const cv::Mat& leftCameraRotationVector,
+  const cv::Mat& leftCameraTranslationVector,
+  const cv::Mat& rightCameraIntrinsicParams,
+  const cv::Mat& rightCameraRotationVector,
+  const cv::Mat& rightCameraTranslationVector
+  );
 
 
 /**
@@ -549,14 +560,14 @@ std::vector< cv::Point3f > TriangulatePointPairs(
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-cv::Mat_<double> TriangulatePoint(
-    const cv::Matx34d& P1,
-    const cv::Matx34d& P2,
-    const cv::Point3d& u1,
-    const cv::Point3d& u2,
-    const double& w1,
-    const double& w2
-    );
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat_<double> TriangulatePoint(
+  const cv::Matx34d& P1,
+  const cv::Matx34d& P2,
+  const cv::Point3d& u1,
+  const cv::Point3d& u2,
+  const double& w1,
+  const double& w2
+  );
 
 
 /**
@@ -573,123 +584,141 @@ cv::Mat_<double> TriangulatePoint(
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-cv::Point3d IterativeTriangulatePoint(
-    const cv::Matx34d& P1,
-    const cv::Matx34d& P2,
-    const cv::Point3d& u1,
-    const cv::Point3d& u2
-    );
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d IterativeTriangulatePoint(
+  const cv::Matx34d& P1,
+  const cv::Matx34d& P2,
+  const cv::Point3d& u1,
+  const cv::Point3d& u2
+  );
 
 /**
  * \brief Returns the angular distance between two rotation matrices
  */
-double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+extern "C++" NIFTKOPENCV_EXPORT double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2);
+
 
 /**
  * \brief Converts a 3x3 rotation matrix to a quaternion
  */
-cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix);
+
 
 /**
  * \brief Returns -1.0 if value < 0 or 1.0 if value >= 0
  */
-double ModifiedSignum(double value);
+extern "C++" NIFTKOPENCV_EXPORT double ModifiedSignum(double value);
+
 
 /**
  * \brief Returns 0.0 of value < 0 or sqrt(value) if value >= 0
  */
-double SafeSQRT(double value);
+extern "C++" NIFTKOPENCV_EXPORT double SafeSQRT(double value);
+
 
 /**
  * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and 
  * put them in a vector of 4x4 cvMats
  */
-std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
+
 
 /**
  * \brief Read a set of matrices, stored in openCV xml matrix format from a directory and
  * put them in a vector of 4x4 cvMats
  */
-std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName);
+
 
  /**
   * \brief Load a set of matrices from a file describing the 
   * extrinsic parameters of a standard camera calibration
   */
-std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
+
 
 /**
   * \brief Load stereo camera parameters from a directory
   */
 extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (const std::string& directory,
-    cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion, 
-    cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion, 
-    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
-    cv::Mat* leftCameraToTracker);
+  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
+  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion,
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+  cv::Mat* leftCameraToTracker);
+
 
 /**
  * \brief Load camera intrinsics from a plain text file and return results as
  * cv::Mat
  */
-void LoadCameraIntrinsicsFromPlainText ( const std::string& filename, 
-    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion); 
+extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
+  cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion);
+
 
 /**
  * \brief Load stereo camera parameters from a plain text file
  * cv::Mat
  */
-void LoadStereoTransformsFromPlainText ( const std::string& filename, 
-    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
+extern "C++" NIFTKOPENCV_EXPORT void LoadStereoTransformsFromPlainText ( const std::string& filename,
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
+
 
 /**
  * \brief Load the handeye matrix from a plain text file
  * cv::Mat
  */
-void LoadHandeyeFromPlainText ( const std::string& filename, 
+extern "C++" NIFTKOPENCV_EXPORT void LoadHandeyeFromPlainText ( const std::string& filename,
     cv::Mat* leftCameraToTracker);
+
 
 /**
  * \brief Flips the matrices in the vector from left handed coordinate 
  * system to right handed and vice versa
  */
-std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
+
 
 /**
  * \brief find the average of a vector of 4x4 matrices
  */
-cv::Mat AverageMatrices(std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> Matrices);
+
 
  /**
  * \brief Sorts the matrices based on the translations , and returns the order
  */
-std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> Matrices);
  
+
 /**
   * \brief Sorts the matrices based on the rotations, and returns the order
   */
-std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
+
 
  /**
   * \brief loads a result file into a residual vector and matrix
   */
-void LoadResult(const std::string& Filename, cv::Mat& Result,
-      std::vector<double>& residuals);
+extern "C++" NIFTKOPENCV_EXPORT void LoadResult(const std::string& Filename, cv::Mat& Result,
+  std::vector<double>& residuals);
+
 
  /** 
   * \brief Transforms a point relative to the left camera lens to 
   * world coordinates using the handeye and tracking matrices
   */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
-      cv::Mat& Handeye, cv::Mat& Tracker );
- 
+  cv::Mat& Handeye, cv::Mat& Tracker );
+
+
 /** 
   * \brief Transforms a point in world coordinates to a point 
   * relative to the left lens using
   * world coordinates using the handeye and tracking matrices
   */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
-      cv::Mat& Handeye, cv::Mat& Tracker );
+  cv::Mat& Handeye, cv::Mat& Tracker );
+
 
 } // end namespace
 
-#endif // MITKCAMERACALIBRATIONFACADE_H
+#endif
