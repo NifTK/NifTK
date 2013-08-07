@@ -18,6 +18,7 @@
 #include "niftkCoreExports.h"
 #include <vtkMatrix4x4.h>
 #include <mitkImage.h>
+#include <mitkVector.h>
 
 namespace mitk {
 
@@ -25,6 +26,11 @@ namespace mitk {
  * \file mitkFileIOUtils.h
  * \brief Various file IO stuff, like loading transformations from file.
  */
+
+/**
+ * \brief Loads a point from file, returning true if successful and false otherwise.
+ */
+NIFTKCORE_EXPORT bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point);
 
 /**
  * \brief Load a plain text file of 4 rows of 4 space separated numbers into a vtkMatrix4x4.  
