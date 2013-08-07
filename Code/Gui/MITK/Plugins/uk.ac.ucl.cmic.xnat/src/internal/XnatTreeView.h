@@ -42,9 +42,6 @@ public:
 
 public slots:
   void refreshRows();
-  void createNewRow();
-  void deleteRow(const QModelIndex& index);
-  void deleteCurrentRow();
 
 private:
   /// \brief d pointer of the pimpl pattern

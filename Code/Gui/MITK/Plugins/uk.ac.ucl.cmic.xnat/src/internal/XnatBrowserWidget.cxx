@@ -22,7 +22,6 @@
 
 #include "XnatDownloadManager.h"
 #include "ctkXnatTreeModel.h"
-#include "XnatNameDialog.h"
 #include "XnatTreeView.h"
 
 // Qt includes
