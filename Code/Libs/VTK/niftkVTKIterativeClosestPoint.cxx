@@ -20,11 +20,11 @@
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
 
-// ---------------------------------------------------------------------------
-// Create a reference image corresponding to a given control point grid image
-// ---------------------------------------------------------------------------
+namespace niftk
+{
 
-niftkVTKIterativeClosestPoint::niftkVTKIterativeClosestPoint()
+//-----------------------------------------------------------------------------
+VTKIterativeClosestPoint::VTKIterativeClosestPoint()
   : m_Source(NULL),
   m_Target(NULL),
   m_TransformMatrix(NULL),
@@ -37,7 +37,15 @@ niftkVTKIterativeClosestPoint::niftkVTKIterativeClosestPoint()
   m_Icp->SetMaximumNumberOfIterations(m_MaxIterations);
 }
 
-void niftkVTKIterativeClosestPoint::SetMaxLandmarks(int MaxLandMarks)
+
+//-----------------------------------------------------------------------------
+VTKIterativeClosestPoint::~VTKIterativeClosestPoint()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetMaxLandmarks(int MaxLandMarks)
 {
   m_MaxLandmarks = MaxLandMarks;
   m_Icp->SetMaximumNumberOfLandmarks(m_MaxLandmarks);
@@ -45,23 +53,31 @@ void niftkVTKIterativeClosestPoint::SetMaxLandmarks(int MaxLandMarks)
   //doesn't seem to alter the performance of the algorithm.
 }
 
-void niftkVTKIterativeClosestPoint::SetMaxIterations(int MaxIterations)
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetMaxIterations(int MaxIterations)
 {
   m_MaxIterations = MaxIterations;
   m_Icp->SetMaximumNumberOfLandmarks(m_MaxIterations);
 }
 
-niftkVTKIterativeClosestPoint::~niftkVTKIterativeClosestPoint()
-{}
-void niftkVTKIterativeClosestPoint::SetSource ( vtkSmartPointer<vtkPolyData>  source)
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetSource ( vtkSmartPointer<vtkPolyData>  source)
 {
   m_Source = source;
 }
-void niftkVTKIterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
+
+
+//-----------------------------------------------------------------------------
+void VTKIterativeClosestPoint::SetTarget ( vtkSmartPointer<vtkPolyData>  target)
 {
   m_Target = target;
 }
-bool niftkVTKIterativeClosestPoint::Run()
+
+
+//-----------------------------------------------------------------------------
+bool VTKIterativeClosestPoint::Run()
 {
   if ( m_Source == NULL || m_Target == NULL )
   {
@@ -95,12 +111,16 @@ bool niftkVTKIterativeClosestPoint::Run()
   return true;
 }
 
-vtkSmartPointer<vtkMatrix4x4> niftkVTKIterativeClosestPoint::GetTransform()
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::GetTransform()
 {
   return m_TransformMatrix;
 }
 
-bool niftkVTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
+
+//-----------------------------------------------------------------------------
+bool VTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
 {
   if ( m_Source == NULL && m_TransformMatrix == NULL )
   {
@@ -109,7 +129,7 @@ bool niftkVTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
   vtkSmartPointer<vtkTransformPolyDataFilter> icpTransformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
   vtkSmartPointer<vtkTransform> icpTransform = vtkSmartPointer<vtkTransform>::New();
   icpTransform->SetMatrix(m_TransformMatrix);
-  
+
 #if VTK_MAJOR_VERSION <= 5
   icpTransformFilter->SetInput(m_Source);
   icpTransformFilter->SetOutput(solution);
@@ -121,3 +141,6 @@ bool niftkVTKIterativeClosestPoint::ApplyTransform(vtkPolyData * solution)
   icpTransformFilter->Update();
   return true;
 }
+
+//-----------------------------------------------------------------------------
+} // end namespace

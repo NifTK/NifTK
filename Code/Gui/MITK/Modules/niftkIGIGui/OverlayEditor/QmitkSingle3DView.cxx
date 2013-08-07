@@ -22,7 +22,7 @@
 #include <mitkGeometry3D.h>
 #include <vtkCamera.h>
 #include <vtkTransform.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 #include <Undistortion.h>
 
 //-----------------------------------------------------------------------------
@@ -482,7 +482,7 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
       yAxis[i] = geometryYAxis[i];
     }
 
-    SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, true, *m_MatrixDrivenCamera);
+    niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, true, *m_MatrixDrivenCamera);
   }
 }
 

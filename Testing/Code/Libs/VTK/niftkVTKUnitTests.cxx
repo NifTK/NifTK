@@ -12,20 +12,14 @@
 
 =============================================================================*/
 
-#ifndef vtkEnums_h
-#define vtkEnums_h
-
-/**
- * Compare this with enum SLICE_ORIENTATION_XY/XZ/YZ in vtkImageViewer2.
- * The one in vtkImageViewer2 is the data view, i.e. XY plane, XZ plane, YZ plane.
- * This one is the desired view as the user would expect to specify it.
- */
-enum ViewerSliceOrientation
-{
-  VIEWER_ORIENTATION_CORONAL = 0,
-  VIEWER_ORIENTATION_SAGITTAL = 1,
-  VIEWER_ORIENTATION_AXIAL = 2,
-  VIEWER_ORIENTATION_UNKNOWN = 3
-};
-
+#if defined(_MSC_VER)
+#pragma warning ( disable : 4786 )
 #endif
+
+#include <iostream>
+#include <itkTestMain.h>
+
+void RegisterTests()
+{
+  REGISTER_TEST(niftkVTKLoadSaveMatrix4x4Test);
+}

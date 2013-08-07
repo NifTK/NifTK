@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "niftkvtk4PointsReader.h"
+#include "niftkVTK4PointsReader.h"
 
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
@@ -22,28 +22,33 @@
 
 #include <sstream>
 
-vtkStandardNewMacro(niftkvtk4PointsReader);
+namespace niftk
+{
+
+vtkStandardNewMacro(VTK4PointsReader);
 
 //----------------------------------------------------------------------------
-niftkvtk4PointsReader::niftkvtk4PointsReader()
+VTK4PointsReader::VTK4PointsReader()
 :m_ReadWeights(true)
 {
   this->FileName = 0;
   this->SetNumberOfInputPorts(0);
-  for ( int i = 0 ; i < 4 ; i ++ ) 
+  for ( int i = 0 ; i < 4 ; i ++ )
   {
     m_Clipping[i] = false;
   }
 }
 
+
 //----------------------------------------------------------------------------
-niftkvtk4PointsReader::~niftkvtk4PointsReader()
+VTK4PointsReader::~VTK4PointsReader()
 {
   this->SetFileName(0);
 }
 
+
 //----------------------------------------------------------------------------
-void niftkvtk4PointsReader::PrintSelf(ostream& os, vtkIndent indent)
+void VTK4PointsReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
   os << indent << "FileName: "
@@ -51,8 +56,9 @@ void niftkvtk4PointsReader::PrintSelf(ostream& os, vtkIndent indent)
 
 }
 
+
 //----------------------------------------------------------------------------
-int niftkvtk4PointsReader::RequestData(vtkInformation*,
+int VTK4PointsReader::RequestData(vtkInformation*,
                                        vtkInformationVector**,
                                        vtkInformationVector* outputVector)
 {
@@ -86,7 +92,7 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
     {
       std::stringstream linestream(line);
       bool parseSuccess;
-      if ( m_ReadWeights ) 
+      if ( m_ReadWeights )
       {
         parseSuccess = linestream >> x[0] >> x[1] >> x[2] >> weight;
       }
@@ -94,7 +100,7 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
       {
         parseSuccess = linestream >> x[0] >> x[1] >> x[2];
       }
-      if ( parseSuccess ) 
+      if ( parseSuccess )
       {
         bool ok=true;
         for ( int i = 0 ; i < 3 ; i++)
@@ -133,15 +139,22 @@ int niftkvtk4PointsReader::RequestData(vtkInformation*,
 
   return 1;
 }
+
+
 //-------------------------------------------------------------------------------
-void niftkvtk4PointsReader::SetClippingOn (int direction, double min, double max)
+void VTK4PointsReader::SetClippingOn (int direction, double min, double max)
 {
   m_Clipping[direction] = true;
   m_Min[direction] = min;
   m_Max[direction] = max;
 }
+
+
 //-------------------------------------------------------------------------------
-void niftkvtk4PointsReader::SetClippingOff (int direction)
+void VTK4PointsReader::SetClippingOff (int direction)
 {
   m_Clipping[direction]=false;
 }
+
+}
+

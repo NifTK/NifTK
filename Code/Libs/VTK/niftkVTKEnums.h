@@ -12,20 +12,20 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#ifndef niftkVTKEnums_h
+#define niftkVTKEnums_h
 
-#include <iostream>
-#include <itkTestMain.h>
-
-void RegisterTests()
+/**
+ * Compare this with enum SLICE_ORIENTATION_XY/XZ/YZ in vtkImageViewer2.
+ * The one in vtkImageViewer2 is the data view, i.e. XY plane, XZ plane, YZ plane.
+ * This one is the desired view as the user would expect to specify it.
+ */
+enum ViewerSliceOrientation
 {
-  REGISTER_TEST(VTKIterativeClosestPointTest);
-  REGISTER_TEST(VTKIterativeClosestPointRepeatTest);
-  REGISTER_TEST(VTK3PointReaderTest);
-  REGISTER_TEST(VTK4PointReaderTest);
-  REGISTER_TEST(VTKDistanceToSurfaceTest);
-  REGISTER_TEST(VTKDistanceToSurfaceTestSinglePoint);
-}
+  VIEWER_ORIENTATION_CORONAL = 0,
+  VIEWER_ORIENTATION_SAGITTAL = 1,
+  VIEWER_ORIENTATION_AXIAL = 2,
+  VIEWER_ORIENTATION_UNKNOWN = 3
+};
 
+#endif
