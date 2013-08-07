@@ -24,7 +24,7 @@
 #include <QMessageBox>
 #include <QtConcurrentRun>
 #include <QmitkIGIUtils.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 #include <vtkDoubleArray.h>
 
 
@@ -159,8 +159,9 @@ float SurfaceRegView::ComputeDistance(vtkSmartPointer<vtkPolyData> fixed, vtkSma
   // note: this is run in a worker thread! do not do any updates to data storage or nodes!
 
   vtkSmartPointer<vtkDoubleArray>   result;
+
   // FIXME: this crashes because targetLocator has a null tree member... sometimes???
-  DistanceToSurface(moving, fixed, result);
+  niftk::DistanceToSurface(moving, fixed, result);
 
   double  sum = 0;
   for (int i = 0; i < result->GetNumberOfTuples(); ++i)

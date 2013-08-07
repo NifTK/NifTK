@@ -21,7 +21,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
@@ -153,7 +153,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
   //second test, moving non id fixed ID
-  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();
@@ -172,7 +172,7 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
     return EXIT_FAILURE;
   }
    //third test, fixed non id moving ID
-  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
@@ -191,12 +191,12 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
     return EXIT_FAILURE;
   }
     //forth test, both non id.
-  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
 
-  RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();

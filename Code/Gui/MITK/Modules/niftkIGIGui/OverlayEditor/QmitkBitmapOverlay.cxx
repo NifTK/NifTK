@@ -26,7 +26,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkImageMapper.h>
 #include <vtkCamera.h>
 #include <vtkImageData.h>
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 
 //-----------------------------------------------------------------------------
 QmitkBitmapOverlay::QmitkBitmapOverlay()
@@ -336,8 +336,8 @@ void QmitkBitmapOverlay::SetupCamera()
   windowSize[0] = m_RenderWindow->GetSize()[0];
   windowSize[1] = m_RenderWindow->GetSize()[1];
 
-  SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *backCamera);
-  SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *frontCamera);
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *backCamera);
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *frontCamera);
 
   this->Modified();
 }

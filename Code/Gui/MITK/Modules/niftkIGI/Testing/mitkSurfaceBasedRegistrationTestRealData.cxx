@@ -22,7 +22,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 
-#include <vtkFunctions.h>
+#include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>

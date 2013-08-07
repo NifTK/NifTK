@@ -16,20 +16,21 @@
 #pragma warning ( disable : 4786 )
 #endif
 
+#include <niftkVTKFunctions.h>
+
 #include <iostream>
 #include <cstdlib>
-#include <vtkFunctions.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 
 /**
  * Loads and Saves a vtkMatrix4x4.
  */
-int VTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
+int niftkVTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
 {
   if ( argc != 2 )
   {
-    std::cerr << "Usage VTKLoadSaveMatrix4x4Test outputFile.txt" << std::endl;
+    std::cerr << "Usage niftkVTKLoadSaveMatrix4x4Test outputFile.txt" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -45,12 +46,12 @@ int VTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
     }
   }
 
-  SaveMatrix4x4ToFile(argv[1], *m1);
-  m2 = LoadMatrix4x4FromFile(argv[1]);
+  niftk::SaveMatrix4x4ToFile(argv[1], *m1);
+  m2 = niftk::LoadMatrix4x4FromFile(argv[1]);
 
   if (m2 == NULL)
   {
-    std::cerr << "VTKLoadSaveMatrix4x4Test: the LoadMatrix4x4FromFile should not return NULL, as even an invalid file should return Identity matrix" << std::endl;
+    std::cerr << "niftkVTKLoadSaveMatrix4x4Test: the LoadMatrix4x4FromFile should not return NULL, as even an invalid file should return Identity matrix" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -58,10 +59,10 @@ int VTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
   {
     for (int j = 0; j < 4; j++)
     {
-      std::cerr << "VTKLoadSaveMatrix4x4Test: comparing: " << m1->GetElement(i, j) << ", with " << m2->GetElement(i,j) << std::endl;
+      std::cerr << "niftkVTKLoadSaveMatrix4x4Test: comparing: " << m1->GetElement(i, j) << ", with " << m2->GetElement(i,j) << std::endl;
       if (m1->GetElement(i, j) != m2->GetElement(i,j))
       {
-        std::cerr << "VTKLoadSaveMatrix4x4Test: comparing: " << m1->GetElement(i, j) << ", differs from " << m2->GetElement(i,j) << std::endl;
+        std::cerr << "niftkVTKLoadSaveMatrix4x4Test: comparing: " << m1->GetElement(i, j) << ", differs from " << m2->GetElement(i,j) << std::endl;
         return EXIT_FAILURE;
       }
     }
@@ -69,23 +70,23 @@ int VTKLoadSaveMatrix4x4Test ( int argc, char * argv[] )
 
   if (m1 == m2)
   {
-    std::cerr << "VTKLoadSaveMatrix4x4Test: m1 == m2, vtkMatrix4x4 does not override == so pointer indicates same object, which is wrong.";
+    std::cerr << "niftkVTKLoadSaveMatrix4x4Test: m1 == m2, vtkMatrix4x4 does not override == so pointer indicates same object, which is wrong.";
     return EXIT_FAILURE;
   }
 
   // Load non-existent file, which should then return the identity matrix.
-  m3 = LoadMatrix4x4FromFile("nonsense.txt");
+  m3 = niftk::LoadMatrix4x4FromFile("nonsense.txt");
   if (m3 == NULL)
   {
-    std::cerr << "VTKLoadSaveMatrix4x4Test: loading non-existent matrix should produce identity" << std::endl;
+    std::cerr << "niftkVTKLoadSaveMatrix4x4Test: loading non-existent matrix should produce identity" << std::endl;
     return EXIT_FAILURE;
   }
 
   // Check non-existent file is producing Identity matrix.
   m1->Identity();
-  if (!MatricesAreEqual(*m1, *m3))
+  if (!niftk::MatricesAreEqual(*m1, *m3))
   {
-    std::cerr << "VTKLoadSaveMatrix4x4Test: matrix should be identity matrix:" << *m3 << std::endl;
+    std::cerr << "niftkVTKLoadSaveMatrix4x4Test: matrix should be identity matrix:" << *m3 << std::endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;

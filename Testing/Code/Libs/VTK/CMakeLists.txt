@@ -29,38 +29,38 @@ set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 # Build instructions for Unit Tests.
 #################################################################################
 set( VTKUnitTests_SRCS
-  VTKLoadSaveMatrix4x4Test.cxx
+  niftkVTKLoadSaveMatrix4x4Test.cxx
 )
 
-add_executable(VTKUnitTests VTKUnitTests.cxx ${VTKUnitTests_SRCS})
-target_link_libraries(VTKUnitTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
+add_executable(niftkVTKUnitTests niftkVTKUnitTests.cxx ${VTKUnitTests_SRCS})
+target_link_libraries(niftkVTKUnitTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
 
-set(VTK_UNIT_TESTS ${CXX_TEST_PATH}/VTKUnitTests)
+set(VTK_UNIT_TESTS ${CXX_TEST_PATH}/niftkVTKUnitTests)
 
-add_test(VTK-LoadSaveMatrix4x4Test ${VTK_UNIT_TESTS} VTKLoadSaveMatrix4x4Test ${TEMPORARY_OUTPUT}/VTKLoadSaveMatrix4x4Test.txt )
+add_test(VTK-LoadSaveMatrix4x4Test ${VTK_UNIT_TESTS} niftkVTKLoadSaveMatrix4x4Test ${TEMPORARY_OUTPUT}/VTKLoadSaveMatrix4x4Test.txt )
 
 #################################################################################
 # Build instructions for Integration Tests.
 #################################################################################
 set( VTKIntegrationTests_SRCS
-     VTKIterativeClosestPointTest.cxx
-     VTKTextFileReaderTests.cxx
-     VTKDistanceToSurfaceTests.cxx
+     niftkVTKIterativeClosestPointTest.cxx
+     niftkVTKTextFileReaderTests.cxx
+     niftkVTKDistanceToSurfaceTests.cxx
 )
 
-add_executable(VTKIntegrationTests VTKIntegrationTests.cxx ${VTKIntegrationTests_SRCS})
-target_link_libraries(VTKIntegrationTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
+add_executable(niftkVTKIntegrationTests niftkVTKIntegrationTests.cxx ${VTKIntegrationTests_SRCS})
+target_link_libraries(niftkVTKIntegrationTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
 
-set(VTK_INTEGRATION_TESTS ${CXX_TEST_PATH}/VTKIntegrationTests)
+set(VTK_INTEGRATION_TESTS ${CXX_TEST_PATH}/niftkVTKIntegrationTests)
 
-add_test(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK4PointReaderTest ${INPUT_DATA}/4points.txt)
-add_test(VTK-3Point-Reader-Test ${VTK_INTEGRATION_TESTS} VTK3PointReaderTest ${INPUT_DATA}/3points.txt)
-add_test(VTK-Distance-To-Surface-PolyData-Test ${VTK_INTEGRATION_TESTS} VTKDistanceToSurfaceTest ${INPUT_DATA}/3points.txt  ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/PointsToSurfaceDist.txt)
-add_test(VTK-Distance-To-Surface-Single-Test ${VTK_INTEGRATION_TESTS} VTKDistanceToSurfaceTestSinglePoint 5.4 2.20 1.134 ${INPUT_DATA}/liver.vtk 146.72)
-add_test(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk noperturb)
+add_test(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} niftkVTK4PointReaderTest ${INPUT_DATA}/4points.txt)
+add_test(VTK-3Point-Reader-Test ${VTK_INTEGRATION_TESTS} niftkVTK3PointReaderTest ${INPUT_DATA}/3points.txt)
+add_test(VTK-Distance-To-Surface-PolyData-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTest ${INPUT_DATA}/3points.txt  ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/PointsToSurfaceDist.txt)
+add_test(VTK-Distance-To-Surface-Single-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTestSinglePoint 5.4 2.20 1.134 ${INPUT_DATA}/liver.vtk 146.72)
+add_test(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk noperturb)
 if(BUILD_SLS_TESTING)
-  add_test(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
-  add_test(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} VTKIterativeClosestPointRepeatTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk)
+  add_test(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
+  add_test(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointRepeatTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk)
 endif()
 
 

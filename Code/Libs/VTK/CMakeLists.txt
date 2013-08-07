@@ -13,9 +13,9 @@
 #============================================================================*/
 
 set(niftkVTK_SRCS
-  Common/vtkFunctions.cxx
+  niftkVTKFunctions.cxx
   niftkVTKIterativeClosestPoint.cxx
-  niftkvtk4PointsReader.cxx
+  niftkVTK4PointsReader.cxx
 )
 
 add_library(niftkVTK ${niftkVTK_SRCS})
