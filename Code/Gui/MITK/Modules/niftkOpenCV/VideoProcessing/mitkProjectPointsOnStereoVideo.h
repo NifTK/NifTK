@@ -89,6 +89,7 @@ protected:
 private:
   bool                          m_Visualise; //if true the project function attempts to open a couple of windows to show projection in real time
   bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
+  std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::vector<cv::Point3f>      m_WorldPoints;  //the world points to project
 
