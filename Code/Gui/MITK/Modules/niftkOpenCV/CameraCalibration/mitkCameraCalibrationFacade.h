@@ -15,6 +15,7 @@
 #ifndef mitkCameraCalibrationFacade_h
 #define mitkCameraCalibrationFacade_h
 
+#include "niftkOpenCVExports.h"
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
@@ -391,7 +392,7 @@ void Project3DModelPositionsToStereo2D(
  * \param output2DPointsLeft [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in left camera
  * \param output2DPointsRight [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in right camera
  */
-std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
     const CvMat& leftCameraWorldPointsIn3D,
     const CvMat& leftCameraWorldNormalsIn3D,
     const CvMat& leftCameraPositionToFocalPointUnitVector,
@@ -415,7 +416,7 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPointsNx2 [Nx2] matrix of (x,y) points, as ideal locations in an undistorted image.
  */
-void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
+extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
     const cv::Mat& cameraIntrinsics3x3,
     const cv::Mat& cameraDistortionParams5x1,
     cv::Mat& outputIdealPointsNx2
@@ -474,7 +475,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-cv::Point3f TriangulatePointPair(
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f TriangulatePointPair(
     const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
@@ -620,7 +621,7 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
 /**
   * \brief Load stereo camera parameters from a directory
   */
-void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (const std::string& directory,
     cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion, 
     cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion, 
     cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
@@ -678,7 +679,7 @@ void LoadResult(const std::string& Filename, cv::Mat& Result,
   * \brief Transforms a point relative to the left camera lens to 
   * world coordinates using the handeye and tracking matrices
   */
-cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
       cv::Mat& Handeye, cv::Mat& Tracker );
  
 /** 
@@ -686,7 +687,7 @@ cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
   * relative to the left lens using
   * world coordinates using the handeye and tracking matrices
   */
-cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
       cv::Mat& Handeye, cv::Mat& Tracker );
 
 } // end namespace
