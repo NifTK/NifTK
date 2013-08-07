@@ -76,7 +76,14 @@ public:
    * \brief Set the world points by triangulating their position from the
    * on screen coordinates for the specified frame
    */
-  void SetWorldPointsByTriangulation (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPoinntPairs);
+  void SetWorldPointsByTriangulation 
+    (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPointPairs, 
+     unsigned int FrameNumber);
+
+  itkSetMacro ( Visualise, bool);
+  itkSetMacro ( SaveVideo, bool);
+  itkSetMacro ( TrackerIndex, int);
+  itkSetMacro ( DrawLines, bool);
 
 protected:
 

@@ -20,8 +20,23 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
+: m_Visualise(false)
+, m_SaveVideo(false)
+, m_VideoIn("")
+, m_VideoOut("")
+, m_TrackerIndex(0)
+, m_TrackerMatcher(NULL)
+, m_DrawLines(false)
+, m_InitOK(false)
+, m_ProjectOK(false)
+, leftIntrinsicMatrix (cvCreateMat(3,3,CV_32FC1))
+, leftDistortionVector (cvCreateMat(5,1,CV_32FC1))
+, rightIntrinsicMatrix (cvCreateMat(3,3,CV_32FC1))
+, rightDistortionVector (cvCreateMat(5,1,CV_32FC1))
+, rightToLeftRotationMatrix (cvCreateMat(3,3,CV_32FC1))
+, rightToLeftTranslationVector (cvCreateMat(3,1,CV_32FC1))
+, leftHandeye (cvCreateMat(4,4,CV_32FC1))
 {
-
 }
 
 
