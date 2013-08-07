@@ -20,6 +20,9 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <mitkVector.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace mitk {
 
@@ -35,12 +38,32 @@ public:
   mitkClassMacro(UltrasoundPinCalibration, itk::Object);
   itkNewMacro(UltrasoundPinCalibration);
 
-  /**
-   * \brief Calibration function that returns the residual (basically the spread of the reconstructed points).
-   */
-  double Calibrate(const std::string& matrixDirectory,
+  bool CalibrateUsingTrackerPointAndFilesInTwoDirectories(
+      const std::string& matrixDirectory,
       const std::string& pointDirectory,
-      const std::string& outputFileName
+      const std::string& outputFileName,
+      const mitk::Point3D& invariantPoint,
+      const mitk::Point2D& originInImagePlaneInPixels,
+      double &residualError
+      );
+
+  bool CalibrateUsingTrackerPoint(
+      const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
+      const std::vector<mitk::Point3D>& points,
+      const mitk::Point3D& invariantPoint,
+      const mitk::Point2D& originInImagePlaneInPixels,
+      double &residualError,
+      vtkMatrix4x4 &outputMatrix
+      );
+
+  bool Calibrate(
+      const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
+      const std::vector<mitk::Point3D>& points,
+      const vtkMatrix4x4& worldToPhantomMatrix,
+      const mitk::Point3D& invariantPoint,
+      const mitk::Point2D& originInImagePlaneInPixels,
+      double &residualError,
+      vtkMatrix4x4 &outputMatrix
       );
 
 protected:
@@ -50,6 +73,8 @@ protected:
 
   UltrasoundPinCalibration(const UltrasoundPinCalibration&); // Purposefully not implemented.
   UltrasoundPinCalibration& operator=(const UltrasoundPinCalibration&); // Purposefully not implemented.
+
+private:
 
 }; // end class
 

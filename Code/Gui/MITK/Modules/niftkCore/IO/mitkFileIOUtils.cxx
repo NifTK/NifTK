@@ -14,8 +14,36 @@
 
 #include <mitkFileIOUtils.h>
 #include <niftkVTKFunctions.h>
+#include <iostream>
 
 namespace mitk {
+
+//-----------------------------------------------------------------------------
+bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
+{
+  bool isSuccessful = false;
+
+  if(fileName.size() > 0)
+  {
+    ifstream myfile(fileName.c_str());
+    if (myfile.is_open())
+    {
+      int i = 0;
+      for (i = 0; i < 3 && !myfile.bad() && !myfile.eof() && !myfile.fail(); i++)
+      {
+        myfile >> point[i];
+      }
+      if (i == 3)
+      {
+        isSuccessful = true;
+      }
+      myfile.close();
+    }
+  }
+
+  return isSuccessful;
+}
+
 
 //-----------------------------------------------------------------------------
 vtkMatrix4x4* LoadVtkMatrix4x4FromFile(const std::string& fileName)

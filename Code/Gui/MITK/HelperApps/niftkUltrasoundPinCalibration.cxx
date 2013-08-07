@@ -16,6 +16,7 @@
 #include <limits>
 #include <mitkUltrasoundPinCalibration.h>
 #include <niftkUltrasoundPinCalibrationCLP.h>
+#include <mitkVector.h>
 
 int main(int argc, char** argv)
 {
@@ -31,10 +32,36 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    residualError = calibration->Calibrate(matrixDirectory, pointDirectory, outputMatrix);
+    mitk::Point3D invariantPoint;
+    invariantPoint[0] = 0;
+    invariantPoint[1] = 0;
+    invariantPoint[2] = 0;
 
-    returnStatus = EXIT_SUCCESS;
+    mitk::Point2D originInPixels;
+    originInPixels[0] = 0;
+    originInPixels[1] = 0;
+
+    mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
+
+    bool isSuccessful = calibration->CalibrateUsingTrackerPointAndFilesInTwoDirectories(
+        matrixDirectory,
+        pointDirectory,
+        outputMatrix,
+        invariantPoint,
+        originInPixels,
+        residualError
+        );
+
+
+    if (isSuccessful)
+    {
+      returnStatus = EXIT_SUCCESS;
+    }
+    else
+    {
+      returnStatus = EXIT_FAILURE;
+    }
+
   }
   catch (std::exception& e)
   {
