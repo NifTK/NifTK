@@ -95,7 +95,12 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_32FC1);
   cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
   cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_32FC1);
-  
+ 
+  for ( int i = 0 ; i < 3 ; i ++ ) 
+  {
+    leftCameraTranslationVector.at<float>(i,0) = 0.0;
+    leftCameraRotationVector.at<float>(i,0) = 0.0;
+  }
   rightCameraTranslationVector = rightToLeftTranslationVector * -1;
   cv::Rodrigues ( rightToLeftRotationMatrix.inv(), rightCameraRotationVector  );
   
