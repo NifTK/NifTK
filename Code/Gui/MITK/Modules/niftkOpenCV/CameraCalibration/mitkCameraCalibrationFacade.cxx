@@ -2015,6 +2015,8 @@ void LoadHandeyeFromPlainText (const std::string& filename,
   
 }
 
+
+//-----------------------------------------------------------------------------
 void LoadStereoCameraParametersFromDirectory (const std::string& directory,
   cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
   cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDistortion, 
