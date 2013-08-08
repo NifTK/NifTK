@@ -85,7 +85,14 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
-  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3f>);
+  std::vector < std::vector <cv::Point3f> > GetPointsInLeftLensCS();
+  itkGetMacro ( InitOK, bool);
+  itkGetMacro ( ProjectOK, bool);
+
+  /**
+   * \brief Set the matrix flip state for the VideoTracker matcher
+   */
+  void SetFlipMatrices (bool);
 
 protected:
 
@@ -119,9 +126,10 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
-  std::vector < std::pair<cv::Point2f, cv::Point2f> > 
+  std::vector < std::vector < std::pair<cv::Point2f, cv::Point2f> > >
                                 m_ProjectedPoints; // the projected points
-  std::vector <cv::Point3f>     m_PointsInLeftLensCS; // the points in left lens coordinates.
+  std::vector < std::vector <cv::Point3f> >    
+                                m_PointsInLeftLensCS; // the points in left lens coordinates.
 
   std::vector<std::string> FindVideoData();
 

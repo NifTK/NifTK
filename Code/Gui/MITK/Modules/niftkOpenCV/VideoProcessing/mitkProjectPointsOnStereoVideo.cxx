@@ -179,9 +179,12 @@ void ProjectPointsOnStereoVideo::Project()
       * m_LeftCameraToTracker->inv();
    
    // m_PointsInLeftLensCS = TransformPoints(WorldToLeftCamera , m_WorldPoints);
-    m_PointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints;
-
+    std::vector < cv::Point3f > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
+    m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
+    
+    framenumber ++;
   }
+  m_ProjectOK = true;
 
 }
 //-----------------------------------------------------------------------------
@@ -201,6 +204,19 @@ std::vector<std::string> ProjectPointsOnStereoVideo::FindVideoData()
   return returnStrings;
 }
                                           
+void ProjectPointsOnStereoVideo::SetFlipMatrices(bool state)
+{
+  if ( m_TrackerMatcher == NULL ) 
+  {
+    MITK_ERROR << "Tried to set flip matrices before initialisation";
+    return;
+  }
+  m_TrackerMatcher->SetFlipMatrices(state);
+}
 
+std::vector < std::vector <cv::Point3f> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
+{
+  return m_PointsInLeftLensCS;
+}
 
 } // end namespace

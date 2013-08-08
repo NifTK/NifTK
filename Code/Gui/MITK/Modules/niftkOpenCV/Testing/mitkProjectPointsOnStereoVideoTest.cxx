@@ -18,11 +18,11 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
-bool CheckTransformedPointVector (std::vector <cv::Point3f> points)
+bool CheckTransformedPointVector (std::vector < std::vector <cv::Point3f> > points)
 {
   double Error = 0.0;
-
-  Error += fabs ( points[0].x - ( -0.1499633640 ));
+  std::vector <cv::Point3f> point = points[0];
+  Error += fabs ( points[0][0].x - ( -0.1499633640 ));
   if ( Error < 1e-6 ) 
   {
     return true;
@@ -39,6 +39,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 {
   mitk::ProjectPointsOnStereoVideo::Pointer Projector = mitk::ProjectPointsOnStereoVideo::New();
   Projector->Initialise(argv[1], argv[2]);
+  Projector->SetFlipMatrices(true);
 
   //check it initialised, check it gets the right matrix with the right time error
   MITK_TEST_CONDITION_REQUIRED (Projector->GetInitOK() , "Testing mitkProjectPointsOnStereoVideo Initialised OK"); 
