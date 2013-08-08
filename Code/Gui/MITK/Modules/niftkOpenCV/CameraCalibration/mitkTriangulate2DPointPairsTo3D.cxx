@@ -124,7 +124,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     cv::Mat rightToLeftRotationVector(rightToLeftRotation);
     cv::Mat rightToLeftTranslationVector(rightToLeftTranslation);
 
-    std::vector< cv::Point3f > pointsIn3D = mitk::TriangulatePointPairsUsingGeometry(
+    std::vector< cv::Point3f > pointsIn3D = mitk::TriangulatePointPairs(
         pointPairs,
         leftCameraIntrinsicParams,
         rightCameraIntrinsicParams,
