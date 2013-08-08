@@ -2,7 +2,7 @@
 <executable>
   <category>Laparoscopic Demo</category>
   <title>Calibrate US Probe</title>
-  <description><![CDATA[Calibrates a US probe using a single Pin method.]]></description>
+  <description><![CDATA[Calibrates a US probe using a Single Pin method.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -15,7 +15,7 @@
     <directory>
       <name>matrixDirectory</name>
       <longflag>matrixDirectory</longflag>
-      <description>Directory containing 4x4 tracking matrices in text files.</description>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
       <label>Matrix Directory</label>
     </directory>
     <directory>
@@ -50,18 +50,12 @@
   <parameters>
     <label>Optional Parameters</label>
     <description><![CDATA[Additional parameters]]></description>
-    <file fileExtensions="*.txt,*.4x4">
-      <name>trackerToPhantomMatrixFile</name>
-      <longflag>trackerToPhantomMatrixFile</longflag>
-      <description>Tracker to phantom matrix.</description>
-      <label>Tracker to Phantom</label>
-      <channel>input</channel>
-    </file>
     <point>
       <name>invariantPoint</name>
       <longflag>invariantPoint</longflag>
-      <description>Tracker to phantom matrix.</description>
+      <description>Location of the point in tracker coordinates.</description>
       <label>Invariant Point</label>
+      <default>0,0,0</default>
       <channel>input</channel>
     </point>
     <float-vector>
@@ -81,10 +75,18 @@
       <channel>input</channel>
     </float-vector>
     <boolean>
-      <name>optimisingScaling</name>
-      <longflag>optimisingScaling</longflag>
+      <name>optimiseScaling</name>
+      <longflag>optimiseScaling</longflag>
       <description>Optimise the scale parameters.</description>
       <label>Optimise Scaling</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+    <boolean>
+      <name>optimiseInvariantPoint</name>
+      <longflag>optimiseInvariantPoint</longflag>
+      <description>Optimise the position of the invariant point.</description>
+      <label>Optimise Invariant Point</label>
       <default>false</default>
       <channel>input</channel>
     </boolean>
