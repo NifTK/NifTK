@@ -29,7 +29,7 @@ namespace mitk {
  * to the x and y image coordinates for the left and then right image of a stereo
  * video pair, and all the calibration data to enable a reconstruction of 3D points.
  *
- * Currently the image that you are dealing with are assumed to be distortion corrected.
+ * Currently the image that you are dealing with and hence the 2D pixel coordinates are assumed to be distortion corrected.
  */
 class NIFTKOPENCV_EXPORT Triangulate2DPointPairsTo3D : public itk::Object
 {
@@ -42,8 +42,7 @@ public:
   bool Triangulate(const std::string& input2DPointPairsFileName,
       const std::string& intrinsicLeftFileName,
       const std::string& intrinsicRightFileName,
-      const std::string& rightToLeftRotationFileName,
-      const std::string& rightToLeftTranslationFileName
+      const std::string& rightToLeftExtrinsics
       );
 
 protected:

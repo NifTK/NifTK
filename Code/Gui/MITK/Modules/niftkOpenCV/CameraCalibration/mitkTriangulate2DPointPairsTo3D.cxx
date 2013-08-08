@@ -43,36 +43,13 @@ Triangulate2DPointPairsTo3D::~Triangulate2DPointPairsTo3D()
 bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPairsFileName,
                                               const std::string& intrinsicLeftFileName,
                                               const std::string& intrinsicRightFileName,
-                                              const std::string& rightToLeftRotationFileName,
-                                              const std::string& rightToLeftTranslationFileName
+                                              const std::string& rightToLeftExtrinsics
                                              )
 {
   bool isSuccessful = false;
 
   try
   {
-    CvMat *intrinsicLeft = (CvMat*)cvLoad(intrinsicLeftFileName.c_str());
-    if (intrinsicLeft == NULL)
-    {
-      throw std::logic_error("Failed to load left camera intrinsic params");
-    }
-    CvMat *intrinsicRight = (CvMat*)cvLoad(intrinsicRightFileName.c_str());
-    if (intrinsicRight == NULL)
-    {
-      throw std::logic_error("Failed to load right camera intrinsic params");
-    }
-    CvMat *rightToLeftRotation = (CvMat*)cvLoad(rightToLeftRotationFileName.c_str());
-    if (rightToLeftRotation == NULL)
-    {
-      throw std::logic_error("Failed to load right to left rotation params");
-    }
-
-    CvMat *rightToLeftTranslation = (CvMat*)cvLoad(rightToLeftTranslationFileName.c_str());
-    if (rightToLeftTranslation == NULL)
-    {
-      throw std::logic_error("Failed to load right to left translation params");
-    }
-
     // Load the pairs of 2D points.
     std::ifstream reader(input2DPointPairsFileName.c_str());
     if (!reader)
@@ -118,12 +95,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     }
 
     std::cout << "Triangulate2DPointPairsTo3D: Read in " << pointPairs.size() << " point pairs." << std::endl;
-
-    cv::Mat leftCameraIntrinsicParams(intrinsicLeft);
-    cv::Mat rightCameraIntrinsicParams(intrinsicRight);
-    cv::Mat rightToLeftRotationVector(rightToLeftRotation);
-    cv::Mat rightToLeftTranslationVector(rightToLeftTranslation);
-
+/*
     std::vector< cv::Point3f > pointsIn3D = mitk::TriangulatePointPairs(
         pointPairs,
         leftCameraIntrinsicParams,
@@ -139,24 +111,16 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       oss << "Could not triangulate all points. 2D=" << pointPairs.size() << ", whereas 3D=" << pointsIn3D.size() << std::endl;
       throw std::logic_error(oss.str());
     }
-
     for (unsigned int i = 0; i < pointsIn3D.size(); i++)
     {
       std::cout << "[" << i << "], 2Dl=(" << pointPairs[i].first.x << ", " << pointPairs[i].first.y << "), 2Dr=(" << pointPairs[i].second.x << ", " << pointPairs[i].second.y << "), 3D=" << pointsIn3D[i].x << ", " << pointsIn3D[i].y << ", " << pointsIn3D[i].z <<  std::endl;
     }
-
-    // Tidy up.
-    cvReleaseMat(&intrinsicLeft);
-    cvReleaseMat(&intrinsicRight);
-    cvReleaseMat(&rightToLeftRotation);
-    cvReleaseMat(&rightToLeftTranslation);
+*/
   }
   catch(std::logic_error& e)
   {
     std::cerr << "Triangulate2DPointPairsTo3D::Project: exception thrown e=" << e.what() << std::endl;
   }
-
-  // Read in pairs of points.
 
   return isSuccessful;
 }

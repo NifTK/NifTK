@@ -19,32 +19,25 @@
       <label>Input Point Pairs</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.xml">
+    <file fileExtensions="*.txt,*.mat,*.4x4">
       <name>intrinsicLeft</name>
       <longflag>intrinsicLeft</longflag>
-      <description>Left camera intrinsic parameters file</description>
+      <description>Left camera intrinsic parameters file as plain text file.</description>
       <label>Left camera intrinsic parameters</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.xml">
+    <file fileExtensions="*.txt,*.mat,*.4x4">
       <name>intrinsicRight</name>
       <longflag>intrinsicRight</longflag>
-      <description>Right camera intrinsic parameters file</description>
+      <description>Right camera intrinsic parameters file as plain text file.</description>
       <label>Right camera intrinsics</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.xml">
-      <name>rightToLeftRotation</name>
-      <longflag>rightToLeftRotation</longflag>
-      <description>Right to left camera rotation parameters file</description>
-      <label>Right to left camera rotation parameters</label>
-      <channel>input</channel>
-    </file>
-    <file fileExtensions="*.xml">
-      <name>rightToLeftTranslation</name>
-      <longflag>rightToLeftTranslation</longflag>
-      <description>Right to left camera translation parameters file</description>
-      <label>Right to left camera translation parameters</label>
+    <file fileExtensions="*.txt,*.mat,*.4x4">
+      <name>rightToLeftExtrinsics</name>
+      <longflag>rightToLeftExtrinsics</longflag>
+      <description>Right to left camera transformation as plain text file.</description>
+      <label>Right to left camera transformation</label>
       <channel>input</channel>
     </file>
   </parameters>
