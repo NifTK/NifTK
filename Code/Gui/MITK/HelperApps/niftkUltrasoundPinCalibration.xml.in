@@ -24,7 +24,7 @@
       <description>Directory containing point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
-    <file fileExtensions="*.txt">
+    <file fileExtensions="*.txt,*.4x4">
       <name>outputMatrix</name>
       <longflag>outputMatrix</longflag>
       <description>Output matrix filename.</description>
@@ -85,6 +85,18 @@
         <step>0.01</step>
       </constraints>
     </float>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <file fileExtensions="*.txt,*.4x4">
+      <name>trackerToPhantomMatrixFile</name>
+      <longflag>trackerToPhantomMatrixFile</longflag>
+      <description>Tracker to phantom matrix.</description>
+      <label>Tracker to Phantom</label>
+      <channel>input</channel>
+    </file>
   </parameters>
 
 </executable>

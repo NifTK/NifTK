@@ -38,30 +38,26 @@ public:
   mitkClassMacro(UltrasoundPinCalibration, itk::Object);
   itkNewMacro(UltrasoundPinCalibration);
 
-  bool CalibrateUsingTrackerPointAndFilesInTwoDirectories(
+  bool CalibrateUsingInvariantPointAndFilesInTwoDirectories(
       const std::string& matrixDirectory,
       const std::string& pointDirectory,
-      const std::string& outputFileName,
+      const vtkMatrix4x4& trackerToPhantomMatrix,
       const mitk::Point3D& invariantPoint,
       const mitk::Point2D& originInImagePlaneInPixels,
-      double &residualError
-      );
-
-  bool CalibrateUsingTrackerPoint(
-      const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
-      const std::vector<mitk::Point3D>& points,
-      const mitk::Point3D& invariantPoint,
-      const mitk::Point2D& originInImagePlaneInPixels,
+      const mitk::Point2D& millimetresPerPixel,
+      const std::vector<double>& initialGuessOf6DofParameters,
       double &residualError,
-      vtkMatrix4x4 &outputMatrix
+      const std::string& outputFileName
       );
 
   bool Calibrate(
       const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
       const std::vector<mitk::Point3D>& points,
-      const vtkMatrix4x4& worldToPhantomMatrix,
+      const vtkMatrix4x4& trackerToPhantomMatrix,
       const mitk::Point3D& invariantPoint,
       const mitk::Point2D& originInImagePlaneInPixels,
+      const mitk::Point2D& millimetresPerPixel,
+      const std::vector<double>& initialGuessOf6DofParameters,
       double &residualError,
       vtkMatrix4x4 &outputMatrix
       );
