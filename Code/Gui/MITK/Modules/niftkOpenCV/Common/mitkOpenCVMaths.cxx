@@ -429,27 +429,6 @@ cv::Matx44d ConstructRigidTransformationMatrix(
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d ConstructRigidTransformationMatrixUsingDegrees(
-    const double& rx,
-    const double& ry,
-    const double& rz,
-    const double& tx,
-    const double& ty,
-    const double& tz
-    )
-{
-  const double pi = 3.14159265358979323846;
-
-  double radians[3];
-  radians[0] = rx * pi / 180;
-  radians[1] = ry * pi / 180;
-  radians[2] = rz * pi / 180;
-
-  return ConstructRigidTransformationMatrix(radians[0], radians[1], radians[2], tx, ty, tz);
-}
-
-
-//-----------------------------------------------------------------------------
 cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
 {
   cv::Matx44d scaling;
@@ -464,7 +443,7 @@ cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, c
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d ConstructSimilarityTransformationMatrixUsingDegrees(
+cv::Matx44d ConstructSimilarityTransformationMatrix(
     const double& rx,
     const double& ry,
     const double& rz,
@@ -480,7 +459,7 @@ cv::Matx44d ConstructSimilarityTransformationMatrixUsingDegrees(
   cv::Matx44d rigid;
   cv::Matx44d result;
 
-  rigid = ConstructRigidTransformationMatrixUsingDegrees(rx, ry, rz, tx, ty, tz);
+  rigid = ConstructRigidTransformationMatrix(rx, ry, rz, tx, ty, tz);
   scaling = ConstructScalingTransformation(sx, sy, sz);
 
   result = scaling * rigid;

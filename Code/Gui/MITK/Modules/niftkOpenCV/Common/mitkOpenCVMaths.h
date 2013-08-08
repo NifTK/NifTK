@@ -116,17 +116,17 @@ extern "C++" NIFTKOPENCV_EXPORT void CopyToOpenCVMatrix(const vtkMatrix4x4& matr
 /**
  * \brief Generates a rotation about X-axis, given a Euler angle in radians.
  * \param rx angle in radians
- * \param matrix3x3 pre-allocated [3x3] matrix
+ * \return a new [3x3] rotation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void ConstructEulerRxMatrix(const double& rx, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx33d ConstructEulerRxMatrix(const double& rx);
 
 
 /**
  * \brief Generates a rotation about Y-axis, given a Euler angle in radians.
  * \param ry angle in radians
- * \param matrix3x3 pre-allocated [3x3] matrix
+ * \return a new [3x3] rotation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT void ConstructEulerRyMatrix(const double& ry, cv::Matx33d& matrix3x3);
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx33d ConstructEulerRyMatrix(const double& ry);
 
 
 /**
@@ -182,21 +182,10 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrix(
 
 
 /**
- * \brief From rotations in degrees (+/- 180), converts to radians, then passes on to Construct4x4TransformationMatrix.
- * \return a new [4x4] matrix
- */
-extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrixUsingDegrees(
-  const double& rx,
-  const double& ry,
-  const double& rz,
-  const double& tx,
-  const double& ty,
-  const double& tz
-  );
-
-
-/**
  * \brief Constructs a scaling matrix from sx, sy, sz where the scale factors simply appear on the diagonal.
+ * \param sx scale factor in x direction
+ * \param sy scale factor in y direction
+ * \param sz scale factor in z direction
  * \return a new [4x4] matrix
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz = 1);
@@ -204,9 +193,18 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructScalingTransformation(const
 
 /**
  * \brief Constructs an affine transformation, without skew using the specified parameters, where rotations are in degrees.
+ * \param rx Euler rotation about x-axis in radians
+ * \param ry Euler rotation about y-axis in radians
+ * \param rz Euler rotation about z-axis in radians
+ * \param tx translation in millimetres along x-axis
+ * \param ty translation in millimetres along y-axis
+ * \param tz translation in millimetres along z-axis
+ * \param sx scale factor in x direction
+ * \param sy scale factor in y direction
+ * \param sz scale factor in z direction
  * \return a new [4x4] matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMatrixUsingDegrees(
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMatrix(
     const double& rx,
     const double& ry,
     const double& rz,
