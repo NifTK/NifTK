@@ -14,6 +14,7 @@
 
 #include "mitkProjectPointsOnStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkOpenCVMaths.h>
 #include <cv.h>
 #include <highgui.h>
 
@@ -147,6 +148,12 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::Project()
 {
+  if ( ! m_InitOK )
+  {
+    MITK_WARN << "Called project before initialise.";
+    return;
+  }
+    
   m_ProjectOK = false;
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
@@ -170,7 +177,10 @@ void ProjectPointsOnStereoVideo::Project()
     cv::Mat WorldToLeftCamera = 
       m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex).inv() 
       * m_LeftCameraToTracker->inv();
-    
+   
+   // m_PointsInLeftLensCS = TransformPoints(WorldToLeftCamera , m_WorldPoints);
+    m_PointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints;
+
   }
 
 }
