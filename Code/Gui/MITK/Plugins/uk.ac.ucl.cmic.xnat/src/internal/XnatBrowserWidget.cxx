@@ -18,11 +18,12 @@
 #include <ctkXnatConnectionFactory.h>
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
+#include <ctkXnatReconstructionResource.h>
 #include <ctkXnatScanResource.h>
 #include <ctkXnatSettings.h>
+#include <ctkXnatTreeModel.h>
 
 #include "XnatDownloadManager.h"
-#include "ctkXnatTreeModel.h"
 #include "XnatTreeView.h"
 
 // Qt includes
@@ -249,7 +250,7 @@ void XnatBrowserWidget::importFile()
   }
   catch (std::exception& exc)
   {
-    MITK_INFO << "reading the image has failed";
+    MITK_ERROR << "reading the image has failed";
   }
 }
 
@@ -297,7 +298,7 @@ void XnatBrowserWidget::importFiles()
   }
   catch (std::exception& exc)
   {
-    MITK_INFO << "reading the image has failed";
+    MITK_ERROR << "reading the image has failed";
   }
 }
 
@@ -360,19 +361,10 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
 
 bool XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const
 {
-//  MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const" << std::endl;
-  ctkXnatObject* xnatObjectP = xnatObject.data();
-  if (ctkXnatScanResource* scanResource = dynamic_cast<ctkXnatScanResource*>(xnatObjectP))
+  if (dynamic_cast<ctkXnatScanResource*>(xnatObject.data())
+      || dynamic_cast<ctkXnatReconstructionResource*>(xnatObject.data()))
   {
-//    scanResource->fetch();
-//    MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const This is a scan resource." << std::endl;
-    if (scanResource->children().size() > 0)
-    {
-//      scanResource->reset();
-//      MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const It has children." << std::endl;
-      return true;
-    }
-//    scanResource->reset();
+    return true;
   }
   return false;
 }
