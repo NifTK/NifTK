@@ -35,14 +35,43 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::Point3D invariantPoint;
-    invariantPoint[0] = 0;
-    invariantPoint[1] = 0;
-    invariantPoint[2] = 0;
+    mitk::Point3D invPoint;
+    if (invariantPoint.size() == 3)
+    {
+      invPoint[0] = invariantPoint[0];
+      invPoint[1] = invariantPoint[1];
+      invPoint[2] = invariantPoint[2];
+    }
+    else
+    {
+      invPoint[0] = 0;
+      invPoint[1] = 0;
+      invPoint[2] = 0;
+    }
 
     mitk::Point2D originInPixels;
-    originInPixels[0] = xOrigin;
-    originInPixels[1] = yOrigin;
+    if (pixelOrigin.size() == 2)
+    {
+      originInPixels[0] = pixelOrigin[0];
+      originInPixels[1] = pixelOrigin[1];
+    }
+    else
+    {
+      originInPixels[0] = 0;
+      originInPixels[1] = 0;
+    }
+
+    mitk::Point2D mmPerPix;
+    if (millimetresPerPixel.size() == 2)
+    {
+      mmPerPix[0] = millimetresPerPixel[0];
+      mmPerPix[1] = millimetresPerPixel[1];
+    }
+    else
+    {
+      mmPerPix[0] = 1;
+      mmPerPix[1] = 1;
+    }
 
     vtkSmartPointer<vtkMatrix4x4> trackerToPhantomMatrix = vtkMatrix4x4::New();
     trackerToPhantomMatrix->Identity();
@@ -51,17 +80,48 @@ int main(int argc, char** argv)
       trackerToPhantomMatrix = niftk::LoadMatrix4x4FromFile(trackerToPhantomMatrixFile);
     }
 
-    mitk::Point2D millimetresPerPixel;
-    millimetresPerPixel[0] = 1;
-    millimetresPerPixel[1] = 1;
+    std::vector<double> initialTransformationParameters;
+    if(initialGuess.size() == 6)
+    {
+      initialTransformationParameters.push_back(initialGuess[0]);
+      initialTransformationParameters.push_back(initialGuess[1]);
+      initialTransformationParameters.push_back(initialGuess[2]);
+      initialTransformationParameters.push_back(initialGuess[3]);
+      initialTransformationParameters.push_back(initialGuess[4]);
+      initialTransformationParameters.push_back(initialGuess[5]);
+    }
+    else
+    {
+      initialTransformationParameters.push_back(0);
+      initialTransformationParameters.push_back(0);
+      initialTransformationParameters.push_back(0);
+      initialTransformationParameters.push_back(0);
+      initialTransformationParameters.push_back(0);
+      initialTransformationParameters.push_back(0);
+    }
+    if (optimisingScaling)
+    {
+      initialTransformationParameters.push_back(mmPerPix[0]);
+      initialTransformationParameters.push_back(mmPerPix[1]);
+    }
 
-    std::vector<double> initialGuessTransformation;
-    initialGuessTransformation.push_back(0); // rx
-    initialGuessTransformation.push_back(0); // ry
-    initialGuessTransformation.push_back(0); // rz
-    initialGuessTransformation.push_back(0); // tx
-    initialGuessTransformation.push_back(0); // ty
-    initialGuessTransformation.push_back(0); // tz
+    std::cout << "niftkUltrasoundPinCalibration: matrices         = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: points           = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output           = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: invariant point  = " << invPoint << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: origin in pixels = " << originInPixels << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: mm/pix           = " << mmPerPix << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: optimising       = ";
+    for (unsigned int i = 0; i < initialTransformationParameters.size(); i++)
+    {
+      std::cout << initialTransformationParameters[i] << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: tracker-phantom  = " << std::endl;
+    for (int i = 0; i < 4; i++)
+    {
+      std::cout << "niftkUltrasoundPinCalibration:   " << trackerToPhantomMatrix->GetElement(i,0) << " " << trackerToPhantomMatrix->GetElement(i,1) << " " << trackerToPhantomMatrix->GetElement(i,2) << " " << trackerToPhantomMatrix->GetElement(i,3) << std::endl;
+    }
 
     // Do calibration
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
@@ -69,16 +129,17 @@ int main(int argc, char** argv)
         matrixDirectory,
         pointDirectory,
         *trackerToPhantomMatrix,
-        invariantPoint,
+        invPoint,
         originInPixels,
-        millimetresPerPixel,
-        initialGuessTransformation,
+        mmPerPix,
+        initialTransformationParameters,
         residualError,
-        outputMatrix
+        outputMatrixFile
         );
 
     if (isSuccessful)
     {
+      std::cout << "Residual error=" << residualError << std::endl;
       returnStatus = EXIT_SUCCESS;
     }
     else
@@ -98,6 +159,5 @@ int main(int argc, char** argv)
     returnStatus = -2;
   }
 
-  std::cout << "Residual error=" << residualError << ", return status = " << returnStatus << std::endl;
   return returnStatus;
 }
