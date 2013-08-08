@@ -85,6 +85,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
+  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3f>);
 
 protected:
 
