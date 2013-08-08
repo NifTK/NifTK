@@ -75,7 +75,26 @@ void HandeyeCalibrateFromDirectory::InitialiseVideo()
   MITK_INFO << "Loading video frames from " << filenames[0];
   LoadVideoData (filenames[0]);
   return;
-    
+      
+}
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrateFromDirectory::InitialiseTracking()
+{
+  if ( m_Matcher.IsNull() )
+  {
+    MITK_INFO << "Initialising Video Tracker Matcher";
+    m_Matcher = mitk::VideoTrackerMatching::New();
+  }
+  if ( ! m_Matcher->IsReady() )
+  {
+    m_Matcher->Initialise (m_Directory);
+  }
+  
+  if ( m_Matcher->IsReady() ) 
+  {
+    m_TrackingDataInitialised = true;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -98,6 +117,12 @@ std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 {
+  if ( m_NoVideoSupport ) 
+  {
+    MITK_WARN << "Ran load video without video support, returning.";
+    return;
+  }
+
   cv::VideoCapture capture = cv::VideoCapture(filename) ; 
   
   if ( ! capture.isOpened() ) 
@@ -105,16 +130,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     MITK_ERROR << "Failed to open " << filename;
     return;
   }
-  
-  if ( m_Matcher.IsNull() )
+
+  if ( ! m_TrackingDataInitialised )
   {
-    MITK_INFO << "Initialising Video Tracker Matcher";
-    m_Matcher = mitk::VideoTrackerMatching::New();
+    InitialiseTracking();
   }
-  if ( ! m_Matcher->IsReady() )
-  {
-    m_Matcher->Initialise (m_Directory);
-  }
+
 
   //get frame count doesn't work for 264 files, which are just 
   //raw data get the frame count from the framemap log
@@ -380,9 +401,9 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       *outputFundamentalMatrix);
   
   //write it out
-  std::string leftIntrinsic = m_Directory + "/calib.left.intrinsic";
-  std::string rightIntrinsic = m_Directory + "/calib.right.intrinsic";
-  std::string rightToLeft = m_Directory + "/calib.r2l";
+  std::string leftIntrinsic = m_Directory + "/calib.left.intrinsic.txt";
+  std::string rightIntrinsic = m_Directory + "/calib.right.intrinsic.txt";
+  std::string rightToLeft = m_Directory + "/calib.r2l.txt";
   std::string extrinsic = m_Directory + "/leftextrinsics.txt";
 
   std::ofstream fs_leftIntrinsic;
@@ -441,13 +462,15 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       for ( int col = 0 ; col < 4 ; col ++ ) 
       {
-        fs_tracker << LeftTrackingMatrix.at<double>(row,col) << " " ;
+        fs_tracker << LeftTrackingMatrix.at<float>(row,col) << " " ;
       }
       fs_tracker << std::endl;
     }
     fs_tracker.close();
   }
   fs_ext.close();
+  
+  m_VideoInitialised = true;
 
   Calibrate ( m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic); 
 }
