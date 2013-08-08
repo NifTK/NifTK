@@ -199,7 +199,7 @@ void XnatBrowserWidget::importFile()
   QModelIndex index = ui->xnatTreeView->currentIndex();
   ctkXnatTreeModel* model = ui->xnatTreeView->xnatModel();
   QString xnatFilename = model->data(index, Qt::DisplayRole).toString();
-  if ( xnatFilename.isEmpty() )
+  if (xnatFilename.isEmpty())
   {
     return;
   }

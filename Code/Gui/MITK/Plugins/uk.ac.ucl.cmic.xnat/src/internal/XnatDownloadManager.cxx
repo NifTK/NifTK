@@ -20,8 +20,6 @@ extern "C"
 #include "XnatDownloadDialog.h"
 #include "XnatTreeView.h"
 
-#include <mitkLogMacros.h>
-
 class XnatDownloadManagerPrivate
 {
 public:
@@ -31,12 +29,12 @@ public:
   ctkXnatSettings* settings;
 
   QString currDir;
-  QString zipFilename;
+  QString zipFileName;
   bool finished;
   unsigned long totalBytes;
 
-  QString xnatFilename;
-  QString outFilename;
+  QString xnatFileName;
+  QString outFileName;
   QString tempFilePath;
 };
 
@@ -66,35 +64,35 @@ void XnatDownloadManager::downloadFile()
   // get name of file to be downloaded
   QModelIndex index = d->xnatTreeView->currentIndex();
   ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
-  QString filename = model->data(index, Qt::DisplayRole).toString();
-  if ( filename.isEmpty() )
+  QString fileName = model->data(index, Qt::DisplayRole).toString();
+  if (fileName.isEmpty())
   {
     return;
   }
 
-  d->xnatFilename = QFileInfo(filename).fileName();
+  d->xnatFileName = QFileInfo(fileName).fileName();
 
   d->currDir = d->settings->getDefaultDirectory();
 
   QString caption = tr("Save Downloaded File");
-  QString dir = QFileInfo(d->currDir, d->xnatFilename).absoluteFilePath();
+  QString dir = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
   // get output directory and filename from user
   QString userFilePath = QFileDialog::getSaveFileName(d->xnatTreeView, caption, dir);
-  if ( userFilePath.isEmpty() )
+  if (userFilePath.isEmpty())
   {
     return;
   }
   d->currDir = QFileInfo(userFilePath).absolutePath();
-  d->outFilename = QFileInfo(userFilePath).fileName();
+  d->outFileName = QFileInfo(userFilePath).fileName();
 
   // reset name of current directory to last directory viewed by user
   d->settings->setDefaultDirectory(d->currDir);
 
   // check if file exists with same name as file in XNAT
   d->tempFilePath = QString();
-  if ( d->outFilename != d->xnatFilename )
+  if (d->outFileName != d->xnatFileName)
   {
-    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFilename).absoluteFilePath();
+    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
     if ( QFile::exists(xnatFilePath) )
     {
       int i = 1;
@@ -104,9 +102,9 @@ void XnatDownloadManager::downloadFile()
         ver.setNum(i++);
         d->tempFilePath = xnatFilePath;
         d->tempFilePath.append(".").append(ver);
-      } while ( QFile::exists(d->tempFilePath) );
+      } while (QFile::exists(d->tempFilePath));
 
-      if ( !QFile::rename(xnatFilePath, d->tempFilePath) )
+      if (!QFile::rename(xnatFilePath, d->tempFilePath))
       {
         QMessageBox::warning(d->xnatTreeView, tr("Downloaded File Error"), tr("Cannot rename existing file"));
         return;
@@ -121,20 +119,20 @@ void XnatDownloadManager::downloadFile()
   QTimer::singleShot(0, this, SLOT(startDownload()));
 }
 
-void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QString& dir)
+void XnatDownloadManager::silentlyDownloadFile(const QString& fileName, const QString& dir)
 {
   Q_D(XnatDownloadManager);
 
   // initialize download variables
-  d->xnatFilename = fname;
-  d->outFilename = fname;
+  d->xnatFileName = fileName;
+  d->outFileName = fileName;
   d->currDir = dir;
 
   // check if file exists with same name as file in XNAT
   d->tempFilePath = QString();
-  if ( d->outFilename != d->xnatFilename )
+  if ( d->outFileName != d->xnatFileName )
   {
-    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFilename).absoluteFilePath();
+    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
     if ( QFile::exists(xnatFilePath) )
     {
       int i = 1;
@@ -158,8 +156,8 @@ void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QStri
   d->downloadDialog->show();
 
   // start download of ZIP file
-  d->zipFilename = QFileInfo(d->currDir, tr("xnat.file.zip")).absoluteFilePath();
-  if ( !this->startFileDownload(d->zipFilename) )
+  d->zipFileName = QFileInfo(d->currDir, d->outFileName).absoluteFilePath();
+  if (!this->startFileDownload(d->zipFileName))
   {
     d->downloadDialog->close();
     return;
@@ -170,7 +168,7 @@ void XnatDownloadManager::silentlyDownloadFile(const QString& fname, const QStri
   d->totalBytes = 0;
   connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
-  downloadDataBlocking();
+  this->downloadDataBlocking(false);
 }
 
 void XnatDownloadManager::startDownload()
@@ -178,8 +176,8 @@ void XnatDownloadManager::startDownload()
   Q_D(XnatDownloadManager);
 
   // start download of ZIP file
-  d->zipFilename = QFileInfo(d->currDir, tr("xnat.file.zip")).absoluteFilePath();
-  if ( !this->startFileDownload(d->zipFilename) )
+  d->zipFileName = QFileInfo(d->currDir, d->outFileName).absoluteFilePath();
+  if (!this->startFileDownload(d->zipFileName))
   {
     d->downloadDialog->close();
     return;
@@ -198,8 +196,8 @@ void XnatDownloadManager::startGroupDownload()
   Q_D(XnatDownloadManager);
 
   // start download of ZIP file
-  d->zipFilename = QFileInfo(d->currDir, tr("xnat.group.zip")).absoluteFilePath();
-  if ( !this->startFileDownload(d->zipFilename) )
+  d->zipFileName = QFileInfo(d->currDir, tr("xnat.group.zip")).absoluteFilePath();
+  if ( !this->startFileDownload(d->zipFileName) )
   {
     d->downloadDialog->close();
     return;
@@ -209,7 +207,7 @@ void XnatDownloadManager::startGroupDownload()
   d->finished = false;
   d->totalBytes = 0;
 
-  QTimer::singleShot(0, this, SLOT(downloadData()));
+  QTimer::singleShot(0, this, SLOT(downloadDataAndUnzip()));
 }
 
 void XnatDownloadManager::downloadAllFiles()
@@ -253,7 +251,6 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
 {
   Q_D(XnatDownloadManager);
 
-  MITK_INFO << "XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir) dir: " << dir.toStdString() << std::endl;
   // initialize download variables
 //  d->xnatFilename = fname;
 //  d->outFilename = fname;
@@ -265,10 +262,9 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
 
 //  QTimer::singleShot(0, this, SLOT(startGroupDownload()));
   // start download of ZIP file
-  d->zipFilename = QFileInfo(d->currDir, tr("xnat.file.zip")).absoluteFilePath();
-  if (!this->startFileDownload(d->zipFilename))
+  d->zipFileName = QFileInfo(d->currDir, tr("xnat.file.zip")).absoluteFilePath();
+  if (!this->startFileDownload(d->zipFileName))
   {
-    MITK_INFO << "XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir) download not started. zip file name: " << d->zipFilename.toStdString() << std::endl;
     d->downloadDialog->close();
     return;
   }
@@ -278,10 +274,66 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   d->totalBytes = 0;
   QObject::connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
-  this->downloadDataBlocking();
+  this->downloadDataBlocking(true);
 }
 
 void XnatDownloadManager::downloadData()
+{
+  Q_D(XnatDownloadManager);
+
+  unsigned long numBytes;
+//  XnatRestStatus status;
+
+  // check if user has canceled download
+  if ( d->downloadDialog->wasDownloadCanceled() )
+  {
+    d->downloadDialog->close();
+//    status = cancelXnatRestAsynTransfer();
+//    if ( status != XNATREST_OK )
+//    {
+//      QMessageBox::warning(d->xnatTreeView, tr("Cancel File Download Error"), tr(getXnatRestStatusMsg(status)));
+//    }
+//    else if ( !QFile::remove(d->zipFilename) )
+//    {
+//      QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
+//    }
+    emit done();
+    return;
+  }
+
+  // check if download is finished
+  if ( d->finished == true )
+  {
+    d->downloadDialog->close();
+    emit done();
+    return;
+  }
+
+  // download more data from XNAT
+//  status = moveXnatRestAsynData(&numBytes, &d->finished);
+  d->finished = true;
+//  status = XNATREST_OK;
+  numBytes = 0;
+
+//  if ( status != XNATREST_OK )
+//  {
+//    d->downloadDialog->close();
+//    QMessageBox::warning(d->xnatTreeView, tr("Download File Error"), tr(getXnatRestStatusMsg(status)));
+//    emit done();
+//    return;
+//  }
+
+  // update number of bytes downloaded
+  if ( numBytes > 0 )
+  {
+    d->totalBytes += numBytes;
+    d->downloadDialog->showBytesDownloaded(d->totalBytes);
+  }
+
+  QTimer::singleShot(0, this, SLOT(downloadData()));
+}
+
+void XnatDownloadManager::downloadDataAndUnzip()
 {
   Q_D(XnatDownloadManager);
 
@@ -334,13 +386,12 @@ void XnatDownloadManager::downloadData()
     d->downloadDialog->showBytesDownloaded(d->totalBytes);
   }
 
-  QTimer::singleShot(0, this, SLOT(downloadData()));
+  QTimer::singleShot(0, this, SLOT(downloadDataAndUnzip()));
 }
 
-void XnatDownloadManager::downloadDataBlocking()
+void XnatDownloadManager::downloadDataBlocking(bool unzip)
 {
   Q_D(XnatDownloadManager);
-  MITK_INFO << "XnatDownloadManager::downloadDataBlocking()" << std::endl;
 
   unsigned long numBytes;
 
@@ -366,8 +417,17 @@ void XnatDownloadManager::downloadDataBlocking()
     // check if download is finished
     if ( d->finished == true )
     {
-      d->downloadDialog->showUnzipInProgress();
-      this->unzipData();
+      if (unzip)
+      {
+        d->downloadDialog->showUnzipInProgress();
+        this->unzipData();
+      }
+      else
+      {
+        // close dialog
+        d->downloadDialog->close();
+        emit done();
+      }
       break;
     }
 
@@ -396,14 +456,13 @@ void XnatDownloadManager::downloadDataBlocking()
 
 void XnatDownloadManager::unzipData()
 {
-  MITK_INFO << "XnatDownloadManager::unzipData()" << std::endl;
   Q_D(XnatDownloadManager);
 
   // check if user has canceled download
   if ( d->downloadDialog->wasDownloadCanceled() )
   {
     d->downloadDialog->close();
-    if ( !QFile::remove(d->zipFilename) )
+    if ( !QFile::remove(d->zipFileName) )
     {
       QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
     }
@@ -411,9 +470,8 @@ void XnatDownloadManager::unzipData()
     return;
   }
 
-  MITK_INFO << "XnatDownloadManager::unzipData() zip file name: " << d->zipFilename.toStdString() << " ; current dir: " << d->currDir.toStdString() << std::endl;
   // unzip downloaded file
-  XnatRestStatus status = unzipXnatRestFile(d->zipFilename.toAscii().constData(), d->currDir.toAscii().constData());
+  XnatRestStatus status = unzipXnatRestFile(d->zipFileName.toAscii().constData(), d->currDir.toAscii().constData());
 
   // close dialog
   d->downloadDialog->close();
@@ -422,7 +480,7 @@ void XnatDownloadManager::unzipData()
   {
     QMessageBox::warning(d->xnatTreeView, tr("Unzip Downloaded File Error"), tr(getXnatRestStatusMsg(status)));
   }
-  else if ( !QFile::remove(d->zipFilename) )    // delete zip file
+  else if ( !QFile::remove(d->zipFileName) )    // delete zip file
   {
     QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
   }
@@ -431,16 +489,15 @@ void XnatDownloadManager::unzipData()
 
 void XnatDownloadManager::finishDownload()
 {
-  MITK_INFO << "XnatDownloadManager::finishDownload()" << std::endl;
   Q_D(XnatDownloadManager);
 
   QObject::disconnect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
   // change filename to name specified by user
-  if ( d->outFilename != d->xnatFilename )
+  if ( d->outFileName != d->xnatFileName )
   {
-    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFilename).absoluteFilePath();
-    if ( !QFile::rename(xnatFilePath, QFileInfo(d->currDir, d->outFilename).absoluteFilePath()) )
+    QString xnatFilePath = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
+    if ( !QFile::rename(xnatFilePath, QFileInfo(d->currDir, d->outFileName).absoluteFilePath()) )
     {
       QMessageBox::warning(d->xnatTreeView, tr("Rename File Error"), tr("Cannot rename downloaded file"));
       return;
@@ -455,17 +512,16 @@ void XnatDownloadManager::finishDownload()
   }
 }
 
-bool XnatDownloadManager::startFileDownload(const QString& zipFilename)
+bool XnatDownloadManager::startFileDownload(const QString& fileName)
 {
   Q_D(XnatDownloadManager);
 
-  // start download of zip file
+  // start download of file
   try
   {
     QModelIndex index = d->xnatTreeView->selectionModel()->currentIndex();
     ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
-    MITK_INFO << "XnatDownloadManager::startFileDownload(const QString& zipFilename) " << std::endl;
-    model->downloadFile(index, zipFilename);
+    model->downloadFile(index, fileName);
   }
   catch (ctkXnatException& e)
   {

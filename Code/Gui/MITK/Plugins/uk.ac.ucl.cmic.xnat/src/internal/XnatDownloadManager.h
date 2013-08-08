@@ -50,9 +50,10 @@ private slots:
   void startDownload();
   void startGroupDownload();
   void downloadData();
+  void downloadDataAndUnzip();
   void unzipData();
   void finishDownload();
-  void downloadDataBlocking();
+  void downloadDataBlocking(bool unzip = false);
 
 protected:
   QScopedPointer<XnatDownloadManagerPrivate> d_ptr;
