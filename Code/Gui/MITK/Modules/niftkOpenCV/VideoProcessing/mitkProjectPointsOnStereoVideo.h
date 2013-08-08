@@ -71,7 +71,7 @@ public:
   /**
    * \brief Set the world points directly
    */
-  void SetWorldPoints (std::vector<cv::Point3f> worldPoints);
+ // void SetWorldPoints (std::vector<cv::Point3f> worldPoints);
 
   /**
    * \brief Set the world points by triangulating their position from the
@@ -85,6 +85,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
+  itkSetMacro ( WorldPoints, std::vector<cv::Point3f> );
   std::vector < std::vector <cv::Point3f> > GetPointsInLeftLensCS();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
