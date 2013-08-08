@@ -82,6 +82,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   std::cout << "Chess board images are (" << width << ", " << height << ") pixels" << std::endl;
 }
 
+
 //-----------------------------------------------------------------------------
 bool ExtractChessBoardPoints(const cv::Mat image,
                              const int& numberCornersWidth,
@@ -127,7 +128,6 @@ bool ExtractChessBoardPoints(const cv::Mat image,
   }
   return found;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -1143,6 +1143,8 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputPoints,
 {
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
 }
+
+
 //-----------------------------------------------------------------------------
 void UndistortPoint(const cv::Point2f& inputPoint,
     const cv::Mat& cameraIntrinsics,
@@ -1156,6 +1158,7 @@ void UndistortPoint(const cv::Point2f& inputPoint,
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
   outputPoint = outputPoints[0];
 }
+
 
 //-----------------------------------------------------------------------------
 cv::Point3f  TriangulatePointPair(
@@ -1176,6 +1179,7 @@ cv::Point3f  TriangulatePointPair(
       rightToLeftRotationVector, rightToLeftTranslationVector);
   return returnVector[0];
 }
+
 
 //-----------------------------------------------------------------------------
 std::vector< cv::Point3f > TriangulatePointPairs(
@@ -1634,6 +1638,7 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
   return myMatrices;
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName)
 {
@@ -1955,6 +1960,8 @@ double SafeSQRT(double value)
   }
   return sqrt(value);
 }
+
+
 //-----------------------------------------------------------------------------
 void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
@@ -1972,6 +1979,8 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     fin >> CameraDistortion->at<float>(0,col);
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void LoadStereoTransformsFromPlainText (const std::string& filename,
     cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
@@ -1989,6 +1998,8 @@ void LoadStereoTransformsFromPlainText (const std::string& filename,
     fin >> rightToLeftTranslationVector->at<float>(0,col);
   }
 }
+
+
 //-----------------------------------------------------------------------------
 void LoadHandeyeFromPlainText (const std::string& filename,
     cv::Mat* leftCameraToTracker)
@@ -2077,6 +2088,8 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
   LoadHandeyeFromPlainText (handeyeFiles[0],leftCameraToTracker);
 
 }
+
+
 //-----------------------------------------------------------------------------------------
 cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
           cv::Mat& Handeye, cv::Mat& Tracker )
@@ -2109,6 +2122,8 @@ cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
 
   return returnPoint;
 }
+
+
 //-----------------------------------------------------------------------------------------
 cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
           cv::Mat& Handeye, cv::Mat& Tracker )
@@ -2141,7 +2156,9 @@ cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
 
   return returnPoint;
 }
-  
+
+
+//-----------------------------------------------------------------------------------------
 cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
 {
   cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
@@ -2188,4 +2205,6 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
   return returnMat;
     
 } 
+
+//-----------------------------------------------------------------------------------------
 } // end namespace
