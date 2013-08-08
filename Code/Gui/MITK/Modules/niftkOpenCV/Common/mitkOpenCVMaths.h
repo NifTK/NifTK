@@ -99,6 +99,10 @@ void CopyToVTK4x4Matrix(const cv::Matx44d& matrix, vtkMatrix4x4& vtkMatrix);
  */
 void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix);
 
+/**
+ * \brief multiplys a set of points by a 4x4 transformation matrix
+ */
+std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p);
 } // end namespace
 
 #endif

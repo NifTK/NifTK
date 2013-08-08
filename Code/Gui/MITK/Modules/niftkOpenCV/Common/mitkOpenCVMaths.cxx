@@ -316,7 +316,29 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
   }
 }
 
-
+//-----------------------------------------------------------------------------
+std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p)
+{
+  cv::Mat src ( 4, p.size(), CV_32F );
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    src.at<float>(0,i) = p[i].x;
+    src.at<float>(1,i) = p[i].y;
+    src.at<float>(2,i) = p[i].z;
+    src.at<float>(3,i) = 1.0;
+  }
+  cv::Mat dst = M*src;
+  std::vector <cv::Point3f> returnPoints;
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    cv::Point3f point;
+    point.x = dst.at<float>(0,i);
+    point.y = dst.at<float>(1,i);
+    point.z = dst.at<float>(2,i);
+    returnPoints.push_back(point);
+  }
+  return returnPoints;
+}
 //-----------------------------------------------------------------------------
 } // end namespace
 
