@@ -16,6 +16,9 @@
 #include <mitkFileIOUtils.h>
 #include <FileHelper.h>
 #include <itkMultipleValuedCostFunction.h>
+#include <mitkCameraCalibrationFacade.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace mitk {
 
@@ -35,11 +38,12 @@ UltrasoundPinCalibration::~UltrasoundPinCalibration()
 bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirectories(
     const std::string& matrixDirectory,
     const std::string& pointDirectory,
-    const vtkMatrix4x4& trackerToPhantomMatrix,
     const mitk::Point3D& invariantPoint,
     const mitk::Point2D& originInImagePlaneInPixels,
     const mitk::Point2D& millimetresPerPixel,
-    const std::vector<double>& initialGuessOf6DofParameters,
+    const std::vector<double>& initialGuessOfTransformation,
+    const bool& optimiseScaling,
+    const bool& optimiseInvariantPoint,
     double &residualError,
     const std::string& outputFileName
     )
@@ -53,37 +57,37 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     return false;
   }
 
-  std::vector< vtkSmartPointer<vtkMatrix4x4> > matrices;
-  for (unsigned int i = 0; i < matrixFiles.size(); i++)
-  {
-    vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(matrixFiles[i]);
-    matrices.push_back(matrix);
-  }
+  std::vector<cv::Mat> matrices = LoadOpenCVMatricesFromDirectory (matrixDirectory);
 
-  std::vector<mitk::Point3D> points;
+  std::vector<cv::Point2d> points;
   for (unsigned int i = 0; i < pointFiles.size(); i++)
   {
-    mitk::Point3D point;
-    bool isSuccessful = mitk::Load3DPointFromFile(pointFiles[i], point);
-    if (isSuccessful)
+    mitk::Point2D point;
+    if (mitk::Load2DPointFromFile(pointFiles[i], point))
     {
-      points.push_back(point);
+      cv::Point2d cvPoint;
+      cvPoint.x = point[0];
+      cvPoint.y = point[1];
+      points.push_back(cvPoint);
     }
   }
 
-  vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkMatrix4x4::New();
-  outputMatrix->Identity();
+  cv::Matx44d outputMatrix;
+  cv::Point3d invPoint(invariantPoint[0], invariantPoint[1], invariantPoint[2]);
+  cv::Point2d originInPixels(originInImagePlaneInPixels[0], originInImagePlaneInPixels[1]);
+  cv::Point2d mmPerPix(millimetresPerPixel[0], millimetresPerPixel[1]);
 
   bool calibratedSuccessfully = this->Calibrate(
       matrices,
       points,
-      trackerToPhantomMatrix,
-      invariantPoint,
-      originInImagePlaneInPixels,
-      millimetresPerPixel,
-      initialGuessOf6DofParameters,
+      invPoint,
+      originInPixels,
+      mmPerPix,
+      initialGuessOfTransformation,
+      optimiseScaling,
+      optimiseInvariantPoint,
       residualError,
-      *outputMatrix
+      outputMatrix
       );
 
   if (!calibratedSuccessfully)
@@ -92,12 +96,27 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     return false;
   }
 
-  bool savedFileSuccessfully = SaveVtkMatrix4x4ToFile(outputFileName, *outputMatrix);
-
-  if (!savedFileSuccessfully)
+  if (outputFileName.size() > 0)
   {
-    MITK_ERROR << "CalibrateUsingTrackerPointAndFilesInTwoDirectories: Failed to save matrix to file:" << outputFileName << std::endl;
-    return false;
+    vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkMatrix4x4::New();
+    for (int i = 0; i < 4; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        vtkMatrix->SetElement(i, j, outputMatrix(i, j));
+      }
+    }
+    bool savedFile = mitk::SaveVtkMatrix4x4ToFile(outputFileName, *vtkMatrix);
+    if (!savedFile)
+    {
+      MITK_ERROR << "CalibrateUsingTrackerPointAndFilesInTwoDirectories: Failed to save file " << outputFileName << std::endl;
+    }
+  }
+
+  std::cout << "UltrasoundPinCalibration:Result = " << std::endl;
+  for (int i = 0; i < 4; i++)
+  {
+    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
 
   return true;
@@ -106,15 +125,16 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 
 //-----------------------------------------------------------------------------
 bool UltrasoundPinCalibration::Calibrate(
-    const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
-    const std::vector<mitk::Point3D>& points,
-    const vtkMatrix4x4& trackerToPhantomMatrix, // this should be identity if the invariant point is in tracker coordinates.
-    const mitk::Point3D& invariantPoint,
-    const mitk::Point2D& originInImagePlaneInPixels,
-    const mitk::Point2D& millimetresPerPixel,
-    const std::vector<double>& initialGuessOf6DofParameters,
-    double &residualError,
-    vtkMatrix4x4 &outputMatrix
+    const std::vector< cv::Mat>& matrices,
+    const std::vector< cv::Point2d >& points,
+    const cv::Point3d& invariantPoint,
+    const cv::Point2d& originInImagePlaneInPixels,
+    const cv::Point2d& millimetresPerPixel,
+    const std::vector<double>& initialGuessOfTransformation,
+    const bool& optimiseScaling,
+    const bool& optimiseInvariantPoint,
+    double& residualError,
+    cv::Matx44d& outputMatrix
     )
 {
   bool isSuccessful = false;

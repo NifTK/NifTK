@@ -18,8 +18,7 @@
 
 namespace mitk {
 
-//-----------------------------------------------------------------------------
-bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
+bool LoadDoublesFromFile(const std::string& fileName, std::vector<double>& output)
 {
   bool isSuccessful = false;
 
@@ -28,16 +27,71 @@ bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
     ifstream myfile(fileName.c_str());
     if (myfile.is_open())
     {
-      int i = 0;
-      for (i = 0; i < 3 && !myfile.bad() && !myfile.eof() && !myfile.fail(); i++)
+      int i;
+      double value;
+
+      output.clear();
+
+      for (i = 0; !myfile.bad() && !myfile.eof() && !myfile.fail(); i++)
       {
-        myfile >> point[i];
-      }
-      if (i == 3)
-      {
-        isSuccessful = true;
+        myfile >> value;
+        output.push_back(value);
       }
       myfile.close();
+
+      isSuccessful = true;
+    }
+  }
+  return isSuccessful;
+}
+
+
+//-----------------------------------------------------------------------------
+bool Load2DPointFromFile(const std::string& fileName, mitk::Point2D& point)
+{
+  bool isSuccessful = false;
+
+  std::vector<double> pointData;
+  isSuccessful = LoadDoublesFromFile(fileName, pointData);
+
+  if (isSuccessful)
+  {
+    if (pointData.size() == 2)
+    {
+      point[0] = pointData[0];
+      point[1] = pointData[1];
+      isSuccessful = true;
+    }
+    else
+    {
+      isSuccessful = false;
+    }
+  }
+
+  return isSuccessful;
+}
+
+
+//-----------------------------------------------------------------------------
+bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
+{
+  bool isSuccessful = false;
+
+  std::vector<double> pointData;
+  isSuccessful = LoadDoublesFromFile(fileName, pointData);
+
+  if (isSuccessful)
+  {
+    if (pointData.size() == 3)
+    {
+      point[0] = pointData[0];
+      point[1] = pointData[1];
+      point[2] = pointData[2];
+      isSuccessful = true;
+    }
+    else
+    {
+      isSuccessful = false;
     }
   }
 

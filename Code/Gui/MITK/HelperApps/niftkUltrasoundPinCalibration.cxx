@@ -73,13 +73,6 @@ int main(int argc, char** argv)
       mmPerPix[1] = 1;
     }
 
-    vtkSmartPointer<vtkMatrix4x4> trackerToPhantomMatrix = vtkMatrix4x4::New();
-    trackerToPhantomMatrix->Identity();
-    if (trackerToPhantomMatrixFile.size() > 0)
-    {
-      trackerToPhantomMatrix = niftk::LoadMatrix4x4FromFile(trackerToPhantomMatrixFile);
-    }
-
     std::vector<double> initialTransformationParameters;
     if(initialGuess.size() == 6)
     {
@@ -99,10 +92,16 @@ int main(int argc, char** argv)
       initialTransformationParameters.push_back(0);
       initialTransformationParameters.push_back(0);
     }
-    if (optimisingScaling)
+    if (optimiseScaling)
     {
       initialTransformationParameters.push_back(mmPerPix[0]);
       initialTransformationParameters.push_back(mmPerPix[1]);
+    }
+    if (optimiseInvariantPoint)
+    {
+      initialTransformationParameters.push_back(invPoint[0]);
+      initialTransformationParameters.push_back(invPoint[1]);
+      initialTransformationParameters.push_back(invPoint[2]);
     }
 
     std::cout << "niftkUltrasoundPinCalibration: matrices         = " << matrixDirectory << std::endl;
@@ -117,22 +116,18 @@ int main(int argc, char** argv)
       std::cout << initialTransformationParameters[i] << " ";
     }
     std::cout << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: tracker-phantom  = " << std::endl;
-    for (int i = 0; i < 4; i++)
-    {
-      std::cout << "niftkUltrasoundPinCalibration:   " << trackerToPhantomMatrix->GetElement(i,0) << " " << trackerToPhantomMatrix->GetElement(i,1) << " " << trackerToPhantomMatrix->GetElement(i,2) << " " << trackerToPhantomMatrix->GetElement(i,3) << std::endl;
-    }
 
     // Do calibration
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
     bool isSuccessful = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
         matrixDirectory,
         pointDirectory,
-        *trackerToPhantomMatrix,
         invPoint,
         originInPixels,
         mmPerPix,
         initialTransformationParameters,
+        optimiseScaling,
+        optimiseInvariantPoint,
         residualError,
         outputMatrixFile
         );

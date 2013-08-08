@@ -21,8 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <mitkVector.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
+#include <cv.h>
 
 namespace mitk {
 
@@ -41,25 +40,27 @@ public:
   bool CalibrateUsingInvariantPointAndFilesInTwoDirectories(
       const std::string& matrixDirectory,
       const std::string& pointDirectory,
-      const vtkMatrix4x4& trackerToPhantomMatrix,
       const mitk::Point3D& invariantPoint,
       const mitk::Point2D& originInImagePlaneInPixels,
       const mitk::Point2D& millimetresPerPixel,
-      const std::vector<double>& initialGuessOf6DofParameters,
+      const std::vector<double>& initialGuessOfTransformation,
+      const bool& optimiseScaling,
+      const bool& optimiseInvariantPoint,
       double &residualError,
       const std::string& outputFileName
       );
 
   bool Calibrate(
-      const std::vector< vtkSmartPointer<vtkMatrix4x4> >& matrices,
-      const std::vector<mitk::Point3D>& points,
-      const vtkMatrix4x4& trackerToPhantomMatrix,
-      const mitk::Point3D& invariantPoint,
-      const mitk::Point2D& originInImagePlaneInPixels,
-      const mitk::Point2D& millimetresPerPixel,
-      const std::vector<double>& initialGuessOf6DofParameters,
-      double &residualError,
-      vtkMatrix4x4 &outputMatrix
+      const std::vector< cv::Mat >& matrices,
+      const std::vector< cv::Point2d >& points,
+      const cv::Point3d& invariantPoint,
+      const cv::Point2d& originInImagePlaneInPixels,
+      const cv::Point2d& millimetresPerPixel,
+      const std::vector<double>& initialGuessOfTransformation,
+      const bool& optimiseScaling,
+      const bool& optimiseInvariantPoint,
+      double& residualError,
+      cv::Matx44d& outputMatrix
       );
 
 protected:

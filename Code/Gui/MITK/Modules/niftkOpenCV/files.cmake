@@ -40,5 +40,5 @@ set(CPP_FILES
   TagTracking/mitkStereoTagExtractor.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
-  UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunctionAdaptor.cxx
+  UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
 )

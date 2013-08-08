@@ -27,8 +27,15 @@ namespace mitk {
  * \brief Various file IO stuff, like loading transformations from file.
  */
 
+bool LoadDoublesFromFile(const std::string& fileName, std::vector<double>& output);
+
 /**
- * \brief Loads a point from file, returning true if successful and false otherwise.
+ * \brief Loads a 2D point from file, returning true if successful and false otherwise.
+ */
+NIFTKCORE_EXPORT bool Load2DPointFromFile(const std::string& fileName, mitk::Point2D& point);
+
+/**
+ * \brief Loads a 3D point from file, returning true if successful and false otherwise.
  */
 NIFTKCORE_EXPORT bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point);
 
