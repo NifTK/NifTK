@@ -124,7 +124,17 @@ private:
   /**
    * \brief We store the min/max range of rotation parameters, just for some debugging information.
    */
-  double m_RangesOfRotationalParams[6];
+  double m_RangesOfRotationalParams[4];
+
+  /**
+   * \brief Store a registration matrix at a given point in time, to compare against.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_ReferenceMatrix;
+
+  /**
+   * \brief Store a registration matrix at each iteration.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_CurrentMatrix;
 };
 
 #endif // TagTrackerView_h

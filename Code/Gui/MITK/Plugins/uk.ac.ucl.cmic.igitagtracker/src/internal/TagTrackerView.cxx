@@ -26,6 +26,7 @@
 #include <service/event/ctkEvent.h>
 #include <mitkImage.h>
 #include <mitkPointSet.h>
+#include <mitkPointUtils.h>
 #include <mitkSurface.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkMonoTagExtractor.h>
@@ -52,8 +53,10 @@ TagTrackerView::TagTrackerView()
   m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
   m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
-  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
+  m_ReferenceMatrix = vtkMatrix4x4::New();
+  m_ReferenceMatrix->Identity();
+  m_CurrentMatrix = vtkMatrix4x4::New();
+  m_CurrentMatrix->Identity();
 }
 
 
@@ -225,8 +228,7 @@ void TagTrackerView::OnSpinBoxPressed()
   m_RangesOfRotationalParams[1] = std::numeric_limits<double>::min();
   m_RangesOfRotationalParams[2] = std::numeric_limits<double>::max();
   m_RangesOfRotationalParams[3] = std::numeric_limits<double>::min();
-  m_RangesOfRotationalParams[4] = std::numeric_limits<double>::max();
-  m_RangesOfRotationalParams[5] = std::numeric_limits<double>::min();
+  m_ReferenceMatrix->DeepCopy(m_CurrentMatrix);
   this->UpdateTags();
 }
 
@@ -486,51 +488,77 @@ void TagTrackerView::UpdateTags()
 
         if (isSuccessful)
         {
+          m_CurrentMatrix->DeepCopy(registrationMatrix);
+
           double pi = 3.14159265359;
-          double cosRx = registrationMatrix->GetElement(0,0);
-          double rx = acos(cosRx) * 180.0 / pi;
-          double cosRy = registrationMatrix->GetElement(1,1);
-          double ry = acos(cosRy) * 180.0 / pi;
-          double cosRz = registrationMatrix->GetElement(2,2);
-          double rz = acos(cosRz) * 180.0 / pi;
 
-          QString rxString;
-          rxString.setNum(rx);
+          double angleOfProbeWithRespectToCameraZDirection = 0;
+          double rotationAngleOfShaft = 0;
 
-          QString ryString;
-          ryString.setNum(ry);
+          // For angle of probe with respect to camera:
+          //
+          // Assume probe model is aligned down Z axis for now,
+          // and compare with camera z axis.
 
-          QString rzString;
-          rzString.setNum(rz);
+          mitk::Point3D zNormal;
+          zNormal[0] = 0;
+          zNormal[1] = 0;
+          zNormal[2] = 1;
 
-          if (rx < m_RangesOfRotationalParams[0])
+          mitk::TransformPointByVtkMatrix(registrationMatrix, true, zNormal);
+          angleOfProbeWithRespectToCameraZDirection = acos(zNormal[2]) * 180.0 / pi;
+
+          // For rotation angle about shaft:
+          //
+          // Take position of y-axis using reference matrix.
+          // Take position of y-axis using current matrix.
+          // Take angle between two.
+          mitk::Point3D yAxisAtReferencePoint;
+          mitk::Point3D yAxisAtCurrentPoint;
+
+          yAxisAtReferencePoint[0] = 0;
+          yAxisAtReferencePoint[1] = 1;
+          yAxisAtReferencePoint[2] = 0;
+
+          yAxisAtCurrentPoint[0] = 0;
+          yAxisAtCurrentPoint[1] = 1;
+          yAxisAtCurrentPoint[2] = 0;
+
+          mitk::TransformPointByVtkMatrix(m_CurrentMatrix, true, yAxisAtCurrentPoint);
+          mitk::TransformPointByVtkMatrix(m_ReferenceMatrix, true, yAxisAtReferencePoint);
+
+          rotationAngleOfShaft = acos(
+                yAxisAtReferencePoint[0]*yAxisAtCurrentPoint[0]
+              + yAxisAtReferencePoint[1]*yAxisAtCurrentPoint[1]
+              + yAxisAtReferencePoint[2]*yAxisAtCurrentPoint[2]
+              ) * 180.0 / pi;
+
+          QString angleOfProbeWithRespectToCameraZDirectionString;
+          angleOfProbeWithRespectToCameraZDirectionString.setNum(angleOfProbeWithRespectToCameraZDirection);
+
+          QString rotationAngleOfShaftString;
+          rotationAngleOfShaftString.setNum(rotationAngleOfShaft);
+
+          if (angleOfProbeWithRespectToCameraZDirection < m_RangesOfRotationalParams[0])
           {
-            m_RangesOfRotationalParams[0] = rx;
+            m_RangesOfRotationalParams[0] = angleOfProbeWithRespectToCameraZDirection;
           }
-          if (ry < m_RangesOfRotationalParams[2])
+          if (rotationAngleOfShaft < m_RangesOfRotationalParams[2])
           {
-            m_RangesOfRotationalParams[2] = ry;
+            m_RangesOfRotationalParams[2] = rotationAngleOfShaft;
           }
-          if (rz < m_RangesOfRotationalParams[4])
+          if (angleOfProbeWithRespectToCameraZDirection > m_RangesOfRotationalParams[1])
           {
-            m_RangesOfRotationalParams[4] = rz;
+            m_RangesOfRotationalParams[1] = angleOfProbeWithRespectToCameraZDirection;
           }
-          if (rx > m_RangesOfRotationalParams[1])
+          if (rotationAngleOfShaft > m_RangesOfRotationalParams[3])
           {
-            m_RangesOfRotationalParams[1] = rx;
-          }
-          if (ry > m_RangesOfRotationalParams[3])
-          {
-            m_RangesOfRotationalParams[3] = ry;
-          }
-          if (rz > m_RangesOfRotationalParams[5])
-          {
-            m_RangesOfRotationalParams[5] = rz;
+            m_RangesOfRotationalParams[3] = rotationAngleOfShaft;
           }
 
-          labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", rx=") + rxString + QString(", ry=") + ryString + QString(", rz=") + rzString);
+          labelText += (QString(", FRE=") + fiducialRegistrationErrorString + QString(", camera=") + angleOfProbeWithRespectToCameraZDirectionString + QString(", shaft=") + rotationAngleOfShaftString);
 
-          MITK_INFO << "Tag Tracking range, rx=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), ry=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << "), rz=(" << m_RangesOfRotationalParams[4] << ", " << m_RangesOfRotationalParams[5] << ")" << std::endl;
+          MITK_INFO << "Tag Tracking range, camera=(" << m_RangesOfRotationalParams[0] << ", " << m_RangesOfRotationalParams[1] << "), shaft=(" <<m_RangesOfRotationalParams[2] << ", " << m_RangesOfRotationalParams[3] << ")" << std::endl;
         }
         else
         {
