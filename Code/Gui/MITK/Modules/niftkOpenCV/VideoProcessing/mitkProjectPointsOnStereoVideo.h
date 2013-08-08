@@ -111,7 +111,8 @@ private:
   std::vector<cv::Point3f>      m_WorldPoints;  //the world points to project
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
-  mitk::VideoTrackerMatching*   m_TrackerMatcher; //the tracker matcher
+  mitk::VideoTrackerMatching::Pointer
+                                m_TrackerMatcher; //the tracker matcher
  
   bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;

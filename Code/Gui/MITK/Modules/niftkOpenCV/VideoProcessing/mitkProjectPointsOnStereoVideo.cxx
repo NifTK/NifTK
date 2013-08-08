@@ -75,7 +75,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     return;
   }
   
-  if ( m_TrackerMatcher == NULL  )
+  if ( m_TrackerMatcher.IsNull() ) 
   {
     m_TrackerMatcher = mitk::VideoTrackerMatching::New();
   }
@@ -206,7 +206,7 @@ std::vector<std::string> ProjectPointsOnStereoVideo::FindVideoData()
                                           
 void ProjectPointsOnStereoVideo::SetFlipMatrices(bool state)
 {
-  if ( m_TrackerMatcher == NULL ) 
+  if ( m_TrackerMatcher.IsNull() ) 
   {
     MITK_ERROR << "Tried to set flip matrices before initialisation";
     return;
