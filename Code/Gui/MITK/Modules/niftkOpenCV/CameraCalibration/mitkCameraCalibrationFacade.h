@@ -84,15 +84,12 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
 
 /**
  * \brief Extracts the chess board points, using OpenCV routines.
- * \param images is a single image.
+ * \param image is a single image.
  * \param numberCornersWidth the number of internal corners along the width axis (X).
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
  * \param outputImagePoints output image points, array size = (1 * numberOfCorners (N)) x 2, and caller must de-allocate.
  * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
- * \param outputPointCounts output point counts, array size = 1 x 1, and caller must de-allocate. In this case, a "successful" result is
- * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is 1 x 1, with each entry containing
- * the number N.
  */
 extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const cv::Mat  image,
