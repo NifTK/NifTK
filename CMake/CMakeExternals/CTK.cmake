@@ -38,12 +38,12 @@ if(QT_FOUND)
       SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
       BINARY_DIR ${proj}-build
       PREFIX ${proj}-cmake
-#      URL ${NIFTK_LOCATION_CTK}
-#      URL_MD5 ${NIFTK_CHECKSUM_CTK}
-#      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
-      GIT_REPOSITORY http://github.com/NifTK/CTK
-      GIT_TAG 7fc6183e2c
-      UPDATE_COMMAND ""
+      URL ${NIFTK_LOCATION_CTK}
+      URL_MD5 ${NIFTK_CHECKSUM_CTK}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
+#      GIT_REPOSITORY http://github.com/NifTK/CTK
+#      GIT_TAG 9c87c55ddf
+#      UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS

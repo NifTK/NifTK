@@ -67,16 +67,12 @@ ctkXnatTreeModel* XnatTreeView::xnatModel()
 
 const ctkXnatObject::Pointer XnatTreeView::currentObject()
 {
-  return getObject (this->selectionModel()->currentIndex());
+  return this->getObject(this->selectionModel()->currentIndex());
 }
 
 const ctkXnatObject::Pointer XnatTreeView::getObject(const QModelIndex& index)
 {
-
-  ctkXnatTreeItem* item = static_cast<ctkXnatTreeItem*>(index.internalPointer());
-  ctkXnatObject::Pointer xnatObject = item->xnatObject();
-
-  return xnatObject;
+  return this->xnatModel()->xnatObject(index);
 }
 
 void XnatTreeView::refreshRows()
