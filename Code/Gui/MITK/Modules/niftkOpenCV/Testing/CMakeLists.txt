@@ -44,4 +44,4 @@ else(OPENCV_WITH_FFMPEG)
 	mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory -NoVideoSupport)
 endif(OPENCV_WITH_FFMPEG)
 
-mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/2013-07-26-16-58-40-025 ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
+mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
