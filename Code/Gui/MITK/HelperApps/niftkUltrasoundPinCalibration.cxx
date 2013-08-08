@@ -17,6 +17,9 @@
 #include <mitkUltrasoundPinCalibration.h>
 #include <niftkUltrasoundPinCalibrationCLP.h>
 #include <mitkVector.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+#include <niftkVTKFunctions.h>
 
 int main(int argc, char** argv)
 {
@@ -38,20 +41,41 @@ int main(int argc, char** argv)
     invariantPoint[2] = 0;
 
     mitk::Point2D originInPixels;
-    originInPixels[0] = 0;
-    originInPixels[1] = 0;
+    originInPixels[0] = xOrigin;
+    originInPixels[1] = yOrigin;
 
+    vtkSmartPointer<vtkMatrix4x4> trackerToPhantomMatrix = vtkMatrix4x4::New();
+    trackerToPhantomMatrix->Identity();
+    if (trackerToPhantomMatrixFile.size() > 0)
+    {
+      trackerToPhantomMatrix = niftk::LoadMatrix4x4FromFile(trackerToPhantomMatrixFile);
+    }
+
+    mitk::Point2D millimetresPerPixel;
+    millimetresPerPixel[0] = 1;
+    millimetresPerPixel[1] = 1;
+
+    std::vector<double> initialGuessTransformation;
+    initialGuessTransformation.push_back(0); // rx
+    initialGuessTransformation.push_back(0); // ry
+    initialGuessTransformation.push_back(0); // rz
+    initialGuessTransformation.push_back(0); // tx
+    initialGuessTransformation.push_back(0); // ty
+    initialGuessTransformation.push_back(0); // tz
+
+    // Do calibration
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-
-    bool isSuccessful = calibration->CalibrateUsingTrackerPointAndFilesInTwoDirectories(
+    bool isSuccessful = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
         matrixDirectory,
         pointDirectory,
-        outputMatrix,
+        *trackerToPhantomMatrix,
         invariantPoint,
         originInPixels,
-        residualError
+        millimetresPerPixel,
+        initialGuessTransformation,
+        residualError,
+        outputMatrix
         );
-
 
     if (isSuccessful)
     {
