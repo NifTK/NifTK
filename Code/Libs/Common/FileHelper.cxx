@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <fstream>
 #include <ostream>
+#include <sstream>
 #include <deque>
 #include "FileHelper.h"
 #include "EnvironmentHelper.h"
@@ -288,7 +289,9 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
 {
   if (!DirectoryExists(fullDirectoryName))
   {
-    throw std::logic_error("Directory does not exist!");
+    std::ostringstream message;
+    message << "Directory " << fullDirectoryName << " does not exist!";
+    throw std::logic_error(message.str());
   }
 
   std::vector<std::string> fileNames;

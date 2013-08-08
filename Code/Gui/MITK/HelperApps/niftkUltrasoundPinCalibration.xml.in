@@ -25,8 +25,8 @@
       <label>Points Directory</label>
     </directory>
     <file fileExtensions="*.txt,*.4x4">
-      <name>outputMatrix</name>
-      <longflag>outputMatrix</longflag>
+      <name>outputMatrixFile</name>
+      <longflag>outputMatrixFile</longflag>
       <description>Output matrix filename.</description>
       <label>Output Matrix</label>
       <default>calib.4x4</default>
@@ -37,54 +37,14 @@
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
-    <integer>
-      <name>xOrigin</name>
-      <longflag>xOrigin</longflag>
-      <description>X pixel index of origin.</description>
-      <label>X Origin</label>
-      <default>0</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>10000</maximum>
-        <step>1</step>
-      </constraints>
-    </integer>
-    <integer>
-      <name>yOrigin</name>
-      <longflag>yOrigin</longflag>
-      <description>Y pixel index of origin.</description>
-      <label>Y origin</label>
-      <default>0</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>10000</maximum>
-        <step>1</step>
-      </constraints>
-    </integer>
-    <float>
-      <name>xMillimetresPerPixel</name>
-      <longflag>xMillimetresPerPixel</longflag>
-      <description>Millimetres per Pixel in X (horizontal) direction.</description>
-      <label>X mm/pix</label>
-      <default>1</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>10000</maximum>
-        <step>0.01</step>
-      </constraints>
-    </float>
-    <float>
-      <name>yMillimetresPerPixel</name>
-      <longflag>yMillimetresPerPixel</longflag>
-      <description>Millimetres per Pixel in Y (vertical) direction.</description>
-      <label>Y mm/pix</label>
-      <default>1</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>10000</maximum>
-        <step>0.01</step>
-      </constraints>
-    </float>
+    <float-vector>
+      <name>millimetresPerPixel</name>
+      <longflag>millimetresPerPixel</longflag>
+      <description>Initial millimetres per pixel</description>
+      <label>Millimetres/Pixel</label>
+      <default>1,1</default>
+      <channel>input</channel>
+    </float-vector>
   </parameters>
 
   <parameters>
@@ -97,6 +57,37 @@
       <label>Tracker to Phantom</label>
       <channel>input</channel>
     </file>
+    <point>
+      <name>invariantPoint</name>
+      <longflag>invariantPoint</longflag>
+      <description>Tracker to phantom matrix.</description>
+      <label>Invariant Point</label>
+      <channel>input</channel>
+    </point>
+    <float-vector>
+      <name>pixelOrigin</name>
+      <longflag>pixelOrigin</longflag>
+      <description>Pixel location thats considered to be origin.</description>
+      <label>Pixel Origin</label>
+      <default>0,0</default>
+      <channel>input</channel>
+    </float-vector>
+    <float-vector>
+      <name>initialGuess</name>
+      <longflag>initialGuess</longflag>
+      <description>Guess of transformation, [rx,ry,rz,tx,ty,tz] using mm and degrees.</description>
+      <label>Initial Guess</label>
+      <default>0,0,0,0,0,0</default>
+      <channel>input</channel>
+    </float-vector>
+    <boolean>
+      <name>optimisingScaling</name>
+      <longflag>optimisingScaling</longflag>
+      <description>Optimise the scale parameters.</description>
+      <label>Optimise Scaling</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
   </parameters>
 
 </executable>
