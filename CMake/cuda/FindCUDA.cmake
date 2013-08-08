@@ -536,13 +536,15 @@ mark_as_advanced(
 if (MSVC)
    # cudart64_50_35.dll
    # cudart32_50_35.dll
+   # cudart64_55.dll
+   # cudart32_55.dll
    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CUDA_DLL_SUFFIX "64" )
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CUDA_DLL_SUFFIX "32" )
   endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
   
-  set(CUDA_DLL_SUFFIX "${CUDA_DLL_SUFFIX}_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}_*.dll")
+  set(CUDA_DLL_SUFFIX "${CUDA_DLL_SUFFIX}_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}*.dll")
   file(GLOB CUDA_CUDART_DLL ${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart${CUDA_DLL_SUFFIX})
   
   get_filename_component(CUDA_CUDART_DLL_NAME ${CUDA_CUDART_DLL} NAME)
