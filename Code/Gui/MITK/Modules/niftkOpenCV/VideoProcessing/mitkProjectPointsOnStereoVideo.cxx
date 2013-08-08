@@ -174,11 +174,10 @@ void ProjectPointsOnStereoVideo::Project()
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = 
-      m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex).inv() 
-      * m_LeftCameraToTracker->inv();
-   
-   // m_PointsInLeftLensCS = TransformPoints(WorldToLeftCamera , m_WorldPoints);
+    cv::Mat TrackerToWorld = m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex);
+    cv::Mat LeftCameraToWorld = TrackerToWorld * (*m_LeftCameraToTracker);
+    cv::Mat WorldToLeftCamera = LeftCameraToWorld.inv();
+    
     std::vector < cv::Point3f > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
     
