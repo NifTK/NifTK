@@ -18,6 +18,7 @@
 #include <ctkXnatConnectionFactory.h>
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
+#include <ctkXnatScanResource.h>
 #include <ctkXnatSettings.h>
 
 #include "XnatDownloadManager.h"
@@ -266,13 +267,13 @@ void XnatBrowserWidget::importFiles()
   }
 
   // download file
-  QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
+//  QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
   QString tempWorkDirectory = d->settings->getWorkSubdirectory();
   d->downloadManager->silentlyDownloadAllFiles(tempWorkDirectory);
 
   // create list of files to open
   QStringList files;
-  collectImageFiles(tempWorkDirectory, files);
+  this->collectImageFiles(tempWorkDirectory, files);
 
   if (d->dataStorage.IsNull())
   {
@@ -323,9 +324,9 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
   const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
 
   ui->downloadButton->setEnabled(object->isFile());
-  ui->downloadAllButton->setEnabled(object->holdsFiles());
+  ui->downloadAllButton->setEnabled(this->holdsFiles(object));
   ui->importButton->setEnabled(object->isFile());
-  ui->importAllButton->setEnabled(object->holdsFiles());
+  ui->importAllButton->setEnabled(this->holdsFiles(object));
 }
 
 void XnatBrowserWidget::showContextMenu(const QPoint& position)
@@ -341,7 +342,7 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
     {
       actions.append(d->downloadAction);
     }
-    if ( object->holdsFiles() )
+    if (this->holdsFiles(object))
     {
         actions.append(d->downloadAllAction);
         actions.append(d->importAllAction);
@@ -355,4 +356,23 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
       QMenu::exec(actions, ui->xnatTreeView->mapToGlobal(position));
     }
   }
+}
+
+bool XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const
+{
+//  MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const" << std::endl;
+  ctkXnatObject* xnatObjectP = xnatObject.data();
+  if (ctkXnatScanResource* scanResource = dynamic_cast<ctkXnatScanResource*>(xnatObjectP))
+  {
+//    scanResource->fetch();
+//    MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const This is a scan resource." << std::endl;
+    if (scanResource->children().size() > 0)
+    {
+//      scanResource->reset();
+//      MITK_INFO << "XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const It has children." << std::endl;
+      return true;
+    }
+//    scanResource->reset();
+  }
+  return false;
 }

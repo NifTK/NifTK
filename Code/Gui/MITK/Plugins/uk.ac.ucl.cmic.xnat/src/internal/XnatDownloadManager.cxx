@@ -14,11 +14,13 @@ extern "C"
 }
 
 #include <ctkXnatException.h>
+#include <ctkXnatTreeModel.h>
 #include <ctkXnatSettings.h>
 
 #include "XnatDownloadDialog.h"
-#include "ctkXnatTreeModel.h"
 #include "XnatTreeView.h"
+
+#include <mitkLogMacros.h>
 
 class XnatDownloadManagerPrivate
 {
@@ -251,6 +253,7 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
 {
   Q_D(XnatDownloadManager);
 
+  MITK_INFO << "XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir) dir: " << dir.toStdString() << std::endl;
   // initialize download variables
 //  d->xnatFilename = fname;
 //  d->outFilename = fname;
@@ -263,8 +266,9 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
 //  QTimer::singleShot(0, this, SLOT(startGroupDownload()));
   // start download of ZIP file
   d->zipFilename = QFileInfo(d->currDir, tr("xnat.file.zip")).absoluteFilePath();
-  if ( !this->startFileDownload(d->zipFilename) )
+  if (!this->startFileDownload(d->zipFilename))
   {
+    MITK_INFO << "XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir) download not started. zip file name: " << d->zipFilename.toStdString() << std::endl;
     d->downloadDialog->close();
     return;
   }
@@ -272,9 +276,9 @@ void XnatDownloadManager::silentlyDownloadAllFiles(const QString& dir)
   // initialize download variables
   d->finished = false;
   d->totalBytes = 0;
-  connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+  QObject::connect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
-  downloadDataBlocking();
+  this->downloadDataBlocking();
 }
 
 void XnatDownloadManager::downloadData()
@@ -336,9 +340,9 @@ void XnatDownloadManager::downloadData()
 void XnatDownloadManager::downloadDataBlocking()
 {
   Q_D(XnatDownloadManager);
+  MITK_INFO << "XnatDownloadManager::downloadDataBlocking()" << std::endl;
 
   unsigned long numBytes;
-//  XnatRestStatus status;
 
   while (true)
   {
@@ -363,7 +367,7 @@ void XnatDownloadManager::downloadDataBlocking()
     if ( d->finished == true )
     {
       d->downloadDialog->showUnzipInProgress();
-      unzipData();
+      this->unzipData();
       break;
     }
 
@@ -392,6 +396,7 @@ void XnatDownloadManager::downloadDataBlocking()
 
 void XnatDownloadManager::unzipData()
 {
+  MITK_INFO << "XnatDownloadManager::unzipData()" << std::endl;
   Q_D(XnatDownloadManager);
 
   // check if user has canceled download
@@ -406,6 +411,7 @@ void XnatDownloadManager::unzipData()
     return;
   }
 
+  MITK_INFO << "XnatDownloadManager::unzipData() zip file name: " << d->zipFilename.toStdString() << " ; current dir: " << d->currDir.toStdString() << std::endl;
   // unzip downloaded file
   XnatRestStatus status = unzipXnatRestFile(d->zipFilename.toAscii().constData(), d->currDir.toAscii().constData());
 
@@ -425,9 +431,10 @@ void XnatDownloadManager::unzipData()
 
 void XnatDownloadManager::finishDownload()
 {
+  MITK_INFO << "XnatDownloadManager::finishDownload()" << std::endl;
   Q_D(XnatDownloadManager);
 
-  disconnect(this, SIGNAL(done()), this, SLOT(finishDownload()));
+  QObject::disconnect(this, SIGNAL(done()), this, SLOT(finishDownload()));
 
   // change filename to name specified by user
   if ( d->outFilename != d->xnatFilename )
@@ -457,6 +464,7 @@ bool XnatDownloadManager::startFileDownload(const QString& zipFilename)
   {
     QModelIndex index = d->xnatTreeView->selectionModel()->currentIndex();
     ctkXnatTreeModel* model = d->xnatTreeView->xnatModel();
+    MITK_INFO << "XnatDownloadManager::startFileDownload(const QString& zipFilename) " << std::endl;
     model->downloadFile(index, zipFilename);
   }
   catch (ctkXnatException& e)
