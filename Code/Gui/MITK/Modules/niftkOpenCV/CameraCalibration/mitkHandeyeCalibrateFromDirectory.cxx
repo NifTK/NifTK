@@ -431,6 +431,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   for ( int i = 0 ; i < 5 ; i ++ )  
   {
     fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, float , i, 0 ) << " ";
+    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, float , i, 0 ) << " ";
   }
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
