@@ -85,6 +85,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
+  itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( WorldPoints, std::vector<cv::Point3f> );
   std::vector < std::vector <cv::Point3f> > GetPointsInLeftLensCS();
   itkGetMacro ( InitOK, bool);
@@ -118,6 +119,7 @@ private:
   bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;
   bool                          m_ProjectOK;
+  bool                          m_DrawAxes;
 
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
@@ -132,11 +134,16 @@ private:
                                 m_ProjectedPoints; // the projected points
   std::vector < std::vector <cv::Point3f> >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
+  std::vector < std::pair<cv::Point2f, cv::Point2f> > 
+                                m_ScreenAxesPoints; // the projected axes points
 
   std::vector<std::string> FindVideoData();
 
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
+
+  cv::Mat  LeftCameraToWorld ( int framenumber );
+  void ProjectAxes();
 }; // end class
 
 } // end namespace

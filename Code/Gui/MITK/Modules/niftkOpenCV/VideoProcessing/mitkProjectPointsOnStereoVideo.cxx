@@ -34,6 +34,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_DrawLines(false)
 , m_InitOK(false)
 , m_ProjectOK(false)
+, m_DrawAxes(false)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
 , m_LeftDistortionVector (new cv::Mat(5,1,CV_32FC1))
 , m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
@@ -74,7 +75,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     m_InitOK = false;
     return;
   }
-  
+  ProjectAxes(); 
   if ( m_TrackerMatcher.IsNull() ) 
   {
     m_TrackerMatcher = mitk::VideoTrackerMatching::New();
@@ -169,23 +170,273 @@ void ProjectPointsOnStereoVideo::Project()
     cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
   }
   int framenumber = 0 ;
-  while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() )
+  int key = 0;
+  while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat TrackerToWorld = m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex);
-    cv::Mat LeftCameraToWorld = TrackerToWorld * (*m_LeftCameraToTracker);
-    cv::Mat WorldToLeftCamera = LeftCameraToWorld.inv();
+    cv::Mat WorldToLeftCamera = LeftCameraToWorld(framenumber).inv();
     
     std::vector < cv::Point3f > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
+
+    //project onto screen
+    CvMat* outputLeftCameraWorldPointsIn3D = NULL;
+    CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
+    CvMat* output2DPointsLeft = NULL ;
+    CvMat* output2DPointsRight = NULL;
     
+    cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.size(),3,CV_32FC1);
+    cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.size(),3,CV_32FC1);
+
+    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
+    {
+      leftCameraWorldPoints.at<float>(i,0) = pointsInLeftLensCS[i].x;
+      leftCameraWorldPoints.at<float>(i,1) = pointsInLeftLensCS[i].y;
+      leftCameraWorldPoints.at<float>(i,2) = pointsInLeftLensCS[i].z;
+      leftCameraWorldNormals.at<float>(i,0) = 0.0;
+      leftCameraWorldNormals.at<float>(i,1) = 0.0;
+      leftCameraWorldNormals.at<float>(i,2) = -1.0;
+    }
+    cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_32FC1);
+    leftCameraPositionToFocalPointUnitVector.at<float>(0,0)=0.0;
+    leftCameraPositionToFocalPointUnitVector.at<float>(0,1)=0.0;
+    leftCameraPositionToFocalPointUnitVector.at<float>(0,2)=1.0;
+  
+    mitk::ProjectVisible3DWorldPointsToStereo2D
+      ( leftCameraWorldPoints,leftCameraWorldNormals,
+        leftCameraPositionToFocalPointUnitVector,
+        *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
+        *m_RightIntrinsicMatrix,*m_RightDistortionVector,
+        *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
+        outputLeftCameraWorldPointsIn3D,
+        outputLeftCameraWorldNormalsIn3D,
+        output2DPointsLeft,
+        output2DPointsRight);
+
+    std::vector < std::pair < cv::Point2f , cv::Point2f > > screenPoints;
+    
+    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
+    {
+      std::pair<cv::Point2f, cv::Point2f>  pointPair;
+      pointPair.first = cv::Point2f(CV_MAT_ELEM(*output2DPointsLeft,float,i,0),CV_MAT_ELEM(*output2DPointsLeft,float,i,1));
+      pointPair.second = cv::Point2f(CV_MAT_ELEM(*output2DPointsRight,float,i,0),CV_MAT_ELEM(*output2DPointsRight,float,i,1));
+      screenPoints.push_back(pointPair);
+    }
+    m_ProjectedPoints.push_back(screenPoints);
+    
+
+
+
+
+    if ( m_Visualise || m_SaveVideo ) 
+    {
+      cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
+      MITK_INFO << framenumber << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
+      if ( ! m_DrawLines ) 
+      {
+        if ( framenumber % 2 == 0 ) 
+        {
+          for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+          {
+            cv::circle(videoImage, screenPoints[i].first,10, cvScalar(255,0,0), 3, 8, 0 );
+          }
+        }
+        else
+        {
+          for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+          {
+            cv::circle(videoImage, screenPoints[i].second,10, cvScalar(255,0,0), 3, 8, 0 );
+          } 
+        }
+      }
+      else 
+      {
+        if ( framenumber % 2 == 0 ) 
+        {
+          unsigned int i;
+          for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
+          {
+            cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, cvScalar(255,0,0) );
+          }
+          cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, cvScalar(255,0,0) );
+        }
+        else
+        {
+          unsigned int i;
+          for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
+          {
+            cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, cvScalar(255,0,0) );
+          } 
+          cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, cvScalar(255,0,0) );
+        }
+      }
+      if ( m_DrawAxes )
+      {
+        if ( framenumber % 2 == 0 )
+        {
+          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[1].first,cvScalar(255,0,0));
+          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[2].first,cvScalar(0,255,0));
+          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[3].first,cvScalar(0,0,255));         
+        }
+        else
+        {
+          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[1].second,cvScalar(255,0,0));
+          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[2].second,cvScalar(0,255,0));
+          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[3].second,cvScalar(0,0,255));         
+        }
+      }
+      if ( m_Visualise ) 
+      {
+        IplImage image(videoImage);
+        IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
+        cvResize (&image, smallimage,CV_INTER_LINEAR);
+        if ( framenumber %2 == 0 ) 
+        {
+         
+
+          cvShowImage("Left Channel" , smallimage);
+        }
+        else
+        {
+          cvShowImage("Right Channel" , smallimage);
+        }
+        key = cvWaitKey (20);
+        if ( key == 's' )
+        {
+          m_Visualise = false;
+        }
+      }
+
+    }
     framenumber ++;
   }
   m_ProjectOK = true;
 
 }
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
+    (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPointPairs,
+     unsigned int framenumber)
+{
+  if ( ! m_TrackerMatcher->IsReady () ) 
+  {
+    MITK_ERROR << "Attempted to triangulate points without tracking matrices.";
+    return;
+  }
+  
+  cv::Mat * twoDPointsLeft = new  cv::Mat(onScreenPointPairs.size(),2,CV_32FC1);
+  cv::Mat * twoDPointsRight =new  cv::Mat(onScreenPointPairs.size(),2,CV_32FC1);
+
+  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
+  {
+    twoDPointsLeft->at<float>( i, 0) = onScreenPointPairs[i].first.x;
+    twoDPointsLeft->at<float> ( i , 1 ) = onScreenPointPairs[i].first.y;
+    twoDPointsRight->at<float>( i , 0 ) = onScreenPointPairs[i].second.x;
+    twoDPointsRight->at<float>( i , 1 ) = onScreenPointPairs[i].second.y;
+  }
+  cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_32FC1);
+  cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_32FC1);
+
+  mitk::UndistortPoints(*twoDPointsLeft,
+             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints);
+
+  mitk::UndistortPoints(*twoDPointsRight,
+             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints);
+  
+  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+
+  for ( int i = 0 ; i < 3 ; i ++ )
+  {
+    leftCameraTranslationVector.at<float>(i,0) = 0.0;
+    leftCameraRotationVector.at<float>(i,0) = 0.0;
+  }
+  rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
+  cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
+
+  CvMat leftScreenPointsMat = leftScreenPoints;
+  CvMat rightScreenPointsMat= rightScreenPoints;
+  CvMat leftCameraIntrinsicMat= *m_LeftIntrinsicMatrix;
+  CvMat leftCameraRotationVectorMat= leftCameraRotationVector;
+  CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
+  CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
+  CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
+  CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
+  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (onScreenPointPairs.size(),3,CV_32FC1);
+
+  mitk::TriangulatePointPairs(
+    leftScreenPointsMat,
+    rightScreenPointsMat,
+    leftCameraIntrinsicMat,
+    leftCameraRotationVectorMat,
+    leftCameraTranslationVectorMat,
+    rightCameraIntrinsicMat,
+    rightCameraRotationVectorMat,
+    rightCameraTranslationVectorMat,
+    *leftCameraTriangulatedWorldPoints);
+
+  std::vector <cv::Point3f> points;
+  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
+  {
+    points.push_back(cv::Point3f (
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,0),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,1),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
+  }
+
+  m_WorldPoints = LeftCameraToWorld(framenumber) * points;
+
+  for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
+  {
+    MITK_INFO << framenumber << " " << onScreenPointPairs[i].first << ","
+      << onScreenPointPairs[i].second << " => " << points[i] << " => " << m_WorldPoints[i];
+  }
+
+}
+cv::Mat ProjectPointsOnStereoVideo::LeftCameraToWorld(int framenumber)
+{
+  //put the world points into the coordinates of the left hand camera.
+  //worldtotracker * trackertocamera
+  //in general the tracker matrices are trackertoworld
+  cv::Mat TrackerToWorld = m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex);
+  cv::Mat LeftCameraToWorld =  TrackerToWorld *  (*m_LeftCameraToTracker); 
+ // cv::Mat LeftCameraToWorld = (*m_LeftCameraToTracker).inv() * TrackerToWorld;
+ // cv::Mat LeftCameraToWorld =  TrackerToWorld;
+  cv::Mat CameraAxis(4,4,CV_32FC1);
+  CameraAxis.at<float>(0,0) = 0;
+  CameraAxis.at<float>(1,0) = 0;
+  CameraAxis.at<float>(2,0) = 0;
+  CameraAxis.at<float>(3,0) = 1;
+  CameraAxis.at<float>(0,1) = 100;
+  CameraAxis.at<float>(1,1) = 0;
+  CameraAxis.at<float>(2,1) = 0;
+  CameraAxis.at<float>(3,1) = 1;
+  CameraAxis.at<float>(0,2) = 0;
+  CameraAxis.at<float>(1,2) = 100;
+  CameraAxis.at<float>(2,2) = 0;
+  CameraAxis.at<float>(3,2) = 1;
+  CameraAxis.at<float>(0,3) = 0;
+  CameraAxis.at<float>(1,3) = 0;
+  CameraAxis.at<float>(2,3) = 100;
+  CameraAxis.at<float>(3,3) = 1;
+  
+
+  cv::Mat worldCameraAxis = LeftCameraToWorld * CameraAxis;
+  for ( int i = 1 ; i < 4 ; i  ++ )
+  {
+    for ( int j = 0 ; j < 4 ; j ++ ) 
+    {
+      worldCameraAxis.at<float>(j,i) -= worldCameraAxis.at<float>(j,0);
+    }
+  }
+  MITK_INFO << std::endl <<   worldCameraAxis;
+  return LeftCameraToWorld;
+}
+
 //-----------------------------------------------------------------------------
 std::vector<std::string> ProjectPointsOnStereoVideo::FindVideoData()
 {
@@ -218,4 +469,54 @@ std::vector < std::vector <cv::Point3f> > ProjectPointsOnStereoVideo::GetPointsI
   return m_PointsInLeftLensCS;
 }
 
+void ProjectPointsOnStereoVideo::ProjectAxes()
+{
+  cv::Mat leftCameraAxesPoints = cv::Mat (4,3,CV_32FC1);
+  cv::Mat leftCameraAxesNormals = cv::Mat (4,3,CV_32FC1);
+  for ( int i = 0 ; i < 4 ; i ++ ) 
+  {
+    int j;
+    for ( j = 0 ; j < 2 ; j ++ ) 
+    {
+      leftCameraAxesPoints.at<float>(i,j) = 0.0;
+      leftCameraAxesNormals.at<float>(i,j) = 0.0;
+    }
+      leftCameraAxesPoints.at<float>(i,j) = 100.0;
+      leftCameraAxesNormals.at<float>(i,j) = -1.0;
+  }
+  leftCameraAxesPoints.at<float>(1,0) = 100;
+  leftCameraAxesPoints.at<float>(2,1) = 100;
+  leftCameraAxesPoints.at<float>(3,2) = 200;
+      
+  CvMat* outputLeftCameraAxesPointsIn3D = NULL;
+  CvMat* outputLeftCameraAxesNormalsIn3D = NULL ;
+  CvMat* output2DAxesPointsLeft = NULL ;
+  CvMat* output2DAxesPointsRight = NULL;
+  
+  cv::Mat CameraUnitVector = cv::Mat(1,3,CV_32FC1);
+  CameraUnitVector.at<float>(0,0)=0;
+  CameraUnitVector.at<float>(0,1)=0;
+  CameraUnitVector.at<float>(0,2)=1.0;
+  mitk::ProjectVisible3DWorldPointsToStereo2D
+    ( leftCameraAxesPoints,leftCameraAxesNormals,
+        CameraUnitVector,
+        *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
+        *m_RightIntrinsicMatrix,*m_RightDistortionVector,
+        *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
+        outputLeftCameraAxesPointsIn3D,
+        outputLeftCameraAxesNormalsIn3D,
+        output2DAxesPointsLeft,
+        output2DAxesPointsRight);
+  
+  MITK_INFO << leftCameraAxesPoints;
+  for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
+  {
+    std::pair<cv::Point2f, cv::Point2f>  pointPair;
+    pointPair.first = cv::Point2f(CV_MAT_ELEM(*output2DAxesPointsLeft,float,i,0),CV_MAT_ELEM(*output2DAxesPointsLeft,float,i,1));
+    pointPair.second = cv::Point2f(CV_MAT_ELEM(*output2DAxesPointsRight,float,i,0),CV_MAT_ELEM(*output2DAxesPointsRight,float,i,1));
+    MITK_INFO << "Left" << pointPair.first << "Right" << pointPair.second;
+
+    m_ScreenAxesPoints.push_back(pointPair);
+  }
+}
 } // end namespace
