@@ -56,7 +56,7 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     return false;
   }
 
-  std::vector<cv::Mat> matrices = LoadOpenCVMatricesFromDirectory (matrixDirectory);
+  std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
 
   std::vector<cv::Point2d> points;
   for (unsigned int i = 0; i < pointFiles.size(); i++)
@@ -69,6 +69,18 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
       cvPoint.y = point[1];
       points.push_back(cvPoint);
     }
+  }
+
+  if (matrices.size() != matrixFiles.size())
+  {
+    MITK_ERROR << "ERROR: Failed to load all the matrices in directory:" << matrixDirectory << std::endl;
+    return false;
+  }
+
+  if (points.size() != pointFiles.size())
+  {
+    MITK_ERROR << "ERROR: Failed to load all the points in directory:" << pointDirectory << std::endl;
+    return false;
   }
 
   cv::Matx44d transformationMatrix;
@@ -128,11 +140,20 @@ bool UltrasoundPinCalibration::Calibrate(
   std::cout << "UltrasoundPinCalibration:Result = " << std::endl;
   for (int i = 0; i < 4; i++)
   {
-    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
+    std::cout << "UltrasoundPinCalibration:Matrix         = " << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
-  std::cout << "UltrasoundPinCalibration:Scaling = " << millimetresPerPixel.x << ", " << millimetresPerPixel.y << std::endl;
+  std::cout << "UltrasoundPinCalibration:Scaling        = " << millimetresPerPixel.x << ", " << millimetresPerPixel.y << std::endl;
   std::cout << "UltrasoundPinCalibration:Residual error = " << residualError << std::endl;
-  std::cout << "UltrasoundPinCalibration:Success = " << isSuccessful << std::endl;
+
+  if (isSuccessful)
+  {
+    std::cout << "UltrasoundPinCalibration:Success        = YES!" << std::endl;
+  }
+  else
+  {
+    std::cout << "UltrasoundPinCalibration:Success        = FAILED!" << std::endl;
+  }
+
 
   return isSuccessful;
 }

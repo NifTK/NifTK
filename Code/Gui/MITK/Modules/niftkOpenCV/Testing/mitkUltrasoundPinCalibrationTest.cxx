@@ -67,7 +67,7 @@ public:
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
+    bool successfullyCalibrated = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
         directoryOfMatrices,
         directoryOfPoints,
         true,
@@ -78,6 +78,8 @@ public:
         residualError,
         *calibrationMatrix
         );
+
+    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful");
 
     bool successfullySaved = niftk::SaveMatrix4x4ToFile(outputMatrixFileName, *calibrationMatrix);
     MITK_TEST_CONDITION_REQUIRED(successfullySaved == true, "Checking saved file successfully to filename:" << outputMatrixFileName);
@@ -107,9 +109,9 @@ int mitkUltrasoundPinCalibrationTest(int argc, char * argv[])
   MITK_TEST_BEGIN("mitkUltrasoundPinCalibrationTest");
 
   std::string directoryOfMatrices(argv[1]);
-  std::string directoryOfPoints(argv[1]);
-  std::string outputFileName(argv[1]);
-  std::string comparisonFileName(argv[1]);
+  std::string directoryOfPoints(argv[2]);
+  std::string outputFileName(argv[3]);
+  std::string comparisonFileName(argv[4]);
 
   UltrasoundPinCalibrationTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName);
 
