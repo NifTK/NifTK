@@ -27,18 +27,24 @@ bool LoadDoublesFromFile(const std::string& fileName, std::vector<double>& outpu
     ifstream myfile(fileName.c_str());
     if (myfile.is_open())
     {
-      int i;
+      bool finished = false;
       double value;
-
       output.clear();
 
-      for (i = 0; !myfile.bad() && !myfile.eof() && !myfile.fail(); i++)
+      do
       {
         myfile >> value;
-        output.push_back(value);
-      }
-      myfile.close();
+        if (!myfile.bad() && !myfile.eof() && !myfile.fail())
+        {
+          output.push_back(value);
+        }
+        else
+        {
+          finished = true;
+        }
+      } while (!finished);
 
+      myfile.close();
       isSuccessful = true;
     }
   }
