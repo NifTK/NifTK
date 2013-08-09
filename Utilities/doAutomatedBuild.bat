@@ -179,7 +179,7 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 @set PATHSTRING=%var1:/=\%
 @set PATHSTRING=%PATHSTRING:PATH=%
 @set PATHSTRING=%PATHSTRING:~1,-2%
-@PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%;%BUILDPATH%\curl-build\lib;%BUILDPATH%\curl-build\lib\%BCONF%
+@PATH=%PATHSTRING%;%SystemRoot%;%SystemRoot%\system32;%SystemRoot%\System32\Wbem;%OPENSSL_LOCATION%
 
 @if defined CUDA_PATH PATH=%PATH%;%CUDA_PATH%\bin
 

@@ -33,7 +33,6 @@ macro(NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS)
     # This part is based on that in niftkCreateGuiApplication.cmake.
     set(_library_dirs
       ${NiftyLink_LIBRARY_DIRS}
-      ${curl_LIBRARY_DIR}
       ${zlib_LIBRARY_DIR}
       ${Boost_LIBRARY_DIRS}
     )

@@ -15,16 +15,17 @@
 #ifndef XnatTreeView_h
 #define XnatTreeView_h
 
-#include "XnatRestWidgetsExports.h"
-
 #include <QTreeView>
 #include <QModelIndex>
 
-class XnatModel;
-class XnatNode;
+#include "ctkXnatObject.h"
+
+
+class ctkXnatConnection;
+class ctkXnatTreeModel;
 class XnatTreeViewPrivate;
 
-class XnatRestWidgets_EXPORT XnatTreeView : public QTreeView
+class XnatTreeView : public QTreeView
 {
   Q_OBJECT
 
@@ -32,18 +33,15 @@ public:
   explicit XnatTreeView(QWidget* parent = 0);
   virtual ~XnatTreeView();
 
-  void initialize(XnatNode* rootNode);
+  void initialize(ctkXnatConnection* connection);
 
-  XnatModel* xnatModel();
+  ctkXnatTreeModel* xnatModel();
 
-  const XnatNode* node(const QModelIndex& index);
-  const XnatNode* currentNode();
+  const ctkXnatObject::Pointer getObject(const QModelIndex& index);
+  const ctkXnatObject::Pointer currentObject();
 
 public slots:
   void refreshRows();
-  void createNewRow();
-  void deleteRow(const QModelIndex& index);
-  void deleteCurrentRow();
 
 private:
   /// \brief d pointer of the pimpl pattern

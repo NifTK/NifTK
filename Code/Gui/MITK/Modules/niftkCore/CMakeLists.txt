@@ -12,6 +12,13 @@
 #
 #============================================================================*/
 
+# Temporary workaround until the qRestAPI lib directory is not exposed properly to
+# projects depending on CTK. Should be removed as soon as this is fixed in CTK.
+if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
+  include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
+  link_directories(${qRestAPI_LIBRARY_DIRS})
+endif()
+
 MITK_CREATE_MODULE(niftkCore
   EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering

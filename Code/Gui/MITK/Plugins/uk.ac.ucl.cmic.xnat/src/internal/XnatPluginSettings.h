@@ -15,14 +15,14 @@
 #ifndef XnatPluginSettings_h
 #define XnatPluginSettings_h
 
+#include <berryIPreferences.h>
+
+#include <ctkXnatSettings.h>
+
 #include <QString>
 #include <QMap>
 
-#include <berryIPreferences.h>
-
-#include <XnatSettings.h>
-
-class XnatPluginSettings : public XnatSettings
+class XnatPluginSettings : public ctkXnatSettings
 {
 public:
   XnatPluginSettings(berry::IPreferences::Pointer preferences);
@@ -39,15 +39,15 @@ public:
   virtual QString getDefaultWorkDirectory() const;
   virtual void setDefaultWorkDirectory(const QString& workDir);
 
-  virtual QMap<QString, XnatLoginProfile*> getLoginProfiles() const;
-  virtual void setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles);
+  virtual QMap<QString, ctkXnatLoginProfile*> getLoginProfiles() const;
+  virtual void setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> loginProfiles);
 
-  virtual XnatLoginProfile* getLoginProfile(QString profileName) const;
-  virtual void setLoginProfile(QString profileName, XnatLoginProfile*);
+  virtual ctkXnatLoginProfile* getLoginProfile(QString profileName) const;
+  virtual void setLoginProfile(QString profileName, ctkXnatLoginProfile*);
 
   virtual void removeLoginProfile(QString profileName);
 
-  XnatLoginProfile* getDefaultLoginProfile() const;
+  ctkXnatLoginProfile* getDefaultLoginProfile() const;
 
 private:
   berry::IPreferences::Pointer preferences;
