@@ -42,10 +42,26 @@ public:
 
   void SetMatrices(const std::vector< cv::Mat >& matrices);
   void SetPoints(const std::vector< cv::Point2d > points);
+  void SetNumberOfParameters(const int& numberOfParameters);
+  void SetInvariantPoint(const cv::Point3d& invariantPoint);
+  void SetMillimetresPerPixel(const cv::Point2d& mmPerPix);
 
   virtual unsigned int GetNumberOfParameters() const;
   virtual unsigned int GetNumberOfValues(void) const;
+
+  /**
+   * \brief The cost function is the residual error of the reconstructed point.
+   *
+   * The 'invariant point' is assumed to be at the origin of its own coordinate system.
+   *
+   * So the cost function is calculated by taking each point, transforming into phantom space,
+   * and measuring the squared distance to the origin. i.e. its the size of the reconstructed point cloud.
+   */
   virtual MeasureType GetValue( const ParametersType & parameters ) const;
+
+  /**
+   * \brief
+   */
   virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
 
 protected:
@@ -58,10 +74,12 @@ protected:
 
 private:
 
-  std::vector< cv::Mat > m_Matrices;
+  std::vector< cv::Mat >     m_Matrices;
   std::vector< cv::Point2d > m_Points;
-  unsigned int m_NumberOfParameters;
-  unsigned int m_NumberOfValues;
+  unsigned int               m_NumberOfParameters;
+  unsigned int               m_NumberOfValues;
+  cv::Point3d                m_InvariantPoint;
+  cv::Point2d                m_MillimetresPerPixel;
 };
 
 } // end namespace

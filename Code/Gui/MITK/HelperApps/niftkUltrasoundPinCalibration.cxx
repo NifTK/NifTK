@@ -49,18 +49,6 @@ int main(int argc, char** argv)
       invPoint[2] = 0;
     }
 
-    mitk::Point2D originInPixels;
-    if (pixelOrigin.size() == 2)
-    {
-      originInPixels[0] = pixelOrigin[0];
-      originInPixels[1] = pixelOrigin[1];
-    }
-    else
-    {
-      originInPixels[0] = 0;
-      originInPixels[1] = 0;
-    }
-
     mitk::Point2D mmPerPix;
     if (millimetresPerPixel.size() == 2)
     {
@@ -108,7 +96,6 @@ int main(int argc, char** argv)
     std::cout << "niftkUltrasoundPinCalibration: points           = " << pointDirectory << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: output           = " << outputMatrixFile << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: invariant point  = " << invPoint << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: origin in pixels = " << originInPixels << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: mm/pix           = " << mmPerPix << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: optimising       = ";
     for (unsigned int i = 0; i < initialTransformationParameters.size(); i++)
@@ -117,31 +104,39 @@ int main(int argc, char** argv)
     }
     std::cout << std::endl;
 
+    vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkMatrix4x4::New();
+
     // Do calibration
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
     bool isSuccessful = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
         matrixDirectory,
         pointDirectory,
-        invPoint,
-        originInPixels,
-        mmPerPix,
-        initialTransformationParameters,
         optimiseScaling,
         optimiseInvariantPoint,
+        initialTransformationParameters,
+        invPoint,
+        mmPerPix,
         residualError,
-        outputMatrixFile
+        *transformationMatrix
         );
 
     if (isSuccessful)
     {
-      std::cout << "Residual error=" << residualError << std::endl;
-      returnStatus = EXIT_SUCCESS;
+      if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
+      {
+        returnStatus = EXIT_SUCCESS;
+      }
+      else
+      {
+        MITK_ERROR << "Failed to save transformation to file:" << outputMatrixFile << std::endl;
+        returnStatus = EXIT_FAILURE;
+      }
     }
     else
     {
+      MITK_ERROR << "Calibration failed" << std::endl;
       returnStatus = EXIT_FAILURE;
     }
-
   }
   catch (std::exception& e)
   {

@@ -59,14 +59,6 @@
       <channel>input</channel>
     </point>
     <float-vector>
-      <name>pixelOrigin</name>
-      <longflag>pixelOrigin</longflag>
-      <description>Pixel location thats considered to be origin.</description>
-      <label>Pixel Origin</label>
-      <default>0,0</default>
-      <channel>input</channel>
-    </float-vector>
-    <float-vector>
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
       <description>Guess of transformation, [rx,ry,rz,tx,ty,tz] using mm and degrees.</description>
