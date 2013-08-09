@@ -335,6 +335,10 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   return ok;
 }
 
+void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix)
+{
+  m_CameraToTracker = matrix;
+}
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
   cv::Mat returnMat = cv::Mat(4,4,CV_32FC1);
@@ -376,5 +380,9 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
     return returnMat;
   }
 }
-
+cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
+{
+   cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
+   return TrackerMatrix * m_CameraToTracker;
+}
 } // namespace

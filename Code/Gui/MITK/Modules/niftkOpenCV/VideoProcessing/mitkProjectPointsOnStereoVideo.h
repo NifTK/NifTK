@@ -142,7 +142,6 @@ private:
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
 
-  cv::Mat  LeftCameraToWorld ( int framenumber );
   void ProjectAxes();
 }; // end class
 

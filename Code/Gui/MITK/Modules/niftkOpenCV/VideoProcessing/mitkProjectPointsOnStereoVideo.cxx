@@ -90,7 +90,8 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     m_InitOK = false;
     return;
   }
-
+  
+  m_TrackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker);
   if ( m_Visualise || m_SaveVideo ) 
   {
     if ( m_Capture == NULL ) 
@@ -176,7 +177,7 @@ void ProjectPointsOnStereoVideo::Project()
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = LeftCameraToWorld(framenumber).inv();
+    cv::Mat WorldToLeftCamera = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex).inv();
     
     std::vector < cv::Point3f > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
@@ -388,7 +389,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
   }
 
-  m_WorldPoints = LeftCameraToWorld(framenumber) * points;
+  m_WorldPoints = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex) * points;
 
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
   {
@@ -396,45 +397,6 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
       << onScreenPointPairs[i].second << " => " << points[i] << " => " << m_WorldPoints[i];
   }
 
-}
-cv::Mat ProjectPointsOnStereoVideo::LeftCameraToWorld(int framenumber)
-{
-  //put the world points into the coordinates of the left hand camera.
-  //worldtotracker * trackertocamera
-  //in general the tracker matrices are trackertoworld
-  cv::Mat TrackerToWorld = m_TrackerMatcher->GetTrackerMatrix(framenumber,NULL, m_TrackerIndex);
-  cv::Mat LeftCameraToWorld =  TrackerToWorld *  (*m_LeftCameraToTracker); 
- // cv::Mat LeftCameraToWorld = (*m_LeftCameraToTracker).inv() * TrackerToWorld;
- // cv::Mat LeftCameraToWorld =  TrackerToWorld;
-  cv::Mat CameraAxis(4,4,CV_32FC1);
-  CameraAxis.at<float>(0,0) = 0;
-  CameraAxis.at<float>(1,0) = 0;
-  CameraAxis.at<float>(2,0) = 0;
-  CameraAxis.at<float>(3,0) = 1;
-  CameraAxis.at<float>(0,1) = 100;
-  CameraAxis.at<float>(1,1) = 0;
-  CameraAxis.at<float>(2,1) = 0;
-  CameraAxis.at<float>(3,1) = 1;
-  CameraAxis.at<float>(0,2) = 0;
-  CameraAxis.at<float>(1,2) = 100;
-  CameraAxis.at<float>(2,2) = 0;
-  CameraAxis.at<float>(3,2) = 1;
-  CameraAxis.at<float>(0,3) = 0;
-  CameraAxis.at<float>(1,3) = 0;
-  CameraAxis.at<float>(2,3) = 100;
-  CameraAxis.at<float>(3,3) = 1;
-  
-
-  cv::Mat worldCameraAxis = LeftCameraToWorld * CameraAxis;
-  for ( int i = 1 ; i < 4 ; i  ++ )
-  {
-    for ( int j = 0 ; j < 4 ; j ++ ) 
-    {
-      worldCameraAxis.at<float>(j,i) -= worldCameraAxis.at<float>(j,0);
-    }
-  }
-  MITK_INFO << std::endl <<   worldCameraAxis;
-  return LeftCameraToWorld;
 }
 
 //-----------------------------------------------------------------------------
