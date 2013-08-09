@@ -38,14 +38,13 @@ UltrasoundPinCalibration::~UltrasoundPinCalibration()
 bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirectories(
     const std::string& matrixDirectory,
     const std::string& pointDirectory,
-    const mitk::Point3D& invariantPoint,
-    const mitk::Point2D& originInImagePlaneInPixels,
-    const mitk::Point2D& millimetresPerPixel,
-    const std::vector<double>& initialGuessOfTransformation,
     const bool& optimiseScaling,
     const bool& optimiseInvariantPoint,
+    std::vector<double>& rigidBodyTransformation,
+    mitk::Point3D& invariantPoint,
+    mitk::Point2D& millimetresPerPixel,
     double &residualError,
-    const std::string& outputFileName
+    vtkMatrix4x4& outputMatrix
     )
 {
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(matrixDirectory);
@@ -53,7 +52,7 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 
   if (matrixFiles.size() != pointFiles.size())
   {
-    MITK_ERROR << "ERROR: The matrix directory:" << std::endl << "  " << matrixDirectory << std::endl << "and the point directory:" << std::endl << "  " << pointDirectory << "contain different number of files!" << std::endl;
+    MITK_ERROR << "ERROR: The matrix directory:" << std::endl << "  " << matrixDirectory << std::endl << "and the point directory:" << std::endl << "  " << pointDirectory << "contain a different number of files!" << std::endl;
     return false;
   }
 
@@ -72,22 +71,20 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     }
   }
 
-  cv::Matx44d outputMatrix;
+  cv::Matx44d transformationMatrix;
   cv::Point3d invPoint(invariantPoint[0], invariantPoint[1], invariantPoint[2]);
-  cv::Point2d originInPixels(originInImagePlaneInPixels[0], originInImagePlaneInPixels[1]);
   cv::Point2d mmPerPix(millimetresPerPixel[0], millimetresPerPixel[1]);
 
   bool calibratedSuccessfully = this->Calibrate(
       matrices,
       points,
-      invPoint,
-      originInPixels,
-      mmPerPix,
-      initialGuessOfTransformation,
       optimiseScaling,
       optimiseInvariantPoint,
-      residualError,
-      outputMatrix
+      rigidBodyTransformation,
+      invPoint,
+      mmPerPix,
+      transformationMatrix,
+      residualError
       );
 
   if (!calibratedSuccessfully)
@@ -96,28 +93,18 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     return false;
   }
 
-  if (outputFileName.size() > 0)
-  {
-    vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkMatrix4x4::New();
-    for (int i = 0; i < 4; i++)
-    {
-      for (int j = 0; j < 4; j++)
-      {
-        vtkMatrix->SetElement(i, j, outputMatrix(i, j));
-      }
-    }
-    bool savedFile = mitk::SaveVtkMatrix4x4ToFile(outputFileName, *vtkMatrix);
-    if (!savedFile)
-    {
-      MITK_ERROR << "CalibrateUsingTrackerPointAndFilesInTwoDirectories: Failed to save file " << outputFileName << std::endl;
-    }
-  }
-
-  std::cout << "UltrasoundPinCalibration:Result = " << std::endl;
   for (int i = 0; i < 4; i++)
   {
-    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
+    for (int j = 0; j < 4; j++)
+    {
+      outputMatrix.SetElement(i, j, transformationMatrix(i, j));
+    }
   }
+  invariantPoint[0] = invPoint.x;
+  invariantPoint[1] = invPoint.y;
+  invariantPoint[2] = invPoint.z;
+  millimetresPerPixel[0] = mmPerPix.x;
+  millimetresPerPixel[1] = mmPerPix.y;
 
   return true;
 }
@@ -125,19 +112,27 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 
 //-----------------------------------------------------------------------------
 bool UltrasoundPinCalibration::Calibrate(
-    const std::vector< cv::Mat>& matrices,
+    const std::vector< cv::Mat >& matrices,
     const std::vector< cv::Point2d >& points,
-    const cv::Point3d& invariantPoint,
-    const cv::Point2d& originInImagePlaneInPixels,
-    const cv::Point2d& millimetresPerPixel,
-    const std::vector<double>& initialGuessOfTransformation,
     const bool& optimiseScaling,
     const bool& optimiseInvariantPoint,
-    double& residualError,
-    cv::Matx44d& outputMatrix
+    std::vector<double>& rigidBodyTransformation,
+    cv::Point3d& invariantPoint,
+    cv::Point2d& millimetresPerPixel,
+    cv::Matx44d& outputMatrix,
+    double& residualError
     )
 {
   bool isSuccessful = false;
+
+  std::cout << "UltrasoundPinCalibration:Result = " << std::endl;
+  for (int i = 0; i < 4; i++)
+  {
+    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
+  }
+  std::cout << "UltrasoundPinCalibration:Scaling = " << millimetresPerPixel.x << ", " << millimetresPerPixel.y << std::endl;
+  std::cout << "UltrasoundPinCalibration:Residual error = " << residualError << std::endl;
+  std::cout << "UltrasoundPinCalibration:Success = " << isSuccessful << std::endl;
 
   return isSuccessful;
 }
