@@ -64,6 +64,8 @@ public:
    */
   virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
 
+  double GetResidual(const MeasureType & values) const;
+
 protected:
 
   UltrasoundPinCalibrationCostFunction();
@@ -76,10 +78,10 @@ private:
 
   std::vector< cv::Mat >     m_Matrices;
   std::vector< cv::Point2d > m_Points;
-  unsigned int               m_NumberOfParameters;
-  unsigned int               m_NumberOfValues;
   cv::Point3d                m_InvariantPoint;
   cv::Point2d                m_MillimetresPerPixel;
+  unsigned int               m_NumberOfParameters;
+  mutable unsigned int       m_NumberOfValues;
 };
 
 } // end namespace

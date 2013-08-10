@@ -92,6 +92,25 @@ void UltrasoundPinCalibrationCostFunction::SetMillimetresPerPixel(const cv::Poin
 
 
 //-----------------------------------------------------------------------------
+double UltrasoundPinCalibrationCostFunction::GetResidual(const MeasureType & values) const
+{
+  double rmsError = 0;
+  unsigned int numberOfValues = values.GetSize();
+
+  if (numberOfValues > 0)
+  {
+    for (unsigned int i = 0; i < numberOfValues; i++)
+    {
+      rmsError += values[i]*values[i];
+    }
+
+    rmsError /= (double)(numberOfValues / 3.0);
+    rmsError = sqrt(rmsError);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFunction::GetValue(
   const ParametersType & parameters
   ) const
@@ -163,10 +182,11 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     invariantPointTranslation(2, 3) = m_InvariantPoint.z;
   }
 
+  // The values we are minimising are the x, y, and z squared distance for each point.
+  m_NumberOfValues = m_Points.size() * 3;
+
   MeasureType value;
-  value[0] = 0;
-  value[1] = 0;
-  value[2] = 0;
+  value.SetSize(m_NumberOfValues);
 
   for (unsigned int i = 0; i < m_Matrices.size(); i++)
   {
@@ -181,11 +201,14 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 
     transformedPoint = combinedTransformation * point;
 
-    value[0] += transformedPoint(0,0) * transformedPoint(0,0);
-    value[1] += transformedPoint(1,0) * transformedPoint(1,0);
-    value[2] += transformedPoint(2,0) * transformedPoint(2,0);
-  }
+    value[i*3 + 0] = transformedPoint(0,0) * transformedPoint(0,0);
+    value[i*3 + 1] = transformedPoint(1,0) * transformedPoint(1,0);
+    value[i*3 + 2] = transformedPoint(2,0) * transformedPoint(2,0);
 
+  }
+  double rmsError = this->GetResidual(value);
+
+  std::cout << "UltrasoundPinCalibrationCostFunction::GetValue(" << parameters << ") = " << rmsError << std::endl;
   return value;
 }
 
@@ -196,9 +219,35 @@ void UltrasoundPinCalibrationCostFunction::GetDerivative(
   DerivativeType  & derivative
   ) const
 {
+  // Do forward differencing.
+  MeasureType currentValue = this->GetValue(parameters);
+  MeasureType forwardValue;
 
+  ParametersType forwardParameters;
+  derivative.SetSize(m_NumberOfParameters, m_NumberOfValues);
+
+  ParametersType scales(m_NumberOfParameters);
+  scales.Fill(1);
+
+  if (parameters.size() == 8 || parameters.size() == 11)
+  {
+    scales[6] = 0.01;
+    scales[7] = 0.01;
+  }
+
+  for (unsigned int i = 0; i < m_NumberOfParameters; i++)
+  {
+    forwardParameters = parameters;
+    forwardParameters[i] += 1;
+
+    forwardValue = this->GetValue(forwardParameters);
+
+    for (unsigned int j = 0; j < m_NumberOfValues; j++)
+    {
+      derivative[i][j] = forwardValue[j] - currentValue[j];
+    }
+  }
 }
 
-
-
+//-----------------------------------------------------------------------------
 } // end namespace
