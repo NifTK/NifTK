@@ -188,6 +188,9 @@ bool UltrasoundPinCalibration::Calibrate(
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
 
+  itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
+  residualError = costFunction->GetResidual(values);
+
   std::cout << "UltrasoundPinCalibration:Final parameters = " << parameters << std::endl;
   if (isSuccessful)
   {
