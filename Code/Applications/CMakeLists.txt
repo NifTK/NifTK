@@ -209,7 +209,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkComposeITKAffineTransformations
   niftkComputeImageHistogram
   #niftkComputeJointHistogram
-  #niftkComputeMeanTransformation
+  niftkComputeMeanTransformation
   niftkConnectedComponents
   #niftkContourExtractor2DImageFilter
   #niftkConvertDofToFsl
@@ -281,7 +281,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkTestCompareImage
   niftkTestImage
   niftkThreshold
-  #niftkTransformation
+  niftkTransformation
   #niftkTransformPoint3Dto2D
   niftkVesselExtractor
   niftkVolToFreeSurfer
