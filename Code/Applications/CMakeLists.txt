@@ -258,7 +258,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkKMeansWindowBSI
   niftkKMeansWindowWithLinearRegressionNormalisationBSI
   niftkKNDoubleWindowBSI
-  #niftkMTPDbc
+  niftkMTPDbc
   #niftkMultiplyTransformation
   niftkMultiScaleHessianImageEnhancement2D
   niftkMultiScaleHessianImageEnhancement3D
