@@ -476,9 +476,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs
 
 
 /**
- * \brief Triangulates an undistorted (i.e. already correction for distortion) 2D point pair back into 3D.
- *
- * Taken from: http://geomalgorithms.com/a07-_distance.html
+ * \brief Triangulates a single point from two 2D points by calling TriangulatePointPairs().
  *
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
