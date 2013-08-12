@@ -55,6 +55,5 @@ int main(int argc, char** argv)
     returnStatus = -2;
   }
 
-
   return returnStatus;
 }

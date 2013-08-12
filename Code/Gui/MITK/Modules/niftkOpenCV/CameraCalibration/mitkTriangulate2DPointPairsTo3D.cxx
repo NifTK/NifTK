@@ -78,7 +78,6 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       }
       cv::Point2f leftPoint;
       cv::Point2f rightPoint;
-      cv::Point3f pointIn3D;
 
       leftPoint.x = numbersOnLine[0];
       leftPoint.y = numbersOnLine[1];
@@ -95,27 +94,41 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     }
 
     std::cout << "Triangulate2DPointPairsTo3D: Read in " << pointPairs.size() << " point pairs." << std::endl;
-/*
-    std::vector< cv::Point3f > pointsIn3D = mitk::TriangulatePointPairs(
-        pointPairs,
-        leftCameraIntrinsicParams,
-        rightCameraIntrinsicParams,
-        rightToLeftRotationVector,
-        rightToLeftTranslationVector
-        );
 
+    cv::Mat leftIntrinsic = cvCreateMat (3,3,CV_64FC1);
+    cv::Mat leftDistortion = cvCreateMat (1,5,CV_64FC1);
+    cv::Mat rightIntrinsic = cvCreateMat (3,3,CV_64FC1);
+    cv::Mat rightDistortion = cvCreateMat (1,5,CV_64FC1);
+    cv::Mat rightToLeftRotationMatrix = cvCreateMat (3,3,CV_64FC1);
+    cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
 
-    if (pointsIn3D.size() != pointPairs.size())
+    // Load matrices. These throw exceptions if things fail.
+    LoadCameraIntrinsicsFromPlainText(intrinsicLeftFileName, &leftIntrinsic, &leftDistortion);
+    LoadCameraIntrinsicsFromPlainText(intrinsicRightFileName, &rightIntrinsic, &rightDistortion);
+    LoadStereoTransformsFromPlainText(rightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
+
+    // Triangulate each point.
+    std::vector< cv::Point3f > pointsIn3D;
+    for (unsigned int i = 0; i < pointPairs.size(); i++)
     {
-      std::ostringstream oss;
-      oss << "Could not triangulate all points. 2D=" << pointPairs.size() << ", whereas 3D=" << pointsIn3D.size() << std::endl;
-      throw std::logic_error(oss.str());
+      cv::Point3f pointIn3D = mitk::TriangulatePointPair(
+          pointPairs[i],
+          leftIntrinsic,
+          rightIntrinsic,
+          rightToLeftRotationMatrix,
+          rightToLeftTranslationVector
+          );
+      pointsIn3D.push_back(pointIn3D);
     }
+
+    // Print to output for now.
     for (unsigned int i = 0; i < pointsIn3D.size(); i++)
     {
       std::cout << "[" << i << "], 2Dl=(" << pointPairs[i].first.x << ", " << pointPairs[i].first.y << "), 2Dr=(" << pointPairs[i].second.x << ", " << pointPairs[i].second.y << "), 3D=" << pointsIn3D[i].x << ", " << pointsIn3D[i].y << ", " << pointsIn3D[i].z <<  std::endl;
     }
-*/
+
+    isSuccessful = true;
+
   }
   catch(std::logic_error& e)
   {

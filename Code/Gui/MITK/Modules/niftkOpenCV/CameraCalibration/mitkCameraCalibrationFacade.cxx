@@ -1174,6 +1174,7 @@ cv::Point3f  TriangulatePointPair(
 
   std::vector < std::pair<cv::Point2f, cv::Point2f> > inputUndistortedPoints;
   inputUndistortedPoints.push_back(inputUndistortedPoint);
+
   std::vector <cv::Point3f> returnVector = TriangulatePointPairs(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
       rightToLeftRotationVector, rightToLeftTranslationVector);
