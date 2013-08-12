@@ -252,14 +252,14 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkImageReconstruction
   niftkInject
   niftkInvertAffineTransform
-  #niftkInvertTransformation
+  niftkInvertTransformation
   niftkITKAffineResampleImage
   niftkJacobianStatistics
   niftkKMeansWindowBSI
   niftkKMeansWindowWithLinearRegressionNormalisationBSI
   niftkKNDoubleWindowBSI
   niftkMTPDbc
-  #niftkMultiplyTransformation
+  niftkMultiplyTransformation
   niftkMultiScaleHessianImageEnhancement2D
   niftkMultiScaleHessianImageEnhancement3D
   niftkPadImage
