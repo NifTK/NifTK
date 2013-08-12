@@ -55,6 +55,7 @@ unsigned int UltrasoundPinCalibrationCostFunction::GetNumberOfValues(void) const
 void UltrasoundPinCalibrationCostFunction::SetMatrices(const std::vector< cv::Mat >& matrices)
 {
   m_Matrices = matrices;
+  m_NumberOfValues = matrices.size() * 3;
   this->Modified();
 }
 
@@ -63,6 +64,7 @@ void UltrasoundPinCalibrationCostFunction::SetMatrices(const std::vector< cv::Ma
 void UltrasoundPinCalibrationCostFunction::SetPoints(const std::vector< cv::Point2d > points)
 {
   m_Points = points;
+  m_NumberOfValues = points.size() * 3;
   this->Modified();
 }
 
@@ -107,6 +109,8 @@ double UltrasoundPinCalibrationCostFunction::GetResidual(const MeasureType & val
     rmsError /= (double)(numberOfValues / 3.0);
     rmsError = sqrt(rmsError);
   }
+
+  return rmsError;
 }
 
 
@@ -182,9 +186,6 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     invariantPointTranslation(2, 3) = m_InvariantPoint.z;
   }
 
-  // The values we are minimising are the x, y, and z squared distance for each point.
-  m_NumberOfValues = m_Points.size() * 3;
-
   MeasureType value;
   value.SetSize(m_NumberOfValues);
 
@@ -196,7 +197,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 
     point(0,0) = m_Points[i].x;
     point(1,0) = m_Points[i].y;
-    point(2,0) = 1;
+    point(2,0) = 0;
     point(3,0) = 1;
 
     transformedPoint = combinedTransformation * point;
