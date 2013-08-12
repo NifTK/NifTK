@@ -239,7 +239,7 @@ void UltrasoundPinCalibrationCostFunction::GetDerivative(
   for (unsigned int i = 0; i < m_NumberOfParameters; i++)
   {
     forwardParameters = parameters;
-    forwardParameters[i] += 1;
+    forwardParameters[i] += (1 * scales[i]);
 
     forwardValue = this->GetValue(forwardParameters);
 
