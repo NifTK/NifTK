@@ -22,7 +22,6 @@
 #include <itkSubtractImageFilter.h>
 #include <itkMedianImageFilter.h>
 #include <itkExpImageFilter.h>
-#include <itkDivideByConstantImageFilter.h>
 #include <itkMultiplyImageFilter.h>
 #include <itkDivideImageFilter.h>
 #include <itkImageDuplicator.h>
@@ -141,7 +140,6 @@ int main(int argc, char** argv)
   typedef itk::SubtractImageFilter<InputImageType, InputImageType> SubtractImageFilterType; 
   typedef itk::MedianImageFilter<InputImageType, InputImageType> MedianImageFilterType; 
   typedef itk::ExpImageFilter<InputImageType, InputImageType> ExpImageFilterType; 
-  typedef itk::DivideByConstantImageFilter<InputImageType, PixelType, InputImageType> DivideByConstantImageFilterType; 
   typedef itk::MultiplyImageFilter<InputImageType, InputImageType> MultiplyImageFilterType; 
   typedef itk::DivideImageFilter<InputImageType, InputImageType, InputImageType> DivideImageFilterType; 
   typedef itk::ImageDuplicator<InputImageType> DuplicatorType; 
