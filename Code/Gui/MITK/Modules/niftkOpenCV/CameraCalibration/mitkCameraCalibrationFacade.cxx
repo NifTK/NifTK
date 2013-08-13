@@ -1178,6 +1178,7 @@ cv::Point3f  TriangulatePointPair(
   std::vector <cv::Point3f> returnVector = TriangulatePointPairs(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
       rightToLeftRotationVector, rightToLeftTranslationVector);
+
   return returnVector[0];
 }
 
@@ -1316,34 +1317,19 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     sc = (b*e - c*d) / (a*c - b*b);
     tc = (a*e - b*d) / (a*c - b*b);
 
-    if (sc > 0 && tc > 0)
-    {
-      Psc.x = P0.x + sc*u.x;
-      Psc.y = P0.y + sc*u.y;
-      Psc.z = P0.z + sc*u.z;
+    Psc.x = P0.x + sc*u.x;
+    Psc.y = P0.y + sc*u.y;
+    Psc.z = P0.z + sc*u.z;
 
-      Qtc.x = Q0.x + tc*v.x;
-      Qtc.y = Q0.y + tc*v.y;
-      Qtc.z = Q0.z + tc*v.z;
+    Qtc.x = Q0.x + tc*v.x;
+    Qtc.y = Q0.y + tc*v.y;
+    Qtc.z = Q0.z + tc*v.z;
 
-      midPoint.x = (Psc.x + Qtc.x)/2.0;
-      midPoint.y = (Psc.y + Qtc.y)/2.0;
-      midPoint.z = (Psc.z + Qtc.z)/2.0;
+    midPoint.x = (Psc.x + Qtc.x)/2.0;
+    midPoint.y = (Psc.y + Qtc.y)/2.0;
+    midPoint.z = (Psc.z + Qtc.z)/2.0;
 
-      /* For testing.
-      midPoint.x = Psc.x;
-      midPoint.y = Psc.y;
-      midPoint.z = Psc.z;
-      */
-
-      /* For testing.
-      midPoint.x = Qtc.x;
-      midPoint.y = Qtc.y;
-      midPoint.z = Qtc.z;
-      */
-
-      outputPoints.push_back(midPoint);
-    }
+    outputPoints.push_back(midPoint);
   }
   
   return outputPoints;
