@@ -146,10 +146,10 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
   cv::Matx44d rigidTransformation = mitk::ConstructRigidTransformationMatrix(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5]);
 
   cv::Matx44d scalingTransformation;
-  scalingTransformation.eye();
+  mitk::MakeIdentity(scalingTransformation);
 
   cv::Matx44d invariantPointTranslation;
-  invariantPointTranslation.eye();
+  mitk::MakeIdentity(invariantPointTranslation);
 
   if (parameters.size() == 8 || parameters.size() == 11)
   {
