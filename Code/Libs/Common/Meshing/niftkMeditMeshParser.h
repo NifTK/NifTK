@@ -21,7 +21,7 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-#include <IOException.h>
+#include <niftkIOException.h>
 
 namespace niftk {
   /**

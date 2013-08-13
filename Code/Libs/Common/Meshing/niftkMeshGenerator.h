@@ -18,10 +18,12 @@
 #include <string>
 #include <vector>
 #include <utility>
+
 #include <vtkSmartPointer.h>
 #include <vtkMultiBlockDataSet.h>
 #include <itkImage.h>
-#include <IOException.h>
+
+#include <niftkIOException.h>
 
 namespace niftk {
   /**
