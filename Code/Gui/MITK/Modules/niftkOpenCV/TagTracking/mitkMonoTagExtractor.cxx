@@ -45,7 +45,7 @@ public:
 
 private:
 
-  // So, this is persistant between calls to the MonoTagExtractor for performance reasons.
+  // So, these are persistant between calls to the MonoTagExtractor for performance reasons.
   aruco::MarkerDetector   m_Detector;
   aruco::CameraParameters m_CameraParams;
   cv::Mat                 m_GreyImage;

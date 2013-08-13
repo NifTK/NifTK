@@ -18,17 +18,21 @@
 #include "niftkOpenCVExports.h"
 #include <itkObject.h>
 #include <itkObjectFactory.h>
-#include <mitkCommon.h>
 #include <mitkImage.h>
+#include <mitkCommon.h>
 #include <mitkPointSet.h>
-#include <cv.h>
 #include <vtkMatrix4x4.h>
+#include <cv.h>
 
 namespace mitk {
 
+class StereoTagExtractorPrivate;
+
 /**
  * \class StereoTagExtractor
- * \brief Command object to take a stereo pair of images and camera params, and extract tag positions using triangulation.
+ * \brief Takes a stereo pair of images and camera params, and extract tag positions using triangulation.
+ *
+ * TODO: Make OpenCV stuff use C++ style matrices, and double precision consistently throughout.
  */
 class NIFTKOPENCV_EXPORT StereoTagExtractor : public itk::Object
 {
@@ -40,8 +44,8 @@ public:
 
   /**
    * \brief Pass in a stereo pair of images, and tag positions are extracted and returned in the provided mitk::PointSet.
-   * \param leftImage RGB colour image
-   * \param rightImage RGB colour image
+   * \param leftImage RGBA colour image
+   * \param rightImage RGBA colour image
    * \param minSize the minimum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
    * \param maxSize the maximum size of the tag, measured as a fraction between 0 and 1 of the maximum of the number of rows and columns.
    * \param blockSize window size for adaptive thresholding
@@ -90,8 +94,12 @@ protected:
   StereoTagExtractor(const StereoTagExtractor&); // Purposefully not implemented.
   StereoTagExtractor& operator=(const StereoTagExtractor&); // Purposefully not implemented.
 
+private:
+
+  StereoTagExtractorPrivate *m_PIMPL;
+
 }; // end class
 
 } // end namespace
 
-#endif // mitkStereoTagExtractor_h
+#endif
