@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   mitkVideoTrackerMatchingTest.cxx
   mitkReprojectionTest.cxx
   mitkProjectPointsOnStereoVideoTest.cxx
+  mitkFindAndTriangulateCrossHairTest.cxx
 )

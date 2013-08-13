@@ -45,3 +45,5 @@ else(OPENCV_WITH_FFMPEG)
 endif(OPENCV_WITH_FFMPEG)
 
 mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
+
+mitkAddCustomModuleTest(CrossHair-Triangulatrion mitkFindAndTriangulateCrossHairTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/2013-07-26-17-00-36-631 ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
