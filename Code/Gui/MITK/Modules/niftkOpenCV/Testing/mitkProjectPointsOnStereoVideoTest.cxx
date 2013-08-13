@@ -64,7 +64,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   mitk::ProjectPointsOnStereoVideo::Pointer Projector = mitk::ProjectPointsOnStereoVideo::New();
   Projector->SetVisualise(true);
   Projector->Initialise(argv[1], argv[2]);
-  Projector->SetFlipMatrices(true);
+  Projector->SetFlipMatrices(false);
   Projector->SetTrackerIndex(2);
   Projector->SetDrawAxes(true);
   //check it initialised, check it gets the right matrix with the right time error
@@ -107,11 +107,11 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 
   std::vector <cv::Point3f> WorldGridPoints;
   //these are the corners of the grid according to the handeye calibration of the certus
-  WorldGridPoints.push_back ( cv::Point3f(-765.6784 ,-99.4104,1851.3566));
-  WorldGridPoints.push_back ( cv::Point3f(-781.6574 ,-62.9164,1863.0450));
-  WorldGridPoints.push_back ( cv::Point3f(-754.2505 ,-50.4048,1862.8514));
-  WorldGridPoints.push_back ( cv::Point3f(-738.2715 ,-86.8989,1851.1630));
- // Projector->SetWorldPoints(WorldGridPoints);
+  WorldGridPoints.push_back ( cv::Point3f(-826.2,-207.2,-2010.6));
+  WorldGridPoints.push_back ( cv::Point3f(-820.3,-205.0,-2036.9));
+  WorldGridPoints.push_back ( cv::Point3f(-820.8,-166.1,-2033.7));
+  WorldGridPoints.push_back ( cv::Point3f(-826.8,-168.4,-2007.0));
+  Projector->SetWorldPoints(WorldGridPoints);
   Projector->Project();
   MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK"); 
 
