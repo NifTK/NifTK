@@ -41,6 +41,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_NumberCornersHeight(10)
 , m_SquareSizeInMillimetres(3.0)
 , m_WriteOutChessboards(false)
+, m_WriteOutCalibrationImages(true)
 {
 }
 
@@ -201,10 +202,14 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat TempFrame;
     cv::Mat LeftFrame;
     cv::Mat RightFrame;
+    cv::Mat LeftFrame_orig;
+    cv::Mat RightFrame_orig;
     capture >> TempFrame;
     LeftFrame = TempFrame.clone();
     capture >> TempFrame;
     RightFrame = TempFrame.clone();
+    LeftFrame_orig = LeftFrame.clone();
+    RightFrame_orig = RightFrame.clone();
     imageSize=RightFrame.size();
     if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber) != LeftFramesToUse.end()) ) 
     {
@@ -236,6 +241,14 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
           allRightImagePoints.push_back(cv::Mat(*rightImageCorners,true));
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
+          if ( m_WriteOutCalibrationImages )
+          {
+            std::string leftfilename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
+            std::string rightfilename = m_Directory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".jpg";
+            MITK_INFO << "Writing image to " << leftfilename;
+            cv::imwrite( leftfilename, LeftFrame_orig );
+            cv::imwrite( rightfilename, RightFrame_orig );
+          }
         }
         else
         {

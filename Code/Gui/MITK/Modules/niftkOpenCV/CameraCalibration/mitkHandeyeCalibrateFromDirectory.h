@@ -82,7 +82,7 @@ private:
   double                              m_SquareSizeInMillimetres;
   std::string                         m_Directory;
   bool                                m_WriteOutChessboards;
-
+  bool                                m_WriteOutCalibrationImages;
   mitk::VideoTrackerMatching::Pointer m_Matcher;
 
   // Not possible to store the frames in memory, will need to process them on the fly
