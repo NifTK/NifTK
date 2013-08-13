@@ -329,7 +329,7 @@ cv::Matx33d ConstructEulerRxMatrix(const double& rx)
   result(1, 2) = sinRx;
   result(2, 1) = -sinRx;
   result(2, 2) = cosRx;
-
+  result(0, 0) = 1;
   return result;
 }
 
@@ -346,7 +346,7 @@ cv::Matx33d ConstructEulerRyMatrix(const double& ry)
   result(0, 2) = -sinRy;
   result(2, 0) = sinRy;
   result(2, 2) = cosRy;
-
+  result(1, 1) = 1;
   return result;
 }
 
@@ -363,7 +363,7 @@ cv::Matx33d ConstructEulerRzMatrix(const double& rz)
   result(0, 1) = sinRz;
   result(1, 0) = -sinRz;
   result(1, 1) = cosRz;
-
+  result(2, 2) = 1;
   return result;
 }
 
@@ -409,7 +409,7 @@ cv::Matx44d ConstructRigidTransformationMatrix(
     )
 {
   cv::Matx44d transformation;
-  transformation.eye();
+  mitk::MakeIdentity(transformation);
 
   cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
 
@@ -432,7 +432,7 @@ cv::Matx44d ConstructRigidTransformationMatrix(
 cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
 {
   cv::Matx44d scaling;
-  scaling.eye();
+  mitk::MakeIdentity(scaling);
 
   scaling(0,0) = sx;
   scaling(1,1) = sy;
