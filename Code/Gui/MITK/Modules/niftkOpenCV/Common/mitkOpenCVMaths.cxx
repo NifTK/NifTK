@@ -324,12 +324,14 @@ cv::Matx33d ConstructEulerRxMatrix(const double& rx)
 
   double cosRx = cos(rx);
   double sinRx = sin(rx);
+
   result.eye();
   result(1, 1) = cosRx;
   result(1, 2) = sinRx;
   result(2, 1) = -sinRx;
   result(2, 2) = cosRx;
   result(0, 0) = 1;
+
   return result;
 }
 
@@ -341,12 +343,14 @@ cv::Matx33d ConstructEulerRyMatrix(const double& ry)
 
   double cosRy = cos(ry);
   double sinRy = sin(ry);
+
   result.eye();
   result(0, 0) = cosRy;
   result(0, 2) = -sinRy;
   result(2, 0) = sinRy;
   result(2, 2) = cosRy;
   result(1, 1) = 1;
+
   return result;
 }
 
@@ -358,12 +362,14 @@ cv::Matx33d ConstructEulerRzMatrix(const double& rz)
 
   double cosRz = cos(rz);
   double sinRz = sin(rz);
+
   result.eye();
   result(0, 0) = cosRz;
   result(0, 1) = sinRz;
   result(1, 0) = -sinRz;
   result(1, 1) = cosRz;
   result(2, 2) = 1;
+  
   return result;
 }
 

@@ -208,7 +208,6 @@ bool UltrasoundPinCalibration::Calibrate(
   {
     std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
-
   return isSuccessful;
 }
 
