@@ -115,6 +115,11 @@ public:
    */
   double GetResidual(const MeasureType & values) const;
 
+  /**
+   * \brief Computes the 6DOF transformation from image to sensor, (i.e. without scaling parameters).
+   */
+  cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const;
+
 protected:
 
   UltrasoundPinCalibrationCostFunction();

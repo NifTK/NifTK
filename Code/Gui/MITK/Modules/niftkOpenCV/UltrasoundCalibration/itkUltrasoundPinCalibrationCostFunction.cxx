@@ -115,6 +115,17 @@ double UltrasoundPinCalibrationCostFunction::GetResidual(const MeasureType & val
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d UltrasoundPinCalibrationCostFunction::GetCalibrationTransformation(const ParametersType & parameters) const
+{
+  double pi = 3.14159265359;
+  double degreesToRadians = pi/180.0;
+
+  cv::Matx44d rigidTransformation = mitk::ConstructRigidTransformationMatrix(parameters[0]*degreesToRadians, parameters[1]*degreesToRadians, parameters[2]*degreesToRadians, parameters[3], parameters[4], parameters[5]);
+  return rigidTransformation;
+}
+
+
+//-----------------------------------------------------------------------------
 UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFunction::GetValue(
   const ParametersType & parameters
   ) const
@@ -143,10 +154,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     throw std::logic_error(oss.str());
   }
 
-  double pi = 3.14159265359;
-  double degreesToRadians = pi/180.0;
-
-  cv::Matx44d rigidTransformation = mitk::ConstructRigidTransformationMatrix(parameters[0]*degreesToRadians, parameters[1]*degreesToRadians, parameters[2]*degreesToRadians, parameters[3], parameters[4], parameters[5]);
+  cv::Matx44d rigidTransformation = GetCalibrationTransformation(parameters);
 
   cv::Matx44d scalingTransformation;
   mitk::MakeIdentity(scalingTransformation);

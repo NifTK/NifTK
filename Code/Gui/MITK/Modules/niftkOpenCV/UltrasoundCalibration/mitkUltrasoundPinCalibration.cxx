@@ -190,6 +190,8 @@ bool UltrasoundPinCalibration::Calibrate(
 
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
+  outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+  isSuccessful = true;
 
   std::cout << "UltrasoundPinCalibration:Final parameters = " << parameters << std::endl;
   if (isSuccessful)
@@ -201,12 +203,12 @@ bool UltrasoundPinCalibration::Calibrate(
     std::cout << "UltrasoundPinCalibration:Success          = FAILED!" << std::endl;
   }
   std::cout << "UltrasoundPinCalibration:Residual error   = " << residualError << std::endl;
-  std::cout << "UltrasoundPinCalibration:Scaling          = " << millimetresPerPixel.x << ", " << millimetresPerPixel.y << std::endl;
   std::cout << "UltrasoundPinCalibration:Result:" << std::endl;
   for (int i = 0; i < 4; i++)
   {
     std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
+
   return isSuccessful;
 }
 
