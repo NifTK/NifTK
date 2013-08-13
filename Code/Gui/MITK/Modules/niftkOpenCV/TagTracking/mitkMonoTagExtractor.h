@@ -77,4 +77,4 @@ private:
 
 } // end namespace
 
-#endif // mitkMonoTagExtractor_h
+#endif
