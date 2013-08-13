@@ -21,7 +21,7 @@
 #include <CGAL/Image_3.h>
 #include <fstream>
 
-#include "CGALMesherBackEnd.h"
+#include "niftkCGALMesherBackEnd.h"
 
 using namespace std;
 using namespace niftk;

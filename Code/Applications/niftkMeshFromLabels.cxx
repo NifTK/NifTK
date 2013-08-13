@@ -23,7 +23,7 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkErrorCode.h>
 
-#include <CommandLineParser.h>
+#include <niftkCommandLineParser.h>
 #include <MeshGenerator.h>
 #include <MeshMerger.h>
 

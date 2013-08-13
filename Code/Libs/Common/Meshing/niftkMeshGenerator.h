@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MeshGenerator_h
-#define MeshGenerator_h
+#ifndef niftkMeshGenerator_h
+#define niftkMeshGenerator_h
 
 #include <string>
 #include <vector>

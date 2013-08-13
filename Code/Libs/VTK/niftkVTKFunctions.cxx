@@ -14,7 +14,7 @@
 
 #include <math.h>
 #include <iostream>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "niftkVTKFunctions.h"
 #include <vtkSmartPointer.h>
 #include <vtkTransformPolyDataFilter.h>

@@ -16,7 +16,7 @@
 #define __itkBSplineOperator_txx
 #include "itkBSplineOperator.h"
 #include <itkOutputWindow.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace itk
 {

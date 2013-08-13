@@ -20,7 +20,7 @@
 #include "itkSetBoundaryVoxelsToValueFilter.h"
 #include <itkImageRegionConstIterator.h>
 #include <itkProgressReporter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkTransformFileWriter.h>
 #include <itkGE_TomosynthesisGeometry.h>
 

@@ -17,7 +17,7 @@
 
 #include "itkAddOneLayerOfGreyMatterFilter.h"
 #include <itkImageRegionConstIteratorWithIndex.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

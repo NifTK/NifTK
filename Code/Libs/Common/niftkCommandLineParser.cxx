@@ -22,8 +22,8 @@
 #include <sstream>
 using namespace std;
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 
 namespace niftk

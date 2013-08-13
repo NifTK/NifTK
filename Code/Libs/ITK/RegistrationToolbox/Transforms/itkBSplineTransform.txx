@@ -19,7 +19,7 @@
 #include <itkMatrixOffsetTransformBase.h>
 #include <itkIdentityTransform.h>
 #include <vnl/algo/vnl_matrix_inverse.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <iostream>
 
 #include <itkLogHelper.h>

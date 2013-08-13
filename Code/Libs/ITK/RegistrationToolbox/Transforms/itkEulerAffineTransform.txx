@@ -20,7 +20,7 @@
 #include <vnl/algo/vnl_determinant.h>
 #include <vnl/vnl_matrix.h>
 #include <vnl/vnl_math.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <iostream>
 #include <fstream>
 #include <boost/format.hpp>

@@ -25,12 +25,12 @@
 #include <itkImageFileWriter.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCell.h>
-
-#include "MeshGenerator.h"
-#include "CGALMesherBackEnd.h"
 #include <itkINRImageIO.h>
-#include <FileHelper.h>
-#include "MeditMeshParser.h"
+
+#include <niftkFileHelper.h>
+#include "niftkMeshGenerator.h"
+#include "niftkMeditMeshParser.h"
+#include "niftkCGALMesherBackEnd.h"
 
 using namespace niftk;
 using namespace std;

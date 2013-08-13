@@ -24,7 +24,7 @@
 #include <itkIntegrateStreamlinesFilter.h>
 #include <itkRelaxStreamlinesFilter.h>
 #include <itkOrderedTraversalStreamlinesFilter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkRescaleIntensityImageFilter.h>

@@ -18,7 +18,7 @@
 #include <vtkAppendFilter.h>
 #include <vtkCell.h>
 #include <vtkPoints.h>
-#include "MeshMerger.h"
+#include "niftkMeshMerger.h"
 
 static std::vector<int> _MakeUniqueVector(const std::vector<int> &inputVec) {
   std::vector<int>::iterator i_end;

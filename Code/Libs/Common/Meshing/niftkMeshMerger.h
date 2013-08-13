@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MeshMerger_h
-#define MeshMerger_h
+#ifndef niftkMeshMerger_h
+#define niftkMeshMerger_h
 
 #include <vector>
 #include <string>

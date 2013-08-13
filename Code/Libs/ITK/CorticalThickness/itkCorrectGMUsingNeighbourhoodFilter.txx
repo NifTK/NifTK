@@ -18,7 +18,7 @@
 #include "itkCorrectGMUsingNeighbourhoodFilter.h"
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIteratorWithIndex.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

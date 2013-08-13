@@ -18,7 +18,7 @@
 #include <itkLogHelper.h>
 #include "itkBlockMatchingMethod.h"
 #include <itkImageFileWriter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace itk
 {

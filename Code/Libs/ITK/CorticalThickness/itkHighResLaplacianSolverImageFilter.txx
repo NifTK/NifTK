@@ -16,7 +16,7 @@
 #define __itkHighResLaplacianSolverImageFilter_txx
 
 #include "itkHighResLaplacianSolverImageFilter.h"
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <cmath>
 
 #include <itkLogHelper.h>

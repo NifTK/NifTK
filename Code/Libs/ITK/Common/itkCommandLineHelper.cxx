@@ -16,10 +16,10 @@
 #define __itkCommandLineHelper_cxx
 
 #include "itkCommandLineHelper.h"
-#include <ConversionUtils.h>
 #include <itkImageIOBase.h>
 #include <itkImageIOFactory.h>
 #include <itkExceptionObject.h>
+#include <niftkConversionUtils.h>
 
 namespace itk
 {

@@ -15,13 +15,21 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-
+#include <math.h>
 #include <iostream>
-#include <itkTestMain.h>
 #include <stdlib.h>
+#include <niftkConversionUtils.h>
 
-void RegisterTests()
+/**
+ * Basic test harness that is meant to create a memory leak, so we can make sure valgrind is working.
+ * This isn't a unit test as such, as it always returns EXIT_SUCCESS, but we are simply making sure
+ * that valgrind is running unit tests, and checking for memory leaks.
+ */
+int niftkDeliberateMemoryLeakTest(int argc, char * argv[])
 {
-  REGISTER_TEST(ConversionUtilsTest);
-  REGISTER_TEST(DeliberateMemoryLeakTest);
+
+  int *dummyArray = new int[1000];
+  std::cout << "dummyArray=" << dummyArray << std::endl; // to remove compiler warning about unused variable.
+  return EXIT_SUCCESS;
 }
+

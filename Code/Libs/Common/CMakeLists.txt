@@ -19,10 +19,10 @@ if (BUILD_MESHING)
 endif (BUILD_MESHING)
 
 set(niftkcommon_SRCS
-FileHelper.cxx
-ConversionUtils.cxx 
-EnvironmentHelper.cxx
-CommandLineParser.cxx
+niftkFileHelper.cxx
+niftkConversionUtils.cxx
+niftkEnvironmentHelper.cxx
+niftkCommandLineParser.cxx
 )
 
 add_library(niftkcommon ${niftkcommon_SRCS})

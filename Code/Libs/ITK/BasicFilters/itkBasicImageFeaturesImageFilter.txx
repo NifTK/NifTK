@@ -21,7 +21,7 @@
 #include <itkImageFileWriter.h>
 #include <itkImageDuplicator.h>
 #include <itkProgressReporter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <vnl/vnl_double_2x2.h>
 

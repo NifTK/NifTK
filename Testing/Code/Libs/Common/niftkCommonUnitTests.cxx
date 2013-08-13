@@ -18,8 +18,10 @@
 
 #include <iostream>
 #include <itkTestMain.h>
+#include <stdlib.h>
 
 void RegisterTests()
 {
-  REGISTER_TEST(FileHelperTest);
+  REGISTER_TEST(niftkConversionUtilsTest);
+  REGISTER_TEST(niftkDeliberateMemoryLeakTest);
 }

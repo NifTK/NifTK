@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkEulerAffineTransform.h>
 #include <itkArray.h>
 #include <itkArray2D.h>

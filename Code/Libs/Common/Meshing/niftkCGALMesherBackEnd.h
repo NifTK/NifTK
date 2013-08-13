@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CGALMesherBackEnd_h
-#define CGALMesherBackEnd_h
+#ifndef niftkCGALMesherBackEnd_h
+#define niftkCGALMesherBackEnd_h
 
 #include <stdexcept>
 #include <string>

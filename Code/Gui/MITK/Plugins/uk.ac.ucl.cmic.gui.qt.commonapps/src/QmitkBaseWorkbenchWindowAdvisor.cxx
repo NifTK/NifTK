@@ -31,7 +31,7 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkProperties.h>
 #include <mitkRenderingManager.h>
-#include <EnvironmentHelper.h>
+#include <niftkEnvironmentHelper.h>
 #include <NifTKConfigure.h>
 
 //-----------------------------------------------------------------------------

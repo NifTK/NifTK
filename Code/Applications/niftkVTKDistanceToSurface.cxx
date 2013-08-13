@@ -25,7 +25,7 @@
 */
 
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <niftkVTKDistanceToSurfaceCLP.h>
 #include <niftkVTK4PointsReader.h>
 #include <niftkVTKFunctions.h>

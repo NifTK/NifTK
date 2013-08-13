@@ -28,7 +28,7 @@
 #include <itkBSplineInterpolateImageFunction.h>
 #include <itkIdentityTransform.h>
 #include <itkNearestNeighborInterpolateImageFunction.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkAbsImageFilter.h>
 
 #include <itkLogHelper.h>

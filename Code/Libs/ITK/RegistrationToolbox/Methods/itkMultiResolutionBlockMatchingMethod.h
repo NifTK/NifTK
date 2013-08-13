@@ -16,7 +16,7 @@
 #define itkMultiResolutionBlockMatchingMethod_h
 
 #include "itkMultiResolutionImageRegistrationWrapper.h"
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "itkBlockMatchingMethod.h"
 
 namespace itk
