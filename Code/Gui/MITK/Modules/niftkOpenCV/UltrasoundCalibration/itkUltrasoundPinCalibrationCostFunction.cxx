@@ -143,7 +143,10 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     throw std::logic_error(oss.str());
   }
 
-  cv::Matx44d rigidTransformation = mitk::ConstructRigidTransformationMatrix(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], parameters[5]);
+  double pi = 3.14159265359;
+  double degreesToRadians = pi/180.0;
+
+  cv::Matx44d rigidTransformation = mitk::ConstructRigidTransformationMatrix(parameters[0]*degreesToRadians, parameters[1]*degreesToRadians, parameters[2]*degreesToRadians, parameters[3], parameters[4], parameters[5]);
 
   cv::Matx44d scalingTransformation;
   mitk::MakeIdentity(scalingTransformation);
