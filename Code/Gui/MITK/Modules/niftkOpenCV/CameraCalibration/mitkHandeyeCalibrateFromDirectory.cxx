@@ -187,6 +187,10 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       }
     }
   }
+
+  //sort the vector in ascending order
+  std::sort (LeftFramesToUse.begin(), LeftFramesToUse.end());
+  std::sort (RightFramesToUse.begin(), RightFramesToUse.end());
   //now go through video and extract frames to use
   int FrameNumber = 0 ;
 
@@ -243,8 +247,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
           if ( m_WriteOutCalibrationImages )
           {
-            std::string leftfilename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".jpg";
-            std::string rightfilename = m_Directory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".jpg";
+            std::string leftfilename = m_Directory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
+            std::string rightfilename = m_Directory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".jpg";
             MITK_INFO << "Writing image to " << leftfilename;
             cv::imwrite( leftfilename, LeftFrame_orig );
             cv::imwrite( rightfilename, RightFrame_orig );
@@ -465,11 +469,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       fs_ext << CV_MAT_ELEM ( *outputTranslationVectorsLeft , float  , view, i) << " ";
     }
     fs_ext << std::endl; 
+
     cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
         NULL, m_TrackerIndex );
 
     std::string trackerFilename = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) + "/" + boost::lexical_cast<std::string>(view) + ".txt";
-    
+    MITK_INFO << "Saving matrix for frame " << LeftFramesToUse[view] << "to " << trackerFilename;    
     std::ofstream fs_tracker;
     fs_tracker.open(trackerFilename.c_str(), std::ios::out);
     for ( int row = 0 ; row < 4 ; row ++ ) 
