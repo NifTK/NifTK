@@ -111,7 +111,14 @@ private:
 
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
-  
+
+  cv::Size                      m_BlurKernel; //for blurring
+ 
+  double                        m_HoughRho; //for the hough filter
+  double                        m_HoughTheta; //for the hough filter
+  int                           m_HoughThreshold; //for the hough filter
+  int                           m_HoughLineLength; //for the hough filter
+  int                           m_HoughLineGap; //for the hough filter
   void TriangulatePoints();
 
 }; // end class

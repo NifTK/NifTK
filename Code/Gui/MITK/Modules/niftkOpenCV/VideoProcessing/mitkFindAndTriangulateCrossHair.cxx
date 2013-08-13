@@ -44,6 +44,12 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_32FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
+, m_BlurKernel (cv::Size (3,3))
+, m_HoughRho (10.0)
+, m_HoughTheta(0.1)
+, m_HoughThreshold(10)
+, m_HoughLineLength(10)
+, m_HoughLineGap(2)
 {
 }
 
@@ -157,13 +163,36 @@ void FindAndTriangulateCrossHair::Triangulate()
   {
     cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
     cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow ("Processed Left", CV_WINDOW_AUTOSIZE);
   }
   int framenumber = 0 ;
   int key = 0;
+
+  cv::Mat leftFrame;
+  cv::Mat rightFrame;
+  cv::Mat leftBlurred;
+  cv::Mat* rightBlurred;
+  cv::Mat* leftCanny;
+  cv::Mat* rightCanny;
+  cv::Mat* leftHough;
+  cv::Mat* rightHough;
   while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
   {
+   /* cv::blur;
+    cv::Canny;
+    cv::HoughLinesP;*/
+
+   // cv::blur ( rightprocessedMat, rightprocessed_tempMat, cv::Size(blurkernel,blurkernel));
     cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-        
+    leftFrame = videoImage.clone();
+    videoImage = cvQueryFrame ( m_Capture ) ;
+    rightFrame = videoImage.clone();
+    
+    cv::blur (leftFrame, leftBlurred, m_BlurKernel);
+    
+    cv::vector<cv::Vec4i> linesleft;
+    cv::vector<cv::Vec4i> linesright;
+    cv::HoughLinesP (leftBlurred, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
     std::pair <cv::Point2f, cv::Point2f> screenPoints;
 
     if ( framenumber % 2 == 0 ) 
@@ -176,17 +205,15 @@ void FindAndTriangulateCrossHair::Triangulate()
     }
     if ( m_Visualise ) 
     {
-      IplImage image(videoImage);
-      IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
-      cvResize (&image, smallimage,CV_INTER_LINEAR);
-      if ( framenumber %2 == 0 ) 
-      {
-        cvShowImage("Left Channel" , smallimage);
-      }
-      else
-      {
-        cvShowImage("Right Channel" , smallimage);
-      }
+      IplImage *smallleft = cvCreateImage (cvSize(960, 270), 8,3);
+      cvResize (&(IplImage(leftFrame)), smallleft,CV_INTER_LINEAR);
+      IplImage *smallright = cvCreateImage (cvSize(960, 270), 8,3);
+      cvResize (&(IplImage(rightFrame)), smallright,CV_INTER_LINEAR);
+      IplImage *smallprocessed = cvCreateImage (cvSize(960, 270), 8,3);
+      cvResize (&(IplImage(leftBlurred)), smallprocessed , CV_INTER_LINEAR);
+      cvShowImage("Left Channel" , smallleft);
+      cvShowImage("Right Channel" , smallright);
+      cvShowImage("Processed Left", smallprocessed);
       key = cvWaitKey (20);
       if ( key == 's' )
       {
