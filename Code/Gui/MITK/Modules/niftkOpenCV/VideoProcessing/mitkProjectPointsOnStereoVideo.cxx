@@ -172,6 +172,7 @@ void ProjectPointsOnStereoVideo::Project()
   }
   int framenumber = 0 ;
   int key = 0;
+  bool drawProjection = true;
   while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     //put the world points into the coordinates of the left hand camera.
@@ -235,57 +236,60 @@ void ProjectPointsOnStereoVideo::Project()
     {
       cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
       MITK_INFO << framenumber << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
-      if ( ! m_DrawLines ) 
+      if ( drawProjection )
       {
-        if ( framenumber % 2 == 0 ) 
+        if ( ! m_DrawLines ) 
         {
-          for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+          if ( framenumber % 2 == 0 ) 
           {
-            cv::circle(videoImage, screenPoints[i].first,10, cvScalar(255,0,0), 3, 8, 0 );
+            for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+            {
+              cv::circle(videoImage, screenPoints[i].first,10, cvScalar(255,0,0), 3, 8, 0 );
+            }
+          }
+          else
+          {
+            for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+            {
+              cv::circle(videoImage, screenPoints[i].second,10, cvScalar(255,0,0), 3, 8, 0 );
+            } 
           }
         }
-        else
+        else 
         {
-          for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
+          if ( framenumber % 2 == 0 ) 
           {
-            cv::circle(videoImage, screenPoints[i].second,10, cvScalar(255,0,0), 3, 8, 0 );
-          } 
-        }
-      }
-      else 
-      {
-        if ( framenumber % 2 == 0 ) 
-        {
-          unsigned int i;
-          for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
-          {
-            cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, cvScalar(255,0,0) );
+            unsigned int i;
+            for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
+            {
+              cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, cvScalar(255,0,0) );
+            }
+            cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, cvScalar(255,0,0) );
           }
-          cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, cvScalar(255,0,0) );
-        }
-        else
-        {
-          unsigned int i;
-          for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
+          else
           {
-            cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, cvScalar(255,0,0) );
-          } 
-          cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, cvScalar(255,0,0) );
+            unsigned int i;
+            for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
+            {
+              cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, cvScalar(255,0,0) );
+            } 
+            cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, cvScalar(255,0,0) );
+          }
         }
-      }
-      if ( m_DrawAxes )
-      {
-        if ( framenumber % 2 == 0 )
+        if ( m_DrawAxes && drawProjection )
         {
-          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[1].first,cvScalar(255,0,0));
-          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[2].first,cvScalar(0,255,0));
-          cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[3].first,cvScalar(0,0,255));         
-        }
-        else
-        {
-          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[1].second,cvScalar(255,0,0));
-          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[2].second,cvScalar(0,255,0));
-          cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[3].second,cvScalar(0,0,255));         
+          if ( framenumber % 2 == 0 )
+          {
+            cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[1].first,cvScalar(255,0,0));
+            cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[2].first,cvScalar(0,255,0));
+            cv::line(videoImage,m_ScreenAxesPoints[0].first,m_ScreenAxesPoints[3].first,cvScalar(0,0,255));         
+          }
+          else
+          {
+            cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[1].second,cvScalar(255,0,0));
+            cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[2].second,cvScalar(0,255,0));
+            cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[3].second,cvScalar(0,0,255));         
+          }
         }
       }
       if ( m_Visualise ) 
@@ -307,6 +311,10 @@ void ProjectPointsOnStereoVideo::Project()
         if ( key == 's' )
         {
           m_Visualise = false;
+        }
+        if ( key == 't' )
+        {
+          drawProjection = ! drawProjection;
         }
       }
 
