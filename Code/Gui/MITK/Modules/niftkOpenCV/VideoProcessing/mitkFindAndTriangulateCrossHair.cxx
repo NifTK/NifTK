@@ -45,11 +45,11 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_Capture(NULL)
 , m_Writer(NULL)
 , m_BlurKernel (cv::Size (3,3))
-, m_HoughRho (10.0)
-, m_HoughTheta(0.1)
-, m_HoughThreshold(10)
-, m_HoughLineLength(10)
-, m_HoughLineGap(2)
+, m_HoughRho (1.0)
+, m_HoughTheta(CV_PI/(180))
+, m_HoughThreshold(50)
+, m_HoughLineLength(130)
+, m_HoughLineGap(20)
 {
 }
 
@@ -171,11 +171,11 @@ void FindAndTriangulateCrossHair::Triangulate()
   cv::Mat leftFrame;
   cv::Mat rightFrame;
   cv::Mat leftBlurred;
-  cv::Mat* rightBlurred;
-  cv::Mat* leftCanny;
-  cv::Mat* rightCanny;
-  cv::Mat* leftHough;
-  cv::Mat* rightHough;
+  cv::Mat rightBlurred;
+  cv::Mat leftCanny;
+  cv::Mat rightCanny;
+  cv::Mat leftHough;
+  cv::Mat rightHough;
   while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
   {
    /* cv::blur;
@@ -188,29 +188,40 @@ void FindAndTriangulateCrossHair::Triangulate()
     videoImage = cvQueryFrame ( m_Capture ) ;
     rightFrame = videoImage.clone();
     
-    cv::blur (leftFrame, leftBlurred, m_BlurKernel);
-    
+    cv::cvtColor( leftFrame, leftHough, CV_BGR2GRAY );
+    cv::cvtColor( rightFrame, rightHough, CV_BGR2GRAY );
+    int lowThreshold=20;
+    int highThreshold = 70;
+    int kernel = 3;
+    cv::Canny(leftHough,leftCanny, lowThreshold,highThreshold,kernel);
+    cv::Canny(rightHough,rightCanny, lowThreshold,highThreshold,kernel);
     cv::vector<cv::Vec4i> linesleft;
     cv::vector<cv::Vec4i> linesright;
-    cv::HoughLinesP (leftBlurred, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
+    cv::HoughLinesP (leftCanny, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
+    cv::HoughLinesP (rightCanny, linesright,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
     std::pair <cv::Point2f, cv::Point2f> screenPoints;
-
-    if ( framenumber % 2 == 0 ) 
+    for ( int i = 0 ; i < linesleft.size() ; i ++ )
     {
-      cv::circle(videoImage, screenPoints.first,10, cvScalar(255,0,0), 3, 8, 0 );
+      cv::line(leftFrame,cvPoint(linesleft[i][0],linesleft[i][1]),
+          cvPoint(linesleft[i][2],linesleft[i][3]),cvScalar(255,0,0));
     }
-    else
+    for ( int i = 0 ; i < linesright.size() ; i ++ )
     {
-      cv::circle(videoImage, screenPoints.second,10, cvScalar(255,0,0), 3, 8, 0 );
+      cv::line(rightFrame,cvPoint(linesright[i][0],linesright[i][1]),
+          cvPoint(linesright[i][2],linesright[i][3]),cvScalar(255,0,0));
     }
+    std::vector <cv::Point2f> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
+    std::vector <cv::Point2f> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
+    cv::circle(leftFrame , mitk::GetCentroid(leftIntersectionPoints,true),10, cvScalar(0,0,255),2,8,0);
+    cv::circle(rightFrame , mitk::GetCentroid(rightIntersectionPoints,true),10, cvScalar(0,255,0),2,8,0);
     if ( m_Visualise ) 
     {
       IplImage *smallleft = cvCreateImage (cvSize(960, 270), 8,3);
       cvResize (&(IplImage(leftFrame)), smallleft,CV_INTER_LINEAR);
       IplImage *smallright = cvCreateImage (cvSize(960, 270), 8,3);
       cvResize (&(IplImage(rightFrame)), smallright,CV_INTER_LINEAR);
-      IplImage *smallprocessed = cvCreateImage (cvSize(960, 270), 8,3);
-      cvResize (&(IplImage(leftBlurred)), smallprocessed , CV_INTER_LINEAR);
+      IplImage *smallprocessed = cvCreateImage (cvSize(960, 270), 8,1);
+      cvResize (&(IplImage(leftCanny)), smallprocessed , CV_INTER_LINEAR);
       cvShowImage("Left Channel" , smallleft);
       cvShowImage("Right Channel" , smallright);
       cvShowImage("Processed Left", smallprocessed);
@@ -220,6 +231,7 @@ void FindAndTriangulateCrossHair::Triangulate()
         m_Visualise = false;
       }
     }
+    framenumber ++;
     framenumber ++;
   }
   m_TriangulateOK = true;
