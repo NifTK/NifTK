@@ -88,6 +88,7 @@ public:
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( WorldPoints, std::vector<cv::Point3f> );
   std::vector < std::vector <cv::Point3f> > GetPointsInLeftLensCS();
+  std::vector < std::vector < std::pair<cv::Point2f, cv::Point2f> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
 

@@ -431,6 +431,10 @@ std::vector < std::vector <cv::Point3f> > ProjectPointsOnStereoVideo::GetPointsI
   return m_PointsInLeftLensCS;
 }
 
+std::vector < std::vector <std::pair <cv::Point2f, cv::Point2f> > > ProjectPointsOnStereoVideo::GetProjectedPoints()
+{
+  return m_ProjectedPoints;
+}
 void ProjectPointsOnStereoVideo::ProjectAxes()
 {
   cv::Mat leftCameraAxesPoints = cv::Mat (4,3,CV_32FC1);
