@@ -2,9 +2,8 @@ Welcome
 -------
 
 This is the @NIFTK_PLATFORM@ Translational Software Platform version @NIFTK_VERSION_STRING@.
-For all questions and queries, please join the users mailing list: @NIFTK_USER_CONTACT@,
-or the developers mailing list: @NIFTK_DEVELOPER_CONTACT@.
 
+For all questions and queries, please join the users mailing list: @NIFTK_USER_CONTACT@.
 
 Documentation
 -------------
