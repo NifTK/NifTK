@@ -121,7 +121,12 @@ std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i>,
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers);
+cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers = false);
+/**
+ * \brief Calculates the centroid of a vector of points.
+ */
+cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOutliers = false, cv::Point3f* StandardDeviation = NULL);
+
 
 
 

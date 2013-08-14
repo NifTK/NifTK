@@ -494,7 +494,118 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
 
   return centroid;
 }
+//-----------------------------------------------------------------------------
+cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOutliers , cv::Point3f* StandardDeviation)
+{
+  cv::Point3f centroid;
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  centroid.z = 0.0;
 
+  unsigned int  numberOfPoints = points.size();
+
+  unsigned int goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+  
+    if ( ! ( isnan(centroid.x) || isnan(centroid.y) || isnan(centroid.z) ) )
+    { 
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      centroid.z += points[i].z;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+  centroid.z /= (double) goodPoints;
+
+  if ( ! RefineForOutliers  && StandardDeviation == NULL)
+  {
+    return centroid;
+  }
+  
+  cv::Point3f standardDeviation;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  standardDeviation.z = 0.0;
+
+  goodPoints = 0;
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ! ( isnan(centroid.x) || isnan(centroid.y) || isnan(centroid.z) ) )
+    {
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      standardDeviation.z += ( points[i].z - centroid.z ) * (points[i].z - centroid.z);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  standardDeviation.z = sqrt ( standardDeviation.z/ (double) goodPoints ) ;
+  
+  if ( ! RefineForOutliers )
+  {
+    *StandardDeviation = standardDeviation;
+    return centroid;
+  }
+  cv::Point3f highLimit (centroid.x + 2 * standardDeviation.x , 
+      centroid.y + 2 * standardDeviation.y, centroid.z + standardDeviation.z);
+  cv::Point3f lowLimit (centroid.x - 2 * standardDeviation.x , 
+      centroid.y - 2 * standardDeviation.y, centroid.z - standardDeviation.z);
+
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  centroid.z = 0.0;
+  goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    if ( ( ! ( isnan(centroid.x) || isnan(centroid.y) || isnan(centroid.z) ) ) &&
+         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
+         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+    {
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      centroid.z += points[i].z;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+  centroid.z /= (double) goodPoints;
+
+  if ( StandardDeviation == NULL ) 
+  {
+    return centroid;
+  }
+  goodPoints = 0 ;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  standardDeviation.z = 0.0;
+
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ( ! ( isnan(centroid.x) || isnan(centroid.y) || isnan(centroid.z) ) ) &&
+         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
+         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+    { 
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      standardDeviation.z += ( points[i].z - centroid.z ) * (points[i].z - centroid.z);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  standardDeviation.z = sqrt ( standardDeviation.z/ (double) goodPoints ) ;
+  *StandardDeviation = standardDeviation;
+  return centroid;
+}
 
 
 //-----------------------------------------------------------------------------
