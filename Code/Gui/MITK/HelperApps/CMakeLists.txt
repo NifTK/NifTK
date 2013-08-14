@@ -81,6 +81,7 @@ if(SlicerExecutionModel_FOUND)
       niftkProject3DPointsToStereoPair
       niftkHandeyeCalibration
       niftkGetMatchedTrackingMatrix
+      niftkProjectTrackedPointsOnStereoVideo
     )
   endif()  
 
