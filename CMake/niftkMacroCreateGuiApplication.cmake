@@ -55,12 +55,18 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   # NOTE: Check CMake/PackageDepends for any additional dependencies.
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
-    ${curl_LIBRARY_DIR}
     ${Boost_LIBRARY_DIRS}
     ${zlib_LIBRARY_DIR}
     ${aruco_DIR}/lib
   )
-  
+
+  # Temporary workaround for CTK bug of not exposing external project library dirs.
+  # Should be removed as soon as this is fixed in CTK. (espakm)
+  if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
+    include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
+    list(APPEND _library_dirs ${qRestAPI_LIBRARY_DIRS})
+  endif()
+
   #############################################################################
   # Watch out for this:
   # In the top level CMakeLists, MACOSX_BUNDLE_NAMES will contain all the apps

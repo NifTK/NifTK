@@ -23,12 +23,12 @@
 
 #include <vector>
 
-#include <XnatLoginProfile.h>
+#include <ctkXnatLoginProfile.h>
 
 #include "XnatPluginPreferencePage.h"
 
 XnatPluginSettings::XnatPluginSettings(berry::IPreferences::Pointer preferences)
-: XnatSettings()
+: ctkXnatSettings()
 , preferences(preferences)
 {
 }
@@ -77,9 +77,9 @@ void XnatPluginSettings::setDefaultWorkDirectory(const QString& workDirectory)
   preferences->Put(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, workDirectory.toStdString());
 }
 
-QMap<QString, XnatLoginProfile*> XnatPluginSettings::getLoginProfiles() const
+QMap<QString, ctkXnatLoginProfile*> XnatPluginSettings::getLoginProfiles() const
 {
-  QMap<QString, XnatLoginProfile*> profiles;
+  QMap<QString, ctkXnatLoginProfile*> profiles;
 
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
   std::vector<std::string> profileNames = profilesNode->ChildrenNames();
@@ -90,7 +90,7 @@ QMap<QString, XnatLoginProfile*> XnatPluginSettings::getLoginProfiles() const
     std::string profileName = *itProfileNames;
     QString qProfileName = QString::fromStdString(profileName);
     berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
-    XnatLoginProfile* profile = new XnatLoginProfile();
+    ctkXnatLoginProfile* profile = new ctkXnatLoginProfile();
     profile->setName(QString::fromStdString(profileName));
     profile->setServerUri(QString::fromStdString(profileNode->Get("serverUri", "")));
     profile->setUserName(QString::fromStdString(profileNode->Get("userName", "")));
@@ -103,15 +103,15 @@ QMap<QString, XnatLoginProfile*> XnatPluginSettings::getLoginProfiles() const
   return profiles;
 }
 
-void XnatPluginSettings::setLoginProfiles(QMap<QString, XnatLoginProfile*> loginProfiles)
+void XnatPluginSettings::setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> loginProfiles)
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  QMap<QString, XnatLoginProfile*>::iterator itProfiles = loginProfiles.begin();
-  QMap<QString, XnatLoginProfile*>::iterator endProfiles = loginProfiles.end();
+  QMap<QString, ctkXnatLoginProfile*>::iterator itProfiles = loginProfiles.begin();
+  QMap<QString, ctkXnatLoginProfile*>::iterator endProfiles = loginProfiles.end();
   while (itProfiles != endProfiles)
   {
     QString profileName = itProfiles.key();
-    XnatLoginProfile* profile = itProfiles.value();
+    ctkXnatLoginProfile* profile = itProfiles.value();
     berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
     profileNode->Put("serverUri", profile->serverUri().toStdString());
     profileNode->Put("userName", profile->userName().toStdString());
@@ -122,11 +122,11 @@ void XnatPluginSettings::setLoginProfiles(QMap<QString, XnatLoginProfile*> login
   }
 }
 
-XnatLoginProfile* XnatPluginSettings::getLoginProfile(QString profileName) const
+ctkXnatLoginProfile* XnatPluginSettings::getLoginProfile(QString profileName) const
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
   berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
-  XnatLoginProfile* profile = new XnatLoginProfile();
+  ctkXnatLoginProfile* profile = new ctkXnatLoginProfile();
   profile->setName(profileName);
   profile->setServerUri(QString::fromStdString(profileNode->Get("serverUri", "")));
   profile->setUserName(QString::fromStdString(profileNode->Get("userName", "")));
@@ -136,7 +136,7 @@ XnatLoginProfile* XnatPluginSettings::getLoginProfile(QString profileName) const
   return profile;
 }
 
-void XnatPluginSettings::setLoginProfile(QString profileName, XnatLoginProfile* profile)
+void XnatPluginSettings::setLoginProfile(QString profileName, ctkXnatLoginProfile* profile)
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
   berry::IPreferences::Pointer profileNode = profilesNode->Node(profile->name().toStdString());
@@ -155,14 +155,14 @@ void XnatPluginSettings::removeLoginProfile(QString profileName)
   profileNode->RemoveNode();
 }
 
-XnatLoginProfile* XnatPluginSettings::getDefaultLoginProfile() const
+ctkXnatLoginProfile* XnatPluginSettings::getDefaultLoginProfile() const
 {
-  QMap<QString, XnatLoginProfile*> profiles = getLoginProfiles();
-  QMap<QString, XnatLoginProfile*>::const_iterator itProfiles = profiles.begin();
-  QMap<QString, XnatLoginProfile*>::const_iterator endProfiles = profiles.end();
+  QMap<QString, ctkXnatLoginProfile*> profiles = getLoginProfiles();
+  QMap<QString, ctkXnatLoginProfile*>::const_iterator itProfiles = profiles.begin();
+  QMap<QString, ctkXnatLoginProfile*>::const_iterator endProfiles = profiles.end();
   while (itProfiles != endProfiles)
   {
-    XnatLoginProfile* profile = itProfiles.value();
+    ctkXnatLoginProfile* profile = itProfiles.value();
     if (profile->isDefault())
     {
       return profile;

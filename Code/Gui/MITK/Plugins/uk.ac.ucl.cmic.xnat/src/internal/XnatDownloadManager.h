@@ -15,29 +15,25 @@
 #ifndef XnatDownloadManager_h
 #define XnatDownloadManager_h
 
-#include "XnatRestWidgetsExports.h"
-
 #include <QObject>
+#include <QScopedPointer>
 
-extern "C"
-{
-#include <XnatRest.h>
-}
-
+class ctkXnatSettings;
 class QString;
 class QWidget;
 class XnatDownloadDialog;
-class XnatSettings;
+class XnatDownloadManagerPrivate;
 class XnatTreeView;
 
-class XnatRestWidgets_EXPORT XnatDownloadManager : public QObject
+class XnatDownloadManager : public QObject
 {
   Q_OBJECT
 
 public:
   XnatDownloadManager(XnatTreeView* xnatTreeView);
+  virtual ~XnatDownloadManager();
 
-  void setSettings(XnatSettings* settings);
+  void setSettings(ctkXnatSettings* settings);
 
   void silentlyDownloadFile(const QString& fname, const QString& dir);
   void silentlyDownloadAllFiles(const QString& dir);
@@ -54,24 +50,17 @@ private slots:
   void startDownload();
   void startGroupDownload();
   void downloadData();
+  void downloadDataAndUnzip();
   void unzipData();
   void finishDownload();
-  void downloadDataBlocking();
+  void downloadDataBlocking(bool unzip = false);
+
+protected:
+  QScopedPointer<XnatDownloadManagerPrivate> d_ptr;
 
 private:
-  XnatTreeView* xnatTreeView;
-  XnatDownloadDialog* downloadDialog;
-
-  XnatSettings* settings;
-
-  QString currDir;
-  QString zipFilename;
-  XnatRestAsynStatus finished;
-  unsigned long totalBytes;
-
-  QString xnatFilename;
-  QString outFilename;
-  QString tempFilePath;
+  Q_DECLARE_PRIVATE(XnatDownloadManager);
+  Q_DISABLE_COPY(XnatDownloadManager);
 };
 
 #endif
