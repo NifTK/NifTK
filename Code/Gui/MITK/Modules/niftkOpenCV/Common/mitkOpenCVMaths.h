@@ -103,6 +103,24 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix);
  * \brief multiplys a set of points by a 4x4 transformation matrix
  */
 std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p);
+
+/**
+ * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
+ */
+cv::Point2f FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
+
+/**
+ * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
+ */
+std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i>, 
+    bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
+/**
+ * \brief Calculates the centroid of a vector of points.
+ */
+cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers);
+
+
+
 } // end namespace
 
 #endif

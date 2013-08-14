@@ -340,6 +340,146 @@ std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
+cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
+    bool RejectIfNotPerpendicular)
+{
+  double a1;
+  double a2;
+  double b1;
+  double b2;
+  cv::Point2f returnPoint;
+  returnPoint.x = -100.0;
+  returnPoint.y = -100.0;
+
+  if ( fabs ( line1[2] - line1[0] ) < 1e-6 || fabs (line2[2] - line2[0] ) < 1e-6 ) 
+  {
+    MITK_ERROR << "Intersect for vertical lines not implemented";
+    return returnPoint;
+  }
+  else
+  {
+    a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) / 
+      ( static_cast<double>(line1[2]) - static_cast<double>(line1[0]) );
+    a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) / 
+      ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
+    b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
+    b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
+  }
+  returnPoint.x = ( b2 - b1 )/(a1 - a2 );
+  returnPoint.y = a1 * returnPoint.x + b1;
+
+  bool ok = true;
+  if ( RejectIfNotOnALine )
+  {
+    if ( ((returnPoint.x >= line1[2]) && (returnPoint.x <= line1[0])) || 
+         ((returnPoint.x >= line1[0]) && (returnPoint.x <= line1[2])) ||
+         ((returnPoint.x >= line2[2]) && (returnPoint.x <= line2[0])) ||
+         ((returnPoint.x >= line2[0]) && (returnPoint.x <= line2[2])) )
+    {
+      ok = true;
+    }
+    else
+    {
+      ok = false;
+    }
+  }
+  if ( RejectIfNotPerpendicular ) 
+  {
+    //if there perpendicular a1 * a2 should be approximately 1
+    double Angle = fabs(a1 * a2);
+    if ( ! ( (Angle < 3.0) && (Angle > 0.1) ) )
+    {
+      ok = false;
+    }
+  }
+  if ( ok == false ) 
+  {
+    return ( cv::Point2f (-100.0, -100.0) );
+  }
+  else 
+  {
+    return returnPoint;
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+{
+  std::vector<cv::Point2f> returnPoints; 
+  for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
+  {
+    for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
+    {
+      cv::Point2f point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
+      if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
+      {
+        returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
+      }
+    }
+  }
+  return returnPoints;
+}
+//-----------------------------------------------------------------------------
+cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers)
+{
+  cv::Point2f centroid;
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+
+  unsigned int  numberOfPoints = points.size();
+
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    centroid.x += points[i].x;
+    centroid.y += points[i].y;
+  }
+
+  centroid.x /= (double) numberOfPoints;
+  centroid.y /= (double) numberOfPoints;
+  if ( ! RefineForOutliers )
+  {
+    return centroid;
+  }
+  
+  cv::Point2f standardDeviation;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+    standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
+
+  cv::Point2f highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
+  cv::Point2f lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
+
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  unsigned int goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    {
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+
+  return centroid;
+}
+
+
+
+//-----------------------------------------------------------------------------
 } // end namespace
 
 
