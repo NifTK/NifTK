@@ -170,19 +170,14 @@ void FindAndTriangulateCrossHair::Triangulate()
 
   cv::Mat leftFrame;
   cv::Mat rightFrame;
-  cv::Mat leftBlurred;
-  cv::Mat rightBlurred;
   cv::Mat leftCanny;
   cv::Mat rightCanny;
   cv::Mat leftHough;
   cv::Mat rightHough;
+  m_ScreenPoints.clear();
   while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
   {
-   /* cv::blur;
-    cv::Canny;
-    cv::HoughLinesP;*/
 
-   // cv::blur ( rightprocessedMat, rightprocessed_tempMat, cv::Size(blurkernel,blurkernel));
     cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
     leftFrame = videoImage.clone();
     videoImage = cvQueryFrame ( m_Capture ) ;
@@ -200,6 +195,8 @@ void FindAndTriangulateCrossHair::Triangulate()
     cv::HoughLinesP (leftCanny, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
     cv::HoughLinesP (rightCanny, linesright,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
     std::pair <cv::Point2f, cv::Point2f> screenPoints;
+    screenPoints.first = cv::Point2f(-100.0, -100.0);
+    screenPoints.second = cv::Point2f(-100.0, -100.0);
     for ( int i = 0 ; i < linesleft.size() ; i ++ )
     {
       cv::line(leftFrame,cvPoint(linesleft[i][0],linesleft[i][1]),
@@ -212,8 +209,11 @@ void FindAndTriangulateCrossHair::Triangulate()
     }
     std::vector <cv::Point2f> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
     std::vector <cv::Point2f> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
-    cv::circle(leftFrame , mitk::GetCentroid(leftIntersectionPoints,true),10, cvScalar(0,0,255),2,8,0);
-    cv::circle(rightFrame , mitk::GetCentroid(rightIntersectionPoints,true),10, cvScalar(0,255,0),2,8,0);
+    screenPoints.first = mitk::GetCentroid(leftIntersectionPoints,true);
+    screenPoints.second = mitk::GetCentroid(rightIntersectionPoints,true);
+    cv::circle(leftFrame , screenPoints.first,10, cvScalar(0,0,255),2,8,0);
+    cv::circle(rightFrame , screenPoints.second,10, cvScalar(0,255,0),2,8,0);
+    m_ScreenPoints.push_back(screenPoints);
     if ( m_Visualise ) 
     {
       IplImage *smallleft = cvCreateImage (cvSize(960, 270), 8,3);
@@ -231,10 +231,20 @@ void FindAndTriangulateCrossHair::Triangulate()
         m_Visualise = false;
       }
     }
+
     framenumber ++;
     framenumber ++;
   }
-  m_TriangulateOK = true;
+  if ( m_ScreenPoints.size() !=  m_TrackerMatcher->GetNumberOfFrames()/2 )
+  {
+    MITK_ERROR << "Got the wrong number of screen point pairs " << m_ScreenPoints.size() 
+      << " != " << m_TrackerMatcher->GetNumberOfFrames()/2;
+    m_TriangulateOK = false;
+  }
+  else
+  {
+    m_TriangulateOK = true;
+  }
 }
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TriangulatePoints()
