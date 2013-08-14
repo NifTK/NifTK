@@ -120,6 +120,7 @@ private:
   int                           m_HoughLineLength; //for the hough filter
   int                           m_HoughLineGap; //for the hough filter
   void TriangulatePoints();
+  void TransformPointsToWorld();
 
 }; // end class
 

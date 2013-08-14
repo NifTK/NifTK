@@ -197,12 +197,12 @@ void FindAndTriangulateCrossHair::Triangulate()
     std::pair <cv::Point2f, cv::Point2f> screenPoints;
     screenPoints.first = cv::Point2f(-100.0, -100.0);
     screenPoints.second = cv::Point2f(-100.0, -100.0);
-    for ( int i = 0 ; i < linesleft.size() ; i ++ )
+    for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ )
     {
       cv::line(leftFrame,cvPoint(linesleft[i][0],linesleft[i][1]),
           cvPoint(linesleft[i][2],linesleft[i][3]),cvScalar(255,0,0));
     }
-    for ( int i = 0 ; i < linesright.size() ; i ++ )
+    for ( unsigned int i = 0 ; i < linesright.size() ; i ++ )
     {
       cv::line(rightFrame,cvPoint(linesright[i][0],linesright[i][1]),
           cvPoint(linesright[i][2],linesright[i][3]),cvScalar(255,0,0));
@@ -235,7 +235,7 @@ void FindAndTriangulateCrossHair::Triangulate()
     framenumber ++;
     framenumber ++;
   }
-  if ( m_ScreenPoints.size() !=  m_TrackerMatcher->GetNumberOfFrames()/2 )
+  if ( m_ScreenPoints.size() !=  (unsigned int)m_TrackerMatcher->GetNumberOfFrames()/2 )
   {
     MITK_ERROR << "Got the wrong number of screen point pairs " << m_ScreenPoints.size() 
       << " != " << m_TrackerMatcher->GetNumberOfFrames()/2;
@@ -249,6 +249,11 @@ void FindAndTriangulateCrossHair::Triangulate()
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TriangulatePoints()
 {
+  if ( ! m_TriangulateOK ) 
+  {
+    MITK_WARN << "Need to call triangulate before triangulate points";
+    return;
+  }
   cv::Mat * twoDPointsLeft = new cv::Mat(m_ScreenPoints.size(),2,CV_32FC1);
   cv::Mat * twoDPointsRight = new cv::Mat(m_ScreenPoints.size(),2,CV_32FC1);
 
@@ -309,10 +314,23 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,1),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
   }
-  
-  
-  //m_WorldPoints = m_TrackerMatcher->GetCameraMatrix(framenumber, NULL , m_TrackerIndex) * points;
 
+}
+
+//-----------------------------------------------------------------------------
+void FindAndTriangulateCrossHair::TransformPointsToWorld()
+{
+  if ( ! m_PointsInLeftLensCS.size() == 0  ) 
+  {
+    MITK_WARN << "Need to triangulate points before transforming to world";
+    return;
+  }
+
+  for ( unsigned int i = 0 ; i < m_PointsInLeftLensCS.size() ; i ++ )
+  {
+    int framenumber = i * 2;
+    m_WorldPoints.push_back( m_TrackerMatcher->GetCameraTrackingMatrix(framenumber, NULL , m_TrackerIndex) * m_PointsInLeftLensCS[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
