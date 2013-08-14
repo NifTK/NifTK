@@ -340,6 +340,24 @@ std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
+cv::Point3f operator*(cv::Mat M, const cv::Point3f& p)
+{
+  cv::Mat src ( 4, 1, CV_32F );
+  src.at<float>(0,0) = p.x;
+  src.at<float>(1,0) = p.y;
+  src.at<float>(2,0) = p.z;
+  src.at<float>(3,0) = 1.0;
+    
+  cv::Mat dst = M*src;
+  cv::Point3f returnPoint;
+  
+  returnPoint.x = dst.at<float>(0,0);
+  returnPoint.y = dst.at<float>(1,0);
+  returnPoint.z = dst.at<float>(2,0);
+
+  return returnPoint;
+}
+//-----------------------------------------------------------------------------
 cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
 {
