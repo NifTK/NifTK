@@ -61,6 +61,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3f> );
+  itkGetMacro ( WorldPoints, std::vector<cv::Point3f> );
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( TriangulateOK, bool);
 
@@ -92,8 +93,6 @@ private:
  
   bool                          m_InitOK;
   bool                          m_TriangulateOK;
-  bool                          m_CalibrateOK;
-  bool                          m_TrackingOK;
 
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;

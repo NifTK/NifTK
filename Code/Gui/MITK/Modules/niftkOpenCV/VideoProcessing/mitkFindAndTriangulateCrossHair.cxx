@@ -33,8 +33,6 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_TrackerMatcher(NULL)
 , m_InitOK(false)
 , m_TriangulateOK(false)
-, m_CalibrateOK(false)
-, m_TrackingOK(false)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
 , m_LeftDistortionVector (new cv::Mat(5,1,CV_32FC1))
 , m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
@@ -69,7 +67,6 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
 
   try
   {
-    m_CalibrateOK = true;
     mitk::LoadStereoCameraParametersFromDirectory
       ( calibrationParameterDirectory,
       m_LeftIntrinsicMatrix,m_LeftDistortionVector,m_RightIntrinsicMatrix,
@@ -79,7 +76,8 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
   catch ( int e )
   {
     MITK_WARN << "Failed to load camera parameters";
-    m_CalibrateOK = false;
+    m_InitOK = false;
+    return;
   }
   if ( m_TrackerMatcher.IsNull() ) 
   {
@@ -92,12 +90,11 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
   if ( ! m_TrackerMatcher->IsReady() )
   {
     MITK_WARN << "Failed to initialise tracker matcher";
-    m_TrackingOK = false;
+    m_InitOK = false;
+    return;
   }
-  else 
-  {
-    m_TrackingOK = true;
-  }
+  
+  m_TrackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker);
 
   if ( m_Capture == NULL ) 
   {
@@ -245,6 +242,9 @@ void FindAndTriangulateCrossHair::Triangulate()
   {
     m_TriangulateOK = true;
   }
+
+  TriangulatePoints();
+  TransformPointsToWorld();
 }
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TriangulatePoints()
@@ -320,7 +320,7 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
 //-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::TransformPointsToWorld()
 {
-  if ( ! m_PointsInLeftLensCS.size() == 0  ) 
+  if ( m_PointsInLeftLensCS.size() == 0  ) 
   {
     MITK_WARN << "Need to triangulate points before transforming to world";
     return;
