@@ -5,7 +5,6 @@ This is the @NIFTK_PLATFORM@ Translational Software Platform version @NIFTK_VERS
 
 For all questions and queries, please join:
   the users mailing list: @NIFTK_USER_CONTACT@
-  or the developers mailing list: @NIFTK_DEVELOPER_CONTACT@
 
 A complete set of build and installation instructions is available, and updated 
 on the @NIFTK_ORIGIN_SHORT_TEXT@ @NIFTK_WIKI_TEXT@:
