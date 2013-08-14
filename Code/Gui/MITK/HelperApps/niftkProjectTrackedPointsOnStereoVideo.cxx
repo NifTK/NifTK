@@ -89,8 +89,56 @@ int main(int argc, char** argv)
       fin.close();
     }
 
+    projector->Project();
+   
+    if ( output2D.length() != 0 ) 
+    {
+      std::ofstream fout (output2D.c_str());
+      std::vector < std::vector < std::pair < cv::Point2f , cv::Point2f > > > projectedPoints = 
+        projector->GetProjectedPoints();
+      fout << "#Frame Number " ;
+      for ( unsigned int i = 0 ; i < projectedPoints[0].size() ; i ++ ) 
+      {
+        fout << "P" << i << "[lx,ly,rx,ry]" << " ";
+      }
+      fout << std::endl;
+      for ( unsigned int i  = 0 ; i < projectedPoints.size() ; i ++ )
+      {
+        fout << i << " ";
+        for ( unsigned int j = 0 ; j < projectedPoints[i].size() ; j ++ )
+        {
+          fout << projectedPoints[i][j].first.x << " " <<  projectedPoints[i][j].first.y <<
+             " " << projectedPoints[i][j].second.x << " " << projectedPoints[i][j].second.y << " ";
+        }
+        fout << std::endl;
+      }
+      fout.close();
+    }
+    if ( output3D.length() !=0 )
+    {
+      std::ofstream fout (output3D.c_str());
+      std::vector < std::vector < cv::Point3f > > leftLensPoints = 
+        projector->GetPointsInLeftLensCS();
+      fout << "#Frame Number " ;
+      for ( unsigned int i = 0 ; i < leftLensPoints[0].size() ; i ++ ) 
+      {
+        fout << "P" << i << "[x,y,z]" << " ";
+      }
+      fout << std::endl;
+      for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
+      {
+        fout << i << " ";
+        for ( unsigned int j = 0 ; j < leftLensPoints[i].size() ; j ++ )
+        {
+          fout << leftLensPoints[i][j].x << " " <<  leftLensPoints[i][j].y <<
+             " " << leftLensPoints[i][j].z << " " ;
+        }
+        fout << std::endl;
+      }
+      fout.close();
+    }
 
-    
+
     returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)

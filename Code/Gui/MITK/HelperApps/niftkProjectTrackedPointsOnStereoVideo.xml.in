@@ -42,6 +42,23 @@
       <label>Input 2D points</label>
       <channel>input</channel>
     </file>
+ 
+    <file>
+      <name>output3D</name>
+      <longflag>output3D</longflag>
+      <description>Output 3D points</description>
+      <label>Output 3D points</label>
+      <channel>ouput</channel>
+    </file>
+    
+    <file>
+      <name>output2D</name>
+      <longflag>output2D</longflag>
+      <description>Output 2D points</description>
+      <label>output 2D points</label>
+      <channel>output</channel>
+    </file>
+
 
   </parameters>
   
