@@ -26,7 +26,7 @@ namespace mitk {
 
 /**
  * \class TrackedImageCommand
- * \brief Command used to update the alignment of a tracked image and probe.
+ * \brief Command used to update the position of a tracked image.
  */
 class NIFTKIGI_EXPORT TrackedImageCommand : public itk::Object
 {
@@ -44,9 +44,10 @@ public:
    * \brief Write My Documentation
    */
   void Update(const mitk::DataNode::Pointer imageNode,
-           const mitk::DataNode::Pointer surfaceNode,
            const mitk::DataNode::Pointer probeToWorldNode,
-           const vtkMatrix4x4* imageToProbeTransform);
+           const vtkMatrix4x4* imageToProbeTransform,
+           const mitk::Point2D& imageScaling
+           );
 
 protected:
 

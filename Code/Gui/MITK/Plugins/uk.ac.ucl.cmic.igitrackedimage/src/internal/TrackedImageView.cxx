@@ -42,6 +42,8 @@ TrackedImageView::TrackedImageView()
 , m_RenderingManager(NULL)
 {
   m_RenderingManager = mitk::RenderingManager::New();
+  m_ImageScaling[0] = 1;
+  m_ImageScaling[1] = 1;
 }
 
 
@@ -89,15 +91,10 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageNode->SetPredicate(isImage);
 
-    mitk::TNodePredicateDataType<mitk::Surface>::Pointer isSurface = mitk::TNodePredicateDataType<mitk::Surface>::New();
-    m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
-    m_Controls->m_ProbeSurfaceNode->SetAutoSelectNewItems(false);
-    m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurface);
-
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
-    m_Controls->m_ProbeToWorldNode->SetDataStorage(dataStorage);
-    m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
-    m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
+    m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
+    m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
+    m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
 
     // Set up the Render Window.
     // This currently has to be a 2D view, to generate the 2D plane geometry to render
@@ -136,6 +133,8 @@ void TrackedImageView::RetrievePreferenceValues()
   {
     m_ImageToProbeFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToProbeFileName);
+    m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
+    m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
   }
 }
 
@@ -188,20 +187,24 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
   Q_UNUSED(event);
 
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
-  mitk::DataNode::Pointer surfaceNode = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
-  mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
+  mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
 
-  if (m_ImageToProbeTransform != NULL
+  if (   imageNode.IsNotNull()
+      && m_ImageToProbeTransform != NULL
       && probeToWorldTransform.IsNotNull()
      )
   {
     mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
     command->Update(imageNode,
-                    surfaceNode,
                     probeToWorldTransform,
-                    m_ImageToProbeTransform
+                    m_ImageToProbeTransform,
+                    m_ImageScaling
                     );
 
-    m_Controls->m_RenderWindow->GetRenderer()->GetDisplayGeometry()->Fit();
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
+    if (image.IsNotNull())
+    {
+      m_RenderingManager->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+    }
   }
 }

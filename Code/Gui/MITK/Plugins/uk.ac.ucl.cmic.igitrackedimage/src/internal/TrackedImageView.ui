@@ -35,7 +35,7 @@
         <widget class="QmitkDataStorageComboBox" name="m_ImageNode"/>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="m_ProbeLabel">
+        <widget class="QLabel" name="m_ImageToWorldLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -43,28 +43,12 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>probe</string>
+          <string>image to world</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_ProbeToWorldLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>probe to world</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode"/>
+        <widget class="QmitkDataStorageComboBox" name="m_ImageToWorldNode"/>
        </item>
       </layout>
      </item>

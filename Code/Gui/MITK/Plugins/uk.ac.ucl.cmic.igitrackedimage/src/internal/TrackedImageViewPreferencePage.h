@@ -21,6 +21,7 @@
 
 class QWidget;
 class QPushButton;
+class QDoubleSpinBox;
 class ctkPathLineEdit;
 
 /**
@@ -45,6 +46,16 @@ public:
    * \brief Stores the name of the preference node that contains the name of the calibration file.
    */
   static const std::string CALIBRATION_FILE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the image scaling in the x direction.
+   */
+  static const std::string X_SCALING;
+
+  /**
+   * \brief Stores the name of the preference node that contains the image scaling in the y direction.
+   */
+  static const std::string Y_SCALING;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
@@ -78,6 +89,8 @@ private:
   QWidget         *m_MainControl;
   ctkPathLineEdit *m_CalibrationFileName;
   bool             m_Initializing;
+  QDoubleSpinBox  *m_XScaling;
+  QDoubleSpinBox  *m_YScaling;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };
