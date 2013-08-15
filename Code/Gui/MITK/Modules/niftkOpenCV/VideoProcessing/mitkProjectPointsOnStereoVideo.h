@@ -96,6 +96,11 @@ public:
    * \brief Set the matrix flip state for the VideoTracker matcher
    */
   void SetFlipMatrices (bool);
+  /** 
+   * \brief set the video lag parameters for the tracker matcher
+   */
+  void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
+
 
 protected:
 

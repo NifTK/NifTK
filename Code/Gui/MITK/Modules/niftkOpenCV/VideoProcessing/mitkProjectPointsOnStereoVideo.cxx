@@ -493,4 +493,14 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
     m_ScreenAxesPoints.push_back(pointPair);
   }
 }
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking)
+{
+  if ( m_TrackerMatcher.IsNull() )
+  {
+    m_TrackerMatcher = mitk::VideoTrackerMatching::New();
+  }
+  m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
+}
+
 } // end namespace
