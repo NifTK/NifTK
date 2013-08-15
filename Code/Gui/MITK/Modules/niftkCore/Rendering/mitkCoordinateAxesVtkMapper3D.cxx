@@ -60,6 +60,10 @@ void CoordinateAxesVtkMapper3D::SetDefaultProperties(mitk::DataNode* node, mitk:
   // which means that with visibility on, the OverlayEditor goes nuts.
   node->AddProperty( "visible", mitk::BoolProperty::New(false), renderer, overwrite );
 
+  // However: This seems to help. I haven't had time to test taking the above bit out!
+  node->AddProperty( "includeInBoundingBox", mitk::BoolProperty::New(false), renderer, overwrite );
+
+  // Hereon ... business as usual.
   node->AddProperty( "show text", mitk::BoolProperty::New(false), renderer, overwrite );
   node->AddProperty( "size", mitk::IntProperty::New(10), renderer, overwrite );
   Superclass::SetDefaultProperties(node, renderer, overwrite);
