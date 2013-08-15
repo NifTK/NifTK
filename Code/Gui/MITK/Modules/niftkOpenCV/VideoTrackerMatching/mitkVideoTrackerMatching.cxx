@@ -556,6 +556,16 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   {
     fout << std::endl;
   }
+  
+  std::vector <cv::Point3d> optimalVideoLag;
+  std::vector <cv::Point3f> minimumSD;
+  float maximumSD = 0;
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size(); trackerIndex ++ ) 
+  { 
+    optimalVideoLag.push_back(cv::Point3d(0,0,0));
+    minimumSD.push_back(cv::Point3f(0,0,0));
+  }
+
 
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
@@ -585,18 +595,67 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       cv::Point3f* worldStdDev = new cv::Point3f;
       mitk::GetCentroid (worldPoints, true, worldStdDev);
       standardDeviations[trackerIndex].push_back(*worldStdDev);
+      if ( videoLag == windowLow )
+      {
+        optimalVideoLag[trackerIndex] = cv::Point3d(videoLag, videoLag,videoLag);
+        minimumSD[trackerIndex] = *worldStdDev;
+      }
+      else
+      {
+        if ( worldStdDev->x < minimumSD[trackerIndex].x )
+        {
+          minimumSD[trackerIndex].x = worldStdDev->x;
+          optimalVideoLag[trackerIndex].x = videoLag;
+        }
+        if ( worldStdDev->y < minimumSD[trackerIndex].y )
+        {
+          minimumSD[trackerIndex].y = worldStdDev->y;
+          optimalVideoLag[trackerIndex].y = videoLag;
+        }
+        if ( worldStdDev->z < minimumSD[trackerIndex].z )
+        {
+          minimumSD[trackerIndex].z = worldStdDev->z;
+          optimalVideoLag[trackerIndex].z = videoLag;
+        }
+        if ( worldStdDev->x > maximumSD ) 
+        {
+          maximumSD = worldStdDev->x;
+        }
+        if ( worldStdDev->y > maximumSD ) 
+        {
+          maximumSD = worldStdDev->y;
+        }
+        if ( worldStdDev->z > maximumSD ) 
+        {
+          maximumSD = worldStdDev->z;
+        }
+      }
+
       if ( fout ) 
       {
         fout << *worldStdDev << " ";
       }
-
     }
     if ( fout ) 
     {
       fout << std::endl;
     }
-
   }
+
+  MITK_INFO << "min sd at " ;
+  for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
+  {
+    MITK_INFO << optimalVideoLag[i];
+  }
+  if ( fout ) 
+  {
+    fout << "min sd at " ;
+    for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
+    { 
+      fout << optimalVideoLag[i];
+    } 
+  }
+
 }
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
