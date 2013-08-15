@@ -27,10 +27,10 @@
 #include <mitkOpenCVMaths.h>
 
 /**
- * \class UltrasoundPinCalibrationTest
- * \brief Test class for ultrasound pin calibration.
+ * \class UltrasoundPinCalibrationRegressionTest
+ * \brief Regression test class for ultrasound pin calibration.
  */
-class UltrasoundPinCalibrationTest
+class UltrasoundPinCalibrationRegressionTest
 {
 
 public:
@@ -103,17 +103,17 @@ public:
 /**
  * \file Test harness for Ultrasound Pin Calibration
  */
-int mitkUltrasoundPinCalibrationTest(int argc, char * argv[])
+int mitkUltrasoundPinCalibrationRegressionTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("mitkUltrasoundPinCalibrationTest");
+  MITK_TEST_BEGIN("mitkUltrasoundPinCalibrationRegressionTest");
 
   std::string directoryOfMatrices(argv[1]);
   std::string directoryOfPoints(argv[2]);
   std::string outputFileName(argv[3]);
   std::string comparisonFileName(argv[4]);
 
-  UltrasoundPinCalibrationTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName);
+  UltrasoundPinCalibrationRegressionTest::DoCalibration(directoryOfMatrices, directoryOfPoints, outputFileName, comparisonFileName);
 
   MITK_TEST_END();
 }

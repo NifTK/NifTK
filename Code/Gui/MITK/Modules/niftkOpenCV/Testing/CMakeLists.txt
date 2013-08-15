@@ -44,4 +44,4 @@ else(OPENCV_WITH_FFMPEG)
 	mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory -NoVideoSupport)
 endif(OPENCV_WITH_FFMPEG)
 
-mitkAddCustomModuleTest(SLS-USPinCalib mitkUltrasoundPinCalibrationTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/matrices ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/points ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4 )
+mitkAddCustomModuleTest(SLS-USPinCalib mitkUltrasoundPinCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/matrices ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/points ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4 )
