@@ -105,12 +105,13 @@ private:
   std::string                           m_Directory;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
+  std::string                           m_FrameMap;
 
   std::vector<std::string> FindFrameMaps();
   void                     FindTrackingMatrixDirectories();
   TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
   bool                     CheckIfDirectoryContainsTrackingMatrices(std::string directory);
-  void                     ProcessFrameMapFile(std::string filename);
+  void                     ProcessFrameMapFile();
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
   cv::Mat                  m_CameraToTracker;

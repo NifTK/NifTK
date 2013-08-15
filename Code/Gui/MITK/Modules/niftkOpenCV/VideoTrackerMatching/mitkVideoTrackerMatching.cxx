@@ -67,8 +67,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
       }
     }
   }
-
-  ProcessFrameMapFile(FrameMaps[0]);
+  m_FrameMap = FrameMaps[0];
+  ProcessFrameMapFile();
   if ( CheckTimingErrorStats() )
   { 
     MITK_INFO << "VideoTrackerMatching initialised OK";
@@ -172,12 +172,12 @@ bool VideoTrackerMatching::CheckIfDirectoryContainsTrackingMatrices(std::string 
 
 
 //---------------------------------------------------------------------------
-void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
+void VideoTrackerMatching::ProcessFrameMapFile ()
 {
-  std::ifstream fin(filename.c_str());
+  std::ifstream fin(m_FrameMap.c_str());
   if ( !fin )
   {
-    MITK_WARN << "Failed to open frame map file " << filename;
+    MITK_WARN << "Failed to open frame map file " << m_FrameMap;
     return;
   }
 
@@ -187,6 +187,13 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
   unsigned int channel;
   unsigned long long TimeStamp;
   unsigned int linenumber = 0;
+
+  m_FrameNumbers.clear();
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
+  {
+    m_TrackingMatrices[i].m_TimingErrors.clear();
+    m_TrackingMatrices[i].m_TrackingMatrices.clear();
+  }
   while ( getline(fin,line) )
   {
     if ( line[0] != '#' )
@@ -231,7 +238,7 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
       }
     }
   }
-  MITK_INFO << "Read " << linenumber << " lines from " << filename;
+  MITK_INFO << "Read " << linenumber << " lines from " << m_FrameMap;
     
 }
 
@@ -278,9 +285,20 @@ void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag
   m_VideoLeadsTracking = VideoLeadsTracking;
   if ( m_Ready ) 
   {
-    MITK_INFO << "Set video lag after initialisation , need to re initialise video matcher";
-    m_Ready = false;
+    MITK_INFO << "Set video lag after initialisation reprocessing frame map files";
+    ProcessFrameMapFile();
+    if ( CheckTimingErrorStats() )
+    { 
+      MITK_INFO << "VideoTrackerMatching initialised OK";
+      m_Ready=true;
+    }
+    else
+    {
+      MITK_WARN << "VideoTrackerMatching initialise FAILED";
+      m_Ready=false;
+    }
   }
+  return;
 }
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
