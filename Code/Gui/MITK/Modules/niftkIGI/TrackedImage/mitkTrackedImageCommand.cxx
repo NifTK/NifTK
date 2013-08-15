@@ -43,9 +43,9 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
                                  const mitk::Point2D& imageScaling
                                  )
 {
-  if (imageToProbeTransform == NULL)
+  if (imageNode.IsNull())
   {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid imageToProbeTransform";
+    MITK_ERROR << "TrackedImageCommand::Update, invalid imageNode";
     return;
   }
 
@@ -53,6 +53,12 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
   if (probeToWorld.IsNull())
   {
     MITK_ERROR << "TrackedImageCommand::Update, invalid probeToWorldNode";
+    return;
+  }
+
+  if (imageToProbeTransform == NULL)
+  {
+    MITK_ERROR << "TrackedImageCommand::Update, invalid imageToProbeTransform";
     return;
   }
 
@@ -70,7 +76,13 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     mitk::Geometry3D::Pointer geometry = image->GetGeometry();
     if (geometry.IsNotNull())
     {
+      mitk::Vector3D spacing = geometry->GetSpacing();
+      spacing[0] = imageScaling[0];
+      spacing[1] = imageScaling[1];
+
       geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
+      geometry->SetSpacing(spacing);
+
       geometry->Modified();
       imageNode->Modified();
     }
