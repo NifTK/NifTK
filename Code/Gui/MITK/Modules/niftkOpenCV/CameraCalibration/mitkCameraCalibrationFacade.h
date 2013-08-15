@@ -84,15 +84,12 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
 
 /**
  * \brief Extracts the chess board points, using OpenCV routines.
- * \param images is a single image.
+ * \param image is a single image.
  * \param numberCornersWidth the number of internal corners along the width axis (X).
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
  * \param outputImagePoints output image points, array size = (1 * numberOfCorners (N)) x 2, and caller must de-allocate.
  * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
- * \param outputPointCounts output point counts, array size = 1 x 1, and caller must de-allocate. In this case, a "successful" result is
- * one in which the extraction process retrieved all N points for that chessboard. So, by definition, this array, is 1 x 1, with each entry containing
- * the number N.
  */
 extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const cv::Mat  image,
@@ -479,9 +476,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs
 
 
 /**
- * \brief Triangulates an undistorted (i.e. already correction for distortion) 2D point pair back into 3D.
- *
- * Taken from: http://geomalgorithms.com/a07-_distance.html
+ * \brief Triangulates a single point from two 2D points by calling TriangulatePointPairs().
  *
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
@@ -651,7 +646,7 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (co
  * cv::Mat
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
-  cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion);
+  cv::Mat* cameraIntrinsic, cv::Mat* cameraDistortion);
 
 
 /**
@@ -674,31 +669,31 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadHandeyeFromPlainText ( const std::strin
  * \brief Flips the matrices in the vector from left handed coordinate 
  * system to right handed and vice versa
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> matrices);
 
 
 /**
  * \brief find the average of a vector of 4x4 matrices
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat AverageMatrices(std::vector<cv::Mat> matrices);
 
 
  /**
  * \brief Sorts the matrices based on the translations , and returns the order
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByDistance (const std::vector<cv::Mat> matrices);
  
 
 /**
   * \brief Sorts the matrices based on the rotations, and returns the order
   */
-extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> Matrices);
+extern "C++" NIFTKOPENCV_EXPORT std::vector<int> SortMatricesByAngle (const std::vector<cv::Mat> matrices);
 
 
  /**
   * \brief loads a result file into a residual vector and matrix
   */
-extern "C++" NIFTKOPENCV_EXPORT void LoadResult(const std::string& Filename, cv::Mat& Result,
+extern "C++" NIFTKOPENCV_EXPORT void LoadResult(const std::string& Filename, cv::Mat& result,
   std::vector<double>& residuals);
 
 
@@ -706,8 +701,8 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadResult(const std::string& Filename, cv:
   * \brief Transforms a point relative to the left camera lens to 
   * world coordinates using the handeye and tracking matrices
   */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
-  cv::Mat& Handeye, cv::Mat& Tracker );
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f pointInLensCS,
+  cv::Mat& handeye, cv::Mat& tracker );
 
 
 /** 
@@ -715,8 +710,8 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f PointI
   * relative to the left lens using
   * world coordinates using the handeye and tracking matrices
   */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
-  cv::Mat& Handeye, cv::Mat& Tracker );
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f pointInWorldCS,
+  cv::Mat& handeye, cv::Mat& tracker );
 
 
 } // end namespace

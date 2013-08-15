@@ -55,6 +55,11 @@ int main(int argc, char** argv)
   // pixelsPerTagSquare = numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2)
 
   int pixelsPerTagSquare = static_cast<int>(numberOfPixelsAlongLength / (numberSquares + numberSquares*0.2 - 0.2));
+
+  // Pixels per tag square must be a multiple of 7, as its a 7x7 grid logically, and we don't want aruco to generate a wonky pattern.
+  int pixelsPerTagSquareModulo7 = pixelsPerTagSquare%7;
+  pixelsPerTagSquare -= pixelsPerTagSquareModulo7;
+
   int actualLengthInPixels = static_cast<int>(pixelsPerTagSquare*numberSquares + (numberSquares-1)*(pixelsPerTagSquare*0.2));
   double actualLengthInMillimetres = actualLengthInPixels / printerDotsPerMillimetre;
 

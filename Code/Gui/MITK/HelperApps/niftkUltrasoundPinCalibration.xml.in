@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calibrate US Probe</title>
+  <description><![CDATA[Calibrates a US probe using a Single Pin method.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>pointDirectory</name>
+      <longflag>pointDirectory</longflag>
+      <description>Directory containing point locations in plain text files.</description>
+      <label>Points Directory</label>
+    </directory>
+    <file fileExtensions="*.txt,*.4x4">
+      <name>outputMatrixFile</name>
+      <longflag>outputMatrixFile</longflag>
+      <description>Output matrix filename.</description>
+      <label>Output Matrix</label>
+      <default>calib.4x4</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    <float-vector>
+      <name>millimetresPerPixel</name>
+      <longflag>millimetresPerPixel</longflag>
+      <description>Initial millimetres per pixel</description>
+      <label>Millimetres/Pixel</label>
+      <default>1,1</default>
+      <channel>input</channel>
+    </float-vector>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <point>
+      <name>invariantPoint</name>
+      <longflag>invariantPoint</longflag>
+      <description>Location of the point in tracker coordinates.</description>
+      <label>Invariant Point</label>
+      <default>0,0,0</default>
+      <channel>input</channel>
+    </point>
+    <float-vector>
+      <name>initialGuess</name>
+      <longflag>initialGuess</longflag>
+      <description>Guess of transformation, [rx,ry,rz,tx,ty,tz] using mm and degrees.</description>
+      <label>Initial Guess</label>
+      <default>0,0,0,0,0,0</default>
+      <channel>input</channel>
+    </float-vector>
+    <boolean>
+      <name>optimiseScaling</name>
+      <longflag>optimiseScaling</longflag>
+      <description>Optimise the scale parameters.</description>
+      <label>Optimise Scaling</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+    <boolean>
+      <name>optimiseInvariantPoint</name>
+      <longflag>optimiseInvariantPoint</longflag>
+      <description>Optimise the position of the invariant point.</description>
+      <label>Optimise Invariant Point</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+  </parameters>
+
+</executable>

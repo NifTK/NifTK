@@ -87,9 +87,9 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
 
 
 //-----------------------------------------------------------------------------
-bool IsCloseToZero(const double& value)
+bool IsCloseToZero(const double& value, const double& tolerance)
 {
-  if (fabs(value) < 0.000001)
+  if (fabs(value) < tolerance)
   {
     return true;
   }
@@ -207,7 +207,7 @@ bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
     tmpPPrime(2,0) = pPrime.z;
     T = tmpPPrime - R*tmpP;
 
-    Setup4x4Matrix(T, R, outputMatrix);
+    ConstructAffineMatrix(T, R, outputMatrix);
     fiducialRegistrationError = CalculateFiducialRegistrationError(fixedPoints, movingPoints, outputMatrix);
 
     success = true;
@@ -274,7 +274,7 @@ double CalculateFiducialRegistrationError(const mitk::PointSet::Pointer& fixedPo
 
 
 //-----------------------------------------------------------------------------
-void Setup4x4Matrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
+void ConstructAffineMatrix(const cv::Matx31d& translation, const cv::Matx33d& rotation, cv::Matx44d& matrix)
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -316,6 +316,161 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
   }
 }
 
+
+//-----------------------------------------------------------------------------
+cv::Matx33d ConstructEulerRxMatrix(const double& rx)
+{
+  cv::Matx33d result;
+
+  double cosRx = cos(rx);
+  double sinRx = sin(rx);
+
+  result.eye();
+  result(1, 1) = cosRx;
+  result(1, 2) = sinRx;
+  result(2, 1) = -sinRx;
+  result(2, 2) = cosRx;
+  result(0, 0) = 1;
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx33d ConstructEulerRyMatrix(const double& ry)
+{
+  cv::Matx33d result;
+
+  double cosRy = cos(ry);
+  double sinRy = sin(ry);
+
+  result.eye();
+  result(0, 0) = cosRy;
+  result(0, 2) = -sinRy;
+  result(2, 0) = sinRy;
+  result(2, 2) = cosRy;
+  result(1, 1) = 1;
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx33d ConstructEulerRzMatrix(const double& rz)
+{
+  cv::Matx33d result;
+
+  double cosRz = cos(rz);
+  double sinRz = sin(rz);
+
+  result.eye();
+  result(0, 0) = cosRz;
+  result(0, 1) = sinRz;
+  result(1, 0) = -sinRz;
+  result(1, 1) = cosRz;
+  result(2, 2) = 1;
+  
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx33d ConstructEulerRotationMatrix(const double& rx, const double& ry, const double& rz)
+{
+  cv::Matx33d result;
+
+  cv::Matx33d rotationAboutX = ConstructEulerRxMatrix(rx);
+  cv::Matx33d rotationAboutY = ConstructEulerRyMatrix(ry);
+  cv::Matx33d rotationAboutZ = ConstructEulerRzMatrix(rz);
+
+  result = (rotationAboutZ * (rotationAboutY * rotationAboutX));
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx13d ConvertEulerToRodrigues(
+    const double& rx,
+    const double& ry,
+    const double& rz
+    )
+{
+  cv::Matx13d rotationVector;
+
+  cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
+  cv::Rodrigues(rotationMatrix, rotationVector);
+
+  return rotationVector;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructRigidTransformationMatrix(
+    const double& rx,
+    const double& ry,
+    const double& rz,
+    const double& tx,
+    const double& ty,
+    const double& tz
+    )
+{
+  cv::Matx44d transformation;
+  mitk::MakeIdentity(transformation);
+
+  cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      transformation(i, j) = rotationMatrix(i, j);
+    }
+  }
+  transformation(0, 3) = tx;
+  transformation(1, 3) = ty;
+  transformation(2, 3) = tz;
+
+  return transformation;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
+{
+  cv::Matx44d scaling;
+  mitk::MakeIdentity(scaling);
+
+  scaling(0,0) = sx;
+  scaling(1,1) = sy;
+  scaling(2,2) = sz;
+
+  return scaling;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructSimilarityTransformationMatrix(
+    const double& rx,
+    const double& ry,
+    const double& rz,
+    const double& tx,
+    const double& ty,
+    const double& tz,
+    const double& sx,
+    const double& sy,
+    const double& sz
+    )
+{
+  cv::Matx44d scaling;
+  cv::Matx44d rigid;
+  cv::Matx44d result;
+
+  rigid = ConstructRigidTransformationMatrix(rx, ry, rz, tx, ty, tz);
+  scaling = ConstructScalingTransformation(sx, sy, sz);
+
+  result = scaling * rigid;
+  return result;
+}
 
 //-----------------------------------------------------------------------------
 } // end namespace
