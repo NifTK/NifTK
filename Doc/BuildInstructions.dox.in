@@ -76,7 +76,7 @@ Once you have obtained a binary version of the patched CMake please install it t
 <li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. Make sure the compiled ccmake is on your PATH. </li>
 </ul>
 
-\section BuildInstructionsDownloadQt 3. Install Qt 4.6.2 or greater
+\section BuildInstructionsDownloadQt 3. Install Qt 4.8.3 or greater
 
 <ul>
 <li> If you intend to simply build and develop you can install a pre-compiled Qt version. 
@@ -88,7 +88,7 @@ the source code and compile your own, and install it in a non standard place (i.
 then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
 On Linux/Mac try
 \verbatim
-./configure -prefix /somewhere/to/install/qt-4.7.4 -release -shared -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/to/install/qt-4.8.5 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
