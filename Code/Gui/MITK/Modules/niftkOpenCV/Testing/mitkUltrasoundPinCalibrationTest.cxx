@@ -51,16 +51,16 @@ public:
     invariantPoint[2] = 0;
 
     mitk::Point2D scaleFactors;
-    scaleFactors[0] = 1;
-    scaleFactors[1] = 1;
+    scaleFactors[0] = 0.156; // Assuming image is 256 pixels, and depth = 4cm = 40/256 mm per pixel.
+    scaleFactors[1] = 0.156;
 
     std::vector<double> initialTransformation;
     initialTransformation.push_back(0);
-    initialTransformation.push_back(1);
-    initialTransformation.push_back(2);
-    initialTransformation.push_back(3);
-    initialTransformation.push_back(4);
-    initialTransformation.push_back(5);
+    initialTransformation.push_back(0);
+    initialTransformation.push_back(0);
+    initialTransformation.push_back(0);
+    initialTransformation.push_back(0);
+    initialTransformation.push_back(0);
 
     double residualError = 0;
     vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkMatrix4x4::New();
@@ -70,7 +70,7 @@ public:
     bool successfullyCalibrated = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
         directoryOfMatrices,
         directoryOfPoints,
-        true,
+        false,
         true,
         initialTransformation,
         invariantPoint,
@@ -79,7 +79,7 @@ public:
         *calibrationMatrix
         );
 
-    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful");
+    MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
 
     bool successfullySaved = niftk::SaveMatrix4x4ToFile(outputMatrixFileName, *calibrationMatrix);
     MITK_TEST_CONDITION_REQUIRED(successfullySaved == true, "Checking saved file successfully to filename:" << outputMatrixFileName);
@@ -93,7 +93,7 @@ public:
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j))), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
+        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix->GetElement(i, j) - calibrationMatrix->GetElement(i, j)),0.01), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix->GetElement(i,j) << ", but got " << calibrationMatrix->GetElement(i, j));
       }
     }
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");
