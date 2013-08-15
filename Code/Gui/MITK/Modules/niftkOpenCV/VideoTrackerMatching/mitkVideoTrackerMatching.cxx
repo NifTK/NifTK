@@ -376,10 +376,12 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   return ok;
 }
 
+//---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix)
 {
   m_CameraToTracker = matrix;
 }
+//---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
   cv::Mat returnMat = cv::Mat(4,4,CV_32FC1);
@@ -421,9 +423,72 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
     return returnMat;
   }
 }
+//---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
    cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
    return TrackerMatrix * m_CameraToTracker;
 }
+//---------------------------------------------------------------------------
+void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
+    int windowLow, int windowHigh, bool visualise)
+{
+  if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
+    return;
+  }
+  std::ifstream fin(calibrationfilename.c_str());
+  if ( !fin )
+  {
+    MITK_WARN << "Failed to open temporal calibration file " << calibrationfilename;
+    return;
+  }
+
+  std::string line;
+  unsigned int frameNumber; 
+  unsigned int linenumber = 0;
+  std::vector <cv::Point3f> pointsInLensCS;
+  pointsInLensCS.clear();
+
+  while ( getline(fin,line) )
+  {
+    if ( line[0] != '#' )
+    {
+      std::stringstream linestream(line);
+      cv::Point3f point;
+      bool parseSuccess = linestream >> frameNumber >> point.x >> point.y >> point.z;
+      if ( parseSuccess )
+      {
+        pointsInLensCS.push_back(point);  
+        if ( frameNumber != linenumber++ )
+        {
+          MITK_WARN << "Skipped frame detected at line " << linenumber ;
+        }
+      } 
+      else
+      {
+        MITK_WARN << "Parse failure at line " << linenumber;
+      }
+    }
+  }
+  if ( frameNumber * 2 != m_FrameNumbers.size() )
+  {
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << frameNumber * 2 << " != " << m_FrameNumbers.size() ;
+    return;
+  }
+
+  std::vector < std::vector <cv::Point3f> > standardDeviations;
+
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i++ )
+  {
+    std::vector <cv::Point3f> pointvector;
+    standardDeviations.push_back(pointvector);
+  }
+
+  for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
+  {
+  }
+}
+
 } // namespace

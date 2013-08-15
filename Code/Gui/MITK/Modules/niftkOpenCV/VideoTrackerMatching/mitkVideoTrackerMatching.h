@@ -90,6 +90,13 @@ public:
 
   void SetCameraToTracker( cv::Mat);
 
+  /**
+   * \brief Pass a file name that defines the position of a point fixed in world
+   * coordinates relative to the camera lens. The VideoLag is adjusted so as to 
+   * minimalise the standard deviation of the reconstructed world point
+   */
+  void TemporalCalibration (std::string filename, int windowLow = -100, int windowHigh = 100, bool visualise = false);
+
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();

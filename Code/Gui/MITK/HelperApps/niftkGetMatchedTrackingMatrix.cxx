@@ -28,14 +28,16 @@ int main(int argc, char** argv)
     commandLine.getOutput()->usage(commandLine);
     return returnStatus;
   }
- 
-  bool FlipTracking = ! DontFlipTracking;
 
   try
   {
     mitk::VideoTrackerMatching::Pointer trackerMatcherObject = mitk::VideoTrackerMatching::New();
     trackerMatcherObject->SetFlipMatrices(FlipTracking);
     trackerMatcherObject->Initialise(trackingInputDirectory);
+    if ( TemporalCalibration.length() != 0 )
+    {
+      trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true);
+    }
     long long* timingError = new long long;
     std::cout << trackerMatcherObject->GetTrackerMatrix(frameNumber, timingError, trackerIndex);
 

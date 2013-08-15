@@ -19,6 +19,13 @@
       <description>The directory containing the corresponding tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
     </directory>    
+    <file>
+      <name>TemporalCalibration</name>
+      <longflag>TemporalCalibration</longflag>
+      <description>A file used for temporal calibration.</description>
+      <label>A file used for temporal calibration</label>
+    </file>    
+
 
   </parameters>
   
@@ -27,10 +34,10 @@
     <description><![CDATA[Parameters that control the calibration]]></description>
     
     <boolean>
-      <name>DontFlipTracking</name>
-      <longflag>DontFlipTracking</longflag>
-      <description>Don't Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
-      <label>Dont Flip the tracking matrices</label>
+      <name>FlipTracking</name>
+      <longflag>FlipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the tracking matrices</label>
       <default>0</default>
     </boolean>
 
