@@ -27,6 +27,8 @@ namespace mitk
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 , m_FlipMatrices(false)
+, m_VideoLag(0)
+, m_VideoLeadsTracking(true)
 {}
 
 //---------------------------------------------------------------------------
@@ -197,7 +199,17 @@ void VideoTrackerMatching::ProcessFrameMapFile (std::string filename)
         for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
         {
           long long * timingError = new long long;
-          unsigned long long TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(TimeStamp,timingError);
+          unsigned long long TargetTimeStamp; 
+          if ( m_VideoLeadsTracking )
+          {
+            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+                TimeStamp + m_VideoLag,timingError);
+          }
+          else
+          {
+            TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
+                TimeStamp - m_VideoLag,timingError);
+          }
           
           m_TrackingMatrices[i].m_TimingErrors.push_back(*timingError);
 
@@ -259,6 +271,17 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
   return returnValue;
 }
 
+//---------------------------------------------------------------------------
+void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking ) 
+{
+  m_VideoLag = VideoLag * 1e6;
+  m_VideoLeadsTracking = VideoLeadsTracking;
+  if ( m_Ready ) 
+  {
+    MITK_INFO << "Set video lag after initialisation , need to re initialise video matcher";
+    m_Ready = false;
+  }
+}
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
 {

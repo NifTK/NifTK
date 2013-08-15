@@ -74,12 +74,19 @@ public:
   itkSetMacro (FlipMatrices, bool);
 
   /**
-   * \get the frame count
+   * \brief get the frame count
    */
   int GetNumberOfFrames () 
   {
     return m_FrameNumbers.size();
   }
+
+  /**
+   * \brief if the tracking data is ahead of the video data you can set a video lag in 
+   * milliseconds to account for this. If the video is ahead of the tracking set 
+   * argument 2 to true
+   */
+  void SetVideoLagMilliseconds(unsigned long long VideoLag, bool VideoLeadsTracking =false);
 
   void SetCameraToTracker( cv::Mat);
 
@@ -107,6 +114,10 @@ private:
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
   cv::Mat                  m_CameraToTracker;
+
+  unsigned long long       m_VideoLag; //the delay between the tracking and video data
+  bool                     m_VideoLeadsTracking; //if the video lag is negative, set this to true
+
   
 };
 
