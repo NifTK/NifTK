@@ -13,6 +13,7 @@
 =============================================================================*/
 #include "mitkVideoTrackerMatching.h"
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkOpenCVMaths.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -64,6 +65,23 @@ void VideoTrackerMatching::Initialise(std::string directory)
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
+        cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_32F);
+        for ( int i = 0 ; i < 4 ; i ++ ) 
+        {
+          for ( int j = 0 ; j < 4 ; j ++ )
+          {
+            if ( i == j ) 
+            {
+              tempCameraToTracker.at<float>(i,j) = 1.0;
+            }
+            else
+            {
+              tempCameraToTracker.at<float>(i,j) = 0.0;
+            }
+          }
+        }
+        m_CameraToTracker.push_back(tempCameraToTracker);
+
       }
     }
   }
@@ -398,7 +416,7 @@ void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
   }
   if ( trackerIndex == -1 )
   {
-    for ( int i = 0 ; i < m_CameraToTracker.size() ; i ++ )
+    for ( unsigned int i = 0 ; i < m_CameraToTracker.size() ; i ++ )
     {
       m_CameraToTracker[i] = matrix;
     }
@@ -529,17 +547,20 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
     }
     
-    for ( int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
       std::vector <cv::Point3f> worldPoints;
-      for ( int frame = 0 ; frame < pointsInLensCS.size() ; i++ )
+      worldPoints.clear();
+      for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
       {
-        int framenumber = i * 2;
+        int framenumber = frame * 2;
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
-            pointsInLensCS[i]);
+            pointsInLensCS[frame]);
       }
+      cv::Point3f* worldStdDev = new cv::Point3f;
+      mitk::GetCentroid (worldPoints, true, worldStdDev);
+      standardDeviations[trackerIndex].push_back(*worldStdDev);
     }
-
 
   }
 }
