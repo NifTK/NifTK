@@ -201,6 +201,10 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
                     m_ImageScaling
                     );
 
-    m_Controls->m_RenderWindow->GetRenderer()->GetDisplayGeometry()->Fit();
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
+    if (image.IsNotNull())
+    {
+      m_RenderingManager->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+    }
   }
 }
