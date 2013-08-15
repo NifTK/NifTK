@@ -58,7 +58,14 @@
       <label>output 2D points</label>
       <channel>output</channel>
     </file>
-
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>0</default>
+    </integer>
+							
 
   </parameters>
   

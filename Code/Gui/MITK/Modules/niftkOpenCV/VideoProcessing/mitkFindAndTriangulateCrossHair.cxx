@@ -360,6 +360,7 @@ void FindAndTriangulateCrossHair::SetFlipMatrices(bool state)
   m_TrackerMatcher->SetFlipMatrices(state);
 }
 
+//-----------------------------------------------------------------------------
 void FindAndTriangulateCrossHair::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking)
 {
   if ( m_TrackerMatcher.IsNull() )

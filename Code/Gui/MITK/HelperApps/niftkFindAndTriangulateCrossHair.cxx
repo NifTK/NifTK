@@ -43,6 +43,17 @@ int main(int argc, char** argv)
   {
     mitk::FindAndTriangulateCrossHair::Pointer finder = mitk::FindAndTriangulateCrossHair::New();
     finder->SetVisualise(Visualise);
+    if ( videoLag != 0 )
+    {
+      if ( videoLag < 0 )
+      {
+        finder->SetVideoLagMilliseconds(videoLag,true);
+      } 
+      else
+      {
+        finder->SetVideoLagMilliseconds(videoLag,false);
+      } 
+    } 
     finder->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( ! finder->GetInitOK() ) 
     {

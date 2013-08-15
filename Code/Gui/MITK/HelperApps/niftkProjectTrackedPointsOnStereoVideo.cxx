@@ -48,6 +48,18 @@ int main(int argc, char** argv)
   {
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
+    if ( videoLag != 0 ) 
+    {
+      if ( videoLag < 0 )
+      {
+        projector->SetVideoLagMilliseconds(videoLag,true);
+      }
+      else 
+      {
+        projector->SetVideoLagMilliseconds(videoLag,false);
+      }
+    }
+
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( ! projector->GetInitOK() ) 
     {
