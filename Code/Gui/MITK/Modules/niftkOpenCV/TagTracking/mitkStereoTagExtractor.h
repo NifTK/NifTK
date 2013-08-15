@@ -30,7 +30,7 @@ class StereoTagExtractorPrivate;
 
 /**
  * \class StereoTagExtractor
- * \brief Takes a stereo pair of images and camera params, and extract tag positions using triangulation.
+ * \brief Takes a stereo pair of images and camera params, and uses ARUCO to extract tag positions, then triangulates them to 3D.
  *
  * TODO: Make OpenCV stuff use C++ style matrices, and double precision consistently throughout.
  */

@@ -29,7 +29,7 @@ class MonoTagExtractorPrivate;
 
 /**
  * \class MonoTagExtractor
- * \brief Takes a single RGBA video image, and extracts tag positions.
+ * \brief Takes a single RGBA video image, and uses ARUCO to extract tag positions.
  *
  * This class is more of a test class, as most use-cases in NifTK use the
  * stereo version in order to do triangulation.
