@@ -48,6 +48,7 @@ int main(int argc, char** argv)
   {
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
+    projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( videoLag != 0 ) 
     {
       if ( videoLag < 0 )
@@ -60,7 +61,6 @@ int main(int argc, char** argv)
       }
     }
 
-    projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( ! projector->GetInitOK() ) 
     {
       MITK_ERROR << "Projector failed to initialise, halting.";

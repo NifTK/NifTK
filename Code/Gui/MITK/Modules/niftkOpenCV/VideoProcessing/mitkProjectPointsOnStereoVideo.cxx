@@ -496,10 +496,11 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking)
 {
-  if ( m_TrackerMatcher.IsNull() )
+  if ( m_TrackerMatcher.IsNull()  || (! m_TrackerMatcher->IsReady()) )
   {
-    m_TrackerMatcher = mitk::VideoTrackerMatching::New();
-  }
+    MITK_ERROR << "Need to initialise before setting video lag";
+    return;
+  } 
   m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
 }
 

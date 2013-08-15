@@ -27,8 +27,6 @@ namespace mitk
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 , m_FlipMatrices(false)
-, m_VideoLag(0)
-, m_VideoLeadsTracking(true)
 {}
 
 //---------------------------------------------------------------------------
@@ -64,6 +62,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
         TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
+        m_VideoLag.push_back(0);
+        m_VideoLeadsTracking.push_back(false);
       }
     }
   }
@@ -207,15 +207,15 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         {
           long long * timingError = new long long;
           unsigned long long TargetTimeStamp; 
-          if ( m_VideoLeadsTracking )
+          if ( m_VideoLeadsTracking[i] )
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp + m_VideoLag,timingError);
+                TimeStamp + m_VideoLag[i],timingError);
           }
           else
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp - m_VideoLag,timingError);
+                TimeStamp - m_VideoLag[i],timingError);
           }
           
           m_TrackingMatrices[i].m_TimingErrors.push_back(*timingError);
@@ -279,10 +279,22 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
 }
 
 //---------------------------------------------------------------------------
-void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking ) 
+void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking , int trackerIndex) 
 {
-  m_VideoLag = VideoLag * 1e6;
-  m_VideoLeadsTracking = VideoLeadsTracking;
+  if ( trackerIndex == -1 ) 
+  {
+    for ( unsigned int i = 0 ; i < m_VideoLag.size() ; i ++ )
+    { 
+      m_VideoLag[i] = VideoLag * 1e6;
+      m_VideoLeadsTracking[i] = VideoLeadsTracking;
+    }
+  }
+  else
+  {
+    m_VideoLag[trackerIndex] = VideoLag * 1e6;
+    m_VideoLeadsTracking[trackerIndex] = VideoLeadsTracking;
+  }
+
   if ( m_Ready ) 
   {
     MITK_INFO << "Set video lag after initialisation reprocessing frame map files";
@@ -456,11 +468,15 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      cv::Point3f point;
-      bool parseSuccess = linestream >> frameNumber >> point.x >> point.y >> point.z;
+      std::string xstring;
+      std::string ystring;
+      std::string zstring;
+
+      bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring;
       if ( parseSuccess )
       {
-        pointsInLensCS.push_back(point);  
+        pointsInLensCS.push_back(cv::Point3f(
+              atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
         if ( frameNumber != linenumber++ )
         {
           MITK_WARN << "Skipped frame detected at line " << linenumber ;
@@ -472,9 +488,9 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       }
     }
   }
-  if ( frameNumber * 2 != m_FrameNumbers.size() )
+  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << frameNumber * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
     return;
   }
 
@@ -488,6 +504,27 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
 
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
+    if ( videoLag < 0 ) 
+    {
+      SetVideoLagMilliseconds ( (unsigned long long) (videoLag * -1) , true, -1 );
+    }
+    else 
+    {
+      SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
+    }
+    
+    for ( int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    {
+      std::vector <cv::Point3f> worldPoints;
+      for ( int frame = 0 ; frame < pointsInLensCS.size() ; i++ )
+      {
+        int framenumber = i * 2;
+        worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
+            pointsInLensCS[i]);
+      }
+    }
+
+
   }
 }
 

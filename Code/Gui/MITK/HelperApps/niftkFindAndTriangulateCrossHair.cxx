@@ -43,6 +43,7 @@ int main(int argc, char** argv)
   {
     mitk::FindAndTriangulateCrossHair::Pointer finder = mitk::FindAndTriangulateCrossHair::New();
     finder->SetVisualise(Visualise);
+    finder->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( videoLag != 0 )
     {
       if ( videoLag < 0 )
@@ -54,7 +55,6 @@ int main(int argc, char** argv)
         finder->SetVideoLagMilliseconds(videoLag,false);
       } 
     } 
-    finder->Initialise(trackingInputDirectory,calibrationInputDirectory);
     if ( ! finder->GetInitOK() ) 
     {
       MITK_ERROR << "Finder failed to initialise, halting.";

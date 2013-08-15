@@ -86,7 +86,7 @@ public:
    * milliseconds to account for this. If the video is ahead of the tracking set 
    * argument 2 to true
    */
-  void SetVideoLagMilliseconds(unsigned long long VideoLag, bool VideoLeadsTracking =false);
+  void SetVideoLagMilliseconds(unsigned long long VideoLag, bool VideoLeadsTracking =false, int trackerIndex = -1);
 
   void SetCameraToTracker( cv::Mat);
 
@@ -123,8 +123,9 @@ private:
   bool                     CheckTimingErrorStats();
   cv::Mat                  m_CameraToTracker;
 
-  unsigned long long       m_VideoLag; //the delay between the tracking and video data
-  bool                     m_VideoLeadsTracking; //if the video lag is negative, set this to true
+  std::vector <unsigned long long>
+                           m_VideoLag; //the delay between the tracking and video data
+  std::vector <bool>       m_VideoLeadsTracking; //if the video lag is negative, set this to true
 
   
 };
