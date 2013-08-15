@@ -88,7 +88,7 @@ public:
    */
   void SetVideoLagMilliseconds(unsigned long long VideoLag, bool VideoLeadsTracking =false, int trackerIndex = -1);
 
-  void SetCameraToTracker( cv::Mat);
+  void SetCameraToTracker( cv::Mat, int trackerIndex = -1 );
 
   /**
    * \brief Pass a file name that defines the position of a point fixed in world
@@ -121,7 +121,7 @@ private:
   void                     ProcessFrameMapFile();
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
-  cv::Mat                  m_CameraToTracker;
+  std::vector<cv::Mat>     m_CameraToTracker;
 
   std::vector <unsigned long long>
                            m_VideoLag; //the delay between the tracking and video data

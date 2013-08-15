@@ -389,9 +389,25 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 }
 
 //---------------------------------------------------------------------------
-void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix)
+void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
 {
-  m_CameraToTracker = matrix;
+  if ( ! m_Ready )
+  {
+    MITK_ERROR << "Need to initialise tracker matcher before setting camera to tracker matrices";
+    return;
+  }
+  if ( trackerIndex == -1 )
+  {
+    for ( int i = 0 ; i < m_CameraToTracker.size() ; i ++ )
+    {
+      m_CameraToTracker[i] = matrix;
+    }
+  }
+  else
+  {
+    m_CameraToTracker[trackerIndex] = matrix;
+  }
+
 }
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
@@ -439,7 +455,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
 cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
    cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
-   return TrackerMatrix * m_CameraToTracker;
+   return TrackerMatrix * m_CameraToTracker[TrackerIndex];
 }
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
