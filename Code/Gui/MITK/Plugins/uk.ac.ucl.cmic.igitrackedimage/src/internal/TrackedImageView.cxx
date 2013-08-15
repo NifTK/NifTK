@@ -42,6 +42,8 @@ TrackedImageView::TrackedImageView()
 , m_RenderingManager(NULL)
 {
   m_RenderingManager = mitk::RenderingManager::New();
+  m_ImageScaling[0] = 1;
+  m_ImageScaling[1] = 1;
 }
 
 
@@ -131,6 +133,8 @@ void TrackedImageView::RetrievePreferenceValues()
   {
     m_ImageToProbeFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToProbeFileName);
+    m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
+    m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
   }
 }
 
