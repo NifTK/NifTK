@@ -88,14 +88,24 @@ public:
    */
   void SetVideoLagMilliseconds(unsigned long long VideoLag, bool VideoLeadsTracking =false, int trackerIndex = -1);
 
+  /**
+   * \brief set the camera to tracker matrix. if tracker index = -1 all camera to tracker 
+   * matrices will be set with the same value
+   */
   void SetCameraToTracker( cv::Mat, int trackerIndex = -1 );
 
+  /*
+   * \brief Convienient way to set the camera to tracker matrices where multiple tracking 
+   * directories are present. File contains camera to tracker matrices in same order as 
+   * tracker indices
+   */
+  void SetCameraToTrackers ( std::string filename );
   /**
    * \brief Pass a file name that defines the position of a point fixed in world
    * coordinates relative to the camera lens. The VideoLag is adjusted so as to 
    * minimalise the standard deviation of the reconstructed world point
    */
-  void TemporalCalibration (std::string filename, int windowLow = -100, int windowHigh = 100, bool visualise = false);
+  void TemporalCalibration (std::string filename, int windowLow = -100, int windowHigh = 100, bool visualise = false , std::string fileout = "" );
 
 protected:
   VideoTrackerMatching();

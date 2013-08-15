@@ -539,11 +539,22 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   }
 
   std::vector < std::vector <cv::Point3f> > standardDeviations;
-
+  if ( fout ) 
+  {
+    fout << "#lag " ;
+  }
   for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i++ )
   {
     std::vector <cv::Point3f> pointvector;
     standardDeviations.push_back(pointvector);
+    if ( fout ) 
+    {
+      fout << "SDx SDy SDz";
+    }
+  }
+  if ( fout ) 
+  {
+    fout << std::endl;
   }
 
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
@@ -556,7 +567,11 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     {
       SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
     }
-    
+   
+    if ( fout ) 
+    {
+      fout << videoLag << " " ;
+    }
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
       std::vector <cv::Point3f> worldPoints;
@@ -570,6 +585,15 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       cv::Point3f* worldStdDev = new cv::Point3f;
       mitk::GetCentroid (worldPoints, true, worldStdDev);
       standardDeviations[trackerIndex].push_back(*worldStdDev);
+      if ( fout ) 
+      {
+        fout << *worldStdDev << " ";
+      }
+
+    }
+    if ( fout ) 
+    {
+      fout << std::endl;
     }
 
   }
@@ -606,7 +630,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
       if ( parseSuccess )
       {
         row++;
-        if ( row == 3 ) 
+        if ( row == 4 ) 
         {
           row = 0 ; 
           indexnumber++;
