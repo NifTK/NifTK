@@ -34,9 +34,13 @@ int main(int argc, char** argv)
     mitk::VideoTrackerMatching::Pointer trackerMatcherObject = mitk::VideoTrackerMatching::New();
     trackerMatcherObject->SetFlipMatrices(FlipTracking);
     trackerMatcherObject->Initialise(trackingInputDirectory);
+    if ( handeyes.length() !=0 ) 
+    {
+      trackerMatcherObject->SetCameraToTrackers(handeyes);
+    }
     if ( TemporalCalibration.length() != 0 )
     {
-      trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true);
+      trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true, TCfileout);
     }
     long long* timingError = new long long;
     std::cout << trackerMatcherObject->GetTrackerMatrix(frameNumber, timingError, trackerIndex);

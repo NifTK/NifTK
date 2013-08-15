@@ -26,6 +26,19 @@
       <label>A file used for temporal calibration</label>
     </file>    
 
+    <file>
+      <name>handeyes</name>
+      <longflag>handeyes</longflag>
+      <description>A file defining the handeye tranforms.</description>
+      <label>A file defining the handeye transforms</label>
+    </file>    
+    <file>
+      <name>TCfileout</name>
+      <longflag>TCfileout</longflag>
+      <description>A file to writeout the temporal calibration results.</description>
+      <label>A file to writeout the temporal calibration results</label>
+    </file>    
+
 
   </parameters>
   

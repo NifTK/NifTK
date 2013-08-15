@@ -477,7 +477,7 @@ cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber
 }
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
-    int windowLow, int windowHigh, bool visualise)
+    int windowLow, int windowHigh, bool visualise, std::string fileout)
 {
   if ( !m_Ready )
   {
@@ -489,6 +489,15 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   {
     MITK_WARN << "Failed to open temporal calibration file " << calibrationfilename;
     return;
+  }
+  std::ofstream fout;
+  if ( fileout.length() != 0 ) 
+  {
+    fout.open(fileout.c_str());
+    if ( !fout )
+    {
+      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
+    }
   }
 
   std::string line;
@@ -522,6 +531,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       }
     }
   }
+  fin.close();
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
     MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
@@ -564,5 +574,55 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
 
   }
 }
+//---------------------------------------------------------------------------
+void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
+{
+  if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise video tracker matcher before setting camera to trackers.";
+    return;
+  }
+  std::ifstream fin(filename.c_str());
+  if ( !fin )
+  {
+    MITK_WARN << "Failed to open camera to tracker file " << filename;
+    return;
+  }
 
+  std::string line;
+  unsigned int indexnumber = 0;
+
+  int row = 0 ;
+  while ( getline(fin,line) )
+  {
+    if ( line[0] != '#' )
+    {
+      std::stringstream linestream(line);
+      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<float>(row,0) >>
+        m_CameraToTracker[indexnumber].at<float>(row,1) >>
+        m_CameraToTracker[indexnumber].at<float>(row,2) >>
+        m_CameraToTracker[indexnumber].at<float>(row,3);
+
+      if ( parseSuccess )
+      {
+        row++;
+        if ( row == 3 ) 
+        {
+          row = 0 ; 
+          indexnumber++;
+        }
+      } 
+      else
+      {
+        MITK_WARN << "Parse failure at line ";
+      }
+    }
+  }
+  fin.close();
+  MITK_INFO << "Read handeye's from " << filename;
+  for ( unsigned int i = 0 ; i < m_CameraToTracker.size() ; i ++ )
+  {
+    MITK_INFO << m_CameraToTracker[i];
+  }
+} 
 } // namespace
