@@ -37,10 +37,11 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( input2D.length() == 0 && input3D.length() )
+  if ( input2D.length() == 0 && input3D.length() == 0 )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
+    return returnStatus;
   }
 
   try
