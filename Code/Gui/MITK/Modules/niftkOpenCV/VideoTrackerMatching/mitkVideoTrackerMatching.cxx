@@ -647,7 +647,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
 
       if ( fout ) 
       {
-        fout << *worldStdDev << " ";
+        fout << *worldStdDev << " " << sdMag << " ";
       }
     }
     if ( fout ) 
@@ -666,7 +666,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     fout << "min sd at " ;
     for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
     { 
-      fout << optimalVideoLag[i] << " " << optimalVideoLagMag[i];
+      fout << optimalVideoLag[i] << " " << optimalVideoLagMag[i] << " ";
     } 
   }
 
