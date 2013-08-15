@@ -559,11 +559,15 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   
   std::vector <cv::Point3d> optimalVideoLag;
   std::vector <cv::Point3f> minimumSD;
+  std::vector <float> minimumSDMag;
+  std::vector <int> optimalVideoLagMag;
   float maximumSD = 0;
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size(); trackerIndex ++ ) 
   { 
     optimalVideoLag.push_back(cv::Point3d(0,0,0));
     minimumSD.push_back(cv::Point3f(0,0,0));
+    minimumSDMag.push_back(0.0);
+    optimalVideoLagMag.push_back(0);
   }
 
 
@@ -595,13 +599,23 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
       cv::Point3f* worldStdDev = new cv::Point3f;
       mitk::GetCentroid (worldPoints, true, worldStdDev);
       standardDeviations[trackerIndex].push_back(*worldStdDev);
+      float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
+          worldStdDev->z * worldStdDev->z);
+
       if ( videoLag == windowLow )
       {
         optimalVideoLag[trackerIndex] = cv::Point3d(videoLag, videoLag,videoLag);
         minimumSD[trackerIndex] = *worldStdDev;
+        optimalVideoLagMag[trackerIndex] = videoLag;
+        minimumSDMag[trackerIndex] = sdMag;
       }
       else
       {
+        if ( sdMag < minimumSDMag[trackerIndex] ) 
+        {
+          minimumSDMag[trackerIndex] = sdMag;
+          optimalVideoLagMag[trackerIndex] = videoLag;
+        }
         if ( worldStdDev->x < minimumSD[trackerIndex].x )
         {
           minimumSD[trackerIndex].x = worldStdDev->x;
@@ -645,14 +659,14 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   MITK_INFO << "min sd at " ;
   for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
   {
-    MITK_INFO << optimalVideoLag[i];
+    MITK_INFO << optimalVideoLag[i] << " " << optimalVideoLagMag[i];
   }
   if ( fout ) 
   {
     fout << "min sd at " ;
     for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
     { 
-      fout << optimalVideoLag[i];
+      fout << optimalVideoLag[i] << " " << optimalVideoLagMag[i];
     } 
   }
 
