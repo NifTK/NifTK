@@ -19,7 +19,7 @@
 #include <berryIPreferences.h>
 
 class QWidget;
-class QCheckBox;
+class QRadioButton;
 class QPushButton;
 class QWidgetAction;
 class ctkPathLineEdit;
@@ -96,7 +96,8 @@ public slots:
 protected:
 
   QWidget         *m_MainControl;
-  QCheckBox       *m_CameraTrackingMode;
+  QRadioButton    *m_CameraTrackingMode;
+  QRadioButton    *m_ImageTrackingMode;
   QPushButton     *m_ColorButton1;
   QPushButton     *m_ColorButton2;
   ctkPathLineEdit *m_CalibrationFileName;
