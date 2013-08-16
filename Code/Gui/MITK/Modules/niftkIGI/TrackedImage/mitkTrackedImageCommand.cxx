@@ -82,9 +82,6 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
 
       geometry->SetIndexToWorldTransformByVtkMatrix(combinedTransform);
       geometry->SetSpacing(spacing);
-
-      geometry->Modified();
-      imageNode->Modified();
     }
   }
 }
