@@ -100,11 +100,9 @@ int main(int argc, char** argv)
   double halfAngleNotAroundCircle = angleNotAroundCircle/2.0;
   double radius = diameter/2.0;
   double offsetOfOriginFromCentre = 1.0 * radius * cos(halfAngleNotAroundCircle);
-  double offSetOfOrigin = radius - offsetOfOriginFromCentre;
 
   std::cout << "radius                      = " << radius << std::endl;
   std::cout << "offsetOfOriginFromCentre    = " << offsetOfOriginFromCentre << std::endl;
-  std::cout << "offSetOfOrigin              = " << offSetOfOrigin << std::endl << std::endl;
 
   std::vector<int> pointIDs;
   if(inputPointIDs.size() > 0)
@@ -164,11 +162,11 @@ int main(int argc, char** argv)
       double point[3];
 
       point[0] = radius * sin(halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle);
-      point[1] = radius * cos(pi + halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle) + radius - offSetOfOrigin;
+      point[1] = radius * cos(pi + halfAngleNotAroundCircle + proportionAroundCircumference*angleAroundCircle) + offsetOfOriginFromCentre;
       point[2] = (0.5 + j*1.2)*tagSquareSizeInMillimetres;
 
       centre[0] = 0;
-      centre[1] = offSetOfOrigin;
+      centre[1] = offsetOfOriginFromCentre;
       centre[2] = point[2];
 
       normal[0] = point[0] - centre[0];
