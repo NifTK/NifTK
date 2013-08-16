@@ -44,8 +44,8 @@ public:
    * \brief Write My Documentation
    */
   void Update(const mitk::DataNode::Pointer imageNode,
-           const mitk::DataNode::Pointer probeToWorldNode,
-           const vtkMatrix4x4* imageToProbeTransform,
+           const mitk::DataNode::Pointer trackingSensorToTrackerNode,
+           const vtkMatrix4x4* imageToTrackingSensor,
            const mitk::Point2D& imageScaling
            );
 

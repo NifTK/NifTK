@@ -36,12 +36,10 @@ const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 //-----------------------------------------------------------------------------
 TrackedImageView::TrackedImageView()
 : m_Controls(NULL)
-, m_ImageToProbeTransform(NULL)
-, m_ImageToProbeFileName("")
+, m_ImageToTrackingSensorTransform(NULL)
+, m_ImageToTrackingSensorFileName("")
 , m_PlaneNode(NULL)
-, m_RenderingManager(NULL)
 {
-  m_RenderingManager = mitk::RenderingManager::New();
   m_ImageScaling[0] = 1;
   m_ImageScaling[1] = 1;
 }
@@ -79,9 +77,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->setupUi(parent);
 
     connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
-
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
-    m_RenderingManager->AddRenderWindow(m_Controls->m_RenderWindow->GetVtkRenderWindow());
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
@@ -131,8 +126,8 @@ void TrackedImageView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_ImageToProbeFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
-    m_ImageToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToProbeFileName);
+    m_ImageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_ImageToTrackingSensorTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToTrackingSensorFileName);
     m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
     m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
   }
@@ -154,7 +149,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL && image->GetGeometry() != NULL)
     {
-      m_RenderingManager->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
 
       float white[3] = {1.0f,1.0f,1.0f};
       mitk::Geometry2DDataMapper2D::Pointer mapper(NULL);
@@ -175,7 +170,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
         dataStorage->Add(m_PlaneNode);
       }
 
-      m_RenderingManager->RequestUpdateAll();
+      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
     }
   }
 }
@@ -187,24 +182,26 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
   Q_UNUSED(event);
 
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
-  mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
+  mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
 
   if (   imageNode.IsNotNull()
-      && m_ImageToProbeTransform != NULL
-      && probeToWorldTransform.IsNotNull()
+      && m_ImageToTrackingSensorTransform != NULL
+      && trackingSensorToTrackerTransform.IsNotNull()
      )
   {
     mitk::TrackedImageCommand::Pointer command = mitk::TrackedImageCommand::New();
     command->Update(imageNode,
-                    probeToWorldTransform,
-                    m_ImageToProbeTransform,
+                    trackingSensorToTrackerTransform,
+                    m_ImageToTrackingSensorTransform,
                     m_ImageScaling
                     );
+
+    m_PlaneNode->Modified();
 
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
     if (image.IsNotNull())
     {
-      m_RenderingManager->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
     }
   }
 }

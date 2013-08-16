@@ -38,8 +38,8 @@ TrackedImageCommand::~TrackedImageCommand()
 
 //-----------------------------------------------------------------------------
 void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
-                                 const mitk::DataNode::Pointer probeToWorldNode,
-                                 const vtkMatrix4x4* imageToProbeTransform,
+                                 const mitk::DataNode::Pointer trackingSensorToTrackerNode,
+                                 const vtkMatrix4x4* imageToTrackingSensor,
                                  const mitk::Point2D& imageScaling
                                  )
 {
@@ -49,26 +49,26 @@ void TrackedImageCommand::Update(const mitk::DataNode::Pointer imageNode,
     return;
   }
 
-  mitk::CoordinateAxesData::Pointer probeToWorld = dynamic_cast<mitk::CoordinateAxesData*>(probeToWorldNode->GetData());
-  if (probeToWorld.IsNull())
+  mitk::CoordinateAxesData::Pointer trackingSensorToWorld = dynamic_cast<mitk::CoordinateAxesData*>(trackingSensorToTrackerNode->GetData());
+  if (trackingSensorToWorld.IsNull())
   {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid probeToWorldNode";
+    MITK_ERROR << "TrackedImageCommand::Update, invalid trackingSensorToWorld";
     return;
   }
 
-  if (imageToProbeTransform == NULL)
+  if (imageToTrackingSensor == NULL)
   {
-    MITK_ERROR << "TrackedImageCommand::Update, invalid imageToProbeTransform";
+    MITK_ERROR << "TrackedImageCommand::Update, invalid imageToTrackingSensor";
     return;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> probeToWorldTransform = vtkMatrix4x4::New();
-  probeToWorld->GetVtkMatrix(*probeToWorldTransform);
+  vtkSmartPointer<vtkMatrix4x4> trackingSensorToWorldTransform = vtkMatrix4x4::New();
+  trackingSensorToWorld->GetVtkMatrix(*trackingSensorToWorldTransform);
 
   vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
   combinedTransform->Identity();
 
-  combinedTransform->Multiply4x4(probeToWorldTransform, imageToProbeTransform, combinedTransform);
+  combinedTransform->Multiply4x4(trackingSensorToWorldTransform, imageToTrackingSensor, combinedTransform);
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
   if (image.IsNotNull())
