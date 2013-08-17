@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#ifndef __itkMaskedImageRegistrationMethod_h
-#define __itkMaskedImageRegistrationMethod_h
+#ifndef itkMaskedImageRegistrationMethod_h
+#define itkMaskedImageRegistrationMethod_h
 
 
 #include "itkSingleResolutionImageRegistrationMethod.h"
-#include "itkImageMaskSpatialObject.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryDilateImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkSmoothingRecursiveGaussianImageFilter.h"
-#include "itkBoundaryValueRescaleIntensityImageFilter.h"
-#include "itkMultiplyImageFilter.h"
+#include <itkImageMaskSpatialObject.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryDilateImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkSmoothingRecursiveGaussianImageFilter.h>
+#include <itkBoundaryValueRescaleIntensityImageFilter.h>
+#include <itkMultiplyImageFilter.h>
 
 namespace itk
 {

@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkFilenameUtils_h
-#define __itkFilenameUtils_h
+#ifndef itkFilenameUtils_h
+#define itkFilenameUtils_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
 #include <string>
-#include "itkObject.h"
+#include <itkObject.h>
 
 namespace itk
 {

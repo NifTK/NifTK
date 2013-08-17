@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkDisplacementFieldJacobianFilter_h
-#define __itkDisplacementFieldJacobianFilter_h
+#ifndef itkDisplacementFieldJacobianFilter_h
+#define itkDisplacementFieldJacobianFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 /** 

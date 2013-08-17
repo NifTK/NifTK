@@ -20,6 +20,12 @@
 namespace mitk
 {
 
+const char* CoordinateAxesData::FILE_EXTENSION = ".4x4";
+const char* CoordinateAxesData::FILE_EXTENSION_WITH_ASTERISK = "*.4x4";
+const char* CoordinateAxesData::FILE_NAME = "CoordinateAxesTransform.4x4";
+const char* CoordinateAxesData::FILE_DIALOG_PATTERN = "Coordinate Axes Transform (*.4x4)";
+const char* CoordinateAxesData::FILE_DIALOG_NAME = "Coordinate Axes Transform 4x4";
+
 //-----------------------------------------------------------------------------
 CoordinateAxesData::CoordinateAxesData()
 {
@@ -41,6 +47,14 @@ CoordinateAxesData::CoordinateAxesData()
 //-----------------------------------------------------------------------------
 CoordinateAxesData::~CoordinateAxesData()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void CoordinateAxesData::UpdateOutputInformation()
+{
+  Superclass::UpdateOutputInformation();
+  this->GetTimeSlicedGeometry()->UpdateInformation();
 }
 
 
@@ -91,7 +105,7 @@ const CoordinateAxesData::RegionType& CoordinateAxesData::GetRequestedRegion() c
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 {
-  mitk::TimeSlicedGeometry::ConstPointer geometry = this->GetTimeSlicedGeometry();
+  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
   if (geometry.IsNotNull())
   {
     mitk::AffineTransform3D::ConstPointer itkTrans = geometry->GetIndexToWorldTransform();
@@ -114,10 +128,13 @@ void CoordinateAxesData::GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const
 //-----------------------------------------------------------------------------
 void CoordinateAxesData::SetVtkMatrix(const vtkMatrix4x4& matrix)
 {
-  mitk::TimeSlicedGeometry::Pointer geometry = this->GetTimeSlicedGeometry();
+  mitk::Geometry3D::Pointer geometry = this->GetGeometry();
   if (geometry.IsNotNull())
   {
     geometry->SetIndexToWorldTransformByVtkMatrix(const_cast<vtkMatrix4x4*>(&matrix));
+    geometry->Modified();
+    this->UpdateOutputInformation();
+    this->Modified();
   }
 }
 

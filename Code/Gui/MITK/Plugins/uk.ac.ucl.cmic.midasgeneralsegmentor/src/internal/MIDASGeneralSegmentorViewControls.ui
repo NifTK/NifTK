@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>451</width>
-    <height>260</height>
+    <width>389</width>
+    <height>232</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,47 +35,47 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <item row="0" column="0">
-    <widget class="Line" name="m_Line1">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <layout class="QGridLayout" name="m_GridLayoutToggleButtons">
+   <item row="2" column="0">
+    <layout class="QGridLayout" name="m_ThresholdingButtonGridLayout" columnstretch="1,0">
      <property name="spacing">
       <number>5</number>
      </property>
-     <item row="0" column="0">
+     <item row="0" column="1">
       <widget class="QCheckBox" name="m_RetainMarksCheckBox">
        <property name="text">
         <string>retain marks</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QCheckBox" name="m_ThresholdCheckBox">
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="m_ThresholdingCheckBox">
        <property name="text">
-        <string>threshold</string>
+        <string>thresholding</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="m_VisibilityButtonsGridLayout">
+     <property name="spacing">
+      <number>5</number>
+     </property>
+     <item row="0" column="0">
       <widget class="QCheckBox" name="m_SeePriorCheckBox">
        <property name="text">
         <string>see prior</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
+     <item row="0" column="1">
       <widget class="QCheckBox" name="m_SeeNextCheckBox">
        <property name="text">
         <string>see next</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="0" column="2">
       <widget class="QCheckBox" name="m_SeeImageCheckBox">
        <property name="text">
         <string>view image</string>
@@ -84,143 +84,15 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
-    <widget class="Line" name="m_Line3">
+   <item row="1" column="0">
+    <widget class="Line" name="m_LineSeparator">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-   </item>
-   <item row="3" column="0">
-    <layout class="QGridLayout" name="m_GridLayoutSeedValues">
-     <property name="spacing">
-      <number>5</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="m_ThresholdSeedMinLabel">
-       <property name="text">
-        <string>seed min:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="m_ThresholdSeedMinValue">
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="m_ThresholdSeedMaxLabel">
-       <property name="text">
-        <string>seed max:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QLabel" name="m_ThresholdSeedMaxValue">
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item row="4" column="0">
-    <layout class="QGridLayout" name="m_GridLayoutThresholdSliders">
-     <property name="spacing">
-      <number>5</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="m_ThresholdLowerLabel">
-       <property name="text">
-        <string>lower</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="ctkSliderWidget" name="m_ThresholdLowerSliderWidget" native="true"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="m_ThresholdUpperLabel">
-       <property name="text">
-        <string>upper</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="ctkSliderWidget" name="m_ThresholdUpperSliderWidget" native="true"/>
-     </item>
-    </layout>
-   </item>
-   <item row="5" column="0">
-    <layout class="QGridLayout" name="m_GridLayoutPropagateButtons">
-     <property name="spacing">
-      <number>5</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QPushButton" name="m_PropUpButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>prop up</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="m_PropDownButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>prop down</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="m_Prop3DButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>prop 3D</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QPushButton" name="m_ThresholdApplyButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>apply</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="6" column="0">
-    <widget class="Line" name="m_Line5">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <layout class="QGridLayout" name="m_GridLayoutBottomButtons" rowstretch="0,0">
+    <layout class="QGridLayout" name="m_BottomButtonsGridLayout" rowstretch="0,0">
      <property name="spacing">
       <number>5</number>
      </property>
@@ -276,7 +148,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="1" column="3">
       <widget class="QPushButton" name="m_OKButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -289,7 +161,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="1" column="0">
       <widget class="QPushButton" name="m_ResetButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -303,6 +175,160 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="3" column="0">
+    <widget class="QGroupBox" name="m_ThresholdingGroupBox">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QGridLayout" name="m_SeedMinMaxGridLayout" columnstretch="0,1,0,1">
+        <property name="leftMargin">
+         <number>5</number>
+        </property>
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item row="0" column="1">
+         <widget class="QLabel" name="m_SeedMinValue">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_SeedMinLabel">
+          <property name="text">
+           <string>seed min:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="m_SeedMaxLabel">
+          <property name="text">
+           <string>seed max:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="m_SeedMaxValue">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="m_ThresholdingSlidersGridLayout" columnstretch="0,1">
+        <property name="leftMargin">
+         <number>5</number>
+        </property>
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_LowerThresholdLabel">
+          <property name="text">
+           <string>lower:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="ctkSliderWidget" name="m_LowerThresholdSliderWidget" native="true"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="m_UpperThresholdLabel">
+          <property name="text">
+           <string>upper:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="ctkSliderWidget" name="m_UpperThresholdSliderWidget" native="true"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="m_ThresholdingButtonsGridLayout">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="m_PropDownButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>prop dn</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="m_ThresholdApplyButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>apply</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="m_PropUpButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>prop up</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="m_Prop3DButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>prop 3D</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATEPROCESSOR_H
-#define ITKMIDASIMAGEUPDATEPROCESSOR_H
+#ifndef itkMIDASImageUpdateProcessor_h
+#define itkMIDASImageUpdateProcessor_h
 
-#include "itkObject.h"
-#include "itkObjectFactory.h"
-#include "itkImage.h"
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <itkImage.h>
 
 namespace itk
 {

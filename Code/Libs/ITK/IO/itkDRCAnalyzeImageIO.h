@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIO_H
-#define ITKDRCANALYZEIMAGEIO_H
+#ifndef itkDRCAnalyzeImageIO_h
+#define itkDRCAnalyzeImageIO_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkAnalyzeImageIO.h"
+#include <itkAnalyzeImageIO.h>
 
 namespace itk {
 

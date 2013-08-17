@@ -32,10 +32,10 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ImageNode" native="true"/>
+        <widget class="QmitkDataStorageComboBox" name="m_ImageNode"/>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="m_ImageToProbeLabel">
+        <widget class="QLabel" name="m_ImageToWorldLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -43,59 +43,24 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>image to probe</string>
+          <string>image to world</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="ctkPathLineEdit" name="m_ImageToProbeCalibrationFile" native="true"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_ProbeLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>probe</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode" native="true"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="m_ProbeToWorldLabel">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>probe to world</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode" native="true"/>
+        <widget class="QmitkDataStorageComboBox" name="m_ImageToWorldNode"/>
        </item>
       </layout>
      </item>
      <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+      <widget class="QmitkRenderWindow" name="m_RenderWindow" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
     </layout>
    </item>
@@ -104,14 +69,14 @@
  <customwidgets>
   <customwidget>
    <class>QmitkDataStorageComboBox</class>
-   <extends>QWidget</extends>
+   <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ctkPathLineEdit</class>
+   <class>QmitkRenderWindow</class>
    <extends>QWidget</extends>
-   <header>ctkPathLineEdit.h</header>
+   <header>QmitkRenderWindow.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

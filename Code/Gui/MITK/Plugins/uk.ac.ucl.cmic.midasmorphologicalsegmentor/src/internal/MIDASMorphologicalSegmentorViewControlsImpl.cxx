@@ -245,14 +245,16 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ThresholdingAxialCutoffSlider->setMaximum(numberOfAxialSlices - 1);
   if (upDirection > 0)
   {
-    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(false);
-    m_ThresholdingAxialCutoffSlider->setInvertedControls(false);
+    // TODO Turned off temporarily until the "inverted property" tweaks are merged back to CTK.
+//    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(false);
+//    m_ThresholdingAxialCutoffSlider->setInvertedControls(false);
     m_ThresholdingAxialCutoffSlider->setValue(0);
   }
   else
   {
-    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(true);
-    m_ThresholdingAxialCutoffSlider->setInvertedControls(true);
+    // TODO Turned off temporarily until the "inverted property" tweaks are merged back to CTK.
+//    m_ThresholdingAxialCutoffSlider->setInvertedAppearance(true);
+//    m_ThresholdingAxialCutoffSlider->setInvertedControls(true);
     m_ThresholdingAxialCutoffSlider->setValue(numberOfAxialSlices - 1);
   }
 
@@ -322,7 +324,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
          m_ThresholdingUpperThresholdSlider->value(),
-         m_ThresholdingAxialCutoffSlider->value()
+         static_cast<int>(m_ThresholdingAxialCutoffSlider->value())
        );
 }
 

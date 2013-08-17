@@ -12,12 +12,14 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIUTILS_H
-#define QMITKIGIUTILS_H
+#ifndef QmitkIGIUtils_h
+#define QmitkIGIUtils_h
 
 #include "niftkIGIGuiExports.h"
 #include <mitkSurface.h>
 #include <QString>
+#include <vtkMatrix4x4.h>
+#include <QmitkDataStorageCheckableComboBox.h>
 
 /**
  * \brief For testing purposes, loads an STL file.
@@ -29,5 +31,17 @@ NIFTKIGIGUI_EXPORT mitk::Surface::Pointer LoadSurfaceFromSTLFile(QString& surfac
  * \brief Creates a test NDI Polaris Vicra message, used for initial testing.
  */
 NIFTKIGIGUI_EXPORT QString CreateTestDeviceDescriptor();
+
+/**
+ * \brief Saves the matrix to file, returning true if successful and false otherwise.
+ * TODO: Move this function somewhere sensible.
+ */
+NIFTKIGIGUI_EXPORT bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName);
+
+/**
+ * \brief Saves the matrix to file, returning true if successful and false otherwise.
+ * TODO: Move this function somewhere sensible.
+ */
+NIFTKIGIGUI_EXPORT void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageCheckableComboBox& comboBox);
 
 #endif

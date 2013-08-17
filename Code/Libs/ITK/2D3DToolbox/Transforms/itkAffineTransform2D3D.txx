@@ -15,9 +15,9 @@
 #ifndef __itkAffineTransform2D3D_txx
 #define __itkAffineTransform2D3D_txx
 
-#include "itkNumericTraits.h"
+#include <itkNumericTraits.h>
 #include "itkAffineTransform2D3D.h"
-#include "vnl/algo/vnl_matrix_inverse.h"
+#include <vnl/algo/vnl_matrix_inverse.h>
 
 
 namespace itk

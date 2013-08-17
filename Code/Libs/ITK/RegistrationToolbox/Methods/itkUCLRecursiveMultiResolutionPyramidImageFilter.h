@@ -14,11 +14,11 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkUCLRecursiveMultiResolutionPyramidImageFilter_h
-#define __itkUCLRecursiveMultiResolutionPyramidImageFilter_h
+#ifndef itkUCLRecursiveMultiResolutionPyramidImageFilter_h
+#define itkUCLRecursiveMultiResolutionPyramidImageFilter_h
 
 #include "itkUCLMultiResolutionPyramidImageFilter.h"
-#include "vnl/vnl_matrix.h"
+#include <vnl/vnl_matrix.h>
 
 namespace itk
 {

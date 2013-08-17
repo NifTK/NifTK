@@ -16,7 +16,7 @@
 #define _itkUCLHistogram_txx
 
 #include "itkUCLHistogram.h"
-#include "itkNumericTraits.h"
+#include <itkNumericTraits.h>
 
 namespace itk{ 
 namespace Statistics{

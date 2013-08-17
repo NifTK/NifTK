@@ -15,12 +15,14 @@
 #ifndef TrackedImageViewPreferencePage_h
 #define TrackedImageViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
 
 class QWidget;
 class QPushButton;
+class QDoubleSpinBox;
+class ctkPathLineEdit;
 
 /**
  * \class TrackedImageViewPreferencePage
@@ -35,8 +37,25 @@ class TrackedImageViewPreferencePage : public QObject, public berry::IQtPreferen
 
 public:
 
-  /// \brief Stores the name of the preferences node.
+  /**
+   * \brief Stores the name of the preferences node.
+   */
   static const std::string PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the calibration file.
+   */
+  static const std::string CALIBRATION_FILE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the image scaling in the x direction.
+   */
+  static const std::string X_SCALING;
+
+  /**
+   * \brief Stores the name of the preference node that contains the image scaling in the y direction.
+   */
+  static const std::string Y_SCALING;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);
@@ -67,9 +86,11 @@ private slots:
 
 private:
 
-  QWidget        *m_MainControl;
-  QPushButton    *m_DummyButton;
-  bool            m_Initializing;
+  QWidget         *m_MainControl;
+  ctkPathLineEdit *m_CalibrationFileName;
+  bool             m_Initializing;
+  QDoubleSpinBox  *m_XScaling;
+  QDoubleSpinBox  *m_YScaling;
 
   berry::IPreferences::Pointer m_TrackedImageViewPreferencesNode;
 };

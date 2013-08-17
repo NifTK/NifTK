@@ -12,9 +12,6 @@
 
 =============================================================================*/
 
-#ifndef MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_CPP
-#define MIDASGENERALSEGMENTORVIEWCONTROLSWIDGET_CPP
-
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 
 //-----------------------------------------------------------------------------
@@ -39,50 +36,54 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 {
   Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
 
-  this->SetEnableAllWidgets(false);
+  this->SetAllWidgetsEnabled(false);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingCheckbox(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingCheckboxEnabled(bool enabled)
 {
-  m_ThresholdCheckBox->setEnabled(enabled);
+  m_ThresholdingCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableThresholdingWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool enabled)
 {
-  m_Prop3DButton->setEnabled(enabled);
-  m_PropDownButton->setEnabled(enabled);
+  m_ThresholdingGroupBox->setEnabled(enabled);
+//  m_ThresholdingGroupBox->setVisible(enabled);
+
+  m_SeedMinLabel->setEnabled(enabled);
+  m_SeedMinValue->setEnabled(enabled);
+  m_SeedMaxLabel->setEnabled(enabled);
+  m_SeedMaxValue->setEnabled(enabled);
+
+  m_LowerThresholdLabel->setEnabled(enabled);
+  m_LowerThresholdSliderWidget->setEnabled(enabled);
+  m_UpperThresholdLabel->setEnabled(enabled);
+  m_UpperThresholdSliderWidget->setEnabled(enabled);
+
   m_PropUpButton->setEnabled(enabled);
+  m_PropDownButton->setEnabled(enabled);
+  m_Prop3DButton->setEnabled(enabled);
   m_ThresholdApplyButton->setEnabled(enabled);
-  m_ThresholdLowerLabel->setEnabled(enabled);
-  m_ThresholdLowerSliderWidget->setEnabled(enabled);
-  m_ThresholdUpperLabel->setEnabled(enabled);
-  m_ThresholdUpperSliderWidget->setEnabled(enabled);
-  m_ThresholdSeedMaxLabel->setEnabled(enabled);
-  m_ThresholdSeedMaxValue->setEnabled(enabled);
-  m_ThresholdSeedMinLabel->setEnabled(enabled);
-  m_ThresholdSeedMinValue->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableOKCancelResetWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
   m_ResetButton->setEnabled(enabled);
-//  m_CancelButton->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
+void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
 {
-  this->SetEnableThresholdingCheckbox(enabled);
-  this->SetEnableThresholdingWidgets(enabled);
-  this->SetEnableOKCancelResetWidgets(enabled);
+  this->SetThresholdingCheckboxEnabled(enabled);
+  this->SetThresholdingWidgetsEnabled(enabled);
+  this->SetOKCancelResetWidgetsEnabled(enabled);
   m_RetainMarksCheckBox->setEnabled(enabled);
   m_SeePriorCheckBox->setEnabled(enabled);
   m_SeeNextCheckBox->setEnabled(enabled);
@@ -97,10 +98,10 @@ void MIDASGeneralSegmentorViewControlsWidget::SetEnableAllWidgets(bool enabled)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
-  m_ThresholdLowerSliderWidget->setMinimum(lower);
-  m_ThresholdLowerSliderWidget->setMaximum(upper);
-  m_ThresholdUpperSliderWidget->setMinimum(lower);
-  m_ThresholdUpperSliderWidget->setMaximum(upper);
+  m_LowerThresholdSliderWidget->setMinimum(lower);
+  m_LowerThresholdSliderWidget->setMaximum(upper);
+  m_UpperThresholdSliderWidget->setMinimum(lower);
+  m_UpperThresholdSliderWidget->setMaximum(upper);
 }
 
 
@@ -113,7 +114,6 @@ void MIDASGeneralSegmentorViewControlsWidget::SetSeedMinAndMaxValues(double min,
   minText.sprintf("%.2f", min);
   maxText.sprintf("%.2f", max);
 
-  m_ThresholdSeedMinValue->setText(minText);
-  m_ThresholdSeedMaxValue->setText(maxText);
+  m_SeedMinValue->setText(minText);
+  m_SeedMaxValue->setText(maxText);
 }
-#endif

@@ -12,13 +12,23 @@
 #
 #============================================================================*/
 
+find_package(OpenMP)
+
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer
-  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration
+  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration TagTracking
+  DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration niftkOpenCV
   PACKAGE_DEPENDS ITK NiftyLink
 )
 
-IF(BUILD_TESTING)
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()  
+# only enable openmp on windows, for now.
+# see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2502
+if(MSVC)
+  if(OPENMP_FOUND)
+    set_target_properties(niftkIGI PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
+  endif()
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()  

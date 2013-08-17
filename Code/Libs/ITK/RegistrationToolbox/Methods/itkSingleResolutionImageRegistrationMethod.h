@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkSingleResolutionImageRegistrationMethod_h
-#define __itkSingleResolutionImageRegistrationMethod_h
+#ifndef itkSingleResolutionImageRegistrationMethod_h
+#define itkSingleResolutionImageRegistrationMethod_h
 
 
-#include "itkImageRegistrationMethod.h"
-#include "itkIterationUpdateCommand.h"
-#include "itkSimilarityMeasure.h"
+#include <itkImageRegistrationMethod.h>
+#include <itkIterationUpdateCommand.h>
+#include <itkSimilarityMeasure.h>
 
 namespace itk
 {

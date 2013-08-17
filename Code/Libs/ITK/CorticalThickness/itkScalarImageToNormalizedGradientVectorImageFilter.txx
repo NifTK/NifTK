@@ -15,11 +15,11 @@
 #ifndef __itkScalarImageToNormalizedGradientVectorImageFilter_txx
 #define __itkScalarImageToNormalizedGradientVectorImageFilter_txx
 
-#include "itkConstNeighborhoodIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkConstNeighborhoodIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

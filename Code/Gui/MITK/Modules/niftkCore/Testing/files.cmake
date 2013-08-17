@@ -13,7 +13,7 @@
 #============================================================================*/
 
 # tests with no extra command line parameter
-SET(MODULE_TESTS
+set(MODULE_TESTS
   mitkITKRegionParametersDataNodePropertyTest.cxx
   mitkPointUtilsTest.cxx
   mitkCoordinateAxesDataTest.cxx
@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   mitkMIDASImageUtilsTest.cxx
   mitkMIDASCompareImagesForEqualityTest.cxx
   mitkCoordinateAxesDataRenderingTest.cxx
+  mitkCoordinateAxesDataReaderWriterTest.cxx
 )

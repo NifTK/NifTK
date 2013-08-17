@@ -23,10 +23,10 @@
 
 #include <mitkDataStorage.h>
 
+class ctkXnatSettings;
 class QModelIndex;
 class XnatBrowserWidgetPrivate;
-class XnatSettings;
-class XnatNode;
+class XnatObject;
 
 class XnatBrowserWidget : public QWidget
 {
@@ -39,21 +39,20 @@ public:
   mitk::DataStorage::Pointer dataStorage() const;
   void setDataStorage(mitk::DataStorage::Pointer dataStorage);
 
-  XnatSettings* settings() const;
-  void setSettings(XnatSettings* settings);
+  ctkXnatSettings* settings() const;
+  void setSettings(ctkXnatSettings* settings);
 
 private slots:
   void loginXnat();
   void importFile();
   void importFiles();
   void setButtonEnabled(const QModelIndex& index);
-  void setSaveAndUploadButtonEnabled();
   void showContextMenu(const QPoint&);
 
 private:
   void createConnections();
-  void initializeTreeView(XnatNode* rootNode);
   void collectImageFiles(const QDir& tempWorkDirectory, QStringList& fileList);
+  bool holdsFiles(const ctkXnatObject::Pointer xnatObject) const;
 
   /// \brief All the controls for the main view part.
   Ui::XnatBrowserWidget* ui;

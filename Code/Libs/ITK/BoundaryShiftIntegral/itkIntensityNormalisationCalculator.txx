@@ -17,10 +17,10 @@
 
 #include "itkIntensityNormalisationCalculator.h"
 #include "itkBinaryIntersectWithPaddingImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryErodeImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageFileWriter.h"
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryErodeImageFilter.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkImageFileWriter.h>
 #include "itkBasicImageComparisonFunctions.h"
 #include <iostream>
 

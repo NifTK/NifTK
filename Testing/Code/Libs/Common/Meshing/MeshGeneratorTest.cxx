@@ -27,7 +27,7 @@
 #include <vtkCell.h>
 #include <vtkPoints.h>
 
-#include "MeshGenerator.h"
+#include <MeshGenerator.h>
 #include "MeshingUnitTestHelpers.h"
 
 typedef itk::Image<unsigned char, 3> _LabelImageType;

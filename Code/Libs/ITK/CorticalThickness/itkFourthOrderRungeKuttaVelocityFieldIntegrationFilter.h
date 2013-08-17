@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter_h
-#define __itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter_h
+#ifndef itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter_h
+#define itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkPoint.h"
-#include "itkContinuousIndex.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkPoint.h>
+#include <itkContinuousIndex.h>
 
 namespace itk {
 

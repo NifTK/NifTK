@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkInterpolateVectorFieldFilter_h
-#define __itkInterpolateVectorFieldFilter_h
+#ifndef itkInterpolateVectorFieldFilter_h
+#define itkInterpolateVectorFieldFilter_h
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageToImageFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageToImageFilter.h>
+#include <itkVectorInterpolateImageFunction.h>
 
 
 namespace itk {

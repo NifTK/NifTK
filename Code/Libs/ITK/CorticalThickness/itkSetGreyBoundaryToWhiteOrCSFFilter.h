@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkSetGreyBoundaryToWhiteOrCSFFilter_h
-#define __itkSetGreyBoundaryToWhiteOrCSFFilter_h
+#ifndef itkSetGreyBoundaryToWhiteOrCSFFilter_h
+#define itkSetGreyBoundaryToWhiteOrCSFFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 namespace itk

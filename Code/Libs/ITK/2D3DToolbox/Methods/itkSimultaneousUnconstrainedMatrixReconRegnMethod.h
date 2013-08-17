@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
-#define __itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
+#ifndef itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
+#define itkSimultaneousUnconstrainedMatrixReconRegnMethod_h
 
-#include "itkProcessObject.h"
-#include "itkImage.h"
-#include "itkSimultaneousUnconstrainedMatrixReconRegnMetric.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkProjectionGeometry.h"
-#include "itkReconstructionUpdateCommand.h"
+#include <itkProcessObject.h>
+#include <itkImage.h>
+#include <itkSimultaneousUnconstrainedMatrixReconRegnMetric.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkProjectionGeometry.h>
+#include <itkReconstructionUpdateCommand.h>
 
 namespace itk
 {

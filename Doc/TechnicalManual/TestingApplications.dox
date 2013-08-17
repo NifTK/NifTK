@@ -9,11 +9,11 @@ is to actually test the end user application. An ordinary ctest unit test, using
 ctest method such as can be found in:
 
 \verbatim
-NifTK/Testing/Code/Libs/ITK/BasicFilters/BasicFiltersIntegrationTests
+NifTK/Testing/Code/Libs/ITK/BasicFilters/BasicFiltersUnitTests
 \endverbatim
 
 registers a test file eg. <code>ExtractEdgeImageTest.cxx</code> with the test harness 
-<code>BasicFiltersIntegrationTests</code> and so is useful for testing individual filters,
+<code>BasicFiltersUnitTests</code> and so is useful for testing individual filters,
 or each class individually, which is the purpose of unit tests. However, an application in the 
 \verbatim
 NifTK/Code/Applications

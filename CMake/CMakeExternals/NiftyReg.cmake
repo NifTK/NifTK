@@ -18,18 +18,18 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYREG_ROOT AND NOT EXISTS ${NIFTYREG_ROOT})
-  MESSAGE(FATAL_ERROR "NIFTYREG_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYREG_ROOT}\".")
-ENDIF()
+if(DEFINED NIFTYREG_ROOT AND NOT EXISTS ${NIFTYREG_ROOT})
+  message(FATAL_ERROR "NIFTYREG_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYREG_ROOT}\".")
+endif()
 
-IF(BUILD_NIFTYREG)
+if(BUILD_NIFTYREG)
 
-  SET(proj NIFTYREG)
-  SET(proj_DEPENDENCIES )
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj} )
-  SET(NIFTYREG_DEPENDS ${proj})
+  set(proj NIFTYREG)
+  set(proj_DEPENDENCIES )
+  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(NIFTYREG_DEPENDS ${proj})
 
-  IF(NOT DEFINED NIFTYREG_ROOT)
+  if(NOT DEFINED NIFTYREG_ROOT)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
 
@@ -46,14 +46,14 @@ IF(BUILD_NIFTYREG)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    SET(NIFTYREG_ROOT ${proj_INSTALL})
+    set(NIFTYREG_ROOT ${proj_INSTALL})
 
-    MESSAGE("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
+    message("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
 
-  ELSE(NOT DEFINED NIFTYREG_ROOT)
+  else(NOT DEFINED NIFTYREG_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NIFTYREG_ROOT)
+  endif(NOT DEFINED NIFTYREG_ROOT)
 
-ENDIF(BUILD_NIFTYREG)
+endif(BUILD_NIFTYREG)

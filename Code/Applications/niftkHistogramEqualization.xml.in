@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Enhance Image Contrast</title>
+  <description><![CDATA[This program enhances the contrast of an image using the ITK AdaptiveHistogramEqualizationImageFilter. Histogram equalization modifies the contrast in an image. The AdaptiveHistogramEqualizationImageFilter is a superset of many contrast enhancing filters. By modifying its parameters (alpha, beta, and radius), the AdaptiveHistogramEqualizationImageFilter can produce an adaptively equalized histogram or a version of unsharp mask (local mean subtraction). Instead of applying a strict histogram equalization in a radius about a pixel, this filter prescribes a mapping function (power law) controlled by the parameters alpha and beta.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>outputEnhanced.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+    <float>
+      <name>alpha</name>
+      <longflag>alpha</longflag>
+      <description>Alpha controls how much the filter acts like the classical histogram equalization method (alpha=0) versus how much the filter acts like an unsharp mask (alpha=1).</description>
+      <label>Alpha</label>
+      <default>0.5</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>
+
+ 
+    <float>
+      <name>beta</name>
+      <longflag>beta</longflag>
+      <description>Beta controls how much the filter acts like an unsharp mask (beta=0) versus how much the filter acts like pass through (beta=1, with alpha=1).</description>
+      <label>Beta</label>
+      <default>0.5</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <step>0.01</step>
+      </constraints>
+    </float>
+
+ 
+    <integer>
+      <name>radius</name>
+      <longflag>radius</longflag>
+      <description>The parameter radius controls the size of the region over which local statistics are calculated.</description>
+      <label>Radius</label>
+      <default>5</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+   </parameters>
+</executable>

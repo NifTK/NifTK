@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-PROJECT(uk_ac_ucl_cmic_midasgeneralsegmentor)
+project(uk_ac_ucl_cmic_midasgeneralsegmentor)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE MIDASGENERALSEGMENTOR_EXPORTS

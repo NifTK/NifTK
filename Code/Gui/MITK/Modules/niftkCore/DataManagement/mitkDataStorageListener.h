@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_DataStorageListener_h
-#define mitk_DataStorageListener_h
+#ifndef mitkDataStorageListener_h
+#define mitkDataStorageListener_h
 
 #include "niftkCoreExports.h"
 #include <itkObject.h>

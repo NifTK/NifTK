@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef NIFTIIMAGETOMITK_HEADER_INCLUDED
-#define NIFTIIMAGETOMITK_HEADER_INCLUDED
+#ifndef niftiImageToMitk_h
+#define niftiImageToMitk_h
 
-#include "mitkImage.h"
-#include "mitkImageDataItem.h"
+#include <mitkImage.h>
+#include <mitkImageDataItem.h>
 
-#include "nifti1_io.h"
+#include <nifti1_io.h>
 
 
 /// Create an mitk::Image from a Nifti image

@@ -14,9 +14,9 @@
 
 project(uk_ac_ucl_cmic_niftyreg)
 
-LINK_DIRECTORIES(${NIFTYREG_LIBRARY_DIR})
-INCLUDE_DIRECTORIES(${NIFTYREG_INCLUDE_DIR})
-ADD_DEFINITIONS(-DUSE_NIFTYREG)
+link_directories(${NIFTYREG_LIBRARY_DIR})
+include_directories(${NIFTYREG_INCLUDE_DIR})
+add_definitions(-DUSE_NIFTYREG)
 
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE NIFTYREG_EXPORTS
@@ -33,22 +33,22 @@ if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     endif(OPENMP_FOUND)
 endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME} 
                       niftkITK
-                      niftkVTK
-		      ${NIFTYREG_LIBRARIES}
+                      niftkVTKNiftyReg
+                      ${NIFTYREG_LIBRARIES}
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg
 # because of problems compiling the gpu code as shared libraries
 if(FALSE AND NIFTK_USE_CUDA)
 
-  FIND_PACKAGE(CUDA)
-  IF(CUDA_FOUND)
-    ADD_DEFINITIONS(-D_USE_CUDA)
-  ENDIF(CUDA_FOUND)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    add_definitions(-D_USE_CUDA)
+  endif(CUDA_FOUND)
   
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} 
+  target_link_libraries(${PROJECT_NAME} 
 			_reg_aladin
 			_reg_f3d
 			_reg_thinPlateSpline

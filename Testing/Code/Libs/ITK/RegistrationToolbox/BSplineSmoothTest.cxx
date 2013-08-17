@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkBSplineOperator.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkBSplineOperator.h>
 
 /**
  * Basic tests for BSpline smoothing.

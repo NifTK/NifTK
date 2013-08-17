@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASPaintbrushTool_h
-#define mitk_MIDASPaintbrushTool_h
+#ifndef mitkMIDASPaintbrushTool_h
+#define mitkMIDASPaintbrushTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
-#include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.h"
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkSegTool2D.h>

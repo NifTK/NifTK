@@ -14,13 +14,13 @@
 
 #include "mitkMIDASSeedTool.h"
 #include "mitkMIDASSeedTool.xpm"
-#include "mitkToolManager.h"
-#include "mitkPointSet.h"
-#include "mitkProperties.h"
-#include "mitkStateEvent.h"
-#include "mitkPositionEvent.h"
-#include "mitkRenderingManager.h"
-#include "mitkGlobalInteraction.h"
+#include <mitkToolManager.h>
+#include <mitkPointSet.h>
+#include <mitkProperties.h>
+#include <mitkStateEvent.h>
+#include <mitkPositionEvent.h>
+#include <mitkRenderingManager.h>
+#include <mitkGlobalInteraction.h>
 
 namespace mitk{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
@@ -104,6 +104,7 @@ void mitk::MIDASSeedTool::Activated()
     if (m_PointSetInteractor.IsNull())
     {
       m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
+      m_PointSetInteractor->SetPrecision(1);
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_PointSetInteractor );
   }

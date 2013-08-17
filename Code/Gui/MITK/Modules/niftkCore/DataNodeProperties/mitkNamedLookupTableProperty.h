@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef NamedLookupTableProperty_h
-#define NamedLookupTableProperty_h
+#ifndef mitkNamedLookupTableProperty_h
+#define mitkNamedLookupTableProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkLookupTableProperty.h"
+#include <mitkLookupTableProperty.h>
 
 namespace mitk {
 

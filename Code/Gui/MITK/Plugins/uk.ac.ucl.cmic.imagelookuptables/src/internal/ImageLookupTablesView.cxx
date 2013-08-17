@@ -31,15 +31,15 @@
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
-#include "LookupTableManager.h"
-#include "LookupTableContainer.h"
+#include <LookupTableManager.h>
+#include <LookupTableContainer.h>
 
-#include "mitkLevelWindowManager.h"
-#include "mitkNodePredicateData.h"
-#include "mitkNodePredicateDataType.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkNodePredicateAnd.h"
-#include "mitkNodePredicateNot.h"
+#include <mitkLevelWindowManager.h>
+#include <mitkNodePredicateData.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateNot.h>
 
 const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
@@ -47,8 +47,8 @@ const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookupta
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
 , m_LookupTableManager(0)
-, m_CurrentNode(NULL)
-, m_CurrentImage(NULL)
+, m_CurrentNode(0)
+, m_CurrentImage(0)
 , m_Precision(2)
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
@@ -87,8 +87,6 @@ ImageLookupTablesView::~ImageLookupTablesView()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
 {
-  MITK_DEBUG << "ImageLookupTablesView::CreateQtPartControl() begin" << std::endl;
-
   if (!m_Controls)
   {
     // Create UI.
@@ -110,25 +108,26 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
       m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder()+1, container->GetDisplayName());
     }
 
+    /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
+    /// OnPreferencesChanged that calls RetrievePreferenceValues. It would need testing.
     this->RetrievePreferenceValues();
+
     this->CreateConnections();
   }
-
-  MITK_DEBUG << "ImageLookupTablesView::CreateQtPartControl() end" << std::endl;
 }
 
 
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::CreateConnections()
 {
-  connect(m_Controls->m_MinSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
-  connect(m_Controls->m_MaxSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
-  connect(m_Controls->m_LevelSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
-  connect(m_Controls->m_WindowSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
-  connect(m_Controls->m_MinLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
-  connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
-  connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
-  connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
+  this->connect(m_Controls->m_MinSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
+  this->connect(m_Controls->m_MaxSlider, SIGNAL(valueChanged(double)), SLOT(OnWindowBoundsChanged()));
+  this->connect(m_Controls->m_LevelSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
+  this->connect(m_Controls->m_WindowSlider, SIGNAL(valueChanged(double)), SLOT(OnLevelWindowChanged()));
+  this->connect(m_Controls->m_MinLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
+  this->connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
+  this->connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
+  this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
 }
 
 
@@ -153,6 +152,11 @@ void ImageLookupTablesView::RetrievePreferenceValues()
 
   m_Precision = prefs->GetInt(QmitkImageLookupTablesPreferencePage::PRECISION_NAME, 2);
 
+  if (m_CurrentNode.IsNull())
+  {
+    this->BlockSignals(true);
+  }
+
   m_Controls->m_MinSlider->setDecimals(m_Precision);
   m_Controls->m_MaxSlider->setDecimals(m_Precision);
   m_Controls->m_LevelSlider->setDecimals(m_Precision);
@@ -160,9 +164,10 @@ void ImageLookupTablesView::RetrievePreferenceValues()
   m_Controls->m_MinLimitDoubleSpinBox->setDecimals(m_Precision);
   m_Controls->m_MaxLimitDoubleSpinBox->setDecimals(m_Precision);
 
-  MITK_DEBUG << "ImageLookupTablesView::RetrievePreferenceValues" \
-      << ", m_Precision=" << m_Precision \
-      << std::endl;
+  if (m_CurrentNode.IsNull())
+  {
+    this->BlockSignals(false);
+  }
 }
 
 

@@ -41,4 +41,5 @@ set(CPP_FILES
 set(RESOURCE_FILES
   Interactions/DisplayConfigMIDASTool.xml
   Interactions/DisplayConfigMIDASPaintbrushTool.xml
+  Interactions/DisplayInteraction.xml
 )

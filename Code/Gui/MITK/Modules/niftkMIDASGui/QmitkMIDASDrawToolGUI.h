@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMIDASDRAWTOOL_H
-#define QMITKMIDASMIDASDRAWTOOL_H
+#ifndef QmitkMIDASDrawToolGUI_h
+#define QmitkMIDASDrawToolGUI_h
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASDrawTool.h"
+#include <mitkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
 
 class QSlider;

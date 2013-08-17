@@ -13,15 +13,15 @@
 =============================================================================*/
 
 
-#ifndef __itkSimultaneousReconstructionAndRegistrationMethod_h
-#define __itkSimultaneousReconstructionAndRegistrationMethod_h
+#ifndef itkSimultaneousReconstructionAndRegistrationMethod_h
+#define itkSimultaneousReconstructionAndRegistrationMethod_h
 
-#include "itkProcessObject.h"
-#include "itkImage.h"
-#include "itkSimultaneousReconstructionRegistrationMetric.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkProjectionGeometry.h"
-#include "itkSimultaneousReconAndRegnUpdateCommand.h"
+#include <itkProcessObject.h>
+#include <itkImage.h>
+#include <itkSimultaneousReconstructionRegistrationMetric.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkProjectionGeometry.h>
+#include <itkSimultaneousReconAndRegnUpdateCommand.h>
 
 
 namespace itk

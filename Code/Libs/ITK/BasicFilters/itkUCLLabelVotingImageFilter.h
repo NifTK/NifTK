@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLLabelVotingImageFilter_h
-#define __itkUCLLabelVotingImageFilter_h
+#ifndef itkUCLLabelVotingImageFilter_h
+#define itkUCLLabelVotingImageFilter_h
 
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

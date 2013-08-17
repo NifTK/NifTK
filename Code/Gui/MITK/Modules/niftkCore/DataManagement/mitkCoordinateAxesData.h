@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_CoordinateAxesData_h
-#define mitk_CoordinateAxesData_h
+#ifndef mitkCoordinateAxesData_h
+#define mitkCoordinateAxesData_h
 
 #include "niftkCoreExports.h"
 #include <itkImageRegion.h>
@@ -41,12 +41,19 @@ public:
   mitkClassMacro(CoordinateAxesData, BaseData);
   itkNewMacro(Self);
 
+  static const char* FILE_NAME;
+  static const char* FILE_EXTENSION;
+  static const char* FILE_EXTENSION_WITH_ASTERISK;
+  static const char* FILE_DIALOG_PATTERN;
+  static const char* FILE_DIALOG_NAME;
+
   void SetRequestedRegionToLargestPossibleRegion();
   bool RequestedRegionIsOutsideOfTheBufferedRegion();
   virtual bool VerifyRequestedRegion();
   void SetRequestedRegion(itk::DataObject *data);
   const RegionType& GetLargestPossibleRegion() const;
   virtual const RegionType& GetRequestedRegion() const;
+  virtual void UpdateOutputInformation();
 
   void GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const;
   void SetVtkMatrix(const vtkMatrix4x4& matrix);

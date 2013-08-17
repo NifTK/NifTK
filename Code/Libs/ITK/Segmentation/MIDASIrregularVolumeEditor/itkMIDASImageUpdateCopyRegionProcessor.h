@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATECOPYREGIONPROCESSOR_H
-#define ITKMIDASIMAGEUPDATECOPYREGIONPROCESSOR_H
+#ifndef itkMIDASImageUpdateCopyRegionProcessor_h
+#define itkMIDASImageUpdateCopyRegionProcessor_h
 
 #include "itkMIDASImageUpdateRegionProcessor.h"
-#include "itkPasteImageFilter.h"
+#include <itkPasteImageFilter.h>
 
 namespace itk
 {

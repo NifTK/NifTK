@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKVIDEOPREVIEWWIDGET_H
-#define QMITKVIDEOPREVIEWWIDGET_H
+#ifndef QmitkVideoPreviewWidget_h
+#define QmitkVideoPreviewWidget_h
 
 #include <QObject>
 #include <QMetaType>
@@ -30,6 +30,10 @@ public:
 
 public:
   void SetVideoDimensions(int width, int height);
+
+  /**
+   * Needs to be called repeatedly. At most one frame will be rendered with the given texture id.
+   */
   void SetTextureId(int id);
 
 
@@ -38,7 +42,15 @@ protected:
   virtual void resizeGL(int width, int height);
   virtual void paintGL();
 
+  void setupViewport();
+
   int   m_TextureId;
+  // i guess we could query this from QWidget?
+  int   m_WidgetWidth;
+  int   m_WidgetHeight;
+
+  int   m_VideoWidth;
+  int   m_VideoHeight;
 };
 
 #endif // QMITKVIDEOPREVIEWWIDGET_H

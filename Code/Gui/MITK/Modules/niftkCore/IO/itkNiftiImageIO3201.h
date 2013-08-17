@@ -35,15 +35,15 @@
  *         The University of Iowa 2002
  */
 
-#ifndef NiftiImageIO3201_h
-#define NiftiImageIO3201_h
+#ifndef itkNiftiImageIO3201_h
+#define itkNiftiImageIO3201_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
 #include <fstream>
-#include "itkImageIOBase.h"
+#include <itkImageIOBase.h>
 #include <nifti1_io.h>
 #include "niftkCoreExports.h"
 

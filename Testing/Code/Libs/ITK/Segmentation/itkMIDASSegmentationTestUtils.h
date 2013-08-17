@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASSEGMENTATIONTESTUTILS_H
-#define ITKMIDASSEGMENTATIONTESTUTILS_H
+#ifndef itkMIDASSegmentationTestUtils_h
+#define itkMIDASSegmentationTestUtils_h
 
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIteratorWithIndex.h"
+#include <itkImage.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
 #include "itkMIDASSegmentationTestUtils.h"
 
 template <class TPixel, unsigned int VImageDimension>

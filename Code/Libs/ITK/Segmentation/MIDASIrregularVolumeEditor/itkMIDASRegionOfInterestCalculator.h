@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASREGIONOFINTERESTCALCULATOR_H
-#define ITKMIDASREGIONOFINTERESTCALCULATOR_H
+#ifndef itkMIDASRegionOfInterestCalculator_h
+#define itkMIDASRegionOfInterestCalculator_h
 
-#include "itkObject.h"
-#include "itkObjectFactory.h"
-#include "itkImage.h"
-#include "itkMIDASHelper.h"
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <itkImage.h>
+#include <itkMIDASHelper.h>
 
 namespace itk
 {

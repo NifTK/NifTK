@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkSumOfSquaredDifferencePointMetric_h
-#define __itkSumOfSquaredDifferencePointMetric_h
+#ifndef itkSumOfSquaredDifferencePointMetric_h
+#define itkSumOfSquaredDifferencePointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkImage.h"
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkImage.h>
 
 namespace itk
 {

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASSINGLEVIEWWIDGETLISTMANAGER_H_
-#define QMITKMIDASSINGLEVIEWWIDGETLISTMANAGER_H_
+#ifndef QmitkMIDASSingleViewWidgetListManager_h
+#define QmitkMIDASSingleViewWidgetListManager_h
 
 #include <vector>
 #include <set>

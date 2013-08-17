@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef AffineTransformParametersDataNodeProperty_h
-#define AffineTransformParametersDataNodeProperty_h
+#ifndef mitkAffineTransformParametersDataNodeProperty_h
+#define mitkAffineTransformParametersDataNodeProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkBaseProperty.h"
+#include <mitkBaseProperty.h>
 #include <algorithm>
 
 namespace mitk {

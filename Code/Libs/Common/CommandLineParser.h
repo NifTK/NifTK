@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __NIFTK_COMMANDLINEPARSER_H_
-#define __NIFTK_COMMANDLINEPARSER_H_
+#ifndef CommandLineParser_h
+#define CommandLineParser_h
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
 #include <ostream>

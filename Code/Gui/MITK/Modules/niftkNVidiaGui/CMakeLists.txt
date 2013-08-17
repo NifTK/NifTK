@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-FIND_PACKAGE(CUDA REQUIRED)
+find_package(CUDA REQUIRED)
 
 MITK_CREATE_MODULE(niftkNVidiaGui
   EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
@@ -22,17 +22,28 @@ MITK_CREATE_MODULE(niftkNVidiaGui
   QT_MODULE 
 )
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-INCLUDE_DIRECTORIES(${QT_QTOPENGL_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+include_directories(${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 # stuffing this into DEPENDS above doesnt work for some reason
-TARGET_LINK_LIBRARIES(niftkNVidiaGui
+target_link_libraries(niftkNVidiaGui
   niftknvapi
   mitkOpenCVVideoSupport
   Winmm.lib
+  ${CUDA_CUDA_LIBRARY}
+  ${CUDA_CUDART_LIBRARY}
   )
-  
-IF(BUILD_TESTING)  
-  ADD_SUBDIRECTORY(Testing)
-ENDIF()
+
+
+if(MSVC)
+  # all of the nvidia-driver/cuda dependencies should be delay-loaded
+  #  so this library would at least load on a machine that doesnt have nv hardware
+  set_target_properties(niftkNVidiaGui PROPERTIES LINK_FLAGS 
+    "/DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
+endif(MSVC)
+
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

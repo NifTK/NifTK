@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkSquaredFunctionImageToImageMetric_h
-#define __itkSquaredFunctionImageToImageMetric_h
+#ifndef itkSquaredFunctionImageToImageMetric_h
+#define itkSquaredFunctionImageToImageMetric_h
 
-#include "itkImageToImageMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
+#include <itkImageToImageMetric.h>
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
 
 namespace itk
 {

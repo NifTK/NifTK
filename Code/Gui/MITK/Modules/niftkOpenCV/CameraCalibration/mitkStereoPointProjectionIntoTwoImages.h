@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKSTEREOPOINTPROJECTIONINTOTWOIMAGES
-#define MITKSTEREOPOINTPROJECTIONINTOTWOIMAGES
+#ifndef mitkStereoPointProjectionIntoTwoImages_h
+#define mitkStereoPointProjectionIntoTwoImages_h
 
 #include "niftkOpenCVExports.h"
 #include <string>

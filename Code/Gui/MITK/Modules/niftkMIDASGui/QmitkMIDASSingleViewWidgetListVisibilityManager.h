@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKSINGLEVIEWWIDGETLISTVISIBILITYMANAGER_H
-#define QMITKSINGLEVIEWWIDGETLISTVISIBILITYMANAGER_H
+#ifndef QmitkMIDASSingleViewWidgetListVisibilityManager_h
+#define QmitkMIDASSingleViewWidgetListVisibilityManager_h
 
 #include <niftkMIDASGuiExports.h>
 #include "QmitkMIDASSingleViewWidgetListManager.h"

@@ -16,9 +16,9 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
 
 /**
  * Test the normalized gradient vector generator.

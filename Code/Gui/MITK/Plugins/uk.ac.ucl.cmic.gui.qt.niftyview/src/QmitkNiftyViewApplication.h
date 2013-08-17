@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYVIEWAPPLICATION_H_
-#define QMITKNIFTYVIEWAPPLICATION_H_
+#ifndef QmitkNiftyViewApplication_h
+#define QmitkNiftyViewApplication_h
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
-#include "QmitkBaseApplication.h"
+#include <QmitkBaseApplication.h>
 
 /**
  * \class QmitkNiftyViewApplication

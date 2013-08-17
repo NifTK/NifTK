@@ -12,32 +12,32 @@
 #
 #============================================================================*/
 
-ADD_SUBDIRECTORY(Exceptions)
+add_subdirectory(Exceptions)
 
-IF (BUILD_MESHING)
-  ADD_SUBDIRECTORY(Meshing)
-ENDIF (BUILD_MESHING)
+if (BUILD_MESHING)
+  add_subdirectory(Meshing)
+endif (BUILD_MESHING)
 
-SET(niftkcommon_SRCS
+set(niftkcommon_SRCS
 FileHelper.cxx
 ConversionUtils.cxx 
 EnvironmentHelper.cxx
 CommandLineParser.cxx
 )
 
-ADD_LIBRARY(niftkcommon ${niftkcommon_SRCS})
+add_library(niftkcommon ${niftkcommon_SRCS})
 
-IF(BUILD_SHARED_LIBS)
-  IF(WIN32)
-    ADD_DEFINITIONS(-DNIFTKCOMMON_WINDOWS_EXPORT)
-  ENDIF(WIN32)
-ENDIF(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    add_definitions(-DNIFTKCOMMON_WINDOWS_EXPORT)
+  endif(WIN32)
+endif(BUILD_SHARED_LIBS)
 
-TARGET_LINK_LIBRARIES(niftkcommon  
+target_link_libraries(niftkcommon  
   ITKCommon  
   ITKIO  
   ITKBasicFilters 
-  ITKAlgorithms  
+  ITKAlgorithms
   vtkCommon
   vtkIO
   ${Boost_LIBRARIES}   

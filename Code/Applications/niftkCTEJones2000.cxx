@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkJonesThicknessFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkJonesThicknessFilter.h>
 
 /*!
  * \file niftkCTEJones2000.cxx

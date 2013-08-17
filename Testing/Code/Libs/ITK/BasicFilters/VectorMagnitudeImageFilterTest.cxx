@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkVectorMagnitudeImageFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkVectorMagnitudeImageFilter.h>
 
 /**
  * Basic tests for VectorMagnitudeImageFilterTest

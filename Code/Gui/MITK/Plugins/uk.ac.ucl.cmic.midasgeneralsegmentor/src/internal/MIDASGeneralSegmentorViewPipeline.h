@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_H_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWPIPELINE_H_INCLUDED
+#ifndef MIDASGeneralSegmentorViewPipeline_h
+#define MIDASGeneralSegmentorViewPipeline_h
 
-#include "itkIndex.h"
-#include "itkContinuousIndex.h"
-#include "itkImage.h"
-#include "itkExtractImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkPasteImageFilter.h"
-#include "itkMIDASHelper.h"
-#include "itkMIDASRegionGrowingImageFilter.h"
+#include <itkIndex.h>
+#include <itkContinuousIndex.h>
+#include <itkImage.h>
+#include <itkExtractImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkPasteImageFilter.h>
+#include <itkMIDASHelper.h>
+#include <itkMIDASRegionGrowingImageFilter.h>
 #include "MIDASGeneralSegmentorViewHelper.h"
 
 /**

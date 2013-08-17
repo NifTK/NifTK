@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkShapeBasedAveragingImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <itkImage.h>
+#include <itkShapeBasedAveragingImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
 
 /**
  * Basic tests for ShapeBasedAveragingImageFilter

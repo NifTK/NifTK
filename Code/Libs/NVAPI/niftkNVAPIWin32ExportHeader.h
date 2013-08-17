@@ -11,10 +11,10 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef __NIFTKNVAPIWIN32EXPORTHEADER_H
-#define __NIFTKNVAPIWIN32EXPORTHEADER_H
+#ifndef niftkNVAPIWin32ExportHeader_h
+#define niftkNVAPIWin32ExportHeader_h
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 
 #if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
   #ifdef NIFTKNVAPI_WINDOWS_EXPORT

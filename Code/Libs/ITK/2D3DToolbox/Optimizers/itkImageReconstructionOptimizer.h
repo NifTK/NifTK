@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkImageReconstructionOptimizer_h
-#define __itkImageReconstructionOptimizer_h
+#ifndef itkImageReconstructionOptimizer_h
+#define itkImageReconstructionOptimizer_h
 
-#include "itkSingleValuedNonLinearOptimizer.h"
+#include <itkSingleValuedNonLinearOptimizer.h>
 
 
 namespace itk

@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkImageRegionIterator.h"
-#include "itkMIDASHelper.h"
-#include "itkMIDASRegionOfInterestCalculator.h"
+#include <itkImage.h>
+#include <itkImageRegionIterator.h>
+#include <itkMIDASHelper.h>
+#include <itkMIDASRegionOfInterestCalculator.h>
 
 /**
  * Basic tests for itkMIDASRegionOfInterestCalculator

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_
-#define QMITKNIFTYVIEWAPPWORKBENCHADVISOR_H_
+#ifndef QmitkNiftyViewAppWorkbenchAdvisor_h
+#define QmitkNiftyViewAppWorkbenchAdvisor_h
 
 #ifdef __MINGW32__
 // We need to include winbase.h here in order to declare
@@ -23,7 +23,7 @@
 #endif
 
 #include <uk_ac_ucl_cmic_gui_qt_niftyview_Export.h>
-#include "QmitkBaseAppWorkbenchAdvisor.h"
+#include <QmitkBaseAppWorkbenchAdvisor.h>
 
 /**
  * \class QmitkNiftyViewAppWorkbenchAdvisor

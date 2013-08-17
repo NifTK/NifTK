@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef _MORPHOLOGICALSEGMENTORPIPELINE_H_INCLUDED
-#define _MORPHOLOGICALSEGMENTORPIPELINE_H_INCLUDED
+#ifndef MorphologicalSegmentorPipeline_h
+#define MorphologicalSegmentorPipeline_h
 
 #include "MorphologicalSegmentorPipelineParams.h"
 #include "MorphologicalSegmentorPipelineInterface.h"
 
-#include "itkImage.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include <itkImage.h>
+#include <itkBinaryThresholdImageFilter.h>
 #include "itkMIDASMaskByRegionImageFilter.h"
 #include "itkMIDASConditionalErosionFilter.h"
 #include "itkMIDASConditionalDilationFilter.h"

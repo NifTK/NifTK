@@ -34,10 +34,9 @@ Further information can be obtained via:
 \li \subpage UserManual
 \li \subpage TechnicalManual
 
-and two mailing lists for discussion
+and
 
-\li <a href="@NIFTK_USER_CONTACT@">for end users</a>
-\li <a href="@NIFTK_DEVELOPER_CONTACT@">for developers</a>
+\li <a href="@NIFTK_USER_CONTACT@">the user's mailing list</a>.
 
 For developers it is important to read:
 

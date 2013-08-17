@@ -12,12 +12,15 @@
 #
 #============================================================================*/
 
-FIND_PACKAGE(CUDA REQUIRED)
+find_package(CUDA REQUIRED)
+find_package(OpenGL REQUIRED)
  
-SET(niftknvapi_SRCS
+set(niftknvapi_SRCS
   niftkNVAPICommon.cxx
   glew/glew.c
   video/compress.cxx
+  video/conversion.cxx
+  video/decompress.cxx
   video/device.cxx
   video/deviceimpl.cxx
   video/frame.cxx
@@ -29,28 +32,28 @@ SET(niftknvapi_SRCS
 # with all the itk etc stuff, nvcc dies with "command line too long".
 # so instead drop off all the not needed stuff and start clean.
 # http://www.cmake.org/Bug/print_bug_page.php?bug_id=12198
-SET_DIRECTORY_PROPERTIES( PROPERTIES INCLUDE_DIRECTORIES "" )
+set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "" )
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
-INCLUDE_DIRECTORIES(${NVAPI_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
-INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
+include_directories(${NVAPI_INCLUDE_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CUDA_TOOLKIT_INCLUDE})
 
-# ADD_LIBRARY(niftknvapi ${niftknvapi_SRCS})
+# add_library(niftknvapi ${niftknvapi_SRCS})
 CUDA_ADD_LIBRARY(niftknvapi ${niftknvapi_SRCS})
 
-IF(BUILD_SHARED_LIBS)
-  IF(WIN32)
-    ADD_DEFINITIONS(-DNIFTKNVAPI_WINDOWS_EXPORT)
-    ADD_DEFINITIONS(-DLIBVIDEO_BUILDING_DLL)
-  ENDIF(WIN32)
-ENDIF(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    add_definitions(-DNIFTKNVAPI_WINDOWS_EXPORT)
+    add_definitions(-DLIBVIDEO_BUILDING_DLL)
+  endif(WIN32)
+endif(BUILD_SHARED_LIBS)
 
 
-GET_FILENAME_COMPONENT(cudaencoderpath ${CUDA_CUDART_LIBRARY} PATH)
+get_filename_component(cudaencoderpath ${CUDA_CUDART_LIBRARY} PATH)
 
-TARGET_LINK_LIBRARIES(niftknvapi  
+target_link_libraries(niftknvapi  
   ${NVAPI_LIBRARY}
   ${OPENGL_gl_LIBRARY}
   ${CUDA_CUDA_LIBRARY}
@@ -59,11 +62,12 @@ TARGET_LINK_LIBRARIES(niftknvapi
   ${cudaencoderpath}/nvcuvid.lib
 )
 
-# all of the nvidia-driver/cuda dependencies should be delay-loaded
-#  so this library would at least load on a machine that doesnt have nv hardware
-# FIXME: cuda-rt as well! but name is not fixed
-SET_TARGET_PROPERTIES(niftknvapi PROPERTIES LINK_FLAGS 
-    "/DELAYLOAD:nvcuvenc.dll /DELAYLOAD:nvcuvid.dll /DELAYLOAD:nvcuda.dll")
+if(MSVC)
+  # all of the nvidia-driver/cuda dependencies should be delay-loaded
+  #  so this library would at least load on a machine that doesnt have nv hardware
+  set_target_properties(niftknvapi PROPERTIES LINK_FLAGS 
+    "/DELAYLOAD:nvcuvenc.dll /DELAYLOAD:nvcuvid.dll /DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
+endif(MSVC)
 
 
 MITK_INSTALL(TARGETS niftknvapi)

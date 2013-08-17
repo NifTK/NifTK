@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "MorphologicalSegmentorPipeline.h"
-#include "itkConversionUtils.h"
-#include "itkMIDASHelper.h"
+#include <itkConversionUtils.h>
+#include <itkMIDASHelper.h>
 
 template<typename TPixel, unsigned int VImageDimension>
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>

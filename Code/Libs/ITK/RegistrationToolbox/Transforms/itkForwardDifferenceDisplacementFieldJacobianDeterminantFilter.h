@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef ITKForwardDifferenceisplacementFieldJacobianDeterminantFilter_H_
-#define ITKForwardDifferenceisplacementFieldJacobianDeterminantFilter_H_
+#ifndef itkForwardDifferenceDisplacementFieldJacobianDeterminantFilter_h
+#define itkForwardDifferenceDisplacementFieldJacobianDeterminantFilter_h
 
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
 
 namespace itk
 {

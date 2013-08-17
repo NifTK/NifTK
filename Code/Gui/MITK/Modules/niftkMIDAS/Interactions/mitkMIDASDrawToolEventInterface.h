@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASDrawToolEventInterface_h
-#define mitk_MIDASDrawToolEventInterface_h
+#ifndef mitkMIDASDrawToolEventInterface_h
+#define mitkMIDASDrawToolEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>

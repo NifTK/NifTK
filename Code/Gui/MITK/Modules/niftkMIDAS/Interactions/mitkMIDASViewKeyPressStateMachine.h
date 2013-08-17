@@ -12,14 +12,18 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASViewKeyPressStateMachine_h
-#define mitk_MIDASViewKeyPressStateMachine_h
+#ifndef mitkMIDASViewKeyPressStateMachine_h
+#define mitkMIDASViewKeyPressStateMachine_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include <mitkStateMachine.h>
 
+#include <vector>
+
 namespace mitk {
+
+class BaseRenderer;
 
 /**
  * \class MIDASViewPressStateMachine
@@ -34,6 +38,15 @@ public:
   mitkClassMacro(MIDASViewKeyPressStateMachine, StateMachine); // this creates the Self typedef
   mitkNewMacro2Param(Self, const char*, MIDASViewKeyPressResponder*);
 
+  /// \brief Tells if the state machine listens to the key events of the renderer.
+  bool HasRenderer(const mitk::BaseRenderer* renderer) const;
+
+  /// \brief Adds a renderer so that the state machine handles its key events.
+  void AddRenderer(const mitk::BaseRenderer* renderer);
+
+  /// \brief Removes a renderer so that the state machine does not handles its key events any more.
+  void RemoveRenderer(const mitk::BaseRenderer* renderer);
+
 protected:
 
   /// \brief Purposely hidden, protected constructor, so class is instantiated via static ::New() macro, where we pass in the state machine pattern name, and also the object to pass the data onto.
@@ -41,6 +54,8 @@ protected:
 
   /// \brief Purposely hidden, destructor.
   ~MIDASViewKeyPressStateMachine(){}
+
+  virtual bool HandleEvent(StateEvent const* stateEvent);
 
   /// \see mitk::StateMachine::CanHandleEvent
   float CanHandleEvent(const StateEvent *) const;
@@ -67,6 +82,9 @@ private:
 
   /// \brief the object that gets called, specified in constructor.
   MIDASViewKeyPressResponder* m_Responder;
+
+  /// \brief The renderers whose key events are listened to.
+  std::vector<const mitk::BaseRenderer*> m_Renderers;
 
 }; // end class
 

@@ -26,11 +26,7 @@
 #include <berryPlatform.h>
 
 const std::string TagTrackerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitagtracker");
-const float TagTrackerViewPreferencePage::MIN_SIZE = 0.01;
-const float TagTrackerViewPreferencePage::MAX_SIZE = 0.125;
 const bool TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS(true);
-const std::string TagTrackerViewPreferencePage::MIN_SIZE_NAME("min size");
-const std::string TagTrackerViewPreferencePage::MAX_SIZE_NAME("max size");
 const std::string TagTrackerViewPreferencePage::LISTEN_TO_EVENT_BUS_NAME("listen to event bus");
 const bool TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA(false);
 const std::string TagTrackerViewPreferencePage::DO_MONO_LEFT_CAMERA_NAME("mono left camera");
@@ -40,8 +36,6 @@ TagTrackerViewPreferencePage::TagTrackerViewPreferencePage()
 : m_MainControl(0)
 , m_ListenToEventBusPulse()
 , m_ManualUpdate(0)
-, m_MinSize(0)
-, m_MaxSize(0)
 , m_DoMonoLeftCamera(0)
 , m_Initializing(false)
 , m_TagTrackerViewPreferencesNode(0)
@@ -91,18 +85,6 @@ void TagTrackerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_ManualUpdate = new QRadioButton();
   formLayout->addRow("manual update", m_ManualUpdate);
 
-  m_MinSize = new QDoubleSpinBox();
-  m_MinSize->setMinimum(0);
-  m_MinSize->setMaximum(1);
-  m_MinSize->setDecimals(3);
-  formLayout->addRow("min size", m_MinSize);
-
-  m_MaxSize = new QDoubleSpinBox();
-  m_MaxSize->setMinimum(0);
-  m_MaxSize->setMaximum(1);
-  m_MaxSize->setDecimals(3);
-  formLayout->addRow("max size", m_MaxSize);
-
   m_DoMonoLeftCamera = new QCheckBox();
   formLayout->addRow("mono left camera only", m_DoMonoLeftCamera);
 
@@ -123,8 +105,6 @@ QWidget* TagTrackerViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TagTrackerViewPreferencePage::PerformOk()
 {
-  m_TagTrackerViewPreferencesNode->PutDouble(MIN_SIZE_NAME, m_MinSize->value());
-  m_TagTrackerViewPreferencesNode->PutDouble(MAX_SIZE_NAME, m_MaxSize->value());
   if (m_ListenToEventBusPulse->isChecked())
   {
     m_TagTrackerViewPreferencesNode->PutBool(LISTEN_TO_EVENT_BUS_NAME, true);
@@ -148,8 +128,6 @@ void TagTrackerViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TagTrackerViewPreferencePage::Update()
 {
-  m_MinSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MIN_SIZE_NAME, MIN_SIZE));
-  m_MaxSize->setValue(m_TagTrackerViewPreferencesNode->GetDouble(MAX_SIZE_NAME, MAX_SIZE));
   bool listenToEventBus = m_TagTrackerViewPreferencesNode->GetBool(LISTEN_TO_EVENT_BUS_NAME, LISTEN_TO_EVENT_BUS);
   if (listenToEventBus)
   {

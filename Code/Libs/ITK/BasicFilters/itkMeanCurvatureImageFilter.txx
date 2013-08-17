@@ -16,8 +16,8 @@
 #define __itkMeanCurvatureImageFilter_txx
 
 #include "itkMeanCurvatureImageFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 #include <math.h>
 
 namespace itk

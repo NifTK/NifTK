@@ -12,17 +12,17 @@
 #
 #============================================================================*/
 
-SET(niftkIGIGuiManager_DEPENDS
+set(niftkIGIGuiManager_DEPENDS
   niftkIGIGui
 )
 
-IF(NVAPI_FOUND)
-  SET(niftkIGIGuiManager_DEPENDS
+if(NVAPI_FOUND)
+  set(niftkIGIGuiManager_DEPENDS
     ${niftkIGIGuiManager_DEPENDS}
     niftkNVidia
     niftkNVidiaGui
   )
-ENDIF()
+endif()
 
 MITK_CREATE_MODULE(niftkIGIGuiManager
   EXPORT_DEFINE NIFTKIGIGUIMANAGER_EXPORT
@@ -32,6 +32,6 @@ MITK_CREATE_MODULE(niftkIGIGuiManager
   QT_MODULE 
 )
 
-IF(BUILD_TESTING)  
-  #ADD_SUBDIRECTORY(Testing)
-ENDIF()
+if(BUILD_TESTING)  
+  #add_subdirectory(Testing)
+endif()

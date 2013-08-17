@@ -17,13 +17,13 @@
 #endif
 #include <iostream>
 #include <memory>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkTranslationTransform.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkSSDRegistrationForceFilter.h"
-#include "itkNMIImageToImageMetric.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkTranslationTransform.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkSSDRegistrationForceFilter.h>
+#include <itkNMIImageToImageMetric.h>
 
 int SSDRegistrationForceFilterTest(int argc, char * argv[])
 {

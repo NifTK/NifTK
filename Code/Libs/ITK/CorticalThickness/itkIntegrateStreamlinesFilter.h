@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkIntegrateStreamlinesFilter_h
-#define __itkIntegrateStreamlinesFilter_h
+#ifndef itkIntegrateStreamlinesFilter_h
+#define itkIntegrateStreamlinesFilter_h
 
-#include "itkImage.h"
-#include "itkVector.h"
+#include <itkImage.h>
+#include <itkVector.h>
 #include "itkBaseCTEStreamlinesFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
 
 namespace itk {
 /** 

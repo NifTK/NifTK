@@ -286,7 +286,21 @@ EXCLUDE_PATTERNS      =
 # directories that contain example code fragments that are included (see 
 # the \include command). 
 
-EXAMPLE_PATH     = 
+EXAMPLE_PATH     = @CMAKE_BINARY_DIR@/LICENSE.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_Aruco.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_Boost.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_CTK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_DCMTK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_GDCM.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_ITK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_MITK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_NiftyLink.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_NiftyReg.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_NiftySeg.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_NiftySim.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_OpenCV.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_Qt.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_VTK.txt
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cxx 
@@ -302,7 +316,19 @@ EXAMPLE_PATTERNS      =
 IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/it.unito.cim.intensityprofile/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.affinetransform/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.commonapps/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftyview/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igidatasources/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igioverlayeditor/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igipointreg/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igisurfacerecon/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igisurfacereg/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igitagtracker/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igitrackedimage/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igitrackedpointer/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igiundistort/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagestatistics/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midaseditor/documentation/UserManual \
@@ -315,6 +341,7 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.surfaceextractor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.surgicalguidance/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.thumbnail/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.xnat/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/it.unito.cim.intensityprofile \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.affinetransform \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.gui.qt.niftyview \
@@ -330,7 +357,7 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.surfaceextractor \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.surgicalguidance \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.thumbnail 
-                        
+                         
                         
                         
                         

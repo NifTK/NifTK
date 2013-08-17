@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "zlib.h"
+#include <zlib.h>
 #include "XnatRestZip.h"
 
 #ifdef STDC

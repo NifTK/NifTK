@@ -18,13 +18,13 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkMaskedImageRegistrationMethod.h"
-#include "itkSingleResolutionImageRegistrationBuilder.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkSmartPointer.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkSmartPointer.h>
 
 /**
  * Aim of this test is simply to tesReg2D-Mask-1t the masking mechanism

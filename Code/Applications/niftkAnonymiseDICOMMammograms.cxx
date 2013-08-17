@@ -22,25 +22,25 @@
  */
 
 
-#include "FileHelper.h"
+#include <FileHelper.h>
 
-#include "itkLogHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
-#include "itkGDCMImageIO.h"
-#include "itkImageLinearIteratorWithIndex.h"
+#include <itkLogHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
+#include <itkImageLinearIteratorWithIndex.h>
 
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-#include "boost/progress.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/progress.hpp>
 
 #include <vector>
 
-#include "niftkAnonymiseDICOMMammogramsCLP.h"
+#include <niftkAnonymiseDICOMMammogramsCLP.h>
 
 
 namespace fs = boost::filesystem;
@@ -322,10 +322,9 @@ int main( int argc, char *argv[] )
     if ( flgAnonymiseImageLabel )
     {
 
-      // Determine if this is a left or right breast by calculating the CoM
-
       InputImageType::RegionType region;
       InputImageType::SizeType   size;
+      InputImageType::SizeType   scanSize;
       InputImageType::IndexType  start;
       InputImageType::IndexType  idx;
 
@@ -333,10 +332,23 @@ int main( int argc, char *argv[] )
 
       size = region.GetSize();
 
-      start[0] = size[0];
-      start[1] = size[1];
+
+    if ( labelSide == std::string( "Automatic" ) )
+    {
+
+      // Determine if this is a left or right breast by calculating the CoM
+
+      start[0] = size[0]/10;
+      start[1] = 0;
+
+      scanSize[0] = size[0]*8/10;
+      scanSize[1] = size[1];
+
+      region.SetSize(  scanSize  );
+      region.SetIndex( start );
 
       std::cout << "Image size: " << size << std::endl;
+      std::cout << "Region: " << region << std::endl;
 
       unsigned int iRow = 0;
       unsigned int nRows = 5;
@@ -393,6 +405,19 @@ int main( int argc, char *argv[] )
 	breastSide = LEFT_BREAST_SIDE;
 	std::cout << "LEFT breast (label on right-hand side)" << std::endl;
       }
+    }
+
+    else if ( labelSide == std::string( "Right" ) )
+    {
+    breastSide = LEFT_BREAST_SIDE;
+    std::cout << "Label on RIGHT-hand side (left breast)" << std::endl;
+    }
+
+    else if ( labelSide == std::string( "Left" ) )
+    {
+    breastSide = RIGHT_BREAST_SIDE;
+    std::cout << "Label on left-hand side (right breast)" << std::endl;
+    }
 
 
       // Set the label region to zero
@@ -442,7 +467,7 @@ int main( int argc, char *argv[] )
     if ( flgAnonymiseDICOMHeader )
     {
       AnonymiseTag( flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00-00-00"     ); // Patient's Birth Date                        
+      AnonymiseTag( flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
       AnonymiseTag( flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
       AnonymiseTag( flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
       AnonymiseTag( flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           

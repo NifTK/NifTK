@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkSetOutputVectorToCurrentPositionFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkSetOutputVectorToCurrentPositionFilter.h>
 
 /**
  * Basic tests for SetOutputVectorToCurrentPositionFilterTest

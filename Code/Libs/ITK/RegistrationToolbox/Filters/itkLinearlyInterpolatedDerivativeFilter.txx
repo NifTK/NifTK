@@ -16,13 +16,13 @@
 #define __itkLinearlyInterpolatedDerivativeFilter_txx
 
 #include "itkLinearlyInterpolatedDerivativeFilter.h"
-#include "itkObjectFactory.h"
-#include "itkIdentityTransform.h"
-#include "itkProgressReporter.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkPoint.h"
+#include <itkObjectFactory.h>
+#include <itkIdentityTransform.h>
+#include <itkProgressReporter.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkPoint.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

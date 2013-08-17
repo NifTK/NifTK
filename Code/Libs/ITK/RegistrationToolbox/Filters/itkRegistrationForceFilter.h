@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkRegistrationForceFilter_h
-#define __itkRegistrationForceFilter_h
-#include "itkHistogramSimilarityMeasure.h"
-#include "itkImageToImageFilter.h"
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkDisplacementFieldJacobianDeterminantFilter.h"
+#ifndef itkRegistrationForceFilter_h
+#define itkRegistrationForceFilter_h
+#include <itkHistogramSimilarityMeasure.h>
+#include <itkImageToImageFilter.h>
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
 
 namespace itk {
 /** 

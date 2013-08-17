@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __NIFTK_IOEXCEPTION_H
-#define __NIFTK_IOEXCEPTION_H
+#ifndef IOException_h
+#define IOException_h
 
 #include "ExceptionObject.h"
 

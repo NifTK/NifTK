@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CoordinateAxesVtkMapper3D_h
-#define CoordinateAxesVtkMapper3D_h
+#ifndef mitkCoordinateAxesVtkMapper3D_h
+#define mitkCoordinateAxesVtkMapper3D_h
 
 #include "niftkCoreExports.h"
 
@@ -37,6 +37,11 @@ public:
 
   virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer);
   const CoordinateAxesData* GetInput();
+
+  /**
+   * \see mitk::Mapper::SetDefaultProperties()
+   */
+  static void SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer = NULL, bool overwrite = false);
 
 protected:
   CoordinateAxesVtkMapper3D();

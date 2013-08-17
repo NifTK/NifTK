@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkArray.h"
-#include "itkPoint.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkArray.h>
+#include <itkPoint.h>
 
 int EulerAffine3DTransformTest(int argc, char * argv[])
 {

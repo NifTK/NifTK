@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkFluidVelocityToDeformationFilter_h
-#define __itkFluidVelocityToDeformationFilter_h
+#ifndef itkFluidVelocityToDeformationFilter_h
+#define itkFluidVelocityToDeformationFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 
 /**

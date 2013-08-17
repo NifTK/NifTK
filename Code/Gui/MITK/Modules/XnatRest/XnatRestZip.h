@@ -37,8 +37,8 @@
 
 */
 
-#ifndef _zip12_H
-#define _zip12_H
+#ifndef XnatRestZip_h
+#define XnatRestZip_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +47,7 @@ extern "C" {
 //#define HAVE_BZIP2
 
 #ifndef _ZLIB_H
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifndef _ZLIBIOAPI_H
@@ -55,7 +55,7 @@ extern "C" {
 #endif
 
 #ifdef HAVE_BZIP2
-#include "bzlib.h"
+#include <bzlib.h>
 #endif
 
 #define Z_BZIP2ED 12

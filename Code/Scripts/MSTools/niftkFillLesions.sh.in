@@ -279,26 +279,28 @@ function cfityk_v098_OR_NEWER_T1() {
 # Param	    : $2 delete orientation to the mask file
 # Param     : $3 input images orientation
 # Param     : $4 length scale of non-uniformity
+# Param     : $5 dir output
 function N3() { 
 	local image=$1
 	local deleteorient=$2
 	local orient_flag=$3
 	local nu_distance=$4
+	local dir_output=$5
 	
 	# Normalization
 
 	# Delete temporally files
 	execute_command_or_else_stop "rm -f *.mnc ${image}_n3*"
 	
-	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}.nii ${image}.mnc" 
-	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}_mask.nii ${image}_mask.mnc"
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}.nii ${dir_output}/${image}.mnc" 
+	execute_command_or_else_stop "${mnidir}nii2mnc $orientation ${image}_mask.nii ${dir_output}/${image}_mask.mnc"
 	
 	execute_command_or_else_stop "${n3dir}nu_correct -normalize_field -clobber -distance $nu_distance \
-					 -mask ${image}_mask.mnc \
-					 ${image}.mnc \
-					 ${image}_n3.mnc"
+					 -mask ${dir_output}/${image}_mask.mnc \
+					 ${dir_output}/${image}.mnc \
+					 ${dir_output}/${image}_n3.mnc"
 	
-	execute_command_or_else_stop ${mnidir}"mnc2nii -nii ${image}_n3.mnc ${image}_n3"
+	execute_command_or_else_stop ${mnidir}"mnc2nii -nii ${dir_output}/${image}_n3.mnc ${dir_output}/${image}_n3"
 	execute_command_or_else_stop "rm -f *.mnc"
 	
 	# The next line may be need to be commented depending of the results
@@ -354,7 +356,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Fill lesions</category>
+   <category>Multiple Sclerosis Tools.Fill lesions</category>
    <title>Automated lesion-filling</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, to develop an automated lesion-filling technique (LEAP; LEsion Automated Preprocessing) that would reduce lesion-associated brain tissue segmentation bias (which is known to affect automated brain gray [GM] and white matter [WM] tissue segmentations in people who have multiple sclerosis).<br>
    <ul>
@@ -519,7 +521,7 @@ For the installation and configuration of the different needed software in this 
           <name>same</name>
           <longflag>same</longflag>      
           <description>Always use the same temp directory for computing (this option is useful mixed with -debug)</description>
-          <label>Temp directory</label>
+          <label>Same temp directory</label>
       </boolean>
     </parameters>
 </executable>
@@ -700,7 +702,8 @@ if [ ${same} = true ] ; then
 else
 	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
 fi
-dir_output=${patient}-${dir_output}
+dir_main=`pwd`
+dir_output="/tmp/${patient}-${dir_output}"
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
@@ -744,7 +747,7 @@ progressXML "0.40" "Run non-uniformity correction using BET image"
 
 # RUN NON-UNIFORMITY CORRECTION USING BET IMAGE
 if [[ ! -f "input_image_bet_n3.nii"  ]] ; then
-	N3 "input_image_bet" "${deleteorient}" "${orient_flag}" "${nu_distance}"
+	N3 "input_image_bet" "${deleteorient}" "${orient_flag}" "${nu_distance}" "${dir_output}"
 else
 	echo "File input_image_bet_n3.nii exists, we don't repeat the calculation "
 fi
@@ -860,7 +863,7 @@ name_file=`basename ${OUTPUT_IMAGE}`
 name=${name_file%%.*};
 extension=${name_file#*.};
 if [ "${dir_file}" == "." ] ; then
-	dir_result="../"
+	dir_result="${dir_main}/"
 else
 	dir_result="${dir_file}/"
 fi
@@ -869,6 +872,8 @@ fi
 copyFileToDestination "filled.nii" "${dir_result}${name}.${extension}"
 execute_command_or_else_stop "fslcpgeom input_image.nii ${dir_result}${name}.${extension}"
 
+# Go to the main directory
+execute_command_or_else_stop "cd ${dir_main}"
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkLagrangianInitializedRelaxStreamlinesFilter_h
-#define __itkLagrangianInitializedRelaxStreamlinesFilter_h
+#ifndef itkLagrangianInitializedRelaxStreamlinesFilter_h
+#define itkLagrangianInitializedRelaxStreamlinesFilter_h
 
 #include "itkRelaxStreamlinesFilter.h"
-#include "itkContinuousIndex.h"
+#include <itkContinuousIndex.h>
 
 namespace itk {
 /** 

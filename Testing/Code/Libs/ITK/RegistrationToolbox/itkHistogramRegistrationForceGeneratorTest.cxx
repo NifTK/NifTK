@@ -16,11 +16,11 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkNMILocalHistogramDerivativeForceFilter.h"
-#include "itkNMIImageToImageMetric.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
-#include "itkTranslationTransform.h"
-#include "itkArray.h"
+#include <itkNMILocalHistogramDerivativeForceFilter.h>
+#include <itkNMIImageToImageMetric.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkTranslationTransform.h>
+#include <itkArray.h>
 
 /**
  * Test the NMILocalHistogramDerivativeForceFilter.

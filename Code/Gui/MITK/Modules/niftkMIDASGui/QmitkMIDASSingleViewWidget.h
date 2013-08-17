@@ -16,22 +16,29 @@
 #define QmitkMIDASSingleViewWidget_h
 
 #include <niftkMIDASGuiExports.h>
-#include "mitkMIDASEnums.h"
-#include "QmitkMIDASStdMultiWidget.h"
-#include <QWidget>
-#include <QColor>
+
+#include <deque>
+
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
 #include <mitkRenderingManager.h>
 #include <QmitkRenderWindow.h>
+
+#include <QColor>
+#include <QWidget>
+
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASViewKeyPressResponder.h>
+#include <mitkMIDASViewKeyPressStateMachine.h>
+#include "QmitkMIDASStdMultiWidget.h"
 
 class QGridLayout;
 
 /**
  * \class QmitkMIDASSingleViewWidget
  * \brief A widget to wrap a single QmitkMIDASStdMultiWidget view,
- * providing methods for switching the view mode, remembering the last slice,
- * magnification and in the future camera position.
+ * providing methods for switching the render window layout, remembering
+ * the last slice, magnification and cursor position.
  *
  * IMPORTANT: This class acts as a wrapper for QmitkMIDASStdMultiWidget.
  * Do not expose QmitkMIDASStdMultiWidget, or any member variables, or any
@@ -62,7 +69,8 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa QmitkMIDASStdMultiWidget
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidget : public QWidget {
+class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+{
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
   Q_OBJECT;
@@ -71,19 +79,16 @@ public:
 
   friend class QmitkMIDASSegmentationViewWidget;
 
-  QmitkMIDASSingleViewWidget(QWidget *parent);
+  QmitkMIDASSingleViewWidget(QWidget* parent);
 
   QmitkMIDASSingleViewWidget(QString windowName,
                              double minimumMagnification,
                              double maximumMagnification,
-                             QWidget *parent = 0,
+                             QWidget* parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0
                              );
   ~QmitkMIDASSingleViewWidget();
-
-  /// \brief Returns true if the view is axial, coronal or sagittal and false otherwise (e.g. if ortho-view or 3D view).
-  bool IsSingle2DView() const;
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -137,17 +142,23 @@ public:
   /// \brief Get the flag controlling 2D cursors on/off.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  /// \brief Tells if the direction annotations are visible.
+  bool AreDirectionAnnotationsVisible() const;
+
+  /// \brief Sets the visibility of the direction annotations.
+  void SetDirectionAnnotationsVisible(bool visible);
+
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   bool GetShow3DWindowInOrthoView() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) view. In 3D view, always visible.
+  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
   void SetShow3DWindowInOrthoView(bool enabled);
 
-  /// \brief Sets a flag to determin if we remember the view settings such as slice, cursor position, magnification, time step when we switch between views axial, coronal, sagittal.
-  void SetRememberViewSettingsPerOrientation(bool remember);
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
+  void SetRememberSettingsPerLayout(bool remember);
 
-  /// \brief Get the flag to determin if we remember the view settings such as slice, cursor position, magnification, time step when we switch between views axial, coronal, sagittal.
-  bool GetRememberViewSettingsPerOrientation() const;
+  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
+  bool GetRememberSettingsPerLayout() const;
 
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
@@ -155,17 +166,11 @@ public:
   /// \brief Gets the background colour.
   QColor GetBackgroundColor() const;
 
-  /// \brief Returns the minimum allowed slice number for a given orientation.
-  unsigned int GetMinSlice(MIDASOrientation orientation) const;
+  /// \brief Returns the maximum allowed slice index for a given orientation.
+  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Returns the maximum allowed slice number for a given orientation.
-  unsigned int GetMaxSlice(MIDASOrientation orientation) const;
-
-  /// \brief Gets the minimum time step, or -1 if the widget is currently showing multiple views.
-  unsigned int GetMinTime() const;
-
-  /// \brief Gets the maximum time step, or -1 if the widget is currently showing multiple views.
-  unsigned int GetMaxTime() const;
+  /// \brief Gets the maximum time step.
+  unsigned int GetMaxTimeStep() const;
 
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
@@ -191,7 +196,7 @@ public:
   /// \brief As each widget has its own rendering manager, we have to manually ask each widget to re-render.
   void RequestUpdate();
 
-  /// \brief Sets the world geometry that we are sampling.
+  /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
   void SetGeometry(mitk::Geometry3D::Pointer geometry);
 
   /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
@@ -200,32 +205,30 @@ public:
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
   void SetBoundGeometry(mitk::Geometry3D::Pointer geometry);
 
-  /// \brief If we tell the widget to be in bound mode, it uses the bound geometries.
+  /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
+  /// this viewer will be bound to other viewers in the same multi viewer widget.
   void SetBoundGeometryActive(bool isBound);
 
-  /// \brief Returns the bound flag.
-  bool GetBoundGeometryActive();
+  /// \brief Returns true if the geometry of the viewer is bound to other viewers, otherwise false.
+  bool IsBoundGeometryActive();
 
-  /// \brief Get the current slice number for a given orientation.
-  unsigned int GetSliceNumber(MIDASOrientation orientation) const;
+  /// \brief Get the current slice index for a given orientation.
+  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
 
-  /// \brief Set the current slice number for a given orientation.
-  void SetSliceNumber(MIDASOrientation orientation, unsigned int sliceNumber);
+  /// \brief Set the current slice index for a given orientation.
+  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
 
-  /// \brief Get the current time step number.
-  unsigned int GetTime() const;
+  /// \brief Get the current time step.
+  unsigned int GetTimeStep() const;
 
-  /// \brief Set the current time step number.
-  void SetTime(unsigned int timeSlice);
+  /// \brief Set the current time step.
+  void SetTimeStep(unsigned int timeStep);
 
-  /// \brief Get the view ID.
-  MIDASView GetView() const;
+  /// \brief Gets the render window layout.
+  MIDASLayout GetLayout() const;
 
-  /// \brief Sets the view to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetView(MIDASView view, bool fitToDisplay);
-
-  /// \brief In contrast to SetView this method does as little as possible, to be analagous to just switching the orientation.
-  void SwitchView(MIDASView view);
+  /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
+  void SetLayout(MIDASLayout layout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -239,23 +242,41 @@ public:
   /// \brief Set the current cursor position on the render window in pixels, normalised with the size of the render windows.
   void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
-  /// \brief Get the current magnification factor.
+  /// \brief Get the current magnification.
   double GetMagnification() const;
 
-  /// \brief Set the current magnification factor.
+  /// \brief Set the current magnification.
   void SetMagnification(double magnification);
 
-  /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
+  /// \brief Get the current scale factor.
+  double GetScaleFactor() const;
+
+  /// \brief Set the current scale factor.
+  void SetScaleFactor(double scaleFactor);
+
+  /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
 
-  /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
+  /// \brief Gets the flag that controls whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  /// \brief Sets the flag controlling whether the display interactors are enabled for the render windows.
-  void SetDisplayInteractionEnabled(bool enabled);
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
 
-  /// \brief Gets the flag controlling whether the display interactors are enabled for the render windows.
-  bool IsDisplayInteractionEnabled() const;
+  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
+
+  /// \brief Gets the flag that controls whether the cursor position is bound across the render windows.
+  bool AreCursorPositionsBound() const;
+
+  /// \brief Sets the flag that controls whether the cursor position is bound across the render windows.
+  void SetCursorPositionsBound(bool bound);
+
+  /// \brief Gets the flag that controls whether the scale factors are bound across the render windows.
+  bool AreScaleFactorsBound() const;
+
+  /// \brief Sets the flag that controls whether the scale factors are bound across the render windows.
+  void SetScaleFactorsBound(bool bound);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -263,33 +284,81 @@ public:
   /// \brief Returns pointers to the widget planes.
   std::vector<mitk::DataNode*> GetWidgetPlanes();
 
-  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
+  /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice index to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
+  /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+
+  /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+
+  /// \brief Move anterior a slice.
+  bool MoveAnterior();
+
+  /// \brief Move posterior a slice.
+  bool MovePosterior();
+
+  /// \brief Switch to Axial.
+  bool SwitchToAxial();
+
+  /// \brief Switch to Sagittal.
+  bool SwitchToSagittal();
+
+  /// \brief Switch to Coronal.
+  bool SwitchToCoronal();
+
+  /// \brief Switch to 3D.
+  bool SwitchTo3D();
+
+  /// \brief Switch the from single window to multiple windows or back
+  bool ToggleMultiWindowLayout();
+
+  /// \brief Shows or hides the cursor.
+  bool ToggleCursor();
+
 protected:
 
-  virtual void paintEvent(QPaintEvent *event);
+  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
+  virtual void paintEvent(QPaintEvent* event);
 
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleView widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget *widget, QmitkRenderWindow *window, int sliceNumber);
-  void CursorPositionChanged(QmitkMIDASSingleViewWidget *widget, const mitk::Vector3D& cursorPosition);
-  void MagnificationChanged(QmitkMIDASSingleViewWidget *widget, double magnification);
+
+  /// \brief Emitted when the selected slice has changed in a render window of this view.
+  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Emitted when the cursor position has changed in this view.
+  void CursorPositionChanged(QmitkMIDASSingleViewWidget* thisView, const mitk::Vector3D& cursorPosition);
+
+  /// \brief Emitted when the scale factor has changed in this view.
+  void ScaleFactorChanged(QmitkMIDASSingleViewWidget* thisView, double scaleFactor);
+
+  /// \brief Emitted when the window layout has changed in this view.
+  void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
+
+  /// \brief Emitted when the geometry of this view has changed.
+  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::Geometry3D* geometry);
 
 protected slots:
 
-  // Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* window, int sliceNumber);
+  /// \brief Called when nodes are dropped on the contained render windows.
+  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+
+  /// \brief Called when the selected slice has changed in a render window.
+  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Called when the cursor position has changed.
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
-  virtual void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the scale factor has changed.
+  virtual void OnScaleFactorChanged(double scaleFactor);
 
 private:
-
 
   /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
   void InitializeStandardViews(const mitk::Geometry3D * geometry );
@@ -300,40 +369,52 @@ private:
                   mitk::DataStorage* dataStorage = 0
                  );
 
-  void SetActiveGeometry();
   inline int Index(int index) const
   {
-    return (index << 1) + m_IsBound;
+    return (index << 1) + m_IsBoundGeometryActive;
   }
-  void StorePosition();
-  void ResetCurrentPosition();
   void ResetRememberedPositions();
 
-  mitk::DataStorage::Pointer           m_DataStorage;
-  mitk::RenderingManager::Pointer      m_RenderingManager;
+  /// \brief Used to move either anterior/posterior by a certain number of slices.
+  bool MoveAnteriorPosterior(int slices);
 
-  QGridLayout                         *m_Layout;
-  QmitkMIDASStdMultiWidget            *m_MultiWidget;
+  mitk::DataStorage::Pointer m_DataStorage;
+  mitk::RenderingManager::Pointer m_RenderingManager;
 
-  bool                                 m_IsBound;
-  mitk::Geometry3D::Pointer            m_UnBoundGeometry;              // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer            m_BoundGeometry;                // Passed in, when we do "bind", so shared amongst multiple windows.
-  mitk::Geometry3D::Pointer            m_ActiveGeometry;               // The one we actually use, which points to either of the two above.
+  QGridLayout* m_GridLayout;
+  QmitkMIDASStdMultiWidget* m_MultiWidget;
 
-  double                               m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
-  double                               m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  bool m_IsBoundGeometryActive;
+  mitk::Geometry3D::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::Geometry3D::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
-  MIDASView                            m_View;
-  MIDASOrientation                     m_Orientation;
+  double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
+  double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  int                                  m_SliceNumbers[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
-  int                                  m_TimeSliceNumbers[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-  mitk::Vector3D                       m_CursorPositions[MIDAS_VIEW_NUMBER * 2]; // Two each for view. Unbound, then bound, alternatingly.
-  double                               m_Magnifications[MIDAS_VIEW_NUMBER * 2];    // Two each for view. Unbound, then bound, alternatingly.
-  bool                                 m_ViewInitialised[MIDAS_VIEW_NUMBER * 2];         // Two each for view. Unbound, then bound, alternatingly.
+  MIDASLayout m_Layout;
+  MIDASOrientation m_Orientation;
 
-  bool                                 m_NavigationControllerEventListening;
-  bool                                 m_RememberViewSettingsPerOrientation;
+  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
+//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
+  double m_ScaleFactors[MIDAS_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
+  bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
+
+  bool m_NavigationControllerEventListening;
+  bool m_RememberSettingsPerLayout;
+
+  MIDASLayout m_SingleWindowLayout;
+  MIDASLayout m_MultiWindowLayout;
+
+  mitk::Vector3D m_CursorPosition;
+  mitk::Vector3D m_LastCursorPosition;
+//  mitk::Vector3D m_SecondLastCursorPosition;
+  mitk::Point3D m_SelectedPosition;
+  mitk::Point3D m_LastSelectedPosition;
+  mitk::Point3D m_SecondLastSelectedPosition;
+//  std::deque<mitk::Point3D> m_LastSelectedPositions;
+
+  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
 };
 
 #endif

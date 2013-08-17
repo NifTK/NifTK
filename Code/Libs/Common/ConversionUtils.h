@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __NIFTK_CONVERSIONUTILS_H
-#define __NIFTK_CONVERSIONUTILS_H
+#ifndef ConversionUtils_h
+#define ConversionUtils_h
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
 #include <string>

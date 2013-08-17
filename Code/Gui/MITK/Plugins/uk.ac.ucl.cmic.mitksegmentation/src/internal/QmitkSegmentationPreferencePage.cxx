@@ -30,7 +30,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include <QmitkMIDASBaseSegmentationFunctionality.h>
 
 QmitkSegmentationPreferencePage::QmitkSegmentationPreferencePage()
 : m_MainControl(0)

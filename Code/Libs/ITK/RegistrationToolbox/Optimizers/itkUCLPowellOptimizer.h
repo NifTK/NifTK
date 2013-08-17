@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkUCLPowellOptimizer_h
-#define __itkUCLPowellOptimizer_h
+#ifndef itkUCLPowellOptimizer_h
+#define itkUCLPowellOptimizer_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
 #include <itkVector.h>
 #include <itkMatrix.h>

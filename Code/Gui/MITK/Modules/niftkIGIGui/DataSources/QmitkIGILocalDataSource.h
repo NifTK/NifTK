@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCE_H
-#define QMITKIGILOCALDATASOURCE_H
+#ifndef QmitkIGILocalDataSource_h
+#define QmitkIGILocalDataSource_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGIDataSource.h"

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef ITKRegionParametersDataNodeProperty_h
-#define ITKRegionParametersDataNodeProperty_h
+#ifndef mitkITKRegionParametersDataNodeProperty_h
+#define mitkITKRegionParametersDataNodeProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkBaseProperty.h"
+#include <mitkBaseProperty.h>
 #include <algorithm>
 
 namespace mitk {

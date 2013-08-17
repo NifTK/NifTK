@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkBasicImageFeaturesImageFilter_h
-#define __itkBasicImageFeaturesImageFilter_h
+#ifndef itkBasicImageFeaturesImageFilter_h
+#define itkBasicImageFeaturesImageFilter_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 #include "itkLewisGriffinRecursiveGaussianImageFilter.h"
-#include "itkMaskImageFilter.h"
+#include <itkMaskImageFilter.h>
 
 #include <vnl/vnl_double_2.h>
 

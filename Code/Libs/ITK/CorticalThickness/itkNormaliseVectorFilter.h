@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkNormaliseVectorFilter_h
-#define __itkNormaliseVectorFilter_h
+#ifndef itkNormaliseVectorFilter_h
+#define itkNormaliseVectorFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 /**

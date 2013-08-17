@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef MITKIGINVIDIADATATYPE_H
-#define MITKIGINVIDIADATATYPE_H
+#ifndef mitkIGINVidiaDataType_h
+#define mitkIGINVidiaDataType_h
 
 #include "niftkNVidiaExports.h"
-#include "mitkIGIDataType.h"
+#include <mitkIGIDataType.h>
 
 namespace mitk
 {
@@ -36,6 +36,8 @@ public:
   void SetValues(unsigned int cookie, unsigned int sn, unsigned __int64 gputime);
 
   unsigned int GetSequenceNumber() const;
+
+  unsigned int GetCookie() const;
 
 protected:
 

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkHighResRelaxStreamlinesFilter_h
-#define __itkHighResRelaxStreamlinesFilter_h
+#ifndef itkHighResRelaxStreamlinesFilter_h
+#define itkHighResRelaxStreamlinesFilter_h
 
 #include "itkLagrangianInitializedRelaxStreamlinesFilter.h"
 #include "itkHighResLaplacianSolverImageFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
+#include <itkVectorInterpolateImageFunction.h>
 
 namespace itk {
 /** 

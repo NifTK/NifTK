@@ -839,7 +839,7 @@ IntensityProfileView::getXValues(mitk::DataNode* node, QVector<double>& xValues,
   if (node->GetProperty(xValueOrderFloatProp, "X value order")) {
     mitk::FloatLookupTable xValueOrderLut = xValueOrderFloatProp->GetValue();
     for (int i = 0; i < xValueOrder.size(); ++i) {
-      xValueOrder[i] = xValueOrderLut.GetTableValue(i);
+      xValueOrder[i] = static_cast<unsigned>(xValueOrderLut.GetTableValue(i));
     }
   }
   else {

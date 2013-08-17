@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __itkNIFTKTransformIOFactory_h
-#define __itkNIFTKTransformIOFactory_h
+#ifndef itkNIFTKTransformIOFactory_h
+#define itkNIFTKTransformIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkObjectFactoryBase.h"
-#include "itkTransformIOBase.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <itkObjectFactoryBase.h>
+#include <itkTransformIOBase.h>
+#include <niftkITKWin32ExportHeader.h>
 
 namespace itk
 {

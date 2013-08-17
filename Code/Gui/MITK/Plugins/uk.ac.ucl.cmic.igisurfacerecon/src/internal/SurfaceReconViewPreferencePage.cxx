@@ -13,25 +13,28 @@
 =============================================================================*/
 
 #include "SurfaceReconViewPreferencePage.h"
-
+#include <cassert>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QPushButton>
-
+#include <QFileDialog>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string SurfaceReconViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacerecon");
+//-----------------------------------------------------------------------------
+const char* SurfaceReconViewPreferencePage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igisurfacerecon";
+const char* SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
+const char* SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName   = "use undistort default path";
+const char* SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName    = "default triangulation error";
+const char* SurfaceReconViewPreferencePage::s_DefaultMinDepthRangePrefsName         = "default min depth range";
+const char* SurfaceReconViewPreferencePage::s_DefaultMaxDepthRangePrefsName         = "default max depth range";
 
 //-----------------------------------------------------------------------------
 SurfaceReconViewPreferencePage::SurfaceReconViewPreferencePage()
-: m_MainControl(0)
-, m_DummyButton(0)
-, m_Initializing(false)
-, m_SurfaceReconViewPreferencesNode(0)
+: m_UseUndistortPluginDefaultPath(false)
 {
 }
 
@@ -48,6 +51,13 @@ SurfaceReconViewPreferencePage::SurfaceReconViewPreferencePage(const SurfaceReco
 //-----------------------------------------------------------------------------
 SurfaceReconViewPreferencePage::~SurfaceReconViewPreferencePage()
 {
+  bool  ok = false;
+  ok = disconnect(m_DefaultCalibrationLocationBrowseButton, SIGNAL(clicked()), this, SLOT(OnDefaultPathBrowseButtonClicked()));
+  assert(ok);
+  ok = disconnect(m_UseUndistortionDefaultPathRadioButton, SIGNAL(clicked()), this, SLOT(OnUseUndistortRadioButtonClicked()));
+  assert(ok);
+  ok = disconnect(m_UseOwnLocationRadioButton, SIGNAL(clicked()), this, SLOT(OnUseUndistortRadioButtonClicked()));
+  assert(ok);
 }
 
 
@@ -59,39 +69,72 @@ void SurfaceReconViewPreferencePage::Init(berry::IWorkbench::Pointer )
 
 
 //-----------------------------------------------------------------------------
+void SurfaceReconViewPreferencePage::OnDefaultPathBrowseButtonClicked()
+{
+  QString   file = QFileDialog::getExistingDirectory(GetQtControl(), "Calibration File Path", m_DefaultCalibrationFilePath);
+  if (!file.isEmpty())
+  {
+    m_DefaultCalibrationFilePath = file;
+    m_DefaultCalibrationLocationLineEdit->setText(m_DefaultCalibrationFilePath);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconViewPreferencePage::OnUseUndistortRadioButtonClicked()
+{
+  if (m_UseUndistortionDefaultPathRadioButton->isChecked())
+  {
+    assert(!m_UseOwnLocationRadioButton->isChecked());
+    m_UseUndistortPluginDefaultPath = true;
+  }
+  else
+  {
+    assert(m_UseOwnLocationRadioButton->isChecked());
+    m_UseUndistortPluginDefaultPath = false;
+  }
+
+  m_DefaultCalibrationLocationLineEdit->setEnabled(!m_UseUndistortPluginDefaultPath);
+  m_DefaultCalibrationLocationBrowseButton->setEnabled(!m_UseUndistortPluginDefaultPath);
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconViewPreferencePage::CreateQtControl(QWidget* parent)
 {
-  m_Initializing = true;
+  setupUi(parent);
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  bool  ok = false;
+  ok = connect(m_DefaultCalibrationLocationBrowseButton, SIGNAL(clicked()), this, SLOT(OnDefaultPathBrowseButtonClicked()));
+  assert(ok);
+  ok = connect(m_UseUndistortionDefaultPathRadioButton, SIGNAL(clicked()), this, SLOT(OnUseUndistortRadioButtonClicked()), Qt::QueuedConnection);
+  assert(ok);
+  ok = connect(m_UseOwnLocationRadioButton, SIGNAL(clicked()), this, SLOT(OnUseUndistortRadioButtonClicked()), Qt::QueuedConnection);
+  assert(ok);
 
-  m_SurfaceReconViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  m_SurfaceReconViewPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
 
-  m_MainControl = new QWidget(parent);
-  QFormLayout *formLayout = new QFormLayout;
-
-  m_DummyButton = new QPushButton();
-  formLayout->addRow("dummy", m_DummyButton);
-
-  m_MainControl->setLayout(formLayout);
-  this->Update();
-
-  m_Initializing = false;
+  Update();
 }
 
 
 //-----------------------------------------------------------------------------
 QWidget* SurfaceReconViewPreferencePage::GetQtControl() const
 {
-  return m_MainControl;
+  return SurfaceReconViewPreferencePageWidget;
 }
 
 
 //-----------------------------------------------------------------------------
 bool SurfaceReconViewPreferencePage::PerformOk()
 {
+  m_SurfaceReconViewPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultCalibrationLocationLineEdit->text().toStdString());
+  m_SurfaceReconViewPreferencesNode->PutBool(s_UseUndistortionDefaultPathPrefsName, m_UseUndistortionDefaultPathRadioButton->isChecked());
+  m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultTriangulationErrorPrefsName, (float) m_DefaultTriangulationErrorThresholdSpinBox->value());
+  m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMinDepthRangePrefsName, (float) m_MinDefaultDepthRangeSpinBox->value());
+  m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMaxDepthRangePrefsName, (float) m_MaxDefaultDepthRangeSpinBox->value());
+
   return true;
 }
 
@@ -106,4 +149,21 @@ void SurfaceReconViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void SurfaceReconViewPreferencePage::Update()
 {
+  m_DefaultCalibrationFilePath = QString::fromStdString(m_SurfaceReconViewPreferencesNode->Get(s_DefaultCalibrationFilePathPrefsName, ""));
+  m_DefaultCalibrationLocationLineEdit->setText(m_DefaultCalibrationFilePath);
+
+  m_UseUndistortPluginDefaultPath = m_SurfaceReconViewPreferencesNode->GetBool(s_UseUndistortionDefaultPathPrefsName, true);
+  if (m_UseUndistortPluginDefaultPath)
+  {
+    m_UseUndistortionDefaultPathRadioButton->click();
+  }
+  else
+  {
+    m_UseOwnLocationRadioButton->click();
+  }
+
+  m_DefaultTriangulationErrorThresholdSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultTriangulationErrorPrefsName, 0.1f));
+
+  m_MinDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMinDepthRangePrefsName, 1.0f));
+  m_MaxDefaultDepthRangeSpinBox->setValue(m_SurfaceReconViewPreferencesNode->GetFloat(s_DefaultMaxDepthRangePrefsName, 1000.0f));
 }

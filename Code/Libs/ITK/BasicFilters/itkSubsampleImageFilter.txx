@@ -16,16 +16,16 @@
 #define __itkSubsampleImageFilter_txx
 
 #include "itkSubsampleImageFilter.h"
-#include "itkGaussianOperator.h"
-#include "itkCastImageFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkExceptionObject.h"
-#include "itkResampleImageFilter.h"
-#include "itkIdentityTransform.h"
+#include <itkGaussianOperator.h>
+#include <itkCastImageFilter.h>
+#include <itkDiscreteGaussianImageFilter.h>
+#include <itkExceptionObject.h>
+#include <itkResampleImageFilter.h>
+#include <itkIdentityTransform.h>
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

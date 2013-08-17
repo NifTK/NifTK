@@ -16,7 +16,7 @@
 #define itkMIDASMeanIntensityWithinARegionFilter_txx
 
 #include "itkMIDASMeanIntensityWithinARegionFilter.h"
-#include "itkImageRegionConstIterator.h"
+#include <itkImageRegionConstIterator.h>
 
 #include <map>
 #include <algorithm>

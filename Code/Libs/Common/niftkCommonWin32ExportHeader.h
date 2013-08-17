@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __NIFTKCOMMONWIN32EXPORTHEADER_H
-#define __NIFTKCOMMONWIN32EXPORTHEADER_H
+#ifndef niftkCommonWin32ExportHeader_h
+#define niftkCommonWin32ExportHeader_h
 
-#include "NifTKConfigure.h"
+#include <NifTKConfigure.h>
 
 #if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
   #ifdef NIFTKCOMMON_WINDOWS_EXPORT

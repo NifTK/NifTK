@@ -6,396 +6,410 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>832</width>
-    <height>1390</height>
+    <width>930</width>
+    <height>935</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QFormLayout" name="formLayout_2">
-   <property name="fieldGrowthPolicy">
-    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-   </property>
-   <item row="1" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>1) Choose input nodes</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="1" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>&amp;Left channel:</string>
-        </property>
-        <property name="buddy">
-         <cstring>LeftChannelNodeNameComboBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="LeftChannelNodeNameComboBox">
-        <property name="editable">
-         <bool>true</bool>
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>1) Choose input nodes</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="margin">
+         <number>0</number>
         </property>
         <item>
-         <property name="text">
-          <string notr="true">choose or edit node name</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>&amp;Right channel:</string>
-        </property>
-        <property name="buddy">
-         <cstring>RightChannelNodeNameComboBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="RightChannelNodeNameComboBox">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-        <property name="insertPolicy">
-         <enum>QComboBox::NoInsert</enum>
-        </property>
-        <item>
-         <property name="text">
-          <string notr="true">choose or edit node name</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Pick a data storage node from the list or enter its name. The node should have an image attached to it.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QGroupBox" name="calibrationgroupbox">
-        <property name="title">
-         <string>Show &amp;camera calibration options</string>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="0">
-          <widget class="QWidget" name="calibrationdummypanel" native="true">
-           <layout class="QFormLayout" name="formLayout_7">
-            <property name="margin">
-             <number>0</number>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QmitkStereoImageAndCameraSelectionWidget" name="m_StereoImageAndCameraSelectionWidget" native="true"/>
+          </item>
+          <item>
+           <widget class="ctkCollapsibleGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>Show camera calibration options</string>
             </property>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Left intrinsic:</string>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="StereoCameraCalibrationSelectionWidget" name="m_StereoCameraCalibrationSelectionWidget" native="true"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_15">
+                 <property name="text">
+                  <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up.</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="title">
+        <string>2) Output node</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout_4">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>&amp;Output node:</string>
+          </property>
+          <property name="buddy">
+           <cstring>OutputNodeNameLineEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="OutputNodeNameLineEdit">
+          <property name="toolTip">
+           <string>Type a name for the result node. 
+If it does not exist it is created. 
+If it exists a point cloud or image is attached to it. 
+If you leave it empty a suitable name will be generated.</string>
+          </property>
+          <property name="text">
+           <string>stereo matching output</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QGroupBox" name="outputoptionsgroupbox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string>Show output o&amp;ptions</string>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="1" column="0">
+            <widget class="QWidget" name="outputoptionsdummypanel" native="true">
+             <layout class="QFormLayout" name="formLayout_5">
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
               </property>
-              <property name="buddy">
-               <cstring>LeftIntrinsicPathLineEdit</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Right intrinsic:</string>
-              </property>
-              <property name="buddy">
-               <cstring>RightIntrinsicPathLineEdit</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <property name="spacing">
+              <property name="margin">
                <number>0</number>
               </property>
-              <item>
-               <widget class="QLineEdit" name="RightIntrinsicPathLineEdit"/>
-              </item>
-              <item>
-               <widget class="QPushButton" name="RightIntrinsicBrowseButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
+              <item row="1" column="0">
+               <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
                 <property name="text">
-                 <string>...</string>
+                 <string>Generate disparity image</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
-             </layout>
-            </item>
-            <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QLineEdit" name="LeftIntrinsicPathLineEdit"/>
-              </item>
-              <item>
-               <widget class="QPushButton" name="LeftIntrinsicBrowseButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
+              <item row="2" column="0">
+               <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
                 <property name="text">
-                 <string>...</string>
+                 <string>Generate point cloud</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
-             </layout>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>Left-right transf.:</string>
-              </property>
-              <property name="buddy">
-               <cstring>StereoRigTransformationPathLineEdit</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QLineEdit" name="StereoRigTransformationPathLineEdit"/>
+              <item row="3" column="0" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item>
+                 <widget class="QWidget" name="m_PointCloudOptionsWidget" native="true">
+                  <layout class="QFormLayout" name="formLayout_8">
+                   <property name="leftMargin">
+                    <number>50</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_7">
+                     <property name="text">
+                      <string>Max triangulation error:</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>m_MaxTriangulationErrorThresholdSpinBox</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="m_MaxTriangulationErrorThresholdSpinBox">
+                     <property name="toolTip">
+                      <string>Left-right correspondences above this threshold will be rejected.</string>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.050000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Depth range:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                     <item>
+                      <widget class="QDoubleSpinBox" name="m_MinDepthRangeSpinBox">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximum">
+                        <double>999.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.500000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>1.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_14">
+                       <property name="text">
+                        <string>to</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QDoubleSpinBox" name="m_MaxDepthRangeSpinBox">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximum">
+                        <double>9999.000000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>1000.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
               </item>
-              <item>
-               <widget class="QPushButton" name="StereoRigTransformBrowseButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
              </layout>
-            </item>
-            <item row="6" column="0" colspan="2">
-             <widget class="QLabel" name="label_11">
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>3) Choose method</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout_3">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>&amp;Method:</string>
+          </property>
+          <property name="buddy">
+           <cstring>MethodComboBox</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="MethodComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <item>
+           <property name="text">
+            <string>Sequential Quasi Dense Matching</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Parallel Quasi Dense Matching</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Real-time Quasi Dense Matching</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Each method has different behaviour regarding noise susceptibility, run-time performance, suitability for high-resolution images, etc.</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QRadioButton" name="m_ManualUpdateRadioButton">
               <property name="text">
-               <string>Pick files that contain the corresponding camera calibration matrices. If you leave these empty then some more or less suitable values will be conjured up. Intrinsic calibration is in the form of a 3x3 matrix (fx, 0, px, 0, fy, py, 0, 0, 1), followed by 4 distortion coefficients. Left-right transformation is a 3x3 rotation matrix, followed by translation vector.</string>
+               <string>Manual update</string>
               </property>
-              <property name="wordWrap">
+              <property name="checked">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>2) Output node</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_4">
-      <property name="fieldGrowthPolicy">
-       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>&amp;Output node:</string>
-        </property>
-        <property name="buddy">
-         <cstring>OutputNodeNameLineEdit</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="OutputNodeNameLineEdit">
-        <property name="text">
-         <string>stereo matching output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_7">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Type a name for the result node. If it does not exist it is created. If it exists a point cloud is attached to it. If you leave it empty a suitable name will be generated.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QGroupBox" name="outputoptionsgroupbox">
-        <property name="title">
-         <string>Show o&amp;ptions</string>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item row="1" column="0">
-          <widget class="QWidget" name="outputoptionsdummypanel" native="true">
-           <layout class="QFormLayout" name="formLayout_5">
-            <property name="fieldGrowthPolicy">
-             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-            </property>
-            <property name="margin">
-             <number>0</number>
-            </property>
-            <item row="0" column="0">
-             <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
-              <property name="enabled">
-               <bool>false</bool>
+            <item>
+             <widget class="QRadioButton" name="m_AutomaticUpdateRadioButton">
+              <property name="toolTip">
+               <string>Triggers on data sources update.</string>
               </property>
               <property name="text">
-               <string>Generate point cloud</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
-              <property name="text">
-               <string>Generate disparity image</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
+               <string>Automatic update</string>
               </property>
              </widget>
             </item>
            </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QPushButton" name="DoItButton">
+              <property name="text">
+               <string>DO IT NOW</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Minimum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>3) Choose method</string>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>&amp;Method:</string>
-        </property>
-        <property name="buddy">
-         <cstring>MethodComboBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="MethodComboBox">
-        <item>
-         <property name="text">
-          <string>Sequential Quasi Dense Matching</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Parallel Quasi Dense Matching</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Real-time Quasi Dense Matching</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Each method has different behaviour regarding noise susceptibility, run-time performance, suitability for high-resolution images, etc.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="DoItButton">
-        <property name="text">
-         <string>DO IT NOW</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StereoCameraCalibrationSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>StereoCameraCalibrationSelectionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkStereoImageAndCameraSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>QmitkStereoImageAndCameraSelectionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
-  <tabstop>LeftChannelNodeNameComboBox</tabstop>
-  <tabstop>RightChannelNodeNameComboBox</tabstop>
-  <tabstop>calibrationgroupbox</tabstop>
-  <tabstop>LeftIntrinsicPathLineEdit</tabstop>
-  <tabstop>LeftIntrinsicBrowseButton</tabstop>
-  <tabstop>RightIntrinsicPathLineEdit</tabstop>
-  <tabstop>RightIntrinsicBrowseButton</tabstop>
-  <tabstop>StereoRigTransformationPathLineEdit</tabstop>
-  <tabstop>StereoRigTransformBrowseButton</tabstop>
   <tabstop>OutputNodeNameLineEdit</tabstop>
   <tabstop>outputoptionsgroupbox</tabstop>
-  <tabstop>GeneratePointCloudRadioBox</tabstop>
   <tabstop>GenerateDisparityImageRadioBox</tabstop>
   <tabstop>MethodComboBox</tabstop>
-  <tabstop>DoItButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -416,18 +430,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>calibrationgroupbox</sender>
+   <sender>GeneratePointCloudRadioBox</sender>
    <signal>clicked(bool)</signal>
-   <receiver>calibrationdummypanel</receiver>
-   <slot>setVisible(bool)</slot>
+   <receiver>m_PointCloudOptionsWidget</receiver>
+   <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>415</x>
-     <y>404</y>
+     <x>174</x>
+     <y>853</y>
     </hint>
     <hint type="destinationlabel">
-     <x>415</x>
-     <y>417</y>
+     <x>397</x>
+     <y>921</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GenerateDisparityImageRadioBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>m_PointCloudOptionsWidget</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>195</x>
+     <y>810</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>397</x>
+     <y>921</y>
     </hint>
    </hints>
   </connection>

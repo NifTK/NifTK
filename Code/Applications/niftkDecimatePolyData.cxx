@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataReader.h"
-#include "vtkPolyDataWriter.h"
-#include "vtkDecimatePro.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataReader.h>
+#include <vtkPolyDataWriter.h>
+#include <vtkDecimatePro.h>
 
 /*!
  * \file niftkDecimatePolyData.cxx

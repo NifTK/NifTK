@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousReconstructionRegistrationMetric_h
-#define __itkSimultaneousReconstructionRegistrationMetric_h
+#ifndef itkSimultaneousReconstructionRegistrationMetric_h
+#define itkSimultaneousReconstructionRegistrationMetric_h
 
-#include "itkImageToImageFilter.h"
-#include "itkConceptChecking.h"
-#include "itkSingleValuedCostFunction.h"
+#include <itkImageToImageFilter.h>
+#include <itkConceptChecking.h>
+#include <itkSingleValuedCostFunction.h>
 
-#include "itkForwardProjectionWithAffineTransformDifferenceFilter.h"
+#include <itkForwardProjectionWithAffineTransformDifferenceFilter.h>
 
 
 namespace itk

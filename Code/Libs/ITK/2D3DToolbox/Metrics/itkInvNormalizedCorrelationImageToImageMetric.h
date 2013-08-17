@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkInvNormalizedCorrelationImageToImageMetric_h
-#define __itkInvNormalizedCorrelationImageToImageMetric_h
+#ifndef itkInvNormalizedCorrelationImageToImageMetric_h
+#define itkInvNormalizedCorrelationImageToImageMetric_h
 
-#include "itkImageToImageMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
+#include <itkImageToImageMetric.h>
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
 
 
 namespace itk

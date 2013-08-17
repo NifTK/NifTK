@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef ITK_RAYLEIGHFUNCTION_H
-#define ITK_RAYLEIGHFUNCTION_H
+#ifndef itkRayleighFunction_h
+#define itkRayleighFunction_h
 
-#include "vnl/vnl_least_squares_function.h"
+#include <vnl/vnl_least_squares_function.h>
 
 
 class ITK_EXPORT RayleighFunction : public vnl_least_squares_function

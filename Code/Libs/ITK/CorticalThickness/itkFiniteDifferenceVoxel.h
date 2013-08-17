@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkFiniteDifferenceVoxel_h
-#define __itkFiniteDifferenceVoxel_h
-#include "itkContinuousIndex.h"
-#include "itkPoint.h"
+#ifndef itkFiniteDifferenceVoxel_h
+#define itkFiniteDifferenceVoxel_h
+#include <itkContinuousIndex.h>
+#include <itkPoint.h>
 
 namespace itk
 {

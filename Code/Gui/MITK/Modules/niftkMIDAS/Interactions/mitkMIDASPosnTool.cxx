@@ -14,10 +14,10 @@
 
 #include "mitkMIDASPosnTool.h"
 #include "mitkMIDASPosnTool.xpm"
-#include "mitkImageAccessByItk.h"
-#include "mitkToolManager.h"
+#include <mitkImageAccessByItk.h>
+#include <mitkToolManager.h>
 
-#include "itkImageRegionConstIterator.h"
+#include <itkImageRegionConstIterator.h>
 
 namespace mitk{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");

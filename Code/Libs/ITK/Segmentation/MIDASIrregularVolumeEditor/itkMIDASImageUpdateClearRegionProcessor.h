@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H
-#define ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H
+#ifndef itkMIDASImageUpdateClearRegionProcessor_h
+#define itkMIDASImageUpdateClearRegionProcessor_h
 
 #include "itkMIDASImageUpdateRegionProcessor.h"
 

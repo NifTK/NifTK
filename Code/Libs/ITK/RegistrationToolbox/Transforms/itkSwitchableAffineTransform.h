@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __itkSwitchableAffineTransform_h
-#define __itkSwitchableAffineTransform_h
+#ifndef itkSwitchableAffineTransform_h
+#define itkSwitchableAffineTransform_h
 
 #include <iostream>
-#include "itkMatrix.h"
+#include <itkMatrix.h>
 #include "itkUCLBaseTransform.h"
-#include "itkExceptionObject.h"
-#include "itkMacro.h"
-#include "itkAffineTransform.h"
+#include <itkExceptionObject.h>
+#include <itkMacro.h>
+#include <itkAffineTransform.h>
 #include "itkMatrixLinearCombinationFunctions.h"
 
 namespace itk

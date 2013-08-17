@@ -16,16 +16,16 @@
 #define __itkBasicImageFeaturesImageFilter_txx
 
 #include "itkBasicImageFeaturesImageFilter.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageFileWriter.h"
-#include "itkImageDuplicator.h"
-#include "itkProgressReporter.h"
-#include "ConversionUtils.h"
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageFileWriter.h>
+#include <itkImageDuplicator.h>
+#include <itkProgressReporter.h>
+#include <ConversionUtils.h>
 
 #include <vnl/vnl_double_2x2.h>
 
-#include "itkUCLMacro.h"
+#include <itkUCLMacro.h>
 
 
 namespace itk

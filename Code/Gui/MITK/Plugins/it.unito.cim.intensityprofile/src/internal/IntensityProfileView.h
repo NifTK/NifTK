@@ -16,8 +16,8 @@
 
  ============================================================================*/
 
-#ifndef __IntensityProfileView_h
-#define __IntensityProfileView_h
+#ifndef IntensityProfileView_h
+#define IntensityProfileView_h
 
 #include <berryISelectionListener.h>
 

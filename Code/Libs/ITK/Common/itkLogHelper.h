@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __ITKLOGHELPER_H
-#define __ITKLOGHELPER_H
+#ifndef itkLogHelper_h
+#define itkLogHelper_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
 #include <iostream>
-#include "itkObject.h"
-#include "itkObjectFactory.h"
-#include "itkIndent.h"
+#include <itkObject.h>
+#include <itkObjectFactory.h>
+#include <itkIndent.h>
 #include "itkUCLMacro.h"
 
 

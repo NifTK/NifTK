@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkAbsoluteManhattanDistancePointMetric_h
-#define __itkAbsoluteManhattanDistancePointMetric_h
+#ifndef itkAbsoluteManhattanDistancePointMetric_h
+#define itkAbsoluteManhattanDistancePointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkImage.h"
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkImage.h>
 
 namespace itk
 {

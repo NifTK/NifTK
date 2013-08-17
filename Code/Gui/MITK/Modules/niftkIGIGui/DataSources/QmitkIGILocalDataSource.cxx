@@ -14,7 +14,7 @@
 
 #include "QmitkIGILocalDataSource.h"
 #include "QmitkIGILocalDataSourceGrabbingThread.h"
-#include "mitkITKImageImport.h"
+#include <mitkITKImageImport.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGILocalDataSource::QmitkIGILocalDataSource(mitk::DataStorage* storage)
@@ -54,3 +54,4 @@ void QmitkIGILocalDataSource::InitializeAndRunGrabbingThread(const int& interval
     m_GrabbingThread->start();
   }
 }
+

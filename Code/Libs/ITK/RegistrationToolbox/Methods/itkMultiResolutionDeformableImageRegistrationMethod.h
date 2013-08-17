@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkMultiResolutionDeformableImageRegistrationMethod_h
-#define __itkMultiResolutionDeformableImageRegistrationMethod_h
+#ifndef itkMultiResolutionDeformableImageRegistrationMethod_h
+#define itkMultiResolutionDeformableImageRegistrationMethod_h
 
 #include "itkMultiResolutionImageRegistrationWrapper.h"
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 
 namespace itk
 {

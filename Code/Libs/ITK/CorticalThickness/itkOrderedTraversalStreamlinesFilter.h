@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkOrderedTraversalStreamlinesFilter_h
-#define __itkOrderedTraversalStreamlinesFilter_h
+#ifndef itkOrderedTraversalStreamlinesFilter_h
+#define itkOrderedTraversalStreamlinesFilter_h
 
-#include "itkImage.h"
-#include "itkVector.h"
+#include <itkImage.h>
+#include <itkVector.h>
 #include "itkBaseCTEStreamlinesFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
-#include "itkInterpolateImageFunction.h"
+#include <itkVectorInterpolateImageFunction.h>
+#include <itkInterpolateImageFunction.h>
 
 #include <queue>
 

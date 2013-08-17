@@ -22,15 +22,15 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED GDCM_DIR AND NOT EXISTS ${GDCM_DIR})
-  MESSAGE(FATAL_ERROR "GDCM_DIR variable is defined but corresponds to non-existing directory \"${GDCM_DIR}\".")
-ENDIF()
+if(DEFINED GDCM_DIR AND NOT EXISTS ${GDCM_DIR})
+  message(FATAL_ERROR "GDCM_DIR variable is defined but corresponds to non-existing directory \"${GDCM_DIR}\".")
+endif()
 
-SET(proj GDCM)
-SET(proj_DEPENDENCIES )
-SET(GDCM_DEPENDS ${proj})
+set(proj GDCM)
+set(proj_DEPENDENCIES )
+set(GDCM_DEPENDS ${proj})
 
-IF(NOT DEFINED GDCM_DIR)
+if(NOT DEFINED GDCM_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
 
@@ -49,21 +49,21 @@ IF(NOT DEFINED GDCM_DIR)
        -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
      DEPENDS ${proj_DEPENDENCIES}
     )
-  SET(GDCM_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  MESSAGE("SuperBuild loading GDCM from ${GDCM_DIR}")
+  set(GDCM_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
-  SET(GDCM_IS_2_0_18 TRUE)
+  set(GDCM_IS_2_0_18 TRUE)
 
-ELSE()
+else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  FIND_PACKAGE(GDCM)
+  find_package(GDCM)
 
-  IF( GDCM_BUILD_VERSION EQUAL "18")
-    SET(GDCM_IS_2_0_18 TRUE)
-  ELSE()
-    SET(GDCM_IS_2_0_18 FALSE)
-  ENDIF()
+  if( GDCM_BUILD_VERSION EQUAL "18")
+    set(GDCM_IS_2_0_18 TRUE)
+  else()
+    set(GDCM_IS_2_0_18 FALSE)
+  endif()
  
-ENDIF()
+endif()

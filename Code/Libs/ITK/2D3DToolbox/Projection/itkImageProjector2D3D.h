@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkImageProjector2D3D_h
-#define __itkImageProjector2D3D_h
+#ifndef itkImageProjector2D3D_h
+#define itkImageProjector2D3D_h
 
 #include "itkImageProjectionBaseClass2D3D.h"
 

@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
-#include "itkImage.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkTransformFileWriter.h"
-#include "itkImageFileReader.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
+#include <itkImage.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkTransformFileWriter.h>
+#include <itkImageFileReader.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

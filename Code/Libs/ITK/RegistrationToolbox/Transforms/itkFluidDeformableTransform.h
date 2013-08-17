@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef ITKFLUIDDEFORMABLETRANSFORM_H_
-#define ITKFLUIDDEFORMABLETRANSFORM_H_
+#ifndef itkFluidDeformableTransform_h
+#define itkFluidDeformableTransform_h
 
 #include "itkDeformableTransform.h"
-#include "itkImage.h"
-#include "itkVector.h"
+#include <itkImage.h>
+#include <itkVector.h>
 
 
 namespace itk

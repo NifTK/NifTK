@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGINIFTYLINKDATATYPE_H
-#define QMITKIGINIFTYLINKDATATYPE_H
+#ifndef QmitkIGINiftyLinkDataType_h
+#define QmitkIGINiftyLinkDataType_h
 
 #include "niftkIGIGuiExports.h"
-#include "mitkIGIDataType.h"
-#include "NiftyLinkMessage.h"
+#include <mitkIGIDataType.h>
+#include <NiftyLinkMessage.h>
 
 /**
  * \class QmitkIGINiftyLinkDataType

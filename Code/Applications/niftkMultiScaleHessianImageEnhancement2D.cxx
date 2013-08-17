@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkHessianToObjectnessMeasureImageFilter.h"
-#include "itkMultiScaleHessianBasedMeasureImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkImage.h"
+#include <itkHessianToObjectnessMeasureImageFilter.h>
+#include <itkMultiScaleHessianBasedMeasureImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkImage.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "dark", 0, "Detect dark objects on a bright background [bright on dark]."},

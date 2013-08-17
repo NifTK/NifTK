@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkScaleVectorFieldFilter_h
-#define __itkScaleVectorFieldFilter_h
+#ifndef itkScaleVectorFieldFilter_h
+#define itkScaleVectorFieldFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 
 namespace itk {

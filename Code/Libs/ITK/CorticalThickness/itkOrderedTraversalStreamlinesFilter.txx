@@ -16,12 +16,12 @@
 #define __itkOrderedTraversalStreamlinesFilter_txx
 
 #include "itkOrderedTraversalStreamlinesFilter.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
 #include <algorithm>
 #include <vector>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

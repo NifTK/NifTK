@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef NifTKItkImageFileIOFactory_h
-#define NifTKItkImageFileIOFactory_h
+#ifndef mitkNifTKItkImageFileIOFactory_h
+#define mitkNifTKItkImageFileIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
 #include "niftkCoreExports.h"
-#include "itkObjectFactoryBase.h"
-#include "mitkBaseData.h"
+#include <itkObjectFactoryBase.h>
+#include <mitkBaseData.h>
 
 namespace mitk
 {

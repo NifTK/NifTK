@@ -13,14 +13,14 @@
 =============================================================================*/
 
 
-#ifndef __itkBSplineCurveFitMetric_h
-#define __itkBSplineCurveFitMetric_h
+#ifndef itkBSplineCurveFitMetric_h
+#define itkBSplineCurveFitMetric_h
 
 #include <vector>
 
-#include "itkConceptChecking.h"
-#include "itkMultipleValuedCostFunction.h"
-#include "itkPoint.h"
+#include <itkConceptChecking.h>
+#include <itkMultipleValuedCostFunction.h>
+#include <itkPoint.h>
 
 
 namespace itk

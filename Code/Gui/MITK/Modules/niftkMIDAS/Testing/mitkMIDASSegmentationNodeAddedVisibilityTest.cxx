@@ -30,12 +30,12 @@
 #include <mitkRenderWindowBase.h>
 #include <mitkGlobalInteraction.h>
 
-#include "mitkNifTKCoreObjectFactory.h"
-#include "mitkMIDASImageUtils.h"
-#include "mitkMIDASDataNodeNameStringFilter.h"
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPolyTool.h"
+#include <mitkNifTKCoreObjectFactory.h>
+#include <mitkMIDASImageUtils.h>
+#include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPolyTool.h>
 
 /**
  * \brief Test class for mitkMIDASSegmentationNodeAddedVisibilityTest.

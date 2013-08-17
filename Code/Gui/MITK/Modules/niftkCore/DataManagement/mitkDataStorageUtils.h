@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef mitk_DataStorageUtils_h
-#define mitk_DataStorageUtils_h
+#ifndef mitkDataStorageUtils_h
+#define mitkDataStorageUtils_h
 
 #include "niftkCoreExports.h"
-#include "mitkDataNode.h"
-#include "mitkDataStorage.h"
-#include "mitkTimeSlicedGeometry.h"
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASImageUtils.h"
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkTimeSlicedGeometry.h>
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASImageUtils.h>
 
 /**
  * \file mitkDataStorageUtils.h
@@ -75,6 +75,23 @@ namespace mitk
    * </pre>
    */
   NIFTKCORE_EXPORT mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex=-1);
+
+  /**
+   * \brief Loads a 4x4 matrix from a plain textfile, and puts in data storage with the given nodeName, or else creates Identity matrix.
+   * \param fileName full file name
+   * \param helperObject if true the node is created in DataStorage as a helper object, and so by default will normally be invisible
+   */
+  NIFTKCORE_EXPORT void LoadMatrixOrCreateDefault(const std::string& fileName, const std::string& nodeName, const bool& helperObject, mitk::DataStorage* dataStorage);
+
+
+  /**
+   * \brief Applies the given transformation to the given node.
+   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \param[In] transform the VTK transformation
+   * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
+   * \return bool true if successful and false otherwise.
+   */
+  NIFTKCORE_EXPORT bool ApplyToNode(mitk::DataNode::Pointer& node, const vtkMatrix4x4* transform, const bool& makeUndoAble);
 }
 
 #endif

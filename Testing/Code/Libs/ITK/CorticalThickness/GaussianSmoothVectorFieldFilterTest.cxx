@@ -15,9 +15,9 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkGaussianSmoothVectorFieldFilter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkGaussianSmoothVectorFieldFilter.h>
 
 /**
  * Test the GaussianSmoothVectorFieldFilter.

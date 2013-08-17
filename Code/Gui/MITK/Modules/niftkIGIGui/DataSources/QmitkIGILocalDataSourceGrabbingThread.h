@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
-#define QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#ifndef QmitkIGILocalDataSourceGrabbingThread_h
+#define QmitkIGILocalDataSourceGrabbingThread_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGITimerBasedThread.h"
@@ -38,4 +38,4 @@ private:
   QmitkIGILocalDataSource *m_Source;
 };
 
-#endif // QMITKIGILOCALDATASOURCEGRABBINGTHREAD_H
+#endif

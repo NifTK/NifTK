@@ -29,7 +29,7 @@
 #include <itkSubtractImageFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkPointSet.h>
-#include "itkMIDASRegionGrowingImageFilter.h"
+#include <itkMIDASRegionGrowingImageFilter.h>
 
 using namespace std;
 

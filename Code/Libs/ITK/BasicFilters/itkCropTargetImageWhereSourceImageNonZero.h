@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkCropTargetImageWhereSourceImageNonZero_h
-#define __itkCropTargetImageWhereSourceImageNonZero_h
+#ifndef itkCropTargetImageWhereSourceImageNonZero_h
+#define itkCropTargetImageWhereSourceImageNonZero_h
 
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

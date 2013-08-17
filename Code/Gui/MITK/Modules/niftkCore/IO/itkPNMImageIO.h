@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef PNMImageIO_h
-#define PNMImageIO_h
+#ifndef itkPNMImageIO_h
+#define itkPNMImageIO_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )

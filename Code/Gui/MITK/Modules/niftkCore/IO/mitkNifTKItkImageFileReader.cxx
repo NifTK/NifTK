@@ -12,20 +12,20 @@
 
 =============================================================================*/
 
-#include "mitkConfig.h"
+#include <mitkConfig.h>
 #include "mitkNifTKItkImageFileReader.h"
-#include "mitkImageCast.h"
-#include "itkImageFileReader.h"
-#include "itksys/SystemTools.hxx"
-#include "itksys/Directory.hxx"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageIOFactory.h"
-#include "itkImageIORegion.h"
-#include "itkImageIOBase.h"
+#include <mitkImageCast.h>
+#include <itkImageFileReader.h>
+#include <itksys/SystemTools.hxx>
+#include <itksys/Directory.hxx>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageIOFactory.h>
+#include <itkImageIORegion.h>
+#include <itkImageIOBase.h>
 #include "itkDRCAnalyzeImageIO3160.h"
 #include "itkNiftiImageIO3201.h"
-#include "EnvironmentHelper.h"
+#include <EnvironmentHelper.h>
 
 mitk::NifTKItkImageFileReader::NifTKItkImageFileReader()
 {

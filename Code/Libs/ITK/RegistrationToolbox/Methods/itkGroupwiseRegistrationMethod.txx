@@ -23,7 +23,7 @@
 #include <itkArray.h>
 #include <itkEulerAffineTransform.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

@@ -24,17 +24,17 @@
  */
 
 
-#include "itkLogHelper.h"
-#include "itkCropImageFilter.h"
-#include "itkCommandLineHelper.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkNumericTraits.h"
-#include "itkImageDuplicator.h"
-#include "itkImageRegionIteratorWithIndex.h"
+#include <itkLogHelper.h>
+#include <itkCropImageFilter.h>
+#include <itkCommandLineHelper.h>
+#include <itkImage.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkNumericTraits.h>
+#include <itkImageDuplicator.h>
+#include <itkImageRegionIteratorWithIndex.h>
 
-#include "niftkCropImageCLP.h"
+#include <niftkCropImageCLP.h>
 
 
 //  -------------------------------------------------------------------------

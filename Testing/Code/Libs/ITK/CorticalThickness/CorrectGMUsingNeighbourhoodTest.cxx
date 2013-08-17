@@ -16,8 +16,8 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkCorrectGMUsingNeighbourhoodFilter.h"
+#include <itkImage.h>
+#include <itkCorrectGMUsingNeighbourhoodFilter.h>
 
 /**
  * Test the CorrectGMUsingneighbourhood filter

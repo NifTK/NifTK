@@ -12,29 +12,27 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   LookupTables/LookupTableContainer.cxx
   LookupTables/LookupTableSaxHandler.cxx
   LookupTables/LookupTableManager.cxx
-  Dialogs/QmitkHelpAboutDialog.cxx
-  QmitkSingleWidget.cxx
+  QmitkDataStorageCheckableComboBox.cxx
+  QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
-  QmitkBitmapOverlay.cxx
-  QmitkFileIOUtils.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   Events/QmitkPaintEventEater.h
   Events/QmitkWheelEventEater.h
   Events/QmitkMouseEventEater.h
-  Dialogs/QmitkHelpAboutDialog.h
-  QmitkSingleWidget.h
+  QmitkDataStorageCheckableComboBox.h
+  QmitkHelpAboutDialog.h
 )
 
-SET(UI_FILES
-  Resources/UI/QmitkHelpAboutDialog.ui
+set(UI_FILES
+  QmitkHelpAboutDialog.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   Resources/niftkCoreGui.qrc
 )

@@ -37,14 +37,14 @@
 #include <mitkProperties.h>
 #include <QmitkRenderWindow.h>
 
-#include "NifTKConfigure.h"
-#include "QmitkMIDASNewSegmentationDialog.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASDrawTool.h"
-#include "mitkMIDASPolyTool.h"
-#include "mitkMIDASSeedTool.h"
-#include "mitkMIDASOrientationUtils.h"
-#include "itkMIDASHelper.h"
+#include <NifTKConfigure.h>
+#include <QmitkMIDASNewSegmentationDialog.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASDrawTool.h>
+#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASSeedTool.h>
+#include <mitkMIDASOrientationUtils.h>
+#include <itkMIDASHelper.h>
 
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -132,10 +132,9 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     m_ContainerForSelectorWidget = new QWidget(parent);
     m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_AlignmentWarningLabel->hide();
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->show();
 
     // Set up the Tool Selector.
@@ -233,10 +232,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     {
       segmentedData = node;
     }
-
-    if (mitk::IsNodeABinaryImage(node) &&
-        this->CanStartSegmentationForBinaryNode(node) &&
-        !this->IsNodeASegmentationImage(node))
+    else if (mitk::IsNodeABinaryImage(node) && this->CanStartSegmentationForBinaryNode(node))
     {
       segmentedData = node;
     }
@@ -257,12 +253,11 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
-
       m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
     }
     else
     {
-      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>please select an image!</font>");
+      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
 
@@ -316,9 +311,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToo
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::DataNode::Pointer node = toolManager->GetReferenceData(0);
-
-  return node;
+  return toolManager->GetReferenceData(0);
 }
 
 
@@ -343,7 +336,7 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolM
 //-----------------------------------------------------------------------------
 mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  mitk::DataNode* result = FindFirstParentImage(this->GetDataStorage(), node, false );
+  mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), node, false );
   return result;
 }
 
@@ -367,21 +360,21 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImage()
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeAGreyScaleImage(node);
+  return mitk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeABinaryImage(node);
+  return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
-  return IsNodeABinaryImage(node);
+  return mitk::IsNodeABinaryImage(node);
 }
 
 mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
@@ -517,7 +510,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
     if (workingDataNodes.size() == 0)
     {
       m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
-      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
     else
     {
@@ -532,7 +525,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
   else
   {
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>please create a segmentation image!</font>");
+    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
   }
 }
 
@@ -654,7 +647,10 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
 void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 {
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  this->SetCurrentSelection(referenceImageNode);
+  if (referenceImageNode.IsNotNull())
+  {
+    this->SetCurrentSelection(referenceImageNode);
+  }
 }
 
 

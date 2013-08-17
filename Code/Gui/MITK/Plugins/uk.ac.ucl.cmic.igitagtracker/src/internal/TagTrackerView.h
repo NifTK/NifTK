@@ -15,9 +15,12 @@
 #ifndef TagTrackerView_h
 #define TagTrackerView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <mitkDataNode.h>
+#include <mitkTagTrackingRegistrationManager.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include "ui_TagTrackerViewControls.h"
 #include <cv.h>
 
@@ -26,7 +29,7 @@
  * \brief User interface to provide a small plugin to track Augmented Reality tags.
  * \ingroup uk_ac_ucl_cmic_igitagtracker_internal
 */
-class TagTrackerView : public QmitkBaseView
+class TagTrackerView : public QmitkBaseView, public Ui::TagTrackerViewControls
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -41,11 +44,6 @@ public:
    * \brief Static view ID = uk.ac.ucl.cmic.igitagtracker
    */
   static const std::string VIEW_ID;
-
-  /**
-   * \brief This plugin creates its own data node to store a point set, this static variable stores the name.
-   */
-  static const std::string NODE_ID;
 
   /**
    * \brief Returns the view ID.
@@ -82,9 +80,14 @@ private slots:
   void OnManualUpdate();
 
   /**
-   * \brief If any of the matrix file names change, we try to reload all matrices.
+   * \brief if any spin box pressed, we update.
    */
-  void OnFileNameChanged();
+  void OnSpinBoxPressed();
+
+  /**
+   * \brief We can toggle, whether or not to update the registration.
+   */
+  void OnRegistrationEnabledChecked(bool isChecked);
 
 private:
 
@@ -99,27 +102,39 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   /**
-   * \brief Loads a matrix.
-   */
-  void LoadMatrix(const QString& fileName, CvMat*& matrixToWriteTo);
-
-  /**
    * \brief Main method to update tag positions.
    */
   void UpdateTags();
 
-  /** The Widgets. */
-  Ui::TagTrackerViewControls *m_Controls;
-
-  /** The Member Variables. */
-  CvMat *m_LeftIntrinsicMatrix;
-  CvMat *m_RightIntrinsicMatrix;
-  CvMat *m_RightToLeftRotationVector;
-  CvMat *m_RightToLeftTranslationVector;
+  /**
+   * \brief If true, we continuously update according to the ping event on the CTK Event Bus.
+   */
   bool m_ListenToEventBusPulse;
+
+  /**
+   * \brief If true, we dont bother with stereo and triangulation.
+   */
   bool m_MonoLeftCameraOnly;
-  float m_MinSize;
-  float m_MaxSize;
+
+  /**
+   * \brief to make sure we only show dialog box once.
+   */
+  bool m_ShownStereoSameNameWarning;
+
+  /**
+   * \brief We store the min/max range of rotation parameters, just for some debugging information.
+   */
+  double m_RangesOfRotationalParams[4];
+
+  /**
+   * \brief Store a registration matrix at a given point in time, to compare against.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_ReferenceMatrix;
+
+  /**
+   * \brief Store a registration matrix at each iteration.
+   */
+  vtkSmartPointer<vtkMatrix4x4> m_CurrentMatrix;
 };
 
 #endif // TagTrackerView_h

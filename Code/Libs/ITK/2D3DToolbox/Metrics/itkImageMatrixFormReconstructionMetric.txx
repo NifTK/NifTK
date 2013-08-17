@@ -16,9 +16,9 @@
 #define __itkImageMatrixFormReconstructionMetric_txx
 
 #include "itkImageMatrixFormReconstructionMetric.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

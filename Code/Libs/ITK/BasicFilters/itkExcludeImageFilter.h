@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef ITKEXCLUDEIMAGEFILTER_H_
-#define ITKEXCLUDEIMAGEFILTER_H_
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#ifndef itkExcludeImageFilter_h
+#define itkExcludeImageFilter_h
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 
 namespace itk

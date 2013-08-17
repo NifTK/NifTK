@@ -14,12 +14,12 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkVTKImageToImageFilter_h
-#define __itkVTKImageToImageFilter_h
+#ifndef itkVTKImageToImageFilter_h
+#define itkVTKImageToImageFilter_h
 
-#include "itkVTKImageImport.h"
-#include "vtkImageExport.h"
-#include "vtkImageData.h"
+#include <itkVTKImageImport.h>
+#include <vtkImageExport.h>
+#include <vtkImageData.h>
 
 #ifndef vtkFloatingPointType
 #define vtkFloatingPointType float

@@ -21,7 +21,7 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/static_assert.hpp>
 
-#ifdef _OMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
@@ -65,11 +65,6 @@ struct Match
 //-----------------------------------------------------------------------------
 static bool CheckBorder(const Match& m, int bx, int by, int w, int h)
 {
-  assert(m.p0.x >= 0);
-  assert(m.p0.y >= 0);
-  assert(m.p1.x >= 0);
-  assert(m.p1.y >= 0);
-
   if ((m.p0.x < bx    ) || 
       (m.p0.x > w - bx) || 
       (m.p0.y < by    ) || 
@@ -245,7 +240,7 @@ void SequentialCpuQds::InitSparseFeatures()
 #ifndef NDEBUG
   // help with debugging this
   // throw out all failed points, otherwise it's a mess trying to figure out which features were tracked and which were not
-  for (unsigned int i = m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
+  for (int i = (int)m_SparseFeaturesLeft.size() - 1; i >= 0; --i)
   {
     if (m_FeatureStatus[i] == 0)
     {
@@ -278,8 +273,8 @@ void SequentialCpuQds::QuasiDensePropagation()
       // Calculate correlation and store match in Seeds.
       Match m;
       // FIXME: check for negative coords! our guestimate in InitSparseFeatures() might have pushed these off
-      m.p0 = RefPoint(m_SparseFeaturesLeft[i].x,  m_SparseFeaturesLeft[i].y);
-      m.p1 = RefPoint(m_SparseFeaturesRight[i].x, m_SparseFeaturesRight[i].y);
+      m.p0 = RefPoint(static_cast<unsigned short>(m_SparseFeaturesLeft[i].x), static_cast<unsigned short>(m_SparseFeaturesLeft[i].y));
+      m.p1 = RefPoint(static_cast<unsigned short>(m_SparseFeaturesRight[i].x), static_cast<unsigned short>(m_SparseFeaturesRight[i].y));
 
       // Check if too close to boundary.
       if (!CheckBorder(m, m_PropagationParams.BorderX, m_PropagationParams.BorderY, m_LeftImg.width(), m_LeftImg.height()))

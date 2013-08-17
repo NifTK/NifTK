@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkAddOneLayerOfGreyMatterFilter_h
-#define __itkAddOneLayerOfGreyMatterFilter_h
+#ifndef itkAddOneLayerOfGreyMatterFilter_h
+#define itkAddOneLayerOfGreyMatterFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 

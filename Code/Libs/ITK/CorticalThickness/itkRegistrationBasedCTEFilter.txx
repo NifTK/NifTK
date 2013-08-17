@@ -17,11 +17,11 @@
 
 #include <stdio.h>
 #include "itkRegistrationBasedCTEFilter.h"
-#include "itkContinuousIndex.h"
-#include "itkPoint.h"
-#include "itkImageFileWriter.h"
+#include <itkContinuousIndex.h>
+#include <itkPoint.h>
+#include <itkImageFileWriter.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk {
 

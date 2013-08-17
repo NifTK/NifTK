@@ -17,9 +17,9 @@
 
 #include "ui_ImageLookupTablesViewControls.h"
 
-#include "QmitkBaseView.h"
-#include "mitkLevelWindowManager.h"
-#include "mitkDataNode.h"
+#include <QmitkBaseView.h>
+#include <mitkLevelWindowManager.h>
+#include <mitkDataNode.h>
 
 class QWidget;
 class QSlider;

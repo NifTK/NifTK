@@ -128,6 +128,7 @@ protected:
 
 public:
     void set_log_filename(const std::string& fn);
+    void flush_log();
 };
 
 

@@ -18,16 +18,16 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkArray.h"
-#include "itkArray2D.h"
-#include "itkPoint.h"
-#include "itkUCLRegularStepGradientDescentOptimizer.h"
-#include "itkIterationUpdateCommand.h"
-#include "itkTranslationTransform.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkArray.h>
+#include <itkArray2D.h>
+#include <itkPoint.h>
+#include <itkUCLRegularStepGradientDescentOptimizer.h>
+#include <itkIterationUpdateCommand.h>
+#include <itkTranslationTransform.h>
 #include "itkSquaredFunctionImageToImageMetric.h"
-#include "itkArray.h"
+#include <itkArray.h>
 
 int SquaredUCLRegularStepOptimizerTest(int argc, char * argv[])
 {

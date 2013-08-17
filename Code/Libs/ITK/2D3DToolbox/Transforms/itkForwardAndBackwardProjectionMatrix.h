@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#ifndef __itkForwardAndBackwardProjectionMatrix_h
-#define __itkForwardAndBackwardProjectionMatrix_h
+#ifndef itkForwardAndBackwardProjectionMatrix_h
+#define itkForwardAndBackwardProjectionMatrix_h
 
-#include "itkRay.h"
-#include "itkImage.h"
+#include <itkRay.h>
+#include <itkImage.h>
 
 #include <vnl/vnl_math.h>
 #include <vnl/vnl_vector.h>
 #include <vnl/vnl_sparse_matrix.h>
 
-#include "itkProjectionGeometry.h"
-#include "itkEulerAffineTransform.h"
+#include <itkProjectionGeometry.h>
+#include <itkEulerAffineTransform.h>
 #include "itkPerspectiveProjectionTransform.h"
 
 namespace itk

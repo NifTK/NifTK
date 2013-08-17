@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef ITKMULTIPLEERODEIMAGEFILTER_H_
-#define ITKMULTIPLEERODEIMAGEFILTER_H_
+#ifndef itkMultipleErodeImageFilter_h
+#define itkMultipleErodeImageFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryErodeImageFilter.h"
+#include <itkImageToImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryErodeImageFilter.h>
 
 namespace itk 
 {

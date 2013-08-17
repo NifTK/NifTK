@@ -12,6 +12,6 @@
 #
 #============================================================================*/
 
-IF(MITK_FOUND)
-  ADD_SUBDIRECTORY(MITK)
-ENDIF(MITK_FOUND)
+if(MITK_FOUND)
+  add_subdirectory(MITK)
+endif(MITK_FOUND)

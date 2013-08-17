@@ -12,31 +12,37 @@
 #
 #============================================================================*/
 
-SET(SRC_CPP_FILES
+set(SRC_CPP_FILES
 )
 
-SET(INTERNAL_CPP_FILES
+set(INTERNAL_CPP_FILES
   XnatBrowserView.cxx
   XnatBrowserWidget.cxx
+  XnatDownloadDialog.cxx
+  XnatDownloadManager.cxx
   XnatPluginActivator.cxx
   XnatPluginPreferencePage.cxx
   XnatPluginSettings.cxx
+  XnatTreeView.cxx
 )
 
-SET(UI_FILES
+set(UI_FILES
   src/internal/XnatBrowserView.ui
   src/internal/XnatBrowserWidget.ui
   src/internal/XnatPluginPreferencePage.ui
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
   src/internal/XnatBrowserView.h
   src/internal/XnatBrowserWidget.h
+  src/internal/XnatDownloadDialog.h
+  src/internal/XnatDownloadManager.h
   src/internal/XnatPluginActivator.h
   src/internal/XnatPluginPreferencePage.h
+  src/internal/XnatTreeView.h
 )
 
-SET(CACHED_RESOURCE_FILES
+set(CACHED_RESOURCE_FILES
   resources/xnat-icon.png
   plugin.xml
 # list of resource files which can be used by the plug-in
@@ -45,17 +51,17 @@ SET(CACHED_RESOURCE_FILES
 # plug-in views in the workbench
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   resources/XNAT.qrc
 )
 
-SET(CPP_FILES 
+set(CPP_FILES 
 )
 
 foreach(file ${SRC_CPP_FILES})
-  SET(CPP_FILES ${CPP_FILES} src/${file})
+  set(CPP_FILES ${CPP_FILES} src/${file})
 endforeach(file ${SRC_CPP_FILES})
 
 foreach(file ${INTERNAL_CPP_FILES})
-  SET(CPP_FILES ${CPP_FILES} src/internal/${file})
+  set(CPP_FILES ${CPP_FILES} src/internal/${file})
 endforeach(file ${INTERNAL_CPP_FILES})

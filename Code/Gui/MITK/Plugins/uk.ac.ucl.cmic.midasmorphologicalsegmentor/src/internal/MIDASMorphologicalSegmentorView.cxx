@@ -27,10 +27,10 @@
 #include <mitkUndoController.h>
 #include <mitkMIDASOrientationUtils.h>
 
-#include "itkConversionUtils.h"
-#include "mitkITKRegionParametersDataNodeProperty.h"
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPaintbrushTool.h"
+#include <itkConversionUtils.h>
+#include <mitkITKRegionParametersDataNodeProperty.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPaintbrushTool.h>
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
@@ -397,17 +397,17 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
 }
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
+void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
   if (!m_MorphologicalControls)
   {
     m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(0,0,0,0);
+    m_Layout->setContentsMargins(0, 0, 0, 0);
     m_Layout->setSpacing(0);
     m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 10);
+    m_Layout->setRowStretch(1, 1);
     m_Layout->setRowStretch(2, 0);
     m_Layout->setRowStretch(3, 0);
 
@@ -418,13 +418,13 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget *parent)
 
     QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
-    m_Layout->setMargin(9);
-    m_Layout->setSpacing(6);
+    m_Layout->setMargin(5);
+    m_Layout->setSpacing(5);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget,         0, 0);
+    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForSegmentationViewWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget,             2, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget,         3, 0);
+    m_Layout->addWidget(m_ContainerForToolWidget, 2, 0);
+    m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
@@ -520,6 +520,27 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool b)
 void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
   m_PipelineManager->NodeChanged(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+{
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
+  {
+    this->OnToolSelected(-1);
+    this->EnableSegmentationWidgets(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
+    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_PipelineManager->RemoveWorkingData();
+    m_PipelineManager->DestroyPipeline();
+//    this->GetDataStorage()->Remove(segmentationNode);
+    this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->RequestRenderWindowUpdate();
+    mitk::UndoController::GetCurrentUndoModel()->Clear();
+  }
 }
 
 

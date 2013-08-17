@@ -16,9 +16,9 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkDemonsRegistrationFilter.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkDemonsRegistrationFilter.h>
 
 /**
  * A simple test harness for the the DemonsRegistrationFilter.

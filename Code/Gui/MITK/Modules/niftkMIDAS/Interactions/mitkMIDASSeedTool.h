@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitk_MIDASSeedTool_h
-#define mitk_MIDASSeedTool_h
+#ifndef mitkMIDASSeedTool_h
+#define mitkMIDASSeedTool_h
 
 #include "niftkMIDASExports.h"
 #include "mitkMIDASTool.h"

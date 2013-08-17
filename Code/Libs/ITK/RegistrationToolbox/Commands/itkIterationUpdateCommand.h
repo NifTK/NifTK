@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkIterationUpdateCommand_h
-#define __itkIterationUpdateCommand_h
+#ifndef itkIterationUpdateCommand_h
+#define itkIterationUpdateCommand_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkCommand.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
+#include <itkCommand.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
 
 namespace itk
 {

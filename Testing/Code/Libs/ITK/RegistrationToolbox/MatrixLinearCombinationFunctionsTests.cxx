@@ -18,9 +18,9 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkEulerAffineTransform.h"
-#include "itkMatrixLinearCombinationFunctions.h"
+#include <ConversionUtils.h>
+#include <itkEulerAffineTransform.h>
+#include <itkMatrixLinearCombinationFunctions.h>
 
 
 int MatrixLinearCombinationFunctionsTests(int argc, char * argv[])

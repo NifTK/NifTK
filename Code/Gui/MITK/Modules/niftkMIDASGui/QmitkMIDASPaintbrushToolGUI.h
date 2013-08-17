@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASMIDASPAINTBRUSHTOOL_H
-#define QMITKMIDASMIDASPAINTBRUSHTOOL_H
+#ifndef QmitkMIDASPaintbrushToolGUI_h
+#define QmitkMIDASPaintbrushToolGUI_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QmitkToolGUI.h>
-#include "mitkMIDASPaintbrushTool.h"
+#include <mitkMIDASPaintbrushTool.h>
 
 class QSlider;
 class QLabel;

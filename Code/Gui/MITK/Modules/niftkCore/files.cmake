@@ -30,6 +30,8 @@ set(CPP_FILES
   DataManagement/mitkDataStorageVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
+  Rendering/mitkFastPointSetVtkMapper3D.cxx
+  Rendering/vtkOpenGLMatrixDrivenCamera.cxx
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
@@ -41,4 +43,10 @@ set(CPP_FILES
   IO/mitkNifTKItkImageFileIOFactory.cxx
   IO/itkPNMImageIOFactory.cxx
   IO/itkPNMImageIO.cxx
+  IO/mitkFileIOUtils.cxx
+  IO/mitkCoordinateAxesDataReader.cxx
+  IO/mitkCoordinateAxesDataReaderFactory.cxx
+  IO/mitkCoordinateAxesDataWriter.cxx
+  IO/mitkCoordinateAxesDataWriterFactory.cxx
+  Interactions/mitkPointSetUpdate.cxx
 )

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QMITKIGIULTRASONIXTOOLGUI_H
-#define QMITKIGIULTRASONIXTOOLGUI_H
+#ifndef QmitkIGINVidiaDataSourceGui_h
+#define QmitkIGINVidiaDataSourceGui_h
 
 #include "niftkNVidiaGuiExports.h"
 #include <QWidget>
-#include "QmitkIGIDataSourceGui.h"
+#include <QmitkIGIDataSourceGui.h>
 #include "ui_QmitkIGINVidiaDataSourceGui.h"
 
 class QmitkIGINVidiaDataSource;
@@ -51,6 +51,8 @@ protected:
    */
   virtual void Initialize(QWidget *parent);
 
+  void StopPreviewWidget();
+
 protected slots:
 
   /**
@@ -58,12 +60,17 @@ protected slots:
    */
   void OnUpdateDisplay();
 
+  void OnFieldModeChange(int index);
+
 private:
 
   QmitkIGINVidiaDataSource* GetQmitkIGINVidiaDataSource() const;
 
   // init'd by Initialize()
   QmitkVideoPreviewWidget* m_OglWin;
+
+  // used to check whether stream format has changed in between calls to OnUpdateDisplay()
+  int     m_PreviousBaseResolution;
 }; // end class
 
 #endif

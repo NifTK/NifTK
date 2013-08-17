@@ -54,6 +54,23 @@ void CoordinateAxesVtkMapper3D::ResetMapper( mitk::BaseRenderer* renderer )
 
 
 //-----------------------------------------------------------------------------
+void CoordinateAxesVtkMapper3D::SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
+{
+  // Temporary: By default, start off invisible, as there is a current glitch
+  // which means that with visibility on, the OverlayEditor goes nuts.
+  node->AddProperty( "visible", mitk::BoolProperty::New(false), renderer, overwrite );
+
+  // However: This seems to help. I haven't had time to test taking the above bit out!
+  node->AddProperty( "includeInBoundingBox", mitk::BoolProperty::New(false), renderer, overwrite );
+
+  // Hereon ... business as usual.
+  node->AddProperty( "show text", mitk::BoolProperty::New(false), renderer, overwrite );
+  node->AddProperty( "size", mitk::IntProperty::New(10), renderer, overwrite );
+  Superclass::SetDefaultProperties(node, renderer, overwrite);
+}
+
+
+//-----------------------------------------------------------------------------
 void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* renderer)
 {
   LocalStorage *ls = m_LocalStorage.GetLocalStorage(renderer);
@@ -61,22 +78,32 @@ void CoordinateAxesVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* rend
   bool visible = true;
   this->GetDataNode()->GetVisibility(visible, renderer, "visible");
 
+  bool showText = false;
+  this->GetDataNode()->GetBoolProperty("show text", showText, renderer );
+
+  int length = 10; // millimetres
+  this->GetDataNode()->GetIntProperty("size", length, renderer);
+
   if(!visible)
   {
     ls->m_Actor->VisibilityOff();
     return;
   }
-
-  // Update the transformation to match that on the node, which should be a mitkCoordinateAxesData.
-  mitk::CoordinateAxesData::Pointer axesData = dynamic_cast<mitk::CoordinateAxesData*>(this->GetDataNode()->GetData());
-  if (axesData.IsNotNull())
+  else
   {
-    vtkMatrix4x4 *matrix = vtkMatrix4x4::New();
-    axesData->GetVtkMatrix(*matrix);
-    ls->m_Actor->SetUserMatrix(matrix);
-    matrix->Delete();
+    ls->m_Actor->VisibilityOn();
   }
 
+  if(showText)
+  {
+    ls->m_Actor->AxisLabelsOn();
+  }
+  else
+  {
+    ls->m_Actor->AxisLabelsOff();
+  }
+
+  ls->m_Actor->SetTotalLength(length, length, length);
 }
 
 

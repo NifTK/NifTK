@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkBSplineBendingEnergyConstraint_h
-#define __itkBSplineBendingEnergyConstraint_h
+#ifndef itkBSplineBendingEnergyConstraint_h
+#define itkBSplineBendingEnergyConstraint_h
 
 #include "itkConstraint.h"
-#include "itkBSplineTransform.h"
+#include <itkBSplineTransform.h>
 
 
 namespace itk

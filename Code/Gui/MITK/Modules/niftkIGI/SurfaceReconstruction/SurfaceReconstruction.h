@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkSurfaceReconstruction_h
-#define niftkSurfaceReconstruction_h
+#ifndef SurfaceReconstruction_h
+#define SurfaceReconstruction_h
 
 #include "niftkIGIExports.h"
 #include <mitkDataStorage.h>
@@ -23,6 +23,7 @@
 #include <mitkGenericProperty.h>
 //#include <opencv2/core/core.hpp>
 #include <itkMatrix.h>
+#include <CameraCalibration/Undistortion.h>
 
 
 // forward-decl
@@ -52,8 +53,8 @@ public:
   // or better the other way around: combobox needs to match this order.
   enum Method
   {
-    SEQUENTIAL_CPU,
-    PYRAMID_PARALLEL_CPU,
+    SEQUENTIAL_CPU          = 0,
+    PYRAMID_PARALLEL_CPU    = 1,
     PYRAMID_PARALLEL_CUDA
   };
 
@@ -64,14 +65,6 @@ public:
     DISPARITY_IMAGE
   };
 
-
-  // FIXME: i dont think this is the best place to keep these. i'm up for suggestions!
-  static const char*    s_ImageIsUndistortedPropertyName;       // mitk::BoolProperty
-  static const char*    s_ImageIsRectifiedPropertyName;         // mitk::BoolProperty
-  static const char*    s_CameraCalibrationPropertyName;        // mitk::CameraIntrinsicsProperty
-  static const char*    s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
-
-
 public:
 
   mitkClassMacro(SurfaceReconstruction, itk::Object);
@@ -80,12 +73,36 @@ public:
   /**
    * \brief Write My Documentation
    */
-  void Run(const mitk::DataStorage::Pointer dataStorage,
-           mitk::DataNode::Pointer outputNode,
+  mitk::BaseData::Pointer Run(
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
-           Method method = SEQUENTIAL_CPU,
-           OutputType outputtype = POINT_CLOUD);
+           Method method,
+           OutputType outputtype,
+           const mitk::DataNode::Pointer camnode,
+           float maxTriangulationError,
+           float minDepth,
+           float maxDepth);
+
+
+  struct ParamPacket
+  {
+    mitk::DataStorage::Pointer dataStorage;
+    mitk::DataNode::Pointer outputNode;
+    mitk::Image::Pointer image1;
+    mitk::Image::Pointer image2;
+    Method method;
+    OutputType outputtype;
+    mitk::DataNode::Pointer camnode;
+    float maxTriangulationError;
+    float minDepth;
+    float maxDepth;
+
+    ParamPacket()
+    {
+    }
+  };
+
+  mitk::BaseData::Pointer Run(ParamPacket params);
 
 protected:
 

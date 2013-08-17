@@ -21,7 +21,7 @@
 #include <mitkPositionEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkInteractionConst.h>
-#include "itkMIDASHelper.h"
+#include <itkMIDASHelper.h>
 
 namespace mitk
 {
@@ -78,9 +78,9 @@ ITKGetAsAcquiredOrientation(
 
 
 //-----------------------------------------------------------------------------
-MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::Image* image)
+MIDASLayout GetAsAcquiredView(const MIDASLayout& defaultView, const mitk::Image* image)
 {
-  MIDASView view = defaultView;
+  MIDASLayout view = defaultView;
   if (image != NULL)
   {
     // "As Acquired" means you take the orientation of the XY plane
@@ -98,15 +98,15 @@ MIDASView GetAsAcquiredView(const MIDASView& defaultView, const mitk::Image* ima
 
     if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      view = MIDAS_VIEW_AXIAL;
+      view = MIDAS_LAYOUT_AXIAL;
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      view = MIDAS_VIEW_SAGITTAL;
+      view = MIDAS_LAYOUT_SAGITTAL;
     }
     else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      view = MIDAS_VIEW_CORONAL;
+      view = MIDAS_LAYOUT_CORONAL;
     }
     else
     {
@@ -579,6 +579,24 @@ void DumpImage(const mitk::Image *image, const std::string& fileName)
   }
 }
 
+
+
+//-----------------------------------------------------------------------------
+mitk::Vector3D GetXYAspectRatio(const mitk::Image::Pointer image)
+{
+  mitk::Vector3D spacing = image->GetGeometry()->GetSpacing();
+  if (spacing[1] > spacing[0])
+  {
+    spacing[1] = spacing[1]/spacing[0];
+    spacing[0] = 1;
+  }
+  else
+  {
+    spacing[0] = spacing[0]/spacing[1];
+    spacing[1] = 1;
+  }
+  return spacing;
+}
 
 } // end namespace
 

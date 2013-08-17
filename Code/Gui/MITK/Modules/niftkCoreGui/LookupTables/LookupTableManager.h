@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef LOOKUPTABLEMANAGER_H
-#define LOOKUPTABLEMANAGER_H
+#ifndef LookupTableManager_h
+#define LookupTableManager_h
 
 #include <niftkCoreGuiExports.h>
 #include <vector>

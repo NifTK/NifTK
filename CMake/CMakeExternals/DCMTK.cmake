@@ -65,7 +65,7 @@ if(NOT DEFINED DCMTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
     )
   set(DCMTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install)
-  MESSAGE("SuperBuild loading DCMTK from ${DCMTK_DIR}")
+  message("SuperBuild loading DCMTK from ${DCMTK_DIR}")
   
 else()
   

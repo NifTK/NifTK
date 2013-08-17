@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SurfaceRegView</class>
+ <widget class="QWidget" name="SurfaceRegView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>713</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_FixedSurfaceLabel">
+         <property name="text">
+          <string>Fixed surface:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_FixedSurfaceComboBox</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_FixedSurfaceComboBox"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_MovingSurfaceLabel">
+         <property name="text">
+          <string>Moving surface:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_MovingSurfaceComboBox</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QmitkDataStorageComboBox" name="m_MovingSurfaceComboBox"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="m_SurfaceBasedRegistrationButton">
+         <property name="text">
+          <string>Calculate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="m_SurfaceBasedRegistrationLineEdit"/>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="ctkMatrixWidget" name="m_MatrixWidget" native="true"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="m_ComposeWithDataButton">
+         <property name="text">
+          <string>Compose with data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QmitkDataStorageCheckableComboBox" name="m_ComposeWithDataNode"/>
+       </item>
+       <item row="5" column="1">
+        <widget class="ctkPathLineEdit" name="m_SaveToFilePathEdit"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QPushButton" name="m_SaveToFileButton">
+         <property name="text">
+          <string>Save to file</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="m_LiveDistanceGroupBox">
+       <property name="title">
+        <string>Compute live distance</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Distance:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLineEdit" name="m_DistanceLineEdit"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="m_LiveDistanceUpdateButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Update</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkDataStorageComboBox</class>
+   <extends>QComboBox</extends>
+   <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>ctkPathLineEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkMatrixWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkMatrixWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageCheckableComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageCheckableComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __itkDasGradientFilter_h
-#define __itkDasGradientFilter_h
+#ifndef itkDasGradientFilter_h
+#define itkDasGradientFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
-#include "itkImageFileWriter.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkImageFileWriter.h>
 #include "itkDasTransformImageFilter.h"
 
 namespace itk {

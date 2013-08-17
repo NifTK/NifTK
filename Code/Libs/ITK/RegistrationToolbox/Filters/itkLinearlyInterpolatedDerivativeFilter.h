@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkLinearlyInterpolatedDerivativeFilter_h
-#define __itkLinearlyInterpolatedDerivativeFilter_h
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkImageToImageFilter.h"
+#ifndef itkLinearlyInterpolatedDerivativeFilter_h
+#define itkLinearlyInterpolatedDerivativeFilter_h
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkImageToImageFilter.h>
 
 namespace itk {
 /** 

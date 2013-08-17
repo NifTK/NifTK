@@ -15,15 +15,15 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 
-#ifndef AFFINETRANSFORMINTERACTOR3D_H_HEADER_INCLUDED
-#define AFFINETRANSFORMINTERACTOR3D_H_HEADER_INCLUDED
+#ifndef AffineTransformInteractor3D_h
+#define AffineTransformInteractor3D_h
 
-#include "mitkInteractor.h"
-#include "mitkInteractionConst.h"
-#include "mitkCommon.h"
-#include "mitkSurface.h"
-#include "mitkBaseRenderer.h"
-#include "mitkBoundingObject.h"
+#include <mitkInteractor.h>
+#include <mitkInteractionConst.h>
+#include <mitkCommon.h>
+#include <mitkSurface.h>
+#include <mitkBaseRenderer.h>
+#include <mitkBoundingObject.h>
 
 #include <vtkPolyData.h>
 #include <vtkType.h>

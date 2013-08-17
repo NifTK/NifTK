@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MITKIGIOPENCVDATASOURCE_H
-#define MITKIGIOPENCVDATASOURCE_H
+#ifndef QmitkIGIOpenCVDataSource_h
+#define QmitkIGIOpenCVDataSource_h
 
 #include "niftkIGIGuiExports.h"
 #include "QmitkIGILocalDataSource.h"
@@ -70,6 +70,13 @@ public:
    */
   bool IsCapturing();
 
+
+  // overridden from IGIDataSource
+  virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
+  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
+  virtual void StopPlayback();
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
+
 signals:
 
   /**
@@ -105,9 +112,11 @@ private:
 
   mitk::OpenCVVideoSource::Pointer m_VideoSource;
 
+  std::set<igtlUint64>              m_PlaybackIndex;
+  std::string                       m_PlaybackDirectoryName;
+
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)
 
 #endif
-

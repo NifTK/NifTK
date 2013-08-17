@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __itkRelaxStreamlinesFilter_h
-#define __itkRelaxStreamlinesFilter_h
+#ifndef itkRelaxStreamlinesFilter_h
+#define itkRelaxStreamlinesFilter_h
 
-#include "itkImage.h"
-#include "itkVector.h"
-#include "itkPoint.h"
+#include <itkImage.h>
+#include <itkVector.h>
+#include <itkPoint.h>
 #include "itkBaseCTEStreamlinesFilter.h"
-#include "itkVectorInterpolateImageFunction.h"
-#include "itkInterpolateImageFunction.h"
+#include <itkVectorInterpolateImageFunction.h>
+#include <itkInterpolateImageFunction.h>
 
 
 namespace itk {

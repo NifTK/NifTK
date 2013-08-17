@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkConstraint_h
-#define __itkConstraint_h
+#ifndef itkConstraint_h
+#define itkConstraint_h
 
-#include "itkObject.h"
-#include "itkObjectFactory.h"
+#include <itkObject.h>
+#include <itkObjectFactory.h>
 
-#include "itkSingleValuedCostFunction.h"
+#include <itkSingleValuedCostFunction.h>
 
 namespace itk
 {

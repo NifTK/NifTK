@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef LOOKUPTABLESAXHANDLER_H
-#define LOOKUPTABLESAXHANDLER_H
+#ifndef LookupTableSaxHandler_h
+#define LookupTableSaxHandler_h
 
 #include <niftkCoreGuiExports.h>
 #include <vector>

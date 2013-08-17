@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkImageMatrixFormReconstructionMetric_h
-#define __itkImageMatrixFormReconstructionMetric_h
+#ifndef itkImageMatrixFormReconstructionMetric_h
+#define itkImageMatrixFormReconstructionMetric_h
 
-#include "itkConceptChecking.h"
-#include "itkSingleValuedCostFunction.h"
+#include <itkConceptChecking.h>
+#include <itkSingleValuedCostFunction.h>
 
-#include "itkForwardAndBackwardProjectionMatrix.h"
+#include <itkForwardAndBackwardProjectionMatrix.h>
 
 
 

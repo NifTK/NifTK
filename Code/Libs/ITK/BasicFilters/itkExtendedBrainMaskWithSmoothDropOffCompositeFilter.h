@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
-#define __itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
+#ifndef itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
+#define itkExtendedBrainMaskWithSmoothDropOffCompositeFilter_h
 
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 #include "itkInjectSourceImageGreaterThanZeroIntoTargetImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkBinaryCrossStructuringElement.h"
-#include "itkBinaryDilateImageFilter.h"
-#include "itkDiscreteGaussianImageFilter.h"
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkBinaryCrossStructuringElement.h>
+#include <itkBinaryDilateImageFilter.h>
+#include <itkDiscreteGaussianImageFilter.h>
 
 namespace itk 
 {

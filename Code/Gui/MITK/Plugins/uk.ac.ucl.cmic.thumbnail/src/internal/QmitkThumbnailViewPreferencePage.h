@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef _QMITKTHUMBNAILVIEWPREFERENCE_PAGE_H_INCLUDED
-#define _QMITKTHUMBNAILVIEWPREFERENCE_PAGE_H_INCLUDED
+#ifndef QmitkThumbnailViewPreferencePage_h
+#define QmitkThumbnailViewPreferencePage_h
 
-#include "berryIQtPreferencePage.h"
+#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 
 class QWidget;

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkMakeLapUSProbeModelCLP.h"
+#include <niftkMakeLapUSProbeModelCLP.h>
 #include <cmath>
 #include <itkRGBPixel.h>
 #include <itkImage.h>

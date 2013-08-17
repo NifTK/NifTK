@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#ifndef __itkForwardProjectionWithAffineTransformDifferenceFilter_h
-#define __itkForwardProjectionWithAffineTransformDifferenceFilter_h
+#ifndef itkForwardProjectionWithAffineTransformDifferenceFilter_h
+#define itkForwardProjectionWithAffineTransformDifferenceFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkConceptChecking.h"
+#include <itkImageToImageFilter.h>
+#include <itkConceptChecking.h>
 
-#include "itkCreateForwardBackwardProjectionMatrix.h"
+#include <itkCreateForwardBackwardProjectionMatrix.h>
 #include "itkBackwardImageProjector2Dto3D.h"
 
-#include "itkPerspectiveProjectionTransform.h"
-#include "itkEulerAffineTransform.h"
+#include <itkPerspectiveProjectionTransform.h>
+#include <itkEulerAffineTransform.h>
 #include "itkProjectionGeometry.h"
 #include "itkSubtract2DImageFromVolumeSliceFilter.h"
 

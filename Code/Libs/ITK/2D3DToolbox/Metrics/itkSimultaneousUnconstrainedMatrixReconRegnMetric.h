@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousUnconstrainedMatrixReconRegnMetric_h
-#define __itkSimultaneousUnconstrainedMatrixReconRegnMetric_h
+#ifndef itkSimultaneousUnconstrainedMatrixReconRegnMetric_h
+#define itkSimultaneousUnconstrainedMatrixReconRegnMetric_h
 
-#include "itkConceptChecking.h"
-#include "itkSingleValuedCostFunction.h"
+#include <itkConceptChecking.h>
+#include <itkSingleValuedCostFunction.h>
 
-#include "itkForwardAndBackwardProjectionMatrix.h"
-#include "itkEulerAffineTransformMatrixAndItsVariations.h"
+#include <itkForwardAndBackwardProjectionMatrix.h>
+#include <itkEulerAffineTransformMatrixAndItsVariations.h>
 
 
 

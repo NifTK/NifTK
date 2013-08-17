@@ -16,8 +16,8 @@
 #pragma warning ( disable : 4786 )
 #endif
 #include <iostream>
-#include "itkDerivativeOperator.h"
-#include "itkNondirectionalDerivativeOperator.h"
+#include <itkDerivativeOperator.h>
+#include <itkNondirectionalDerivativeOperator.h>
 
 int NondirectionalDerivativeOperatorTest(int argc, char * argv[])
 {

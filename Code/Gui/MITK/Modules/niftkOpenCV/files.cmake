@@ -13,6 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Common/mitkOpenCVMaths.cxx
+  Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cxx
@@ -20,21 +22,22 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
-  VideoProcessing/mitkTrackLapUSProcessor.cxx
-  VideoProcessing/mitkTrackLapUS.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx
-  Registration/mitkRegistrationHelper.cxx
-  Registration/mitkStereoImageToModelMetric.cxx
-  Registration/mitkStereoImageToModelSSD.cxx
-  Registration/mitkRegisterProbeModelToStereoPair.cxx
-  Tracking/mitkTagTrackingFacade.cxx
-  Tracking/mitkMonoTagExtractor.cxx
-  Tracking/mitkStereoTagExtractor.cxx
-  demo/mitkTestLineExtraction.cxx
-  demo/mitkTestCornerExtraction.cxx
+  CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
+  CameraCalibration/Undistortion.cxx
+  CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
+  Registration/mitkArunLeastSquaresPointRegistration.cxx
+  Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
+  Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
+  TagTracking/mitkMonoTagExtractor.cxx
+  TagTracking/mitkStereoTagExtractor.cxx
+  VideoTrackerMatching/mitkVideoTrackerMatching.cxx
+  UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
+  UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
 )

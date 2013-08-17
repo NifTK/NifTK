@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __mitkHandeyeCalibrate_h
-#define __mitkHandeyeCalibrate_h
+#ifndef mitkHandeyeCalibrate_h
+#define mitkHandeyeCalibrate_h
 
 #include "niftkOpenCVExports.h"
 #include <string>
@@ -43,11 +43,13 @@ public:
    */
   std::vector<double> Calibrate (const std::string& TrackingFileDirectory,
       const std::string& ExtrinsicFileDirectoryOrFile,
-      bool FlipTracking = true,
-      bool FlipExtrinsic = false,
-      bool SortByDistance = false,
-      bool SortByAngle = false,
       const std::string GroundTruthSolution = "");
+
+  itkSetMacro(FlipTracking, bool);
+  itkSetMacro(FlipExtrinsic, bool);
+  itkSetMacro(SortByDistance, bool);
+  itkSetMacro(SortByAngle, bool);
+  itkSetMacro(DoGridToWorld, bool);
 
 protected:
 
@@ -56,7 +58,14 @@ protected:
 
   HandeyeCalibrate(const HandeyeCalibrate&); // Purposefully not implemented.
   HandeyeCalibrate& operator=(const HandeyeCalibrate&); // Purposefully not implemented.
+  
+  bool  m_FlipTracking;
+  bool  m_FlipExtrinsic;
+  bool  m_SortByDistance;
+  bool  m_SortByAngle;
+  bool  m_DoGridToWorld;
 
+private: 
 
 }; // end class
 

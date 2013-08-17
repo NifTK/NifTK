@@ -16,7 +16,7 @@
 #define __itkConversionUtils_cxx
 
 #include "itkConversionUtils.h"
-#include "itkSpatialOrientation.h"
+#include <itkSpatialOrientation.h>
 #include <iostream>
 
 namespace itk

@@ -17,15 +17,15 @@
 # However, you will also need to specify stuff in each subdirectory.
 ####################################################################################
 
-SET(MY_PROJECT_NAME ${PROJECT})
+set(MY_PROJECT_NAME ${PROJECT})
 
-MARK_AS_ADVANCED(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
+mark_as_advanced(${MY_PROJECT_NAME}_INSTALL_RPATH_RELATIVE
                  )
 
-IF(MITK_USE_QT)
-  SET(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
-  ADD_DEFINITIONS(-DQWT_DLL)
-ENDIF()
+if(MITK_USE_QT)
+  set(QT_QMAKE_EXECUTABLE ${MITK_QMAKE_EXECUTABLE})
+  add_definitions(-DQWT_DLL)
+endif()
 
 ####################################################################################
 # Add 'Modules', i.e. shared libs
@@ -45,7 +45,7 @@ if(_modules_conf_files)
   file(REMOVE ${_modules_conf_files})
 endif()
 
-ADD_SUBDIRECTORY(Modules)
+add_subdirectory(Modules)
 
 ####################################################################################
 # Create all CTK plugins.
@@ -61,11 +61,26 @@ endmacro()
 # Get infos about application directories and build options
 include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
 set(_apps_fullpath )
-FOREACH(NIFTK_APP ${NIFTK_APPS})
-  LIST(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")  
-ENDFOREACH()
+foreach(NIFTK_APP ${NIFTK_APPS})
+  string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+  set(target_info_list ${target_info})
+  list(GET target_info_list 1 option_name)
+  list(GET target_info_list 0 app_name)
+  if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+    list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
+  endif()
+endforeach()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
+
+# Force the IGI plugins to turn off/on.
+foreach(IGI_PLUGIN ${IGI_PLUGINS})
+  string(REPLACE ":" "\;" target_info ${IGI_PLUGIN})
+  set(target_info_list ${target_info})
+  list(GET target_info_list 0 plugin_name)
+  set(${PROJECT_NAME}_${plugin_name} ${BUILD_IGI} CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
+endforeach()
+
 ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                      APPS ${_apps_fullpath} 
                      BUILD_OPTION_PREFIX ${PROJECT_NAME}_
@@ -77,6 +92,6 @@ ctkMacroSetupPlugins(${PROJECT_PLUGINS}
 #   HelperApps contains independent stuff like utilities, command line apps etc.
 ####################################################################################
 
-ADD_SUBDIRECTORY(HelperApps)
-ADD_SUBDIRECTORY(Apps)
+add_subdirectory(HelperApps)
+add_subdirectory(Apps)
 

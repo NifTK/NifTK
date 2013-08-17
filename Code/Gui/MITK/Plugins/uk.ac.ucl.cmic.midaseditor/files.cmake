@@ -14,7 +14,6 @@
 
 set(SRC_CPP_FILES
   mitkMIDASDataStorageEditorInput.cxx
-  QmitkMIDASMultiViewWidget.cxx
   QmitkMIDASMultiViewEditor.cxx
   QmitkMIDASMultiViewEditorPreferencePage.cxx
 )
@@ -28,7 +27,6 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/uk_ac_ucl_cmic_midaseditor_Activator.h
-  src/QmitkMIDASMultiViewWidget.h
   src/QmitkMIDASMultiViewEditor.h
   src/QmitkMIDASMultiViewEditorPreferencePage.h  
 )
@@ -39,14 +37,11 @@ set(MOC_H_FILES
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
   plugin.xml
-  resources/PushPinIn.png
-  resources/PushPinOut.png
 )
 
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-  resources/midaseditor.qrc
 )
 
 set(CPP_FILES )
@@ -58,4 +53,3 @@ endforeach(file ${SRC_CPP_FILES})
 foreach(file ${INTERNAL_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/internal/${file})
 endforeach(file ${INTERNAL_CPP_FILES})
-

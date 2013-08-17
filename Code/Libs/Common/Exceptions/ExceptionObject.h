@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __NIFTK_EXCEPTIONOBJECT_H
-#define __NIFTK_EXCEPTIONOBJECT_H
+#ifndef ExceptionObject_h
+#define ExceptionObject_h
 #include <stdexcept>
 #include <string>
 

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkMinimumCurvatureImageFilter_h
-#define __itkMinimumCurvatureImageFilter_h
+#ifndef itkMinimumCurvatureImageFilter_h
+#define itkMinimumCurvatureImageFilter_h
 
-#include "itkBinaryFunctorImageFilter.h"
-#include "itkNumericTraits.h"
+#include <itkBinaryFunctorImageFilter.h>
+#include <itkNumericTraits.h>
 
 namespace itk
 {

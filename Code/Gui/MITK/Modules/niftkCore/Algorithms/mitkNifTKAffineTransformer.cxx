@@ -17,9 +17,9 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
-#include "mitkDataStorageUtils.h"
+#include <mitkDataStorageUtils.h>
 
-#include "ConversionUtils.h"
+#include <ConversionUtils.h>
 
 // ITK
 #include <itkResampleImageFilter.h>

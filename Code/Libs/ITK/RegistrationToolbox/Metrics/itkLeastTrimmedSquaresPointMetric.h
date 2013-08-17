@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkLeastTrimmedSquaresPointMetric_h
-#define __itkLeastTrimmedSquaresPointMetric_h
+#ifndef itkLeastTrimmedSquaresPointMetric_h
+#define itkLeastTrimmedSquaresPointMetric_h
 
 #include "itkPointSetToPointSetSingleValuedMetric.h"
-#include "itkCovariantVector.h"
-#include "itkPoint.h"
-#include "itkPointSet.h"
-#include "itkImage.h"
+#include <itkCovariantVector.h>
+#include <itkPoint.h>
+#include <itkPointSet.h>
+#include <itkImage.h>
 
 namespace itk
 {

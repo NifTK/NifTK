@@ -15,17 +15,19 @@
 #ifndef TrackedImageView_h
 #define TrackedImageView_h
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedImageView.h"
 #include <vtkSmartPointer.h>
+#include <mitkVector.h>
 
 class vtkMatrix4x4;
 
 /**
  * \class TrackedImageView
- * \brief User interface to coordinate an image, surface and calibration transform to
- * enable the view of a tracked image probe, such as a tracked ultrasound probe.
+ * \brief User interface to coordinate an image and tracker transform to
+ * enable the display of an image in a rendered scene, as might be useful in
+ * a tracked ultrasound probe for example.
  * \ingroup uk_ac_ucl_cmic_igitrackedimage_internal
 */
 class TrackedImageView : public QmitkBaseView
@@ -74,9 +76,9 @@ private slots:
   void OnUpdate(const ctkEvent& event);
 
   /**
-   * \brief When the user selects a new image to probe matrix, we load the transformation.
+   * \brief When the image selection is changed, we re-init the views for the tracked image.
    */
-  void OnImageToProbeChanged();
+  void OnSelectionChanged(const mitk::DataNode*);
 
 private:
 
@@ -98,8 +100,10 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  vtkSmartPointer<vtkMatrix4x4> m_ImageToProbeTransform;
-  std::string m_ImageToProbeFileName;
+  vtkSmartPointer<vtkMatrix4x4>   m_ImageToTrackingSensorTransform;
+  std::string                     m_ImageToTrackingSensorFileName;
+  mitk::DataNode::Pointer         m_PlaneNode;
+  mitk::Point2D                   m_ImageScaling;
 };
 
 #endif // TrackedImageView_h

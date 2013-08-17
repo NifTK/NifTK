@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkCorrectGMUsingPVMapFilter_h
-#define __itkCorrectGMUsingPVMapFilter_h
+#ifndef itkCorrectGMUsingPVMapFilter_h
+#define itkCorrectGMUsingPVMapFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTESegmentationFilter.h"
 
 

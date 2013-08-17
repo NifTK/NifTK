@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef ITKSIMPLEKMEANSCLUSTERINGIMAGEFILTER_H_
-#define ITKSIMPLEKMEANSCLUSTERINGIMAGEFILTER_H_
+#ifndef itkSimpleKMeansClusteringImageFilter_h
+#define itkSimpleKMeansClusteringImageFilter_h
 
-#include "itkImageToImageFilter.h"
-#include "itkMacro.h"
-#include "itkWeightedCentroidKdTreeGenerator.h"
-#include "itkKdTreeBasedKmeansEstimator.h"
-#include "itkListSample.h"
+#include <itkImageToImageFilter.h>
+#include <itkMacro.h>
+#include <itkWeightedCentroidKdTreeGenerator.h>
+#include <itkKdTreeBasedKmeansEstimator.h>
+#include <itkListSample.h>
 
 namespace itk
 {

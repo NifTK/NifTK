@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKPAINTEVENTEATER_H_
-#define QMITKPAINTEVENTEATER_H_
+#ifndef QmitkPaintEventEater_h
+#define QmitkPaintEventEater_h
 
 #include "niftkCoreGuiExports.h"
 #include <QWidget>

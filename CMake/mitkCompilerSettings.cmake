@@ -15,37 +15,29 @@
 
 # Additional stuff that gets included if we are using MITK
 
-INCLUDE(mitkFunctionCheckCompilerFlags)
-INCLUDE(mitkFunctionGetGccVersion)
-INCLUDE(mitkFunctionGetVersion)
-INCLUDE(niftkMacroGetGitDateTime)
+include(mitkFunctionCheckCompilerFlags)
+include(mitkFunctionGetGccVersion)
 
-# Retrieve some software versions
-mitkFunctionGetVersion(${CMAKE_SOURCE_DIR} NIFTK)
-niftkMacroGetGitDateTime(${CMAKE_SOURCE_DIR} NIFTK)
-
-MESSAGE("NIFTK version=${NIFTK_REVISION_SHORTID}, from ${NIFTK_DATE_TIME}")
-
-IF(BUILD_GUI)
-  MESSAGE("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-  MESSAGE("CTK version=${NIFTK_VERSION_CTK}")
-ENDIF()
-IF(BUILD_IGI)
-  MESSAGE("NiftyLink version=${NIFTK_VERSION_NIFTYLINK}")
-ENDIF(BUILD_IGI)
+if(BUILD_GUI)
+  message("Qt version=${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
+  message("CTK version=${NIFTK_VERSION_CTK}")
+endif()
+if(BUILD_IGI)
+  message("NiftyLink version=${NIFTK_VERSION_NIFTYLINK}")
+endif(BUILD_IGI)
 
 # Print out other versions.
-MESSAGE("BOOST version=${NIFTK_VERSION_BOOST}")                 
-MESSAGE("GDCM version=${NIFTK_VERSION_GDCM}")                   
-MESSAGE("DCMTK version=${NIFTK_VERSION_DCMTK}")
-MESSAGE("ITK version=${NIFTK_VERSION_ITK}") 
-MESSAGE("VTK version=${NIFTK_VERSION_VTK}")                     
-MESSAGE("MITK version=${NIFTK_VERSION_MITK}")
+message("BOOST version=${NIFTK_VERSION_BOOST}")                 
+message("GDCM version=${NIFTK_VERSION_GDCM}")                   
+message("DCMTK version=${NIFTK_VERSION_DCMTK}")
+message("ITK version=${NIFTK_VERSION_ITK}") 
+message("VTK version=${NIFTK_VERSION_VTK}")                     
+message("MITK version=${NIFTK_VERSION_MITK}")
 
 # MinGW does not export all symbols automatically, so no need to set flags
-IF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
-  #SET(VISIBILITY_CXX_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
+  #set(VISIBILITY_CXX_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+endif(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
 
 if(NOT UNIX AND NOT MINGW)
   set(MITK_WIN32_FORCE_STATIC "STATIC")
@@ -59,19 +51,19 @@ endif()
 set(NIFTK_MITK_C_FLAGS "${NIFTK_COVERAGE_C_FLAGS} ${NIFTK_ADDITIONAL_C_FLAGS}")
 set(NIFTK_MITK_CXX_FLAGS "${VISIBILITY_CXX_FLAGS} ${NIFTK_COVERAGE_CXX_FLAGS} ${NIFTK_ADDITIONAL_CXX_FLAGS}")
 
-IF(APPLE)
-  SET(NIFTK_MITK_CXX_FLAGS "${NIFTK_MITK_CXX_FLAGS} -DNIFTK_OS_IS_MAC")
-ENDIF(APPLE)
+if(APPLE)
+  set(NIFTK_MITK_CXX_FLAGS "${NIFTK_MITK_CXX_FLAGS} -DNIFTK_OS_IS_MAC")
+endif(APPLE)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 
-  SET(MITK_GNU_COMPILER_C_WARNINGS "-Wall -Wextra -Wpointer-arith -Winvalid-pch -Wcast-align -Wwrite-strings -D_FORTIFY_SOURCE=2")
-  SET(MITK_GNU_COMPILER_CXX_WARNINGS "-Woverloaded-virtual -Wold-style-cast -Wstrict-null-sentinel -Wsign-promo ")
+  set(MITK_GNU_COMPILER_C_WARNINGS "-Wall -Wextra -Wpointer-arith -Winvalid-pch -Wcast-align -Wwrite-strings -D_FORTIFY_SOURCE=2")
+  set(MITK_GNU_COMPILER_CXX_WARNINGS "-Woverloaded-virtual -Wold-style-cast -Wstrict-null-sentinel -Wsign-promo ")
 
-  IF(NIFTK_VERBOSE_COMPILER_WARNINGS)
-    SET(cflags "${MITK_GNU_COMPILER_C_WARNINGS}")
-    SET(cxxflags "${cflags} ${MITK_GNU_COMPILER_CXX_WARNINGS}") 
-  ENDIF(NIFTK_VERBOSE_COMPILER_WARNINGS)
+  if(NIFTK_VERBOSE_COMPILER_WARNINGS)
+    set(cflags "${MITK_GNU_COMPILER_C_WARNINGS}")
+    set(cxxflags "${cflags} ${MITK_GNU_COMPILER_CXX_WARNINGS}") 
+  endif(NIFTK_VERBOSE_COMPILER_WARNINGS)
   
   mitkFunctionCheckCompilerFlags("-fdiagnostics-show-option" cflags)
   mitkFunctionCheckCompilerFlags("-Wl,--no-undefined" cflags)

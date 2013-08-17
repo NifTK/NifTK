@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#ifndef ITKFFDCONJUGATEGRADIENTDESCENTOPTIMIZER_H_
-#define ITKFFDCONJUGATEGRADIENTDESCENTOPTIMIZER_H_
+#ifndef itkFFDConjugateGradientDescentOptimizer_h
+#define itkFFDConjugateGradientDescentOptimizer_h
 
 
 #include "itkFFDGradientDescentOptimizer.h"
-#include "itkImageToImageMetricWithConstraint.h"
-#include "itkBSplineTransform.h"
-#include "itkRegistrationForceFilter.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkScaleVectorFieldFilter.h"
+#include <itkImageToImageMetricWithConstraint.h>
+#include <itkBSplineTransform.h>
+#include <itkRegistrationForceFilter.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkScaleVectorFieldFilter.h>
 
 namespace itk
 {

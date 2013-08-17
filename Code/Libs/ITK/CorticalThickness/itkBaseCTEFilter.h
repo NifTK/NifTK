@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkBaseCTEFilter_h
-#define __itkBaseCTEFilter_h
+#ifndef itkBaseCTEFilter_h
+#define itkBaseCTEFilter_h
 
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
 
 namespace itk
 {

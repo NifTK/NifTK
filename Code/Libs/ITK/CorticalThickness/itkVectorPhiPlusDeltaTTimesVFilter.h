@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkVectorPhiPlusDeltaTTimesVFilter_h
-#define __itkVectorPhiPlusDeltaTTimesVFilter_h
+#ifndef itkVectorPhiPlusDeltaTTimesVFilter_h
+#define itkVectorPhiPlusDeltaTTimesVFilter_h
 
-#include "itkVector.h"
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
-#include "itkVectorLinearInterpolateImageFunction.h"
+#include <itkVector.h>
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
 
 namespace itk {
 /**

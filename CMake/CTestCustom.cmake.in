@@ -13,12 +13,12 @@
 #============================================================================*/
 
 
-SET (CTEST_EXTRA_COVERAGE_GLOB ${CTEST_EXTRA_COVERAGE_GLOB})
-FOREACH (E IN ITEMS .c .cxx .h .txx)
-  LIST (APPEND CTEST_EXTRA_COVERAGE_GLOB
+set (CTEST_EXTRA_COVERAGE_GLOB ${CTEST_EXTRA_COVERAGE_GLOB})
+foreach (E IN ITEMS .c .cxx .h .txx)
+  list (APPEND CTEST_EXTRA_COVERAGE_GLOB
     "Code/*/*${E}"
 )
-ENDFOREACH ()
+endforeach ()
 
 set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   ${CTEST_CUSTOM_COVERAGE_EXCLUDE}
@@ -166,4 +166,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   ".*CTK-src.*"
   ".*DCMTK-src.*"
   ".*OpenCV-src.*"
+
+  # Trac 2495: Removing warning for Kelvin
+  ".*itkShapeBasedAveragingImageFilter.*"
   )

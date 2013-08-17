@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkLaplacianSolverImageFilter_h
-#define __itkLaplacianSolverImageFilter_h
+#ifndef itkLaplacianSolverImageFilter_h
+#define itkLaplacianSolverImageFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTEFilter.h"
 
 

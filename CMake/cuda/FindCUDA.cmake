@@ -334,8 +334,9 @@ option(CUDA_64_BIT_DEVICE_CODE "Compile device code in 64 bit mode" ${CUDA_64_BI
 option(CUDA_BUILD_CUBIN "Generate and parse .cubin files in Device mode." OFF)
 # Extra user settable flags
 set(CUDA_NVCC_FLAGS "" CACHE STRING "Semi-colon delimit multiple arguments.")
-# Attach the build rule to the source file in VS.  This option
-option(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE "Attach the build rule to the CUDA source file.  Enable only when the CUDA source file is added to at most one target." ON)
+# Attach the build rule to the source file in VS.  This option [???]
+# Leave this off, it messes up the build.
+option(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE "Attach the build rule to the CUDA source file.  Enable only when the CUDA source file is added to at most one target." OFF)
 # Specifies whether the commands used when compiling the .cu file will be printed out.
 option(CUDA_VERBOSE_BUILD "Print out the commands run while compiling the CUDA source file.  With the Makefile generator this defaults to VERBOSE variable specified on the command line, but can be forced on with this option." OFF)
 # Where to put the generated output.
@@ -391,12 +392,15 @@ endif()
 if(NOT CUDA_TOOLKIT_ROOT_DIR)
 
   # Search in the CUDA_BIN_PATH first.
+  # for cuda 5 on windows, the env var CUDA_BIN_PATH does not exist.
+  # instead it's CUDA_PATH
   find_path(CUDA_TOOLKIT_ROOT_DIR
     NAMES nvcc nvcc.exe
     PATHS ENV CUDA_BIN_PATH
     DOC "Toolkit location."
     NO_DEFAULT_PATH
     )
+
   # Now search default paths
   find_path(CUDA_TOOLKIT_ROOT_DIR
     NAMES nvcc nvcc.exe
@@ -431,8 +435,8 @@ find_program(CUDA_NVCC_EXECUTABLE
 find_program(CUDA_NVCC_EXECUTABLE nvcc)
 mark_as_advanced(CUDA_NVCC_EXECUTABLE)
 
-if(CUDA_NVCC_EXECUTABLE AND NOT CUDA_VERSION)
-  # Compute the version.
+if(CUDA_NVCC_EXECUTABLE)
+  # (re-)compute the version.
   exec_program(${CUDA_NVCC_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE NVCC_OUT)
   string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\1" CUDA_VERSION_MAJOR ${NVCC_OUT})
   string(REGEX REPLACE ".*release ([0-9]+)\\.([0-9]+).*" "\\2" CUDA_VERSION_MINOR ${NVCC_OUT})
@@ -481,11 +485,25 @@ mark_as_advanced(CUDA_TOOLKIT_INCLUDE)
 set (CUDA_NVCC_INCLUDE_ARGS_USER "")
 set (CUDA_INCLUDE_DIRS ${CUDA_TOOLKIT_INCLUDE})
 
+# on cuda 5.0 (windows), the library path is something like:
+#  lib/win32/
+#  lib/x64/
+if(MSVC)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_LIB_PATH_FRAGMENT "lib/x64" )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_LIB_PATH_FRAGMENT "lib/win32" )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+else(MSVC)
+  set(CUDA_LIB_PATH_FRAGMENT "")
+endif(MSVC)
+
 macro(FIND_LIBRARY_LOCAL_FIRST _var _names _doc)
   find_library(${_var}
     NAMES ${_names}
     PATHS "${CUDA_TOOLKIT_ROOT_DIR}/lib64"
           "${CUDA_TOOLKIT_ROOT_DIR}/lib"
+          "${CUDA_TOOLKIT_ROOT_DIR}/${CUDA_LIB_PATH_FRAGMENT}"
     ENV CUDA_LIB_PATH
     DOC ${_doc}
     NO_DEFAULT_PATH
@@ -511,6 +529,28 @@ mark_as_advanced(
   CUDA_CUDA_LIBRARY
   CUDA_CUDART_LIBRARY
   )
+  
+  
+# we want to know dll filenames on windows.
+# this allows us to delay-load cuda, i.e. proceed at load time and only fail at runtime.
+if (MSVC)
+   # cudart64_50_35.dll
+   # cudart32_50_35.dll
+   # cudart64_55.dll
+   # cudart32_55.dll
+   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_DLL_SUFFIX "64" )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CUDA_DLL_SUFFIX "32" )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  
+  set(CUDA_DLL_SUFFIX "${CUDA_DLL_SUFFIX}_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}*.dll")
+  file(GLOB CUDA_CUDART_DLL ${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart${CUDA_DLL_SUFFIX})
+  
+  get_filename_component(CUDA_CUDART_DLL_NAME ${CUDA_CUDART_DLL} NAME)
+  # message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
+  # message("CUDA_CUDART_DLL_NAME=${CUDA_CUDART_DLL_NAME}")
+endif (MSVC)
 
 #######################
 # Look for some of the toolkit helper libraries

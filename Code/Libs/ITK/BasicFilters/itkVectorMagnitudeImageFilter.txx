@@ -16,10 +16,10 @@
 #define __itkVectorMagnitudeImageFilter_txx
 
 #include "itkVectorMagnitudeImageFilter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk {

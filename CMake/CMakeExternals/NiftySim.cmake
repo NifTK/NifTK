@@ -18,26 +18,44 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-IF(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
-  MESSAGE(FATAL_ERROR "NIFTYSIM_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYSIM_ROOT}\".")
-ENDIF()
+if(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
+  message(FATAL_ERROR "NIFTYSIM_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYSIM_ROOT}\".")
+endif()
 
-IF(BUILD_NIFTYSIM)
+if(BUILD_NIFTYSIM)
+  set(proj NIFTYSIM)
+  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(NIFTYSIM_DEPENDS ${proj})
 
-  SET(proj NIFTYSIM)
-  SET(proj_DEPENDENCIES VTK )
-  SET(proj_INSTALL ${EP_BASE}/Install/${proj} )
-  SET(NIFTYSIM_DEPENDS ${proj})
+  if(NOT DEFINED NIFTYSIM_ROOT)
+    if (DEFINED NIFTK_LOCATION_BOOST) 
+      option(USE_NIFTYSIM_BOOST "Enable CPU-parallelism in NiftySim through Boost." OFF)
+      mark_as_advanced(USE_NIFTYSIM_BOOST)
+    endif (DEFINED NIFTK_LOCATION_BOOST) 
 
-  IF(NOT DEFINED NIFTYSIM_ROOT)
-
-    IF(DEFINED VTK_DIR)
-      SET(USE_VTK ON)
-    ELSE(DEFINED VTK_DIR)
-      SET(USE_VTK OFF)
-    ENDIF(DEFINED VTK_DIR)
+    if(DEFINED VTK_DIR)
+      set(USE_VTK ON)
+    else(DEFINED VTK_DIR)
+      set(USE_VTK OFF)
+    endif(DEFINED VTK_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSIM ${NIFTK_LOCATION_NIFTYSIM})
+
+    set(proj_DEPENDENCIES "")
+    if (USE_NIFTYSIM_BOOST)
+      list(APPEND proj_DEPENDENCIES BOOST)
+    endif (USE_NIFTYSIM_BOOST)
+
+    if (USE_VTK)
+      list(APPEND proj_DEPENDENCIES VTK)
+    endif (USE_VTK)
+
+    # Temporary solution to build problems on MSVS 2010
+    if (WIN32)
+      set(NIFTYSIM_CMAKE_CXX_FLAGS "/D_USE_MATH_DEFINES")
+    else ()
+      set(NIFTYSIM_CMAKE_CXX_FLAGS "")
+    endif (WIN32)
 
     ExternalProject_Add(${proj}
       URL ${NIFTK_LOCATION_NIFTYSIM}
@@ -47,23 +65,32 @@ IF(BUILD_NIFTYSIM)
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
-        -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
-        -DVTK_DIR:PATH=${VTK_DIR}
+	-DUSE_BOOST:BOOL=${USE_NIFTYSIM_BOOST}
         -DUSE_VIZ:BOOL=${USE_VTK}
+        -DVTK_DIR:PATH=${VTK_DIR}
+	-DVTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}
+	-DVTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}
+	-DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
+	-DBOOST_ROOT:PATH=${BOOST_ROOT}
+	-DBoost_USE_STATIC_LIBS:BOOL=TRUE
+        -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
+        -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+	-DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYSIM}
       )
 
-    SET(NIFTYSIM_ROOT ${proj_INSTALL})
-    SET(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
-    SET(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
+    set(NIFTYSIM_ROOT ${proj_INSTALL})
+    set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
+    set(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
 
-    MESSAGE("SuperBuild loading NIFTYSIM from ${NIFTYSIM_ROOT}")
+    message("SuperBuild loading NIFTYSIM from ${NIFTYSIM_ROOT}")
 
-  ELSE(NOT DEFINED NIFTYSIM_ROOT)
+  else(NOT DEFINED NIFTYSIM_ROOT)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  ENDIF(NOT DEFINED NIFTYSIM_ROOT)
+  endif(NOT DEFINED NIFTYSIM_ROOT)
 
-ENDIF(BUILD_NIFTYSIM)
+endif(BUILD_NIFTYSIM)

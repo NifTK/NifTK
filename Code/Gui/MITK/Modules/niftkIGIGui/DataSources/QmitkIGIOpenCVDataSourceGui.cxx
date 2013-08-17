@@ -21,7 +21,7 @@
 #include <QmitkRenderWindow.h>
 #include "QmitkIGIDataSourceMacro.h"
 #include "QmitkIGIOpenCVDataSource.h"
-#include "QmitkStdMultiWidget.h"
+#include <QmitkStdMultiWidget.h>
 
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIOpenCVDataSourceGui, "IGI Open CV Video Gui")
 
@@ -41,10 +41,6 @@ QmitkIGIOpenCVDataSourceGui::QmitkIGIOpenCVDataSourceGui()
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
 {
-  // FIXME: what exactly are these disconnecting?
-  m_Background->disconnect();
-  this->disconnect();
-
   // gui is destroyed before data source (by igi data manager)
   // so disconnect ourselfs from source
   QmitkIGIOpenCVDataSource* source = GetOpenCVDataSource();
@@ -54,6 +50,14 @@ QmitkIGIOpenCVDataSourceGui::~QmitkIGIOpenCVDataSourceGui()
     // and source is sender
     this->disconnect(source);
   }
+
+  // Disable the background so that if the VideoSource is deleted
+  // we will not trigger an itk::DeleteEvent to QmitkVideoBackground::OnVideoSourceDelete.
+  m_Background->Disable();
+
+  // Also disconnect the video source, which has the effect of telling
+  // the video source that there are no observers.
+  m_Background->SetVideoSource(NULL);
 
   // delete render window first.
   if (m_RenderWindow != NULL)
@@ -113,5 +117,4 @@ void QmitkIGIOpenCVDataSourceGui::Initialize(QWidget *parent)
 void QmitkIGIOpenCVDataSourceGui::OnUpdateDisplay()
 {
   m_Background->UpdateVideo();
-  m_RenderingManager->RequestUpdateAll();
 }

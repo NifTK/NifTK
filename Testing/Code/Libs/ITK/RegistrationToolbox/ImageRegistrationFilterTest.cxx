@@ -18,10 +18,10 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkImageFileReader.h"
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkImageFileReader.h>
 
 /**
  * This tests the setup for the ImageRegistrationFilter.

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef VISIBILITYCHANGEOBSERVER_H_
-#define VISIBILITYCHANGEOBSERVER_H_
+#ifndef VisibilityChangeObserver_h
+#define VisibilityChangeObserver_h
 
 namespace mitk {
 class DataNode;

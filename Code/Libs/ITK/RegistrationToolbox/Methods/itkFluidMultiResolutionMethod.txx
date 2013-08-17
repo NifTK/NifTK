@@ -17,7 +17,7 @@
 
 #include "itkFluidMultiResolutionMethod.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

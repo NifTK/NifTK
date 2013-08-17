@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __itkSingleResolutionImageRegistrationBuilder_h
-#define __itkSingleResolutionImageRegistrationBuilder_h
+#ifndef itkSingleResolutionImageRegistrationBuilder_h
+#define itkSingleResolutionImageRegistrationBuilder_h
 
 
-#include "itkObject.h"
-#include "itkSingleResolutionImageRegistrationMethod.h"
+#include <itkObject.h>
+#include <itkSingleResolutionImageRegistrationMethod.h>
 #include "itkImageRegistrationFactory.h"
 
 namespace itk

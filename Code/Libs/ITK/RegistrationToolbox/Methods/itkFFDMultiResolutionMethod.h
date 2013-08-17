@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkFFDMultiResolutionMethod_h
-#define __itkFFDMultiResolutionMethod_h
+#ifndef itkFFDMultiResolutionMethod_h
+#define itkFFDMultiResolutionMethod_h
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
-#include "itkBSplineTransform.h"
+#include <itkBSplineTransform.h>
 
 namespace itk
 {

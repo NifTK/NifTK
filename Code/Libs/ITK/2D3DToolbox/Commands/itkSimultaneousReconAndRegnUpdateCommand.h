@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __itkSimultaneousReconAndRegnUpdateCommand_h
-#define __itkSimultaneousReconAndRegnUpdateCommand_h
+#ifndef itkSimultaneousReconAndRegnUpdateCommand_h
+#define itkSimultaneousReconAndRegnUpdateCommand_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkCommand.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
+#include <itkCommand.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
 
 namespace itk
 {

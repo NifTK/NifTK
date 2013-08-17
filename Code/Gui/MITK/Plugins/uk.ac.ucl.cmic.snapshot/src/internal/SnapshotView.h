@@ -15,7 +15,7 @@
 #ifndef SnapshotView_h
 #define SnapshotView_h
 
-#include "QmitkAbstractView.h"
+#include <QmitkAbstractView.h>
 #include "ui_SnapshotViewControls.h"
 
 

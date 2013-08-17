@@ -72,7 +72,7 @@
         #define NOUNCRYPT
 #endif
 
-#include "zlib.h"
+#include <zlib.h>
 #include "XnatRestUnzip.h"
 
 #ifdef STDC
@@ -194,7 +194,7 @@ typedef struct
 
 
 #ifndef NOUNCRYPT
-#include "crypt.h"
+#include <crypt.h>
 #endif
 
 /* ===========================================================================

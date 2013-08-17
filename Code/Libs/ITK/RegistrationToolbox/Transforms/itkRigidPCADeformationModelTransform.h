@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __itkRigidPCADeformationModelTransform_h
-#define __itkRigidPCADeformationModelTransform_h
+#ifndef itkRigidPCADeformationModelTransform_h
+#define itkRigidPCADeformationModelTransform_h
 
 #include <iostream>
-#include "itkImage.h"
-#include "itkTransform.h"
-#include "itkExceptionObject.h"
-#include "itkMatrix.h"
+#include <itkImage.h>
+#include <itkTransform.h>
+#include <itkExceptionObject.h>
+#include <itkMatrix.h>
 
-#include "itkVectorLinearInterpolateNearestNeighborExtrapolateImageFunction.h"
+#include <itkVectorLinearInterpolateNearestNeighborExtrapolateImageFunction.h>
 
 namespace itk
 {

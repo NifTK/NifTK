@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <itksys/SystemTools.hxx>
 #include <itkByteSwapper.h>
-#include "itkSpatialOrientation.h"
-#include "itkSpatialOrientationAdapter.h"
+#include <itkSpatialOrientation.h>
+#include <itkSpatialOrientationAdapter.h>
 
 namespace itk {
 

@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __itkAffineTransform2D3D_h
-#define __itkAffineTransform2D3D_h
+#ifndef itkAffineTransform2D3D_h
+#define itkAffineTransform2D3D_h
 
 #include <iostream>
 
-#include "itkMatrix.h"
-#include "itkMatrixOffsetTransformBase.h"
-#include "itkExceptionObject.h"
-#include "itkMacro.h"
+#include <itkMatrix.h>
+#include <itkMatrixOffsetTransformBase.h>
+#include <itkExceptionObject.h>
+#include <itkMacro.h>
 
 namespace itk
 {

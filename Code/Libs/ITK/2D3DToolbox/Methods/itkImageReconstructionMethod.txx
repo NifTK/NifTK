@@ -15,12 +15,12 @@
 #ifndef _itkImageReconstructionMethod_txx
 #define _itkImageReconstructionMethod_txx
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIteratorWithIndex.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
 
 #include "itkImageReconstructionMethod.h"
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 
 namespace itk

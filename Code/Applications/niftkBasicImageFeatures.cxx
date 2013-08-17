@@ -16,23 +16,23 @@
 #include <float.h>
 #include <iomanip>
 
-#include "ConversionUtils.h"
-#include "CommandLineParser.h"
+#include <ConversionUtils.h>
+#include <CommandLineParser.h>
 
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkBasicImageFeaturesImageFilter.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkImage.h"
-#include "itkUnaryFunctorImageFilter.h"
-#include "itkScalarToRGBBIFPixelFunctor.h"
-#include "itkScalarToRGBOBIFPixelFunctor.h"
-#include "itkMaskImageFilter.h"
-#include "itkResampleImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkIdentityTransform.h"
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkBasicImageFeaturesImageFilter.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkRescaleIntensityImageFilter.h>
+#include <itkImage.h>
+#include <itkUnaryFunctorImageFilter.h>
+#include <itkScalarToRGBBIFPixelFunctor.h>
+#include <itkScalarToRGBOBIFPixelFunctor.h>
+#include <itkMaskImageFilter.h>
+#include <itkResampleImageFilter.h>
+#include <itkLinearInterpolateImageFunction.h>
+#include <itkIdentityTransform.h>
 
 #include <boost/filesystem.hpp>
 

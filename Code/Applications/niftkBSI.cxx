@@ -15,12 +15,12 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include "itkLogHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkIntensityNormalisationCalculator.h"
-#include "itkBoundaryShiftIntegralCalculator.h"
-#include "itkIndent.h"
+#include <itkLogHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkIntensityNormalisationCalculator.h>
+#include <itkBoundaryShiftIntegralCalculator.h>
+#include <itkIndent.h>
 #include <stdio.h>
 
 /*!

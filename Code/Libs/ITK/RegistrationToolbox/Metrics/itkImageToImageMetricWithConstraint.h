@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __itkImageToImageMetricWithConstraint_h
-#define __itkImageToImageMetricWithConstraint_h
+#ifndef itkImageToImageMetricWithConstraint_h
+#define itkImageToImageMetricWithConstraint_h
 
-#include "itkImageToImageMetric.h"
-#include "itkConstraint.h"
+#include <itkImageToImageMetric.h>
+#include <itkConstraint.h>
 #include "itkMetricDerivativeBridge.h"
 
 namespace itk

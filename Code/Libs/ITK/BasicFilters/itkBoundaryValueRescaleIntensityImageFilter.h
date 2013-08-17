@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkBoundaryValueRescaleIntensityImageFilter_h
-#define __itkBoundaryValueRescaleIntensityImageFilter_h
-#include "itkImageToImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
+#ifndef itkBoundaryValueRescaleIntensityImageFilter_h
+#define itkBoundaryValueRescaleIntensityImageFilter_h
+#include <itkImageToImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
 
 namespace itk
 {

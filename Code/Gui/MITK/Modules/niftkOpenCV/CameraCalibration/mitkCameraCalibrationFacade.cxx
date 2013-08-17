@@ -13,12 +13,15 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
-#include "mitkStereoDistortionCorrectionVideoProcessor.h"
-#include "FileHelper.h"
+#include <mitkStereoDistortionCorrectionVideoProcessor.h>
+#include <FileHelper.h>
 #include <iostream>
 #include <fstream>
 #include <cv.h>
 #include <highgui.h>
+
+#include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
 
 namespace mitk {
 
@@ -77,6 +80,53 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   }
 
   std::cout << "Chess board images are (" << width << ", " << height << ") pixels" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+bool ExtractChessBoardPoints(const cv::Mat image,
+                             const int& numberCornersWidth,
+                             const int& numberCornersHeight,
+                             const bool& drawCorners,
+                             const double& squareSizeInMillimetres,
+                             std::vector <cv::Point2f>*& corners,
+                             std::vector <cv::Point3f>*& objectPoints
+                             )
+{
+
+  unsigned int numberOfCorners = numberCornersWidth * numberCornersHeight;
+  cv::Size boardSize = cvSize(numberCornersWidth, numberCornersHeight);
+
+  std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
+
+  bool found = cv::findChessboardCorners(image, boardSize, *corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+
+  if ( corners->size() == 0 )
+  {
+    return false;
+  }
+  cv::Mat greyImage;
+  cv::cvtColor(image, greyImage, CV_BGR2GRAY);
+  cv::cornerSubPix(greyImage, *corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+//END FIX
+  if (drawCorners)
+  {
+    cv::drawChessboardCorners(image, boardSize, *corners, found);
+  }
+
+  // If we got the right number of corners, add it to our data.
+  if (found  && corners->size() == ( unsigned int)numberOfCorners)
+  {
+    for ( int k=0; k<(int)numberOfCorners; ++k)
+    {
+      cv::Point3f objectCorner;
+      objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
+      objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
+      objectCorner.z = 0; 
+      objectPoints->push_back(objectCorner);
+    }
+  }
+  return found;
 }
 
 
@@ -283,7 +333,6 @@ void CalibrateSingleCameraExtrinsicParameters(
 
 //-----------------------------------------------------------------------------
 double CalibrateSingleCameraParameters(
-     const int& numberSuccessfulViews,
      const CvMat& objectPoints,
      const CvMat& imagePoints,
      const CvMat& pointCounts,
@@ -438,7 +487,6 @@ void ProjectAllPoints(
     const int& numberSuccessfulViews,
     const int& pointCount,
     const CvMat& objectPoints,
-    const CvMat& imagePoints,
     const CvMat& intrinsicMatrix,
     const CvMat& distortionCoeffictions,
     const CvMat& rotationVectors,
@@ -491,7 +539,6 @@ void ProjectAllPoints(
 
 //-----------------------------------------------------------------------------
 double CalibrateStereoCameraParameters(
-    const int& numberSuccessfulViews,
     const CvMat& objectPointsLeft,
     const CvMat& imagePointsLeft,
     const CvMat& pointCountsLeft,
@@ -548,10 +595,35 @@ double CalibrateStereoCameraParameters(
       &outputEssentialMatrix,
       &outputFundamentalMatrix,
       cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      CV_CALIB_FIX_INTRINSIC // Use the initial guess, but feel free to optimise it.
+      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to optimise it.
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
+
+  // OpenCV calculates left to right, so we want right to left.
+  CvMat *leftToRight = cvCreateMat(4,4,CV_32FC1);
+  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_32FC1);
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      CV_MAT_ELEM(*leftToRight, float, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, float, i, j);
+    }
+    CV_MAT_ELEM(*leftToRight, float, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0);
+  }
+  CV_MAT_ELEM(*leftToRight, float, 3, 0) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 1) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 2) = 0;
+  CV_MAT_ELEM(*leftToRight, float, 3, 3) = 1;
+  cvInvert(leftToRight, leftToRightInverted);
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      CV_MAT_ELEM(outputRightToLeftRotation, float, i, j) = CV_MAT_ELEM(*leftToRightInverted, float, i, j);
+    }
+    CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0) = CV_MAT_ELEM(*leftToRightInverted, float, i, 3);
+  }
 
   double leftProjectError2 = cvCalibrateCamera2(
                             &objectPointsLeft,
@@ -579,6 +651,9 @@ double CalibrateStereoCameraParameters(
 
   std::cout << "Final extrinsic calibration gave re-projection errors of left=" << leftProjectError2 << ", right=" << rightProjectError2 << std::endl;
 
+  cvReleaseMat(&leftToRight);
+  cvReleaseMat(&leftToRightInverted);
+
   return stereoCalibrationProjectionError;
 }
 
@@ -586,6 +661,7 @@ double CalibrateStereoCameraParameters(
 //-----------------------------------------------------------------------------
 void OutputCalibrationData(
     std::ostream& os,
+    const std::string intrinsicFlatFileName,
     const CvMat& objectPoints,
     const CvMat& imagePoints,
     const CvMat& pointCounts,
@@ -615,7 +691,6 @@ void OutputCalibrationData(
       numberOfFilesUsed,
       pointCount,
       objectPoints,
-      imagePoints,
       intrinsicMatrix,
       distortionCoeffs,
       rotationVectors,
@@ -626,13 +701,35 @@ void OutputCalibrationData(
   os.precision(10);
   os.width(10);
 
-  os << "Intrinsic matrix" << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 0, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 0, 2) << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 1, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 1, 2) << std::endl;
-  os << CV_MAT_ELEM(intrinsicMatrix, float, 2, 0) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 1) << ", " << CV_MAT_ELEM(intrinsicMatrix, float, 2, 2) << std::endl;
+  bool writeIntrinsicToFlatFile = false;
 
-  os << "Distortion vector (k1, k2, p1, p2, k3)" << std::endl;
-  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 4, 0) << std::endl;
+  std::ofstream intrinsicFileOutput;
+  intrinsicFileOutput.open((intrinsicFlatFileName).c_str(), std::ios::out);
+  if (!intrinsicFileOutput.fail())
+  {
+    writeIntrinsicToFlatFile = true;
+  }
+
+  os << "Intrinsic matrix" << std::endl;
+  for (int i = 0; i < 3; i++)
+  {
+    os << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    if (writeIntrinsicToFlatFile)
+    {
+      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    }
+  }
+
+  os << "Distortion vector (k1, k2, p1, p2)" << std::endl;
+  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+  if (writeIntrinsicToFlatFile)
+  {
+    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+  }
+  if(intrinsicFileOutput.is_open())
+  {
+    intrinsicFileOutput.close();
+  }
 
   os << "projection error:" << projectionError << std::endl;
   os << "image size:" << sizeX << " " << sizeY << std::endl;
@@ -674,6 +771,16 @@ void OutputCalibrationData(
     cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
+
+    bool writeExtrinsicToFlatFile = false;
+
+    std::ofstream extrinsicFileOutput;
+    extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
+    if (!extrinsicFileOutput.fail())
+    {
+      writeExtrinsicToFlatFile = true;
+    }
+
     for (int a = 0; a < 4; a++)
     {
       for (int b = 0; b < 4; b++)
@@ -684,7 +791,15 @@ void OutputCalibrationData(
           os << ", ";
         }
       }
+      if (writeExtrinsicToFlatFile)
+      {
+        extrinsicFileOutput << CV_MAT_ELEM(*extrinsicMatrix, float, a, 0) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 1) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 2) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 3) << std::endl;
+      }
       os << std::endl;
+    }
+    if(extrinsicFileOutput.is_open())
+    {
+      extrinsicFileOutput.close();
     }
 
     for (unsigned int j = 0; j < numberOfPoints; j++)
@@ -840,15 +955,17 @@ void Project3DModelPositionsToStereo2D(
     CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInLeftCameraSpace, float, 2, i) + CV_MAT_ELEM(leftCameraTranslationVector, float, 0, 2);
   }
 
+  CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_32FC1);
+  cvInv(&rightToLeftRotationMatrix, leftToRightRotationMatrix);
   CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_32FC1);        // So, [3xN] matrix.
-  cvGEMM(&rightToLeftRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
+  cvGEMM(leftToRightRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
 
   // Add translation again, to get 3D model points into 3D camera coordinates for right camera.
   for (int i = 0; i < modelPointsIn3D.rows; i++)
   {
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
-    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) + CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 0, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 0, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 1, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 1, 0);
+    CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) = CV_MAT_ELEM(*modelPointsIn3DInRightCameraSpace, float, 2, i) - CV_MAT_ELEM(rightToLeftTranslationVector, float, 2, 0);
   }
 
   // Now project those points to 2D
@@ -1029,6 +1146,44 @@ void UndistortPoints(const std::vector<cv::Point2f>& inputPoints,
 
 
 //-----------------------------------------------------------------------------
+void UndistortPoint(const cv::Point2f& inputPoint,
+    const cv::Mat& cameraIntrinsics,
+    const cv::Mat& cameraDistortionParams,
+    cv::Point2f& outputPoint
+    )
+{
+  std::vector<cv::Point2f> inputPoints;
+  std::vector<cv::Point2f> outputPoints;
+  inputPoints.push_back (inputPoint);
+  cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+  outputPoint = outputPoints[0];
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Point3f  TriangulatePointPair(
+    const std::pair<cv::Point2f, cv::Point2f>& inputUndistortedPoint,
+    const cv::Mat& leftCameraIntrinsicParams,
+    const cv::Mat& rightCameraIntrinsicParams,
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector
+    )
+{
+  cv::Mat rightToLeftRotationVector = cv::Mat(1,3,CV_32FC1);
+  cv::Rodrigues(rightToLeftRotationMatrix,rightToLeftRotationVector);
+
+  std::vector < std::pair<cv::Point2f, cv::Point2f> > inputUndistortedPoints;
+  inputUndistortedPoints.push_back(inputUndistortedPoint);
+
+  std::vector <cv::Point3f> returnVector = TriangulatePointPairs(
+      inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
+      rightToLeftRotationVector, rightToLeftTranslationVector);
+
+  return returnVector[0];
+}
+
+
+//-----------------------------------------------------------------------------
 std::vector< cv::Point3f > TriangulatePointPairs(
     const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
@@ -1039,7 +1194,6 @@ std::vector< cv::Point3f > TriangulatePointPairs(
 {
   std::vector< cv::Point3f > outputPoints;
   int numberOfPoints = inputUndistortedPoints.size();
-
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat R2LRot32 = cv::Mat(3, 3, CV_32FC1);
@@ -1069,7 +1223,7 @@ std::vector< cv::Point3f > TriangulatePointPairs(
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
   K2Inv = K2.inv();
-
+  
   // Set up some working matrices...
   cv::Mat p1                = cv::Mat(3, 1, CV_64FC1);
   cv::Mat p2                = cv::Mat(3, 1, CV_64FC1);
@@ -1163,23 +1317,21 @@ std::vector< cv::Point3f > TriangulatePointPairs(
     sc = (b*e - c*d) / (a*c - b*b);
     tc = (a*e - b*d) / (a*c - b*b);
 
-    if (sc > 0 && tc > 0)
-    {
-      Psc.x = P0.x + sc*u.x;
-      Psc.y = P0.y + sc*u.y;
-      Psc.z = P0.z + sc*u.z;
+    Psc.x = P0.x + sc*u.x;
+    Psc.y = P0.y + sc*u.y;
+    Psc.z = P0.z + sc*u.z;
 
-      Qtc.x = Q0.x + tc*v.x;
-      Qtc.y = Q0.y + tc*v.y;
-      Qtc.z = Q0.z + tc*v.z;
+    Qtc.x = Q0.x + tc*v.x;
+    Qtc.y = Q0.y + tc*v.y;
+    Qtc.z = Q0.z + tc*v.z;
 
-      midPoint.x = (Psc.x + Qtc.x)/2.0;
-      midPoint.y = (Psc.y + Qtc.y)/2.0;
-      midPoint.z = (Psc.z + Qtc.z)/2.0;
+    midPoint.x = (Psc.x + Qtc.x)/2.0;
+    midPoint.y = (Psc.y + Qtc.y)/2.0;
+    midPoint.z = (Psc.z + Qtc.z)/2.0;
 
-      outputPoints.push_back(midPoint);
-    }
+    outputPoints.push_back(midPoint);
   }
+  
   return outputPoints;
 }
 
@@ -1216,12 +1368,12 @@ void TriangulatePointPairs(
   for (int i = 0; i < numberOfPoints; i++)
   {
     leftPoint.x = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 0);
-    leftPoint.y = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 0);
+    leftPoint.y = CV_MAT_ELEM(leftCameraUndistortedImagePoints, float, i, 1);
     rightPoint.x = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 0);
-    rightPoint.y = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 0);
+    rightPoint.y = CV_MAT_ELEM(rightCameraUndistortedImagePoints, float, i, 1);
+    inputPairs.push_back( std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
   }
 
-  inputPairs.push_back( std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
 
   // Call the other, more C++ like method.
   outputPoints = TriangulatePointPairs(
@@ -1281,17 +1433,20 @@ std::vector< cv::Point3f > TriangulatePointPairs(
   // E2 = Object to Right Camera = Right Camera Extrinsics.
   // K1 = Copy of Left Camera intrinsics.
   // K2 = Copy of Right Camera intrinsics.
+  // Copy data into cv::Mat data types.
+  // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
+  // These triangulation routines need 64 bit data.
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
     {
-      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<double>(i,j);
-      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<double>(i,j);
-      E1.at<double>(i,j) = R1.at<double>(i,j);
-      E2.at<double>(i,j) = R2.at<double>(i,j);
+      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<float>(i,j);
+      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<float>(i,j);
+      E1.at<double>(i,j) = R1.at<float>(i,j);
+      E2.at<double>(i,j) = R2.at<float>(i,j);
     }
-    E1.at<double>(i,3) = leftCameraTranslationVector.at<double>(0,i);
-    E2.at<double>(i,3) = rightCameraTranslationVector.at<double>(0,i);
+    E1.at<double>(i,3) = leftCameraTranslationVector.at<float>(0,i);
+    E2.at<double>(i,3) = rightCameraTranslationVector.at<float>(0,i);
   }
   E1.at<double>(3,0) = 0;
   E1.at<double>(3,1) = 0;
@@ -1432,6 +1587,7 @@ cv::Point3d IterativeTriangulatePoint(
   return result;
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
@@ -1467,6 +1623,8 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
 }
+
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName)
 {
@@ -1505,6 +1663,7 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
 }
+
 
 //------------------------------------------------------------------------------
 void LoadResult (const std::string& FileName, cv::Mat& result,
@@ -1572,6 +1731,7 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
   return myMatrices;
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
 {
@@ -1604,6 +1764,8 @@ std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
   }
   return OutMatrices;
 }
+
+
 //-----------------------------------------------------------------------------
 std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
 {
@@ -1661,6 +1823,8 @@ std::vector<int> SortMatricesByDistance(const std::vector<cv::Mat>  Matrices)
   }
   return index;
 }
+
+
 //-----------------------------------------------------------------------------
 std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
 {
@@ -1719,11 +1883,10 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
       index[counter] = CurrentIndex;
     }
     startIndex = CurrentIndex;
-
-   
   }
   return index;
 }
+
 
 //-----------------------------------------------------------------------------
 double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
@@ -1738,6 +1901,7 @@ double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
       + q1.at<double>(2,0) * q2.at<double>(2,0));
 
 }
+
 
 //-----------------------------------------------------------------------------
 cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
@@ -1761,6 +1925,7 @@ cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
   return q;
 }
 
+
 //-----------------------------------------------------------------------------
 double ModifiedSignum(double value)
 {
@@ -1770,6 +1935,8 @@ double ModifiedSignum(double value)
   }
   return 1.0;
 }
+
+
 //-----------------------------------------------------------------------------
 double SafeSQRT(double value)
 {
@@ -1780,4 +1947,252 @@ double SafeSQRT(double value)
   return sqrt(value);
 }
 
+
+//-----------------------------------------------------------------------------
+void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
+    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> CameraIntrinsic->at<float>(row,col);
+    }
+  } 
+  for ( int col = 0 ; col < 5 ; col++ )
+  {
+    fin >> CameraDistortion->at<float>(0,col);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadStereoTransformsFromPlainText (const std::string& filename,
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> rightToLeftRotationMatrix->at<float>(row,col);
+    }
+  } 
+  for ( int col = 0 ; col < 3 ; col++ )
+  {
+    fin >> rightToLeftTranslationVector->at<float>(0,col);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadHandeyeFromPlainText (const std::string& filename,
+    cv::Mat* leftCameraToTracker)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 4; row ++ )
+  {
+    for ( int col = 0; col < 4; col ++ )
+    {
+       fin >> leftCameraToTracker->at<float>(row,col);
+    }
+  } 
+  
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
+  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDistortion, 
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+  cv::Mat* leftCameraToTracker)
+{
+  boost::filesystem::directory_iterator end_itr;
+  boost::regex leftIntrinsicFilter ("(.+)(left.intrinsic.txt)");
+  boost::regex rightIntrinsicFilter ("(.+)(right.intrinsic.txt)");
+  boost::regex r2lFilter ("(.+)(r2l.txt)");
+  boost::regex handeyeFilter ("(.+)(left.handeye.txt)");
+
+  std::vector<std::string> leftIntrinsicFiles;
+  std::vector<std::string> rightIntrinsicFiles;
+  std::vector<std::string> r2lFiles;
+  std::vector<std::string> handeyeFiles;
+
+  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      char *  stringthing = new char [512] ;
+      strcpy (stringthing,it->path().string().c_str());
+      if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
+      {
+        leftIntrinsicFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
+      {
+        rightIntrinsicFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,r2lFilter) )
+      {
+        r2lFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,handeyeFilter) )
+      {
+        handeyeFiles.push_back(it->path().string());
+      }
+    }
+  }
+
+  if ( leftIntrinsicFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of left intrinsic files");
+  }
+
+  if ( rightIntrinsicFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of right intrinsic files");
+  }
+
+  if ( r2lFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of right to left files");
+  }
+  
+  if ( handeyeFiles.size() != 1 )
+  {
+    throw std::logic_error("Found the wrong number of handeye files");
+  }
+
+  std::cout << "Loading left intrinsics from  " << leftIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (leftIntrinsicFiles[0],leftCameraIntrinsic, leftCameraDistortion);
+  std::cout << "Loading right intrinsics from  " << rightIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (rightIntrinsicFiles[0],rightCameraIntrinsic, rightCameraDistortion);
+  std::cout << "Loading right to left from  " << r2lFiles[0] << std::endl;
+  LoadStereoTransformsFromPlainText (r2lFiles[0],rightToLeftRotationMatrix, rightToLeftTranslationVector);
+  std::cout << "Loading handeye from  " << handeyeFiles[0] << std::endl;
+  LoadHandeyeFromPlainText (handeyeFiles[0],leftCameraToTracker);
+
+}
+
+
+//-----------------------------------------------------------------------------------------
+cv::Point3f LeftLensToWorld ( cv::Point3f PointInLensCS,
+          cv::Mat& Handeye, cv::Mat& Tracker )
+{
+  cv::Mat lensToTracker    = cv::Mat(4, 4, CV_64FC1);
+  cv::Mat trackerToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat lensToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat pointInLens      = cv::Mat(4,1,CV_64FC1);
+  cv::Mat pointInWorld     = cv::Mat(4,1,CV_64FC1);
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      lensToTracker.at<double>(i,j) = Handeye.at<float>(i,j);
+      trackerToWorld.at<double>(i,j) = Tracker.at<float>(i,j);
+    }
+  }
+  pointInLens.at<double>(0,0) = PointInLensCS.x;
+  pointInLens.at<double>(1,0) = PointInLensCS.y;
+  pointInLens.at<double>(2,0) = PointInLensCS.z;
+  pointInLens.at<double>(3,0) = 1.0;
+
+  lensToWorld = lensToTracker * trackerToWorld;
+  pointInWorld = lensToWorld * pointInLens;
+  
+  cv::Point3f returnPoint;
+  returnPoint.x = pointInWorld.at<double>(0,0);
+  returnPoint.y = pointInWorld.at<double>(1,0);
+  returnPoint.z = pointInWorld.at<double>(2,0);
+
+  return returnPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------
+cv::Point3f WorldToLeftLens ( cv::Point3f PointInWorldCS,
+          cv::Mat& Handeye, cv::Mat& Tracker )
+{
+  cv::Mat lensToTracker    = cv::Mat(4, 4, CV_64FC1);
+  cv::Mat trackerToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat lensToWorld   = cv::Mat(4,4,CV_64FC1);
+  cv::Mat pointInLens      = cv::Mat(4,1,CV_64FC1);
+  cv::Mat pointInWorld     = cv::Mat(4,1,CV_64FC1);
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      lensToTracker.at<double>(i,j) = Handeye.at<float>(i,j);
+      trackerToWorld.at<double>(i,j) = Tracker.at<float>(i,j);
+    }
+  }
+  pointInWorld.at<double>(0,0) = PointInWorldCS.x;
+  pointInWorld.at<double>(1,0) = PointInWorldCS.y;
+  pointInWorld.at<double>(2,0) = PointInWorldCS.z;
+  pointInWorld.at<double>(3,0) = 1.0;
+
+  lensToWorld = lensToTracker * trackerToWorld;
+  pointInLens = lensToWorld.inv() * pointInWorld;
+  
+  cv::Point3f returnPoint;
+  returnPoint.x = pointInLens.at<double>(0,0);
+  returnPoint.y = pointInLens.at<double>(1,0);
+  returnPoint.z = pointInLens.at<double>(2,0);
+
+  return returnPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------
+cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
+{
+  cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
+ 
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
+  {
+    for ( int row = 0 ; row < 3 ; row++ )
+    {
+      for ( int col = 0 ; col < 3 ; col++ ) 
+      {
+        temp.at<double>(row,col) += Matrices[i].at<double>(row,col);
+      }
+      temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
+    }
+  }
+  
+  temp_T = temp_T /Matrices.size();
+  temp = temp / Matrices.size();
+
+  cv::Mat rtr = temp.t() * temp;
+
+  cv::Mat eigenvectors = cvCreateMat(3,3,CV_64FC1);
+  cv::Mat eigenvalues = cvCreateMat(3,1,CV_64FC1);
+  cv::eigen(rtr , eigenvalues, eigenvectors);
+  cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
+  for ( int i = 0 ; i < 3 ; i ++ ) 
+  {
+    rootedEigenValues.at<double>(i,i) = sqrt(1/eigenvalues.at<double>(i,0));
+  }
+
+  cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
+  cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
+  temp2 = temp * ( eigenvectors * rootedEigenValues * eigenvectors.t() );
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      returnMat.at<double>(row,col) = temp2.at<double>(row,col);
+    }
+    returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
+  }
+  returnMat.at<double>(3,3)  = 1.0;
+  return returnMat;
+    
+} 
+
+//-----------------------------------------------------------------------------------------
 } // end namespace

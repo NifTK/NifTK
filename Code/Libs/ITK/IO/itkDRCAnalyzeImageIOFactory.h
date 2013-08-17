@@ -12,20 +12,20 @@
 
 =============================================================================*/
 
-#ifndef ITKDRCANALYZEIMAGEIOFACTORY_H
-#define ITKDRCANALYZEIMAGEIOFACTORY_H
+#ifndef itkDRCAnalyzeImageIOFactory_h
+#define itkDRCAnalyzeImageIOFactory_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkAnalyzeImageIOFactory.h"
+#include <itkAnalyzeImageIOFactory.h>
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkObjectFactoryBase.h"
-#include "itkAnalyzeImageIO.h"
+#include <itkObjectFactoryBase.h>
+#include <itkAnalyzeImageIO.h>
 
 namespace itk
 {

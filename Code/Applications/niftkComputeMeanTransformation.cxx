@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "ConversionUtils.h"
-#include "itkImage.h"
-#include "itkImageRegistrationFactory.h"
-#include "itkImageRegistrationFilter.h"
-#include "itkTransformFileWriter.h" 
+#include <ConversionUtils.h>
+#include <itkImage.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkImageRegistrationFilter.h>
+#include <itkTransformFileWriter.h>
 
 /*!
  * \file niftkComputeMeanTransformation.cxx

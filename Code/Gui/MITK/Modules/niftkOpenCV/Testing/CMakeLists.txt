@@ -14,14 +14,14 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
-IF(BUILD_SLS_TESTING)
+if(BUILD_SLS_TESTING)
 
   # Trac: 2207
   # Using OpenCV calibration, and example data from the Laparoscope, here we
   # provide a regression test for the stereo camera calibration.
   mitkAddCustomModuleTest(SLS-CameraCalib mitkCameraCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibLeft ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibRight ${CMAKE_BINARY_DIR}/Testing/Temporary/CameraCalibration 14 10 3 0.577703 0.888462)
   
-ENDIF(BUILD_SLS_TESTING)
+endif(BUILD_SLS_TESTING)
   
 mitkAddCustomModuleTest(Handeye-Calibration mitkHandeyeCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices NoSort ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_NoSort_Result.txt )
 
@@ -29,6 +29,19 @@ mitkAddCustomModuleTest(Handeye-Calibration-DistanceSort mitkHandeyeCalibrationT
 
 mitkAddCustomModuleTest(Handeye-Calibration-AngleSort mitkHandeyeCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices Angles ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_Angles_Result.txt )
 
-# Trac: 2227
-# Using ARUCO and OpenCV we detect AR-Tag style markers.
+# Trac 2227: Using ARUCO and OpenCV we detect AR-Tag style markers.
+# Trac 2608: Added surface normal calculations.
 mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/Input/TagTracking/left.png ${NIFTK_DATA_DIR}/Input/TagTracking/right.png ${NIFTK_DATA_DIR}/Input/TagTracking/left.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/right.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.rot.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.trn.xml)
+
+mitkAddCustomModuleTest(Video-Tracker_Matching mitkVideoTrackerMatchingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy)
+  
+mitkAddCustomModuleTest(Reprojection-Test mitkReprojectionTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/CameraParameters)
+
+if(OPENCV_WITH_FFMPEG)
+	mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory)
+
+else(OPENCV_WITH_FFMPEG)
+	mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory -NoVideoSupport)
+endif(OPENCV_WITH_FFMPEG)
+
+mitkAddCustomModuleTest(SLS-USPinCalib mitkUltrasoundPinCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/matrices ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/points ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4 )

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igipointreg"
+          name="Point Based Registration"
+          class="PointRegView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.PointRegViewPreferencePage" name="Point Based Registration" class="PointRegViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.PointRegViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

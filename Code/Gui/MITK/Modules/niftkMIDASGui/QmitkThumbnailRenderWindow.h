@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKTHUMBNAILRENDERWINDOW_H_
-#define QMITKTHUMBNAILRENDERWINDOW_H_
+#ifndef QmitkThumbnailRenderWindow_h
+#define QmitkThumbnailRenderWindow_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QColor>
@@ -22,8 +22,8 @@
 #include <mitkDataNode.h>
 #include <mitkCuboid.h>
 #include <mitkTimeSlicedGeometry.h>
-#include "mitkDataStorageVisibilityTracker.h"
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
+#include <mitkDataStorageVisibilityTracker.h>
+#include <mitkMIDASNodeAddedVisibilitySetter.h>
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;

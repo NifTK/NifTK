@@ -34,10 +34,10 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 
-#include "mitkMIDASTool.h"
-#include "mitkMIDASPaintbrushTool.h"
-#include "mitkNifTKCoreObjectFactory.h"
-#include "mitkMIDASMorphologicalSegmentorPipelineManager.h"
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPaintbrushTool.h>
+#include <mitkNifTKCoreObjectFactory.h>
+#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
 
 /**
  * \brief Test class for mitkMIDASMorphologicalSegmentorPipelineManagerTest.

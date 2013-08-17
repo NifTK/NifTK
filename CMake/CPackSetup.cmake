@@ -17,65 +17,71 @@
 # First, set the generator variable
 ############################################################################
 
-IF(NOT CPACK_GENERATOR)
-  IF(WIN32)
+if(NOT CPACK_GENERATOR)
+  if(WIN32)
   
-    FIND_PROGRAM(NSIS_MAKENSIS NAMES makensis
+    find_program(NSIS_MAKENSIS NAMES makensis
       PATHS [HKEY_LOCAL_MACHINE\\SOFTWARE\\NSIS]
       DOC "Where is makensis.exe located"
       )
 
-    IF(NOT NSIS_MAKENSIS)
-      SET(CPACK_GENERATOR ZIP)
-    ELSE()
-      SET(CPACK_GENERATOR "NSIS")
-    ENDIF(NOT NSIS_MAKENSIS)
+    if(NOT NSIS_MAKENSIS)
+      set(CPACK_GENERATOR ZIP)
+    else()
+      set(CPACK_GENERATOR "NSIS")
+    endif(NOT NSIS_MAKENSIS)
     
-    SET(CPACK_SOURCE_GENERATOR ZIP)
+    set(CPACK_SOURCE_GENERATOR ZIP)
     
-  ELSE()
+  else()
   
-    IF(APPLE)
-      SET(CPACK_GENERATOR "DragNDrop")
-    ELSE()
-      SET(CPACK_GENERATOR TGZ)
-    ENDIF()
+    if(APPLE)
+      set(CPACK_GENERATOR "DragNDrop")
+    else()
+      set(CPACK_GENERATOR TGZ)
+    endif()
     
-    SET(CPACK_SOURCE_GENERATOR TGZ)
+    set(CPACK_SOURCE_GENERATOR TGZ)
     
-  ENDIF()
-ENDIF(NOT CPACK_GENERATOR)
+  endif()
+endif(NOT CPACK_GENERATOR)
 
 ############################################################################
-# This bit came from MITK (http://www.mitk.org). Don't know if we need it.
+# This bit came from MITK (http://www.mitk.org). Don't know if we need it. Yes we do.
 ############################################################################
-INCLUDE(InstallRequiredSystemLibraries)
+# should apply only to windows.
+# note however, that the debug crt is non-redistributable! a debug-package cannot be made available to the public.
+# it's for internal testing only!
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  set(CMAKE_INSTALL_DEBUG_LIBRARIES ON)
+endif()
+include(InstallRequiredSystemLibraries)
 
 ############################################################################
 # This bit came from Nifty Rec - START. Don't really know if we need it.
 ############################################################################
-IF (CMAKE_SYSTEM_PROCESSOR MATCHES "unknown")
-  SET (CMAKE_SYSTEM_PROCESSOR "x86")
-ENDIF (CMAKE_SYSTEM_PROCESSOR MATCHES "unknown")
-IF(NOT DEFINED CPACK_SYSTEM_NAME)
-  SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR})
-ENDIF(NOT DEFINED CPACK_SYSTEM_NAME)
-IF(${CPACK_SYSTEM_NAME} MATCHES Windows)
-  IF(CMAKE_CL_64)
-    SET(CPACK_SYSTEM_NAME Win64-${CMAKE_SYSTEM_PROCESSOR})
-  ELSE(CMAKE_CL_64)
-    SET(CPACK_SYSTEM_NAME Win32-${CMAKE_SYSTEM_PROCESSOR})
-  ENDIF(CMAKE_CL_64)
-ENDIF(${CPACK_SYSTEM_NAME} MATCHES Windows)
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "unknown")
+  set (CMAKE_SYSTEM_PROCESSOR "x86")
+endif (CMAKE_SYSTEM_PROCESSOR MATCHES "unknown")
+if(NOT DEFINED CPACK_SYSTEM_NAME)
+  set(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR})
+endif(NOT DEFINED CPACK_SYSTEM_NAME)
+if(${CPACK_SYSTEM_NAME} MATCHES Windows)
+  if(CMAKE_CL_64)
+    set(CPACK_SYSTEM_NAME Win64-${CMAKE_SYSTEM_PROCESSOR})
+  else(CMAKE_CL_64)
+    set(CPACK_SYSTEM_NAME Win32-${CMAKE_SYSTEM_PROCESSOR})
+  endif(CMAKE_CL_64)
+endif(${CPACK_SYSTEM_NAME} MATCHES Windows)
 
-IF(${CPACK_SYSTEM_NAME} MATCHES Darwin AND CMAKE_OSX_ARCHITECTURES)
+if(${CPACK_SYSTEM_NAME} MATCHES Darwin AND CMAKE_OSX_ARCHITECTURES)
   list(LENGTH CMAKE_OSX_ARCHITECTURES _length)
-  IF(_length GREATER 1)
-    SET(CPACK_SYSTEM_NAME Darwin-Universal)
-  ELSE(_length GREATER 1)
-    SET(CPACK_SYSTEM_NAME Darwin-${CMAKE_OSX_ARCHITECTURES})
-  ENDIF(_length GREATER 1)
-ENDIF(${CPACK_SYSTEM_NAME} MATCHES Darwin AND CMAKE_OSX_ARCHITECTURES)
+  if(_length GREATER 1)
+    set(CPACK_SYSTEM_NAME Darwin-Universal)
+  else(_length GREATER 1)
+    set(CPACK_SYSTEM_NAME Darwin-${CMAKE_OSX_ARCHITECTURES})
+  endif(_length GREATER 1)
+endif(${CPACK_SYSTEM_NAME} MATCHES Darwin AND CMAKE_OSX_ARCHITECTURES)
 
 ############################################################################
 # This bit came from Nifty Rec - END
@@ -87,17 +93,17 @@ ENDIF(${CPACK_SYSTEM_NAME} MATCHES Darwin AND CMAKE_OSX_ARCHITECTURES)
 # and then used at CPack time.
 ############################################################################
 
-SET(CPACK_PACKAGE_NAME "NifTK")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CPACK_PACKAGE_NAME} - CMIC's translation medical imaging platform")
-SET(CPACK_PACKAGE_VENDOR "Centre For Medical Image Computing (CMIC), University College London (UCL)")
-SET(CPACK_PACKAGE_VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}")
-SET(CPACK_PACKAGE_VERSION_MAJOR "${NIFTK_VERSION_MAJOR}")
-SET(CPACK_PACKAGE_VERSION_MINOR "${NIFTK_VERSION_MINOR}")
-SET(CPACK_CREATE_DESKTOP_LINKS "NiftyView")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_BINARY_DIR}/README.txt")
-SET(CPACK_RESOURCE_FILE_README "${CMAKE_BINARY_DIR}/README.txt")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.txt")
-SET(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_BINARY_DIR}/INSTALLATION.txt")
-SET(CPACK_PACKAGE_FILE_NAME "${NIFTK_DEPLOY_NAME}")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${NIFTK_DEPLOY_NAME}")
-SET(CPACK_MONOLITHIC_INSTALL ON)
+set(CPACK_PACKAGE_NAME "NifTK")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CPACK_PACKAGE_NAME} - CMIC's translation medical imaging platform")
+set(CPACK_PACKAGE_VENDOR "Centre For Medical Image Computing (CMIC), University College London (UCL)")
+set(CPACK_PACKAGE_VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${NIFTK_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${NIFTK_VERSION_MINOR}")
+set(CPACK_CREATE_DESKTOP_LINKS "NiftyView")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_BINARY_DIR}/README.txt")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_BINARY_DIR}/README.txt")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_BINARY_DIR}/INSTALLATION.txt")
+set(CPACK_PACKAGE_FILE_NAME "${NIFTK_DEPLOY_NAME}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${NIFTK_DEPLOY_NAME}")
+set(CPACK_MONOLITHIC_INSTALL ON)

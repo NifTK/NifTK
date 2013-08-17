@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkMultiplyImageFilter.h"
-#include "itkExtendedBrainMaskWithSmoothDropOffCompositeFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkMultiplyImageFilter.h>
+#include <itkExtendedBrainMaskWithSmoothDropOffCompositeFilter.h>
 
 /*!
  * \file niftkDilateMaskAndCrop.cxx

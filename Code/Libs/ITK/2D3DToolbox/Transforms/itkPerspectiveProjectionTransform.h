@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkPerspectiveProjectionTransform_h
-#define __itkPerspectiveProjectionTransform_h
+#ifndef itkPerspectiveProjectionTransform_h
+#define itkPerspectiveProjectionTransform_h
 
-#include "itkExceptionObject.h"
+#include <itkExceptionObject.h>
 #include <iostream>
-#include "itkMatrix.h"
-#include "itkTransform.h"
+#include <itkMatrix.h>
+#include <itkTransform.h>
 
 namespace itk
 {

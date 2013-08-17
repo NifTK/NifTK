@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef TRACKERCONTROLSWIDGET_H
-#define TRACKERCONTROLSWIDGET_H
+#ifndef TrackerControlsWidget_h
+#define TrackerControlsWidget_h
 
 #include <QWidget>
 #include "niftkIGIGuiExports.h"

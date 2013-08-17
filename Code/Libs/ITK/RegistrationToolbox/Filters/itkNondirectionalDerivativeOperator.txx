@@ -15,10 +15,10 @@
 #ifndef __itkNondirectionalDerivativeOperator_txx
 #define __itkNondirectionalDerivativeOperator_txx
 #include "itkNondirectionalDerivativeOperator.h"
-#include "itkImage.h"
-#include "itkImageRegionIterator.h"
+#include <itkImage.h>
+#include <itkImageRegionIterator.h>
 
-#include "itkLogHelper.h"
+#include <itkLogHelper.h>
 
 namespace itk
 {

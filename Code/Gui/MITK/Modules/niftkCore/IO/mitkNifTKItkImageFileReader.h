@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef NifTKItkImageFileReader_h
-#define NifTKItkImageFileReader_h
+#ifndef mitkNifTKItkImageFileReader_h
+#define mitkNifTKItkImageFileReader_h
 
 #include "niftkCoreExports.h"
-#include "mitkCommon.h"
-#include "mitkItkImageFileReader.h"
-#include "itkImage.h"
+#include <mitkCommon.h>
+#include <mitkItkImageFileReader.h>
+#include <itkImage.h>
 
 namespace mitk {
 

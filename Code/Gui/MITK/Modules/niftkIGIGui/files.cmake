@@ -12,8 +12,10 @@
 #
 #============================================================================*/
 
-SET(CPP_FILES
+set(CPP_FILES
   Common/QmitkIGIUtils.cxx
+  Common/QmitkStereoImageAndCameraSelectionWidget.cxx
+  Common/StereoCameraCalibrationSelectionWidget.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
   DataSources/QmitkIGITimerBasedThread.cxx
@@ -26,15 +28,20 @@ SET(CPP_FILES
   DataSources/QmitkIGIDataSourceGui.cxx
   DataSources/QmitkIGILocalDataSource.cxx
   DataSources/QmitkIGILocalDataSourceGrabbingThread.cxx
-  DataSources/QmitkIGITrackerTool.cxx
-  DataSources/QmitkIGITrackerToolGui.cxx
+  DataSources/QmitkIGITrackerSource.cxx
+  DataSources/QmitkIGITrackerSourceGui.cxx
   DataSources/QmitkIGIUltrasonixTool.cxx
   DataSources/QmitkIGIUltrasonixToolGui.cxx
   DataSources/QmitkIGIOpenCVDataSource.cxx
   DataSources/QmitkIGIOpenCVDataSourceGui.cxx
+  OverlayEditor/QmitkBitmapOverlay.cxx
+  OverlayEditor/QmitkSingle3DView.cxx
+  OverlayEditor/QmitkIGIOverlayEditor.cxx
 )
 
-SET(MOC_H_FILES
+set(MOC_H_FILES
+  Common/QmitkStereoImageAndCameraSelectionWidget.h
+  Common/StereoCameraCalibrationSelectionWidget.h
   DataSources/TrackerControlsWidget.h
   DataSources/QmitkIGITimerBasedThread.h
   DataSources/QmitkFiducialRegistrationWidgetDialog.h
@@ -43,21 +50,26 @@ SET(MOC_H_FILES
   DataSources/QmitkIGIDataSource.h
   DataSources/QmitkIGIDataSourceGui.h
   DataSources/QmitkIGILocalDataSource.h
-  DataSources/QmitkIGITrackerTool.h
-  DataSources/QmitkIGITrackerToolGui.h  
+  DataSources/QmitkIGITrackerSource.h
+  DataSources/QmitkIGITrackerSourceGui.h
   DataSources/QmitkIGIUltrasonixTool.h
   DataSources/QmitkIGIUltrasonixToolGui.h
   DataSources/QmitkIGIOpenCVDataSource.h
   DataSources/QmitkIGIOpenCVDataSourceGui.h
+  OverlayEditor/QmitkSingle3DView.h
+  OverlayEditor/QmitkIGIOverlayEditor.h
 )
 
-SET(UI_FILES
+set(UI_FILES
+  Common/QmitkStereoImageAndCameraSelectionWidget.ui
+  Common/StereoCameraCalibrationSelectionWidget.ui
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
-  DataSources/QmitkIGITrackerToolGui.ui
+  DataSources/QmitkIGITrackerSourceGui.ui
   DataSources/QmitkIGIUltrasonixToolGui.ui
+  OverlayEditor/QmitkIGIOverlayEditor.ui
 )
 
-SET(QRC_FILES
+set(QRC_FILES
   #Resources/niftkIGIGui.qrc
 )

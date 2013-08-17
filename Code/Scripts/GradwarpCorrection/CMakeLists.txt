@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-IF(NOT WIN23)
-  FILE(GLOB SH_FILES *.sh)
+if(NOT WIN23)
+  file(GLOB SH_FILES *.sh)
   MITK_INSTALL(PROGRAMS ${SH_FILES})
-ENDIF()
+endif()

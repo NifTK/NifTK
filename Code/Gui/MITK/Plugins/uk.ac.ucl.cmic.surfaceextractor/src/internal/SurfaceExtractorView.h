@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef _SurfaceExtractorView_h
-#define _SurfaceExtractorView_h
+#ifndef SurfaceExtractorView_h
+#define SurfaceExtractorView_h
 
 #include "ui_SurfaceExtractorViewControls.h"
 
@@ -23,7 +23,7 @@
 #include <mitkDataStorage.h>
 #include <mitkImageToSurfaceFilter.h>
 
-#include "QmitkBaseView.h"
+#include <QmitkBaseView.h>
 
 class QWidget;
 class QEvent;

@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#ifndef __itkInvResampleImageFilter_h
-#define __itkInvResampleImageFilter_h
+#ifndef itkInvResampleImageFilter_h
+#define itkInvResampleImageFilter_h
 
 // First make sure that the configuration is available.
 // This line can be removed once the optimized versions
 // gets integrated into the main directories.
-#include "itkConfigure.h"
+#include <itkConfigure.h>
 
-#include "itkFixedArray.h"
-#include "itkTransform.h"
-#include "itkImageFunction.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageToImageFilter.h"
-#include "itkInterpolateImageFunction.h"
-#include "itkSize.h"
+#include <itkFixedArray.h>
+#include <itkTransform.h>
+#include <itkImageFunction.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageToImageFilter.h>
+#include <itkInterpolateImageFunction.h>
+#include <itkSize.h>
 
 namespace itk
 {

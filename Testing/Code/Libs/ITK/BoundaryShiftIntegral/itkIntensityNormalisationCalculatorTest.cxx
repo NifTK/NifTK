@@ -16,9 +16,9 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkIntensityNormalisationCalculator.h"
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkIntensityNormalisationCalculator.h>
 
 int itkIntensityNormalisationCalculatorTest(int argc, char* argv[]) 
 {

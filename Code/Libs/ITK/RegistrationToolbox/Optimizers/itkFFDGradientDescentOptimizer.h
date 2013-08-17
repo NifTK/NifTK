@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#ifndef ITKFFDGRADIENTDESCENTOPTIMIZER_H_
-#define ITKFFDGRADIENTDESCENTOPTIMIZER_H_
+#ifndef itkFFDGradientDescentOptimizer_h
+#define itkFFDGradientDescentOptimizer_h
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h" 
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 #include "itkLocalSimilarityMeasureGradientDescentOptimizer.h"
-#include "itkImageToImageMetricWithConstraint.h"
-#include "itkBSplineTransform.h"
-#include "itkRegistrationForceFilter.h"
-#include "itkBSplineSmoothVectorFieldFilter.h"
-#include "itkInterpolateVectorFieldFilter.h"
-#include "itkScaleVectorFieldFilter.h"
-#include "itkScalarImageToNormalizedGradientVectorImageFilter.h"
+#include <itkImageToImageMetricWithConstraint.h>
+#include <itkBSplineTransform.h>
+#include <itkRegistrationForceFilter.h>
+#include <itkBSplineSmoothVectorFieldFilter.h>
+#include <itkInterpolateVectorFieldFilter.h>
+#include <itkScaleVectorFieldFilter.h>
+#include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
 
 namespace itk
 {

@@ -51,14 +51,15 @@ trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
 # Function  : Data normalization
 #
 # Param	    : $1 input image
-# Param	    : $2 output image
-# Param     : $3 patient name
-# Param	    : $4 volume orientation
+# Param     : $2 patient name
+# Param	    : $3 volume orientation
+# Param     : $4 dir output
 function normalization() 
 {
 	local img=$1
 	local name=$2
 	local orientation=$3
+	local dir_output=$4
 	
 	# Normalization
 
@@ -75,7 +76,6 @@ function normalization()
 			-flo ${HEAD_IMAGE} \
 			-aff source-to-target-12dof.txt \
 			-res ${img}_neck_register.nii.gz \
-			-sym \
 			-lp 5" 
 	else
 		echo "File source-to-target-12dof.txt exists, we don't repeat the calculation "
@@ -108,17 +108,17 @@ function normalization()
 	execute_command_or_else_stop "fslchfiletype NIFTI ${img}.nii.gz ${img}_2.nii"
 
 	# Change format to mnc
-	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_2.nii ${img}.mnc"
-	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${img}_ICBM152_mask_register.mnc"
+	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_2.nii ${dir_output}/${img}.mnc"
+	execute_command_or_else_stop "${mnidir}nii2mnc ${orientation} ${img}_ICBM152_mask_register.nii ${dir_output}/${img}_ICBM152_mask_register.mnc"
 	
 	progressXML "0.5" "Starting N3"
 	
 	# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
 	if [[ ! -f "input_image_normalized.nii"  ]] ; then		
 		execute_command_or_else_stop "${n3dir}nu_correct $n3_options \
-		-mask ${img}_ICBM152_mask_register.mnc \
-		${img}.mnc \
-		${img}_n3.mnc" > /dev/null
+		-mask ${dir_output}/${img}_ICBM152_mask_register.mnc \
+		${dir_output}/${img}.mnc \
+		${dir_output}/${img}_n3.mnc" > /dev/null
 	else
 		echo "File input_image_normalized.nii exists, we don't repeat the calculation "
 	fi
@@ -127,7 +127,7 @@ function normalization()
 	
 	# Change format from mnc to NIFTI
 	if [[ -f "${img}_n3.mnc"  ]] ; then
-		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${img}_n3.mnc input_image_normalized.nii"
+		execute_command_or_else_stop "${mnidir}mnc2nii -nii ${dir_output}/${img}_n3.mnc input_image_normalized.nii"
 	fi
 	execute_command_or_else_stop "rm -f *.mnc *_2.nii"
 }
@@ -138,7 +138,7 @@ function UsageXML() {
 cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-   <category>MS Tools.Normalization</category>
+   <category>Multiple Sclerosis Tools.Normalization</category>
    <title>N3 Data Normalization</title>
    <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for doing Boyes et al. Neuroimage 2008 normalization process.<br>
    <ul>
@@ -215,7 +215,7 @@ cat <<EOF
           <name>same</name>
           <longflag>same</longflag>      
           <description>Always use the same temp directory for computing (this option is useful mixed with -debug)</description>
-          <label>Temp directory</label>
+          <label>Same temp directory</label>
       </boolean>
    </parameters>
 </executable>
@@ -314,6 +314,9 @@ do
     shift 1
 done
 
+# Start of the main program
+openprogressXML "N3 Starts"
+
 if [[ -z ${orientation} ]] ; then
 	progressXML "0.02" "Failed, specify an orientation is needed (orientation=${orientation})"
 	exitprog "Failed, specify an orientation is needed (orientation=${orientation})" 1
@@ -331,8 +334,6 @@ if ( ls ${OUTPUT_IMAGE/%\.*/}* > /dev/null ) then
 	exitprog "There are files with the same name of the output file (${OUTPUT_IMAGE}) in the output directory. It could be a source of conflicts. Please, change the name, or remove the files." 1
 fi
 
-# Start of the main program
-openprogressXML "N3 Starts"
 progressXML "0.1" "Checking programs"
 
 # Check that all programs exist
@@ -359,7 +360,8 @@ if [ ${same} = true ] ; then
 else
 	patient='nifTK_'`date +"%Y%m%d-%H%M%S"`
 fi
-dir_output=${patient}-${dir_output}
+dir_main=`pwd`
+dir_output="/tmp/${patient}-${dir_output}"
 
 # Create an output directory and copy data
 if [[ ! -d $dir_output ]] ; then
@@ -371,7 +373,7 @@ copyFileToDestination ${INPUT_IMAGE} "${dir_output}input_image.nii.gz"
 execute_command_or_else_stop "cd ${dir_output}"
 
 # Start process
-normalization "input_image" ${patient} ${orientation}
+normalization "input_image" "${patient}" "${orientation}" "${dir_output}"
 
 progressXML "0.95" "Change format NIFTI to ${OUTPUT_TYPE}"
 	
@@ -380,13 +382,16 @@ name_file=`basename ${OUTPUT_IMAGE}`
 name=${name_file%%.*};
 extension=${name_file#*.};
 if [ "${dir_file}" == "." ] ; then
-	dir_result="../"
+	dir_result="${dir_main}/"
 else
 	dir_result="${dir_file}/"
 fi
 
 # Copy all the results
 copyFileToDestination "input_image_normalized.nii" "${dir_result}${name}.${extension}"
+
+# Go to the main directory
+execute_command_or_else_stop "cd ${dir_main}"
 
 progressXML "1" "Finish"
 closeprogressXML ${OUTPUT_IMAGE}

@@ -20,7 +20,7 @@
 #include <sstream>
 #include <cv.h>
 #include <highgui.h>
-#include "FileHelper.h"
+#include <FileHelper.h>
 
 namespace mitk {
 
@@ -221,6 +221,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
       point.z = numbersOnLine[2];
       pointsIn3D.push_back(point);
     }
+    reader.close();
 
     unsigned int numberOfPoints = pointsIn3D.size();
 
@@ -280,10 +281,10 @@ bool StereoPointProjectionIntoTwoImages::Project(
 
     for (unsigned int i = 0; i < numberOfPoints; i++)
     {
-      cvCircle(outputLeftImage, cvPoint(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0), CV_MAT_ELEM(*output2DPointsLeft, float, i, 1)), 1, CV_RGB(255,0,0), 1, 8);
-      cvCircle(outputLeftImage, cvPoint(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0), CV_MAT_ELEM(*output2DPointsLeft, float, i, 1)), 10, CV_RGB(0,255,0), 3, 8);
-      cvCircle(outputRightImage, cvPoint(CV_MAT_ELEM(*output2DPointsRight, float, i, 0), CV_MAT_ELEM(*output2DPointsRight, float, i, 1)), 1, CV_RGB(255,0,0), 1, 8);
-      cvCircle(outputRightImage, cvPoint(CV_MAT_ELEM(*output2DPointsRight, float, i, 0), CV_MAT_ELEM(*output2DPointsRight, float, i, 1)), 10, CV_RGB(0,255,0), 3, 8);
+      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
+      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 1))), 10, CV_RGB(0,255,0), 3, 8);
+      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
+      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 1))), 10, CV_RGB(0,255,0), 3, 8);
     }
 
     cvSaveImage(outputLeftImageName.c_str(), outputLeftImage);

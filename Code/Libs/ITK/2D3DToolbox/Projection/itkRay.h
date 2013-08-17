@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkRay_h
-#define __itkRay_h
+#ifndef itkRay_h
+#define itkRay_h
 
-#include "itkMatrix.h"
+#include <itkMatrix.h>
 
 namespace itk {
 

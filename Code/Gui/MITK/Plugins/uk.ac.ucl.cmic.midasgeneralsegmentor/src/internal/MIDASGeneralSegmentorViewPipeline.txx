@@ -16,9 +16,9 @@
 #define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
 
 #include "MIDASGeneralSegmentorViewHelper.h"
-#include "itkImage.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
+#include <itkImageRegionIterator.h>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
@@ -54,8 +54,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
   m_SliceNumber = p.m_SliceNumber;
   m_AxisNumber = p.m_AxisNumber;
-  m_LowerThreshold = p.m_LowerThreshold;
-  m_UpperThreshold = p.m_UpperThreshold;
+  m_LowerThreshold = static_cast<int>(p.m_LowerThreshold);
+  m_UpperThreshold = static_cast<int>(p.m_UpperThreshold);
   m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
@@ -140,7 +140,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
             m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
-              voxelIndex[a] = continuousIndex[a];
+              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
             }
             voxelIndex[m_AxisNumber] = m_SliceNumber;
             paintingRegion.SetIndex(voxelIndex);
@@ -193,7 +193,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               
             for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
             {
-              voxelIndex[a] = continuousIndex[a];
+              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
             }
             voxelIndex[m_AxisNumber] = m_SliceNumber;
             paintingRegion.SetIndex(voxelIndex);

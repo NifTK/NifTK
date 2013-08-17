@@ -14,12 +14,12 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __itkRegionGrowSurfacePoints_h
-#define __itkRegionGrowSurfacePoints_h
+#ifndef itkRegionGrowSurfacePoints_h
+#define itkRegionGrowSurfacePoints_h
 
-#include "itkImage.h"
-#include "itkImageToImageFilter.h"
-#include "itkSimpleDataObjectDecorator.h"
+#include <itkImage.h>
+#include <itkImageToImageFilter.h>
+#include <itkSimpleDataObjectDecorator.h>
 
 namespace itk {
 

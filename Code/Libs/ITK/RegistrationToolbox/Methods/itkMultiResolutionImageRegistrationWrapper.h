@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#ifndef __itkMultiResolutionImageRegistrationWrapper_h
-#define __itkMultiResolutionImageRegistrationWrapper_h
+#ifndef itkMultiResolutionImageRegistrationWrapper_h
+#define itkMultiResolutionImageRegistrationWrapper_h
 
-#include "itkProcessObject.h"
-#include "itkNumericTraits.h"
-#include "itkDataObjectDecorator.h"
-#include "itkImageToImageMetric.h"
-#include "itkSingleValuedNonLinearOptimizer.h"
-#include "itkRecursiveMultiResolutionPyramidImageFilter.h"
+#include <itkProcessObject.h>
+#include <itkNumericTraits.h>
+#include <itkDataObjectDecorator.h>
+#include <itkImageToImageMetric.h>
+#include <itkSingleValuedNonLinearOptimizer.h>
+#include <itkRecursiveMultiResolutionPyramidImageFilter.h>
 #include "itkMaskedImageRegistrationMethod.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include <itkBinaryThresholdImageFilter.h>
 
 namespace itk
 {

@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
-#include "ConversionUtils.h"
-#include "itkCommandLineHelper.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkAddImageFilter.h"
+#include <itkLogHelper.h>
+#include <ConversionUtils.h>
+#include <itkCommandLineHelper.h>
+#include <itkImageFileReader.h>
+#include <itkImageFileWriter.h>
+#include <itkAddImageFilter.h>
 
-#include "niftkAddCLP.h"
+#include <niftkAddCLP.h>
 
 /*!
  * \file niftkAdd.cxx

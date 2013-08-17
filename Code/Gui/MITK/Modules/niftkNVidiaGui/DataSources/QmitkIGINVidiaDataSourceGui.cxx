@@ -18,7 +18,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QGLWidget>
-#include "QmitkIGIDataSourceMacro.h"
+#include <QmitkIGIDataSourceMacro.h>
 #include "QmitkIGINVidiaDataSource.h"
 #include "QmitkVideoPreviewWidget.h"
 
@@ -26,7 +26,7 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKNVIDIAGUI_EXPORT, QmitkIGINVidiaDataSourceGui, "I
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceGui::QmitkIGINVidiaDataSourceGui()
-  : m_OglWin(0)
+  : m_OglWin(0), m_PreviousBaseResolution(0)
 {
   // To do.
 }
@@ -75,17 +75,21 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
   {
     if (m_OglWin == 0)
     {
-      // query for ogl context, etc
-      // this should never fail, even if there's no sdi hardware
       QGLWidget* capturecontext = source->GetCaptureContext();
-      assert(capturecontext != 0);
+      if (capturecontext != 0)
+      {
+        // one preview window for all channels
+        m_OglWin = new QmitkVideoPreviewWidget(PreviewGroupBox, capturecontext);
+        PreviewGroupBox->layout()->addWidget(m_OglWin);
+        m_OglWin->show();
 
-      // FIXME: one for each channel?
-      m_OglWin = new QmitkVideoPreviewWidget(this, capturecontext);
-      previewgridlayout->addWidget(m_OglWin);
-      m_OglWin->show();
+        connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
+        // connect gui controls only if everything else is fine
+        connect(FieldModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFieldModeChange(int)));
 
-      connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
+        // explicitly update at least once
+        OnUpdateDisplay();
+      }
     }
   }
   else
@@ -97,40 +101,134 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceGui::OnFieldModeChange(int index)
+{
+  QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
+  if (source != NULL)
+  {
+    // only allow changing field mode during live capture.
+    // for playback the combobox is disabled anyway and allowing this handler to
+    // proceed will mess up the internal state of the data source.
+    if (!source->GetIsPlayingBack())
+    {
+      // FIXME: if we are recording do not allow changing it!
+      //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2559
+
+      // if we dont stop then preview-widget will reference a deleted texture
+      StopPreviewWidget();
+
+      bool    wascapturing = source->IsCapturing();
+      if (wascapturing)
+      {
+        source->StopCapturing();
+      }
+
+      source->SetFieldMode((QmitkIGINVidiaDataSource::InterlacedBehaviour) index);
+
+      if (wascapturing)
+      {
+        source->StartCapturing();
+      }
+    }
+  }
+  else
+  {
+    MITK_ERROR << "QmitkIGINVidiaDataSourceGui: source is NULL, which suggests a programming bug" << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGINVidiaDataSourceGui::StopPreviewWidget()
+{
+  assert(PreviewGroupBox->layout() != 0);
+  for (int i = 0; i < PreviewGroupBox->layout()->count(); ++i)
+  {
+    QLayoutItem* l = PreviewGroupBox->layout()->itemAt(i);
+    QWidget*     w = l->widget();
+    if (w)
+    {
+      QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
+      if (g)
+      {
+        g->SetTextureId(0);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
 {
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
   {
-    int width = source->GetCaptureWidth();
-    int height = source->GetCaptureHeight();
-    float rr = source->GetRefreshRate();
-
-    std::ostringstream    s;
-    s << width << " x " << height << " @ " << rr << " Hz";
-
-    QString   ss = QString::fromStdString(s.str());
+    int streamcount = source->GetNumberOfStreams();
+    std::ostringstream    sc;
+    sc << streamcount;
+    QString   ss = QString::fromStdString(sc.str());
     // only change text if it's actually different
     // otherwise the window is resetting a selection all the time: annoying as hell
-    if (signal_tb->text().compare(ss) != 0)
-      signal_tb->setText(ss);
-
-    actualcaptureformat_tb->setText(QString::fromAscii("FIXME"));
-
-
-    for (int i = 0; i < previewgridlayout->count(); ++i)
+    if (StreamCountTextBox->text().compare(ss) != 0)
     {
-      QLayoutItem* l = previewgridlayout->itemAt(i);
-      QWidget*     w = l->widget();
-      if (w)
+      StreamCountTextBox->setText(ss);
+    }
+
+    QString wireformat(source->GetWireFormatString());
+    if (FormatIDTextBox->text().compare(wireformat) != 0)
+    {
+      FormatIDTextBox->setText(wireformat);
+    }
+
+    int   fieldmodecomboboxindex = FieldModeComboBox->currentIndex();
+    QmitkIGINVidiaDataSource::InterlacedBehaviour   fieldmode = source->GetFieldMode();
+    if (fieldmodecomboboxindex != (int) fieldmode)
+    {
+      FieldModeComboBox->setCurrentIndex((int) fieldmode);
+    }
+    FieldModeComboBox->setEnabled(!source->GetIsPlayingBack());
+
+    if (streamcount > 0)
+    {
+      int width = source->GetCaptureWidth();
+      int height = source->GetCaptureHeight();
+      float rr = source->GetRefreshRate();
+
+      std::ostringstream    sf;
+      sf << width << " x " << height << " @ " << rr << " Hz";
+
+      ss = QString::fromStdString(sf.str());
+      // only change text if it's actually different
+      // otherwise the window is resetting a selection all the time: annoying as hell
+      if (SignalTextBox->text().compare(ss) != 0)
       {
-        QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
-        if (g)
+        SignalTextBox->setText(ss);
+      }
+
+      // there should be only one, really
+      assert(PreviewGroupBox->layout() != 0);
+      for (int i = 0; i < PreviewGroupBox->layout()->count(); ++i)
+      {
+        QLayoutItem* l = PreviewGroupBox->layout()->itemAt(i);
+        QWidget*     w = l->widget();
+        if (w)
         {
-          g->SetTextureId(source->GetTextureId(0));
-          g->updateGL();
+          QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
+          if (g)
+          {
+            g->SetVideoDimensions(width, height);
+            g->SetTextureId(source->GetTextureId(0));
+            g->updateGL();
+            // one preview widget for all input streams
+            break;
+          }
         }
       }
+    } // if streamcount
+    else
+    {
+      SignalTextBox->setText("None");
     }
   }
 }

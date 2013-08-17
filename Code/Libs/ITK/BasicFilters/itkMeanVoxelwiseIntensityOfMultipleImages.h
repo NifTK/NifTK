@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkMeanVoxelwiseIntensityOfMultipleImages_h
-#define __itkMeanVoxelwiseIntensityOfMultipleImages_h
+#ifndef itkMeanVoxelwiseIntensityOfMultipleImages_h
+#define itkMeanVoxelwiseIntensityOfMultipleImages_h
 
-#include "itkImageToImageFilter.h"
+#include <itkImageToImageFilter.h>
 #include <itkEulerAffineTransform.h>
 
 

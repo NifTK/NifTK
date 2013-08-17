@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __QmitkBaseView_h
-#define __QmitkBaseView_h
+#ifndef QmitkBaseView_h
+#define QmitkBaseView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_common_Export.h>
 
@@ -86,7 +86,7 @@ public:
    * of changing the data manager selection, the "selected" property of the
    * previously selected nodes will be cleared.
    */
-  void SetCurrentSelection(mitk::DataNode* dataNode);
+  void SetCurrentSelection(mitk::DataNode::Pointer dataNode);
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);

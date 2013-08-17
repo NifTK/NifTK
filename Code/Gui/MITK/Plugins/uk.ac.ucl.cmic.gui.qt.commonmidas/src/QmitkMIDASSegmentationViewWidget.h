@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef mitk_QmitkMIDASSegmentationViewWidget_h
-#define mitk_QmitkMIDASSegmentationViewWidget_h
+#ifndef QmitkMIDASSegmentationViewWidget_h
+#define QmitkMIDASSegmentationViewWidget_h
 
 #include "ui_QmitkMIDASSegmentationViewWidget.h"
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 #include <QWidget>
 #include <QString>
-#include "mitkMIDASEnums.h"
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
-#include "mitkDataStorageVisibilityTracker.h"
+#include <mitkMIDASEnums.h>
+#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkDataStorageVisibilityTracker.h>
 
 namespace mitk
 {
@@ -56,7 +56,7 @@ class CMIC_QT_COMMONMIDAS QmitkMIDASSegmentationViewWidget :
 
 public:
 
-  QmitkMIDASSegmentationViewWidget(QWidget *parent = 0);
+  QmitkMIDASSegmentationViewWidget(QWidget* parent = 0);
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
@@ -80,12 +80,6 @@ public:
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
 
   /**
-   * \brief Calls setBlockSignals(block) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
-   * \param block if true will block signals, and if false will unblock them.
-   */
-  void SetBlockSignals(bool block);
-
-  /**
    * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
@@ -104,33 +98,41 @@ public:
 signals:
 
   /**
-   * \brief At the moment we support axial, coronal, or sagittal views, or combinations of
-   * two view windows, in vertical or horizontal mode. (see MIDASView enum for a complete list),
-   * and emit this signal when the displayed view of this window changes.
+   * \brief At the moment we support single axial, coronal, or sagittal render windows, or combinations of
+   * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
+   * and emit this signal when the displayed layout of this window changes.
    */
-  void ViewChanged(MIDASView);
+  void LayoutChanged(MIDASLayout);
 
 protected slots:
 
-  void OnTwoViewStateChanged(int);
-  void OnVerticalLayoutStateChanged(int);
-  void OnAxialToggled(bool);
-  void OnCoronalToggled(bool);
-  void OnSagittalToggled(bool);
-  void OnOrthoToggled(bool);
+  /// \brief Called when the axial window layout radio button is toggled.
+  void OnAxialWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the sagittal window layout radio button is toggled.
+  void OnSagittalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the coronal window layout radio button is toggled.
+  void OnCoronalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the multi window layout radio button is toggled.
+  void OnMultiWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged();
+
+  /// \brief Called when the magnification is changed by the spin box.
+  void OnMagnificationChanged(double magnification);
+
+  /// \brief Called when the magnification is changed by zooming in a renderer window.
+  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double magnification);
 
 protected:
 
 private:
 
-  /// \brief Method that actually changes the view to axial, sagittal, coronal etc.
-  void ChangeLayout(bool isInitialising = false);
-
-  /// \brief Enables all widgets according to which view we are in.
-  void EnableWidgets();
-
-  /// \brief Separate method to just enable/disable the axial, sagittal, coronal radio buttons.
-  void EnableOrientationWidgets(bool enabled);
+  /// \brief Method that actually changes the layout to axial, sagittal, coronal etc.
+  void ChangeLayout();
 
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
@@ -138,26 +140,32 @@ private:
   /// \brief Works out the MIDASOrientation of the currently focused window.
   MIDASOrientation GetCurrentMainWindowOrientation();
 
-  /// \brief Works out the MIDASView of the currently focused window.
-  MIDASView GetCurrentMainWindowView();
+  /// \brief Works out the MIDASLayout of the currently focused window.
+  MIDASLayout GetCurrentMainWindowLayout();
 
-  /// \brief Returns true if the currently focused window is in this widget.
-  bool IsCurrentlyFocusedWindowInThisWidget();
-
-  /// \brief Returns the currently focused window.
-  mitk::BaseRenderer* GetCurrentlyFocusedRenderer() const;
-
-  QmitkMIDASBaseSegmentationFunctionality *m_ContainingFunctionality;
+  QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
-  MIDASView m_View;
-  MIDASView m_MainWindowView;
+
+  /// \brief Stores the currently selected window layout.
+  MIDASLayout m_Layout;
+
+  MIDASLayout m_MainWindowLayout;
+
   QmitkRenderWindow* m_MainWindowAxial;
   QmitkRenderWindow* m_MainWindowSagittal;
   QmitkRenderWindow* m_MainWindowCoronal;
   QmitkRenderWindow* m_MainWindow3d;
   mitk::BaseRenderer* m_CurrentRenderer;
+
   mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
+
+  double m_Magnification;
+
+  /// \brief Stores the last single window layout of the internal viewer,
+  /// one for each layout of the main window.
+  QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+
 };
 
 #endif

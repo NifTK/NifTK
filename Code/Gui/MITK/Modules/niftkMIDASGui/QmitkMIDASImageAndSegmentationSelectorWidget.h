@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_H
-#define QMITKMIDASIMAGEANDSEGMENTATIONSELECTORWIDGET_H
+#ifndef QmitkMIDASImageAndSegmentationSelectorWidget_h
+#define QmitkMIDASImageAndSegmentationSelectorWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QWidget>
@@ -34,7 +34,7 @@ public:
   QmitkMIDASImageAndSegmentationSelectorWidget(QWidget *parent = 0);
 
   /** Destructor. */
-  ~QmitkMIDASImageAndSegmentationSelectorWidget();
+  virtual ~QmitkMIDASImageAndSegmentationSelectorWidget();
 
 protected:
 

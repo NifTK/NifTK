@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __itkBaseCTESegmentationFilter_h
-#define __itkBaseCTESegmentationFilter_h
+#ifndef itkBaseCTESegmentationFilter_h
+#define itkBaseCTESegmentationFilter_h
 
-#include "itkImage.h"
+#include <itkImage.h>
 #include "itkBaseCTEFilter.h"
 
 

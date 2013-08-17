@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#ifndef __itkINRImageIOFactory_h
-#define __itkINRImageIOFactory_h
+#ifndef itkINRImageIOFactory_h
+#define itkINRImageIOFactory_h
 
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #endif
 
-#include "NifTKConfigure.h"
-#include "niftkITKWin32ExportHeader.h"
+#include <NifTKConfigure.h>
+#include <niftkITKWin32ExportHeader.h>
 
-#include "itkObjectFactoryBase.h"
-#include "itkImageIOBase.h"
+#include <itkObjectFactoryBase.h>
+#include <itkImageIOBase.h>
 
 namespace itk
 {

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MG</category>
+  <title><![CDATA[Convert Raw DICOM Mammograms To Presentation Versions]]></title>
+  <description><![CDATA[Search for raw "For Processing" DICOM mammograms in a directory and convert them to "For Presentation" versions by calculating the logarithm of their intensities and then the inverse.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters advanced="false">
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <directory>
+      <name>dcmDirectoryIn</name>
+      <longflag>inDir</longflag>
+      <description>Input top-level directory to search</description>
+      <label>Input directory to search</label>
+      <channel>input</channel>
+    </directory>
+
+    <directory>
+      <name>dcmDirectoryOut</name>
+      <longflag>outDir</longflag>
+      <description>Output top-level directory to write images to</description>
+      <label>Output directory to write to</label>
+      <channel>output</channel>
+    </directory>
+
+    <string>
+      <name>strAdd2Suffix</name>
+      <longflag>add2suffix</longflag>
+      <description>Add this text to the filename suffix to generate a new file name.</description>
+      <label>Add text to file name suffix</label>
+      <default>_ForPresentation</default>
+    </string>
+
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>If the presentation image already exists then overwrite it.</description>
+      <label>Overwrite output image if it exists?</label>
+    </boolean>
+
+  </parameters>
+
+</executable>

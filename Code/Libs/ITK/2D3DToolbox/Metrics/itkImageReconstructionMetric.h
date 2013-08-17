@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __itkImageReconstructionMetric_h
-#define __itkImageReconstructionMetric_h
+#ifndef itkImageReconstructionMetric_h
+#define itkImageReconstructionMetric_h
 
-#include "itkImageToImageFilter.h"
-#include "itkConceptChecking.h"
-#include "itkSingleValuedCostFunction.h"
-#include "itkForwardAndBackProjectionDifferenceFilter.h"
+#include <itkImageToImageFilter.h>
+#include <itkConceptChecking.h>
+#include <itkSingleValuedCostFunction.h>
+#include <itkForwardAndBackProjectionDifferenceFilter.h>
 
 
 namespace itk
