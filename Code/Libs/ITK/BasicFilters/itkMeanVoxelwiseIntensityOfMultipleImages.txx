@@ -26,7 +26,7 @@
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkImageDuplicator.h>
 #include <itkMinimumMaximumImageCalculator.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

@@ -14,7 +14,7 @@
 
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
-#include <FileHelper.h>
+#include <niftkFileHelper.h>
 #include <iostream>
 #include <fstream>
 #include <cv.h>

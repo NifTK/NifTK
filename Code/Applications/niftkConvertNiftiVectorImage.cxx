@@ -21,7 +21,7 @@
 #include <itkImageAdaptor.h>
 #include <itkMultiplyByConstantImageFilter.h>
 
-#include <CommandLineParser.h>
+#include <niftkCommandLineParser.h>
 #include <itkDisplacementVectorCoordinateAdaptionPixelAccessor.h>
 
 #include <nifti1_io.h>

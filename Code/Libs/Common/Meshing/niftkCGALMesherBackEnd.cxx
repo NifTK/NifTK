@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+#include "niftkCGALMesherBackEnd.h"
+
 #include <CGAL/Mesh_triangulation_3.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>
 #include <CGAL/Mesh_criteria_3.h>
@@ -19,9 +21,8 @@
 #include <CGAL/make_mesh_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Image_3.h>
-#include <fstream>
 
-#include "CGALMesherBackEnd.h"
+#include <fstream>
 
 using namespace std;
 using namespace niftk;

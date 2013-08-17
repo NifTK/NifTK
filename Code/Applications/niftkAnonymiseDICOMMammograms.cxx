@@ -22,7 +22,7 @@
  */
 
 
-#include <FileHelper.h>
+#include <niftkFileHelper.h>
 
 #include <itkLogHelper.h>
 #include <itkImage.h>

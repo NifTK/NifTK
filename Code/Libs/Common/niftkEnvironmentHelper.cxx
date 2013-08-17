@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "EnvironmentHelper.h"
+#include "niftkEnvironmentHelper.h"
 #include <stdlib.h>
 
 namespace niftk

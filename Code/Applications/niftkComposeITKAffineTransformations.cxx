@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 #include <itkAffineTransform.h>
 #include <itkTransformFileWriter.h>
 #include <itkTransformFileReader.h>

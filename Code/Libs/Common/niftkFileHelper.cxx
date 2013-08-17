@@ -20,8 +20,8 @@
 #include <ostream>
 #include <sstream>
 #include <deque>
-#include "FileHelper.h"
-#include "EnvironmentHelper.h"
+#include "niftkFileHelper.h"
+#include "niftkEnvironmentHelper.h"
 
 namespace fs = boost::filesystem;
 

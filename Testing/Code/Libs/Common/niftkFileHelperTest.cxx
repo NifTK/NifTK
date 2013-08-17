@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include <FileHelper.h>
-#include <stdlib.h>
-#include <EnvironmentHelper.h>
 #include <iostream>
-#include <ConversionUtils.h>
+#include <stdlib.h>
+#include <niftkFileHelper.h>
+#include <niftkEnvironmentHelper.h>
+#include <niftkConversionUtils.h>
 
 namespace fs = boost::filesystem;
 
@@ -208,11 +208,11 @@ int TestConcatenateToPath()
 /**
  * \brief Basic test harness for FileHelper.h
  */
-int FileHelperTest(int argc, char * argv[])
+int niftkFileHelperTest(int argc, char * argv[])
 {
   if (argc < 2)
     {
-      std::cerr << "Usage   :FileHelperTest testNumber" << std::endl;
+      std::cerr << "Usage   :niftkFileHelperTest testNumber" << std::endl;
       return 1;
     }
   

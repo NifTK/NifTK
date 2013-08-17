@@ -12,18 +12,22 @@
 
 =============================================================================*/
 
-#ifndef MeshingUnitTestHelpers_h
-#define MeshingUnitTestHelpers_h
+#ifndef niftkIOException_h
+#define niftkIOException_h
 
-#define niftkMeshingAssert(COND) \
-     {\
-      if(!(COND))\
-      {\
-         std::cerr << "Test failed " << __FILE__ << ":" << __LINE__;\
-         std::cerr << " in function " << __FUNCTION__ << std::endl;\
-         std::cerr << "Condition: " << #COND;\
-         abort();\
-      }\
-   }
+#include "niftkExceptionObject.h"
 
-#endif /* MESHINGUNITTESTHELPERS_H_ */
+namespace niftk
+{
+  /**
+   * \brief Exceptions for Filesystem, Network, ... I/O
+   */
+  class IOException : public ExceptionObject
+  {
+  public:
+    IOException(const std::string &what) : ExceptionObject(what) {}
+  };
+
+} // end namespace
+
+#endif

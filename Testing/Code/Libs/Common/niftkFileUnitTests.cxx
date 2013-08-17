@@ -12,23 +12,14 @@
 
 =============================================================================*/
 
-#ifndef InvalidArgumentException_h
-#define InvalidArgumentException_h
+#if defined(_MSC_VER)
+#pragma warning ( disable : 4786 )
+#endif
 
-#include "ExceptionObject.h"
+#include <iostream>
+#include <itkTestMain.h>
 
-namespace niftk
+void RegisterTests()
 {
-  /**
-   * \brief Exceptions for signalling invalid input.
-   */
-  class InvalidArgumentException : public ExceptionObject
-  {
-  public:
-    InvalidArgumentException(const std::string &what) : ExceptionObject(what) {}
-  };
-
-} // end namespace
-
-
-#endif /* INVALIDARGUMENTEXCEPTION_H_ */
+  REGISTER_TEST(niftkFileHelperTest);
+}

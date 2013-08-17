@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ConversionUtils_h
-#define ConversionUtils_h
+#ifndef niftkConversionUtils_h
+#define niftkConversionUtils_h
 
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"

@@ -14,7 +14,7 @@
 
 #ifndef _itkSimilarityMeasure_txx
 #define _itkSimilarityMeasure_txx
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "itkSimilarityMeasure.h"
 #include <itkStatisticsImageFilter.h>
 #include <itkImageRegionConstIteratorWithIndex.h>

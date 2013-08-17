@@ -27,8 +27,8 @@
 #include <vtkCell.h>
 #include <vtkPoints.h>
 
-#include <MeshGenerator.h>
-#include "MeshingUnitTestHelpers.h"
+#include <niftkMeshGenerator.h>
+#include "niftkMeshingUnitTestHelpers.h"
 
 typedef itk::Image<unsigned char, 3> _LabelImageType;
 
@@ -259,10 +259,10 @@ static int _TestMultiLabelImage(const std::string &imgFileName, const std::vecto
   return EXIT_SUCCESS;
 }
 
-int MeshGeneratorTest(int argc, char *argv[])
+int niftkMeshGeneratorTest(int argc, char *argv[])
 {
   if (argc < 2) {
-    std::cerr << "Unit test requires at least one argument!\n";
+    std::cerr << "niftkMeshGeneratorTest: Unit test requires at least one argument!\n";
 
     return EXIT_FAILURE;
   }

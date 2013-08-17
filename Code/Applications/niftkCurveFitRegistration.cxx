@@ -27,8 +27,8 @@
 #include <itkImageFileWriter.h>
 #include <itkCommandLineHelper.h>
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 #include <boost/filesystem.hpp>
 

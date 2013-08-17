@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CommandLineParser_h
-#define CommandLineParser_h
+#ifndef niftkCommandLineParser_h
+#define niftkCommandLineParser_h
 
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"

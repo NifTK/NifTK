@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef EnvironmentHelper_h
-#define EnvironmentHelper_h
+#ifndef niftkEnvironmentHelper_h
+#define niftkEnvironmentHelper_h
 
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"

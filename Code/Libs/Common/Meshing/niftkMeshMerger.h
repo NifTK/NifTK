@@ -12,16 +12,17 @@
 
 =============================================================================*/
 
-#ifndef MeshMerger_h
-#define MeshMerger_h
+#ifndef niftkMeshMerger_h
+#define niftkMeshMerger_h
 
-#include <vector>
-#include <string>
+#include <niftkInvalidArgumentException.h>
+
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <InvalidArgumentException.h>
+#include <vector>
+#include <string>
 
 namespace niftk {
   class MeshMerger {

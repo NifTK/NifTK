@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 2.6)
 
 set(MEDIT_LIBS  
 	vtkGraphics
-  	vtkIO
+  vtkIO
  	vtkCommon
 )
 
@@ -54,10 +54,10 @@ endif ()
 
 if (WIN32)  
   add_library(niftkMeshingLib
-    CGALMesherBackEnd.cxx
-    MeditMeshParser.cxx
-    MeshGenerator.cxx
-    MeshMerger.cxx
+    niftkCGALMesherBackEnd.cxx
+    niftkMeditMeshParser.cxx
+    niftkMeshGenerator.cxx
+    niftkMeshMerger.cxx
     )
 
   target_link_libraries(niftkMeshingLib
@@ -80,9 +80,9 @@ else (WIN32)
 
   add_library(niftkMeshingLib
     ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o
-    MeditMeshParser.cxx
-    MeshGenerator.cxx
-    MeshMerger.cxx
+    niftkMeditMeshParser.cxx
+    niftkMeshGenerator.cxx
+    niftkMeshMerger.cxx
     )
   target_link_libraries(niftkMeshingLib
     CGAL

@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef CGALMesherBackEnd_h
-#define CGALMesherBackEnd_h
+#ifndef niftkCGALMesherBackEnd_h
+#define niftkCGALMesherBackEnd_h
+
+#include <niftkIOException.h>
 
 #include <stdexcept>
 #include <string>
-
-#include <IOException.h>
 
 namespace niftk {
   /**

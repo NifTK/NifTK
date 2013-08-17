@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef FileHelper_h
-#define FileHelper_h
+#ifndef niftkFileHelper_h
+#define niftkFileHelper_h
 
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
@@ -27,7 +27,7 @@
 #define FILE_SEPARATOR "/"
 #endif
 
-#include "Exceptions/IOException.h"
+#include "Exceptions/niftkIOException.h"
 
 namespace niftk
 {

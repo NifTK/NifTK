@@ -16,8 +16,8 @@
  * Create a transformation from a user specified list of parameters.
  */
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 #include <itkCommand.h>
 #include <itkImage.h>

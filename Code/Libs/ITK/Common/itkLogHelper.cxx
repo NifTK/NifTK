@@ -17,7 +17,7 @@ using namespace std;
 
 #include "itkLogHelper.h"
 #include "itkUCLMacro.h"
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace niftk
 {

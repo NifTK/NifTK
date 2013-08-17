@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MeditMeshParser_h
-#define MeditMeshParser_h
+#ifndef niftkMeditMeshParser_h
+#define niftkMeditMeshParser_h
 
 #include <string>
 #include <vector>
@@ -21,7 +21,7 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-#include <IOException.h>
+#include <niftkIOException.h>
 
 namespace niftk {
   /**

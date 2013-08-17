@@ -15,10 +15,10 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include <ConversionUtils.h>
 #include <math.h>
 #include <iostream>
 #include <stdlib.h>
+#include <niftkConversionUtils.h>
 
 void CheckDoublesEquals(double expected, double actual, double tol)
 {
@@ -97,11 +97,11 @@ int testGetLastNCharacters()
 /**
  * Basic test harness for ConversionUtils.h
  */
-int ConversionUtilsTest(int argc, char * argv[])
+int niftkConversionUtilsTest(int argc, char * argv[])
 {
   if (argc < 2)
     {
-      std::cerr << "Usage   :ConversionUtilsTest testNumber" << std::endl;
+      std::cerr << "Usage   :niftkConversionUtilsTest testNumber" << std::endl;
       return 1;
     }
   

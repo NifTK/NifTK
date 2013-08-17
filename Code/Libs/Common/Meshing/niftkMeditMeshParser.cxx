@@ -22,7 +22,7 @@
 #include <vtkTriangle.h>
 #include <vtkTetra.h>
 
-#include "MeditMeshParser.h"
+#include "niftkMeditMeshParser.h"
 
 using namespace std;
 using namespace niftk;

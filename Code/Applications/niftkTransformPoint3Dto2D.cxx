@@ -15,8 +15,8 @@
 #include <math.h>
 #include <float.h>
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 #include <itkTransform2D3D.h>
 #include <itkImageRegistrationFactory.h>

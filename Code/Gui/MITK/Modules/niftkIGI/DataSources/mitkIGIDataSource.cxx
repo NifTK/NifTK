@@ -18,7 +18,7 @@
 #include <igtlTimeStamp.h>
 #include <boost/filesystem.hpp>
 #include <cstdlib>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace mitk
 {

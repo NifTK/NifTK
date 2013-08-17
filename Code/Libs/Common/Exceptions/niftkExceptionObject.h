@@ -12,15 +12,22 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#ifndef niftkExceptionObject_h
+#define niftkExceptionObject_h
+#include <stdexcept>
+#include <string>
 
-#include <iostream>
-#include <itkTestMain.h>
-#include <stdlib.h>
-
-void RegisterTests()
+namespace niftk
 {
-  REGISTER_TEST(MeshGeneratorTest);
-}
+  /**
+   * \brief Basic NIFTK exception class
+   */
+  class ExceptionObject : public std::runtime_error
+  {
+  public:
+    ExceptionObject(const std::string &what) : std::runtime_error(what) {}
+  };
+
+} // end namespace
+
+#endif

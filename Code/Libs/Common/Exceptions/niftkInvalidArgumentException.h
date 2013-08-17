@@ -12,22 +12,23 @@
 
 =============================================================================*/
 
-#ifndef ExceptionObject_h
-#define ExceptionObject_h
-#include <stdexcept>
-#include <string>
+#ifndef niftkInvalidArgumentException_h
+#define niftkInvalidArgumentException_h
+
+#include "niftkExceptionObject.h"
 
 namespace niftk
 {
   /**
-   * \brief Basic NIFTK exception class
+   * \brief Exceptions for signalling invalid input.
    */
-  class ExceptionObject : public std::runtime_error
+  class InvalidArgumentException : public ExceptionObject
   {
   public:
-    ExceptionObject(const std::string &what) : std::runtime_error(what) {}
+    InvalidArgumentException(const std::string &what) : ExceptionObject(what) {}
   };
 
 } // end namespace
 
-#endif
+
+#endif /* INVALIDARGUMENTEXCEPTION_H_ */

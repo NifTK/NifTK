@@ -16,7 +16,7 @@
 #define itkMultiResolutionDeformableImageRegistrationMethod_h
 
 #include "itkMultiResolutionImageRegistrationWrapper.h"
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace itk
 {

@@ -25,7 +25,7 @@
 #include <itkResampleImageFilter.h>
 #include <itkShrinkImageFilter.h>
 #include <itkIdentityTransform.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkLogHelper.h>
 #include <itkUCLMacro.h>
 #include <vnl/vnl_math.h>

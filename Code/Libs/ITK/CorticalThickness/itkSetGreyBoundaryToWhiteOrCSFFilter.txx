@@ -18,7 +18,7 @@
 #include "itkSetGreyBoundaryToWhiteOrCSFFilter.h"
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIterator.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

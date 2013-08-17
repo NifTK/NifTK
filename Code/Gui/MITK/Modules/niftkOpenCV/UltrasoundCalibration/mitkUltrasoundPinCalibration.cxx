@@ -14,7 +14,7 @@
 
 #include "mitkUltrasoundPinCalibration.h"
 #include <mitkFileIOUtils.h>
-#include <FileHelper.h>
+#include <niftkFileHelper.h>
 #include <itkUltrasoundPinCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <mitkCameraCalibrationFacade.h>
