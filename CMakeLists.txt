@@ -386,6 +386,18 @@ else()
 
 endif()
 
+# append a short release/debug tag, so we know which one is which on the dashboard.
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CTBN "${CTBN}-Dbg")
+else()
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(CTBN "${CTBN}-Rel")
+else()
+  # this should not happen. further above we check for Debug and Release and fail if it's neither.
+  set(CTBN "${CTBN}-${CMAKE_BUILD_TYPE}")
+endif()
+endif()
+
 string(REPLACE "\n" "" CTBN ${CTBN})
 set(BUILDNAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
 set(CTEST_BUILD_NAME ${CTBN} CACHE STRING "${CTBN}" FORCE)
