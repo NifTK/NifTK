@@ -14,8 +14,7 @@
 
 set(NIFTK_COMMON_TEST_LINK_LIBRARIES 
   niftkcommon 
-  ITKCommon 
-  ITKIO 
+  ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}
   )
   
@@ -40,8 +39,7 @@ target_link_libraries(niftkCommonUnitTests ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
 
 set(NIFTK_FILE_TEST_LINK_LIBRARIES 
   niftkcommon 
-  ITKCommon 
-  ITKIO
+  ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}
   )
 

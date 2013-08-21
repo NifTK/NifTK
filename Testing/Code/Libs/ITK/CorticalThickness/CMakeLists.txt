@@ -15,8 +15,7 @@
 set(NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES 
   niftkcommon 
   niftkITK 
-  ITKCommon 
-  ITKIO  
+  ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}
   )
 
