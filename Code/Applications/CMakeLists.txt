@@ -215,7 +215,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   #niftkConvertDofToFsl
   niftkConvertMidasStrToNii
   niftkConvertToMidasStr
-  #niftkConvertTransformToRIREFormat
+  niftkConvertTransformToRIREFormat
   niftkCreateAffineTransform
   niftkCreateMaskFromLabels
   #niftkCreateTransformation
