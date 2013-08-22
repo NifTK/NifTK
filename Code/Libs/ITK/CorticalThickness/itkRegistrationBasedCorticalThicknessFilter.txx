@@ -302,7 +302,7 @@ RegistrationBasedCorticalThicknessFilter< TInputImage, TScalarType >
     
     warpImageFilter->SetInput(whiteMatterPvMap);
     warpImageFilter->SetOutputParametersFromImage(whitePlusGreyPvMap);
-    warpImageFilter->SetDeformationField(integrationFilter->GetOutput());
+    warpImageFilter->SetDisplacementField(integrationFilter->GetOutput());
     warpImageFilter->Modified();
 
     // We use the itkDemonsRegistrationFilter to compute 1 update.
@@ -312,12 +312,12 @@ RegistrationBasedCorticalThicknessFilter< TInputImage, TScalarType >
     updateFilter->SetNumberOfIterations(1);
     updateFilter->SetFixedImage(whitePlusGreyPvMap);
     updateFilter->SetMovingImage(warpImageFilter->GetOutput());
-    updateFilter->SetInitialDeformationField(vectorField);
+    updateFilter->SetInitialDisplacementField(vectorField);
     updateFilter->SetIntensityDifferenceThreshold(0.001);
     updateFilter->SetUseImageSpacing(true);
     updateFilter->SetSmoothUpdateField(true);
     updateFilter->SetUpdateFieldStandardDeviations(m_UpdateSigma);
-    updateFilter->SetSmoothDeformationField(false);
+    updateFilter->SetSmoothDisplacementField(false);
     updateFilter->SetUseMovingImageGradient(true);
     updateFilter->Modified();
     updateFilter->Update();
@@ -435,7 +435,7 @@ RegistrationBasedCorticalThicknessFilter< TInputImage, TScalarType >
   
   warpImageFilter->SetInput(whiteMatterPvMap);
   warpImageFilter->SetOutputParametersFromImage(whitePlusGreyPvMap);
-  warpImageFilter->SetDeformationField(integrationFilter->GetOutput());
+  warpImageFilter->SetDisplacementField(integrationFilter->GetOutput());
   warpImageFilter->Modified();
   warpImageFilter->Update();
   
