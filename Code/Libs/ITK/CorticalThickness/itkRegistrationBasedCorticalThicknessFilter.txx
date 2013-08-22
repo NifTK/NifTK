@@ -110,7 +110,7 @@ RegistrationBasedCorticalThicknessFilter< TInputImage, TScalarType >
   typename MaskImageType::Pointer greyMaskImage = static_cast< MaskImageType * >(this->ProcessObject::GetInput(4));
   
   // Make sure we have memory to write the output to.
-  this->SetNumberOfOutputs(2);
+  this->SetNumberOfIndexedInputs(2);
   this->AllocateOutputs();
 
   // Output is final DiReCT map, an image of thickness values.

@@ -222,7 +222,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCTEAcosta2009Subsampling
   niftkCTEAssignAtlasValues
   #niftkCTEBourgeat2008
-  #niftkCTEDas2009
+  niftkCTEDas2009
   niftkCTEExtractGMWMBoundaryFromLabelImage
   niftkCTEHighRes
   niftkCTEHuttonLayering

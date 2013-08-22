@@ -376,7 +376,7 @@ RegistrationBasedCTEFilter< TInputImage, TScalarType >
   typename ImageType::Pointer thicknessPriorMap = static_cast< ImageType * >(this->ProcessObject::GetInput(2));
 
   // All this does is extend the array of pointers.
-  this->SetNumberOfOutputs(2);
+  this->SetNumberOfIndexedInputs(2);
   this->AllocateOutputs();
   
   // Output is final DiReCT map, an image of thickness values.
