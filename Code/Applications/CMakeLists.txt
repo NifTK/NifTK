@@ -218,7 +218,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkConvertTransformToRIREFormat
   niftkCreateAffineTransform
   niftkCreateMaskFromLabels
-  #niftkCreateTransformation
+  niftkCreateTransformation
   niftkCTEAcosta2009Subsampling
   niftkCTEAssignAtlasValues
   niftkCTEBourgeat2008
