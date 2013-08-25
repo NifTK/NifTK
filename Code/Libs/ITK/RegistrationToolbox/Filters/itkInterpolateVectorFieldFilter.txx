@@ -115,7 +115,7 @@ void
 InterpolateVectorFieldFilter<TScalarType, NDimensions>
 ::ThreadedGenerateData(
   const OutputImageRegionType& outputRegionForThread,
-  int threadId)
+  ThreadIdType threadId)
 {
   niftkitkDebugMacro(<<"ThreadedGenerateData():Executing thread:" << threadId);
 

@@ -74,7 +74,7 @@ protected:
   void PrintSelf(std::ostream& os, Indent indent) const;
 
   /** The "In The Money" method. */
-  virtual void ThreadedGenerateData( const RegionType &outputRegionForThread, int);
+  virtual void ThreadedGenerateData( const RegionType &outputRegionForThread, ThreadIdType threadId);
 
   /**
    * Override this to supply the algorithm to compute the registration force per voxel. 

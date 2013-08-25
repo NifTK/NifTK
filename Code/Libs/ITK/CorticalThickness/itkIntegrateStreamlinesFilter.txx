@@ -179,7 +179,7 @@ IntegrateStreamlinesFilter<TImageType, TScalarType, NDimensions>
 template <class TImageType, typename TScalarType, unsigned int NDimensions >
 void
 IntegrateStreamlinesFilter<TImageType, TScalarType, NDimensions>
-::ThreadedGenerateData(const InputScalarImageRegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const InputScalarImageRegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
  
   // Iterate through each pixel in input region.

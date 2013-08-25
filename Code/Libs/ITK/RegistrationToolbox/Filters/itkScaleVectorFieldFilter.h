@@ -93,7 +93,7 @@ protected:
   virtual void BeforeThreadedGenerateData();
   
   // The main method to implement in derived classes, note, its threaded.
-  virtual void ThreadedGenerateData( const InputImageRegionType &outputRegionForThread, int);
+  virtual void ThreadedGenerateData( const InputImageRegionType &outputRegionForThread, ThreadIdType threadId);
   
   /** Scale by components. Defaults to true. */
   bool m_ScaleByComponents;

@@ -149,7 +149,7 @@ protected:
    * \sa ImageToImageFilter::ThreadedGenerateData(),
    *     ImageToImageFilter::GenerateData() */
   void ThreadedGenerateData(const InputImageRegionType& inputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   /** Split the output's RequestedRegion into "num" pieces, returning
    * region "i" as "splitRegion". This method is called "num" times. The

@@ -133,7 +133,7 @@ protected:
    * \sa ImageToImageFilter::ThreadedGenerateData(),
    *     ImageToImageFilter::GenerateData()  */
   void ThreadedGenerateData(const OutputSubtractedImageRegionType &outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   /// The slice number of the 3D volume to be subtracted from the 2D image
   unsigned int m_SliceNumber;

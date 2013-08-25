@@ -223,7 +223,7 @@ FourthOrderRungeKuttaVelocityFieldIntegrationFilter<TScalarType, NDimensions>
 template <class TScalarType, unsigned int NDimensions>
 void
 FourthOrderRungeKuttaVelocityFieldIntegrationFilter<TScalarType, NDimensions>
-::ThreadedGenerateData(const DisplacementImageRegionType& regionForThread, int threadNumber) 
+::ThreadedGenerateData(const DisplacementImageRegionType& regionForThread, ThreadIdType threadNumber)
 {
   niftkitkDebugMacro(<<"ThreadedGenerateData():Started thread:" << threadNumber);
 

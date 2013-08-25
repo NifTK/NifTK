@@ -44,7 +44,7 @@ LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
 template< class TFixedImage, class TMovingImage, class TScalar >
 void
 LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
-::ThreadedGenerateData(const RegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
   niftkitkDebugMacro(<<"ThreadedGenerateData():Computing histogram force, using Bill Crum's method, thread:" << threadNumber);
 

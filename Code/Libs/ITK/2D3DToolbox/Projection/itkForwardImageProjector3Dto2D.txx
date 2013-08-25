@@ -274,7 +274,7 @@ template< class IntensityType>
 void
 ForwardImageProjector3Dto2D<IntensityType>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
   double integral = 0;
   OutputImageIndexType outIndex;

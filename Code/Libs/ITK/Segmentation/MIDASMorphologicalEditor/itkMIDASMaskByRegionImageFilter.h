@@ -88,7 +88,7 @@ namespace itk
       void PrintSelf(std::ostream& os, Indent indent) const;
 
       virtual void BeforeThreadedGenerateData();
-      virtual void ThreadedGenerateData(const RegionType& outputRegionForThread, int threadNumber);
+      virtual void ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber);
 
     private:
       MIDASMaskByRegionImageFilter(const Self&); //purposely not implemented

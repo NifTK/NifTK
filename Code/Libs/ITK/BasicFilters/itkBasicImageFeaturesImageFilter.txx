@@ -331,7 +331,7 @@ template <typename TInputImage, typename TOutputImage>
 void 
 BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
   unsigned int *adjust = 0;
   unsigned int *reorder = 0;

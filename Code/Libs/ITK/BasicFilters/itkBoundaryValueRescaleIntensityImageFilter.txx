@@ -130,7 +130,7 @@ BoundaryValueRescaleIntensityImageFilter<TImageType>
 template <class TImageType>
 void
 BoundaryValueRescaleIntensityImageFilter<TImageType>
-::ThreadedGenerateData(const ImageRegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const ImageRegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
   
   ImageType *thresholdedInput = m_ThresholdFilter->GetOutput();

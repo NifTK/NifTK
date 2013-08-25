@@ -71,7 +71,7 @@ UCLLabelVotingImageFilter< TInputImage, TOutputImage >
 template< typename TInputImage, typename TOutputImage >
 void
 UCLLabelVotingImageFilter< TInputImage, TOutputImage >
-::ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread, int itkNotUsed(threadId))
+::ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread, ThreadIdType threadId)
 {
   typedef ImageRegionConstIterator< TInputImage > IteratorType;
   typedef ImageRegionIterator< TOutputImage>      OutIteratorType;

@@ -156,7 +156,7 @@ protected:
   virtual void BeforeThreadedGenerateData();
 
   /** Just Do it. */
-  void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, int threadId );
+  void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId );
 
   /** (mainly for debugging purposes). */
   virtual void AfterThreadedGenerateData();

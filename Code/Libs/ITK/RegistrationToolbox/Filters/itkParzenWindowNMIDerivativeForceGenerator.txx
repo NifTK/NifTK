@@ -72,7 +72,7 @@ ParzenWindowNMIDerivativeForceGenerator<TFixedImage, TMovingImage, TScalarType, 
 template< class TFixedImage, class TMovingImage, class TScalarType, class TDeformationScalar > 
 void
 ParzenWindowNMIDerivativeForceGenerator< TFixedImage, TMovingImage, TScalarType, TDeformationScalar >
-::ThreadedGenerateData(const RegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
   niftkitkDebugMacro(<<"ThreadedGenerateData():Computing histogram force, using Marc Modat's method, thread:" << threadNumber);
 

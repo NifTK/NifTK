@@ -96,7 +96,7 @@ AddUpdateToTimeVaryingVelocityFieldFilter<TScalarType, NDimensions>
 template <class TScalarType, unsigned int NDimensions>
 void
 AddUpdateToTimeVaryingVelocityFieldFilter<TScalarType, NDimensions>
-::ThreadedGenerateData(const TimeVaryingVelocityRegionType& regionForThread, int threadNumber) 
+::ThreadedGenerateData(const TimeVaryingVelocityRegionType& regionForThread, ThreadIdType threadNumber)
 {
   
   typename TimeVaryingVelocityImageType::Pointer inputImage = static_cast< TimeVaryingVelocityImageType * >(this->ProcessObject::GetInput(0));
