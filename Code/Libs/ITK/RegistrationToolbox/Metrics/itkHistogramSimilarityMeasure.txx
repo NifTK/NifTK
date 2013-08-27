@@ -29,10 +29,7 @@ HistogramSimilarityMeasure<TFixedImage,TMovingImage>
   m_Histogram = HistogramType::New();
 
   int size = 64;
-  HistogramSizeType histSize;
-  histSize[0] = size;
-  histSize[1] = size;
-  this->SetHistogramSize(histSize);
+  this->SetHistogramSize(size, size);
   
   m_UseParzenFilling = false;
   
@@ -116,7 +113,7 @@ void
 HistogramSimilarityMeasure<TFixedImage,TMovingImage>
 ::AggregateCostFunctionPair(FixedImagePixelType fixedValue, MovingImagePixelType movingValue)
 {
-  HistogramMeasurementVectorType sample;
+  HistogramMeasurementVectorType sample(2);
   sample[0] = fixedValue;
   sample[1] = movingValue;
 
