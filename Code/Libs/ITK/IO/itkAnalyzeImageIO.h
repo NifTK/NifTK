@@ -236,18 +236,21 @@ private:
 /**  All of the information read in from the header file */
   struct dsr             m_Hdr;
   ImageIOBase::ByteOrder m_MachineByteOrder;
+
+  static const char *const ANALYZE_ScanNumber;
+  static const char *const ANALYZE_O_MAX;
+  static const char *const ANALYZE_O_MIN;
+  static const char *const ANALYZE_S_MAX;
+  static const char *const ANALYZE_S_MIN;
+  static const char *const ANALYZE_CAL_MAX;
+  static const char *const ANALYZE_CAL_MIN;
+  static const char *const ANALYZE_GLMAX;
+  static const char *const ANALYZE_GLMIN;
+  static const char *const ANALYZE_AUX_FILE_NAME;
+  static const char *const ANALYZE_CALIBRATIONUNITS;
+
 };
-extern const char *const ANALYZE_ScanNumber;
-extern const char *const ANALYZE_O_MAX;
-extern const char *const ANALYZE_O_MIN;
-extern const char *const ANALYZE_S_MAX;
-extern const char *const ANALYZE_S_MIN;
-extern const char *const ANALYZE_CAL_MAX;
-extern const char *const ANALYZE_CAL_MIN;
-extern const char *const ANALYZE_GLMAX;
-extern const char *const ANALYZE_GLMIN;
-extern const char *const ANALYZE_AUX_FILE_NAME;
-extern const char *const ANALYZE_CALIBRATIONUNITS;
+
 } // end namespace itk
 
 #endif //#if !defined( ITK_LEGACY_REMOVE )

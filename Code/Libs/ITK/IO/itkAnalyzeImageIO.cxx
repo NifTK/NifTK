@@ -27,17 +27,19 @@
 
 namespace itk
 {
-const char *const ANALYZE_ScanNumber = "ANALYZE_ScanNumber";
-const char *const ANALYZE_O_MAX = "ANALYZE_O_MAX";
-const char *const ANALYZE_O_MIN = "ANALYZE_O_MIN";
-const char *const ANALYZE_S_MAX = "ANALYZE_S_MAX";
-const char *const ANALYZE_S_MIN = "ANALYZE_S_MIN";
-const char *const ANALYZE_CAL_MAX = "ANALYZE_CAL_MAX";
-const char *const ANALYZE_CAL_MIN = "ANALYZE_CAL_MIN";
-const char *const ANALYZE_GLMAX = "ANALYZE_GLMAX";
-const char *const ANALYZE_GLMIN = "ANALYZE_GLMIN";
-const char *const ANALYZE_AUX_FILE_NAME = "ANALYZE_AUX_FILE_NAME";
-const char *const ANALYZE_CALIBRATIONUNITS = "ANALYZE_CALIBRATIONUNITS";
+
+const char *const AnalyzeImageIO::ANALYZE_ScanNumber = "ANALYZE_ScanNumber";
+const char *const AnalyzeImageIO::ANALYZE_O_MAX = "ANALYZE_O_MAX";
+const char *const AnalyzeImageIO::ANALYZE_O_MIN = "ANALYZE_O_MIN";
+const char *const AnalyzeImageIO::ANALYZE_S_MAX = "ANALYZE_S_MAX";
+const char *const AnalyzeImageIO::ANALYZE_S_MIN = "ANALYZE_S_MIN";
+const char *const AnalyzeImageIO::ANALYZE_CAL_MAX = "ANALYZE_CAL_MAX";
+const char *const AnalyzeImageIO::ANALYZE_CAL_MIN = "ANALYZE_CAL_MIN";
+const char *const AnalyzeImageIO::ANALYZE_GLMAX = "ANALYZE_GLMAX";
+const char *const AnalyzeImageIO::ANALYZE_GLMIN = "ANALYZE_GLMIN";
+const char *const AnalyzeImageIO::ANALYZE_AUX_FILE_NAME = "ANALYZE_AUX_FILE_NAME";
+const char *const AnalyzeImageIO::ANALYZE_CALIBRATIONUNITS = "ANALYZE_CALIBRATIONUNITS";
+
 //An array of the Analyze v7.5 known DataTypes
 const char DataTypes[12][10] =
   {

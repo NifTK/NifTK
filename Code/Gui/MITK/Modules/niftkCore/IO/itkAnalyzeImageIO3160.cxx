@@ -34,6 +34,18 @@
 namespace itk
 {
 
+const char *const AnalyzeImageIO3160::ANALYZE_ScanNumber = "ANALYZE_ScanNumber";
+const char *const AnalyzeImageIO3160::ANALYZE_O_MAX = "ANALYZE_O_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_O_MIN = "ANALYZE_O_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_S_MAX = "ANALYZE_S_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_S_MIN = "ANALYZE_S_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_CAL_MAX = "ANALYZE_CAL_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_CAL_MIN = "ANALYZE_CAL_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_GLMAX = "ANALYZE_GLMAX";
+const char *const AnalyzeImageIO3160::ANALYZE_GLMIN = "ANALYZE_GLMIN";
+const char *const AnalyzeImageIO3160::ANALYZE_AUX_FILE_NAME = "ANALYZE_AUX_FILE_NAME";
+const char *const AnalyzeImageIO3160::ANALYZE_CALIBRATIONUNITS = "ANALYZE_CALIBRATIONUNITS";
+
 static std::string
 GetExtension( const std::string& filename )
 {
