@@ -32,6 +32,12 @@ if(BUILD_IGI)
 endif(BUILD_IGI)
 set(MITK_DEPENDS ${proj})
 
+# explicitly try to tame windows headers.
+if(WIN32)
+  set(MITK_ADDITIONAL_C_FLAGS ${MITK_ADDITIONAL_C_FLAGS} "-DNOMINMAX")
+  set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-DNOMINMAX")
+endif(WIN32)
+
 if(NOT DEFINED MITK_DIR)
 
     ######################################################################
