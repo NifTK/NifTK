@@ -25,9 +25,14 @@ template <class TFixedImage, class TMovingImage>
 HistogramSimilarityMeasure<TFixedImage,TMovingImage>
 ::HistogramSimilarityMeasure()
 {
-  int size = 64;
+
   m_Histogram = HistogramType::New();
-  this->SetHistogramSize(size,size);
+
+  int size = 64;
+  HistogramSizeType histSize;
+  histSize[0] = size;
+  histSize[1] = size;
+  this->SetHistogramSize(histSize);
   
   m_UseParzenFilling = false;
   

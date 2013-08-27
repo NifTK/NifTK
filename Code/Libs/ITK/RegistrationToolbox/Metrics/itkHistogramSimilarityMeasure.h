@@ -18,7 +18,6 @@
 #include "itkUCLHistogram.h"
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"
 
-
 namespace itk
 {
 /** 
