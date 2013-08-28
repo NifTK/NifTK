@@ -64,9 +64,9 @@ protected:
    */
   MeasureType FinalizeCostFunction()
     {
-      MeasureType piu = NumericTraits<MeasureType>::Zero;     
+      MeasureType piu = NumericTraits<MeasureType>::Zero;
       HistogramFrequencyType movingFrequency;
-      HistogramIndexType index;
+      HistogramIndexType index(2);
        
       HistogramSizeValueType sf = this->m_Histogram->GetSize(0);
       HistogramSizeValueType sm = this->m_Histogram->GetSize(1);
