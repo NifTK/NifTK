@@ -94,15 +94,12 @@ int mitkTagTrackingNormalsTest(int argc, char* argv[])
   mitk::PointSet::PointsIterator pIt;
   mitk::PointSet::PointIdentifier pointID;
   mitk::PointSet::PointType point;
-  mitk::PointSet::PointType pointArray[3];
 
-  int pointCounter = 0;
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     pointID = pIt->Index();
     point = pIt->Value();
     std::cerr << "PointID=" << pointID << ", point=" << point << std::endl;
-    pointArray[pointCounter++] = point;
   }
 
   // Create some input data.
