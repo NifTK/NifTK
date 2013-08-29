@@ -72,7 +72,7 @@ protected:
       HistogramSizeValueType sm = this->m_Histogram->GetSize(1);
        
       HistogramFrequencyType totalFrequency = this->m_Histogram->GetTotalFrequency();
-           
+
       for (unsigned int f = 0; f < sf; f++)
         {
           // Reset to zero.
@@ -98,9 +98,9 @@ protected:
            
           if (totalMovingFrequency > 0)
             {
-              mean = sum/totalMovingFrequency;
+              mean = sum/(double)totalMovingFrequency;
               stdDev = sqrt( (sumSquared - ((sum*sum)/(double)totalMovingFrequency))/((double)totalMovingFrequency - 1));
-              piu += ((stdDev/mean) * (totalMovingFrequency/totalFrequency));
+              piu += ((stdDev/mean) * ((double)totalMovingFrequency/(double)totalFrequency));
            
             }
         }
