@@ -361,13 +361,6 @@ UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
           accumulatedDisplacementVector[d] = 0;
         }
 
-      GridRegionType region;
-      region.SetSize(size);      
-      region.SetIndex(gridIndex);
-
-      GridConstIteratorType gridIterator(this->m_Grid, region);
-      gridIterator.GoToBegin();
-      
       for (l = 0; l < 4; l++)
         {
           Bl = this->m_Lookup[gridRoundedBasis[1]][l];
@@ -376,21 +369,20 @@ UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
             {
               Bm = this->m_Lookup[gridRoundedBasis[0]][m];
               
-              gridMovingIndex = gridIterator.GetIndex();
-              
+              gridMovingIndex = gridIndex;
+              gridMovingIndex[0] += m;
+              gridMovingIndex[1] += l;
+
               if (gridMovingIndex[0] >= (int)0
                && gridMovingIndex[1] >= (int)0
                && gridMovingIndex[0] < (int) gridSize[0]
                && gridMovingIndex[1] < (int) gridSize[1])
                 {
-                  controlPointDisplacementVector = gridIterator.Get();
+                  controlPointDisplacementVector = this->m_Grid->GetPixel(gridMovingIndex);
                   
                   accumulatedDisplacementVector[0] += (Bl * Bm * controlPointDisplacementVector[0]);
                   accumulatedDisplacementVector[1] += (Bl * Bm * controlPointDisplacementVector[1]);                  
                 } // end if
-              
-              ++gridIterator;
-
             } // end for m
         } // end for l
         
@@ -715,13 +707,6 @@ UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
           accumulatedDisplacementVector[d] = 0;
         }
 
-      GridRegionType region;
-      region.SetSize(size);      
-      region.SetIndex(gridIndex);
-      
-      GridConstIteratorType gridIterator(this->m_Grid, region);
-      gridIterator.GoToBegin();
-
       for (l = 0; l < 4; l++)
         {
           Bl = this->m_Lookup[gridRoundedBasis[2]][l];
@@ -735,20 +720,21 @@ UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
 
                   Bn = this->m_Lookup[gridRoundedBasis[0]][n];
                   
-                  gridMovingIndex = gridIterator.GetIndex();
+                  gridMovingIndex = gridIndex;
+                  gridMovingIndex[0] += n;
+                  gridMovingIndex[1] += m;
+                  gridMovingIndex[2] += l;
                   
                   if (gridMovingIndex[0] >= (int)0 && gridMovingIndex[0] < (int)gridSize[0]
                    && gridMovingIndex[1] >= (int)0 && gridMovingIndex[1] < (int)gridSize[1]
                    && gridMovingIndex[2] >= (int)0 && gridMovingIndex[2] < (int)gridSize[2])
                     {
-                      controlPointDisplacementVector = gridIterator.Get();
+                      controlPointDisplacementVector = this->m_Grid->GetPixel(gridMovingIndex);
 
                       accumulatedDisplacementVector[0] += (Bl * Bm * Bn * controlPointDisplacementVector[0]);
                       accumulatedDisplacementVector[1] += (Bl * Bm * Bn * controlPointDisplacementVector[1]);
                       accumulatedDisplacementVector[2] += (Bl * Bm * Bn * controlPointDisplacementVector[2]);                          
                     } // end if
-                  
-                  ++gridIterator;
                   
                 } // end for n
             } // end for m
