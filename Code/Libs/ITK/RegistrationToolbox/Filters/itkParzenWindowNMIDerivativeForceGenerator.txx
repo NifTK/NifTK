@@ -92,8 +92,7 @@ ParzenWindowNMIDerivativeForceGenerator< TFixedImage, TMovingImage, TScalarType,
   OutputPixelType outputValue;
   OutputPixelType zeroValue;
   unsigned int dimension;
-  typename HistogramType::MeasurementVectorType histogramSample;
-  typename HistogramType::IndexType histogramIndex; 
+  typename HistogramType::IndexType histogramIndex(2);
   int f;
   int m;
 
@@ -141,7 +140,7 @@ ParzenWindowNMIDerivativeForceGenerator< TFixedImage, TMovingImage, TScalarType,
   unsigned int movingSize = histogram->GetSize()[1];
   
   niftkitkDebugMacro(<<"ThreadedGenerateData():fixedSize=" << fixedSize << ", " << movingSize);
-  
+
   for (unsigned int i = 0; i < fixedSize; i++)
   {
     HistogramFrequencyType freq = histogram->GetFrequency(i, 0);
@@ -174,7 +173,7 @@ ParzenWindowNMIDerivativeForceGenerator< TFixedImage, TMovingImage, TScalarType,
         fastTransformedImageHistogram.push_back(0);
       }
   }
-  
+
   // Get some iterators
   typedef ImageRegionConstIterator<InputImageType> InputIteratorType;
   typedef ImageRegionIterator<OutputImageType> OutputIteratorType;
@@ -198,7 +197,7 @@ ParzenWindowNMIDerivativeForceGenerator< TFixedImage, TMovingImage, TScalarType,
   zeroValue.Fill(0);
   
   unsigned long int counter=0;
-  
+
   while (!fixedImageIterator.IsAtEnd() 
       && !transformedMovingImageIterator.IsAtEnd() 
       && !gradientImageIterator.IsAtEnd()

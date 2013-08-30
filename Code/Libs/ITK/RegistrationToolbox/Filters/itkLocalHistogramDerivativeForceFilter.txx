@@ -127,8 +127,8 @@ LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
     }
     
     const typename TFixedImage::PixelType fixedImageVoxel = fixedImageIterator.Get();
-    typename HistogramType::MeasurementVectorType fixedImageSample;
-    typename HistogramType::IndexType             fixedImageHistogramIndex; 
+    typename HistogramType::MeasurementVectorType fixedImageSample(2);
+    typename HistogramType::IndexType             fixedImageHistogramIndex(2);
     typename HistogramType::FrequencyType         fixedImageHistogramFrequency;
     
     fixedImageSample[0] = fixedImageVoxel;
@@ -171,10 +171,10 @@ LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
 */
 
       typename TFixedImage::PixelType               transformedMovingImageVoxelMinus = transformedImageIterator.GetPixel(minusOffset);
-      typename HistogramType::MeasurementVectorType transformedMovingImageSampleMinus;
-      typename HistogramType::MeasurementVectorType transformedMovingImageJointSampleMinus;
+      typename HistogramType::MeasurementVectorType transformedMovingImageSampleMinus(2);
+      typename HistogramType::MeasurementVectorType transformedMovingImageJointSampleMinus(2);
       
-      typename HistogramType::IndexType             transformedMovingImageMinusJointHistogramIndex; 
+      typename HistogramType::IndexType             transformedMovingImageMinusJointHistogramIndex(2);
       
       transformedMovingImageJointSampleMinus[0] = fixedImageVoxel; 
       transformedMovingImageJointSampleMinus[1] = transformedMovingImageVoxelMinus;
@@ -201,9 +201,9 @@ LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
 */
       
       typename TFixedImage::PixelType transformedMovingImageVoxelPlus = transformedImageIterator.GetPixel(plusOffset); 
-      typename HistogramType::MeasurementVectorType transformedMovingImageSamplePlus;
-      typename HistogramType::MeasurementVectorType transformedMovingImageJointSamplePlus;
-      typename HistogramType::IndexType transformedMovingImagePlusJointHistogramIndex;
+      typename HistogramType::MeasurementVectorType transformedMovingImageSamplePlus(2);
+      typename HistogramType::MeasurementVectorType transformedMovingImageJointSamplePlus(2);
+      typename HistogramType::IndexType transformedMovingImagePlusJointHistogramIndex(2);
       
       transformedMovingImageJointSamplePlus[0] = fixedImageVoxel; 
       transformedMovingImageJointSamplePlus[1] = transformedMovingImageVoxelPlus;
@@ -233,7 +233,7 @@ LocalHistogramDerivativeForceFilter< TFixedImage, TMovingImage, TScalar >
                             << transformedMovingImagePlusHistogramIndexJointFrequency << std::endl;
 */
 
-      // Calculate the registration force.       
+      // Calculate the registration force.
       if (transformedMovingImageMinusHistogramIndexFrequency > 0 && 
           transformedMovingImageMinusHistogramIndexJointFrequency > 0 &&
           transformedMovingImagePlusHistogramIndexFrequency > 0 &&
