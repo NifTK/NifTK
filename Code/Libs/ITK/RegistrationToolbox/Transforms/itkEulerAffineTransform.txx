@@ -396,6 +396,30 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     }
 }
 
+// Return jacobian with respect to position.
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
+void
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeJacobianWithRespectToPosition(const InputPointType  &p,
+                                       JacobianType &jac) const
+{
+  jac.SetSize( OutputSpaceDimension, ParametersDimension );
+  jac = GetJacobian( p );
+}
+
+// Return jacobian with respect to position.
+template <class TScalarType, 
+          unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
+void
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeInverseJacobianWithRespectToPosition(const InputPointType  &,
+                                              JacobianType & jac) const
+{
+  itkExceptionMacro( << "EulerAffineTransform, ComputeInverseJacobianWithRespectToPosition not implemented");
+}
+
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
 void
@@ -469,6 +493,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   GetInv(inverse);
   out = inverse->TransformPoint(point);       
 }
+
 template<class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>

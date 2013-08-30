@@ -120,6 +120,19 @@ public:
   virtual void ComputeJacobianWithRespectToParameters(const InputPointType & point,
                                                       JacobianType & jacobian ) const;
   
+
+
+  /** Get the jacobian with respect to position. This simply returns
+   * the current Matrix. jac will be resized as needed, but it's
+   * more efficient if it's already properly sized. */
+  virtual void ComputeJacobianWithRespectToPosition(const InputPointType &x, JacobianType &jac) const;
+
+  /** Get the jacobian with respect to position. This simply returns
+   * the inverse of the current Matrix. jac will be resized as needed, but it's
+   * more efficient if it's already properly sized. */
+  virtual void ComputeInverseJacobianWithRespectToPosition(const InputPointType &x, JacobianType &jac) const;
+
+
   /** To get the inverse. Returns false, if transform is non-invertable. */
   virtual bool GetInv(UCLBaseTransform< TScalarType, NInputDimensions, NOutputDimensions >* inverse) const;
   
