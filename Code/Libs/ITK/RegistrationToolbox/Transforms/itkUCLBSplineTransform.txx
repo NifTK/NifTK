@@ -348,15 +348,6 @@ UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar>
           gridIndex[d]             = gridClosestIndex[d] - 1;
           gridRoundedBasis[d]      = (int)niftk::Round(gridBasis[d]*s_LookupTableSize);
           
-          if (gridIndex[d] < 0)
-          {
-            gridIndex[d] = 0;
-          }
-          else if (gridIndex[d] >= size[d])
-          {
-            gridIndex[d] = size[d] - 1;
-          }
-
           // Dont forget to reset the displacement vector to zero:
           accumulatedDisplacementVector[d] = 0;
         }
