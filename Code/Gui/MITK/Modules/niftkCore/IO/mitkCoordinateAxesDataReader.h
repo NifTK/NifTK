@@ -18,6 +18,7 @@
 #include "niftkCoreExports.h"
 #include <mitkCommon.h>
 #include <mitkFileReader.h>
+#include <mitkBaseDataSource.h>
 #include <mitkCoordinateAxesData.h>
 
 namespace mitk
@@ -28,14 +29,13 @@ namespace mitk
  * \brief The reader for mitk::CoordinateAxesData
  */
 
-class NIFTKCORE_EXPORT CoordinateAxesDataReader : public FileReader, public BaseProcess
+class NIFTKCORE_EXPORT CoordinateAxesDataReader : public FileReader, public BaseDataSource
 {
 public:
 
-  mitkClassMacro( CoordinateAxesDataReader, BaseProcess );
-  itkNewMacro(Self);
-
   typedef mitk::CoordinateAxesData OutputType;
+  mitkClassMacro( CoordinateAxesDataReader, BaseDataSource );
+  itkNewMacro(Self);
 
   /**
    * \see mitk::FileReader::GetFileName()
@@ -78,6 +78,13 @@ public:
   static bool CanReadFile(const std::string filename,
                           const std::string filePrefix,
                           const std::string filePattern);
+
+  virtual DataObjectPointer MakeOutput ( DataObjectPointerArraySizeType idx );
+
+  /**
+   * @sa itk::ProcessObject::MakeOutput(const DataObjectIdentifierType&)
+   */
+  virtual DataObjectPointer MakeOutput(const DataObjectIdentifierType& name);
 
 protected:
 

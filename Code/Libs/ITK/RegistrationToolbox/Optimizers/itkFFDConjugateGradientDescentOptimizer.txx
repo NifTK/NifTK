@@ -47,10 +47,10 @@ FFDConjugateGradientDescentOptimizer< TFixedImage, TMovingImage, TScalarType, TD
   niftkitkDebugMacro(<< "Initialize():Started");
   
   this->m_NumberOfGridVoxels = 1;
-  BSplineTransformPointer transform = dynamic_cast<BSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
+  UCLBSplineTransformPointer transform = dynamic_cast<UCLBSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
   if (transform == 0)
     {
-      itkExceptionMacro(<< "Can't dynamic cast to BSplineTransform");
+      itkExceptionMacro(<< "Can't dynamic cast to UCLBSplineTransform");
     }
   GridImagePointer gridPointer = transform->GetGrid();
   OutputImageSizeType size = gridPointer->GetLargestPossibleRegion().GetSize();

@@ -25,9 +25,11 @@ template <class TFixedImage, class TMovingImage>
 HistogramSimilarityMeasure<TFixedImage,TMovingImage>
 ::HistogramSimilarityMeasure()
 {
-  int size = 64;
+
   m_Histogram = HistogramType::New();
-  this->SetHistogramSize(size,size);
+
+  int size = 64;
+  this->SetHistogramSize(size, size);
   
   m_UseParzenFilling = false;
   
@@ -111,7 +113,7 @@ void
 HistogramSimilarityMeasure<TFixedImage,TMovingImage>
 ::AggregateCostFunctionPair(FixedImagePixelType fixedValue, MovingImagePixelType movingValue)
 {
-  HistogramMeasurementVectorType sample;
+  HistogramMeasurementVectorType sample(2);
   sample[0] = fixedValue;
   sample[1] = movingValue;
 
@@ -127,9 +129,9 @@ HistogramSimilarityMeasure<TFixedImage,TMovingImage>
                     {
                       sample[0] = t;
                       sample[1] = r;
-                      double coeff =  GetParzenValue((double)t-fixedValue)
+                      HistogramFrequencyType coeff =  GetParzenValue((double)t-fixedValue)
                                      *GetParzenValue((double)r-movingValue);
-                      this->m_Histogram->IncreaseFrequency(sample, coeff);    
+                      this->m_Histogram->IncreaseFrequencyOfMeasurement(sample, coeff);    
                       
 //                      std::cout << "Matt:   coeff=" << coeff << std::endl;
                     }
@@ -139,7 +141,7 @@ HistogramSimilarityMeasure<TFixedImage,TMovingImage>
     }
   else
     {
-      this->m_Histogram->IncreaseFrequency(sample, 1);    
+      this->m_Histogram->IncreaseFrequencyOfMeasurement(sample, 1);    
     }
 }
 

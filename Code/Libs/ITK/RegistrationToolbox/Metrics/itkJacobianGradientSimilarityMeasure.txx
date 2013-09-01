@@ -83,7 +83,7 @@ JacobianGradientSimilarityMeasure<TFixedImage, TMovingImage>
 
   const unsigned int parametersDimension = parameters.GetSize();
   derivative = DerivativeType( parametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   ti.GoToBegin();
 
@@ -120,7 +120,8 @@ JacobianGradientSimilarityMeasure<TFixedImage, TMovingImage>
               if (movingValue >= this->GetMovingLowerBound() && movingValue <= this->GetMovingUpperBound())
                 {
                   this->m_NumberOfPixelsCounted++;
-                  const TransformJacobianType & jacobian = this->m_Transform->GetJacobian( inputPoint ); 
+                  TransformJacobianType jacobian;
+                  this->m_Transform->ComputeJacobianWithRespectToPosition( inputPoint, jacobian ); 
                   
                   // Get the gradient by NearestNeighboorInterpolation: 
                   // which is equivalent to round up the point components.

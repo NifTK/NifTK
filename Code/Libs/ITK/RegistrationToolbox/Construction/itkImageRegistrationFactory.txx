@@ -301,10 +301,10 @@ ImageRegistrationFactory<TInputImageType, Dimension, TScalarType>
         transform->Print(std::cout);
         break;
       }
-      else if (strcmp((*it)->GetNameOfClass(),"BSplineTransform") == 0)
+      else if (strcmp((*it)->GetNameOfClass(),"UCLBSplineTransform") == 0)
       {
         transform = static_cast<TransformType*>((*it).GetPointer());
-        niftkitkDebugMacro(<<"BSplineTransform found");
+        niftkitkDebugMacro(<<"UCLBSplineTransform found");
       }
       else if (strcmp((*it)->GetNameOfClass(),"FluidDeformableTransform") == 0)
       {

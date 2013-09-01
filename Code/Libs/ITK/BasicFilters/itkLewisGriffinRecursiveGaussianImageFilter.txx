@@ -297,7 +297,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
 template <typename TInputImage, typename TOutputImage>
 void
 LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId)
+::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId)
 {
   typedef typename TOutputImage::PixelType  OutputPixelType;
 

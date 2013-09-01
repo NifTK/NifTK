@@ -434,7 +434,7 @@ int main( int argc, char ** argv )
 
   unsigned int N = 0;
   
-  for ( itField1.Begin(), itField2.Begin(); !itField1.IsAtEnd(); ++itField1, ++itField2)
+  for ( itField1.GoToBegin(), itField2.GoToBegin(); !itField1.IsAtEnd(); ++itField1, ++itField2)
     {
       Findex = itField1.GetIndex();
       
@@ -489,7 +489,7 @@ int main( int argc, char ** argv )
     if (maskName != NULL)
       {
 	MaskIterator itM( mask, mask->GetLargestPossibleRegion() );
-	for ( it.Begin(), itM.Begin(); !it.IsAtEnd(); ++it, ++itM)
+    for ( it.GoToBegin(), itM.GoToBegin(); !it.IsAtEnd(); ++it, ++itM)
 	  {
 	    if (itM.Get() ==  mask_value)
 	      {
@@ -500,7 +500,7 @@ int main( int argc, char ** argv )
       }
     else
       {
-	for ( it.Begin(); !it.IsAtEnd(); ++it)
+    for ( it.GoToBegin(); !it.IsAtEnd(); ++it)
 	  {
 	    initialerror = it.Get();
 	    sumDiffSq = sumDiffSq + (initialerror - initialmeanError)*(initialerror - initialmeanError);
@@ -522,7 +522,7 @@ int main( int argc, char ** argv )
     if (maskName != NULL)
       {
 	MaskIterator itM( mask, mask->GetLargestPossibleRegion() );
-	for ( it.Begin(), itM.Begin(); !it.IsAtEnd(); ++it, ++itM)
+    for ( it.GoToBegin(), itM.GoToBegin(); !it.IsAtEnd(); ++it, ++itM)
 	  {
 	    if (itM.Get() ==  mask_value)
 	      {
@@ -533,7 +533,7 @@ int main( int argc, char ** argv )
       }
     else
       {
-	for ( it.Begin(); !it.IsAtEnd(); ++it)
+    for ( it.GoToBegin(); !it.IsAtEnd(); ++it)
 	  {
 	    error = it.Get();
 	    sumDiffSq = sumDiffSq + (error-meanError) * (error-meanError);

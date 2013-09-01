@@ -138,7 +138,10 @@ public:
   OutputPointType  TransformPoint(const InputPointType  &point ) const;
 
   /** Compute the Jacobian Matrix of the transformation at one point */
-  virtual const JacobianType & GetJacobian(const InputPointType  &point ) const;
+  virtual const JacobianType GetJacobian(const InputPointType  &point ) const;
+
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType & point,
+                                                      JacobianType & jacobian ) const;
 
 protected:
     PerspectiveProjectionTransform();

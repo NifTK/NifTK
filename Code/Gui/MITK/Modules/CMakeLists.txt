@@ -17,7 +17,7 @@ set(MODULE_DIRS
   niftkCoreGui
   niftkMIDAS
   niftkMIDASGui
-  XnatRest
+#  XnatRest
 )
 
 if(BUILD_IGI)

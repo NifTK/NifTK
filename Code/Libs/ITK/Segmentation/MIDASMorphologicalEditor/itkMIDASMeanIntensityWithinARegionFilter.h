@@ -100,7 +100,7 @@ namespace itk
     virtual void BeforeThreadedGenerateData();
     
     // The main method to implement in derived classes, note, its threaded.
-    virtual void ThreadedGenerateData(const InputMainImageRegionType &outputRegionForThread, int ThreadID);
+    virtual void ThreadedGenerateData(const InputMainImageRegionType &outputRegionForThread, ThreadIdType ThreadID);
 
     /** Do all the final calculations and other general stuff after the threads finish executing */
     virtual void AfterThreadedGenerateData();

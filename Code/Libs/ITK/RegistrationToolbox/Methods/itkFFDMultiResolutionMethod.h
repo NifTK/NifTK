@@ -16,7 +16,7 @@
 #define itkFFDMultiResolutionMethod_h
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 
 namespace itk
 {
@@ -53,9 +53,9 @@ public:
   typedef typename InputImageType::SpacingType                                 InputImageSpacingType;
 
   /**  Type of the Transform . */
-  typedef BSplineTransform<TInputImageType, TScalarType, 
-                           NDimensions, TDeformationScalar >                   BSplineTransformType;
-  typedef typename BSplineTransformType::Pointer                               BSplineTransformPointer;
+  typedef UCLBSplineTransform<TInputImageType, TScalarType, 
+                           NDimensions, TDeformationScalar >                   UCLBSplineTransformType;
+  typedef typename UCLBSplineTransformType::Pointer                               UCLBSplineTransformPointer;
 
   typedef LocalSimilarityMeasureGradientDescentOptimizer<TInputImageType, 
                                                          TInputImageType,
@@ -64,8 +64,8 @@ public:
   typedef OptimizerType*                                                       OptimizerPointer;
   
   /** Set/Get the Transfrom. */
-  itkSetObjectMacro( Transform, BSplineTransformType );
-  itkGetObjectMacro( Transform, BSplineTransformType );
+  itkSetObjectMacro( Transform, UCLBSplineTransformType );
+  itkGetObjectMacro( Transform, UCLBSplineTransformType );
 
   /**
    * The max step size = max voxel size * MaxStepSizeFactor
@@ -109,7 +109,7 @@ private:
   FFDMultiResolutionMethod(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  BSplineTransformPointer m_Transform;
+  UCLBSplineTransformPointer m_Transform;
   
   /** to calculate minimum step size. */
   TScalarType m_MinStepSizeFactor;

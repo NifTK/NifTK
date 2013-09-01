@@ -49,7 +49,7 @@ SumLogJacobianDeterminantConstraint<TFixedImage, TScalarType,NDimensions, TDefor
 {
   if( m_Transform.IsNull() )
     {
-      itkExceptionMacro(<<"You Must supply a BSplineTransform");
+      itkExceptionMacro(<<"You Must supply a UCLBSplineTransform");
     }
   
   niftkitkDebugMacro(<<"EvaluateConstraint():Started, delegating back to transform at address:" << this->m_Transform.GetPointer());

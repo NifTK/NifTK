@@ -163,4 +163,25 @@ void CoordinateAxesDataReader::GenerateOutputInformation()
   }
 }
 
+
+//-----------------------------------------------------------------------------
+BaseDataSource::DataObjectPointer CoordinateAxesDataReader::MakeOutput ( DataObjectPointerArraySizeType idx )
+{
+  return OutputType::New().GetPointer();
+}
+
+
+//-----------------------------------------------------------------------------
+BaseDataSource::DataObjectPointer CoordinateAxesDataReader::MakeOutput(const DataObjectIdentifierType& name)
+{
+  itkDebugMacro("MakeOutput(" << name << ")");
+  if( this->IsIndexedOutputName(name) )
+    {
+    return this->MakeOutput( this->MakeIndexFromOutputName(name) );
+    }
+  return static_cast<itk::DataObject*>(OutputType::New().GetPointer());
+
+}
+
+
 } // end namespace

@@ -66,9 +66,9 @@ namespace itk {
 template< class TInputImage, typename TScalarType >
 class ITK_EXPORT ScalarImageToNormalizedGradientVectorImageFilter :
   public ImageToImageFilter<TInputImage, 
-                            Image<  
-                              Vector< TScalarType, ::itk::GetImageDimension<TInputImage>::ImageDimension>, 
-                              ::itk::GetImageDimension<TInputImage>::ImageDimension> >
+                            Image< Vector< TScalarType, 
+                                           TInputImage::ImageDimension >, 
+                                   TInputImage::ImageDimension > >
 {
 public:
 
@@ -76,10 +76,9 @@ public:
   /** Standard "Self" typedef. */
   typedef ScalarImageToNormalizedGradientVectorImageFilter                              Self;
   typedef ImageToImageFilter<TInputImage, 
-                             Image<  
-                               Vector< VectorDataType, 
-                                 ::itk::GetImageDimension<TInputImage>::ImageDimension>, 
-                               ::itk::GetImageDimension<TInputImage>::ImageDimension> > Superclass;
+                             Image< Vector< VectorDataType, 
+                                             TInputImage::ImageDimension >, 
+                                    TInputImage::ImageDimension > > Superclass;
   typedef SmartPointer<Self>                                                            Pointer;
   typedef SmartPointer<const Self>                                                      ConstPointer;
   

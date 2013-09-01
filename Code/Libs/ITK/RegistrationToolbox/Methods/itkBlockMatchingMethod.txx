@@ -38,10 +38,10 @@ BlockMatchingMethod<TImageType, TScalarType>
   m_FixedPointSetContainer = PointsContainerType::New();
   m_MovingPointSetContainer = PointsContainerType::New();
   m_FixedImageListAdaptor = ImageTypeListAdaptorType::New();
-  m_FixedImageCovarianceCalculator = ImageTypeCovarianceCalculatorType::New();
+  m_FixedImageCovarianceSampleFilter = ImageTypeCovarianceSampleFilterType::New();
   m_GradientMagnitudeImageFilter = GradientMagnitudeFilterType::New();
   m_GradientMagnitudeListAdaptor = GradientImageTypeListAdaptorType::New();
-  m_GradientMagnitudeCovarianceCalculator = GradientImageTypeCovarianceCalculatorType::New();
+  m_GradientMagnitudeCovarianceSampleFilter = GradientImageTypeCovarianceSampleFilterType::New();
   m_MinMaxCalculator = MinimumMaximumImageCalculatorType::New();
   
   m_MaximumNumberOfIterationsRoundMainLoop = 10;
@@ -192,12 +192,12 @@ BlockMatchingMethod<TImageType, TScalarType >
 
   // We will either be calculating covariance based on image intensity.
   m_FixedImageListAdaptor->SetImage(m_FixedImageRegionFilter->GetOutput());
-  m_FixedImageCovarianceCalculator->SetInputSample(m_FixedImageListAdaptor);
+  m_FixedImageCovarianceSampleFilter->SetInput(m_FixedImageListAdaptor);
   
   // Or we will be calculating covariance based on gradient magnitude image intensity.
   m_GradientMagnitudeImageFilter->SetInput(m_FixedImageRegionFilter->GetOutput());
   m_GradientMagnitudeListAdaptor->SetImage(m_GradientMagnitudeImageFilter->GetOutput());
-  m_GradientMagnitudeCovarianceCalculator->SetInputSample(m_GradientMagnitudeListAdaptor);
+  m_GradientMagnitudeCovarianceSampleFilter->SetInput(m_GradientMagnitudeListAdaptor);
   
   this->GetMetric()->SetTransform( this->GetTransform() );
   this->GetMetric()->SetInterpolator( this->m_DummyInterpolator);
@@ -512,7 +512,12 @@ BlockMatchingMethod<TImageType, TScalarType>
   // Step 1, use a priority_queue (heap) to store index and variance.
   VarianceHeap heap;
   double variance;
-  
+  const typename ImageTypeCovarianceSampleFilterType::MatrixDecoratedType *decoratorFixedImageMatrix;
+   typename ImageTypeCovarianceSampleFilterType::MatrixType covarianceFixedImageMatrix;
+
+  const  typename GradientImageTypeCovarianceSampleFilterType::MatrixDecoratedType *decoratorGradientImageMatrix;
+   typename GradientImageTypeCovarianceSampleFilterType::MatrixType covarianceGradientImageMatrix;
+
   if (m_UseGradientMagnitudeVariance)
     {
       niftkitkDebugMacro(<<"GetPointCorrespondencies2D():Using fixed image gradient magnitude for variance");
@@ -540,13 +545,17 @@ BlockMatchingMethod<TImageType, TScalarType>
           if (m_UseGradientMagnitudeVariance)
             {
               m_GradientMagnitudeImageFilter->Update();
-              m_GradientMagnitudeCovarianceCalculator->Update();
-              variance = (*(m_GradientMagnitudeCovarianceCalculator->GetOutput()))(0,0);
+              m_GradientMagnitudeCovarianceSampleFilter->Update();
+              decoratorGradientImageMatrix = m_GradientMagnitudeCovarianceSampleFilter->GetCovarianceMatrixOutput();
+              covarianceGradientImageMatrix  = decoratorGradientImageMatrix->Get();
+              variance = covarianceGradientImageMatrix(0,0);
             }
           else
             {
-              m_FixedImageCovarianceCalculator->Update();
-              variance = (*(m_FixedImageCovarianceCalculator->GetOutput()))(0,0);
+              m_FixedImageCovarianceSampleFilter->Update();
+              decoratorFixedImageMatrix = m_FixedImageCovarianceSampleFilter->GetCovarianceMatrixOutput();
+              covarianceFixedImageMatrix  = decoratorFixedImageMatrix->Get();
+              variance = covarianceFixedImageMatrix(0,0);
             }
           if (variance > 0)
             {
@@ -747,6 +756,11 @@ BlockMatchingMethod<TImageType, TScalarType >
   // Step 1, use a priority_queue (heap) to store index and variance.
   VarianceHeap heap;
   double variance;
+  const typename ImageTypeCovarianceSampleFilterType::MatrixDecoratedType *decoratorFixedImageMatrix;
+   typename ImageTypeCovarianceSampleFilterType::MatrixType covarianceFixedImageMatrix;
+
+  const  typename GradientImageTypeCovarianceSampleFilterType::MatrixDecoratedType *decoratorGradientImageMatrix;
+   typename GradientImageTypeCovarianceSampleFilterType::MatrixType covarianceGradientImageMatrix;
 
   if (m_UseGradientMagnitudeVariance)
     {
@@ -778,13 +792,17 @@ BlockMatchingMethod<TImageType, TScalarType >
               if (m_UseGradientMagnitudeVariance)
                 {
                   m_GradientMagnitudeImageFilter->Update();
-                  m_GradientMagnitudeCovarianceCalculator->Update();
-                  variance = (*(m_GradientMagnitudeCovarianceCalculator->GetOutput()))(0,0);
+                  m_GradientMagnitudeCovarianceSampleFilter->Update();
+                  decoratorGradientImageMatrix = m_GradientMagnitudeCovarianceSampleFilter->GetCovarianceMatrixOutput();
+                  covarianceGradientImageMatrix  = decoratorGradientImageMatrix->Get();
+                  variance = covarianceGradientImageMatrix(0,0);
                 }
               else
                 {
-                  m_FixedImageCovarianceCalculator->Update();
-                  variance = (*(m_FixedImageCovarianceCalculator->GetOutput()))(0,0);
+                  m_FixedImageCovarianceSampleFilter->Update();
+                  decoratorFixedImageMatrix = m_FixedImageCovarianceSampleFilter->GetCovarianceMatrixOutput();
+                  covarianceFixedImageMatrix  = decoratorFixedImageMatrix->Get();
+                  variance = covarianceFixedImageMatrix(0,0);
                 }
               if (variance > 0)
                 {

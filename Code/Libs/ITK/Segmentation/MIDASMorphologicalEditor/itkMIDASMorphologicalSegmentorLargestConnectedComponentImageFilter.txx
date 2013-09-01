@@ -29,7 +29,7 @@ void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImage
 
 template <class TInputImageType, class TOutputImageType>
 void MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<TInputImageType, TOutputImageType>
-::ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, int ThreadID) 
+::ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, ThreadIdType ThreadID)
 {
   ImageRegionConstIterator<InputImageType> ic_input(this->GetInput(), outputRegionForThread);
   ImageRegionIterator<OutputImageType> i_componentPx(this->GetOutput(), outputRegionForThread);

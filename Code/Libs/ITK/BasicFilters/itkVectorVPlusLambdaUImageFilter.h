@@ -86,7 +86,7 @@ public ImageToImageFilter<
     virtual void BeforeThreadedGenerateData();
     
     // The main method to implement in derived classes, note, its threaded.
-    virtual void ThreadedGenerateData( const InputImageRegionType &outputRegionForThread, int);
+    virtual void ThreadedGenerateData( const InputImageRegionType &outputRegionForThread, ThreadIdType threadId);
     
   private:
     

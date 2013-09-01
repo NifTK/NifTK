@@ -119,7 +119,11 @@ int ImageMetricTest2D(int argc, char * argv[])
   double expected = niftk::ConvertToDouble(argv[10]);
   int samples = niftk::ConvertToInt(argv[11]);
   
-  if (fabs(value - expected) > 0.00001) return EXIT_FAILURE;
+  if (fabs(value - expected) > 0.00001)
+  {
+    std::cerr << "Expected " << expected << ", actual=" << value << std::endl;
+    return EXIT_FAILURE;
+  }
   if (samples != similarity->GetNumberOfFixedSamples()) return EXIT_FAILURE;
   
   return EXIT_SUCCESS;

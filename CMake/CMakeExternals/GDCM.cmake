@@ -26,6 +26,16 @@ if(DEFINED GDCM_DIR AND NOT EXISTS ${GDCM_DIR})
   message(FATAL_ERROR "GDCM_DIR variable is defined but corresponds to non-existing directory \"${GDCM_DIR}\".")
 endif()
 
+# Check if an external ITK build tree was specified.
+# If yes, use the GDCM from ITK, otherwise ITK will complain
+if(ITK_DIR)
+  find_package(ITK)
+  if(ITK_GDCM_DIR)
+    set(GDCM_DIR ${ITK_GDCM_DIR})
+  endif()
+endif()
+
+
 set(proj GDCM)
 set(proj_DEPENDENCIES )
 set(GDCM_DEPENDS ${proj})
@@ -39,7 +49,6 @@ if(NOT DEFINED GDCM_DIR)
      URL_MD5 ${NIFTK_CHECKSUM_GDCM}
      BINARY_DIR ${proj}-build
      INSTALL_COMMAND ""
-     PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-2.0.18.cmake
      CMAKE_GENERATOR ${GEN}
      CMAKE_ARGS
        ${EP_COMMON_ARGS}
@@ -52,18 +61,10 @@ if(NOT DEFINED GDCM_DIR)
   set(GDCM_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
-  set(GDCM_IS_2_0_18 TRUE)
-
 else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
   find_package(GDCM)
 
-  if( GDCM_BUILD_VERSION EQUAL "18")
-    set(GDCM_IS_2_0_18 TRUE)
-  else()
-    set(GDCM_IS_2_0_18 FALSE)
-  endif()
- 
 endif()

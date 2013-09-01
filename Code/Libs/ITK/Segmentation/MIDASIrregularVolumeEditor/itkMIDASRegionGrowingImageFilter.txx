@@ -213,7 +213,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
     }
   }
   
-	this->SetNumberOfOutputs(1);
+  this->SetNumberOfIndexedInputs(1);
 	this->AllocateOutputs();
 	
 	// Note: This is intentional. If a region of interest is specified, we blank the
@@ -227,7 +227,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 	{
 	  outputRegion = m_RegionOfInterest;
   }
-	
 	
 	// Iterate through list of seeds conditionally plotting them in the output image. 
 	{
@@ -349,23 +348,43 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
       
       for (int axis = 0; axis < dimension; axis++)
       {
-        if (outputRegion.GetSize()[axis] >= 3)
+        if (outputRegion.GetSize()[axis] >= 3 && currImgIndex[axis] > 0)
         {
           neighborhoodRegionStartingIndex[axis] -= 1;
         }
       }
       neighborhoodRegion.SetIndex(neighborhoodRegionStartingIndex);
+      neighborhoodRegion.SetSize(neighborhoodRegionSize);
+
+      /*
+       * Check that the region is fully contained within the image,
+       * and if not, shrink the region so it is inside.
+       */
+      if (!outputRegion.IsInside(neighborhoodRegion))
+      {
+        __ImageSizeType tmpSize = neighborhoodRegionSize;
+
+        for (int axis = 0; axis < dimension; axis++)
+        {
+          if (neighborhoodRegionStartingIndex[axis] + tmpSize[axis] > (outputRegion.GetIndex()[axis] + outputRegion.GetSize()[axis] - 1))
+          {
+            tmpSize[axis] -= ((neighborhoodRegionStartingIndex[axis] + tmpSize[axis]) - (outputRegion.GetIndex()[axis] + outputRegion.GetSize()[axis]));
+          }
+        }
+
+        neighborhoodRegion.SetSize(tmpSize);
+      }
 
       typename itk::ImageRegionConstIteratorWithIndex<OutputImageType> outputIterator(sp_output, neighborhoodRegion);
       for (outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator)
       {
         nextImgIndex = outputIterator.GetIndex();
-        
+
         if (outputRegion.IsInside(nextImgIndex))
         {
           isFullyConnected = this->IsFullyConnected(currImgIndex, nextImgIndex);
           ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex, isFullyConnected);
-        }      
+        }
       }
     }    
   } // end while

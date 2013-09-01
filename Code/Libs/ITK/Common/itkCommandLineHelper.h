@@ -18,7 +18,6 @@
 #include <NifTKConfigure.h>
 #include <niftkITKWin32ExportHeader.h>
 
-#include <itkExceptionObject.h>
 #include <itkImageIOBase.h>
 
 namespace itk

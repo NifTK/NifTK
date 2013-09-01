@@ -34,8 +34,6 @@ public:
   mitkClassMacro(ITKRegionParametersDataNodeProperty, BaseProperty);
   itkNewMacro(ITKRegionParametersDataNodeProperty);
 
-  Pointer Clone() const;
-
   /**
    * \brief Parameters are 6 integers, corresponding to size[X,Y,Z], index[X,Y,Z].
    */

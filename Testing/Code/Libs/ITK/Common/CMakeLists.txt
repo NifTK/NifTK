@@ -15,8 +15,7 @@
 set(NIFTK_TEST_EXT_ITK_COMMON_LINK_LIBRARIES 
   niftkcommon 
   niftkITK 
-  ITKCommon 
-  ITKIO  
+  ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}
   )
 

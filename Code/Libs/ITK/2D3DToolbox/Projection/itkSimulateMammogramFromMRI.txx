@@ -180,7 +180,7 @@ template< class IntensityType>
 void
 SimulateMammogramFromMRI<IntensityType>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
   double integral = 0;
   OutputImageIndexType outIndex;

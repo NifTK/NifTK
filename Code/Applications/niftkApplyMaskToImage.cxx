@@ -27,6 +27,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkCropTargetImageWhereSourceImageNonZero.h>
 #include <itkImage.h>
+#include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNumericTraits.h>

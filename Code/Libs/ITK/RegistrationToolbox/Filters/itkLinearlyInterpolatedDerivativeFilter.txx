@@ -193,7 +193,7 @@ void
 LinearlyInterpolatedDerivativeFilter<TFixedImage,TMovingImage,TScalar, TDeformationScalar>
 ::ThreadedGenerateData(
   const OutputImageRegionType& outputRegionForThread,
-  int threadId)
+  ThreadIdType threadId)
 {
   // Get the input pointers
   MovingImagePointer inputPtr = const_cast< TMovingImage *>( this->GetInput(1) );
