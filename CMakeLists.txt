@@ -633,7 +633,7 @@ message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 # are already built.
 ######################################################################
 set(CMAKE_MODULE_PATH
-    ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/aruco/lib/cmake
+    ${CMAKE_BINARY_DIR}/../aruco-install/lib/cmake
     ${CMAKE_MODULE_PATH}
    )
 
@@ -773,7 +773,7 @@ endif(MITK_FOUND)
 ######################################################################
 
 if (BUILD_MESHING)
-  set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CMakeExternals/Install/CGAL/lib/CGAL")
+  set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL")
   find_package(CGAL) 
   link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
@@ -1119,51 +1119,51 @@ endif()
 # NiftyReg
 if(BUILD_NIFTYREG AND NIFTYREG_FOUND) 
   file(GLOB NIFTY_REG_LIB_FILES 
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.so
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/lib/*.dylib
+       ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.so
+       ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/bin/*)
+  file(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftyReg-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
 endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
 if(BUILD_NIFTYSEG) 
   file(GLOB NIFTY_SEG_LIB_FILES 
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.so
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/lib/*.dylib
+       ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.so
+       ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/bin/*)
+  file(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySeg-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
 
-  file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
+  file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../NiftySeg-install/priors/*)
   install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
 endif(BUILD_NIFTYSEG)
 
 # NiftyRec
 if(BUILD_NIFTYREC AND NIFTYREC_FOUND) 
   file(GLOB NIFTY_REC_LIB_FILES 
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.so
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/lib/*.dylib
+       ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.so
+       ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREC/include/*)
+  file(GLOB NIFTY_REC_INCL_FILES ${CMAKE_BINARY_DIR}/../NiftyRec-install/include/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
 endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
 if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND) 
   file(GLOB NIFTY_SIM_LIB_FILES 
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.so
-       ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/lib/*.dylib
+       ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.so
+       ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.dylib
        )
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSIM/bin/*)
+  file(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySim-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 

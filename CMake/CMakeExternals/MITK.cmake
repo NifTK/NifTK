@@ -446,7 +446,10 @@ if(NOT DEFINED MITK_DIR)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_MITK}
       URL_MD5 ${NIFTK_CHECKSUM_MITK}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
@@ -480,7 +483,7 @@ if(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
-		-DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       DEPENDS ${proj_DEPENDENCIES}
       )

@@ -25,24 +25,29 @@ endif()
 set(proj aruco)
 set(proj_DEPENDENCIES OpenCV)
 set(aruco_DEPENDS ${proj})
+set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
 
 if(NOT DEFINED aruco_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ARUCO ${NIFTK_LOCATION_ARUCO})
 
   ExternalProject_Add(${proj}
+    SOURCE_DIR ${proj}-src
+    BINARY_DIR ${proj}-build
+    PREFIX ${proj}-cmake
+    INSTALL_DIR ${proj}-install
     URL ${NIFTK_LOCATION_ARUCO}
     URL_MD5 ${NIFTK_CHECKSUM_ARUCO}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-        -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
-        -DOpenCV_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/OpenCV-build
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+        -DOpenCV_DIR:PATH=${CMAKE_BINARY_DIR}/OpenCV-build
      DEPENDS ${proj_DEPENDENCIES}
     )
 
-  set(aruco_DIR ${EP_BASE}/Install/${proj})
+  set(aruco_DIR ${proj_INSTALL})
   message("SuperBuild loading ARUCO from ${aruco_DIR}")
 
 else(NOT DEFINED aruco_DIR)

@@ -24,7 +24,7 @@ endif()
 
 set(proj BOOST)
 set(proj_DEPENDENCIES )
-set(proj_INSTALL ${EP_BASE}/Install/${proj})
+set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
 set(BOOST_DEPENDS ${proj})
 
 if(NOT DEFINED BOOST_ROOT)
@@ -89,6 +89,10 @@ if(NOT DEFINED BOOST_ROOT)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_BOOST ${NIFTK_LOCATION_BOOST})
 
   ExternalProject_Add(${proj}
+    SOURCE_DIR ${proj}-src
+    BINARY_DIR ${proj}-build
+    PREFIX ${proj}-cmake
+    INSTALL_DIR ${proj}-install
     URL ${NIFTK_LOCATION_BOOST}
     URL_MD5 ${NIFTK_CHECKSUM_BOOST}
     CMAKE_GENERATOR ${GEN}
@@ -103,7 +107,7 @@ if(NOT DEFINED BOOST_ROOT)
         -DWITH_XSLTPROC:BOOL=OFF
         -DWITH_VALGRIND:BOOL=OFF
         -DWITH_ZLIB:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${EP_BASE}/Install/${proj}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
      DEPENDS ${proj_DEPENDENCIES}
     )
   set(BOOST_ROOT ${proj_INSTALL})

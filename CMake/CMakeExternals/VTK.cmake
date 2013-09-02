@@ -44,9 +44,12 @@ if(NOT DEFINED VTK_DIR)
   endif()
 
   ExternalProject_Add(${proj}
+    SOURCE_DIR ${proj}-src
+    BINARY_DIR ${proj}-build
+    PREFIX ${proj}-cmake
+    INSTALL_DIR ${proj}-install
     URL ${NIFTK_LOCATION_VTK}
     URL_MD5 ${NIFTK_CHECKSUM_VTK}
-    BINARY_DIR ${proj}-build
     INSTALL_COMMAND ""
     PATCH_COMMAND ${VTK_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
@@ -68,7 +71,7 @@ if(NOT DEFINED VTK_DIR)
      DEPENDS ${proj_DEPENDENCIES}
     )
 
-  set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  set(VTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
 else(NOT DEFINED VTK_DIR)

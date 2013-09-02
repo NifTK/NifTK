@@ -64,6 +64,8 @@ if (BUILD_TESTING)
     endif ()
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      PREFIX ${proj}-cmake
       ${${proj}_location_options}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_DATA_TAR}
       CONFIGURE_COMMAND ""
@@ -72,7 +74,7 @@ if (BUILD_TESTING)
       DEPENDS ${proj_DEPENDENCIES}
     )
     
-    set(NIFTK_DATA_DIR ${EP_BASE}/Source/${proj})
+    set(NIFTK_DATA_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
     message("SuperBuild loading ${proj} from ${NIFTK_DATA_DIR}")
     
   else ()

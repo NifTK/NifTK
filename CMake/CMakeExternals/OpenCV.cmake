@@ -31,9 +31,12 @@ if(NOT DEFINED OpenCV_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
   
   ExternalProject_Add(${proj}
+    SOURCE_DIR ${proj}-src
+    BINARY_DIR ${proj}-build
+    PREFIX ${proj}-cmake
+    INSTALL_DIR ${proj}-install
     URL ${NIFTK_LOCATION_OPENCV}
     URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
-    BINARY_DIR ${proj}-build
     UPDATE_COMMAND  ""
     INSTALL_COMMAND ""
     CMAKE_GENERATOR ${GEN}
@@ -57,7 +60,7 @@ if(NOT DEFINED OpenCV_DIR)
     -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
-  set(OpenCV_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+  set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 
 else()

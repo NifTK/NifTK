@@ -40,12 +40,12 @@ if(NOT DEFINED DCMTK_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_DCMTK ${NIFTK_LOCATION_DCMTK})
 
   ExternalProject_Add(${proj}
-    URL ${NIFTK_LOCATION_DCMTK}
-    URL_MD5 ${NIFTK_CHECKSUM_DCMTK}
-    SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
+    SOURCE_DIR ${proj}-src
     BINARY_DIR ${proj}-build
     PREFIX ${proj}-cmake
     INSTALL_DIR ${proj}-install
+    URL ${NIFTK_LOCATION_DCMTK}
+    URL_MD5 ${NIFTK_CHECKSUM_DCMTK}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
        ${ep_common_args}

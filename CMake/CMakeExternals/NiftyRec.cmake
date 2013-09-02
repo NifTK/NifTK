@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# NIFTYREC
+# NiftyRec
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -24,9 +24,9 @@ endif()
 
 if(BUILD_NIFTYREC)
 
-  set(proj NIFTYREC)
-  set(proj_DEPENDENCIES NIFTYREG )
-  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(proj NiftyRec)
+  set(proj_DEPENDENCIES NiftyReg )
+  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYREC_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYREC_ROOT)
@@ -34,6 +34,10 @@ if(BUILD_NIFTYREC)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREC ${NIFTK_LOCATION_NIFTYREC})
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_NIFTYREC}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYREC}
       CMAKE_GENERATOR ${GEN}

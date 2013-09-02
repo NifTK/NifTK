@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# NIFTYSIM
+# NiftySim
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -23,8 +23,8 @@ if(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
 endif()
 
 if(BUILD_NIFTYSIM)
-  set(proj NIFTYSIM)
-  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(proj NiftySim)
+  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYSIM_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
@@ -58,6 +58,10 @@ if(BUILD_NIFTYSIM)
     endif (WIN32)
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_NIFTYSIM}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYSIM}
       CMAKE_GENERATOR ${GEN}
@@ -65,18 +69,18 @@ if(BUILD_NIFTYSIM)
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
-	-DUSE_BOOST:BOOL=${USE_NIFTYSIM_BOOST}
+        -DUSE_BOOST:BOOL=${USE_NIFTYSIM_BOOST}
         -DUSE_VIZ:BOOL=${USE_VTK}
         -DVTK_DIR:PATH=${VTK_DIR}
-	-DVTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}
-	-DVTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}
-	-DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
-	-DBOOST_ROOT:PATH=${BOOST_ROOT}
-	-DBoost_USE_STATIC_LIBS:BOOL=TRUE
+        -DVTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}
+        -DVTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}
+        -DBoost_NO_SYSTEM_PATHS:BOOL=TRUE
+        -DBOOST_ROOT:PATH=${BOOST_ROOT}
+        -DBoost_USE_STATIC_LIBS:BOOL=TRUE
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-	-DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
+        -DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
       DEPENDS ${proj_DEPENDENCIES}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYSIM}
       )

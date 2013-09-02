@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# NIFTYSEG
+# NiftySeg
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -24,9 +24,9 @@ endif()
 
 if(BUILD_NIFTYSEG)
 
-  set(proj NIFTYSEG)
+  set(proj NiftySeg)
   set(proj_DEPENDENCIES )
-  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYSEG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSEG_ROOT)
@@ -34,6 +34,10 @@ if(BUILD_NIFTYSEG)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYSEG ${NIFTK_LOCATION_NIFTYSEG})
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_NIFTYSEG}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYSEG}
       CMAKE_GENERATOR ${GEN}
@@ -43,7 +47,7 @@ if(BUILD_NIFTYSEG)
         -DUSE_CUDA:BOOL=${NIFTK_USE_CUDA}
         -DUSE_OPENMP:BOOL=OFF
         -DINSTALL_PRIORS:BOOL=ON
-        -DINSTALL_PRIORS_DIRECTORY:PATH=${EP_BASE}/Install/${proj}/priors
+        -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
       DEPENDS ${proj_DEPENDENCIES}
       )
