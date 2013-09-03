@@ -73,7 +73,7 @@ if(MITK_USE_Boost)
 
       if(APPLE)
         set(APPLE_CMAKE_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/${proj}-cmake/ChangeBoostLibsInstallNameForMac.cmake)
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
         set(INSTALL_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
       endif()
 
