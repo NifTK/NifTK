@@ -12,13 +12,28 @@
 #
 #============================================================================*/
 
+set(scripts)
+set(python_scripts)
+
 if(NOT WIN32)
   set(scripts
     _niftkCommon.sh
     runBatch.sh
+    ${scripts}
   )
   foreach(script ${scripts})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
     MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
   endforeach()
 endif()
+
+set(python_scripts
+    _niftkCommon.py
+    ${python_scripts}
+)
+foreach(script ${python_scripts})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
+  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+endforeach()
