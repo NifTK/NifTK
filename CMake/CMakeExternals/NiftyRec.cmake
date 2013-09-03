@@ -54,7 +54,7 @@ if(BUILD_NIFTYREC)
     set(NIFTYREC_INCLUDE_DIR "${NIFTYREC_ROOT}/include")
     set(NIFTYREC_LIBRARY_DIR "${NIFTYREC_ROOT}/lib")
 
-    message("SuperBuild loading NIFTYREC from ${NIFTYREC_ROOT}")
+    message("SuperBuild loading NiftyRec from ${NIFTYREC_ROOT}")
 
   else(NOT DEFINED NIFTYREC_ROOT)
 

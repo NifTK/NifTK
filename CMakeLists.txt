@@ -203,15 +203,15 @@ set(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or 
 set(NIFTK_VERSION_DATA_GIT "53fcd619e7" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
 set(NIFTK_VERSION_DATA_TAR "53fcd619e7" CACHE STRING "Version of NifTKData in tarball" FORCE)
-set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
+set(NIFTK_VERSION_Boost "1_54_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.2.1" CACHE STRING "Version of GDCM" FORCE)
-set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
+set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.3.2.2" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "495a771662" CACHE STRING "Version of CTK" FORCE)
-set(NIFTK_VERSION_OPENCV "2.4.2" CACHE STRING "Version of OpenCV" FORCE)
+set(NIFTK_VERSION_CTK "05f6ff0eb3" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_OPENCV "2.4.6.1" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "c92d85a281" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
@@ -224,13 +224,13 @@ set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Mod
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_SVN "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NifTKData" CACHE STRING "Version of NifTKData in svn" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
-set(NIFTK_LOCATION_BOOST "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost-${NIFTK_VERSION_BOOST}.tar.gz" CACHE STRING "Location of Boost" FORCE)
+set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.bz2" CACHE STRING "Location of Boost" FORCE)
 set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${NIFTK_VERSION_GDCM}.tar.gz" CACHE STRING "Location of GDCM" FORCE)
 set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
 set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
 set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
-set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.bz2" CACHE STRING "Location of OpenCV" FORCE)
+set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/opencv-${NIFTK_VERSION_OPENCV}.tar.gz" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/NiftyLink" CACHE STRING "Location of NiftyLink repository")
@@ -273,7 +273,7 @@ mark_as_advanced(NIFTK_ARCHTYPE_DATA)
 mark_as_advanced(NIFTK_VERSION_DATA_GIT)
 mark_as_advanced(NIFTK_VERSION_DATA_SVN)
 mark_as_advanced(NIFTK_VERSION_DATA_TAR)
-mark_as_advanced(NIFTK_VERSION_BOOST)
+mark_as_advanced(NIFTK_VERSION_Boost)
 mark_as_advanced(NIFTK_VERSION_GDCM)
 mark_as_advanced(NIFTK_VERSION_DCMTK)
 mark_as_advanced(NIFTK_VERSION_ITK)
@@ -292,7 +292,7 @@ mark_as_advanced(NIFTK_VERSION_ARUCO)
 mark_as_advanced(NIFTK_LOCATION_DATA_GIT)
 mark_as_advanced(NIFTK_LOCATION_DATA_SVN)
 mark_as_advanced(NIFTK_LOCATION_DATA_TAR)
-mark_as_advanced(NIFTK_LOCATION_BOOST)
+mark_as_advanced(NIFTK_LOCATION_Boost)
 mark_as_advanced(NIFTK_LOCATION_GDCM)
 mark_as_advanced(NIFTK_LOCATION_DCMTK)
 mark_as_advanced(NIFTK_LOCATION_ITK)
@@ -672,8 +672,8 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake 
   ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindBoost.cmake 
-  ${CMAKE_BINARY_DIR}/FindBoost.cmake @ONLY)
+#configure_file(${CMAKE_SOURCE_DIR}/CMake/FindBoost.cmake 
+#  ${CMAKE_BINARY_DIR}/FindBoost.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake 
   ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake 
@@ -695,7 +695,6 @@ endif (BUILD_MESHING)
 ######################################################################
 # Find Boost.
 ######################################################################
-#find_package( Boost 1.35.0 COMPONENTS filesystem system date_time REQUIRED)
 find_package( Boost COMPONENTS filesystem system date_time regex REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
@@ -703,10 +702,10 @@ if(Boost_FOUND)
   link_directories(${Boost_LIBRARY_DIRS})
   if(WIN32)
     if(NIFTK_WITHIN_SUPERBUILD)
-      add_definitions(-DBOOST_LIB_DIAGNOSTIC)  # To get debug messages
+      add_definitions(-DBoost_LIB_DIAGNOSTIC_DEFINITIONS)  # To get debug messages
       add_definitions(-DBOOST_ALL_NO_LIB)      # To stop auto-linking, which seems to be adding "lib" as library prefix in .obj files.
     endif(NIFTK_WITHIN_SUPERBUILD)
-  endif(WIN32)  
+  endif(WIN32)
 endif(Boost_FOUND)
 
 
@@ -746,6 +745,7 @@ endif(BUILD_IGI)
 ######################################################################
 set(MITK_USE_EXT 1)
 set(MITK_USE_Boost 1)
+set(MITK_USE_DCMTK 1)
 set(MITK_USE_BLUEBERRY ${QT_FOUND})
 set(MITK_USE_QT ${QT_FOUND})
 set(MITK_USE_OpenCV ${BUILD_IGI})
@@ -871,7 +871,7 @@ if(BUILD_NIFTYSIM)
 endif(BUILD_NIFTYSIM)
 
 ######################################################################
-# Find NIFTYSEG
+# Find NiftySeg
 ######################################################################
 
 if(BUILD_NIFTYSEG)

@@ -21,11 +21,11 @@ set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-3.8
 if(BUILD_MESHING)
 
   set(proj CGAL)
-  set(proj_DEPENDENCIES BOOST)
+  set(proj_DEPENDENCIES Boost)
   set(CGAL_DEPENDS ${proj})
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
 
-  if(NOT DEFINED CGAL_DIR)    
+  if(NOT DEFINED CGAL_DIR)
     ######################################################################
     # Configure the CGAL Superbuild, to decide which plugins we want.
     ######################################################################
@@ -54,7 +54,7 @@ if(BUILD_MESHING)
       DEPENDS ${proj_DEPENDENCIES}
       )
     set(CGAL_DIR "${proj_INSTALL}/lib/CGAL")
-    set(CGAL_INCLUDE_DIRS "${proj_INSTALL}/include") 
+    set(CGAL_INCLUDE_DIRS "${proj_INSTALL}/include")
 
   else()
 

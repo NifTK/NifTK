@@ -52,7 +52,7 @@ if(BUILD_NIFTYREG)
 
     set(NIFTYREG_ROOT ${proj_INSTALL})
 
-    message("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
+    message("SuperBuild loading NiftyReg from ${NIFTYREG_ROOT}")
 
   else(NOT DEFINED NIFTYREG_ROOT)
 

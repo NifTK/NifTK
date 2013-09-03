@@ -56,7 +56,7 @@ if(BUILD_NIFTYSEG)
     set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
     set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
 
-    message("SuperBuild loading NIFTYSEG from ${NIFTYSEG_ROOT}")
+    message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
 
   else(NOT DEFINED NIFTYSEG_ROOT)
 

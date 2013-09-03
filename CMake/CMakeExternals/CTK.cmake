@@ -43,7 +43,7 @@ if(QT_FOUND)
       URL_MD5 ${NIFTK_CHECKSUM_CTK}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
 #      GIT_REPOSITORY http://github.com/NifTK/CTK
-#      GIT_TAG 9c87c55ddf
+#      GIT_TAG 05f6ff0eb3
 #      UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}

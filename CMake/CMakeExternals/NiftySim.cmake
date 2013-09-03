@@ -28,10 +28,10 @@ if(BUILD_NIFTYSIM)
   set(NIFTYSIM_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYSIM_ROOT)
-    if (DEFINED NIFTK_LOCATION_BOOST) 
+    if (DEFINED NIFTK_LOCATION_Boost)
       option(USE_NIFTYSIM_BOOST "Enable CPU-parallelism in NiftySim through Boost." OFF)
       mark_as_advanced(USE_NIFTYSIM_BOOST)
-    endif (DEFINED NIFTK_LOCATION_BOOST) 
+    endif (DEFINED NIFTK_LOCATION_Boost)
 
     if(DEFINED VTK_DIR)
       set(USE_VTK ON)
@@ -43,7 +43,7 @@ if(BUILD_NIFTYSIM)
 
     set(proj_DEPENDENCIES "")
     if (USE_NIFTYSIM_BOOST)
-      list(APPEND proj_DEPENDENCIES BOOST)
+      list(APPEND proj_DEPENDENCIES Boost)
     endif (USE_NIFTYSIM_BOOST)
 
     if (USE_VTK)
@@ -89,7 +89,7 @@ if(BUILD_NIFTYSIM)
     set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
     set(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
 
-    message("SuperBuild loading NIFTYSIM from ${NIFTYSIM_ROOT}")
+    message("SuperBuild loading NiftySim from ${NIFTYSIM_ROOT}")
 
   else(NOT DEFINED NIFTYSIM_ROOT)
 

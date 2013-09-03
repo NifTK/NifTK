@@ -23,9 +23,9 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 endif()
 
 set(proj MITK)
-set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
+set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
 if(QT_FOUND)
-  set(proj_DEPENDENCIES BOOST ITK VTK GDCM DCMTK CTK)
+  set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
   set(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
@@ -475,7 +475,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
-        -DBOOST_ROOT:PATH=${BOOST_ROOT}                        # FindBoost expectes BOOST_ROOT  
+        -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
