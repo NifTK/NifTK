@@ -61,8 +61,8 @@ fs::path ConvertToFullPath(const std::string& pathName)
       throw std::logic_error("Empty pathName supplied");
     }
 
-  fs::path full_path(fs::initial_path<fs::path>() );
-  full_path = fs::system_complete( fs::path( pathName, fs::native ) );
+  fs::path full_path(fs::initial_path<fs::path>());
+  full_path = fs::system_complete(fs::path(pathName));
   return full_path;
 }
 
@@ -71,7 +71,7 @@ fs::path ConvertToFullPath(const std::string& pathName)
 std::string ConvertToFullNativePath(const std::string& pathName)
 {
   fs::path full_path = ConvertToFullPath(pathName);  
-  return full_path.native_file_string();
+  return full_path.string();
 }
 
 
@@ -306,7 +306,7 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
     {
       fs::path fullFilePath(fs::initial_path<fs::path>() );
       fullFilePath = fs::system_complete(itr->path());
-      fileNames.push_back(fullFilePath.native_file_string());
+      fileNames.push_back(fullFilePath.string());
     }
   }
   return fileNames;
