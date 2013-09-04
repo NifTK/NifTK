@@ -555,10 +555,10 @@ def copy_file_to_destination(source,destination):
 
 	if type1 == type2: 
 		if type1 == 'ANALYZE_GZ' or  type1 == 'ANALYZE':
-			sourcehdr=source.str('.img','.hdr')
-			sourceimg=source.str('.hdr','.img')
-			desthdr=destination.str('.img','.hdr')
-			destimg=destination.str('.hdr','.img')
+			sourcehdr=source.lower().str('.img','.hdr')
+			sourceimg=source.lower().str('.hdr','.img')
+			desthdr=destination.lower().str('.img','.hdr')
+			destimg=destination.lower().str('.hdr','.img')
 			shutil.copyfile(sourcehdr,desthdr)
 			shutil.copyfile(sourceimg,destimg)
 		else:
@@ -583,13 +583,13 @@ def get_output_file_type(image):
 	
 	output_type='NIFTI_GZ'
 	
-	if image.endswith('.nii.gz'):
+	if image.upper().endswith('.NII.GZ'):
 		output_type='NIFTI_GZ'
-	elif image.endswith('.nii'):
+	elif image.upper().endswith('.NII'):
 		output_type='NIFTI'
-	elif image.endswith('.img.gz') or image.endswith('.hdr.gz'):
+	elif image.upper().endswith('.IMG.GZ') or image.upper().endswith('.HDR.GZ'):
 		output_type='ANALYZE_GZ'
-	elif image.endswith('.img') or image.endswith('.hdr'):
+	elif image.upper().endswith('.IMG') or image.upper().endswith('.HDR'):
 		output_type='ANALYZE'
 	else:
 		exit_program('Error: extension '+image+' not recognised')

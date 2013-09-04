@@ -26,7 +26,7 @@ namespace itk
  * \class BoundaryShiftIntegralCalculator
  * \brief Calculate the boundary shift integral.
  * 
- * See the following paper for detais:
+ * See the following paper for details:
  * Freeborough PA and Fox NC, The boundary shift integral: an accurate and 
  * robust measure of cerebral volume changes from registered repeat MRI, 
  * IEEE Trans Med Imaging. 1997 Oct;16(5):623-9.
@@ -48,6 +48,7 @@ public:
    */ 
   typedef typename TInputImage::Pointer TInputImagePointer;
   typedef typename TInputMask::Pointer TInputMaskPointer;
+  typedef itk::Image<int, 3> IntImageType;
   /** 
    * Method for creation through the object factory. 
    */
@@ -74,7 +75,12 @@ public:
   itkSetMacro(RepeatIntensityNormalisationFactor, double);
   itkSetMacro(PaddingValue, typename TInputMask::PixelType);
   itkGetMacro(BSIMask, TInputMaskPointer);
-  itkGetMacro(BSIMap, typename TOutputImage::Pointer); 
+  itkSetMacro(BSIMask, TInputMaskPointer);
+  itkGetMacro(BSIMap,typename TOutputImage::Pointer); 
+  itkGetMacro(BSIMapSIENAStyle,TInputImagePointer); 
+  itkGetMacro(XORMap, TInputImagePointer);
+  itkSetMacro(ProbabilisticBSI, unsigned int);  
+
   /**
    * Compute the BSI.
    */
@@ -95,8 +101,8 @@ public:
     
     for (int arrayIndex = 0; arrayIndex < sizeOfArray; arrayIndex++)
     {
-      meanX += x[arrayIndex];
-      meanY += y[arrayIndex];
+      meanX += x[arrayIndex]; 
+      meanY += y[arrayIndex]; 
     }
     meanX /= sizeOfArray;
     meanY /= sizeOfArray;
@@ -117,6 +123,14 @@ protected:
    * Compute the mask that is used for the BSI integration.
    */
   virtual void ComputeBSIMask(void);
+  /**
+   * Compute the mask that is used for the PBSI integration.
+   */
+  virtual void ComputeGBSIMask(void);
+  /**
+   * Compute the mask that is used for the PBSI Ledig integration.
+   */
+  virtual void ComputeLedigMask(void);
   /**
    * Compute the BSI value by integrating the over the BSI mask.
    * \throw ExceptionObject if the lower cut off vakye is not smaller than the 
@@ -171,7 +185,7 @@ protected:
   /**
    * The binary eroded intersect mask, with 0 and 1, from the input baseline and repeat masks.
    */
-  TInputMaskPointer m_ErodedIntersectMask;
+  typename IntImageType::Pointer m_ErodedIntersectMask;
   /**
    * The number of dilation applied to the union mask.
    */
@@ -179,7 +193,7 @@ protected:
   /**
    * The binary dilated intersect mask, with 0 and 1, from the input baseline and repeat masks.
    */
-  TInputMaskPointer m_DilatedUnionMask;
+  typename IntImageType::Pointer m_DilatedUnionMask;
   /**
    * The padding/background value in all the input masks.
    */
@@ -211,7 +225,31 @@ protected:
   /**
    * A map of BSI values. 
    */
-  typename TOutputImage::Pointer m_BSIMap; 
+  typename TOutputImage::Pointer m_BSIMap;  
+   /**
+   * A map of BSI values in SIENA Style. 
+   */   
+  TInputImagePointer m_BSIMapSIENAStyle; 
+  /**
+   * A map of XOR values. 
+   */
+  TInputImagePointer m_XORMap; 
+  /**
+   * Compute probabilistic mask 
+   */
+  unsigned int m_ProbabilisticBSI;
+
+  typename IntImageType::Pointer m_BaselineMaskInt;
+  typename IntImageType::Pointer m_RepeatMaskInt;
+  typename IntImageType::Pointer m_PORMaskInt;
+  typename IntImageType::Pointer m_PANDMaskInt;
+  
+  TInputMaskPointer m_POR;
+  TInputMaskPointer m_PAND;
+  
+  void ComputePORandPANDMask(void);
+  void ComputePORandPANDMaskLedig(void);
+
   
 private:  
   BoundaryShiftIntegralCalculator(const Self&); //purposely not implemented
