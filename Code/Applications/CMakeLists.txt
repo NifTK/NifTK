@@ -209,7 +209,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCombineSegmentations
   niftkComposeITKAffineTransformations
   niftkComputeImageHistogram
-  #niftkComputeJointHistogram
+  niftkComputeJointHistogram
   niftkComputeMeanTransformation
   niftkConnectedComponents
   #niftkContourExtractor2DImageFilter
