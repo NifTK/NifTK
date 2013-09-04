@@ -307,9 +307,9 @@ if(VTK_FOUND)
   # Add new programs to this list.
   ##############################################################
   set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
-    #niftkBreastMaskSegmentationFromMRI
+    niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
-    #niftkConvertNiftiVectorImage
+    niftkConvertNiftiVectorImage
     niftkDecimatePolyData
     niftkGradientVectorField
     niftkMapVolumeDataToPolyDataVertices
