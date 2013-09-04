@@ -80,6 +80,7 @@ if(SlicerExecutionModel_FOUND)
     niftkLogInvertImage
     niftkMultiply
     niftkNegateImage
+    niftkSubsampleImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
@@ -275,7 +276,6 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkShiftScale
   niftkShrinkImage
   niftkSTAPLE
-  #niftkSubsampleImage
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
   niftkTestCompareImage

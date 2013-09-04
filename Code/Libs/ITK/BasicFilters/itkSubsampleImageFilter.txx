@@ -134,8 +134,9 @@ SubsampleImageFilter<TInputImage, TOutputImage>
   // compute shrink factors and variances
   
   for ( idim = 0; idim < ImageDimension; idim++ )
-
+  {
     variance[idim] = vnl_math_sqr( 0.5 * static_cast<double>( m_SubsamplingFactors[idim] ) );
+  }
 
   typedef itk::IdentityTransform<double,OutputImageType::ImageDimension> IdentityTransformType;
 
@@ -223,8 +224,8 @@ SubsampleImageFilter<TInputImage, TOutputImage>
   if ( ! outputPtr  )
     itkExceptionMacro( << "Output has not been set" );
 
-  for(unsigned int idim = 0; idim < OutputImageType::ImageDimension; idim++ ) {
-
+  for(unsigned int idim = 0; idim < OutputImageType::ImageDimension; idim++ ) 
+  {
     outputSpacing[idim] = inputSpacing[idim] * m_SubsamplingFactors[idim];
 
     outputSize[idim] = static_cast<SizeValueType>(
