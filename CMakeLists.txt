@@ -11,14 +11,14 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-
+ 
 ###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 07 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 08 CACHE STRING "Month version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
 
@@ -189,7 +189,6 @@ set(NIFTK_WIKI_TEXT "wiki" CACHE STRING "Wiki text" FORCE )
 set(NIFTK_DASHBOARD_URL "https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK" CACHE STRING "Dashboard URL" FORCE)
 set(NIFTK_DASHBOARD_TEXT "dashboard" CACHE STRING "Dashboard text" FORCE)
 set(NIFTK_USER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users" CACHE STRING "Contact address for users." FORCE )
-set(NIFTK_DEVELOPER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-developers" CACHE STRING "Contact address for developers." FORCE )
 if(WIN32)
   set(NIFTK_BASE_NAME "NifTK" CACHE STRING "Base name for installation folder. Windows convention is upper case letters" FORCE )
 else(WIN32)
@@ -201,9 +200,9 @@ set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-set(NIFTK_VERSION_DATA_GIT "4eae03d99e" CACHE STRING "Version of NifTKData in git" FORCE)
+set(NIFTK_VERSION_DATA_GIT "14e971fb10" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-set(NIFTK_VERSION_DATA_TAR "4eae03d99e" CACHE STRING "Version of NifTKData in tarball" FORCE)
+set(NIFTK_VERSION_DATA_TAR "14e971fb10" CACHE STRING "Version of NifTKData in tarball" FORCE)
 set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -211,10 +210,9 @@ set(NIFTK_VERSION_ITK "3.20.1.1" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "64e5b774e1" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_CTK "495a771662" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "f86e71ea81" CACHE STRING "Version of MITK" FORCE)
-set(NIFTK_VERSION_curl "7.28.git" CACHE STRING "Version of curl" FORCE)
+set(NIFTK_VERSION_MITK "cb009d8d52" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
@@ -231,10 +229,9 @@ set(NIFTK_LOCATION_GDCM "http://cmic.cs.ucl.ac.uk/platform/dependencies/gdcm-${N
 set(NIFTK_LOCATION_DCMTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/dcmtk-${NIFTK_VERSION_DCMTK}.tar.gz" CACHE STRING "Location of DCMTK" FORCE)
 set(NIFTK_LOCATION_ITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/InsightToolkit-${NIFTK_VERSION_ITK}.tar.gz" CACHE STRING "Location of ITK" FORCE)
 set(NIFTK_LOCATION_VTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/vtk-${NIFTK_VERSION_VTK}.tar.gz" CACHE STRING "Location of VTK" FORCE)
-set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/commontk-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
+set(NIFTK_LOCATION_CTK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-CTK-${NIFTK_VERSION_CTK}.tar.gz" CACHE STRING "Location of CTK" FORCE)
 set(NIFTK_LOCATION_OPENCV "http://cmic.cs.ucl.ac.uk/platform/dependencies/OpenCV-${NIFTK_VERSION_OPENCV}.tar.bz2" CACHE STRING "Location of OpenCV" FORCE)
 set(NIFTK_LOCATION_MITK "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-MITK-${NIFTK_VERSION_MITK}.tar.gz" CACHE STRING "Location of MITK" FORCE)
-set(NIFTK_LOCATION_curl "http://cmic.cs.ucl.ac.uk/platform/dependencies/curl-${NIFTK_VERSION_curl}.zip" CACHE STRING "Location of curl" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_TARBALL "http://cmic.cs.ucl.ac.uk/platform/dependencies/NiftyLink-${NIFTK_VERSION_NIFTYLINK}.tar.gz" CACHE STRING "Location of NiftyLink tarball" FORCE)
 set(NIFTK_LOCATION_NIFTYLINK_REPOSITORY "https://cmicdev.cs.ucl.ac.uk/git/NiftyLink" CACHE STRING "Location of NiftyLink repository")
 set(NIFTK_LOCATION_PROTOTYPE "https://cmicdev.cs.ucl.ac.uk/svn/cmic/trunk/NiftyPrototype" CACHE STRING  "Location of prototype code (internal access only)")
@@ -261,7 +258,6 @@ mark_as_advanced(NIFTK_WIKI_TEXT)
 mark_as_advanced(NIFTK_DASHBOARD_URL)
 mark_as_advanced(NIFTK_DASHBOARD_TEXT)
 mark_as_advanced(NIFTK_USER_CONTACT)
-mark_as_advanced(NIFTK_DEVELOPER_CONTACT)
 mark_as_advanced(NIFTK_BASE_NAME)
 mark_as_advanced(NIFTK_VERSION_STRING)
 mark_as_advanced(NIFTK_DEPLOY_NAME)
@@ -285,7 +281,6 @@ mark_as_advanced(NIFTK_VERSION_VTK)
 mark_as_advanced(NIFTK_VERSION_CTK)
 mark_as_advanced(NIFTK_VERSION_OPENCV)
 mark_as_advanced(NIFTK_VERSION_MITK)
-mark_as_advanced(NIFTK_VERSION_curl)
 mark_as_advanced(NIFTK_VERSION_NIFTYLINK)
 mark_as_advanced(NIFTK_VERSION_NIFTYREG)
 mark_as_advanced(NIFTK_VERSION_NIFTYSEG)
@@ -305,7 +300,6 @@ mark_as_advanced(NIFTK_LOCATION_VTK)
 mark_as_advanced(NIFTK_LOCATION_CTK)
 mark_as_advanced(NIFTK_LOCATION_OPENCV)
 mark_as_advanced(NIFTK_LOCATION_MITK)
-mark_as_advanced(NIFTK_LOCATION_curl)
 mark_as_advanced(NIFTK_LOCATION_NIFTYLINK_TARBALL)
 mark_as_advanced(NIFTK_LOCATION_NIFTYLINK_REPOSITORY)
 mark_as_advanced(NIFTK_LOCATION_PROTOTYPE)
@@ -390,6 +384,18 @@ else()
 
   set(CTBN "${CMAKE_GENERATOR}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
 
+endif()
+
+# append a short release/debug tag, so we know which one is which on the dashboard.
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(CTBN "${CTBN}-Dbg")
+else()
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(CTBN "${CTBN}-Rel")
+else()
+  # this should not happen. further above we check for Debug and Release and fail if it's neither.
+  set(CTBN "${CTBN}-${CMAKE_BUILD_TYPE}")
+endif()
 endif()
 
 string(REPLACE "\n" "" CTBN ${CTBN})

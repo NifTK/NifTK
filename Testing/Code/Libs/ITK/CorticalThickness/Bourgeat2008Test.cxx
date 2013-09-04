@@ -24,7 +24,7 @@
 #include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
 #include <itkLagrangianInitializedRelaxStreamlinesFilter.h>
 #include <itkCastImageFilter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkRescaleIntensityImageFilter.h>

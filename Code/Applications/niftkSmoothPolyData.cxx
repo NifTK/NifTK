@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>

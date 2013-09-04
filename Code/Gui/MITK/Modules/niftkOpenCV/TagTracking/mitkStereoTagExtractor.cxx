@@ -13,34 +13,86 @@
 =============================================================================*/
 
 #include "mitkStereoTagExtractor.h"
-#include "mitkTagTrackingFacade.h"
+#include <mitkCameraCalibrationFacade.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
-#include <cv.h>
-#include <Undistortion.h>
 #include <mitkPointUtils.h>
-#include <mitkGeometry3D.h>
 #include <mitkMIDASImageUtils.h>
+#include <aruco/aruco.h>
+#include <Undistortion.h>
 
 namespace mitk {
 
+/**
+ * \brief PIMPL pattern, private implementation to reduce visibility
+ * of dependencies on OpenCV and ARUCO.
+ */
+class StereoTagExtractorPrivate {
+
+public:
+
+  StereoTagExtractorPrivate();
+  ~StereoTagExtractorPrivate();
+
+  void ExtractPoints(const mitk::Image::Pointer leftImage,
+                     const mitk::Image::Pointer rightImage,
+                     const float& minSize,
+                     const float& maxSize,
+                     const int& blockSize,
+                     const int& offset,
+                     const CvMat& leftCameraIntrinsics,
+                     const CvMat& rightCameraIntrinsics,
+                     const CvMat& rightToLeftRotationVector,
+                     const CvMat& rightToLeftTranslationVector,
+                     const vtkMatrix4x4* cameraToWorld,
+                     mitk::PointSet::Pointer pointSet,
+                     mitk::PointSet::Pointer surfaceNormals
+                     );
+
+  /**
+   * \brief Overloaded interface for other method, extracting the necessary matrices off of the mitk::Image
+   */
+  void ExtractPoints(const mitk::Image::Pointer leftImage,
+                     const mitk::Image::Pointer rightImage,
+                     const float& minSize,
+                     const float& maxSize,
+                     const int& blockSize,
+                     const int& offset,
+                     const vtkMatrix4x4* cameraToWorld,
+                     mitk::PointSet::Pointer pointSet,
+                     mitk::PointSet::Pointer surfaceNormals
+                     );
+private:
+
+  // So, these are persistant between calls to the MonoTagExtractor for performance reasons.
+  aruco::MarkerDetector   m_LeftDetector;
+  aruco::CameraParameters m_LeftCameraParams;
+  cv::Mat                 m_LeftGreyImage;
+  cv::Mat                 m_LeftResizedImage;
+  aruco::MarkerDetector   m_RightDetector;
+  aruco::CameraParameters m_RightCameraParams;
+  cv::Mat                 m_RightGreyImage;
+  cv::Mat                 m_RightResizedImage;
+};
+
+
 //-----------------------------------------------------------------------------
-StereoTagExtractor::StereoTagExtractor()
+StereoTagExtractorPrivate::StereoTagExtractorPrivate()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-StereoTagExtractor::~StereoTagExtractor()
+StereoTagExtractorPrivate::~StereoTagExtractorPrivate()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
+void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftImage,
                    const mitk::Image::Pointer rightImage,
                    const float& minSize,
                    const float& maxSize,
@@ -142,6 +194,218 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
 
 
 //-----------------------------------------------------------------------------
+void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftImage,
+                                       const mitk::Image::Pointer rightImage,
+                                       const float& minSize,
+                                       const float& maxSize,
+                                       const int& blockSize,
+                                       const int& offset,
+                                       const CvMat& leftCameraIntrinsics,
+                                       const CvMat& rightCameraIntrinsics,
+                                       const CvMat& rightToLeftRotationVector,
+                                       const CvMat& rightToLeftTranslationVector,
+                                       const vtkMatrix4x4* cameraToWorld,
+                                       mitk::PointSet::Pointer pointSet,
+                                       mitk::PointSet::Pointer surfaceNormals
+                                      )
+{
+  // For each iteration the point set is erased.
+  pointSet->Clear();
+
+  // The user might pass in NULL surface normals, so only clear if necessary.
+  if (surfaceNormals.IsNotNull())
+  {
+    surfaceNormals->Clear();
+  }
+  
+  // Retrieve scaling parameters, as input 'image' may have anisotropic voxels.
+  mitk::Vector3D aspect = mitk::GetXYAspectRatio(leftImage);
+
+  // This creates a cv::Mat by wrapping and not copying the data in 'leftImage'.
+  mitk::ImageWriteAccessor  leftAccess(leftImage);
+  void* leftPointer = leftAccess.GetData();
+  IplImage  leftIpl;
+  cvInitImageHeader(&leftIpl, cvSize((int) leftImage->GetDimension(0), (int) leftImage->GetDimension(1)), leftImage->GetPixelType().GetBitsPerComponent(), leftImage->GetPixelType().GetNumberOfComponents());
+  cvSetData(&leftIpl, leftPointer, leftImage->GetDimension(0) * (leftImage->GetPixelType().GetBitsPerComponent() / 8) * leftImage->GetPixelType().GetNumberOfComponents());
+  cv::Mat leftColour(&leftIpl);
+
+  // This creates a cv::Mat by wrapping and not copying the data in 'rightImage'.
+  mitk::ImageWriteAccessor  rightAccess(rightImage);
+  void* rightPointer = rightAccess.GetData();
+  IplImage  rightIpl;
+  cvInitImageHeader(&rightIpl, cvSize((int) rightImage->GetDimension(0), (int) rightImage->GetDimension(1)), rightImage->GetPixelType().GetBitsPerComponent(), rightImage->GetPixelType().GetNumberOfComponents());
+  cvSetData(&rightIpl, rightPointer, rightImage->GetDimension(0) * (rightImage->GetPixelType().GetBitsPerComponent() / 8) * rightImage->GetPixelType().GetNumberOfComponents());
+  cv::Mat rightColour(&rightIpl);
+
+  // This converts our RGBA images to grey.
+  cv::cvtColor(leftColour, m_LeftGreyImage, CV_RGBA2GRAY);
+  cv::cvtColor(rightColour, m_RightGreyImage, CV_RGBA2GRAY);
+
+  // This will rescale it to the right size, as we know our video capture can produce input images with anisotropic voxels.
+  cv::resize(m_LeftGreyImage, m_LeftResizedImage, cv::Size(0, 0), aspect[0], aspect[1], cv::INTER_NEAREST);
+  cv::resize(m_RightGreyImage, m_RightResizedImage, cv::Size(0, 0), aspect[0], aspect[1], cv::INTER_NEAREST);
+
+  // Wrap the C-style matrices to C++ style.
+  cv::Mat leftInt(&leftCameraIntrinsics);
+  cv::Mat rightInt(&rightCameraIntrinsics);
+  cv::Mat r2lRot(&rightToLeftRotationVector);
+  cv::Mat r2lTran(&rightToLeftTranslationVector);
+
+  // Eyes.... LEFT!
+  std::vector<aruco::Marker> leftMarkers;
+  m_LeftDetector.setMinMaxSize(minSize, maxSize);
+  m_LeftDetector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  m_LeftDetector.setThresholdParams(blockSize, offset);
+  m_LeftDetector.detect(m_LeftResizedImage, leftMarkers, m_LeftCameraParams);
+
+  // Eyes.... RIGHT!
+  std::vector<aruco::Marker> rightMarkers;
+  m_RightDetector.setMinMaxSize(minSize, maxSize);
+  m_RightDetector.setThresholdMethod(aruco::MarkerDetector::ADPT_THRES);
+  m_RightDetector.setThresholdParams(blockSize, offset);
+  m_RightDetector.detect(m_RightResizedImage, rightMarkers, m_RightCameraParams);
+
+  // Now we find corresponding markers
+  for (unsigned int i = 0; i < leftMarkers.size(); ++i)
+  {
+    int pointID = leftMarkers[i].id;
+
+    for (unsigned int j = 0; j < rightMarkers.size(); ++j)
+    {
+      // Check if we have valid points detected in both left and right views.
+      if (rightMarkers[j].id == pointID && leftMarkers[i].isValid() && rightMarkers[j].isValid())
+      {
+        // Extract and triangulate corresponding points.
+        // We are assuming that each marker has similarly ordered point corners.
+        // We rescale image coordinates back, as camera calibration is assumed to be done on aspect ratio of 1:1.
+
+        cv::Point2f leftMarker;
+        cv::Point2f rightMarker;
+        std::vector<std::pair<cv::Point2f, cv::Point2f> > pairs;
+
+        // If we are doing normals, we need the 4 corners.
+        if (surfaceNormals.IsNotNull())
+        {
+          for (int k = 0; k < 4; k++)
+          {
+            leftMarker = leftMarkers[i][k];
+            leftMarker.x /= aspect[0];
+            leftMarker.y /= aspect[1];
+
+            rightMarker = rightMarkers[j][k];
+            rightMarker.x /= aspect[0];
+            rightMarker.y /= aspect[1];
+
+            std::pair<cv::Point2f, cv::Point2f> pair(leftMarker, rightMarker);
+            pairs.push_back(pair);
+          }
+        }
+
+        // We always need the centre point, calculated by ARUCO.
+        leftMarker = leftMarkers[i].getCenter();
+        leftMarker.x /= aspect[0];
+        leftMarker.y /= aspect[1];
+
+        rightMarker = rightMarkers[j].getCenter();
+        rightMarker.x /= aspect[0];
+        rightMarker.y /= aspect[1];
+
+        std::pair<cv::Point2f, cv::Point2f> centrePoint(leftMarker, rightMarker);
+        pairs.push_back(centrePoint);
+
+        std::vector<cv::Point3f> pointsIn3D = mitk::TriangulatePointPairs(
+            pairs,
+            leftInt,
+            rightInt,
+            r2lRot,
+            r2lTran
+            );
+
+        if (surfaceNormals.IsNotNull())
+        {
+          assert(pointsIn3D.size() == 5);
+
+          mitk::Point3D a, b, c, outputNormal;
+          a[0] =  pointsIn3D[0].x;
+          a[1] = -pointsIn3D[0].y;
+          a[2] = -pointsIn3D[0].z;
+          b[0] =  pointsIn3D[1].x;
+          b[1] = -pointsIn3D[1].y;
+          b[2] = -pointsIn3D[1].z;
+          c[0] =  pointsIn3D[2].x;
+          c[1] = -pointsIn3D[2].y;
+          c[2] = -pointsIn3D[2].z;
+          mitk::ComputeNormalFromPoints(a, b, c, outputNormal);
+
+          mitk::PointSet::PointType outputPoint;
+
+          outputPoint[0] =  pointsIn3D[4].x;
+          outputPoint[1] = -pointsIn3D[4].y;
+          outputPoint[2] = -pointsIn3D[4].z;
+
+          TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
+          TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), true, outputNormal);
+
+          pointSet->InsertPoint(pointID, outputPoint);
+          surfaceNormals->InsertPoint(pointID, outputNormal);
+
+        }
+        else
+        {
+          assert(pointsIn3D.size() == 1);
+
+          mitk::PointSet::PointType outputPoint;
+          outputPoint[0] =  pointsIn3D[0].x;
+          outputPoint[1] = -pointsIn3D[0].y;
+          outputPoint[2] = -pointsIn3D[0].z;
+
+          TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
+          pointSet->InsertPoint(pointID, outputPoint);
+
+        }
+
+        pointSet->UpdateOutputInformation();
+
+      } // end if valid point
+    } // end for each right marker
+  } // end for each left marker
+}
+
+
+//-----------------------------------------------------------------------------
+StereoTagExtractor::StereoTagExtractor()
+: m_PIMPL(new StereoTagExtractorPrivate())
+{
+}
+
+
+//-----------------------------------------------------------------------------
+StereoTagExtractor::~StereoTagExtractor()
+{
+  if (m_PIMPL != NULL)
+  {
+    delete m_PIMPL;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
+                   const mitk::Image::Pointer rightImage,
+                   const float& minSize,
+                   const float& maxSize,
+                   const int& blockSize,
+                   const int& offset,
+                   const vtkMatrix4x4* cameraToWorld,
+                   mitk::PointSet::Pointer pointSet,
+                   mitk::PointSet::Pointer surfaceNormals
+                   )
+{
+  m_PIMPL->ExtractPoints(leftImage, rightImage, minSize, maxSize, blockSize, offset, cameraToWorld, pointSet, surfaceNormals);
+}
+
+
+//-----------------------------------------------------------------------------
 void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                        const mitk::Image::Pointer rightImage,
                                        const float& minSize,
@@ -157,112 +421,8 @@ void StereoTagExtractor::ExtractPoints(const mitk::Image::Pointer leftImage,
                                        mitk::PointSet::Pointer surfaceNormals
                                       )
 {
-  pointSet->Clear();
-  if (surfaceNormals.IsNotNull())
-  {
-    surfaceNormals->Clear();
-  }
-  
-  mitk::ImageWriteAccessor  leftAccess(leftImage);
-  void* leftPointer = leftAccess.GetData();
-
-  IplImage  leftIpl;
-  cvInitImageHeader(&leftIpl, cvSize((int) leftImage->GetDimension(0), (int) leftImage->GetDimension(1)), leftImage->GetPixelType().GetBitsPerComponent(), leftImage->GetPixelType().GetNumberOfComponents());
-  cvSetData(&leftIpl, leftPointer, leftImage->GetDimension(0) * (leftImage->GetPixelType().GetBitsPerComponent() / 8) * leftImage->GetPixelType().GetNumberOfComponents());
-  cv::Mat leftColour(&leftIpl);
-  cv::Mat left;
-  cv::cvtColor(leftColour, left, CV_RGBA2GRAY);
-
-  mitk::ImageWriteAccessor  rightAccess(rightImage);
-  void* rightPointer = rightAccess.GetData();
-
-  IplImage  rightIpl;
-  cvInitImageHeader(&rightIpl, cvSize((int) rightImage->GetDimension(0), (int) rightImage->GetDimension(1)), rightImage->GetPixelType().GetBitsPerComponent(), rightImage->GetPixelType().GetNumberOfComponents());
-  cvSetData(&rightIpl, rightPointer, rightImage->GetDimension(0) * (rightImage->GetPixelType().GetBitsPerComponent() / 8) * rightImage->GetPixelType().GetNumberOfComponents());
-  cv::Mat rightColour(&rightIpl);
-  cv::Mat right;
-  cv::cvtColor(rightColour, right, CV_RGBA2GRAY);
-
-  cv::Mat leftInt(&leftCameraIntrinsics);
-  cv::Mat rightInt(&rightCameraIntrinsics);
-  cv::Mat r2lRot(&rightToLeftRotationVector);
-  cv::Mat r2lTran(&rightToLeftTranslationVector);
-
-  // Check scaling, as image may have anisotropic voxels.
-  mitk::Vector3D aspect = mitk::GetXYAspectRatio(leftImage);
-
-  if (surfaceNormals.IsNull())
-  {
-    std::map<int, cv::Point3f> result = mitk::DetectMarkerPairs(
-      left,
-      right,
-      leftInt,
-      rightInt,
-      r2lRot,
-      r2lTran,
-      aspect[0],
-      aspect[1],
-      minSize,
-      maxSize,
-      blockSize,
-      offset
-      );
-
-    cv::Point3f extractedPoint;
-    mitk::PointSet::PointType outputPoint;
-
-    std::map<int, cv::Point3f>::iterator iter;
-    for (iter = result.begin(); iter != result.end(); ++iter)
-    {
-      extractedPoint = (*iter).second;
-      outputPoint[0] = extractedPoint.x;
-      outputPoint[1] = -extractedPoint.y;
-      outputPoint[2] = -extractedPoint.z;
-      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
-      pointSet->InsertPoint((*iter).first, outputPoint);
-    }
-    pointSet->UpdateOutputInformation();
-  }
-  else
-  {
-    std::map<int, mitk::Point6D> result = DetectMarkerPairsAndNormals(
-        left,
-        right,
-        leftInt,
-        rightInt,
-        r2lRot,
-        r2lTran,
-        aspect[0],
-        aspect[1],
-        minSize,
-        maxSize,
-        blockSize,
-        offset
-        );
-
-    mitk::Point6D point;
-    mitk::PointSet::PointType outputPoint;
-    mitk::PointSet::PointType outputNormal;
-
-    std::map<int, mitk::Point6D>::iterator iter;
-    for (iter = result.begin(); iter != result.end(); ++iter)
-    {
-      point = (*iter).second;
-      outputPoint[0] = point[0];
-      outputPoint[1] = -point[1];
-      outputPoint[2] = -point[2];
-      outputNormal[0] = point[3];
-      outputNormal[1] = -point[4];
-      outputNormal[2] = -point[5];
-      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), false, outputPoint);
-      TransformPointByVtkMatrix(const_cast<vtkMatrix4x4*>(cameraToWorld), true, outputNormal);
-      pointSet->InsertPoint((*iter).first, outputPoint);
-      surfaceNormals->InsertPoint((*iter).first, outputNormal);
-    }
-    pointSet->UpdateOutputInformation();
-  }
+  m_PIMPL->ExtractPoints(leftImage, rightImage, minSize, maxSize, blockSize, offset, leftCameraIntrinsics, rightCameraIntrinsics, rightToLeftRotationVector, rightToLeftTranslationVector, cameraToWorld, pointSet, surfaceNormals);
 }
-
 
 //-----------------------------------------------------------------------------
 } // end namespace

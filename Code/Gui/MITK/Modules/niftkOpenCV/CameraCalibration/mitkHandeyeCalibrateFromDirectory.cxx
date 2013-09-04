@@ -21,7 +21,7 @@
 #include <sstream>
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
-#include <FileHelper.h>
+#include <niftkFileHelper.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>

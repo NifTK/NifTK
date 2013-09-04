@@ -83,6 +83,8 @@ if(SlicerExecutionModel_FOUND)
       niftkGetMatchedTrackingMatrix
       niftkProjectTrackedPointsOnStereoVideo
       niftkFindAndTriangulateCrossHair
+      niftkUltrasoundPinCalibration
+      niftkTriangulate2DPointPairsTo3D
     )
   endif()  
 

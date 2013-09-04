@@ -7,7 +7,7 @@
 Welcome to the @NIFTK_PLATFORM@ technical manual. This manual provides the detailed technical information
 for the platform and any further information can be obtained be joining:
 
-\li <a href="@NIFTK_DEVELOPER_CONTACT@">the developers mailing list</a>
+\li <a href="@NIFTK_USER_CONTACT@">the users' mailing list</a>
 
 The aim of providing this manual is to enable developers to understand the architecture, the code design, 
 layout and conventions, and to start coding and contributing to the platform. Where necessary or informative 

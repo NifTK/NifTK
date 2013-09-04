@@ -20,7 +20,7 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageFileWriter.h>
 #include <itkProgressReporter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkLogHelper.h>
 

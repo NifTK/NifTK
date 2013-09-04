@@ -26,4 +26,5 @@ set(MODULE_CUSTOM_TESTS
   mitkReprojectionTest.cxx
   mitkProjectPointsOnStereoVideoTest.cxx
   mitkFindAndTriangulateCrossHairTest.cxx
+  mitkUltrasoundPinCalibrationRegressionTest.cxx
 )

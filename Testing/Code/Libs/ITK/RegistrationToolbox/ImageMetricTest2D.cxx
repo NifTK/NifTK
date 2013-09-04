@@ -24,7 +24,7 @@
 #include <itkNearestNeighborInterpolateImageFunction.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkSimilarityMeasure.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 int ImageMetricTest2D(int argc, char * argv[])
 {

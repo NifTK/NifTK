@@ -19,7 +19,7 @@
 #include <mitkITKImageImport.h>
 #include <mitkDataStorageUtils.h>
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 // ITK
 #include <itkResampleImageFilter.h>

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 #include <itkGE5000_TomosynthesisGeometry.h>
 #include <itkGE6000_TomosynthesisGeometry.h>

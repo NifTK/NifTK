@@ -16,7 +16,7 @@
 #define __itkBaseCTEFilter_txx
 
 #include "itkBaseCTEFilter.h"
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 
 #include <itkLogHelper.h>

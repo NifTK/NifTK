@@ -30,7 +30,7 @@
 #include <niftkVTK4PointsReader.h>
 #include <niftkVTKFunctions.h>
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkLogHelper.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>

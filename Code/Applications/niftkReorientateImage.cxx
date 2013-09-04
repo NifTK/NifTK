@@ -16,8 +16,8 @@
 #include <float.h>
 #include <iomanip>
 
-#include <ConversionUtils.h>
-#include <CommandLineParser.h>
+#include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 
 #include <itkCommandLineHelper.h>
 #include <itkConversionUtils.h>

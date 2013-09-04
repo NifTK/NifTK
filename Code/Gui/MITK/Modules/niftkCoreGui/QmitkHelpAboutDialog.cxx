@@ -52,7 +52,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString dashboardURL(NIFTK_DASHBOARD_URL);
   QString dashboardText(NIFTK_DASHBOARD_TEXT);
   QString userContact(NIFTK_USER_CONTACT);
-  QString developerContact(NIFTK_DEVELOPER_CONTACT);
   QString qtVersion(NIFTK_QT_VERSION);
   QString boostVersion(NIFTK_BOOST_VERSION);
   QString gdcmVersion(NIFTK_GDCM_VERSION);
@@ -209,11 +208,10 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "Further information can be obtained by:"
       "<ul>"
       "<li>Emailing the %1 <a href=\"%2\">users mailing list</a>.</li>"
-      "<li>Emailing the %1 <a href=\"%3\">developers mailing list</a>.</li>"
-      "<li>Visiting the %1 <a href=\"%4\">%5</a>.</li>"
+      "<li>Visiting the %1 <a href=\"%3\">%4</a>.</li>"
       "</ul>"
       "</p>"
-      ).arg(platformName).arg(userContact).arg(developerContact).arg(wikiURL).arg(wikiText);
+      ).arg(platformName).arg(userContact).arg(wikiURL).arg(wikiText);
 
   // Stick it all together.
   QString totalText =

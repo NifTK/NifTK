@@ -16,7 +16,7 @@
 #include <float.h>
 #include <iomanip>
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <niftkExtracellularVolumeFractionFromContrastEnhancedCTCLP.h>
 

@@ -15,7 +15,7 @@
 #ifndef __itkImageRegistrationFactory_txx
 #define __itkImageRegistrationFactory_txx
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "itkImageRegistrationFactory.h"
 #include <itkTransformFactory.h>
 #include <itkTransformFileReader.h>

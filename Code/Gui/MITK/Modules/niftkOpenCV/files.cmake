@@ -32,16 +32,14 @@ set(CPP_FILES
   CameraCalibration/mitkHandeyeCalibrate.cxx
   CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
   CameraCalibration/Undistortion.cxx
-  Registration/mitkRegistrationHelper.cxx
-  Registration/mitkStereoImageToModelMetric.cxx
-  Registration/mitkStereoImageToModelSSD.cxx
-  Registration/mitkRegisterProbeModelToStereoPair.cxx
+  CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   Registration/mitkArunLeastSquaresPointRegistration.cxx
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
-  TagTracking/mitkTagTrackingFacade.cxx
   TagTracking/mitkMonoTagExtractor.cxx
   TagTracking/mitkStereoTagExtractor.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
+  UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
+  UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
 )

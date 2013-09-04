@@ -691,7 +691,6 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout)
     bool hasBeenInitialised = m_LayoutInitialised[Index(layout)];
     if (m_RememberSettingsPerLayout && hasBeenInitialised)
     {
-      MITK_INFO << "QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout) remember, not initialised" << std::endl;
       if (orientation != MIDAS_ORIENTATION_UNKNOWN)
       {
         int sliceIndex = m_SliceIndexes[Index(orientation)];

@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <itkCastImageFilter.h>
 #include <itkSubtractImageFilter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 /*!
  * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx

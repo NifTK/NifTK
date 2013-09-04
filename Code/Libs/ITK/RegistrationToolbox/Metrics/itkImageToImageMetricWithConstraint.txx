@@ -15,7 +15,7 @@
 #ifndef _itkImageToImageMetricWithConstraint_txx
 #define _itkImageToImageMetricWithConstraint_txx
 #include <itkImageToImageMetric.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 #include <itkUCLMacro.h>
 

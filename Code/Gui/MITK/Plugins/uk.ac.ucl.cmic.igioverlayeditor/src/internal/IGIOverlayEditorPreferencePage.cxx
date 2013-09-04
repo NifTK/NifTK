@@ -18,7 +18,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QFormLayout>
-#include <QCheckBox>
+#include <QRadioButton>
 #include <QColorDialog>
 #include <ctkPathLineEdit.h>
 #include <berryIPreferencesService.h>
@@ -35,6 +35,7 @@ const std::string IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE("camera t
 IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
 : m_MainControl(0)
 , m_CameraTrackingMode(NULL)
+, m_ImageTrackingMode(NULL)
 , m_ColorButton1(NULL)
 , m_ColorButton2(NULL)
 {
@@ -60,11 +61,14 @@ void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 
   QFormLayout *formLayout = new QFormLayout;
 
-  m_CameraTrackingMode = new QCheckBox();
+  m_ImageTrackingMode = new QRadioButton();
+  formLayout->addRow("image tracking mode", m_ImageTrackingMode);
+
+  m_CameraTrackingMode = new QRadioButton();
   formLayout->addRow("camera tracking mode", m_CameraTrackingMode);
 
   m_CalibrationFileName = new ctkPathLineEdit();
-  formLayout->addRow("calibration transform", m_CalibrationFileName);
+  formLayout->addRow("hand-eye calibration transform", m_CalibrationFileName);
 
   // gradient background
   QLabel* gBName = new QLabel;
@@ -174,7 +178,10 @@ void IGIOverlayEditorPreferencePage::Update()
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
   m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
-  m_CameraTrackingMode->setChecked(m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true));
+
+  bool isCameraTracking = m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true);
+  m_CameraTrackingMode->setChecked(isCameraTracking);
+  m_ImageTrackingMode->setChecked(!isCameraTracking);
 }
 
 

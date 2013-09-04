@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Make Laparoscopic Ultrasound Probe Model</title>
+  <title>Make Laparoscopic Ultrasound Probe ARTag style Model</title>
   <description><![CDATA[Generates a VTK model to match the ARTag board created by aruco_create_board.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>

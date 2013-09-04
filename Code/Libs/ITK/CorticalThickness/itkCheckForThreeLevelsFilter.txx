@@ -17,7 +17,7 @@
 
 #include "itkCheckForThreeLevelsFilter.h"
 #include <itkImageRegionConstIteratorWithIndex.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 namespace itk
 {
