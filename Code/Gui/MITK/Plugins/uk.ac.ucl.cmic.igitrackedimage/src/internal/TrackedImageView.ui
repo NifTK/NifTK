@@ -53,6 +53,13 @@
       </layout>
      </item>
      <item>
+      <widget class="QCheckBox" name="m_DoUpdateCheckBox">
+       <property name="text">
+        <string>do update</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QmitkRenderWindow" name="m_RenderWindow" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
