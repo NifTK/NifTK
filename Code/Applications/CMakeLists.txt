@@ -282,7 +282,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkTestImage
   niftkThreshold
   niftkTransformation
-  #niftkTransformPoint3Dto2D
+  niftkTransformPoint3Dto2D
   niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities

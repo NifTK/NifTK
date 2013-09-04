@@ -25,7 +25,7 @@ namespace itk
 // Constructor with default arguments
 template<class TScalarType>
 Transform2D3D<TScalarType>::
-Transform2D3D() : Superclass(SpaceDimension,ParametersDimension)
+Transform2D3D()
 {
   // A default perspective transformation is the minimum trasformation required
   m_PerspectiveTransform = PerspectiveProjectionTransformType::New();
@@ -108,18 +108,22 @@ TransformPoint(const InputPointType &point) const
  
 // Compute the Jacobian in one position 
 template<class TScalarType >
-const typename Transform2D3D<TScalarType>::JacobianType & 
+const typename Transform2D3D<TScalarType>::JacobianType 
 Transform2D3D< TScalarType >::
-GetJacobian( const InputPointType &) const
+GetJacobian( const InputPointType &p ) const
 {
-  this->m_Jacobian.Fill( 0.0 );
-
-  // TODO
-
-  return this->m_Jacobian;
+  JacobianType tmp;
+  this->ComputeJacobianWithRespectToParameters( p, tmp );
+  return tmp;	
 }
 
-
+template<class TScalarType >
+void
+Transform2D3D<TScalarType>
+::ComputeJacobianWithRespectToParameters( const InputPointType &p, JacobianType &jacobian ) const
+{
+  jacobian.Fill( 0.0 );
+}
 
 } // namespace
 
