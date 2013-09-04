@@ -42,7 +42,7 @@ mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/In
 
 mitkAddCustomModuleTest(Video-Tracker_Matching mitkVideoTrackerMatchingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy)
   
-mitkAddCustomModuleTest(Reprojection-Test mitkReprojectionTest ${NIFTK_DATA_DIR}/Input/ameraCalibration/HandeyeFromDirectory/CertusCalibration)
+mitkAddCustomModuleTest(Reprojection-Test mitkReprojectionTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
 
 #Trac 2669 turning off the following tests as they are not very good unit tests, they take a long time to run and open up additional windows.
 if(OPENCV_WITH_FFMPEG)
