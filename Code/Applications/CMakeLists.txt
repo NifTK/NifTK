@@ -265,12 +265,12 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkMultiScaleHessianImageEnhancement3D
   niftkPadImage
   niftkProjectionGeometry
-  #niftkReorientateImage
+  niftkReorientateImage
   niftkRescale
   niftkResetDirectionField
   niftkResetVoxelDimensionsField
   niftkSegmentationStatistics
-  #niftkSeriesReadVolumeWrite
+  niftkSeriesReadVolumeWrite
   niftkSetBorderPixel
   niftkShiftProb
   niftkShiftScale
