@@ -51,7 +51,7 @@ int mitkHandeyeFromDirectoryTest ( int argc, char * argv[] )
     }
   }
                           
-  Calibrator->SetTrackerIndex(2);
+  Calibrator->SetTrackerIndex(0);
   Calibrator->SetAbsTrackerTimingError(40e6);
   Calibrator->SetFramesToUse(30);
   Calibrator->SetSortByDistance(true);
