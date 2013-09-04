@@ -204,7 +204,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkBasicImageFeatures3D
   niftkBilateralImageFilter
   niftkBlockMatching
-  #niftkBreastDicomSeriesReadImageWrite
+  niftkBreastDicomSeriesReadImageWrite
   niftkBSI
   niftkCombineSegmentations
   niftkComposeITKAffineTransformations
@@ -234,7 +234,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCurveFitRegistration
   niftkDecomposeAffineMatrix
   niftkDeformationFieldTargetRegistrationError
-  #niftkDicomSeriesReadImageWrite
+  niftkDicomSeriesReadImageWrite
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
