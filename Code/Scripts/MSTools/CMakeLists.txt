@@ -29,6 +29,7 @@ endif()
 set(python_scripts
     niftkBETter.py
     niftkNormalization.py
+    niftkAtrophyCalculator.py
     ${python_scripts}
 )
 foreach(script ${python_scripts})
