@@ -20,6 +20,7 @@
 
 #define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #if (defined(WIN32) || defined(_WIN32))
 #define FILE_SEPARATOR "\\"
@@ -147,6 +148,15 @@ namespace niftk
    * \throw logic_error if directory name is invalid
    */
   NIFTKCOMMON_WINEXPORT void GetRecursiveFilesInDirectory(const std::string& fullDirectoryName, std::vector<std::string> &fileNames);
+
+  /**
+   * A numeric string comparison operator, useful for sorting filenames into numeric order
+   * \param string1
+   * \param string2
+   * return comparison result
+   */
+  NIFTKCOMMON_WINEXPORT bool NumericStringCompare(const std::string& string1, const std::string& string2);
+
 
 } // end namespace
 
