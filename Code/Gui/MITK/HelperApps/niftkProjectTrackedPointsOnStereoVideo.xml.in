@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Get Matched Tracking Matrix</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <directory>
+      <name>calibrationInputDirectory</name>
+      <longflag>calibration</longflag>
+      <description>The directory containing the camera calibration files.</description>
+      <label>calibration Input directory.</label>
+    </directory>    
+
+    <file fileExtensions="*.txt">
+      <name>input3D</name>
+      <longflag>input3D</longflag>
+      <description>Input 3D points</description>
+      <label>Input 3D points</label>
+      <channel>input</channel>
+    </file>
+    
+    <file fileExtensions="*.txt">
+      <name>input2D</name>
+      <longflag>input2D</longflag>
+      <description>Input 2D points</description>
+      <label>Input 2D points</label>
+      <channel>input</channel>
+    </file>
+ 
+    <file>
+      <name>output3D</name>
+      <longflag>output3D</longflag>
+      <description>Output 3D points</description>
+      <label>Output 3D points</label>
+      <channel>ouput</channel>
+    </file>
+    
+    <file>
+      <name>output2D</name>
+      <longflag>output2D</longflag>
+      <description>Output 2D points</description>
+      <label>output 2D points</label>
+      <channel>output</channel>
+    </file>
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>0</default>
+    </integer>
+							
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>FlipTracking</name>
+      <longflag>FlipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+    
+    <boolean>
+      <name>Visualise</name>
+      <longflag>Visualise</longflag>
+      <description>Visualise the results</description>
+      <label>Visualise the results</label>
+      <default>0</default>
+    </boolean>
+   
+    <boolean>
+      <name>DrawAxes</name>
+      <longflag>DrawAxes</longflag>
+      <description>Draw camera axes on the visualisation</description>
+      <label>Draw camera axes on the visualisation</label>
+      <default>0</default>
+    </boolean>
+
+
+
+    <integer>
+	<name>trackerIndex</name>
+	<longflag>trackerIndex</longflag>
+	<description>The tracker index to use</description>
+	<label>The tracker index to use</label>
+	<default>0</default>
+    </integer>
+  </parameters>
+  
+</executable>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Get Matched Tracking Matrix</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, uses the video data to perform and intrinsic calibration and the tracking data to perform a handeye calibration.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <directory>
+      <name>outputDirectory</name>
+      <longflag>outputDirectory</longflag>
+      <description>Output the calibration results</description>
+      <label>Output results</label>
+      <channel>ouput</channel>
+    </directory>
+    
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>FlipTracking</name>
+      <longflag>FlipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+   
+    <boolean>
+      <name>FlipExtrinsic</name>
+      <longflag>FlipExtrinsic</longflag>
+      <description>Flip the Extrinsic matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the Extrinisic matrices</label>
+      <default>0</default>
+    </boolean>
+    
+    <boolean>
+      <name>Visualise</name>
+      <longflag>Visualise</longflag>
+      <description>Visualise the results</description>
+      <label>Visualise the results</label>
+      <default>0</default>
+    </boolean>
+   
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>0</default>
+    </integer>
+   
+    <integer>
+      <name>MaxTimingError</name>
+      <longflag>MaxTimingError</longflag>
+      <description>The maximum allowable timing error when choosing video and tracking pairs</description>
+      <label>The maxium allowable timing error when choosing video and tracking pairs</label>
+      <default>40e6</default>
+    </integer>
+
+
+    <integer>
+	<name>trackerIndex</name>
+	<longflag>trackerIndex</longflag>
+	<description>The tracker index to use</description>
+	<label>The tracker index to use</label>
+	<default>0</default>
+    </integer>
+    <integer>
+	<name>FramesToUse</name>
+	<longflag>FramesToUse</longflag>
+	<description>The target number of randomly selected video frames to use</description>
+	<label>The target number of randomly selected video frames to use</label>
+	<default>30</default>
+    </integer>
+    <boolean>
+      <name>SortByDistance</name>
+      <longflag>SortByDistance</longflag>
+      <description>Sort the tracking matrices by distance when doing the handeye</description>
+      <label>Sort the tracking matrices by distance when doing the handeye</label>
+      <default>0</default>
+    </boolean>
+   
+
+
+  </parameters>
+  
+</executable>
