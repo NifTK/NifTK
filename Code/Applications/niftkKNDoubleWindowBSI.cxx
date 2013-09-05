@@ -40,6 +40,8 @@
  * \li Dimensions: 3
  * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
+ * Added gBSI and pBSI calculation options: gBSI is generalized BSI, and pBSI is probabilistic BSI of Ledig et al. MICCAI 2012
+ *
  * \section niftkKNDoubleWindowBSICaveat Caveats
  * \li File sizes not checked.
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
@@ -57,8 +59,8 @@ typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
 typedef itk::ImageFileReader<IntImageType> IntReaderType;
 typedef itk::ImageFileWriter<IntImageType> WriterType;
 typedef itk::IntensityNormalisationCalculator<DoubleImageType, IntImageType> IntensityNormalisationCalculatorType;
-typedef itk::BoundaryShiftIntegralCalculator<DoubleImageType,IntImageType,IntImageType> BoundaryShiftIntegralFilterType;
-typedef itk::DoubleWindowBoundaryShiftIntegralCalculator<DoubleImageType,IntImageType,FloatImageType> DoubleWindowBoundaryShiftIntegralFilterType;
+typedef itk::BoundaryShiftIntegralCalculator<DoubleImageType,DoubleImageType,IntImageType> BoundaryShiftIntegralFilterType;
+typedef itk::DoubleWindowBoundaryShiftIntegralCalculator<DoubleImageType,DoubleImageType,FloatImageType> DoubleWindowBoundaryShiftIntegralFilterType;
 typedef itk::SimpleKMeansClusteringImageFilter< DoubleImageType, IntImageType, IntImageType > SimpleKMeansClusteringImageFilterType;
 typedef itk::MultipleDilateImageFilter<IntImageType> MultipleDilateImageFilterType;
 typedef itk::BinariseUsingPaddingImageFilter<IntImageType,IntImageType> BinariseUsingPaddingImageFilterType;
@@ -72,14 +74,18 @@ void KMeansClassification(SimpleKMeansClusteringImageFilterType::ParametersType&
   const IntImageType* mask, 
   int numberOfDilations,
   int numberOfClasses, 
-  const char* outputImageName)  
+  const char* outputImageName,
+  const char* tissueToRemoveMASKFilename)  
 {
   SimpleKMeansClusteringImageFilterType::Pointer simpleKMeansClusteringImageFilter = SimpleKMeansClusteringImageFilterType::New();
   BinariseUsingPaddingImageFilterType::Pointer binariseImageFilter = BinariseUsingPaddingImageFilterType::New();
   MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
   IntensityNormalisationCalculatorType::Pointer normalisationCalculator = IntensityNormalisationCalculatorType::New();
   WriterType::Pointer imageWriter = WriterType::New();
-    
+  /* This code is for introducing a mask during the normalization step */
+  DoubleReaderType::Pointer tissueToRemoveImageReader = DoubleReaderType::New();
+  
+  /*Start K-Means*/
   binariseImageFilter->SetPaddingValue(0);
   binariseImageFilter->SetInput(mask);
   binariseImageFilter->Update();
@@ -98,6 +104,48 @@ void KMeansClassification(SimpleKMeansClusteringImageFilterType::ParametersType&
     imageWriter->SetInput(simpleKMeansClusteringImageFilter->GetOutput());
     imageWriter->SetFileName(outputImageName);
     imageWriter->Update();
+  }
+  if (tissueToRemoveMASKFilename!=NULL && strcmp(tissueToRemoveMASKFilename, "dummy") != 0) {
+    
+    tissueToRemoveImageReader->SetFileName(tissueToRemoveMASKFilename);
+    tissueToRemoveImageReader->Update();
+    
+    itk::ImageRegionIterator<IntImageType> KmeansImageIterator(simpleKMeansClusteringImageFilter->GetOutput(), simpleKMeansClusteringImageFilter->GetOutput()->GetLargestPossibleRegion());
+    itk::ImageRegionConstIterator<DoubleImageType> InputImageIterator(image, image->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<DoubleImageType> lesionsImageIterator(tissueToRemoveImageReader->GetOutput(), tissueToRemoveImageReader->GetOutput()->GetLargestPossibleRegion());	    
+
+    int tissueCount[5];	
+    for(int i=0;i<numberOfClasses;i++) {
+	means[i]=0;
+	stds[i]=0;
+	tissueCount[i]=0;
+    }
+    int tissue=0;
+    for(KmeansImageIterator.GoToBegin(),InputImageIterator.GoToBegin(),lesionsImageIterator.GoToBegin();
+	!KmeansImageIterator.IsAtEnd() && !InputImageIterator.IsAtEnd() && !lesionsImageIterator.IsAtEnd(); 
+		++KmeansImageIterator, ++InputImageIterator, ++lesionsImageIterator) {
+		tissue=KmeansImageIterator.Get();
+		if(tissue>0 && lesionsImageIterator.Get()<1) {
+			means[tissue-1]+=InputImageIterator.Get();
+			tissueCount[tissue-1]++;
+		}	
+    }
+    for(int i=0;i<numberOfClasses;i++) {
+	means[i]=means[i]/tissueCount[i];
+    }
+    for(KmeansImageIterator.GoToBegin(),InputImageIterator.GoToBegin(),lesionsImageIterator.GoToBegin();
+	!KmeansImageIterator.IsAtEnd() && !InputImageIterator.IsAtEnd() && !lesionsImageIterator.IsAtEnd(); 
+		++KmeansImageIterator, ++InputImageIterator, ++lesionsImageIterator) {
+		tissue=KmeansImageIterator.Get();
+		if(tissue>0 && lesionsImageIterator.Get()<1) {
+			double value=InputImageIterator.Get()-means[tissue-1];
+			stds[tissue-1]+=value*value;
+		}
+		else KmeansImageIterator.Set(0);
+    }
+    for(int i=0;i<numberOfClasses;i++) {
+	stds[i]= sqrt(stds[i]/tissueCount[i]);
+    }
   }
 }
 
@@ -197,7 +245,8 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
   const itk::Array<double>& baselineFinalStds, const itk::Array<double>& repeatFinalStds, 
   double slope, double intercept, int windowAverageMode, double minSecondWindowWidth, 
   const char* firstBSIMapName, const char* secondBSIMapName, 
-  double userLowerCSFGMWindowValue, double userUpperCSFGMWindowValue, double userLowerGMWMWindowValue, double userUpperGMWMWindowValue)
+  double userLowerCSFGMWindowValue, double userUpperCSFGMWindowValue, double userLowerGMWMWindowValue, double userUpperGMWMWindowValue,
+  char* resultFileName,unsigned int pBSIComputation)
 {
   typedef itk::Image<double, 3> DoubleImageType;
   typedef itk::Image<float, 3> FloatImageType;
@@ -214,14 +263,16 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
   
   DoubleReaderType::Pointer baselineBSIImageReader = DoubleReaderType::New();
   DoubleReaderType::Pointer repeatBSIImageReader = DoubleReaderType::New();
-  IntReaderType::Pointer baselineBSIMaskReader = IntReaderType::New();
-  IntReaderType::Pointer repeatBSIMaskReader = IntReaderType::New();
+  DoubleReaderType::Pointer baselineBSIMaskReader = DoubleReaderType::New();
+  DoubleReaderType::Pointer repeatBSIMaskReader = DoubleReaderType::New();
+  
   // Normalise the intensity using the linear regression of CSF, GM and WM intensities, mapping to the baseline scan. 
   baselineBSIImageReader->SetFileName(baselineImageName);
   baselineBSIImageReader->Update();
   repeatBSIImageReader->SetFileName(repeatImageName);
   repeatBSIImageReader->Update();
   
+
   itk::ImageRegionIterator<DoubleImageType> baselineImageIterator(baselineBSIImageReader->GetOutput(), baselineBSIImageReader->GetOutput()->GetLargestPossibleRegion());
   itk::ImageRegionIterator<DoubleImageType> repeatImageIterator(repeatBSIImageReader->GetOutput(), repeatBSIImageReader->GetOutput()->GetLargestPossibleRegion());
   
@@ -232,7 +283,7 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
   
   baselineImageIterator.GoToBegin();
   repeatImageIterator.GoToBegin();
-  
+
   for (; !baselineImageIterator.IsAtEnd(); ++baselineImageIterator, ++repeatImageIterator)
   {
     double baselineValue = baselineImageIterator.Get();
@@ -316,10 +367,30 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
   std::cout << "upperGreyWhiteWindow," << baselineUpperGreyWhiteWindow << "," << repeatUpperGreyWhiteWindow << "," << upperGreyWhiteWindow << ",";
   
   BoundaryShiftIntegralFilterType::Pointer bsiFilter = BoundaryShiftIntegralFilterType::New();
-  IntReaderType::Pointer subROIMaskReader = IntReaderType::New();
+  DoubleReaderType::Pointer subROIMaskReader = DoubleReaderType::New();
   
   baselineBSIMaskReader->SetFileName(baselineMaskName);
   repeatBSIMaskReader->SetFileName(repeatMaskName);
+  
+  // Ferran
+  bsiFilter->SetBaselineImage(baselineBSIImageReader->GetOutput());
+  bsiFilter->SetBaselineMask(baselineBSIMaskReader->GetOutput());
+  bsiFilter->SetRepeatImage(repeatBSIImageReader->GetOutput());
+  bsiFilter->SetRepeatMask(repeatBSIMaskReader->GetOutput());
+  bsiFilter->SetBaselineIntensityNormalisationFactor(1);
+  bsiFilter->SetRepeatIntensityNormalisationFactor(1);
+  bsiFilter->SetNumberOfErosion(numberOfErosion);
+  bsiFilter->SetNumberOfDilation(numberOfDilation);
+  bsiFilter->SetLowerCutoffValue(lowerWindow);
+  bsiFilter->SetUpperCutoffValue(upperWindow);
+  bsiFilter->SetProbabilisticBSI(pBSIComputation);
+  if (subROIMaskName != NULL) {
+     subROIMaskReader->SetFileName(subROIMaskName);
+     bsiFilter->SetSubROIMask(subROIMaskReader->GetOutput()); 
+  }
+  bsiFilter->Compute();
+ 
+  // End Ferran 
   
   // Double window BSI without double counting. 
   doubleWindowBSIFilter->SetBaselineImage(baselineBSIImageReader->GetOutput());
@@ -335,29 +406,34 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
   doubleWindowBSIFilter->SetSecondLowerCutoffValue(lowerGreyWhiteWindow);
   doubleWindowBSIFilter->SetSecondUpperCutoffValue(upperGreyWhiteWindow);
   doubleWindowBSIFilter->SetMinSecondWindowWidth(minSecondWindowWidth); 
+  doubleWindowBSIFilter->SetProbabilisticBSI(pBSIComputation);
   if (subROIMaskName != NULL)
   {
     std::cout << "subROI," << subROIMaskName << ",";
     subROIMaskReader->SetFileName(subROIMaskName);
     doubleWindowBSIFilter->SetSubROIMask(subROIMaskReader->GetOutput()); 
   }
+
   if (weightImageName != NULL)
   {
     std::cout << "weight," << weightImageName << ","; 
     weightImageReader->SetFileName(weightImageName); 
     doubleWindowBSIFilter->SetWeightImage(weightImageReader->GetOutput()); 
   }
+  else {
+	  doubleWindowBSIFilter->SetWeightImage(bsiFilter->GetXORMap());
+  }
   
   doubleWindowBSIFilter->Compute(); 
   
   if (bsiMaskName != NULL && strlen(bsiMaskName) > 0)
   {
-    WriterType::Pointer imageWriter = WriterType::New(); 
-    imageWriter->SetInput(doubleWindowBSIFilter->GetBSIMask());
+    DoublerWriterType::Pointer imageWriter = DoublerWriterType::New(); 
+    imageWriter->SetInput(bsiFilter->GetXORMap());
     imageWriter->SetFileName(bsiMaskName);
     imageWriter->Update();
   }
-  
+   
   std::cout << "CSF-GM BSI," << doubleWindowBSIFilter->GetFirstBoundaryShiftIntegral() << "," 
             << "GM-WM BSI," << doubleWindowBSIFilter->GetSecondBoundaryShiftIntegral() << ","
             << "DW BSI," << doubleWindowBSIFilter->GetBoundaryShiftIntegral() << ","; 
@@ -375,10 +451,52 @@ double calculateKNBSI(const char* baselineImageName, const char* repeatImageName
     bsiMapWriter->SetFileName(secondBSIMapName); 
     bsiMapWriter->Update(); 
   }
+  if (resultFileName != NULL && strlen(resultFileName) > 0)
+  {
+	DoubleImageType::Pointer bsiMap=bsiFilter->GetBSIMapSIENAStyle();
+	DoublerWriterType::Pointer writer = DoublerWriterType::New(); 
+	writer->SetInput(bsiMap); 
+	writer->SetFileName(resultFileName); 
+	writer->Update(); 
+  }
   
   return doubleWindowBSIFilter->GetBoundaryShiftIntegral();
 }
 
+/**
+ * Save BSI image. 
+ */
+void saveBSIImage(char* forward, char* backward,  char* resultBSIFilename)
+{
+	typedef itk::Image<double, 3> DoubleImageType;
+	typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
+	typedef itk::ImageFileWriter<DoubleImageType> DoublerWriterType;
+
+
+	DoubleReaderType::Pointer forwardImageReader = DoubleReaderType::New();
+	DoubleReaderType::Pointer backwardImageReader = DoubleReaderType::New();
+
+	forwardImageReader->SetFileName(forward);
+	forwardImageReader->Update();
+	backwardImageReader->SetFileName(backward);
+	backwardImageReader->Update();
+	
+	itk::ImageRegionIterator<DoubleImageType> forwardImageIterator(forwardImageReader->GetOutput(), forwardImageReader->GetOutput()->GetLargestPossibleRegion());
+	itk::ImageRegionIterator<DoubleImageType> backwardImageIterator(backwardImageReader->GetOutput(), backwardImageReader->GetOutput()->GetLargestPossibleRegion());
+
+	for(forwardImageIterator.GoToBegin(),backwardImageIterator.GoToBegin();
+		!forwardImageIterator.IsAtEnd() && !backwardImageIterator.IsAtEnd(); 
+		++forwardImageIterator, ++backwardImageIterator) {
+		double forwardBSI = forwardImageIterator.Get(); 
+		double backwardBSI = backwardImageIterator.Get(); 
+		double BSI=(forwardBSI-backwardBSI)/2.0;
+		backwardImageIterator.Set(static_cast<double>(BSI));
+	}
+	DoublerWriterType::Pointer writer = DoublerWriterType::New(); 
+	writer->SetInput(backwardImageReader->GetOutput()); 
+	writer->SetFileName(resultBSIFilename); 
+	writer->Update(); 
+}
 
 /**
  * Main program.
@@ -395,6 +513,9 @@ int main(int argc, char* argv[])
     std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 
     std::cerr << "  robust measure of cerebral volume changes from registered repeat MRI," << std::endl; 
     std::cerr << "  IEEE Trans Med Imaging. 1997 Oct;16(5):623-9." << std::endl << std::endl;
+    std::cerr << "Added gBSI and pBSI calculation options" << std::endl;
+    std::cerr << "  gBSI is generalized BSI " << std::endl;
+    std::cerr << "  pBSI is probabilistic BSI of Ledig et al. MICCAI 2012"  << std::endl << std::endl;  
     std::cerr << "The double window BSI aims to capture the boundary change between CSF and GM " << std::endl; 
     std::cerr << "as well as the boundary change between GM and WM. This is mainly used to calculate " << std::endl; 
     std::cerr << "the caudate BSI because one bounday of caudate is CSF/GM and the other side is GM/WM." << std::endl; 
@@ -425,7 +546,10 @@ int main(int argc, char* argv[])
     std::cerr << "         <Lower CSF-GM window value> (-1 for automatic)" << std::endl; 
     std::cerr << "         <Upper CSF-GM window value> (-1 for automatic)" << std::endl; 
     std::cerr << "         <Lower GM-WM window value> (-1 for automatic)" << std::endl; 
-    std::cerr << "         <Upper CSF-GM window value> (-1 for automatic)" << std::endl; 
+    std::cerr << "         <Upper CSF-GM window value> (-1 for automatic)" << std::endl;
+    std::cerr << "         <BSI method. 0 KN-BSI, 1 GBSI, 2 pBSI1, 3 pBSI gamma=0.5. Default is 0, that it computes KN-BSI>" << std::endl;
+    std::cerr << "         <output complete BSI image> (dummy to ignore it)" << std::endl;
+    std::cerr << "         <tissue to remove mask file name, is for masking lesions during the normalization step (dummy to ignore it)>" << std::endl;    
     std::cerr << "Notice that all the images and masks for intensity normalisation must " << std::endl;
     std::cerr << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
     std::cerr << "images and masks for BSI." << std::endl;
@@ -455,6 +579,9 @@ int main(int argc, char* argv[])
     double userUpperCSFGMWindowValue = -1.;
     double userLowerGMWMWindowValue = -1.;
     double userUpperGMWMWindowValue = -1.;
+    char *forwardbsi = NULL;
+    char *backwardbsi = NULL;
+    char* tissueToRemoveMASKFilename = NULL;
     if (argv[14] != NULL && strlen(argv[14]) > 0 && strcmp(argv[14], "dummy") != 0)
     {
       subROIMaskName = argv[14];
@@ -484,11 +611,11 @@ int main(int argc, char* argv[])
     {
       minSecondWindowWidth = atof(argv[21]); 
     }
-    if (argc > 22)
+    if (argc > 22 && strlen(argv[22]) > 0 && strcmp(argv[22], "dummy") != 0)
     {
       firstBSIMapName = argv[22];  
     }
-    if (argc > 23)
+    if (argc > 23 && strlen(argv[23]) > 0 && strcmp(argv[23], "dummy") != 0)
     {
       secondBSIMapName = argv[23];  
     }
@@ -508,7 +635,29 @@ int main(int argc, char* argv[])
     {
       userUpperGMWMWindowValue = atof(argv[27]); 
     }
+    char* resultBSIFilename = NULL;
+    unsigned int pBSIComputation=0;
     
+    if (argc > 28 && strlen(argv[28]) > 0)
+    {
+      pBSIComputation = atoi(argv[28]);
+    }
+    if (argc > 29 && strlen(argv[29]) > 0 && strcmp(argv[29], "dummy") != 0)
+    {
+      resultBSIFilename = argv[29];
+      forwardbsi=new char[20];
+      backwardbsi=new char[20];
+      strcpy(forwardbsi,"bsiforward.nii.gz");
+      strcpy(backwardbsi,"bsibackward.nii.gz");
+    }
+    if (argc > 30 && strlen(argv[30]) > 0 && strcmp(argv[30], "dummy") != 0)
+    {
+      tissueToRemoveMASKFilename = argv[30];
+    }
+    /*for(int i=0;i<argc;i++) {
+	std::cout<<"["<<i<<"] "<<argv[i]<<std::endl;
+    }*/
+
     DoubleReaderType::Pointer baselineNormalisationImageReader = DoubleReaderType::New();
     DoubleReaderType::Pointer repeatNormalisationImageReader = DoubleReaderType::New();
     IntReaderType::Pointer baselineNormalisationMaskReader = IntReaderType::New();
@@ -530,7 +679,7 @@ int main(int argc, char* argv[])
     normalisationCalculator->Compute();
     std::cout << "mean intensities," << normalisationCalculator->GetNormalisationMean1() << "," 
                                      << normalisationCalculator->GetNormalisationMean2() << ",";
-                                     
+                                
     SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalMeans(3);
     SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalStds(3);
     SimpleKMeansClusteringImageFilterType::ParametersType repeatFinalMeans(3);
@@ -552,7 +701,7 @@ int main(int argc, char* argv[])
     KMeansClassification(baselineFinalMeans, baselineFinalStds, 
                           baselineNormalisationImageReader->GetOutput(),
                           baselineNormalisationMaskReader->GetOutput(),
-                          numberOfDilationsForKMeans, 3, baselineKMeansOutputName);  
+                          numberOfDilationsForKMeans, 3, baselineKMeansOutputName,tissueToRemoveMASKFilename);  
     
     repeatFinalMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
     repeatFinalMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
@@ -560,7 +709,7 @@ int main(int argc, char* argv[])
     KMeansClassification(repeatFinalMeans, repeatFinalStds, 
                           repeatNormalisationImageReader->GetOutput(),
                           repeatNormalisationMaskReader->GetOutput(),
-                          numberOfDilationsForKMeans, 3, repeatKMeansOutputName);  
+                          numberOfDilationsForKMeans, 3, repeatKMeansOutputName,tissueToRemoveMASKFilename);  
     
     baselineMeans.push_back(normalisationCalculator->GetNormalisationMean1());
     repeatMeans.push_back(normalisationCalculator->GetNormalisationMean2());
@@ -569,7 +718,7 @@ int main(int argc, char* argv[])
       baselineMeans.push_back(baselineFinalMeans[index]);
       repeatMeans.push_back(repeatFinalMeans[index]);
     }
-    
+
     // Repeat (x) regress on baseline (y).  
     itk::BoundaryShiftIntegralCalculator<IntImageType,IntImageType,IntImageType>::PerformLinearRegression(repeatMeans, baselineMeans, &slopeRepeatBaseline, &interceptRepeatBaseline);      
     
@@ -580,7 +729,7 @@ int main(int argc, char* argv[])
     std::cout << "repeat means," << repeatFinalMeans[0] << "," << repeatFinalMeans[1] << "," << repeatFinalMeans[2] << ",";  
     std::cout << "baseline std," << baselineFinalStds[0] << "," << baselineFinalStds[1] << "," << baselineFinalStds[2] << ",";  
     std::cout << "repeat std," << repeatFinalStds[0] << "," << repeatFinalStds[1] << "," << repeatFinalStds[2] << ",";  
-  
+
     // Use the local GM mask to get the GM intensity. 
     // Dilate the mask by 3 and the k-means again. 
     IntReaderType::Pointer baselineLocalGMBaselineNormalisationMaskReader = IntReaderType::New();
@@ -643,14 +792,14 @@ int main(int argc, char* argv[])
                                   bsiMaskName, csfGreyWindowFactor, greyWhiteWindowFactor, numberOfBSIErosion, numberOfBSIDilation, localBaselineCSFWMMeans,
                                   localRepeatCSFWMMeans, localBaselineCSFWMStds, localRepeatCSFWMStds, slopeRepeatBaseline, interceptRepeatBaseline, 0,
                                   minSecondWindowWidth, firstBSIMapName, secondBSIMapName, 
-                                  userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue); 
+                                  userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue,forwardbsi,pBSIComputation); 
       
       // Backward BSI. 
       backwardBSI = calculateKNBSI(repeatBSIImageName, baselineBSIImageName, repeatBSIMaskName, baselineBSIMaskName, subROIMaskName, weightImageName, 
                                    bsiMaskName, csfGreyWindowFactor, greyWhiteWindowFactor, numberOfBSIErosion, numberOfBSIDilation, localRepeatCSFWMMeans,
                                    localBaselineCSFWMMeans, localRepeatCSFWMStds, localBaselineCSFWMStds, slopeBaselineRepeat, interceptBaselineRepeat, 0,
                                    minSecondWindowWidth, NULL, NULL, 
-                                   userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue); 
+                                   userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue,backwardbsi,pBSIComputation); 
     }
     else
     {
@@ -659,17 +808,23 @@ int main(int argc, char* argv[])
                                   bsiMaskName, csfGreyWindowFactor, greyWhiteWindowFactor, numberOfBSIErosion, numberOfBSIDilation, localBaselineCSFWMMeans,
                                   localRepeatCSFWMMeans, localBaselineCSFWMStds, localRepeatCSFWMStds, slopeRepeatBaseline, interceptRepeatBaseline, 1, 
                                   minSecondWindowWidth, firstBSIMapName, secondBSIMapName, 
-                                  userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue); 
+                                  userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue,forwardbsi,pBSIComputation); 
       
       // Backward BSI. 
       backwardBSI = calculateKNBSI(repeatBSIImageName, baselineBSIImageName, repeatBSIMaskName, baselineBSIMaskName, subROIMaskName, weightImageName, 
                                    bsiMaskName, csfGreyWindowFactor, greyWhiteWindowFactor, numberOfBSIErosion, numberOfBSIDilation, localRepeatCSFWMMeans,
                                    localBaselineCSFWMMeans, localRepeatCSFWMStds, localBaselineCSFWMStds, slopeBaselineRepeat, interceptBaselineRepeat, 2, 
                                    minSecondWindowWidth, NULL, NULL, 
-                                   userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue); 
+                                   userLowerCSFGMWindowValue, userUpperCSFGMWindowValue, userLowerGMWMWindowValue, userUpperGMWMWindowValue,backwardbsi,pBSIComputation); 
     }
     
     std::cout << "BSI," << forwardBSI << "," << -backwardBSI << "," << (forwardBSI-backwardBSI)/2.0 << std::endl;
+    
+  if(resultBSIFilename!=NULL) {
+		saveBSIImage(backwardbsi,backwardbsi,resultBSIFilename);
+		remove(forwardbsi);
+		remove(backwardbsi);
+  }
     
   }
   catch (itk::ExceptionObject& itkException)
