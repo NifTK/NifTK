@@ -1592,7 +1592,7 @@ cv::Point3d IterativeTriangulatePoint(
 std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
-  std::sort(files.begin(),files.end());
+  std::sort(files.begin(),files.end(),niftk::NumericStringCompare);
   std::vector<cv::Mat> myMatrices;
 
   if (files.size() > 0)
