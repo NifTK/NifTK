@@ -197,6 +197,8 @@ void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
   m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
   m_TransformCombo->setVisible(isCameraTracking);
   m_TransformLabel->setVisible(isCameraTracking);
+  m_ImageCombo->setVisible(isCameraTracking);
+  m_ImageLabel->setVisible(isCameraTracking);
 }
 
 
