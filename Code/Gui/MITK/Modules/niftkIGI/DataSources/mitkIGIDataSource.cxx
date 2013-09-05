@@ -220,9 +220,14 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     {
       m_BufferIterator = m_Buffer.begin();
     }
-    if (m_Buffer.size() == 1)
+    else if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
+    }
+    else if (m_PickLatestData)
+    {
+      m_BufferIterator = m_Buffer.end();
+      m_BufferIterator--;
     }
     else
     {
@@ -459,6 +464,7 @@ void IGIDataSource::StopPlayback()
 //-----------------------------------------------------------------------------
 void IGIDataSource::PlaybackData(igtlUint64 requestedTimeStamp)
 {
+  // nop
 }
 
 
