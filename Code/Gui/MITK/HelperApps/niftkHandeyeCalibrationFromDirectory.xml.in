@@ -42,6 +42,14 @@
       <label>Flip the tracking matrices</label>
       <default>0</default>
     </boolean>
+   
+    <boolean>
+      <name>FlipExtrinsic</name>
+      <longflag>FlipExtrinsic</longflag>
+      <description>Flip the Extrinsic matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the Extrinisic matrices</label>
+      <default>0</default>
+    </boolean>
     
     <boolean>
       <name>Visualise</name>
@@ -58,6 +66,15 @@
       <label>The video lag</label>
       <default>0</default>
     </integer>
+   
+    <integer>
+      <name>MaxTimingError</name>
+      <longflag>MaxTimingError</longflag>
+      <description>The maximum allowable timing error when choosing video and tracking pairs</description>
+      <label>The maxium allowable timing error when choosing video and tracking pairs</label>
+      <default>40e6</default>
+    </integer>
+
 
     <integer>
 	<name>trackerIndex</name>

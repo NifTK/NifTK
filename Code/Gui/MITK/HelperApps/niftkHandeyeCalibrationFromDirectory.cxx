@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkHandeyeCalibrationFromDirectory.h>
+#include <mitkHandeyeCalibrateFromDirectory.h>
 #include <niftkHandeyeCalibrationFromDirectoryCLP.h>
 
 int main(int argc, char** argv)
@@ -23,35 +23,19 @@ int main(int argc, char** argv)
   int returnStatus = EXIT_FAILURE;
   std::vector<double> ReprojectionError;
 
-  if ( trackingInputDirectory.length() == 0 ||
-    ! ( ( extrinsicInputDirectory.length() == 0 ) != ( extrinsicInputFile.length() == 0 )) )
-  {
-    std::cout << trackingInputDirectory.length() << " " << extrinsicInputDirectory.length() << " " << extrinsicInputFile.length() << std::endl;
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
-  }
- 
-  bool FlipTracking = ! DontFlipTracking;
-  bool FlipExtrin = FlipExtrinsics;
-  bool SortByDistance = ! ( DontSortByDistance || SortByAngle );
-
   try
   {
-    mitk::HandeyeCalibrate::Pointer calibrationObject = mitk::HandeyeCalibrate::New();
-    calibrationObject->SetFlipTracking(FlipTracking);
-    calibrationObject->SetFlipExtrinsic(FlipExtrin);
-    calibrationObject->SetSortByDistance(SortByDistance);
-    calibrationObject->SetSortByAngle(SortByAngle);
-    if ( extrinsicInputDirectory.length() == 0 )
-    {
-      ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,
-        extrinsicInputFile);
-    }
-    else
-    {
-      ReprojectionError = calibrationObject->Calibrate(trackingInputDirectory,
-        extrinsicInputDirectory);
-    }
+    mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();
+    Calibrator->SetDirectory(trackingInputDirectory);
+    Calibrator->SetTrackerIndex(trackerIndex);
+    Calibrator->SetAbsTrackerTimingError(MaxTimingError);
+    Calibrator->SetFramesToUse(FramesToUse);
+    Calibrator->SetSortByDistance(SortByDistance);
+    Calibrator->SetFlipTracking(FlipTracking);
+    Calibrator->SetFlipExtrinsic(FlipExtrinsic);
+    Calibrator->SetSortByAngle(false);
+    Calibrator->InitialiseTracking();
+    Calibrator->InitialiseVideo();
 
     returnStatus = EXIT_SUCCESS;
   }
@@ -66,6 +50,5 @@ int main(int argc, char** argv)
     returnStatus = -2;
   }
 
-  std::cout << "Reprojection error=" << ReprojectionError[0] << ", return status = " << returnStatus << std::endl;
   return returnStatus;
 }

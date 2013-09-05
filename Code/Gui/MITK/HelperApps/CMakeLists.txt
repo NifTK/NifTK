@@ -80,6 +80,7 @@ if(SlicerExecutionModel_FOUND)
       niftkCorrectVideoDistortion
       niftkProject3DPointsToStereoPair
       niftkHandeyeCalibration
+      niftkHandeyeCalibrationFromDirectory
       niftkGetMatchedTrackingMatrix
       niftkProjectTrackedPointsOnStereoVideo
       niftkFindAndTriangulateCrossHair
