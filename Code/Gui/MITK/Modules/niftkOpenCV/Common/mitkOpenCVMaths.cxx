@@ -369,7 +369,7 @@ cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   returnPoint.x = -100.0;
   returnPoint.y = -100.0;
 
-  if ( fabs ( line1[2] - line1[0] ) < 1e-6 || fabs (line2[2] - line2[0] ) < 1e-6 ) 
+  if ( line1[2] == line1[0]  || line2[2] == line2[0]  ) 
   {
     MITK_ERROR << "Intersect for vertical lines not implemented";
     return returnPoint;
