@@ -110,36 +110,30 @@ include(niftkMacroGetChecksum)
 ######################################################################
 
 set(EXTERNAL_PROJECTS
-  Boost
+  Boost  
   VTK
-  GDCM
-  ITK
-  SlicerExecutionModel
   DCMTK
-  CTK
+  GDCM
+  OpenCV
+  aruco  
+  ITK          
+  CTK          
+  MITK         
+  CGAL           
   NiftyLink
-# OpenCV is inserted here, just before MITK, if BUILD_IGI is ON
-  MITK
-  CGAL
   NiftySim
   NiftyReg
   NiftyRec
   NiftySeg
-  NifTKData
+  NifTKData  
+  SlicerExecutionModel  
 )
 
 if(BUILD_IGI)
-  list(FIND EXTERNAL_PROJECTS MITK MITK_POSITION_IN_EXTERNAL_PROJECTS)
-  list(INSERT EXTERNAL_PROJECTS ${MITK_POSITION_IN_EXTERNAL_PROJECTS} OpenCV)
   if(OPENCV_WITH_CUDA)
     message("Beware: You are building with OPENCV_WITH_CUDA! This means OpenCV will have a hard dependency on CUDA and will not work without it!")
   endif(OPENCV_WITH_CUDA)
 endif(BUILD_IGI)
-
-if(BUILD_IGI)
-  # aruco depends on opencv. Our root CMakeLists.txt should have taken care of validating BUILD_IGI thereby turning on OpenCV.
-  list(APPEND EXTERNAL_PROJECTS aruco)
-endif()
 
 foreach(p ${EXTERNAL_PROJECTS})
   include("CMake/CMakeExternals/${p}.cmake")
