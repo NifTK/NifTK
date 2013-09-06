@@ -60,7 +60,7 @@ public:
   /**
    * \brief Sets (copies) the point data into this object, and sets the number of values accordingly.
    */
-  void SetPoints(const std::vector< cv::Point2d > points);
+  void SetPoints(const std::vector< cv::Point3d > points);
 
   /**
    * \brief Sets the number of parameters being optimised.
@@ -131,7 +131,7 @@ protected:
 private:
 
   std::vector< cv::Mat >     m_Matrices;
-  std::vector< cv::Point2d > m_Points;
+  std::vector< cv::Point3d > m_Points;
   cv::Point3d                m_InvariantPoint;
   cv::Point2d                m_MillimetresPerPixel;
   unsigned int               m_NumberOfParameters;

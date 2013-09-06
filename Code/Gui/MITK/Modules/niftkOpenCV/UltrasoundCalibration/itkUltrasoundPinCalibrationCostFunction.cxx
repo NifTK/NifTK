@@ -61,7 +61,7 @@ void UltrasoundPinCalibrationCostFunction::SetMatrices(const std::vector< cv::Ma
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundPinCalibrationCostFunction::SetPoints(const std::vector< cv::Point2d > points)
+void UltrasoundPinCalibrationCostFunction::SetPoints(const std::vector< cv::Point3d > points)
 {
   m_Points = points;
   m_NumberOfValues = points.size() * 3;
@@ -208,7 +208,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 
     point(0,0) = m_Points[i].x;
     point(1,0) = m_Points[i].y;
-    point(2,0) = 0;
+    point(2,0) = m_Points[i].z;
     point(3,0) = 1;
 
     transformedPoint = combinedTransformation * point;
