@@ -270,8 +270,26 @@ void UndistortView::OnGoButtonClick()
             {
               try
               {
-                // this will stick props on both node and its image
-                niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
+                std::string   filename = calibparamitem->text().toStdString();
+                // cache the parsed calib data, to avoid repeatedly (every frame!) reading the same stuff.
+                std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>::iterator fc = m_ParamFileCache.find(filename);
+                if (fc != m_ParamFileCache.end())
+                {
+                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value! totally useless.
+                  mitk::CameraIntrinsicsProperty::Pointer calibprop = mitk::CameraIntrinsicsProperty::New(fc->second->GetValue());
+                  inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, calibprop);
+                  inputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, calibprop);
+                }
+                else
+                {
+                  // this will stick props on both node and its image
+                  niftk::Undistortion::LoadIntrinsicCalibration(filename, inputNode);
+                  mitk::CameraIntrinsicsProperty::Pointer calibprop = dynamic_cast<mitk::CameraIntrinsicsProperty*>(inputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName).GetPointer());
+                  assert(calibprop.IsNotNull());
+                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value! totally useless.
+                  m_ParamFileCache[filename] = mitk::CameraIntrinsicsProperty::New(calibprop->GetValue());
+                }
+
                 hascalib = true;
               }
               catch (...)
@@ -302,7 +320,7 @@ void UndistortView::OnGoButtonClick()
 
             // only do background undistortion if we are fairly certain that there is
             // calib data on the image/node. while Undistortion will handle things properly
-            // when not it will still generate an empty image which is pretty confusing to the user.
+            // when not, it will still generate an empty image, which is pretty confusing to the user.
             if (hascalib)
             {
               // as long as we have an Undistortion object it will take care of validating itself
@@ -451,6 +469,8 @@ void UndistortView::OnCellDoubleClicked(int row, int column)
 
           m_LastFile = file;
         }
+        // user chooses (or cancels) a new file, clear the cache to avoid stale data. 
+        m_ParamFileCache.clear();
         break;
       }
       // clicked on output
