@@ -79,7 +79,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
     this->m_LabelForUndecidedPixels = static_cast<typename TOutputImage::PixelType>(labelMap.rbegin()->first+1); 
   }
   // Allocate space for the output merged image. 
-  this->SetNumberOfOutputs(1); 
+  this->SetNumberOfIndexedInputs(1); 
   this->AllocateOutputs(); 
   
   // Allocate space for the average distance map and initialise it to max.   
