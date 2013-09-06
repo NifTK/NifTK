@@ -23,13 +23,14 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 endif()
 
 set(proj MITK)
-set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)  # Don't put CTK here, as it's optional, dependent on Qt.
+set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
-  set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK CTK)
+  list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  set(proj_DEPENDENCIES ${proj_DEPENDENCIES} OpenCV)
+  list(APPEND proj_DEPENDENCIES aruco OpenCV)
 endif(BUILD_IGI)
+
 set(MITK_DEPENDS ${proj})
 
 # explicitly try to tame windows headers.
@@ -445,6 +446,11 @@ if(NOT DEFINED MITK_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_MITK ${NIFTK_LOCATION_MITK})
 
+    set(mitk_additional_library_search_paths)
+    if(BUILD_IGI)
+      list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib)
+    endif()
+    
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
@@ -453,9 +459,6 @@ if(NOT DEFINED MITK_DIR)
       URL ${NIFTK_LOCATION_MITK}
       URL_MD5 ${NIFTK_CHECKSUM_MITK}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_MITK}
-#      GIT_REPOSITORY http://github.com/NifTK/MITK
-#      GIT_TAG cb009d8d52
-#      UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS
@@ -475,6 +478,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
+        -DMITK_ADDITIONAL_LIBRARY_SEARCH_PATHS:STRING=${mitk_additional_library_search_paths}
         -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
