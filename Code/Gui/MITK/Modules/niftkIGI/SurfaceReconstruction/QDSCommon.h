@@ -19,7 +19,6 @@
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core.hpp>
-#include <mitkCameraIntrinsics.h>
 
 
 // the ancient version of boost that comes with mitk does not have
@@ -82,15 +81,6 @@ CvPoint3D32f triangulate(
     float p1x, float p1y,
     const cv::Mat& intrinsic_right, const cv::Vec<float, 4>& distortion_right,
     const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
-    float* err = 0
-  );
-// for mitk stuff
-CvPoint3D32f triangulate(
-    float p0x, float p0y,
-    mitk::CameraIntrinsics::Pointer intrinsic_left,
-    float p1x, float p1y,
-    mitk::CameraIntrinsics::Pointer intrinsic_right,
-    const itk::Matrix<float, 4, 4>& left2right,//const cv::Mat& left2right_rotation, const cv::Mat& left2right_translation,
     float* err = 0
   );
 

@@ -80,6 +80,23 @@ struct NIFTKIGI_EXPORT RefPoint
 };
 
 
+#ifdef _MSC_VER
+// various bits rely on safely dll-exporting class members which may reference
+//  crt components (that may not be explicitly declared to be exported).
+// this checks that we are building against the dll version of the crt.
+#ifndef _DLL
+#ifdef _MT
+#error You are compiling against the static version of the CRT. This is not supported! Choose DLL instead!
+#else
+#pragma message("Warning: cannot tell which CRT version you are building with. Stuff might fail.")
+#endif
+#endif
+
+#pragma warning(push)
+#pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
+#endif
+
+
 class NIFTKIGI_EXPORT SequentialCpuQds : public QDSInterface
 {
 
@@ -153,6 +170,12 @@ private:
   // used only for disparity image debugging
   const int   m_MaxDisparity;
 };
+
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 
 } // namespace
 
