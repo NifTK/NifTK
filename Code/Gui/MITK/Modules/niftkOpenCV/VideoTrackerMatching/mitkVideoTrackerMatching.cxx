@@ -500,6 +500,11 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   pointsInLensCS.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
 
+  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  {
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    return;
+  }
 
   std::vector < std::vector <cv::Point3f> > standardDeviations;
   if ( fout ) 
@@ -635,13 +640,67 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
 
 }
 //---------------------------------------------------------------------------
-void VideoTrackerMatching::OptimiseHandEyeCalibratiion(std::string calibrationfilename ,
+void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfilename ,
     bool visualise, std::string fileout)
-{}
+{
+  if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
+    return;
+  }
+
+  std::ofstream fout;
+  if ( fileout.length() != 0 ) 
+  {
+    fout.open(fileout.c_str());
+    if ( !fout )
+    {
+      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
+    }
+  }
+
+  std::vector <cv::Point3f> pointsInLensCS;
+  pointsInLensCS.clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
+
+  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  {
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    return;
+  }
+
+}
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::HandeyeSensitivityTest(std::string calibrationfilename ,
     bool visualise, std::string fileout)
-{}
+{
+ if ( !m_Ready )
+  {
+    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
+    return;
+  }
+
+  std::ofstream fout;
+  if ( fileout.length() != 0 ) 
+  {
+    fout.open(fileout.c_str());
+    if ( !fout )
+    {
+      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
+    }
+  }
+
+  std::vector <cv::Point3f> pointsInLensCS;
+  pointsInLensCS.clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
+
+  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
+  {
+    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    return;
+  }
+
+}
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
 {
@@ -694,20 +753,20 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   }
 } 
 //---------------------------------------------------------------------------
-std::vector <cv::Point3f> VideoTrackerMatching::ReadPointsInLensCSFile(calibrationfilename)
+std::vector <cv::Point3f> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename)
 {
+  std::vector <cv::Point3f> pointsInLensCS;
+  pointsInLensCS.clear();
   std::ifstream fin(calibrationfilename.c_str());
   if ( !fin )
   {
     MITK_WARN << "Failed to open points in lens CS file " << calibrationfilename;
-    return;
+    return pointsInLensCS;
   }
   std::string line;
   unsigned int frameNumber; 
   unsigned int linenumber = 0;
   
-  std::vector <cv::Point3f> pointsInLensCS;
-  pointsInLensCS.clear();
 
   while ( getline(fin,line) )
   {
@@ -735,11 +794,6 @@ std::vector <cv::Point3f> VideoTrackerMatching::ReadPointsInLensCSFile(calibrati
     }
   }
   fin.close();
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
-  {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
-    return;
-  }
   return pointsInLensCS;
 }
 } // namespace
