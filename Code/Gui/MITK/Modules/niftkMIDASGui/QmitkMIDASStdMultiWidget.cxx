@@ -22,8 +22,8 @@
 #include <QGridLayout>
 #include <mitkMIDASOrientationUtils.h>
 
-#include <mitkGetModuleContext.h>
-#include <mitkModuleRegistry.h>
+#include <usGetModuleContext.h>
+#include <usModuleRegistry.h>
 #include <mitkVtkLayerController.h>
 
 #include "vtkSideAnnotation.h"
@@ -2081,15 +2081,15 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
     // Here we create our own display interactor...
     m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers);
 
-    mitk::Module* niftkMIDASModule = mitk::ModuleRegistry::GetModule("niftkMIDAS");
+    us::Module* niftkMIDASModule = us::ModuleRegistry::GetModule("niftkMIDAS");
     m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkMIDASModule);
     m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 
     // ... and register it as listener via the micro services.
-    mitk::ServiceProperties props;
+    us::ServiceProperties props;
     props["name"] = std::string("DisplayInteractor");
 
-    mitk::ModuleContext* moduleContext = mitk::GetModuleContext();
+    us::ModuleContext* moduleContext = us::GetModuleContext();
     m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
   }
   else
