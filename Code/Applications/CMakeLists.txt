@@ -80,6 +80,7 @@ if(SlicerExecutionModel_FOUND)
     niftkLogInvertImage
     niftkMultiply
     niftkNegateImage
+    niftkSubsampleImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
@@ -203,12 +204,12 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkBasicImageFeatures3D
   niftkBilateralImageFilter
   niftkBlockMatching
-  #niftkBreastDicomSeriesReadImageWrite
+  niftkBreastDicomSeriesReadImageWrite
   niftkBSI
   niftkCombineSegmentations
   niftkComposeITKAffineTransformations
   niftkComputeImageHistogram
-  #niftkComputeJointHistogram
+  niftkComputeJointHistogram
   niftkComputeMeanTransformation
   niftkConnectedComponents
   #niftkContourExtractor2DImageFilter
@@ -233,7 +234,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkCurveFitRegistration
   niftkDecomposeAffineMatrix
   niftkDeformationFieldTargetRegistrationError
-  #niftkDicomSeriesReadImageWrite
+  niftkDicomSeriesReadImageWrite
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
@@ -264,25 +265,24 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkMultiScaleHessianImageEnhancement3D
   niftkPadImage
   niftkProjectionGeometry
-  #niftkReorientateImage
+  niftkReorientateImage
   niftkRescale
   niftkResetDirectionField
   niftkResetVoxelDimensionsField
   niftkSegmentationStatistics
-  #niftkSeriesReadVolumeWrite
+  niftkSeriesReadVolumeWrite
   niftkSetBorderPixel
   niftkShiftProb
   niftkShiftScale
   niftkShrinkImage
   niftkSTAPLE
-  #niftkSubsampleImage
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
   niftkTestCompareImage
   niftkTestImage
   niftkThreshold
   niftkTransformation
-  #niftkTransformPoint3Dto2D
+  niftkTransformPoint3Dto2D
   niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
@@ -307,9 +307,9 @@ if(VTK_FOUND)
   # Add new programs to this list.
   ##############################################################
   set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
-    #niftkBreastMaskSegmentationFromMRI
+    niftkBreastMaskSegmentationFromMRI
     niftkConvertImageToVTKStructuredGrid
-    #niftkConvertNiftiVectorImage
+    niftkConvertNiftiVectorImage
     niftkDecimatePolyData
     niftkGradientVectorField
     niftkMapVolumeDataToPolyDataVertices

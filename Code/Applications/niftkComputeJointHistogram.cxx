@@ -23,7 +23,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkJoinImageFilter.h>
-#include <itkImageToHistogramGenerator.h>
+#include <itkImageToHistogramFilter.h>
 #include <itkUnaryFunctorImageFilter.h>
 #include <itkNormalizeImageFilter.h>
 #include <itkCastImageFilter.h>
@@ -169,7 +169,7 @@ int main( int argc, char *argv[] )
 
   typedef JoinFilterType::OutputImageType VectorImageType;
 
-  typedef itk::Statistics::ImageToHistogramGenerator< VectorImageType >  HistogramGeneratorType;
+  typedef itk::Statistics::ImageToHistogramFilter< VectorImageType >  HistogramGeneratorType;
 
   HistogramGeneratorType::Pointer histogramGenerator = HistogramGeneratorType::New();
 
@@ -180,15 +180,15 @@ int main( int argc, char *argv[] )
   else
     histogramGenerator->SetMarginalScale( 10. );
 
-  typedef HistogramGeneratorType::SizeType SizeType;
+  typedef HistogramGeneratorType::HistogramSizeType SizeType;
 
   SizeType size;
 
   size[0] = nbins1;  // number of bins for the first  channel
   size[1] = nbins2;  // number of bins for the second channel
 
-  histogramGenerator->SetNumberOfBins( size );
-  histogramGenerator->Compute();
+  histogramGenerator->SetHistogramSize( size );
+  histogramGenerator->Update();
 
 
 

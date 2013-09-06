@@ -15,7 +15,7 @@
 #ifndef itkTransform2D3D_h
 #define itkTransform2D3D_h
 
-#include <itkExceptionObject.h>
+#include <itkMacro.h>
 #include <iostream>
 
 #include <itkTransform.h>
@@ -115,8 +115,11 @@ public:
   OutputPointType  TransformPoint(const InputPointType  &point ) const;
 
   /** Compute the Jacobian Matrix of the transformation at one point */
-  virtual const JacobianType & GetJacobian(const InputPointType  &point ) const;
+  virtual const JacobianType GetJacobian(const InputPointType  &point ) const;
 
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType & point,
+                                                      JacobianType & jacobian ) const;
+  
 protected:
     Transform2D3D();
     ~Transform2D3D();
