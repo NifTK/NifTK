@@ -28,6 +28,7 @@
 #include <Undistortion.h>
 #include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
+#include <mitkCameraIntrinsicsProperty.h>
 
 
 const std::string UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
@@ -261,44 +262,83 @@ void UndistortView::OnGoButtonClick()
         // it could simply be a result of a stale table, so sliently ignoring it would be an option.
         if (inputNode.IsNotNull())
         {
-          // FIXME: this is not a good place to load/override the node's calibration. put it somewhere else.
-          if (calibparamitem != 0)
-          {
-            // this will stick props on both node and its image
-            niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
-          }
-
           mitk::Image::Pointer    inputImage = dynamic_cast<mitk::Image*>(inputNode->GetData());
           if (inputImage.IsNotNull())
           {
-            // as long as we have an Undistortion object it will take care of validating itself
-            BOOST_AUTO(ci, m_UndistortionMap.find(inputImage));
-            if (ci == m_UndistortionMap.end())
+            bool    hascalib = false;
+            if (calibparamitem != 0)
             {
-              niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
-              // store the new Undistortion object in our cache
-              // note: insert() returns an iterator to the new insertion location
-              ci = m_UndistortionMap.insert(std::make_pair(inputImage, undist)).first;
+              try
+              {
+                // this will stick props on both node and its image
+                niftk::Undistortion::LoadIntrinsicCalibration(calibparamitem->text().toStdString(), inputNode);
+                hascalib = true;
+              }
+              catch (...)
+              {
+                std::cerr << "Failed loading calib data from file " << calibparamitem->text().toStdString() << std::endl;
+                hascalib = false;
+              }
+            }
+            else
+            {
+              // if there is no overriding calib file set for this image
+              // then there has to be one defined on the image/node already.
+              mitk::BaseProperty::Pointer   imgprop = inputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+              if (imgprop.IsNull())
+              {
+                imgprop = inputNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+              }
+
+              if (imgprop.IsNotNull())
+              {
+                mitk::CameraIntrinsicsProperty::Pointer imgcalib = dynamic_cast<mitk::CameraIntrinsicsProperty*>(imgprop.GetPointer());
+                if (imgcalib.IsNotNull())
+                {
+                  hascalib = true;
+                }
+              }
             }
 
-            mitk::Image::Pointer      outputImage;
-            mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
-            if (outputNode.IsNotNull())
+            // only do background undistortion if we are fairly certain that there is
+            // calib data on the image/node. while Undistortion will handle things properly
+            // when not it will still generate an empty image which is pretty confusing to the user.
+            if (hascalib)
             {
-              outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());
+              // as long as we have an Undistortion object it will take care of validating itself
+              BOOST_AUTO(ci, m_UndistortionMap.find(inputImage));
+              if (ci == m_UndistortionMap.end())
+              {
+                niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+                // store the new Undistortion object in our cache
+                // note: insert() returns an iterator to the new insertion location
+                ci = m_UndistortionMap.insert(std::make_pair(inputImage, undist)).first;
+              }
+
+              mitk::Image::Pointer      outputImage;
+              mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(outputitem->text().toStdString());
+              if (outputNode.IsNotNull())
+              {
+                outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());
+              }
+
+              // check that output image is correct size.
+              ci->second->PrepareOutput(outputImage);
+
+              WorkItem    wi;
+              wi.m_InputImage = inputImage;
+              wi.m_OutputImage = outputImage;
+              wi.m_OutputNodeName = outputitem->text().toStdString();
+              wi.m_InputNodeName = nodename;
+              wi.m_Proc = ci->second;
+
+              m_BackgroundQueue.push_back(wi);
             }
-
-            // check that output image is correct size.
-            ci->second->PrepareOutput(outputImage);
-
-            WorkItem    wi;
-            wi.m_InputImage = inputImage;
-            wi.m_OutputImage = outputImage;
-            wi.m_OutputNodeName = outputitem->text().toStdString();
-            wi.m_InputNodeName = nodename;
-            wi.m_Proc = ci->second;
-
-            m_BackgroundQueue.push_back(wi);
+            else
+            {
+              nameitem->setCheckState(Qt::Unchecked);
+              std::cerr << "Undistortion: skipping node " << nodename << " without calib data" << std::endl;
+            }
           }
         }
         else
