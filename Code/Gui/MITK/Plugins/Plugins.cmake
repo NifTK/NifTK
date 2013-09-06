@@ -58,7 +58,7 @@ set(PROJECT_PLUGINS
 
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.  
   Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
-  Plugins/it.unito.cim.intensityprofile:ON
+  Plugins/it.unito.cim.intensityprofile:OFF
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
