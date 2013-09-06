@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkOpenCVMaths.h"
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace mitk {
 
@@ -508,7 +509,7 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
   
-    if ( ! ( isnan(points[i].x) || isnan(points[i].y) || isnan(points[i].z) ) )
+    if ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) )
     { 
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -534,7 +535,7 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
   goodPoints = 0;
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
-    if ( ! ( isnan(points[i].x) || isnan(points[i].y) || isnan(points[i].z) ) )
+    if ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) )
     {
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
@@ -562,7 +563,7 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
   goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
-    if ( ( ! ( isnan(points[i].x) || isnan(points[i].y) || isnan(points[i].z) ) ) &&
+    if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
          ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
          ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
          ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
@@ -589,7 +590,7 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
 
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
-    if ( ( ! ( isnan(points[i].x) || isnan(points[i].y) || isnan(points[i].z) ) ) &&
+    if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
          ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
          ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
          ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
