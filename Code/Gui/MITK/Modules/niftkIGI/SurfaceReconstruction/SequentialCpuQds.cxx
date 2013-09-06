@@ -188,8 +188,8 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
         continue;
       }
 
-      float   dx = x - r[0];
-      float   dy = y - r[1];
+      float   dx = (float) (x - (int) r[0]);
+      float   dy = (float) (y - (int) r[1]);
       float   d = std::sqrt(dx*dx + dy*dy);
       d = std::max(d, 0.0f);
       d = std::min(d, (float) m_MaxDisparity);
