@@ -104,6 +104,7 @@ private:
   QRadioButton       *m_SaveOnUpdate;
   QRadioButton       *m_SaveOnReceive;
   QCheckBox          *m_SaveInBackground;
+  QCheckBox          *m_PickLatestData;
 
   bool m_Initializing;
 
