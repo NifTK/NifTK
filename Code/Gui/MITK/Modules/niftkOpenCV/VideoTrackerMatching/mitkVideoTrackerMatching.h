@@ -107,6 +107,23 @@ public:
    */
   void TemporalCalibration (std::string filename, int windowLow = -100, int windowHigh = 100, bool visualise = false , std::string fileout = "" );
 
+  /**
+   * \brief Pass a file name that defines the position of a point fixed in world
+   * coordinates relative to the camera lens. The world position of the point and 
+   * the handeye calibration are optimised to minimise the residual error of the 
+   * reconstructed point
+   */
+  void OptimiseHandeyeCalibration (std::string filename, bool visualise = false , std::string fileout = "" );
+
+  /**
+   * \brief Pass a file name that defines the position of a point fixed in world
+   * coordinates relative to the camera lens. The world position of the point is 
+   * is determined using a range of perturbed values for the handeye matrix. The
+   * variance in the residual reconstruction error is used to determine the 
+   * sensitivity of the system to errors in the hand eye calibration
+   */
+  void HandeyeSensitivityTest (std::string filename, bool visualise = false , std::string fileout = "" );
+
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();
@@ -131,6 +148,11 @@ private:
   void                     ProcessFrameMapFile();
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
+  /**
+   * \brief Reads a file that defines the position of a point fixed in world
+   * coordinates relative to the camera lens.
+   */
+  std::vector<cv::Point3f> ReadPointsInLensCSFile (std::string filename);
   std::vector<cv::Mat>     m_CameraToTracker;
 
   std::vector <unsigned long long>
