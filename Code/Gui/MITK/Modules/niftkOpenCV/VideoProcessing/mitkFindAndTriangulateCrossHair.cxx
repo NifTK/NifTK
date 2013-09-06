@@ -213,12 +213,15 @@ void FindAndTriangulateCrossHair::Triangulate()
     m_ScreenPoints.push_back(screenPoints);
     if ( m_Visualise ) 
     {
+      IplImage leftIpl(leftFrame);
+      IplImage rightIpl(rightFrame);
+      IplImage processedIpl(leftCanny);
       IplImage *smallleft = cvCreateImage (cvSize(960, 270), 8,3);
-      cvResize (&(IplImage(leftFrame)), smallleft,CV_INTER_LINEAR);
+      cvResize (&leftIpl, smallleft,CV_INTER_LINEAR);
       IplImage *smallright = cvCreateImage (cvSize(960, 270), 8,3);
-      cvResize (&(IplImage(rightFrame)), smallright,CV_INTER_LINEAR);
+      cvResize (&rightIpl, smallright,CV_INTER_LINEAR);
       IplImage *smallprocessed = cvCreateImage (cvSize(960, 270), 8,1);
-      cvResize (&(IplImage(leftCanny)), smallprocessed , CV_INTER_LINEAR);
+      cvResize (&processedIpl, smallprocessed , CV_INTER_LINEAR);
       cvShowImage("Left Channel" , smallleft);
       cvShowImage("Right Channel" , smallright);
       cvShowImage("Processed Left", smallprocessed);
