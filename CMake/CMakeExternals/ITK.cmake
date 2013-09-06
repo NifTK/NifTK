@@ -24,9 +24,11 @@ endif()
 
 set(proj ITK)
 set(proj_DEPENDENCIES GDCM)
-
 if(MITK_USE_Python)
   list(APPEND proj_DEPENDENCIES CableSwig)
+endif()
+if(BUILD_IGI)
+  list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
 
 set(ITK_DEPENDS ${proj})
@@ -68,6 +70,14 @@ if(NOT DEFINED ITK_DIR)
         )
   endif()
 
+  if(BUILD_IGI)
+    message("Building ITK with OpenCV_DIR: ${OpenCV_DIR}")
+    list(APPEND additional_cmake_args
+         -DModule_ITKVideoBridgeOpenCV:BOOL=ON
+         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        )
+  endif()
+  
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.3.1.cmake)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
@@ -90,12 +100,6 @@ if(NOT DEFINED ITK_DIR)
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
-#      -DITK_USE_REGION_VALIDATION_IN_ITERATORS:BOOL=OFF
-#      -DITK_USE_REVIEW:BOOL=ON
-#      -DITK_USE_PATENTED:BOOL=ON
-#      -DITK_USE_PORTABLE_ROUND:BOOL=ON
-#      -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
-#      -DITK_LEGACY_REMOVE:BOOL=OFF
     DEPENDS ${proj_DEPENDENCIES}
   )
 
