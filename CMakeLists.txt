@@ -672,8 +672,6 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake 
   ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-#configure_file(${CMAKE_SOURCE_DIR}/CMake/FindBoost.cmake 
-#  ${CMAKE_BINARY_DIR}/FindBoost.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake 
   ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake 
@@ -695,7 +693,8 @@ endif (BUILD_MESHING)
 ######################################################################
 # Find Boost.
 ######################################################################
-find_package( Boost COMPONENTS filesystem system date_time regex REQUIRED)
+set(Boost_NO_SYSTEM_PATHS ON)
+find_package( Boost 1.54 COMPONENTS filesystem system date_time regex REQUIRED)
 if(Boost_FOUND)
   message("Found Boost")
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${Boost_INCLUDE_DIRS})
