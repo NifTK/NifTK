@@ -20,6 +20,7 @@
 #include <opencv2/video/tracking.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/static_assert.hpp>
+#include <stdexcept>
 
 #ifdef _OPENMP
 #include <omp.h>

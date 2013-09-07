@@ -15,6 +15,7 @@
 #include "QDSCommon.h"
 #include <boost/gil/gil_all.hpp>
 #include <boost/static_assert.hpp>
+#include <stdexcept>
 
 #ifdef _OPENMP
 #include <omp.h>
