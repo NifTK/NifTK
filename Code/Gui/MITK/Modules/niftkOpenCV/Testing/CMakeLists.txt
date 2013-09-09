@@ -56,4 +56,5 @@ else(OPENCV_WITH_FFMPEG)
 endif(OPENCV_WITH_FFMPEG)
 #end trac 2669
 
+mitkAddCustomModuleTest(Pivot-Calibration mitkPivotCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/PivotCalibration ${CMAKE_BINARY_DIR}/Testing/Temporary/PivotCalibration.4x4 ${BASELINE}/PivotCalibration.4x4)
 

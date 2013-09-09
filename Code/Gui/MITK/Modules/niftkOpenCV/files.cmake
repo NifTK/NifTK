@@ -42,4 +42,5 @@ set(CPP_FILES
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
+  PivotCalibration/mitkPivotCalibration.cxx
 )
