@@ -275,8 +275,8 @@ void UndistortView::OnGoButtonClick()
                 std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>::iterator fc = m_ParamFileCache.find(filename);
                 if (fc != m_ParamFileCache.end())
                 {
-                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value! totally useless.
-                  mitk::CameraIntrinsicsProperty::Pointer calibprop = mitk::CameraIntrinsicsProperty::New(fc->second->GetValue());
+                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value!
+                  mitk::CameraIntrinsicsProperty::Pointer calibprop = mitk::CameraIntrinsicsProperty::New(fc->second->GetValue()->Clone());
                   inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, calibprop);
                   inputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, calibprop);
                 }
@@ -286,8 +286,8 @@ void UndistortView::OnGoButtonClick()
                   niftk::Undistortion::LoadIntrinsicCalibration(filename, inputNode);
                   mitk::CameraIntrinsicsProperty::Pointer calibprop = dynamic_cast<mitk::CameraIntrinsicsProperty*>(inputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName).GetPointer());
                   assert(calibprop.IsNotNull());
-                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value! totally useless.
-                  m_ParamFileCache[filename] = mitk::CameraIntrinsicsProperty::New(calibprop->GetValue());
+                  // beware: mitk::CameraIntrinsicsProperty::Clone() does not clone its value!
+                  m_ParamFileCache[filename] = mitk::CameraIntrinsicsProperty::New(calibprop->GetValue()->Clone());
                 }
 
                 hascalib = true;
