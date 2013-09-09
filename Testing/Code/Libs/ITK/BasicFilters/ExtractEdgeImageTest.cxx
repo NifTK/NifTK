@@ -19,7 +19,7 @@
 #include <memory>
 #include <math.h>
 #include <time.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkResampleImageFilter.h>

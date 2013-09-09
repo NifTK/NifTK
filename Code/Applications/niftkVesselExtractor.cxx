@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkHessian3DToVesselnessMeasureImageFilter.h>
 #include <itkHessianRecursiveGaussianImageFilter.h>
 #include <itkCastImageFilter.h>

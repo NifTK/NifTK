@@ -15,7 +15,7 @@
 #ifndef __itkRegistrationBasedCorticalThicknessFilter_txx
 #define __itkRegistrationBasedCorticalThicknessFilter_txx
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "itkRegistrationBasedCorticalThicknessFilter.h"
 #include "itkFourthOrderRungeKuttaVelocityFieldIntegrationFilter.h"
 #include <itkDisplacementFieldJacobianDeterminantFilter.h>

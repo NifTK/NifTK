@@ -13,11 +13,10 @@
 #============================================================================*/
 
 set(scripts)
+set(python_scripts)
 
 if(NOT WIN32)
   set(scripts
-    niftkBETter.sh
-    niftkNormalization.sh
     niftkFillLesions.sh
     ${scripts}    
   )
@@ -26,3 +25,14 @@ if(NOT WIN32)
     NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
   endforeach()
 endif()
+
+set(python_scripts
+    niftkBETter.py
+    niftkNormalization.py
+    niftkAtrophyCalculator.py
+    ${python_scripts}
+)
+foreach(script ${python_scripts})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
+  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+endforeach()

@@ -272,20 +272,6 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetTrackedImageVisibility(const bool& visibility)
-{
-  if (m_DataStorage.IsNotNull())
-  {
-    mitk::DataNode* trackedImage = m_DataStorage->GetNamedNode(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME);
-    if (trackedImage != NULL)
-    {
-      trackedImage->SetVisibility(visibility, m_RenderWindow->GetRenderer());
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 {
   m_IsCameraTracking = isCameraTracking;
@@ -371,12 +357,10 @@ void QmitkSingle3DView::Update()
 
   if (m_IsCameraTracking)
   {
-    this->SetTrackedImageVisibility(false);
     this->UpdateCameraViaTrackingTransformation();
   }
   else
   {
-    this->SetTrackedImageVisibility(true);
     this->UpdateCameraToTrackImage();
   }
 }

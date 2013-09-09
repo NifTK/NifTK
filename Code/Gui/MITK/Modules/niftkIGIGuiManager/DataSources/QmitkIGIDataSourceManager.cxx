@@ -38,6 +38,7 @@ const int    QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE = 2; // every 2 secon
 const int    QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE = 5000; // 5 seconds expressed in milliseconds
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT = true;
 const bool   QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND = false;
+const bool   QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA = false;
 
 //-----------------------------------------------------------------------------
 QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
@@ -60,6 +61,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_DirectoryPrefix = GetDefaultPath();
   m_SaveOnReceipt = DEFAULT_SAVE_ON_RECEIPT;
   m_SaveInBackground = DEFAULT_SAVE_IN_BACKGROUND;
+  m_PickLatestData = DEFAULT_PICK_LATEST_DATA;
 }
 
 
@@ -235,6 +237,18 @@ void QmitkIGIDataSourceManager::SetOKColour(QColor &colour)
 void QmitkIGIDataSourceManager::SetSuspendedColour(QColor &colour)
 {
   m_SuspendedColour = colour;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::SetPickLatestData(const bool& pickLatest)
+{
+  m_PickLatestData = pickLatest;
+  for (unsigned int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->SetPickLatestData(m_PickLatestData);
+  }
   this->Modified();
 }
 
@@ -433,6 +447,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
   source->SetSourceType(sourceType);
   source->SetIdentifier(m_NextSourceIdentifier);
   source->SetTimeStampTolerance(m_TimingTolerance);
+  source->SetPickLatestData(m_PickLatestData);
 
   m_NextSourceIdentifier++;
   m_Sources.push_back(source);

@@ -17,7 +17,7 @@
 #endif
 #include <iostream>
 #include <memory>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkTranslationTransform.h>

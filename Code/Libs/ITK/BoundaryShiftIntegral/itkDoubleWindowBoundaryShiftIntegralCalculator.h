@@ -49,7 +49,7 @@ public:
    */ 
   typedef typename TInputImage::Pointer TInputImagePointer;
   typedef typename TInputMask::Pointer TInputMaskPointer;
-  typedef float WeightPixelType; 
+  typedef double WeightPixelType; 
   typedef Image<WeightPixelType, TInputImage::ImageDimension> WeightImageType; 
   /** 
    * Method for creation through the object factory. 
@@ -69,7 +69,10 @@ public:
   itkSetMacro(WeightImage, typename WeightImageType::Pointer); 
   itkSetMacro(MinSecondWindowWidth, double); 
   itkGetMacro(MinSecondWindowWidth, double); 
-  itkGetMacro(SecondBSIMap, typename TOutputImage::Pointer); 
+  itkGetMacro(SecondBSIMap, typename TOutputImage::Pointer);
+  itkGetMacro(BSIMap, typename TOutputImage::Pointer);
+  itkSetMacro(ProbabilisticBSI, unsigned int);  
+  itkGetMacro(BSIMapSIENAStyle,TInputImagePointer);  
 
 protected:
   DoubleWindowBoundaryShiftIntegralCalculator();
@@ -110,6 +113,18 @@ protected:
    * A map of BSI values for the second intensity window.  
    */
   typename TOutputImage::Pointer m_SecondBSIMap; 
+  /**
+   * A map of BSI values. 
+   */
+  typename TOutputImage::Pointer m_BSIMap;  
+   /**
+   * A map of BSI values in SIENA Style. 
+   */   
+  TInputImagePointer m_BSIMapSIENAStyle; 
+  /**
+   * Compute probabilistic mask 
+   */
+  unsigned int m_ProbabilisticBSI;
   
 private:
   DoubleWindowBoundaryShiftIntegralCalculator(const Self&); //purposely not implemented
@@ -125,5 +140,3 @@ private:
 #endif
 
 #endif 
-
-

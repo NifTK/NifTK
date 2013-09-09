@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <math.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkMaskedImageRegistrationMethod.h>

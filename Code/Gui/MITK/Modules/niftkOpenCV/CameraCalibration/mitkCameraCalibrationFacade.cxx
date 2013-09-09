@@ -14,7 +14,7 @@
 
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
-#include <FileHelper.h>
+#include <niftkFileHelper.h>
 #include <iostream>
 #include <fstream>
 #include <cv.h>
@@ -1592,7 +1592,7 @@ cv::Point3d IterativeTriangulatePoint(
 std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
-  std::sort(files.begin(),files.end());
+  std::sort(files.begin(),files.end(),niftk::NumericStringCompare);
   std::vector<cv::Mat> myMatrices;
 
   if (files.size() > 0)
@@ -1735,32 +1735,59 @@ std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileN
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
 {
- 
   std::vector<cv::Mat>  OutMatrices;
   for ( unsigned int i = 0; i < Matrices.size(); i ++ )
   {
-    cv::Mat FlipMat = cvCreateMat(4,4,CV_64FC1);
-    FlipMat.at<double>(0,0) = Matrices[i].at<double>(0,0);
-    FlipMat.at<double>(0,1) = Matrices[i].at<double>(0,1);
-    FlipMat.at<double>(0,2) = Matrices[i].at<double>(0,2) * -1;
-    FlipMat.at<double>(0,3) = Matrices[i].at<double>(0,3);
+    if ( Matrices[i].type() == CV_64FC1 )
+    {
+      cv::Mat FlipMat = cvCreateMat(4,4,CV_64FC1);
+      FlipMat.at<double>(0,0) = Matrices[i].at<double>(0,0);
+      FlipMat.at<double>(0,1) = Matrices[i].at<double>(0,1);
+      FlipMat.at<double>(0,2) = Matrices[i].at<double>(0,2) * -1;
+      FlipMat.at<double>(0,3) = Matrices[i].at<double>(0,3);
 
-    FlipMat.at<double>(1,0) = Matrices[i].at<double>(1,0);
-    FlipMat.at<double>(1,1) = Matrices[i].at<double>(1,1);
-    FlipMat.at<double>(1,2) = Matrices[i].at<double>(1,2) * -1;
-    FlipMat.at<double>(1,3) = Matrices[i].at<double>(1,3);
+      FlipMat.at<double>(1,0) = Matrices[i].at<double>(1,0);
+      FlipMat.at<double>(1,1) = Matrices[i].at<double>(1,1);
+      FlipMat.at<double>(1,2) = Matrices[i].at<double>(1,2) * -1;
+      FlipMat.at<double>(1,3) = Matrices[i].at<double>(1,3);
 
-    FlipMat.at<double>(2,0) = Matrices[i].at<double>(2,0) * -1;
-    FlipMat.at<double>(2,1) = Matrices[i].at<double>(2,1) * -1;
-    FlipMat.at<double>(2,2) = Matrices[i].at<double>(2,2);
-    FlipMat.at<double>(2,3) = Matrices[i].at<double>(2,3) * -1;
+      FlipMat.at<double>(2,0) = Matrices[i].at<double>(2,0) * -1;
+      FlipMat.at<double>(2,1) = Matrices[i].at<double>(2,1) * -1;
+      FlipMat.at<double>(2,2) = Matrices[i].at<double>(2,2);
+      FlipMat.at<double>(2,3) = Matrices[i].at<double>(2,3) * -1;
 
-    FlipMat.at<double>(3,0) = Matrices[i].at<double>(3,0);
-    FlipMat.at<double>(3,1) = Matrices[i].at<double>(3,1);
-    FlipMat.at<double>(3,2) = Matrices[i].at<double>(3,2);
-    FlipMat.at<double>(3,3) = Matrices[i].at<double>(3,3);
+      FlipMat.at<double>(3,0) = Matrices[i].at<double>(3,0);
+      FlipMat.at<double>(3,1) = Matrices[i].at<double>(3,1);
+      FlipMat.at<double>(3,2) = Matrices[i].at<double>(3,2);
+      FlipMat.at<double>(3,3) = Matrices[i].at<double>(3,3);
 
-    OutMatrices.push_back(FlipMat);
+      OutMatrices.push_back(FlipMat);
+    }
+    else if ( Matrices[i].type() == CV_32FC1 )
+    {
+      cv::Mat FlipMat = cvCreateMat(4,4,CV_32FC1);
+      FlipMat.at<float>(0,0) = Matrices[i].at<float>(0,0);
+      FlipMat.at<float>(0,1) = Matrices[i].at<float>(0,1);
+      FlipMat.at<float>(0,2) = Matrices[i].at<float>(0,2) * -1;
+      FlipMat.at<float>(0,3) = Matrices[i].at<float>(0,3);
+
+      FlipMat.at<float>(1,0) = Matrices[i].at<float>(1,0);
+      FlipMat.at<float>(1,1) = Matrices[i].at<float>(1,1);
+      FlipMat.at<float>(1,2) = Matrices[i].at<float>(1,2) * -1;
+      FlipMat.at<float>(1,3) = Matrices[i].at<float>(1,3);
+
+      FlipMat.at<float>(2,0) = Matrices[i].at<float>(2,0) * -1;
+      FlipMat.at<float>(2,1) = Matrices[i].at<float>(2,1) * -1;
+      FlipMat.at<float>(2,2) = Matrices[i].at<float>(2,2);
+      FlipMat.at<float>(2,3) = Matrices[i].at<float>(2,3) * -1;
+
+      FlipMat.at<float>(3,0) = Matrices[i].at<float>(3,0);
+      FlipMat.at<float>(3,1) = Matrices[i].at<float>(3,1);
+      FlipMat.at<float>(3,2) = Matrices[i].at<float>(3,2);
+      FlipMat.at<float>(3,3) = Matrices[i].at<float>(3,3);
+
+      OutMatrices.push_back(FlipMat);
+    }
   }
   return OutMatrices;
 }
@@ -1959,8 +1986,11 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     {
        fin >> CameraIntrinsic->at<float>(row,col);
     }
-  } 
-  for ( int col = 0 ; col < 5 ; col++ )
+  }
+
+  int distortionVectorLength = CameraDistortion->size().height * CameraDistortion->size().width;
+
+  for ( int col = 0 ; col < distortionVectorLength ; col++ )
   {
     fin >> CameraDistortion->at<float>(0,col);
   }

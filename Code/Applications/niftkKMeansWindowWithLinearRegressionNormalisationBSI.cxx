@@ -24,9 +24,10 @@
 #include <itkBinariseUsingPaddingImageFilter.h>
 #include <itkIndent.h>
 #include <stdio.h>
+#include <math.h>
 #include <itkCastImageFilter.h>
 #include <itkSubtractImageFilter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 /*!
  * \file niftkKMeansWindowWithLinearRegressionNormalisationBSI.cxx
@@ -43,9 +44,33 @@
  * \li Dimensions: 3
  * \li Pixel type: Scalars only, of unsigned char, char, unsigned short, short, unsigned int, int, unsigned long, long, float, double
  *
+ * Added gBSI and pBSI calculation options: gBSI is generalized BSI, and pBSI is probabilistic BSI of Ledig et al. MICCAI 2012  
+ *
  * \section niftkKMeansWindowNBSIWithLinearRegressionNormalisationCaveat Caveats
  * \li Notice that all the images and masks for intensity normalisation must have the SAME voxel sizes and image dimensions. The same applies to the images and masks for BSI.
  */
+
+/**
+ * Typedefs. 
+ */
+typedef itk::Image<int, 3> IntImageType;
+typedef itk::Image<double, 3> DoubleImageType;
+typedef itk::Image<short, 3> ShortImageType;
+
+typedef itk::ImageFileReader<ShortImageType> ShortReaderType;
+typedef itk::ImageFileWriter<ShortImageType> ShortWriterType;
+typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
+typedef itk::ImageFileWriter<DoubleImageType> DoubleWriterType;
+typedef itk::ImageFileReader<IntImageType> IntReaderType;
+typedef itk::ImageFileWriter<IntImageType> IntWriterType;
+
+typedef itk::IntensityNormalisationCalculator<DoubleImageType, IntImageType> IntensityNormalisationCalculatorType;
+typedef itk::BoundaryShiftIntegralCalculator<DoubleImageType,DoubleImageType,IntImageType> BoundaryShiftIntegralFilterType;
+typedef itk::SimpleKMeansClusteringImageFilter< DoubleImageType, IntImageType, IntImageType > SimpleKMeansClusteringImageFilterType;
+typedef itk::MultipleDilateImageFilter<IntImageType> MultipleDilateImageFilterType;
+typedef itk::MultipleErodeImageFilter<IntImageType> MultipleErodeImageFilterType;
+typedef itk::BinariseUsingPaddingImageFilter<IntImageType,IntImageType> BinariseUsingPaddingType;
+typedef itk::SubtractImageFilter<IntImageType, IntImageType> SubtractImageFilterType; 
 
 
 /**
@@ -53,11 +78,7 @@
  */
 void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, double& csfMean, double& csfSd, double& gmMean, double& wmMean)
 {
-  typedef itk::Image<double, 3> DoubleImageType;
-  typedef itk::Image<int, 3> IntImageType;
-  typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
-  typedef itk::ImageFileReader<IntImageType> IntReaderType;
-  
+
   DoubleReaderType::Pointer imageReader = DoubleReaderType::New();
   IntReaderType::Pointer maskReader = IntReaderType::New();
   
@@ -66,14 +87,11 @@ void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, do
   maskReader->SetFileName(maskName);
   maskReader->Update();
   
-  typedef itk::BinariseUsingPaddingImageFilter<IntImageType, IntImageType> BinariseUsingPaddingType; 
-  
   BinariseUsingPaddingType::Pointer binariseUsingPadding = BinariseUsingPaddingType::New(); 
   binariseUsingPadding->SetInput(maskReader->GetOutput()); 
   binariseUsingPadding->SetPaddingValue(0); 
   binariseUsingPadding->Update(); 
   
-  typedef itk::MultipleDilateImageFilter<IntImageType> MultipleDilateImageFilterType;
   MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
   
   // Dilate multiple times. 
@@ -82,13 +100,11 @@ void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, do
   multipleDilateImageFilter->Update();
   
   // Rough estimate for CSF mean by taking the mean values of the (dilated region - brain region).
-  typedef itk::SubtractImageFilter<IntImageType, IntImageType> SubtractImageFilterType; 
   SubtractImageFilterType::Pointer subtractImageFilter = SubtractImageFilterType::New(); 
   subtractImageFilter->SetInput1(multipleDilateImageFilter->GetOutput());
   subtractImageFilter->SetInput2(binariseUsingPadding->GetOutput()); 
   subtractImageFilter->Update(); 
 
-  typedef itk::MultipleErodeImageFilter<IntImageType> MultipleErodeImageFilterType;
   MultipleErodeImageFilterType::Pointer multipleErodeImageFilterFilter = MultipleErodeImageFilterType::New();
 
   // Erode multiple times.
@@ -157,6 +173,91 @@ void estimateCSFGMWMIntensityFromDilatedMask(char* imageName, char* maskName, do
 
 
 /**
+ * Use K-means clustering to get the means of the tissues. 
+ */
+void KMeansClassification(SimpleKMeansClusteringImageFilterType::ParametersType& means, 
+  SimpleKMeansClusteringImageFilterType::ParametersType& stds, 
+  const DoubleImageType* image, 
+  const IntImageType* mask, 
+  int numberOfDilations,
+  int numberOfClasses, 
+  const char* outputImageName,
+  const char* tissueToRemoveMASKFilename)  
+{
+  SimpleKMeansClusteringImageFilterType::Pointer simpleKMeansClusteringImageFilter = SimpleKMeansClusteringImageFilterType::New();
+  BinariseUsingPaddingType::Pointer binariseImageFilter = BinariseUsingPaddingType::New();
+  MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
+  IntensityNormalisationCalculatorType::Pointer normalisationCalculator = IntensityNormalisationCalculatorType::New();
+  IntWriterType::Pointer imageWriter = IntWriterType::New();
+  /* This code is for introducing a mask during the normalization step */
+  DoubleReaderType::Pointer tissueToRemoveImageReader = DoubleReaderType::New();
+  
+  /*Start K-Means*/
+  binariseImageFilter->SetPaddingValue(0);
+  binariseImageFilter->SetInput(mask);
+  binariseImageFilter->Update();
+  multipleDilateImageFilter->SetNumberOfDilations(numberOfDilations);
+  multipleDilateImageFilter->SetInput(binariseImageFilter->GetOutput());
+  multipleDilateImageFilter->Update();
+  simpleKMeansClusteringImageFilter->SetInitialMeans(means);
+  simpleKMeansClusteringImageFilter->SetInput(image);
+  simpleKMeansClusteringImageFilter->SetInputMask(multipleDilateImageFilter->GetOutput());
+  simpleKMeansClusteringImageFilter->SetNumberOfClasses(numberOfClasses);
+  simpleKMeansClusteringImageFilter->Update();
+  means = simpleKMeansClusteringImageFilter->GetFinalMeans();
+  stds = simpleKMeansClusteringImageFilter->GetFinalStds();
+  if (tissueToRemoveMASKFilename!=NULL && strcmp(tissueToRemoveMASKFilename, "dummy") != 0) {
+    
+    tissueToRemoveImageReader->SetFileName(tissueToRemoveMASKFilename);
+    tissueToRemoveImageReader->Update();
+    
+    itk::ImageRegionIterator<IntImageType> KmeansImageIterator(simpleKMeansClusteringImageFilter->GetOutput(), simpleKMeansClusteringImageFilter->GetOutput()->GetLargestPossibleRegion());
+    itk::ImageRegionConstIterator<DoubleImageType> InputImageIterator(image, image->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<DoubleImageType> lesionsImageIterator(tissueToRemoveImageReader->GetOutput(), tissueToRemoveImageReader->GetOutput()->GetLargestPossibleRegion());	    
+
+    int tissueCount[5];	
+    for(int i=0;i<numberOfClasses;i++) {
+	means[i]=0;
+	stds[i]=0;
+	tissueCount[i]=0;
+    }
+    int tissue=0;
+    for(KmeansImageIterator.GoToBegin(),InputImageIterator.GoToBegin(),lesionsImageIterator.GoToBegin();
+	!KmeansImageIterator.IsAtEnd() && !InputImageIterator.IsAtEnd() && !lesionsImageIterator.IsAtEnd(); 
+		++KmeansImageIterator, ++InputImageIterator, ++lesionsImageIterator) {
+		tissue=KmeansImageIterator.Get();
+		if(tissue>0 && lesionsImageIterator.Get()<1) {
+			means[tissue-1]+=InputImageIterator.Get();
+			tissueCount[tissue-1]++;
+		}	
+    }
+    for(int i=0;i<numberOfClasses;i++) {
+	means[i]=means[i]/tissueCount[i];
+    }
+    for(KmeansImageIterator.GoToBegin(),InputImageIterator.GoToBegin(),lesionsImageIterator.GoToBegin();
+	!KmeansImageIterator.IsAtEnd() && !InputImageIterator.IsAtEnd() && !lesionsImageIterator.IsAtEnd(); 
+		++KmeansImageIterator, ++InputImageIterator, ++lesionsImageIterator) {
+		tissue=KmeansImageIterator.Get();
+		if(tissue>0 && lesionsImageIterator.Get()<1) {
+			double value=InputImageIterator.Get()-means[tissue-1];
+			stds[tissue-1]+=value*value;
+		}
+		else KmeansImageIterator.Set(0);
+    }
+    for(int i=0;i<numberOfClasses;i++) {
+	stds[i]= sqrt(stds[i]/tissueCount[i]);
+    }
+  }
+  if (outputImageName != NULL && strlen(outputImageName) > 0)
+  {
+    imageWriter->SetInput(simpleKMeansClusteringImageFilter->GetOutput());
+    imageWriter->SetFileName(outputImageName);
+    imageWriter->Update();
+  }
+}
+
+
+/**
  * Calculate BSI using the linear regression results. 
  */
 double calculateBSI(char* baselineImageName, char* repeatImageName, 
@@ -165,27 +266,22 @@ double calculateBSI(char* baselineImageName, char* repeatImageName,
                     double userLowerWindow, double userUpperWindow, 
                     const itk::Array<double>& baselineFinalMeans, const itk::Array<double>& repeatFinalMeans, 
                     const itk::Array<double>& baselineFinalStds, const itk::Array<double>& repeatFinalStds, 
-                    double slope, double intercept, int numberOfClasses, double numberOfWmSdForIntensityExclusion)
+                    double slope, double intercept, int numberOfClasses, double numberOfWmSdForIntensityExclusion,
+		    char* resultFileName,char* xorFileName,unsigned int pBSIComputation)
 {
-  typedef itk::Image<double, 3> DoubleImageType;
-  typedef itk::Image<int, 3> IntImageType;
-  typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
-  typedef itk::ImageFileReader<IntImageType> IntReaderType;
-  typedef itk::ImageFileWriter<IntImageType> WriterType;
-  typedef itk::ImageFileWriter<DoubleImageType> DoublerWriterType;
-  typedef itk::BoundaryShiftIntegralCalculator<DoubleImageType,IntImageType,IntImageType> BoundaryShiftIntegralFilterType;
-  
+ 
   DoubleReaderType::Pointer baselineBSIImageReader = DoubleReaderType::New();
   DoubleReaderType::Pointer repeatBSIImageReader = DoubleReaderType::New();
-  IntReaderType::Pointer baselineBSIMaskReader = IntReaderType::New();
-  IntReaderType::Pointer repeatBSIMaskReader = IntReaderType::New();
-  IntReaderType::Pointer subroiMaskReader = IntReaderType::New();
+  DoubleReaderType::Pointer baselineBSIMaskReader = DoubleReaderType::New();
+  DoubleReaderType::Pointer repeatBSIMaskReader = DoubleReaderType::New();
+  DoubleReaderType::Pointer subroiMaskReader = DoubleReaderType::New();
   // Normalise the intensity using the linear regression of CSF, GM and WM intensities, mapping to the baseline scan. 
-  baselineBSIImageReader->SetFileName(baselineImageName);
+  baselineBSIImageReader->SetFileName((char *)baselineImageName);
   baselineBSIImageReader->Update();
-  repeatBSIImageReader->SetFileName(repeatImageName);
+  repeatBSIImageReader->SetFileName((char *)repeatImageName);
   repeatBSIImageReader->Update();
   
+ 
   itk::ImageRegionIterator<DoubleImageType> baselineImageIterator(baselineBSIImageReader->GetOutput(), baselineBSIImageReader->GetOutput()->GetLargestPossibleRegion());
   itk::ImageRegionIterator<DoubleImageType> repeatImageIterator(repeatBSIImageReader->GetOutput(), repeatBSIImageReader->GetOutput()->GetLargestPossibleRegion());
 
@@ -282,7 +378,25 @@ double calculateBSI(char* baselineImageName, char* repeatImageName,
   bsiFilter->SetNumberOfDilation(numberOfDilation);
   bsiFilter->SetLowerCutoffValue(lowerWindow);
   bsiFilter->SetUpperCutoffValue(upperWindow);
+  bsiFilter->SetProbabilisticBSI(pBSIComputation);
   bsiFilter->Compute();
+   
+  DoubleWriterType::Pointer writer = DoubleWriterType::New(); 
+    
+  if(resultFileName!=NULL) {
+	DoubleImageType::Pointer bsiMap=bsiFilter->GetBSIMapSIENAStyle();
+	writer->SetInput(bsiMap); 
+	writer->SetFileName(resultFileName); 
+	writer->Update(); 
+  }
+  
+  if(xorFileName!=NULL) {
+	DoubleImageType::Pointer xorMap=bsiFilter->GetXORMap();
+	writer = DoubleWriterType::New(); 
+	writer->SetInput(xorMap); 
+	writer->SetFileName(xorFileName); 
+	writer->Update(); 
+  }
   
   return bsiFilter->GetBoundaryShiftIntegral();
 }
@@ -292,30 +406,57 @@ double calculateBSI(char* baselineImageName, char* repeatImageName,
  */
 void saveNormalisedImage(char* repeatImageName, char* outputImageName, double slope, double intercept)
 {
-  typedef itk::Image<short, 3> ShortImageType;
-  typedef itk::ImageFileReader<ShortImageType> ReaderType;
-  typedef itk::ImageFileWriter<ShortImageType> WriterType;
-  
-  ReaderType::Pointer repeatBSIImageReader = ReaderType::New();
+ 
+  ShortReaderType::Pointer repeatBSIImageReader = ShortReaderType::New();
   repeatBSIImageReader->SetFileName(repeatImageName);
   repeatBSIImageReader->Update();
   
   itk::ImageRegionIterator<ShortImageType> repeatImageIterator(repeatBSIImageReader->GetOutput(), repeatBSIImageReader->GetOutput()->GetLargestPossibleRegion());
   
-  for (repeatImageIterator.GoToBegin(); !repeatImageIterator.IsAtEnd(); ++repeatImageIterator)
-  {
+  for (repeatImageIterator.GoToBegin(); !repeatImageIterator.IsAtEnd(); ++repeatImageIterator) {
     short repeatValue = repeatImageIterator.Get(); 
-        
     repeatImageIterator.Set(static_cast<short>(niftk::Round(fabs(slope*repeatValue+intercept))));
   }
   
-  WriterType::Pointer writer = WriterType::New(); 
-  
+  ShortWriterType::Pointer writer = ShortWriterType::New(); 
   writer->SetInput(repeatBSIImageReader->GetOutput()); 
   writer->SetFileName(outputImageName); 
   writer->Update(); 
 }
 
+/**
+ * Save BSI image. 
+ */
+void saveBSIImage(char* forward, char* backward,  char* resultBSIFilename)
+{
+	DoubleReaderType::Pointer forwardImageReader = DoubleReaderType::New();
+	DoubleReaderType::Pointer backwardImageReader = DoubleReaderType::New();
+
+	forwardImageReader->SetFileName(forward);
+	forwardImageReader->Update();
+	backwardImageReader->SetFileName(backward);
+	backwardImageReader->Update();
+
+	itk::ImageRegionIterator<DoubleImageType> forwardImageIterator(forwardImageReader->GetOutput(), forwardImageReader->GetOutput()->GetLargestPossibleRegion());
+	itk::ImageRegionIterator<DoubleImageType> backwardImageIterator(backwardImageReader->GetOutput(), backwardImageReader->GetOutput()->GetLargestPossibleRegion());
+
+	for(forwardImageIterator.GoToBegin(),backwardImageIterator.GoToBegin();
+		!forwardImageIterator.IsAtEnd() && !backwardImageIterator.IsAtEnd(); 
+		++forwardImageIterator, ++backwardImageIterator) {
+		double forwardBSI = forwardImageIterator.Get(); 
+		double backwardBSI = backwardImageIterator.Get(); 
+		double BSI=(forwardBSI-backwardBSI)/2.0;
+		backwardImageIterator.Set(static_cast<double>(BSI));
+	}
+	DoubleWriterType::Pointer writer = DoubleWriterType::New(); 
+	writer->SetInput(backwardImageReader->GetOutput()); 
+	writer->SetFileName(resultBSIFilename); 
+	writer->Update(); 
+}
+
+/**
+ * Start main program
+ */
 
 int main(int argc, char* argv[])
 {
@@ -331,6 +472,9 @@ int main(int argc, char* argv[])
     std::cerr << "  Fox NC, Ourselin S; the Alzheimer's Disease Neuroimaging Initiative. " << std::endl; 
     std::cerr << "  Robust atrophy rate measurement in Alzheimer's disease using multi-site serial MRI: " <<std::endl;
     std::cerr << "  Tissue-specific intensity normalization and parameter selection. Neuroimage. 2009 Dec 23. " << std::endl << std::endl; 
+    std::cerr << "Added gBSI and pBSI calculation options" << std::endl;
+    std::cerr << "  gBSI is generalized BSI " << std::endl;
+    std::cerr << "  pBSI is probabilistic BSI of Ledig et al. MICCAI 2012"  << std::endl << std::endl;  
     std::cerr << "Usage: " << argv[0] << std::endl;
     std::cerr << "         <baseline image for intensity normalisation>" << std::endl; 
     std::cerr << "         <baseline mask for intensity normalisation>" << std::endl; 
@@ -352,6 +496,10 @@ int main(int argc, char* argv[])
     std::cerr << "         <number of classes for k-means clustering>" << std::endl;
     std::cerr << "         <number of SD of WM intensity for the exclusion of high intensity voxel>" << std::endl;
     std::cerr << "         <1 for using kmeans auto init from image>" << std::endl;
+    std::cerr << "         <BSI method. 0 KN-BSI, 1 GBSI, 2 pBSI1, 3 pBSI gamma=0.5. Default is 0, that computes KN-BSI>" << std::endl;
+    std::cerr << "         <output BSI image> (dummy to ignore it)" << std::endl;
+    std::cerr << "         <output XOR mask> (dummy to ignore it)" << std::endl;
+    std::cerr << "         <tissue to remove mask file name, is for masking lesions during the normalization step (dummy to ignore it)>" << std::endl;
     std::cerr << "Notice that all the images and masks for intensity normalisation must " << std::endl;
     std::cerr << "have the SAME voxel sizes and image dimensions. The same applies to the " << std::endl;
     std::cerr << "images and masks for BSI." << std::endl;
@@ -360,24 +508,11 @@ int main(int argc, char* argv[])
   
   try
   {
-    typedef itk::Image<double, 3> DoubleImageType;
-    typedef itk::Image<int, 3> IntImageType;
-
-    typedef itk::ImageFileReader<DoubleImageType> DoubleReaderType;
-    typedef itk::ImageFileReader<IntImageType> IntReaderType;
-    typedef itk::ImageFileWriter<IntImageType> WriterType;
-    typedef itk::ImageFileWriter<DoubleImageType> DoublerWriterType;
-    typedef itk::CastImageFilter<DoubleImageType, IntImageType> DoubleToIntImageFilterType;
-    typedef itk::IntensityNormalisationCalculator<DoubleImageType, IntImageType> IntensityNormalisationCalculatorType;
-    typedef itk::SimpleKMeansClusteringImageFilter< DoubleImageType, IntImageType, IntImageType > SimpleKMeansClusteringImageFilterType;
-    typedef itk::MultipleDilateImageFilter<IntImageType> MultipleDilateImageFilterType;
-    typedef itk::BinariseUsingPaddingImageFilter<IntImageType,IntImageType> BinariseUsingPaddingImageFilterType;
-
     DoubleReaderType::Pointer baselineNormalisationImageReader = DoubleReaderType::New();
     DoubleReaderType::Pointer repeatNormalisationImageReader = DoubleReaderType::New();
     IntReaderType::Pointer baselineNormalisationMaskReader = IntReaderType::New();
     IntReaderType::Pointer repeatNormalisationMaskReader = IntReaderType::New();
-    WriterType::Pointer imageWriter = WriterType::New();
+    IntWriterType::Pointer imageWriter = IntWriterType::New();
 
     baselineNormalisationImageReader->SetFileName(argv[1]);
     baselineNormalisationMaskReader->SetFileName(argv[2]);
@@ -404,6 +539,11 @@ int main(int argc, char* argv[])
         // std::cerr << "isUseKMeanAutoInit = true" << std::endl;
       }
     }
+    unsigned int pBSIComputation=0;
+    if (argc > 21 && strlen(argv[21]) > 0)
+    {
+      pBSIComputation = atoi(argv[21]);
+    }
 
     // Calculate mean brain intensity. 
     IntensityNormalisationCalculatorType::Pointer normalisationCalculator = IntensityNormalisationCalculatorType::New();
@@ -428,78 +568,55 @@ int main(int argc, char* argv[])
     double repeatWmMean;
     estimateCSFGMWMIntensityFromDilatedMask(argv[3], argv[4], repeatCsfMean, repeatCsfSd, repeatGmMean, repeatWmMean);
     std::cout << "repeat csf," << repeatCsfMean << "," << repeatCsfSd << ","; 
-                                     
-    // Calculate the intensity window.                                      
-    SimpleKMeansClusteringImageFilterType::Pointer simpleKMeansClusteringImageFilter = SimpleKMeansClusteringImageFilterType::New();
-    SimpleKMeansClusteringImageFilterType::ParametersType initialMeans(numberOfClasses);
-    SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalMeans(numberOfClasses);
-    SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalStds(numberOfClasses);
-    SimpleKMeansClusteringImageFilterType::ParametersType repeatFinalMeans(numberOfClasses);
-    SimpleKMeansClusteringImageFilterType::ParametersType repeatFinalStds(numberOfClasses);
-    BinariseUsingPaddingImageFilterType::Pointer binariseImageFilter = BinariseUsingPaddingImageFilterType::New();
-    MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
     
-    if (isUseKMeanAutoInit == false)
+	 char* tissueToRemoveMASKFilename = NULL;
+    if (argc > 24 && strlen(argv[24]) > 0 && strcmp(argv[24], "dummy") != 0)
     {
-      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
-      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
-      if (numberOfClasses >= 3)
-        initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean2();
-    }
-    else
-    {
-      initialMeans[0] = baselineCsfMean;
-      initialMeans[1] = baselineGmMean;
-      if (numberOfClasses >= 3)
-        initialMeans[2] = baselineWmMean;
-    }
-    binariseImageFilter->SetPaddingValue(0);
-    binariseImageFilter->SetInput(baselineNormalisationMaskReader->GetOutput());
-    binariseImageFilter->Update();
-    multipleDilateImageFilter->SetNumberOfDilations(atoi(argv[11]));
-    multipleDilateImageFilter->SetInput(binariseImageFilter->GetOutput());
-    multipleDilateImageFilter->Update();
-    simpleKMeansClusteringImageFilter->SetInitialMeans(initialMeans);
-    simpleKMeansClusteringImageFilter->SetInput(baselineNormalisationImageReader->GetOutput());
-    simpleKMeansClusteringImageFilter->SetInputMask(multipleDilateImageFilter->GetOutput());
-    simpleKMeansClusteringImageFilter->SetNumberOfClasses(numberOfClasses); 
-    simpleKMeansClusteringImageFilter->Update();
-    baselineFinalMeans = simpleKMeansClusteringImageFilter->GetFinalMeans();
-    baselineFinalStds = simpleKMeansClusteringImageFilter->GetFinalStds();
-    imageWriter->SetInput (simpleKMeansClusteringImageFilter->GetOutput());
-    imageWriter->SetFileName (argv[14]);
-    imageWriter->Update();
+	    tissueToRemoveMASKFilename = argv[24];
+	 }
+	 
+	 // Calculate the intensity window. We use k-means
+	 SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalMeans(3);
+    SimpleKMeansClusteringImageFilterType::ParametersType baselineFinalStds(3);
+    SimpleKMeansClusteringImageFilterType::ParametersType repeatFinalMeans(3);
+    SimpleKMeansClusteringImageFilterType::ParametersType repeatFinalStds(3);
     
-    if (isUseKMeanAutoInit == false)
+	 if (isUseKMeanAutoInit == false)
     {
-      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
-      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
+		baselineFinalMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
+		baselineFinalMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
+		baselineFinalMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean1();
+	 }
+	 else 
+	 {
+	   baselineFinalMeans[0] = baselineCsfMean;
+      baselineFinalMeans[1] = baselineGmMean;
       if (numberOfClasses >= 3)
-        initialMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean1();
-    }
-    else
-    {
-      initialMeans[0] = repeatCsfMean;
-      initialMeans[1] = repeatGmMean;
-      if (numberOfClasses >= 3)
-        initialMeans[2] = repeatWmMean;
-    }
-    binariseImageFilter->SetPaddingValue(0);
-    binariseImageFilter->SetInput(repeatNormalisationMaskReader->GetOutput());
-    binariseImageFilter->Update();
-    multipleDilateImageFilter->SetInput(binariseImageFilter->GetOutput());
-    multipleDilateImageFilter->Update();
-    simpleKMeansClusteringImageFilter->SetInitialMeans(initialMeans);
-    simpleKMeansClusteringImageFilter->SetInput(repeatNormalisationImageReader->GetOutput());
-    simpleKMeansClusteringImageFilter->SetInputMask(multipleDilateImageFilter->GetOutput());
-    simpleKMeansClusteringImageFilter->SetNumberOfClasses(numberOfClasses); 
-    simpleKMeansClusteringImageFilter->Update();
-    repeatFinalMeans = simpleKMeansClusteringImageFilter->GetFinalMeans();
-    repeatFinalStds = simpleKMeansClusteringImageFilter->GetFinalStds();
-    imageWriter->SetInput (simpleKMeansClusteringImageFilter->GetOutput());
-    imageWriter->SetFileName (argv[15]);
-    imageWriter->Update();
+        baselineFinalMeans[2] = baselineWmMean;
+	 }
+    KMeansClassification(baselineFinalMeans, baselineFinalStds, 
+                          baselineNormalisationImageReader->GetOutput(),
+                          baselineNormalisationMaskReader->GetOutput(),
+                          atoi(argv[11]), numberOfClasses, argv[14],tissueToRemoveMASKFilename);  
     
+	 if (isUseKMeanAutoInit == false)
+    {
+		repeatFinalMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
+		repeatFinalMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
+		repeatFinalMeans[2] = 1.1*normalisationCalculator->GetNormalisationMean2();
+	 }
+	 else 
+	 {
+		repeatFinalMeans[0] = repeatCsfMean;
+      repeatFinalMeans[1] = repeatGmMean;
+      if (numberOfClasses >= 3)
+        repeatFinalMeans[2] = repeatWmMean;
+	 }
+    KMeansClassification(repeatFinalMeans, repeatFinalStds, 
+                          repeatNormalisationImageReader->GetOutput(),
+                          repeatNormalisationMaskReader->GetOutput(),
+                          atoi(argv[11]), numberOfClasses, argv[15],tissueToRemoveMASKFilename); 
+	 
     std::cout << "baseline means,";
     for (int i = 0; i < numberOfClasses; i++)
       std::cout << baselineFinalMeans[i] << ",";  
@@ -538,12 +655,30 @@ int main(int argc, char* argv[])
     double userUpperWindow = atof(argv[13]);
     char* outputNormalisedImageName = argv[16]; 
     char* subROIMaskName = NULL;
+    char* resultBSIFilename = NULL;
+    char* bsiMASKFilename = NULL;
+    char *forwardbsi = NULL;
+    char *backwardbsi = NULL;
     
     if (argc > 17 && strlen(argv[17]) > 0 && strcmp(argv[17], "dummy") != 0)
     {
       subROIMaskName = argv[17];
     }
     
+    if (argc > 22 && strlen(argv[22]) > 0 && strcmp(argv[22], "dummy") != 0)
+    {
+      resultBSIFilename = argv[22];
+      forwardbsi=new char[20];
+      backwardbsi=new char[20];
+      strcpy(forwardbsi,"bsiforward.nii.gz");
+      strcpy(backwardbsi,"bsibackward.nii.gz");
+    }
+    
+    if (argc > 23 && strlen(argv[23]) > 0 && strcmp(argv[23], "dummy") != 0)
+    {
+      bsiMASKFilename = argv[23];
+    }
+
     // Repeat (x) regress on baseline (y).  
     itk::BoundaryShiftIntegralCalculator<IntImageType,IntImageType,IntImageType>::PerformLinearRegression(repeatMeans, baselineMeans, &slopeRepeatBaseline, &interceptRepeatBaseline);
     
@@ -551,8 +686,9 @@ int main(int argc, char* argv[])
                                      numberOfErosion, numberOfDilation, userLowerWindow, userUpperWindow, 
                                      baselineFinalMeans, repeatFinalMeans, 
                                      baselineFinalStds, repeatFinalStds, 
-                                     slopeRepeatBaseline, interceptRepeatBaseline, numberOfClasses, numberOfWmSdForIntensityExclusion);
-    
+                                     slopeRepeatBaseline, interceptRepeatBaseline, numberOfClasses, numberOfWmSdForIntensityExclusion,
+												 forwardbsi,bsiMASKFilename,pBSIComputation);
+
     // Baseline (x) regress on repeat (y).  
     itk::BoundaryShiftIntegralCalculator<IntImageType,IntImageType,IntImageType>::PerformLinearRegression(baselineMeans, repeatMeans, &slopeBaselineRepeat, &interceptBaselineRepeat);
 
@@ -560,7 +696,8 @@ int main(int argc, char* argv[])
                                       numberOfErosion, numberOfDilation, userLowerWindow, userUpperWindow, 
                                       repeatFinalMeans, baselineFinalMeans, 
                                       repeatFinalStds, baselineFinalStds, 
-                                      slopeBaselineRepeat, interceptBaselineRepeat, numberOfClasses, numberOfWmSdForIntensityExclusion);
+                                      slopeBaselineRepeat, interceptBaselineRepeat, numberOfClasses, numberOfWmSdForIntensityExclusion,
+												  backwardbsi,bsiMASKFilename,pBSIComputation);
     
     std::cout << "slopeRepeatBaseline," << slopeRepeatBaseline << ",interceptRepeatBaseline," << interceptRepeatBaseline << ",";
     std::cout << "slopeBaselineRepeat," << slopeBaselineRepeat << ",interceptBaselineRepeat," << interceptBaselineRepeat << ",";
@@ -572,27 +709,25 @@ int main(int argc, char* argv[])
     // Save the normalised repeat image. 
     saveNormalisedImage(repeatBSIImageName, outputNormalisedImageName, slopeRepeatBaseline, interceptRepeatBaseline); 
     
+    if(resultBSIFilename!=NULL) {
+		saveBSIImage(forwardbsi,backwardbsi,resultBSIFilename);
+		remove(forwardbsi);
+		remove(backwardbsi);
+    }
+	 
     if (fabs(baselineCsfMean-baselineFinalMeans[0]) > baselineFinalStds[0])
     {
-      SimpleKMeansClusteringImageFilterType::ParametersType initialMeans(2);
       SimpleKMeansClusteringImageFilterType::ParametersType finalMeans(2);
       SimpleKMeansClusteringImageFilterType::ParametersType finalStds(2);
       
-      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
-      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
-      binariseImageFilter->SetPaddingValue(0);
-      binariseImageFilter->SetInput(baselineNormalisationMaskReader->GetOutput());
-      binariseImageFilter->Update();
-      multipleDilateImageFilter->SetNumberOfDilations(atoi(argv[11]));
-      multipleDilateImageFilter->SetInput(binariseImageFilter->GetOutput());
-      multipleDilateImageFilter->Update();
-      simpleKMeansClusteringImageFilter->SetInitialMeans(initialMeans);
-      simpleKMeansClusteringImageFilter->SetInput(baselineNormalisationImageReader->GetOutput());
-      simpleKMeansClusteringImageFilter->SetInputMask(multipleDilateImageFilter->GetOutput());
-      simpleKMeansClusteringImageFilter->SetNumberOfClasses(2); 
-      simpleKMeansClusteringImageFilter->Update();
-      finalMeans = simpleKMeansClusteringImageFilter->GetFinalMeans();
-      finalStds = simpleKMeansClusteringImageFilter->GetFinalStds();
+		finalMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean2();
+      finalMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean2();
+		
+      KMeansClassification(finalMeans, finalStds, 
+                          baselineNormalisationImageReader->GetOutput(),
+                          baselineNormalisationMaskReader->GetOutput(),
+                          atoi(argv[11]), 2, argv[14],tissueToRemoveMASKFilename);  
+								  
       std::cout << "baseline 2-class k-means csf," << finalMeans[0] << "," << finalStds[0]; 
       std::cout << ",inconsistency between baseline CSF intensity estimated from " << numberOfClasses << "-class k-means and from dilated and undilated brain regions"; 
       if (numberOfClasses == 3 && fabs(baselineCsfMean-baselineFinalMeans[0]) > fabs(baselineCsfMean-finalMeans[0]))
@@ -601,25 +736,17 @@ int main(int argc, char* argv[])
     
     if (fabs(repeatCsfMean-repeatFinalMeans[0]) > repeatFinalStds[0])
     {
-      SimpleKMeansClusteringImageFilterType::ParametersType initialMeans(2);
       SimpleKMeansClusteringImageFilterType::ParametersType finalMeans(2);
       SimpleKMeansClusteringImageFilterType::ParametersType finalStds(2);
       
-      initialMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
-      initialMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
-      binariseImageFilter->SetPaddingValue(0);
-      binariseImageFilter->SetInput(repeatNormalisationMaskReader->GetOutput());
-      binariseImageFilter->Update();
-      multipleDilateImageFilter->SetNumberOfDilations(atoi(argv[11]));
-      multipleDilateImageFilter->SetInput(binariseImageFilter->GetOutput());
-      multipleDilateImageFilter->Update();
-      simpleKMeansClusteringImageFilter->SetInitialMeans(initialMeans);
-      simpleKMeansClusteringImageFilter->SetInput(repeatNormalisationImageReader->GetOutput());
-      simpleKMeansClusteringImageFilter->SetInputMask(multipleDilateImageFilter->GetOutput());
-      simpleKMeansClusteringImageFilter->SetNumberOfClasses(2); 
-      simpleKMeansClusteringImageFilter->Update();
-      finalMeans = simpleKMeansClusteringImageFilter->GetFinalMeans();
-      finalStds = simpleKMeansClusteringImageFilter->GetFinalStds();
+      finalMeans[0] = 0.3*normalisationCalculator->GetNormalisationMean1();
+      finalMeans[1] = 0.7*normalisationCalculator->GetNormalisationMean1();
+
+		KMeansClassification(finalMeans, finalStds, 
+                          repeatNormalisationImageReader->GetOutput(),
+                          repeatNormalisationMaskReader->GetOutput(),
+                          atoi(argv[11]), 2, argv[15],tissueToRemoveMASKFilename); 
+
       std::cout << ",repeat 2-class k-means csf," << finalMeans[0] << "," << finalStds[0]; 
       std::cout << ",inconsistency between repeat CSF intensity estimated from " << numberOfClasses << "-class k-means and from dilated and undilated brain regions"; 
       if (numberOfClasses == 3 && fabs(repeatCsfMean-repeatFinalMeans[0]) > fabs(repeatCsfMean-finalMeans[0]))

@@ -63,7 +63,7 @@
 #include "AffineTransformView.h"
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkAffineTransformParametersDataNodeProperty.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 
 //-----------------------------------------------------------------------------
 AffineTransformView::AffineTransformView()

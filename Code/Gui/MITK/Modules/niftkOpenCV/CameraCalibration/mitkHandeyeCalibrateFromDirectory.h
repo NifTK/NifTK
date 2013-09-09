@@ -42,6 +42,7 @@ public:
   itkNewMacro(HandeyeCalibrateFromDirectory);
   
   void InitialiseVideo ();
+  void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
   itkSetMacro(Directory, std::string);
@@ -55,6 +56,7 @@ public:
   itkSetMacro(NumberCornersHeight, unsigned int);
   itkSetMacro(SquareSizeInMillimetres, double);
   itkSetMacro(WriteOutChessboards,bool);
+  itkSetMacro(NoVideoSupport,bool);
 
 protected:
 
@@ -80,25 +82,26 @@ private:
   double                              m_SquareSizeInMillimetres;
   std::string                         m_Directory;
   bool                                m_WriteOutChessboards;
-
+  bool                                m_WriteOutCalibrationImages;
   mitk::VideoTrackerMatching::Pointer m_Matcher;
 
   // Not possible to store the frames in memory, will need to process them on the fly
   // First init videotrackermatching
   // use this to get the number of frames (stored in the framemap.log
   // Process frames, either sequencially of more likely by random selection
-  std::vector <cv::Mat> m_LeftCameraVideoFrames;
-  std::vector <cv::Mat> m_RightCameraVideoFrames;
+  std::vector <cv::Mat>               m_LeftCameraVideoFrames;
+  std::vector <cv::Mat>               m_RightCameraVideoFrames;
 
-  std::vector<std::string>      FindVideoData();
-  void             LoadVideoData(std::string filename);
+  std::vector<std::string>            FindVideoData();
+  void                                LoadVideoData(std::string filename);
 
   /**
    * \brief As video processing can be time consuming allow for saving and loading 
    * of pre-processed video data
    */
-  std::string      CheckForExistingData();
+  std::string                         CheckForExistingData();
 
+  bool                                m_NoVideoSupport; //for testing, enable running 
 
 
 

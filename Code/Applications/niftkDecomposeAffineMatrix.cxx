@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkEulerAffineTransform.h>
 #include <itkAffineTransform.h>
 #include <itkTransformFileReader.h>

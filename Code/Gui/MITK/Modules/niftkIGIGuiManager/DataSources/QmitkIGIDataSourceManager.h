@@ -65,6 +65,7 @@ public:
   static const int    DEFAULT_TIMING_TOLERANCE;
   static const bool   DEFAULT_SAVE_ON_RECEIPT;
   static const bool   DEFAULT_SAVE_IN_BACKGROUND;
+  static const bool   DEFAULT_PICK_LATEST_DATA;
 
   /**
    * \brief Creates the base class widgets, and connects signals and slots.
@@ -138,6 +139,13 @@ public:
    * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
    */
   itkSetMacro(SaveInBackground, bool);
+
+  /**
+   * \brief Sets all data sources to just pick the latest data from the queue.
+   * This is useful if you are running multiple machines, and struggling to
+   * synchronise clocks via NTP.
+   */
+  void SetPickLatestData(const bool& pickLatest);
 
 signals:
 
@@ -257,6 +265,7 @@ private:
   QString                                   m_DirectoryPrefix;
   bool                                      m_SaveOnReceipt;
   bool                                      m_SaveInBackground;
+  bool                                      m_PickLatestData;
   QTimer                                   *m_GuiUpdateTimer;
   QTimer                                   *m_ClearDownTimer;
 

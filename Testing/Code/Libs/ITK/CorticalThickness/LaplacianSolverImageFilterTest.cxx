@@ -20,7 +20,7 @@
 #include <math.h>
 #include <itkImage.h>
 #include <itkLaplacianSolverImageFilter.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkRescaleIntensityImageFilter.h>

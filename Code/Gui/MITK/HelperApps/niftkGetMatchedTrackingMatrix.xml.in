@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Get Matched Tracking Matrix</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+    <file>
+      <name>TemporalCalibration</name>
+      <longflag>TemporalCalibration</longflag>
+      <description>A file used for temporal calibration.</description>
+      <label>A file used for temporal calibration</label>
+    </file>    
+
+    <file>
+      <name>handeyes</name>
+      <longflag>handeyes</longflag>
+      <description>A file defining the handeye tranforms.</description>
+      <label>A file defining the handeye transforms</label>
+    </file>    
+    <file>
+      <name>TCfileout</name>
+      <longflag>TCfileout</longflag>
+      <description>A file to writeout the temporal calibration results.</description>
+      <label>A file to writeout the temporal calibration results</label>
+    </file>    
+
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>FlipTracking</name>
+      <longflag>FlipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
+      <label>Flip the tracking matrices</label>
+      <default>0</default>
+    </boolean>
+
+    <integer>
+	<name>frameNumber</name>
+	<longflag>frameNumber</longflag>
+	<description>The video frame number</description>
+	<label>The video frame number</label>
+	<default>0</default>
+    </integer>
+    <integer>
+	<name>trackerIndex</name>
+	<longflag>trackerIndex</longflag>
+	<description>The tracker index to use</description>
+	<label>The tracker index to use</label>
+	<default>0</default>
+    </integer>
+  </parameters>
+  
+</executable>

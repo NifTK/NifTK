@@ -23,7 +23,7 @@
 #include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkImageDuplicator.h>
 #include <fstream>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkBSplineInterpolateImageFunction.h>
 

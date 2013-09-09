@@ -164,12 +164,6 @@ protected:
 private:
 
   /**
-   * \brief To make sure we don't display the tracked image view.
-   * ToDo: Need to design this bit better.
-   */
-  void SetTrackedImageVisibility(const bool& visibility);
-
-  /**
    * \brief Separate method, so we can force an update on each refresh.
    */
   void UpdateCameraIntrinsicParameters();

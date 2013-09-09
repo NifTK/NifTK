@@ -18,7 +18,7 @@
 #include <itkNumericTraits.h>
 #include <itkMatrixOffsetTransformBase.h>
 #include <vnl/algo/vnl_matrix_inverse.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkUCLMacro.h>
 
 namespace itk

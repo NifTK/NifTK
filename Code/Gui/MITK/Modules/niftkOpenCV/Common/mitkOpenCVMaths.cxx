@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkOpenCVMaths.h"
+#include <boost/math/special_functions/fpclassify.hpp>
 
 namespace mitk {
 
@@ -314,6 +315,297 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
       openCVMatrix(i, j) = matrix.GetElement(i, j);
     }
   }
+}
+
+//-----------------------------------------------------------------------------
+std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p)
+{
+  cv::Mat src ( 4, p.size(), CV_32F );
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    src.at<float>(0,i) = p[i].x;
+    src.at<float>(1,i) = p[i].y;
+    src.at<float>(2,i) = p[i].z;
+    src.at<float>(3,i) = 1.0;
+  }
+  cv::Mat dst = M*src;
+  std::vector <cv::Point3f> returnPoints;
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    cv::Point3f point;
+    point.x = dst.at<float>(0,i);
+    point.y = dst.at<float>(1,i);
+    point.z = dst.at<float>(2,i);
+    returnPoints.push_back(point);
+  }
+  return returnPoints;
+}
+//-----------------------------------------------------------------------------
+cv::Point3f operator*(cv::Mat M, const cv::Point3f& p)
+{
+  cv::Mat src ( 4, 1, CV_32F );
+  src.at<float>(0,0) = p.x;
+  src.at<float>(1,0) = p.y;
+  src.at<float>(2,0) = p.z;
+  src.at<float>(3,0) = 1.0;
+    
+  cv::Mat dst = M*src;
+  cv::Point3f returnPoint;
+  
+  returnPoint.x = dst.at<float>(0,0);
+  returnPoint.y = dst.at<float>(1,0);
+  returnPoint.z = dst.at<float>(2,0);
+
+  return returnPoint;
+}
+//-----------------------------------------------------------------------------
+cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
+    bool RejectIfNotPerpendicular)
+{
+  double a1;
+  double a2;
+  double b1;
+  double b2;
+  cv::Point2f returnPoint;
+  returnPoint.x = -100.0;
+  returnPoint.y = -100.0;
+
+  if ( line1[2] == line1[0]  || line2[2] == line2[0]  ) 
+  {
+    MITK_ERROR << "Intersect for vertical lines not implemented";
+    return returnPoint;
+  }
+  else
+  {
+    a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) / 
+      ( static_cast<double>(line1[2]) - static_cast<double>(line1[0]) );
+    a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) / 
+      ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
+    b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
+    b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
+  }
+  returnPoint.x = ( b2 - b1 )/(a1 - a2 );
+  returnPoint.y = a1 * returnPoint.x + b1;
+
+  bool ok = true;
+  if ( RejectIfNotOnALine )
+  {
+    if ( ((returnPoint.x >= line1[2]) && (returnPoint.x <= line1[0])) || 
+         ((returnPoint.x >= line1[0]) && (returnPoint.x <= line1[2])) ||
+         ((returnPoint.x >= line2[2]) && (returnPoint.x <= line2[0])) ||
+         ((returnPoint.x >= line2[0]) && (returnPoint.x <= line2[2])) )
+    {
+      ok = true;
+    }
+    else
+    {
+      ok = false;
+    }
+  }
+  if ( RejectIfNotPerpendicular ) 
+  {
+    //if there perpendicular a1 * a2 should be approximately 1
+    double Angle = fabs(a1 * a2);
+    if ( ! ( (Angle < 3.0) && (Angle > 0.1) ) )
+    {
+      ok = false;
+    }
+  }
+  if ( ok == false ) 
+  {
+    return ( cv::Point2f (-100.0, -100.0) );
+  }
+  else 
+  {
+    return returnPoint;
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+{
+  std::vector<cv::Point2f> returnPoints; 
+  for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
+  {
+    for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
+    {
+      cv::Point2f point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
+      if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
+      {
+        returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
+      }
+    }
+  }
+  return returnPoints;
+}
+//-----------------------------------------------------------------------------
+cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers)
+{
+  cv::Point2f centroid;
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+
+  unsigned int  numberOfPoints = points.size();
+
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    centroid.x += points[i].x;
+    centroid.y += points[i].y;
+  }
+
+  centroid.x /= (double) numberOfPoints;
+  centroid.y /= (double) numberOfPoints;
+  if ( ! RefineForOutliers )
+  {
+    return centroid;
+  }
+  
+  cv::Point2f standardDeviation;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+    standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
+
+  cv::Point2f highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
+  cv::Point2f lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
+
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  unsigned int goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    {
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+
+  return centroid;
+}
+//-----------------------------------------------------------------------------
+cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOutliers , cv::Point3f* StandardDeviation)
+{
+  cv::Point3f centroid;
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  centroid.z = 0.0;
+
+  unsigned int  numberOfPoints = points.size();
+
+  unsigned int goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+  
+    if ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) )
+    { 
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      centroid.z += points[i].z;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+  centroid.z /= (double) goodPoints;
+
+  if ( ! RefineForOutliers  && StandardDeviation == NULL)
+  {
+    return centroid;
+  }
+  
+  cv::Point3f standardDeviation;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  standardDeviation.z = 0.0;
+
+  goodPoints = 0;
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) )
+    {
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      standardDeviation.z += ( points[i].z - centroid.z ) * (points[i].z - centroid.z);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  standardDeviation.z = sqrt ( standardDeviation.z/ (double) goodPoints ) ;
+  
+  if ( ! RefineForOutliers )
+  {
+    *StandardDeviation = standardDeviation;
+    return centroid;
+  }
+  cv::Point3f highLimit (centroid.x + 2 * standardDeviation.x , 
+      centroid.y + 2 * standardDeviation.y, centroid.z + standardDeviation.z);
+  cv::Point3f lowLimit (centroid.x - 2 * standardDeviation.x , 
+      centroid.y - 2 * standardDeviation.y, centroid.z - standardDeviation.z);
+
+  centroid.x = 0.0;
+  centroid.y = 0.0;
+  centroid.z = 0.0;
+  goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints; ++i)
+  {
+    if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
+         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
+         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+    {
+      centroid.x += points[i].x;
+      centroid.y += points[i].y;
+      centroid.z += points[i].z;
+      goodPoints++;
+    }
+  }
+
+  centroid.x /= (double) goodPoints;
+  centroid.y /= (double) goodPoints;
+  centroid.z /= (double) goodPoints;
+
+  if ( StandardDeviation == NULL ) 
+  {
+    return centroid;
+  }
+  goodPoints = 0 ;
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  standardDeviation.z = 0.0;
+
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
+         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
+         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+    { 
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      standardDeviation.z += ( points[i].z - centroid.z ) * (points[i].z - centroid.z);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  standardDeviation.z = sqrt ( standardDeviation.z/ (double) goodPoints ) ;
+  *StandardDeviation = standardDeviation;
+  return centroid;
 }
 
 

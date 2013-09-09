@@ -104,6 +104,7 @@ void DataSourcesView::RetrievePreferenceValues()
     int timingTolerance = prefs->GetInt("timing tolerance", QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
     bool saveOnReceipt = prefs->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
     bool saveInBackground = prefs->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
+    bool pickLatestData = prefs->GetBool("pick latest data", QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA);
 
     m_DataSourceManager->SetDirectoryPrefix(path);
     m_DataSourceManager->SetFramesPerSecond(refreshRate);
@@ -114,6 +115,7 @@ void DataSourcesView::RetrievePreferenceValues()
     m_DataSourceManager->SetTimingTolerance(timingTolerance);
     m_DataSourceManager->SetSaveOnReceipt(saveOnReceipt);
     m_DataSourceManager->SetSaveInBackground(saveInBackground);
+    m_DataSourceManager->SetPickLatestData(pickLatestData);
   }
   else
   {
@@ -131,6 +133,7 @@ void DataSourcesView::RetrievePreferenceValues()
     m_DataSourceManager->SetTimingTolerance(QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
     m_DataSourceManager->SetSaveOnReceipt(QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
     m_DataSourceManager->SetSaveInBackground(QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
+    m_DataSourceManager->SetPickLatestData(QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA);
   }
 }
 

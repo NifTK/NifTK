@@ -15,7 +15,7 @@
 #ifndef __itkImageRegistrationFilter_txx
 #define __itkImageRegistrationFilter_txx
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include "itkImageRegistrationFilter.h"
 #include <itkImageRegistrationFactory.h>
 #include <itkLogHelper.h>

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>

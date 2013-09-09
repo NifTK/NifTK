@@ -44,6 +44,7 @@ DataSourcesViewPreferencePage::DataSourcesViewPreferencePage()
 , m_SaveOnUpdate(0)
 , m_SaveOnReceive(0)
 , m_SaveInBackground(0)
+, m_PickLatestData(0)
 , m_Initializing(false)
 , m_DataSourcesViewPreferencesNode(0)
 {
@@ -148,6 +149,7 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   m_SaveOnUpdate = new QRadioButton();
   m_SaveOnReceive = new QRadioButton();
   m_SaveInBackground = new QCheckBox();
+  m_PickLatestData = new QCheckBox();
 
   formLayout->addRow("error colour", errorButtonLayout);
   formLayout->addRow("warning colour", warningButtonLayout);
@@ -159,6 +161,7 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("save data each screen update", m_SaveOnUpdate);
   formLayout->addRow("save data as it is received", m_SaveOnReceive);
   formLayout->addRow("save in background", m_SaveInBackground);
+  formLayout->addRow("ignore timing, pick latest data", m_PickLatestData);
 
   m_MainControl->setLayout(formLayout);
   this->Update();
@@ -189,6 +192,7 @@ bool DataSourcesViewPreferencePage::PerformOk()
   m_DataSourcesViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
   m_DataSourcesViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
   m_DataSourcesViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
+  m_DataSourcesViewPreferencesNode->PutBool("pick latest data", m_PickLatestData->isChecked());
   return true;
 }
 
@@ -253,6 +257,7 @@ void DataSourcesViewPreferencePage::Update()
 
   m_SaveOnReceive->setChecked(m_DataSourcesViewPreferencesNode->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT));
   m_SaveInBackground->setChecked(m_DataSourcesViewPreferencesNode->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND));
+  m_PickLatestData->setChecked(m_DataSourcesViewPreferencesNode->GetBool("pick latest data", QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA));
 }
 
 

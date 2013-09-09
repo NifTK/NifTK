@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <itkLogHelper.h>
-#include <ConversionUtils.h>
+#include <niftkConversionUtils.h>
 #include <itkBilateralImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
