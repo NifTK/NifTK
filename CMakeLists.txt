@@ -11,7 +11,7 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
- 
+
 ###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
@@ -50,7 +50,7 @@ else()
    set(CMAKE_BUILD_TYPE Release CACHE STRING "Setting build type to Release (default). Valid options: Debug/Release.")
 endif()
 
-if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release")) 
+if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release"))
   message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} is not supported.")
 endif()
 
@@ -105,11 +105,11 @@ set(BUILD_IGI OFF)
 # Please leave this off, as we can then JUST build command line apps, without
 # filling the CMakeCache.txt with GUI related variables which will only confuse
 # when someone subsequently tries to switch all the GUIs off.
-option(NIFTK_BUILD_ALL_APPS "Build all NifTK Graphical User Interfaces" OFF) 
+option(NIFTK_BUILD_ALL_APPS "Build all NifTK Graphical User Interfaces" OFF)
 
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
-  
+
   # extract option_name
   string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
   set(target_info_list ${target_info})
@@ -119,17 +119,17 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   if(${option_name} OR NIFTK_BUILD_ALL_APPS)
 
     set(BUILD_GUI ON)
-    
+
     if (${app_name} STREQUAL "NiftyIGI")
       set(BUILD_IGI ON)
     endif()
-  
+
     if (${app_name} STREQUAL "NiftyView")
       set(BUILD_IGI ON)
     endif()
-  
+
   endif()
-      
+
 endforeach()
 
 ######################################################################
@@ -170,12 +170,12 @@ option(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES "For make install, for command li
 include (CheckIncludeFiles)
 
 CHECK_INCLUDE_FILES(mpfr.h NIFTK_MESHING_CAN_BUILD)
-if (NIFTK_MESHING_CAN_BUILD) 
+if (NIFTK_MESHING_CAN_BUILD)
   option(BUILD_MESHING "Build meshing?" OFF)
 endif()
 
 ######################################################################
-# Variables that get compiled into C++ code. 
+# Variables that get compiled into C++ code.
 ######################################################################
 set(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
 set(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
@@ -327,16 +327,16 @@ endif()
 ######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
 ######################################################################
-set(CMAKE_MODULE_PATH 
+set(CMAKE_MODULE_PATH
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/CMake
     ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals
-    ${CMAKE_SOURCE_DIR}/CMake/cuda 
+    ${CMAKE_SOURCE_DIR}/CMake/cuda
     ${CMAKE_MODULE_PATH}
    )
 
 ######################################################################
-# Add in any functions/macros. 
+# Add in any functions/macros.
 ######################################################################
 include(mitkMacroEmptyExternalProject)
 include(mitkFunctionGetVersion)
@@ -421,7 +421,7 @@ if(BUILD_TESTING)
                  COPYONLY IMMEDIATE)
   set(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
   mark_as_advanced(BUILDNAME)
-  
+
   # Setup file for setting custom ctest vars
   configure_file(CMake/CTestCustom.cmake.in ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 endif(BUILD_TESTING)
@@ -432,7 +432,7 @@ endif(BUILD_TESTING)
 ######################################################################
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
-CHECK_FUNCTION_EXISTS(mkstemps HAVE_MKSTEMPS) 
+CHECK_FUNCTION_EXISTS(mkstemps HAVE_MKSTEMPS)
 CHECK_INCLUDE_FILES("sys/socket.h" HAVE_SYS_SOCKET_H)
 if(HAVE_SYS_SOCKET_H)
   add_definitions("-DHAVE_SYS_SOCKET_H")
@@ -548,15 +548,15 @@ if(BUILD_GUI)
   else(BUILD_IGI)
     find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
   endif(BUILD_IGI)
-  
+
   if(QT_FOUND)
-  
+
     set(QT_USE_QTXML 1)
     set(QT_USE_QTXMLPATTERNS 1)
     set(QT_USE_PHONON 0)
 
     include(${QT_USE_FILE})
-  
+
     if(BUILD_SUPERBUILD)
       set(VTK_QT_ARGS
         -DDESIRED_QT_VERSION:STRING=4
@@ -566,10 +566,10 @@ if(BUILD_GUI)
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
        )
      endif(BUILD_SUPERBUILD)
-     
+
   endif(QT_FOUND)
 endif(BUILD_GUI)
-  
+
 ######################################################################
 # Find CUDA: Required by the Nifty packages
 ######################################################################
@@ -600,9 +600,9 @@ endif()
 
 ######################################################################
 # Now, if required, do the SuperBuild
-# If we are doing SuperBuild 
+# If we are doing SuperBuild
 #   We configure up to this point (see the return() statement)
-#   and then we call SuperBuild.cmake, which builds all the 
+#   and then we call SuperBuild.cmake, which builds all the
 #   dependencies as CMake ExternalProjects, and then also builds
 #   NifTK as an ExternalProject. However instead of downloading
 #   a tar file, you set the SOURCE_DIR to be THIS project, and force
@@ -647,7 +647,7 @@ if(APPLE)
   include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
 
   foreach(NIFTK_APP ${NIFTK_APPS})
-    
+
     # extract option_name
     string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
     set(target_info_list ${target_info})
@@ -657,9 +657,9 @@ if(APPLE)
     if(${option_name} OR NIFTK_BUILD_ALL_APPS)
       set(MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES} ${app_name})
     endif()
-          
+
   endforeach()
-  
+
 endif()
 
 ######################################################################
@@ -669,19 +669,19 @@ endif()
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
 
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake 
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake
   ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake 
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake
   ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake 
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake
   ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake 
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake 
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 
 if (BUILD_MESHING)
-  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake 
+  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
     ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
 endif (BUILD_MESHING)
 
@@ -749,17 +749,17 @@ set(MITK_USE_QT ${QT_FOUND})
 set(MITK_USE_OpenCV ${BUILD_IGI})
 
 if(NIFTK_GENERATE_DOXYGEN_HELP)
-  set(BLUEBERRY_USE_QT_HELP ON) 
+  set(BLUEBERRY_USE_QT_HELP ON)
 endif(NIFTK_GENERATE_DOXYGEN_HELP)
-  
+
 find_package(MITK REQUIRED)
 if(MITK_FOUND)
   message("Found MITK")
-  set(CMAKE_MODULE_PATH 
+  set(CMAKE_MODULE_PATH
     ${MITK_SOURCE_DIR}/CMake
     ${CMAKE_MODULE_PATH}
   )
-  link_directories(${MITK_LINK_DIRECTORIES})    
+  link_directories(${MITK_LINK_DIRECTORIES})
 endif(MITK_FOUND)
 
 ######################################################################
@@ -772,7 +772,7 @@ endif(MITK_FOUND)
 
 if (BUILD_MESHING)
   set(CGAL_DIR "${PROJECT_BINARY_DIR}/../CGAL-install/lib/CGAL")
-  find_package(CGAL) 
+  find_package(CGAL)
   link_directories("${CGAL_DIR}/..")
 endif (BUILD_MESHING)
 
@@ -953,7 +953,7 @@ foreach(type LIBRARY RUNTIME ARCHIVE)
   mark_as_advanced(CMAKE_${type}_OUTPUT_DIRECTORY)
 endforeach()
 
-configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in 
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in
   ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen @ONLY)
 
 ######################################################################
@@ -1010,7 +1010,7 @@ if(WIN32 AND NOT BUILD_SHARED_LIBS)
 endif()
 
 #######################################################################
-# Set the main install locations. 
+# Set the main install locations.
 # These are relative to CMAKE_INSTALL_PREFIX which we MUST NOT touch.
 #######################################################################
 set(NIFTK_INSTALL_BASE_DIR ".")
@@ -1108,8 +1108,8 @@ endif()
 ##########################################################################
 
 # NiftyReg
-if(BUILD_NIFTYREG AND NIFTYREG_FOUND) 
-  file(GLOB NIFTY_REG_LIB_FILES 
+if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
+  file(GLOB NIFTY_REG_LIB_FILES
        ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.so
        ${CMAKE_BINARY_DIR}/../NiftyReg-install/lib/*.dylib
        )
@@ -1120,8 +1120,8 @@ if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
-if(BUILD_NIFTYSEG) 
-  file(GLOB NIFTY_SEG_LIB_FILES 
+if(BUILD_NIFTYSEG)
+  file(GLOB NIFTY_SEG_LIB_FILES
        ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.so
        ${CMAKE_BINARY_DIR}/../NiftySeg-install/lib/*.dylib
        )
@@ -1135,8 +1135,8 @@ if(BUILD_NIFTYSEG)
 endif(BUILD_NIFTYSEG)
 
 # NiftyRec
-if(BUILD_NIFTYREC AND NIFTYREC_FOUND) 
-  file(GLOB NIFTY_REC_LIB_FILES 
+if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
+  file(GLOB NIFTY_REC_LIB_FILES
        ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.so
        ${CMAKE_BINARY_DIR}/../NiftyRec-install/lib/*.dylib
        )
@@ -1147,8 +1147,8 @@ if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
 
 # NiftySim
-if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND) 
-  file(GLOB NIFTY_SIM_LIB_FILES 
+if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
+  file(GLOB NIFTY_SIM_LIB_FILES
        ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.so
        ${CMAKE_BINARY_DIR}/../NiftySim-install/lib/*.dylib
        )
@@ -1169,9 +1169,9 @@ if(BUILD_UTILITIES)
   subdirs(Utilities)
 endif(BUILD_UTILITIES)
 
-if(BUILD_TESTING) 
+if(BUILD_TESTING)
   subdirs(Testing)
-endif(BUILD_TESTING)   
+endif(BUILD_TESTING)
 
 if(BUILD_PROTOTYPE)
   subdirs(Prototype)
@@ -1201,23 +1201,23 @@ if (WIN32)
   set(DESKTOP_ICONS_SETUP_STRING "")
   set(DESKTOP_ICONS_REMOVE_STRING "")
   set(DESKTOP_ICONS_REMOVE_STRING "")
- 
-  foreach(NIFTK_APP ${NIFTK_APPS})  
+
+  foreach(NIFTK_APP ${NIFTK_APPS})
     # extract option_name
     string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
     set(target_info_list ${target_info})
     list(GET target_info_list 1 option_name)
     list(GET target_info_list 0 app_name)
 
-	message("Current App Name: ${app_name}")
-	
-	if(EXISTS "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/${app_name}.exe")
-	  set(ICONS_SETUP_STRING "${ICONS_SETUP_STRING}CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
+    message("Current App Name: ${app_name}")
+
+    if(EXISTS "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/${app_name}.exe")
+      set(ICONS_SETUP_STRING "${ICONS_SETUP_STRING}CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
       set(ICONS_REMOVE_STRING "${ICONS_REMOVE_STRING}Delete '$SMPROGRAMS\\\\$MUI_TEMP\\\\${app_name}.lnk'\n")
-	
-      set(DESKTOP_ICONS_SETUP_STRING "${DESKTOP_ICONS_SETUP_STRING}CreateShortCut '$DESKTOP\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n") 
+
+      set(DESKTOP_ICONS_SETUP_STRING "${DESKTOP_ICONS_SETUP_STRING}CreateShortCut '$DESKTOP\\\\${app_name}.lnk' '$INSTDIR\\\\bin\\\\${app_name}.exe'\n")
       set(DESKTOP_ICONS_REMOVE_STRING "${DESKTOP_ICONS_REMOVE_STRING}Delete '$DESKTOP\\\\${app_name}.lnk'\n")
-	endif()
+    endif()
   endforeach()
 endif()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -1225,7 +1225,7 @@ endif()
 configure_file(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
                ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)
 
-# 3. Set a variable with the name of this file.		   
+# 3. Set a variable with the name of this file.		
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake")
 
 # 4. Include this optional file.
@@ -1233,7 +1233,7 @@ include(NIFTKCPackOptions)
 
 # 5. Include CPack module once all variables are set. i.e. this must be last.
 include(CPack)
-  
+
 # 6. Trac #1796 - Still need to call MITK rules to get Mac Bundles etc.
 include(mitkInstallRules)
 
@@ -1245,7 +1245,7 @@ include(mitkInstallRules)
 ######################################################################
 if(WIN32)
   if(MITK_FOUND)
-  
+
     include(mitkFunctionCreateWindowsBatchScript)
 
     set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
@@ -1257,22 +1257,22 @@ if(WIN32)
       message( "CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/StartVS_${VS_BUILD_TYPE}.bat" )
     endforeach()
 
-    foreach(NIFTK_APP ${NIFTK_APPS}) 
+    foreach(NIFTK_APP ${NIFTK_APPS})
       # extract option_name
       string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
       set(target_info_list ${target_info})
       list(GET target_info_list 1 option_name)
       list(GET target_info_list 0 app_name)
       message("Current App Name: ${app_name}")
-	  
-	  foreach(VS_BUILD_TYPE debug release)
-		message("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
-		mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
-		${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
-        ${VS_BUILD_TYPE}) 
-	  endforeach()
+
+      foreach(VS_BUILD_TYPE debug release)
+        message("CreateWindowsBatchScript: Creating ${PROJECT_BINARY_DIR}/bin/Start_${app_name}_${VS_BUILD_TYPE}.bat" )
+        mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartApp.bat.in"
+          ${PROJECT_BINARY_DIR}/bin/Start${app_name}_${VS_BUILD_TYPE}.bat
+          ${VS_BUILD_TYPE})
+      endforeach()
     endforeach()
-    
+
   else(MITK_FOUND)
     message( "CreateWindowsBatchScript: MITK not found" )
   endif(MITK_FOUND)
