@@ -496,7 +496,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     }
   }
 
-  std::vector <cv::Point3f> pointsInLensCS;
+  std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
 
@@ -506,14 +506,14 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     return;
   }
 
-  std::vector < std::vector <cv::Point3f> > standardDeviations;
+  std::vector < std::vector <cv::Point3d> > standardDeviations;
   if ( fout ) 
   {
     fout << "#lag " ;
   }
   for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i++ )
   {
-    std::vector <cv::Point3f> pointvector;
+    std::vector <cv::Point3d> pointvector;
     standardDeviations.push_back(pointvector);
     if ( fout ) 
     {
@@ -526,14 +526,14 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
   }
   
   std::vector <cv::Point3d> optimalVideoLag;
-  std::vector <cv::Point3f> minimumSD;
+  std::vector <cv::Point3d> minimumSD;
   std::vector <float> minimumSDMag;
   std::vector <int> optimalVideoLagMag;
   float maximumSD = 0;
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size(); trackerIndex ++ ) 
   { 
     optimalVideoLag.push_back(cv::Point3d(0,0,0));
-    minimumSD.push_back(cv::Point3f(0,0,0));
+    minimumSD.push_back(cv::Point3d(0,0,0));
     minimumSDMag.push_back(0.0);
     optimalVideoLagMag.push_back(0);
   }
@@ -556,7 +556,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
     }
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
-      std::vector <cv::Point3f> worldPoints;
+      std::vector <cv::Point3d> worldPoints;
       worldPoints.clear();
       for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
       {
@@ -564,7 +564,7 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
             pointsInLensCS[frame]);
       }
-      cv::Point3f* worldStdDev = new cv::Point3f;
+      cv::Point3d* worldStdDev = new cv::Point3d;
       mitk::GetCentroid (worldPoints, true, worldStdDev);
       standardDeviations[trackerIndex].push_back(*worldStdDev);
       float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
@@ -659,7 +659,7 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
     }
   }
 
-  std::vector <cv::Point3f> pointsInLensCS;
+  std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
 
@@ -690,7 +690,7 @@ void VideoTrackerMatching::HandeyeSensitivityTest(std::string calibrationfilenam
     }
   }
 
-  std::vector <cv::Point3f> pointsInLensCS;
+  std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
   pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
 
@@ -753,9 +753,9 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   }
 } 
 //---------------------------------------------------------------------------
-std::vector <cv::Point3f> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename)
+std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename)
 {
-  std::vector <cv::Point3f> pointsInLensCS;
+  std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
   std::ifstream fin(calibrationfilename.c_str());
   if ( !fin )
@@ -780,7 +780,7 @@ std::vector <cv::Point3f> VideoTrackerMatching::ReadPointsInLensCSFile(std::stri
       bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring;
       if ( parseSuccess )
       {
-        pointsInLensCS.push_back(cv::Point3f(
+        pointsInLensCS.push_back(cv::Point3d(
               atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
         if ( frameNumber != linenumber++ )
         {
