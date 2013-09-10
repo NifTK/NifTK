@@ -120,6 +120,8 @@ int main(int argc, char** argv)
         *transformationMatrix
         );
 
+    std::cout << "niftkUltrasoundPinCalibration: residual         = " << residualError << std::endl;
+
     if (isSuccessful)
     {
       if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))

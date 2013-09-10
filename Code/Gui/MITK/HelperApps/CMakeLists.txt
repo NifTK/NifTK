@@ -86,6 +86,7 @@ if(SlicerExecutionModel_FOUND)
       niftkFindAndTriangulateCrossHair
       niftkUltrasoundPinCalibration
       niftkTriangulate2DPointPairsTo3D
+      niftkPivotCalibration
     )
   endif()  
 
