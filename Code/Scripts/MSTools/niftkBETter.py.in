@@ -500,7 +500,7 @@ while i < arg:
 	same=True
 
     else:
-	print "\n\ERROR: option ",argv[i]," not recognised\n\n"
+	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
 	usage(help)
 	
     i=i+1

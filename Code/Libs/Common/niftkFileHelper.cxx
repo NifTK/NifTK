@@ -354,5 +354,14 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
     fileNames.push_back( full_path.string() );    
   }
 }
+//  -------------------------------------------------------------------------
+bool NumericStringCompare( const std::string &string1, const std::string &string2) 
+{
+  fs::path path1 (string1);
+  fs::path path2 (string2);
+  int d1 = boost::lexical_cast<long long int>(path1.stem());
+  int d2 = boost::lexical_cast<long long int>(path2.stem());
+  return d1 < d2;
+}
 
 }

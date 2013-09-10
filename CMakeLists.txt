@@ -18,7 +18,7 @@
 # Also, Trac 1592, version number must change if CTK changes significantly.
 ###########################################################################
 set(NIFTK_VERSION_MAJOR 13 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 08 CACHE STRING "Month version number" FORCE )
+set(NIFTK_VERSION_MINOR 09 CACHE STRING "Month version number" FORCE )
 mark_as_advanced(NIFTK_VERSION_MAJOR)
 mark_as_advanced(NIFTK_VERSION_MINOR)
 
@@ -200,9 +200,9 @@ set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "tar" CACHE STRING "Archive type NifTKData (git, svn or tar)" FORCE)
-set(NIFTK_VERSION_DATA_GIT "14e971fb10" CACHE STRING "Version of NifTKData in git" FORCE)
+set(NIFTK_VERSION_DATA_GIT "a953063204" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_VERSION_DATA_SVN "9561" CACHE STRING "Version of NifTKData in svn" FORCE)
-set(NIFTK_VERSION_DATA_TAR "14e971fb10" CACHE STRING "Version of NifTKData in tarball" FORCE)
+set(NIFTK_VERSION_DATA_TAR "a953063204" CACHE STRING "Version of NifTKData in tarball" FORCE)
 set(NIFTK_VERSION_BOOST "1.46.1" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.0.18" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20120222" CACHE STRING "Version of DCMTK" FORCE)
@@ -212,7 +212,7 @@ set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "495a771662" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.2" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "cb009d8d52" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_MITK "a0468dcee1" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)

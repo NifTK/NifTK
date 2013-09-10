@@ -39,8 +39,10 @@ int mitkHandeyeFromDirectoryTest ( int argc, char * argv[] )
     bool argok = false;
     if (( argok == false ) && strcmp ( argv[1], "-NoVideoSupport" ) == 0 ) 
     {
-      MITK_WARN << "Test with No video support not implemented.";
-      exit(0);
+      Calibrator->SetNoVideoSupport(true);
+      argc--;
+      argv++;
+      argok=true;
     }
     if ( argok == false )
     {
@@ -49,10 +51,14 @@ int mitkHandeyeFromDirectoryTest ( int argc, char * argv[] )
     }
   }
                           
-  Calibrator->SetTrackerIndex(2);
+  Calibrator->SetTrackerIndex(0);
   Calibrator->SetAbsTrackerTimingError(40e6);
   Calibrator->SetFramesToUse(30);
   Calibrator->SetSortByDistance(true);
+  Calibrator->InitialiseTracking();
   Calibrator->InitialiseVideo();
+  MITK_TEST_CONDITION ( Calibrator->GetTrackingDataInitialised() , "Testing tracking initialisation");
+  MITK_TEST_CONDITION ( Calibrator->GetVideoInitialised() , "Testing video initialisation");
+
   return ok;
 }
