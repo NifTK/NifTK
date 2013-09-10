@@ -59,15 +59,16 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 
   std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
 
-  std::vector<cv::Point2d> points;
+  std::vector<cv::Point3d> points;
   for (unsigned int i = 0; i < pointFiles.size(); i++)
   {
     mitk::Point2D point;
     if (mitk::Load2DPointFromFile(pointFiles[i], point))
     {
-      cv::Point2d cvPoint;
+      cv::Point3d cvPoint;
       cvPoint.x = point[0];
       cvPoint.y = point[1];
+      cvPoint.z = 0.0;
       points.push_back(cvPoint);
     }
   }
@@ -126,7 +127,7 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 //-----------------------------------------------------------------------------
 bool UltrasoundPinCalibration::Calibrate(
     const std::vector< cv::Mat >& matrices,
-    const std::vector< cv::Point2d >& points,
+    const std::vector< cv::Point3d >& points,
     const bool& optimiseScaling,
     const bool& optimiseInvariantPoint,
     std::vector<double>& rigidBodyTransformation,
