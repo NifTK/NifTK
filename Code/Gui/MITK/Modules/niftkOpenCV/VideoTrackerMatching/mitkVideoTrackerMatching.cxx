@@ -13,6 +13,7 @@
 =============================================================================*/
 #include "mitkVideoTrackerMatching.h"
 #include <mitkCameraCalibrationFacade.h>
+#include <mitkUltrasoundPinCalibration.h>
 #include <mitkOpenCVMaths.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
@@ -667,6 +668,52 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
   {
     MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
     return;
+  }
+
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  {
+    std::vector<cv::Mat> cameraMatrices;
+    cameraMatrices.clear();
+    for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
+    {
+      int framenumber = frame * 2;
+      cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
+    }
+     
+    bool optimiseScaling = false;
+    bool optimiseInvariantPoint = true;
+    std::vector<double> rigidBodyTransformation;
+    cv::Point3d invariantPoint;
+    //initial values for point and transform. Could use known handeye and reconstructed point, 
+    //but for the minute let's use ID and 0 0 0 
+    rigidBodyTransformation.clear();
+    for ( int i = 0 ; i < 6 ; i ++ ) 
+    {
+      rigidBodyTransformation.push_back(0.0);
+    }
+    invariantPoint.x=0.0;
+    invariantPoint.y=0.0;
+    invariantPoint.z=0.0;
+
+    cv::Point2d millimetresPerPixel;
+    //mm per pixel has now meaning in this application as the point is already defined in mm
+    millimetresPerPixel.x = 1.0;
+    millimetresPerPixel.y = 1.0;
+
+    cv::Matx44d outputMatrix;
+    double residualError;
+    
+    mitk::UltrasoundPinCalibration::Pointer invPointCal = mitk::UltrasoundPinCalibration::New();
+    invPointCal->Calibrate(cameraMatrices, pointsInLensCS,
+        optimiseScaling, optimiseInvariantPoint, rigidBodyTransformation,
+        invariantPoint, millimetresPerPixel,
+        outputMatrix, residualError);
+    MITK_INFO << "Tracker Index " << trackerIndex << ": After optimisation, handeye = " ;
+    for ( int i = 0 ; i < 4 ; i ++ )
+    {
+      MITK_INFO << outputMatrix(i,0) << "," << outputMatrix(i,1) << outputMatrix(i,2) << outputMatrix (i,3);
+    }
+    MITK_INFO << "Invariant point = " << invariantPoint << " [ " << residualError << " SD ].";
   }
 
 }
