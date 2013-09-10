@@ -1,4 +1,3 @@
-#/*============================================================================
 #
 #  NifTK: A software platform for medical image computing.
 #
@@ -101,6 +100,7 @@ endif(BUILD_SUPERBUILD)
 include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
 set(BUILD_GUI OFF)
 set(BUILD_IGI OFF)
+set(BUILD_MIDAS OFF)
 
 # Please leave this off, as we can then JUST build command line apps, without
 # filling the CMakeCache.txt with GUI related variables which will only confuse
@@ -126,6 +126,10 @@ foreach(NIFTK_APP ${NIFTK_APPS})
 
     if (${app_name} STREQUAL "NiftyView")
       set(BUILD_IGI ON)
+    endif()
+
+    if (${app_name} STREQUAL "NiftyMIDAS")
+      set(BUILD_MIDAS ON)
     endif()
 
   endif()
