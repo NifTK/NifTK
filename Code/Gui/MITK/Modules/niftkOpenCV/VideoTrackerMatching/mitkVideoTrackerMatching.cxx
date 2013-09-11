@@ -681,12 +681,11 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
       if ( ! ( boost::math::isnan(pointsInLensCS[frame].x) || boost::math::isnan(pointsInLensCS[frame].y) || boost::math::isnan(pointsInLensCS[frame].z) ) )
       {
         cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
-        pushCounter++;
       }
       else
       {
        pointsInLensCS.erase(pointsInLensCS.begin() + frame);
-       rame -- ;
+       frame -- ;
       }
     }
      
@@ -721,7 +720,7 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
     MITK_INFO << "Tracker Index " << trackerIndex << ": After optimisation, handeye = " ;
     for ( int i = 0 ; i < 4 ; i ++ )
     {
-      MITK_INFO << outputMatrix(i,0) << "," << outputMatrix(i,1) << outputMatrix(i,2) << outputMatrix (i,3);
+      MITK_INFO << outputMatrix(i,0) << "," << outputMatrix(i,1) <<  " , " << outputMatrix(i,2) << " , " <<  outputMatrix (i,3);
     }
     MITK_INFO << "Invariant point = " << invariantPoint << " [ " << residualError << " SD ].";
   }
