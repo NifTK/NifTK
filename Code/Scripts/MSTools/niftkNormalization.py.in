@@ -293,7 +293,7 @@ i=1
 # Parse remaining command line options
 while i < arg:
     # Clean unnecessary whitespaces
-    argv[i]=argv.strip()
+    argv[i]=argv[i].strip()
     if argv[i].upper() in ['--XML','-XML']:
 	usage(xml,0)
     
