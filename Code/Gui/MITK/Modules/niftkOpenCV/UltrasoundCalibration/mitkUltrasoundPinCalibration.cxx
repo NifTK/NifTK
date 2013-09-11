@@ -192,6 +192,26 @@ bool UltrasoundPinCalibration::Calibrate(
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
   outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+  if (!optimiseScaling && optimiseInvariantPoint)
+  {
+    invariantPoint.x = parameters[6];
+    invariantPoint.y = parameters[7];
+    invariantPoint.z = parameters[8];
+  }
+  if (optimiseScaling && !optimiseInvariantPoint)
+  {
+    millimetresPerPixel.x = parameters[6];
+    millimetresPerPixel.y = parameters[7];
+  }
+  if (optimiseScaling && optimiseInvariantPoint)
+  {
+    millimetresPerPixel.x = parameters[6];
+    millimetresPerPixel.y = parameters[7];;
+    invariantPoint.x = parameters[8];;
+    invariantPoint.y = parameters[9];;
+    invariantPoint.z = parameters[10];;
+  }
+  
   isSuccessful = true;
 
   std::cout << "UltrasoundPinCalibration:Final parameters = " << parameters << std::endl;
