@@ -1545,7 +1545,7 @@ if arg < 9:
 	i=1
 	while i < arg:
 		# Clean unnecessary whitespaces
-		argv[i]=argv.strip()
+		argv[i]=argv[i].strip()
 		if argv[i].upper() in ['--XML','-XML']: 
 			usage(xml,0)
 		i=i+1
