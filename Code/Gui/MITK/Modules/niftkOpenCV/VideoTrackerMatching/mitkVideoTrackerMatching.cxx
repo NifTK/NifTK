@@ -18,6 +18,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 #include <sstream>
 #include <fstream>
@@ -677,7 +678,16 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
     for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
     {
       int framenumber = frame * 2;
-      cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
+      if ( ! ( boost::math::isnan(pointsInLensCS[frame].x) || boost::math::isnan(pointsInLensCS[frame].y) || boost::math::isnan(pointsInLensCS[frame].z) ) )
+      {
+        cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
+        pushCounter++;
+      }
+      else
+      {
+       pointsInLensCS.erase(pointsInLensCS.begin() + frame);
+       rame -- ;
+      }
     }
      
     bool optimiseScaling = false;
