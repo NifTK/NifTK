@@ -73,10 +73,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
   QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
 #endif
-#ifdef USE_NIFTYSIM
-  QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
-  QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
-#endif
 
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
@@ -126,7 +122,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr><td><a href=\"http://qt.nokia.com/products\">Qt</a></td><td>%4</td><td><a href=\"http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\">LGPL version 2.1</a></td><td><a href=\"http://qt.nokia.com/products\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/\">GDCM</a></td><td>%5</td><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html\">GDCM Berkely-like license</a></td><td><a href=\"%6\">from here</a></td></tr>"
       "<tr><td><a href=\"http://dicom.offis.de/\">DCMTK</a></td><td>%7</td><td><a href=\"ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk360/COPYRIGHT\">DCMTK license</a></td><td><a href=\"%8\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.itk.org\">ITK</a></td><td>%9</td><td><a href=\"http://itk.org/ITK/project/license.html\">Apache 2.0 license</a></td><td><a href=\"%10\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.itk.org\">ITK</a>(Patched)</td><td>%9</td><td><a href=\"http://itk.org/ITK/project/license.html\">Apache 2.0 license</a></td><td><a href=\"%10\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td><td><a href=\"%12\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td><td><a href=\"%14\">from here</a></td></tr>"
       "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td><td><a href=\"%16\">from here</a></td></tr>"
@@ -153,7 +149,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
     QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
     QString niftyRegText = QObject::tr(
-        "<tr><td><a href=\"http://www0.cs.ucl.ac.uk/staff/M.Modat/Marcs_Page/Software.html\">NiftyReg</a></td><td>%1</td><td><a href=\"http://niftyreg.svn.sourceforge.net/viewvc/niftyreg/trunk/nifty_reg/LICENSE.txt?revision=1&view=markup\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftyreg/?source=directory\">NiftyReg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyreg/code/395/tree/trunk/nifty_reg/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftyRegVersion).arg(niftyRegLocation);
   #endif
 
@@ -161,8 +157,16 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
     QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
     QString niftySegText = QObject::tr(
-        "<tr><td><a href=\"http://niftyseg.sourceforge.net\">NiftySeg</a></td><td>%1</td><td><a href=\"http://niftyseg.sourceforge.net/Documentation/styled-3/index.html\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftyseg/?source=directory\">NiftySeg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyseg/code/145/tree/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftySegVersion).arg(niftySegLocation);
+  #endif
+
+  #ifdef USE_NIFTYSIM
+    QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
+    QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
+    QString niftySimText = QObject::tr(
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftysim/?source=directory\">NiftySim</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftysim/code/ci/master/tree/nifty_sim/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        ).arg(niftySimVersion).arg(niftySimLocation);
   #endif
 
   #ifdef BUILD_IGI
@@ -225,6 +229,9 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 #endif
 #ifdef USE_NIFTYSEG
       .append(niftySegText)
+#endif
+#ifdef USE_NIFTYSIM
+      .append(niftySimText)
 #endif
 #ifdef BUILD_IGI
       .append(niftyLinkText)
