@@ -56,6 +56,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
     ${zlib_LIBRARY_DIR}
+    ${aruco_DIR}/lib
   )
 
   # Temporary workaround for CTK bug of not exposing external project library dirs.
