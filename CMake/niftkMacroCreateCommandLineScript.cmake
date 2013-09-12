@@ -32,14 +32,16 @@ macro(NIFTK_CREATE_COMMAND_LINE_SCRIPT)
     message(FATAL_ERROR "NAME argument cannot be empty.")
   endif()
 
+  set(FULL_APP_NAME "${_APP_NAME}.${_APP_EXTENSION}")
+
   # First, the script always goes in the bin folder.
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${_APP_NAME}.${_APP_EXTENSION}.in ${EXECUTABLE_OUTPUT_PATH}/${_APP_NAME}.${_APP_EXTENSION} @ONLY )
-  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${_APP_NAME}.${_APP_EXTENSION})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FULL_APP_NAME}.in ${EXECUTABLE_OUTPUT_PATH}/${FULL_APP_NAME} @ONLY )
+  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${FULL_APP_NAME})
 
   # In addition, if INSTALL_CLI_MODULES is specified, will generate a script into cli-modules folder.
   if(_APP_INSTALL_CLI_MODULES)
 
-    message(STATUS "Configuring SEM CLI module from script: ${_APP_NAME}.${_APP_EXTENSION}")
+    message(STATUS "Configuring SEM CLI module from script: ${FULL_APP_NAME}")
 
     if(WIN32)
       configure_file(${CMAKE_SOURCE_DIR}/CMake/CLI.bat.in ${EXECUTABLE_OUTPUT_PATH}/cli-modules/${_APP_NAME}.bat @ONLY )
