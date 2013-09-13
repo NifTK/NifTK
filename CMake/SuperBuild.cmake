@@ -110,6 +110,7 @@ include(niftkMacroGetChecksum)
 ######################################################################
 
 set(EXTERNAL_PROJECTS
+  camino
   Boost  
   VTK
   DCMTK
@@ -145,7 +146,7 @@ endforeach()
 if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
 
   set(proj NIFTK)
-  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
+  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${camino_DEPENDS})
 
   if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES ${OPENCV_DEPENDS})
