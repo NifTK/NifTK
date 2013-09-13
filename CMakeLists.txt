@@ -145,6 +145,7 @@ endforeach()
 ######################################################################
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
+option(BUILD_CAMINO "Build camino." OFF)
 option(BUILD_NIFTYREG "Build NiftyReg." ON)
 option(BUILD_NIFTYREC "Build NiftyRec." OFF)
 option(BUILD_NIFTYSIM "Build NiftySim." ON)
@@ -1164,6 +1165,14 @@ if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   file(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySim-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
+
+if(NOT WIN32 AND BUILD_CAMINO)
+  file(GLOB CAMINO_BIN_FILES
+       ${CMAKE_BINARY_DIR}/../camino-src/bin/*
+      )
+  MITK_INSTALL(PROGRAMS ${CAMINO_BIN_FILES})
+  MITK_INSTALL(PROGRAMS/.. ${CMAKE_BINARY_DIR}/camino.jar)
+endif()
 
 ######################################################################
 # Decide what subdirectories we are building, and go and build them.
