@@ -28,5 +28,5 @@ SET params=%params% %1
 GOTO LOOP
 :AFTERLOOP
 
-"%UP_ONE_DIRECTORY%\@APP@" %params%
+"%UP_ONE_DIRECTORY%\@FULL_APP_NAME@" %params%
 

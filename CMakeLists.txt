@@ -341,6 +341,7 @@ include(niftkMacroGetGitBranch)
 include(niftkMacroBuildCLI)
 include(niftkMacroInstallCLIScript)
 include(niftkMacroCreateCommandLineApplication)
+include(niftkMacroCreateCommandLineScript)
 include(niftkMacroCreateGuiApplication)
 include(niftkMacroFixupCommandLineApps)
 
