@@ -27,7 +27,7 @@ if(NOT WIN32 AND BUILD_CAMINO)
   find_package(Java COMPONENTS Development)
   find_package(Subversion)
 
-  if(Subversion_FOUND)
+  if(NOT "${Java_VERSION}" STREQUAL "" AND Subversion_FOUND)
 
     set(proj camino)
     set(proj_DEPENDENCIES)
