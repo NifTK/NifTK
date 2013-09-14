@@ -36,27 +36,26 @@ if(NOT WIN32 AND BUILD_CAMINO)
   
     if(NOT DEFINED camino_DIR)
   
-      #niftkMacroGetChecksum(NIFTK_CHECKSUM_CAMINO ${NIFTK_LOCATION_CAMINO})
+      niftkMacroGetChecksum(NIFTK_CHECKSUM_CAMINO ${NIFTK_LOCATION_CAMINO})
   
       ExternalProject_Add(${proj}
         SOURCE_DIR ${proj}-src
-        BINARY_DIR ${proj}-build
         PREFIX ${proj}-cmake
         INSTALL_DIR ${proj}-install
-        SVN_REPOSITORY "http://amy.cs.ucl.ac.uk:8090/repos/camino"
-        SVN_TRUST_CERT 1
+        URL ${NIFTK_LOCATION_CAMINO}
+        URL_MD5 ${NIFTK_CHECKSUM_CAMINO}
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
+        BUILD_COMMAND make
         INSTALL_COMMAND ""
         UPDATE_COMMAND ""
-       DEPENDS ${proj_DEPENDENCIES}
+        BUILD_IN_SOURCE ON
+        LOG_BUILD ON
+        DEPENDS ${proj_DEPENDENCIES}
         )
  
       set(camino_DIR ${proj_SRC})
       message("SuperBuild loading camino from ${camino_DIR}")
 
-      execute_process(COMMAND make WORKING_DIRECTORY ${camino_DIR})
-  
     else(NOT DEFINED camino_DIR)
   
       mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")

@@ -224,6 +224,7 @@ set(NIFTK_VERSION_NIFTYSIM "6b7563534a" CACHE STRING "Version of NiftySim" FORCE
 set(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
+set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.bz2" CACHE STRING "Location of Boost" FORCE)
@@ -244,6 +245,7 @@ set(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
 set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
 set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
+set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -1166,12 +1168,17 @@ if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
+# Camino
 if(NOT WIN32 AND BUILD_CAMINO)
   file(GLOB CAMINO_BIN_FILES
        ${CMAKE_BINARY_DIR}/../camino-src/bin/*
       )
+  file(GLOB CAMINO_MAN_FILES
+       ${CMAKE_BINARY_DIR}/../camino-src/man/*
+      )
+  MITK_INSTALL(PROGRAMS ${CAMINO_MAN_FILES})
   MITK_INSTALL(PROGRAMS ${CAMINO_BIN_FILES})
-  MITK_INSTALL(PROGRAMS/.. ${CMAKE_BINARY_DIR}/camino.jar)
+  MITK_INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/../camino.jar)
 endif()
 
 ######################################################################
