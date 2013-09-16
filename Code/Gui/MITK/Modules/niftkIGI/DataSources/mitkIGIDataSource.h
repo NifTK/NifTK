@@ -215,12 +215,12 @@ public:
   /**
    * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
    */
-  void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
+  virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   /**
    * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
    */
-  void StopRecording();
+  virtual void StopRecording();
 
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
