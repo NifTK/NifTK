@@ -175,6 +175,13 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     list(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
   endif(BUILD_NIFTYREC)
 
+  if(MSVC)
+    # if we dont do this then windows headers will define all sorts of "keywords"
+    # and compilation will fail with the weirdest errors.
+    set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -DWIN32_LEAN_AND_MEAN")
+    set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -DWIN32_LEAN_AND_MEAN")
+  endif()
+
   ExternalProject_Add(${proj}
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
