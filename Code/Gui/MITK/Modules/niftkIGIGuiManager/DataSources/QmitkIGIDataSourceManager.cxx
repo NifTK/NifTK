@@ -50,6 +50,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_ClearDownTimer(NULL)
 , m_PlaybackSliderBase(0)
 , m_PlaybackSliderFactor(1)
+, m_CurrentSourceGUI(NULL)
 {
   m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -107,6 +108,7 @@ void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
       //  data source is alive.
       // but for now this.
       delete widget;
+      m_CurrentSourceGUI = NULL;
     }
     delete m_GridLayoutClientControls;
     m_GridLayoutClientControls = 0;
@@ -608,6 +610,7 @@ void QmitkIGIDataSourceManager::OnCellDoubleClicked(int row, int column)
     sourceGui->Initialize(NULL);
 
     m_GridLayoutClientControls->addWidget(sourceGui, 0, 0);
+    m_CurrentSourceGUI = sourceGui;
   }
   else
   {
@@ -814,7 +817,12 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
 
     emit UpdateGuiFinishedDataSources(idNow);
 
-    // Make sure table is refreshing.
+    // Make sure widgets local to this QmitkIGIDataSourceManager are updating.
+    if (m_CurrentSourceGUI != NULL)
+    {
+      m_CurrentSourceGUI->Update();
+      m_CurrentSourceGUI->update();
+    }
     m_TableWidget->update();
 
     // Make sure scene rendered.

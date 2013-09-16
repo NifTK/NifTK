@@ -34,6 +34,7 @@ class QmitkStdMultiWidget;
 class QmitkIGIDataSourceManagerClearDownThread;
 class QTimer;
 class QGridLayout;
+class QmitkIGIDataSourceGui;
 
 /**
  * \class QmitkIGIDataSourceManager
@@ -276,6 +277,10 @@ private:
   // slider can only represent int values, but we need all 64 bit.
   igtlUint64                                m_PlaybackSliderBase;
   double                                    m_PlaybackSliderFactor;
+
+  // This class now remembers the current GUI, and asks it to update
+  // at the assigned frame rate.
+  QmitkIGIDataSourceGui                    *m_CurrentSourceGUI;
 
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.

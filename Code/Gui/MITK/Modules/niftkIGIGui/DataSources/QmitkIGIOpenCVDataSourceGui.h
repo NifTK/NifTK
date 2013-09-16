@@ -39,6 +39,11 @@ public:
   mitkClassMacro(QmitkIGIOpenCVDataSourceGui, QmitkIGIDataSourceGui);
   itkNewMacro(QmitkIGIOpenCVDataSourceGui);
 
+  /**
+   * \brief Override base class to trigger GUI update.
+   */
+  virtual void Update();
+
 protected:
 
   QmitkIGIOpenCVDataSourceGui(); // Purposefully hidden.
@@ -51,13 +56,6 @@ protected:
    * \brief Initializes this widget.
    */
   virtual void Initialize(QWidget *parent);
-
-protected slots:
-
-  /**
-   * \brief Connected to QmitkIGIOpenCVDataSource::UpdateDisplay to refresh the rendering manager.
-   */
-  void OnUpdateDisplay();
 
 private:
 
