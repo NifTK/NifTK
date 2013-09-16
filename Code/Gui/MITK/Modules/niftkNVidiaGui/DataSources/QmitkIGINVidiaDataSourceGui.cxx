@@ -216,9 +216,13 @@ void QmitkIGINVidiaDataSourceGui::Update()
           QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
           if (g)
           {
-            g->SetVideoDimensions(width, height);
-            g->SetTextureId(source->GetTextureId(0));
-            g->updateGL();
+            // disable preview widget for now.
+            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2745
+            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2383
+            g->SetTextureId(0);
+            //g->SetVideoDimensions(width, height);
+            //g->SetTextureId(source->GetTextureId(0));
+            //g->updateGL();
             // one preview widget for all input streams
             break;
           }
