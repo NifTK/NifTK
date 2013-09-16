@@ -1174,7 +1174,7 @@ if(NOT WIN32 AND BUILD_CAMINO)
        ${CMAKE_BINARY_DIR}/../camino-src/bin/*
       )
   file(GLOB CAMINO_MAN_FILES
-       ${CMAKE_BINARY_DIR}/../camino-src/man/*
+       ${CMAKE_BINARY_DIR}/../camino-src/man/man1/*
       )
   MITK_INSTALL(PROGRAMS ${CAMINO_MAN_FILES})
   MITK_INSTALL(PROGRAMS ${CAMINO_BIN_FILES})
