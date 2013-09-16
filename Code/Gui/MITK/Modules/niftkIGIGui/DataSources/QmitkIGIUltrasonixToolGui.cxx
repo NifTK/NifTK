@@ -47,7 +47,7 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptor
     m_UltrasonixTool = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());
     assert(m_UltrasonixTool);
 
-    if (m_UltrasonixTool == NULL)
+    if (m_UltrasonixTool != NULL)
     {
       mitk::DataStorage* dataStorage = m_UltrasonixTool->GetDataStorage();
       assert(dataStorage);
