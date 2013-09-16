@@ -79,12 +79,6 @@ public:
 
 signals:
 
-  /**
-   * \brief We signal to the GUI that it should be updated.
-   * GUI Clients should register to this signal using a Qt::QueuedConnection.
-   */
-  void UpdateDisplay();
-
 protected:
 
   QmitkIGIOpenCVDataSource(mitk::DataStorage* storage); // Purposefully hidden.
