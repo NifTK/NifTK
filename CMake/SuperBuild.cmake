@@ -180,6 +180,13 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     # and compilation will fail with the weirdest errors.
     set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -DWIN32_LEAN_AND_MEAN")
     set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -DWIN32_LEAN_AND_MEAN")
+    # poco is picky! for some reason the sdk version is not defined for niftk.
+    # so we define it here explicitly:
+    # http://msdn.microsoft.com/en-us/library/aa383745.aspx
+    # 0x0501  = Windows XP
+    # 0x0601  = Windows 7
+    set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -D_WIN32_WINNT=0x0601")
+    set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -D_WIN32_WINNT=0x0601")
   endif()
 
   ExternalProject_Add(${proj}
