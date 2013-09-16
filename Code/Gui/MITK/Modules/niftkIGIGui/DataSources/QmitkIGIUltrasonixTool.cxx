@@ -178,6 +178,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
           void* vPointer = writeAccess.GetData();
 
           memcpy(vPointer, cPointer, qImage.width() * qImage.height());
+          imageInNode->Modified();
         }
         catch(mitk::Exception& e)
         {
@@ -186,6 +187,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
       }
 
       imageMsg->GetMatrix(m_CurrentMatrix);
+      node->Modified();
       result = true;
     }
   }
