@@ -19,6 +19,7 @@
 #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
 #include <NiftyLinkMessage.h>
+#include <mitkImage.h>
 
 class QmitkIGIUltrasonixTool;
 class ClientDescriptorXMLBuilder;
@@ -57,9 +58,15 @@ protected:
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
+  /**
+   * \brief Sets up which image to follow.
+   */
+  void InitializeImage();
+
 private:
 
   QmitkIGIUltrasonixTool *m_UltrasonixTool;
+  mitk::Image            *m_Image;
 }; // end class
 
 #endif

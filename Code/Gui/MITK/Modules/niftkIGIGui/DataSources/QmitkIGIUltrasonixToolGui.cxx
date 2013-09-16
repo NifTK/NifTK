@@ -26,6 +26,8 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ul
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
+: m_UltrasonixTool(NULL)
+, m_Image(NULL)
 {
 
 }
@@ -34,6 +36,27 @@ QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::~QmitkIGIUltrasonixToolGui()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixToolGui::InitializeImage()
+{
+  if (m_UltrasonixTool != NULL)
+  {
+    mitk::DataStorage* dataStorage = m_UltrasonixTool->GetDataStorage();
+    assert(dataStorage);
+
+    mitk::DataNode* node = dataStorage->GetNamedNode(QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME);
+    if (node != NULL)
+    {
+      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+      if (image != NULL)
+      {
+        mitk::RenderingManager::GetInstance()->InitializeView(this->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      }
+    }
+  }
 }
 
 
@@ -53,16 +76,9 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptor
       assert(dataStorage);
 
       this->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
-
       mitk::BaseRenderer::GetInstance(this->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
 
-      mitk::DataNode* node = dataStorage->GetNamedNode(QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME);
-      assert(node);
-
-      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-      assert(image);
-
-      mitk::RenderingManager::GetInstance()->InitializeView(this->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      this->InitializeImage();
     }
   }
 }
@@ -77,4 +93,5 @@ void QmitkIGIUltrasonixToolGui::Update()
     m_MotorPositionLCDLabel->display(motorPosition);
     m_MotorPositionLCDLabel->repaint();
   }
+  this->InitializeImage();
 }
