@@ -38,6 +38,11 @@ public:
   mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGIUltrasonixToolGui);
 
+  /**
+   * \brief Retrieves data from the source, to update the GUI display.
+   */
+  virtual void Update();
+
 protected:
 
   QmitkIGIUltrasonixToolGui(); // Purposefully hidden.
@@ -52,16 +57,9 @@ protected:
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
-private slots:
-
-  void OnStatusUpdate(QString message);
-  void OnUpdatePreviewDisplay(QImage* image, float motorPosition);
-
 private:
 
-  QmitkIGIUltrasonixTool* GetQmitkIGIUltrasonixTool() const;
-  QLabel *m_PixmapLabel;
-
+  QmitkIGIUltrasonixTool *m_UltrasonixTool;
 }; // end class
 
 #endif

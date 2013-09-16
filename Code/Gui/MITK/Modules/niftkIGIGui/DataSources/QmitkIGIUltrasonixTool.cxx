@@ -38,7 +38,14 @@ QmitkIGIUltrasonixTool::~QmitkIGIUltrasonixTool()
 
 
 //-----------------------------------------------------------------------------
-float QmitkIGIUltrasonixTool::GetMotorPos(igtl::Matrix4x4& matrix)
+float QmitkIGIUltrasonixTool::GetCurrentMotorPosition() const
+{
+  return this->GetMotorPos(m_CurrentMatrix);
+}
+
+
+//-----------------------------------------------------------------------------
+float QmitkIGIUltrasonixTool::GetMotorPos(const igtl::Matrix4x4& matrix) const
 {
   float AcosAngle = matrix[2][2];
   return acos ( AcosAngle ) * RAD_TO_DEGREES;
@@ -148,8 +155,6 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
       QImage qImage = imageMsg->GetQImage();
 
       QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-      igtl::Matrix4x4 imageMatrix;
-
       filter->SetQImage(&qImage);
       filter->Update();
 
@@ -180,9 +185,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
         }
       }
 
-      imageMsg->GetMatrix(imageMatrix);
-      emit UpdatePreviewDisplay(&qImage, this->GetMotorPos(imageMatrix));
-
+      imageMsg->GetMatrix(m_CurrentMatrix);
       result = true;
     }
   }
