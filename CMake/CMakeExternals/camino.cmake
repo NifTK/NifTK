@@ -22,7 +22,7 @@ if(DEFINED camino_DIR AND NOT EXISTS ${camino_DIR})
   message(FATAL_ERROR "camino_DIR variable is defined but corresponds to non-existing directory \"${camino_DIR}\".")
 endif()
 
-if(NOT WIN32 AND BUILD_CAMINO)
+if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE)
 
   find_package(Java COMPONENTS Development)
   find_package(Subversion)

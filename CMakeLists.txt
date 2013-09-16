@@ -318,6 +318,9 @@ mark_as_advanced(BUILD_SLS_TESTING)
 mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
 mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
+mark_as_advanced(BUILD_CAMINO)
+mark_as_advanced(NIFTK_LOCATION_CAMINO)
+mark_as_advanced(NIFTK_VERSION_CAMINO)
 
 ######################################################################
 # Make sure Git is available.
@@ -1169,16 +1172,16 @@ if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
 
 # Camino
-if(NOT WIN32 AND BUILD_CAMINO)
+if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
   file(GLOB CAMINO_BIN_FILES
        ${CMAKE_BINARY_DIR}/../camino-src/bin/*
       )
   file(GLOB CAMINO_MAN_FILES
        ${CMAKE_BINARY_DIR}/../camino-src/man/man1/*
       )
-  MITK_INSTALL(PROGRAMS ${CAMINO_MAN_FILES})
-  MITK_INSTALL(PROGRAMS ${CAMINO_BIN_FILES})
-  MITK_INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/../camino.jar)
+  install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/)
+  install(FILES ${CMAKE_BINARY_DIR}/../camino-src/camino.jar DESTINATION .)
+  install(FILES ${CAMINO_BIN_FILES} DESTINATION bin)
 endif()
 
 ######################################################################
