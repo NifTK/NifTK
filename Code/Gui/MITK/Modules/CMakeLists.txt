@@ -17,7 +17,6 @@ set(MODULE_DIRS
   niftkCoreGui
   niftkMIDAS
   niftkMIDASGui
-  XnatRest
 )
 
 if(BUILD_IGI)
@@ -29,7 +28,7 @@ if(BUILD_IGI)
     niftkIGIGui
   )
 
-  if(NVAPI_FOUND)  
+  if(NVAPI_FOUND)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       niftkNVidia
@@ -39,9 +38,9 @@ if(BUILD_IGI)
 
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkIGIGuiManager    
+    niftkIGIGuiManager
   )
-  
+
 endif()
 
 foreach(MODULE_DIR ${MODULE_DIRS})

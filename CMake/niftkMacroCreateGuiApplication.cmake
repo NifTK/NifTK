@@ -56,7 +56,6 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
     ${Boost_LIBRARY_DIRS}
-    ${zlib_LIBRARY_DIR}
     ${aruco_DIR}/lib
   )
 

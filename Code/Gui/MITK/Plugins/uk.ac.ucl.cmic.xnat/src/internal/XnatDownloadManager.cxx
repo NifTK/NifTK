@@ -8,14 +8,11 @@
 #include <QTimer>
 #include <QWidget>
 
-extern "C"
-{
-#include "XnatRest.h"
-}
-
 #include <ctkXnatException.h>
 #include <ctkXnatTreeModel.h>
 #include <ctkXnatSettings.h>
+
+#include <JlCompress.h>
 
 #include "XnatDownloadDialog.h"
 #include "XnatTreeView.h"
@@ -471,16 +468,16 @@ void XnatDownloadManager::unzipData()
   }
 
   // unzip downloaded file
-  XnatRestStatus status = unzipXnatRestFile(d->zipFileName.toAscii().constData(), d->currDir.toAscii().constData());
+  QStringList files = JlCompress::extractDir(d->zipFileName, d->currDir);
 
   // close dialog
   d->downloadDialog->close();
 
-  if ( status != XNATREST_OK )    // check unzip status
+  if (files.isEmpty())    // check unzip status
   {
-    QMessageBox::warning(d->xnatTreeView, tr("Unzip Downloaded File Error"), tr(getXnatRestStatusMsg(status)));
+    QMessageBox::warning(d->xnatTreeView, tr("Unzip Downloaded File Error"), tr("Failed to extract the archive."));
   }
-  else if ( !QFile::remove(d->zipFileName) )    // delete zip file
+  else if (!QFile::remove(d->zipFileName))    // delete zip file
   {
     QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
   }
