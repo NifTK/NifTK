@@ -70,14 +70,11 @@ public:
    */
   bool IsCapturing();
 
-
   // overridden from IGIDataSource
   virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
   virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
   virtual void StopPlayback();
   virtual void PlaybackData(igtlUint64 requestedTimeStamp);
-
-signals:
 
 protected:
 

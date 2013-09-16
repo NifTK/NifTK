@@ -57,8 +57,6 @@ protected:
    */
   virtual void Initialize(QWidget *parent);
 
-protected slots:
-
 private:
 
   QmitkIGIOpenCVDataSource* GetOpenCVDataSource() const;
