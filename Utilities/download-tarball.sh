@@ -136,7 +136,7 @@ function download_from_cmicdev() {
     git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
     cd $directory
     git checkout $version
-    if ! $keep_repository
+    if [ ! $keep_repository ]
     then
       rm -rf .git
     fi

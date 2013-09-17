@@ -246,9 +246,7 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
 
         // And output a status message to console.
         matrixAsString.append("\n");
-        QString statusMessage = header + matrixAsString;
-
-        emit StatusUpdate(statusMessage);
+        m_StatusMessage = header + matrixAsString;
         result = true;
       }
       else

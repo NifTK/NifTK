@@ -19,6 +19,7 @@
 #include "QmitkIGINiftyLinkDataSourceGui.h"
 #include "ui_QmitkIGIUltrasonixToolGui.h"
 #include <NiftyLinkMessage.h>
+#include <mitkImage.h>
 
 class QmitkIGIUltrasonixTool;
 class ClientDescriptorXMLBuilder;
@@ -38,6 +39,11 @@ public:
   mitkClassMacro(QmitkIGIUltrasonixToolGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGIUltrasonixToolGui);
 
+  /**
+   * \brief Retrieves data from the source, to update the GUI display.
+   */
+  virtual void Update();
+
 protected:
 
   QmitkIGIUltrasonixToolGui(); // Purposefully hidden.
@@ -52,16 +58,15 @@ protected:
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder *config);
 
-private slots:
-
-  void OnStatusUpdate(QString message);
-  void OnUpdatePreviewDisplay(QImage* image, float motorPosition);
+  /**
+   * \brief Sets up which image to follow.
+   */
+  void InitializeImage();
 
 private:
 
-  QmitkIGIUltrasonixTool* GetQmitkIGIUltrasonixTool() const;
-  QLabel *m_PixmapLabel;
-
+  QmitkIGIUltrasonixTool *m_UltrasonixTool;
+  mitk::Image            *m_Image;
 }; // end class
 
 #endif

@@ -23,6 +23,8 @@
 #include <string>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <mitkCameraIntrinsicsProperty.h>
+
 
 
 // forward-decl
@@ -86,6 +88,7 @@ private:
 
   QString                                                m_LastFile;
   std::map<mitk::Image::Pointer, niftk::Undistortion*>   m_UndistortionMap;
+  std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>    m_ParamFileCache;
 
 
   struct WorkItem

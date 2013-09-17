@@ -56,17 +56,18 @@ public:
    */
   virtual bool Update(mitk::IGIDataType* data);
 
+  /**
+   * \brief Retrieves the current motor position from the m_CurrentMatrix;
+   * NOTE: This method is not thread safe, and is for just checking that *something* is being updated.
+   */
+  float GetCurrentMotorPosition() const;
+
 public slots:
 
   /**
    * \brief Main message handler routine for this tool.
    */
   virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
-
-signals:
-
-  void StatusUpdate(QString statusUpdateMessage);
-  void UpdatePreviewDisplay(QImage *image, float motorPosition);
 
 protected:
 
@@ -86,7 +87,12 @@ private:
   /**
    * \brief Retrieves the motor position from the most recent data available.
    */
-  float GetMotorPos(igtl::Matrix4x4& matrix);
+  float GetMotorPos(const igtl::Matrix4x4& matrix) const;
+
+  /**
+   * \brief Stores the most recent matrix processed by InterpretMessage.
+   */
+  igtl::Matrix4x4 m_CurrentMatrix;
 
 }; // end class
 

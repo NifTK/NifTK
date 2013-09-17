@@ -221,14 +221,6 @@ bool UltrasoundPinCalibration::Calibrate(
   isSuccessful = true;
 
   std::cout << "UltrasoundPinCalibration:Final parameters = " << parameters << std::endl;
-  if (isSuccessful)
-  {
-    std::cout << "UltrasoundPinCalibration:Success          = YES!" << std::endl;
-  }
-  else
-  {
-    std::cout << "UltrasoundPinCalibration:Success          = FAILED!" << std::endl;
-  }
   std::cout << "UltrasoundPinCalibration:Residual error   = " << residualError << std::endl;
   std::cout << "UltrasoundPinCalibration:Result:" << std::endl;
   for (int i = 0; i < 4; i++)

@@ -56,9 +56,9 @@ protected:
 protected slots:
 
   /**
-   * \brief Connected to QmitkIGINVidiaDataSource::UpdateDisplay to refresh the rendering manager.
+   * Directly called by data-source-gui-manager (I think...) whenever this datasource GUI should refresh.
    */
-  void OnUpdateDisplay();
+  virtual void Update();
 
   void OnFieldModeChange(int index);
 

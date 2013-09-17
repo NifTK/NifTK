@@ -49,16 +49,17 @@ public:
    */
   virtual bool Update(mitk::IGIDataType* data);
 
+  /**
+   * \brief Returns the latest status message, for informational purposes only.
+   * This method is not thread safe.
+   */
+  QString GetStatusMessage() const { return m_StatusMessage; }
 
   // overridden from IGIDataSource
   virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
   virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
   virtual void StopPlayback();
   virtual void PlaybackData(igtlUint64 requestedTimeStamp);
-
-signals:
-
-  void StatusUpdate(QString statusUpdateMessage);
 
 protected:
 
@@ -84,7 +85,7 @@ private:
 
   std::map<std::string, std::set<igtlUint64> >    m_PlaybackIndex;
   std::string                                     m_PlaybackDirectoryName;
-
+  QString                                         m_StatusMessage;
 }; // end class
 
 #endif
