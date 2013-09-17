@@ -79,7 +79,9 @@ if(SlicerExecutionModel_FOUND)
     niftkInvertImage
     niftkLogInvertImage
     niftkMultiply
+    niftkN4BiasFieldCorrection
     niftkNegateImage
+    niftkOtsuThresholdImage
     niftkSubsampleImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter

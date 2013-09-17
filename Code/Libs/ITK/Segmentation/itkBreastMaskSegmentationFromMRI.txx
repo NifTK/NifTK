@@ -1780,9 +1780,18 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     writer->SetFileName( fileModifiedOutput.c_str() );
     writer->SetInput( pipeITKImageDataConnector );
 
-    std::cout << "Writing " << description << " to file: "
-	      << fileModifiedOutput.c_str() << std::endl;
-    writer->Update();
+    try
+    {
+      std::cout << "Writing " << description << " to file: "
+                << fileModifiedOutput.c_str() << std::endl;
+      writer->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+      exit( EXIT_FAILURE );
+    }
+
 
     return true;
   }
