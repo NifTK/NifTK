@@ -203,7 +203,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
   for (unsigned int i = 0; i < m_Matrices.size(); i++)
   {
     cv::Matx44d trackerTransformation(m_Matrices[i]);
-    cv::Matx44d combinedTransformation = (invariantPointTranslation * (trackerTransformation * (rigidTransformation * scalingTransformation)));
+    cv::Matx44d combinedTransformation = (invariantPointTranslation.inv() * (trackerTransformation * (rigidTransformation * scalingTransformation)));
     cv::Matx41d point, transformedPoint;
 
     point(0,0) = m_Points[i].x;
