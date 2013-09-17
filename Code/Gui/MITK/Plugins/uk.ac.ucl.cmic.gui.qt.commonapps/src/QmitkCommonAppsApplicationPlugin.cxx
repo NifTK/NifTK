@@ -33,7 +33,7 @@
 #include <QtPlugin>
 
 #include <NifTKConfigure.h>
-#include <mitkMIDASTool.h>
+//#include <mitkMIDASTool.h>
 #include <mitkDataStorageUtils.h>
 
 QmitkCommonAppsApplicationPlugin* QmitkCommonAppsApplicationPlugin::s_Inst = 0;
@@ -237,12 +237,14 @@ QmitkCommonAppsApplicationPlugin
 void QmitkCommonAppsApplicationPlugin::RegisterMIDASGlobalInteractionPatterns()
 {
   mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
+/*
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML);
   globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_KEYPRESS_STATE_MACHINE_XML);
+*/
 }
 
 
