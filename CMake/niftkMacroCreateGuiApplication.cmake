@@ -55,6 +55,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   # NOTE: Check CMake/PackageDepends for any additional dependencies.
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
+    ${Boost_LIBRARY_DIRS}
     ${zlib_LIBRARY_DIR}
     ${aruco_DIR}/lib
   )
