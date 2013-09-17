@@ -321,8 +321,6 @@ double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 //-----------------------------------------------------------------------------
 float IGIDataSource::UpdateFrameRate()
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   // Always initialise...
   igtlUint64 lastTimeStamp = 0;
   unsigned long int lastFrameId = 0;
@@ -492,9 +490,9 @@ bool IGIDataSource::AddData(mitk::IGIDataType* data)
       m_FrameRateBufferIterator = m_BufferIterator;
     }
 
-    if (   m_SavingMessages     // recording/saving is turned on.
-        && !m_SaveInBackground  // we are doing it immediately as opposed to some background thread.
-        && m_SaveOnReceipt      // we are saving every message that came in, regardless of display refresh rate.
+    if (   m_SavingMessages              // recording/saving is turned on.
+        && !this->GetSaveInBackground()  // we are doing it immediately as opposed to some background thread.
+        && m_SaveOnReceipt               // we are saving every message that came in, regardless of display refresh rate.
         )
     {
       result = this->DoSaveData(data);
@@ -525,9 +523,9 @@ bool IGIDataSource::ProcessData(igtlUint64 requestedTimeStamp)
       try
       {
         // Decide if we are saving data
-        if (   data->GetShouldBeSaved() // when the data was received it was stamped as save=true
-            && !m_SaveInBackground      // we are doing it immediately as opposed to some background thread.
-            && !m_SaveOnReceipt         // we only save the data that was shown on the display.
+        if (   data->GetShouldBeSaved()     // when the data was received it was stamped as save=true
+            && !this->GetSaveInBackground() // we are doing it immediately as opposed to some background thread.
+            && !m_SaveOnReceipt             // we only save the data that was shown on the display.
             )
         {
 

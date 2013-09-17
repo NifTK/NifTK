@@ -45,6 +45,11 @@ public:
   static const float RAD_TO_DEGREES;
 
   /**
+   * \see mitk::IGIDataSource::GetSaveInBackground()
+   */
+  virtual bool GetSaveInBackground() const { return true; }
+
+  /**
    * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
@@ -78,7 +83,7 @@ protected:
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
 
   /**
-   * \brief \see IGIDataSource::SaveData();
+   * \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 

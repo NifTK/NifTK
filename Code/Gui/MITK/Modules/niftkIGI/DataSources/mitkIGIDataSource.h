@@ -130,7 +130,12 @@ public:
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously.
    */
   itkThreadSafeSetMacro(SaveInBackground, bool);
-  itkThreadSafeGetConstMacro(SaveInBackground, bool);
+
+  /**
+   * \brief CAREFUL: This method, read only, can be overridden in derived classes,
+   so for example, you could always return true,
+   */
+  virtual bool GetSaveInBackground() const { return m_SaveInBackground; }
 
   /**
    * \brief If set to true, we save when the data is received, and if false, only when we
@@ -175,7 +180,7 @@ public:
   /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
    */
-  virtual float UpdateFrameRate();
+  float UpdateFrameRate();
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.
@@ -215,12 +220,12 @@ public:
   /**
    * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
    */
-  void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
+  virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   /**
    * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
    */
-  void StopRecording();
+  virtual void StopRecording();
 
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
