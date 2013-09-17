@@ -186,9 +186,15 @@ bool UltrasoundPinCalibration::Calibrate(
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->SetCostFunction(costFunction);
   optimizer->SetInitialPosition(parameters);
+  optimizer->SetNumberOfIterations(2000);
+  optimizer->UseCostFunctionGradientOff();
+  optimizer->SetGradientTolerance(0.5);
+  optimizer->SetEpsilonFunction(0.0500);
+  optimizer->SetValueTolerance(0.05);
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
-
+  
+  std::cerr << "Stop condition" << optimizer->GetStopConditionDescription();
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
   outputMatrix = costFunction->GetCalibrationTransformation(parameters);
