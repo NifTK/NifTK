@@ -15,10 +15,18 @@
 set(MODULE_DIRS
   niftkCore
   niftkCoreGui
-  niftkMIDAS
-  niftkMIDASGui
 #  XnatRest
 )
+
+if(BUILD_MIDAS)
+
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkMIDAS
+    niftkMIDASGui
+  )
+
+endif()
 
 if(BUILD_IGI)
 
