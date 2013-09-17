@@ -103,10 +103,10 @@ double UltrasoundPinCalibrationCostFunction::GetResidual(const MeasureType & val
   {
     for (unsigned int i = 0; i < numberOfValues; i++)
     {
-      rmsError += values[i]*values[i];
+      rmsError += values[i];
     }
 
-    rmsError /= (double)(numberOfValues / 3.0);
+    rmsError /= (double)(numberOfValues);
     rmsError = sqrt(rmsError);
   }
 
