@@ -61,7 +61,7 @@ public:
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3f> );
-  itkGetMacro ( WorldPoints, std::vector<cv::Point3f> );
+  itkGetMacro ( WorldPoints, std::vector<cv::Point3d> );
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( TriangulateOK, bool);
 
@@ -89,7 +89,7 @@ private:
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
 
-  std::vector<cv::Point3f>      m_WorldPoints;  //the triangulated points in world coordinates
+  std::vector<cv::Point3d>      m_WorldPoints;  //the triangulated points in world coordinates
   std::vector<cv::Point3f>      m_PointsInLeftLensCS;  //the triangulated points in world coordinates
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   mitk::VideoTrackerMatching::Pointer

@@ -42,6 +42,11 @@ int main(int argc, char** argv)
     {
       trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true, TCfileout);
     }
+    if ( OptimiseHandeye.length() != 0 ) 
+    {
+      trackerMatcherObject->OptimiseHandeyeCalibration(OptimiseHandeye, false, TCfileout);
+    }
+
     long long* timingError = new long long;
     std::cout << trackerMatcherObject->GetTrackerMatrix(frameNumber, timingError, trackerIndex);
 

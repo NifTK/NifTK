@@ -72,7 +72,7 @@ public:
   /**
    * \brief Performs pin-head (invariant-point) calibration.
    * \param[In] matrices a vector of 4x4 matrices representing rigid body tracking transformation.
-   * \param[In] points a vector of 2D pixel locations in the same order as the tracking transformations.
+   * \param[In] points a vector of 3D pixel locations in the same order as the tracking transformations.
    * \param[In] optimiseScaling if true the scaling will be optimised along with the 6DOF calibration matrix.
    * \param[In] optimiseInvariantPoint if true the position of the invariant point will be optimised along with the 6DOF calibration matrix.
    * \param[Out] rigidBodyTransformation rx, ry, rz, tx, ty, tz where rotations in radians and translations in millimetres.
@@ -83,7 +83,7 @@ public:
    */
   bool Calibrate(
       const std::vector< cv::Mat >& matrices,
-      const std::vector< cv::Point2d >& points,
+      const std::vector< cv::Point3d >& points,
       const bool& optimiseScaling,
       const bool& optimiseInvariantPoint,
       std::vector<double>& rigidBodyTransformation,

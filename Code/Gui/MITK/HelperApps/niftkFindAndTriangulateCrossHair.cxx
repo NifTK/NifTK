@@ -65,9 +65,9 @@ int main(int argc, char** argv)
 
     finder->Triangulate();
    
-    std::vector < cv::Point3f > worldPoints = finder->GetWorldPoints();
-    cv::Point3f worldCentroid;
-    cv::Point3f* worldStdDev = new cv::Point3f;
+    std::vector < cv::Point3d > worldPoints = finder->GetWorldPoints();
+    cv::Point3d worldCentroid;
+    cv::Point3d* worldStdDev = new cv::Point3d;
     worldCentroid = mitk::GetCentroid (worldPoints, true, worldStdDev);
     MITK_INFO << "World centre = " << worldCentroid;
     MITK_INFO << "World std dev = " << *worldStdDev;
