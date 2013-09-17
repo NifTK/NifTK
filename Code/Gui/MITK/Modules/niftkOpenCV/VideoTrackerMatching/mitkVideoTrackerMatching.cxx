@@ -688,7 +688,6 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
        frame -- ;
       }
     }
-     
     bool optimiseScaling = false;
     bool optimiseInvariantPoint = true;
     std::vector<double> rigidBodyTransformation;
@@ -703,9 +702,8 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
     invariantPoint.x=0.0;
     invariantPoint.y=0.0;
     invariantPoint.z=0.0;
-
     cv::Point2d millimetresPerPixel;
-    //mm per pixel has now meaning in this application as the point is already defined in mm
+    //mm per pixel has no meaning in this application as the point is already defined in mm
     millimetresPerPixel.x = 1.0;
     millimetresPerPixel.y = 1.0;
 
@@ -723,6 +721,7 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
       MITK_INFO << outputMatrix(i,0) << "," << outputMatrix(i,1) <<  " , " << outputMatrix(i,2) << " , " <<  outputMatrix (i,3);
     }
     MITK_INFO << "Invariant point = " << invariantPoint << " [ " << residualError << " SD ].";
+    MITK_INFO << "Millimetres per pixel = " << millimetresPerPixel;
   }
 
 }
