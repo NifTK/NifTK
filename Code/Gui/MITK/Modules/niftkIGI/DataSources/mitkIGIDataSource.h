@@ -180,7 +180,7 @@ public:
   /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
    */
-  virtual float UpdateFrameRate();
+  float UpdateFrameRate();
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.

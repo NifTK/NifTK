@@ -321,8 +321,6 @@ double IGIDataSource::GetCurrentTimeLag(const igtlUint64& nowTime)
 //-----------------------------------------------------------------------------
 float IGIDataSource::UpdateFrameRate()
 {
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
-
   // Always initialise...
   igtlUint64 lastTimeStamp = 0;
   unsigned long int lastFrameId = 0;
