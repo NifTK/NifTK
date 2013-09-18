@@ -421,7 +421,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
       trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
 
       vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
-      vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_TrackingCalibrationTransform, combinedTransform);
+      vtkMatrix4x4::Multiply4x4(m_TrackingCalibrationTransform, trackingTransformMatrix, combinedTransform);
 
       combinedTransform->MultiplyPoint(origin, origin);
       combinedTransform->MultiplyPoint(focalPoint, focalPoint);
