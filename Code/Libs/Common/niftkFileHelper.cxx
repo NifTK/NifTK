@@ -363,5 +363,20 @@ bool NumericStringCompare( const std::string &string1, const std::string &string
   int d2 = boost::lexical_cast<long long int>(path2.stem());
   return d1 < d2;
 }
+//  -------------------------------------------------------------------------
+std::vector<std::string> FindVideoData( std::string directory) 
+{
+  boost::filesystem::recursive_directory_iterator end_itr;
+  std::vector<std::string> returnStrings;
 
+  for ( boost::filesystem::recursive_directory_iterator it(directory);
+          it != end_itr ; ++it)
+  {
+    if (  it->path().extension() == ".264" )
+    {
+      returnStrings.push_back(it->path().string());
+    }
+  }
+  return returnStrings;
+}
 }

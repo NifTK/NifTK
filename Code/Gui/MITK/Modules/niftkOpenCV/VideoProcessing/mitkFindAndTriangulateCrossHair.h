@@ -110,8 +110,6 @@ private:
   std::vector < std::pair<cv::Point2f, cv::Point2f> > 
                                 m_ScreenPoints; // the projected points
 
-  std::vector<std::string> FindVideoData();
-
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
 

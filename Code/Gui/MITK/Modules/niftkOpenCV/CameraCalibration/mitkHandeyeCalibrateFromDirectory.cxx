@@ -55,7 +55,7 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::InitialiseVideo()
 {
-  std::vector<std::string> filenames = FindVideoData();
+  std::vector<std::string> filenames = niftk::FindVideoData(m_Directory);
   if ( filenames.size() == 0 ) 
   {
     MITK_ERROR << "Failed to find any video files";
@@ -96,23 +96,6 @@ void HandeyeCalibrateFromDirectory::InitialiseTracking()
   {
     m_TrackingDataInitialised = true;
   }
-}
-
-//-----------------------------------------------------------------------------
-std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
-{
-  boost::filesystem::recursive_directory_iterator end_itr;
-  std::vector<std::string> returnStrings;
-
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory);
-            it != end_itr ; ++it)
-  {
-    if (  it->path().extension() == ".264" )
-    {
-      returnStrings.push_back(it->path().string());
-    }
-  }
-  return returnStrings;
 }
 
 //-----------------------------------------------------------------------------
