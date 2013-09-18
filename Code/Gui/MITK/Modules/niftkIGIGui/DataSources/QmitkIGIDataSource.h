@@ -37,12 +37,6 @@ public:
   mitkClassMacro(QmitkIGIDataSource, mitk::IGIDataSource);
 
   /**
-   * \brief Overrides base class method to additionally start the background thread.
-   * \see mitk::IGIDataSource::SetSavingMessages
-   */
-  virtual void SetSavingMessages(bool isSaving);
-
-  /**
    * \brief Set the interval for saving data.
    */
   virtual void SetSavingInterval(int seconds);
@@ -52,6 +46,10 @@ public:
    */
   void EmitDataSourceStatusUpdatedSignal();
 
+  /**
+   * \see mitk::IGIDataSource::StartRecording()
+   */
+  virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& extension);
 
