@@ -267,6 +267,16 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
   {
     LoadMatrixOrCreateDefault(fileName, "niftk.ov.cal", true /* helper object */, m_DataStorage);
     m_TrackingCalibrationFileName = fileName;
+
+    mitk::DataNode *node = m_DataStorage->GetNamedNode("niftk.ov.cal");
+    if (node != NULL)
+    {
+      mitk::CoordinateAxesData::Pointer data = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+      if (data.IsNotNull())
+      {
+        data->GetVtkMatrix(*m_TrackingCalibrationTransform);
+      }
+    }
   }
 }
 
