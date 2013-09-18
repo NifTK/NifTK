@@ -458,6 +458,9 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   fs_leftIntrinsic.close();
   fs_rightIntrinsic.close();
   fs_r2l.close();
+
+  std::string trackerDirectory = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex);
+  niftk::CreateDirectoryAndParents(trackerDirectory);
   for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 
@@ -473,7 +476,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
         NULL, m_TrackerIndex );
 
-    std::string trackerFilename = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) + "/" + boost::lexical_cast<std::string>(view) + ".txt";
+    std::string trackerFilename = trackerDirectory + "/" + boost::lexical_cast<std::string>(view) + ".txt";
     MITK_INFO << "Saving matrix for frame " << LeftFramesToUse[view] << "to " << trackerFilename;    
     std::ofstream fs_tracker;
     fs_tracker.open(trackerFilename.c_str(), std::ios::out);
