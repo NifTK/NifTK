@@ -92,7 +92,6 @@ private:
   std::vector <cv::Mat>               m_LeftCameraVideoFrames;
   std::vector <cv::Mat>               m_RightCameraVideoFrames;
 
-  std::vector<std::string>            FindVideoData();
   void                                LoadVideoData(std::string filename);
 
   /**

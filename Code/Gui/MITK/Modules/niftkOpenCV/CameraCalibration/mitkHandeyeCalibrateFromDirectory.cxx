@@ -55,7 +55,7 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::InitialiseVideo()
 {
-  std::vector<std::string> filenames = FindVideoData();
+  std::vector<std::string> filenames = niftk::FindVideoData(m_Directory);
   if ( filenames.size() == 0 ) 
   {
     MITK_ERROR << "Failed to find any video files";
@@ -96,23 +96,6 @@ void HandeyeCalibrateFromDirectory::InitialiseTracking()
   {
     m_TrackingDataInitialised = true;
   }
-}
-
-//-----------------------------------------------------------------------------
-std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
-{
-  boost::filesystem::recursive_directory_iterator end_itr;
-  std::vector<std::string> returnStrings;
-
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory);
-            it != end_itr ; ++it)
-  {
-    if (  it->path().extension() == ".264" )
-    {
-      returnStrings.push_back(it->path().string());
-    }
-  }
-  return returnStrings;
 }
 
 //-----------------------------------------------------------------------------
@@ -458,6 +441,9 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   fs_leftIntrinsic.close();
   fs_rightIntrinsic.close();
   fs_r2l.close();
+
+  std::string trackerDirectory = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex);
+  niftk::CreateDirectoryAndParents(trackerDirectory);
   for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 
@@ -473,7 +459,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
         NULL, m_TrackerIndex );
 
-    std::string trackerFilename = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) + "/" + boost::lexical_cast<std::string>(view) + ".txt";
+    std::string trackerFilename = trackerDirectory + "/" + boost::lexical_cast<std::string>(view) + ".txt";
     MITK_INFO << "Saving matrix for frame " << LeftFramesToUse[view] << "to " << trackerFilename;    
     std::ofstream fs_tracker;
     fs_tracker.open(trackerFilename.c_str(), std::ios::out);
