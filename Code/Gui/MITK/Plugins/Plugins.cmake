@@ -47,7 +47,9 @@ set(PROJECT_PLUGINS
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
+  Plugins/uk.ac.ucl.cmic.thumbnail:ON    
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
+  Plugins/uk.ac.ucl.cmic.midaseditor:ON      
   Plugins/uk.ac.ucl.cmic.xnat:OFF
   Plugins/uk.ac.ucl.cmic.niftyreg:ON                      # Must be after the xnat plugin
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
@@ -60,23 +62,20 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 
-# Plugins listed after 'commonlegacy' depend on it, and this list must be as short as possible.
+# Plugins listed after 'commonlegacy' depend on it, and the list below this plugin must be as short as possible.
   Plugins/uk.ac.ucl.cmic.gui.qt.commonlegacy:ON
 )
 
 
 # ---------------------------------------------------------------------------------------------------
 # MIDAS Specific Plugins
-# This 'commonmidas' depends on 'common' and serves like 'base classes' for MIDAS segmentation stuff.
 # ---------------------------------------------------------------------------------------------------
 
 if(BUILD_MIDAS)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
-    Plugins/uk.ac.ucl.cmic.thumbnail:ON    
+    Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON  
     Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON    
-    Plugins/uk.ac.ucl.cmic.midaseditor:ON    
     Plugins/uk.ac.ucl.cmic.mitksegmentation:ON
     Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
     Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON 
