@@ -35,6 +35,11 @@ public:
   mitkClassMacro(QmitkIGITrackerSourceGui, QmitkIGINiftyLinkDataSourceGui);
   itkNewMacro(QmitkIGITrackerSourceGui);
 
+  /**
+   * \brief Retrieves data from the source, to update the GUI display.
+   */
+  virtual void Update();
+
 protected:
 
   QmitkIGITrackerSourceGui(); // Purposefully hidden.
@@ -44,21 +49,14 @@ protected:
   QmitkIGITrackerSourceGui& operator=(const QmitkIGITrackerSourceGui&); // Purposefully not implemented.
 
   /**
-   * \brief Initializes this widget, calling Ui_QmitkIGITrackerSourceGui::setupUi(parent),
-   * and any other stuff as necessary.
+   * \brief Initializes this widget, calling Ui_QmitkIGITrackerSourceGui::setupUi(parent).
    */
   virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config);
 
-private slots:
-
-  /**
-   * \brief Used to update the GUI with a NiftyLink tracking message.
-   */
-  void OnStatusUpdate(QString message);
-
 private:
 
-  QmitkIGITrackerSource* GetQmitkIGITrackerSource() const;
+  QmitkIGITrackerSource* m_TrackerSource;
+
 }; // end class
 
 #endif

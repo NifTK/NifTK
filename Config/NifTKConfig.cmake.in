@@ -98,8 +98,6 @@ set(NifTK_LIBRARIES
   niftkCoreGui
   niftkMIDAS
   niftkMIDASGui
-  niftkXnatRest
-  niftkXnatRestWidgets
 )
 if(${NifTK_NVAPI_FOUND})
   list(APPEND NifTK_LIBRARIES niftkNVidia;niftkNVidiaGui)
@@ -114,7 +112,7 @@ foreach(_module ann;ClippingTools;Connectomics;DiffusionCore;FiberTracking;glew;
 endforeach()
 
 # Set config file for each NifTK library
-foreach(_module XnatRest;XnatRestWidgets;niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
+foreach(_module niftkCore;niftkCoreGui;niftkIGI;niftkIGIGui;niftkIGIGuiManager;niftkOpenCVConfig;niftkMIDAS;niftkMIDASGui)
   set(${_module}_CONFIG_FILE "@CMAKE_BINARY_DIR@/modulesConf/${_module}Config.cmake")
 endforeach()
 

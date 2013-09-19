@@ -56,15 +56,19 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
     ${Boost_LIBRARY_DIRS}
-    ${zlib_LIBRARY_DIR}
     ${aruco_DIR}/lib
   )
 
+  # FIXME
   # Temporary workaround for CTK bug of not exposing external project library dirs.
   # Should be removed as soon as this is fixed in CTK. (espakm)
   if(EXISTS "${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake")
     include(${CTK_DIR}/qRestAPI-build/qRestAPIConfig.cmake)
     list(APPEND _library_dirs ${qRestAPI_LIBRARY_DIRS})
+  endif()
+  if(EXISTS "${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake")
+    include(${CTK_DIR}/QuaZip-build/QuaZipConfig.cmake)
+    list(APPEND _library_dirs ${QUAZIP_LIBRARY_DIRS})
   endif()
 
   #############################################################################

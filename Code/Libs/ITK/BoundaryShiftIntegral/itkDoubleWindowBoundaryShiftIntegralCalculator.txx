@@ -82,6 +82,13 @@ DoubleWindowBoundaryShiftIntegralCalculator<TInputImage, TInputMask, TOutputImag
   this->m_BaselineImage->Update();
   this->m_RepeatImage->Update();
   
+  TInputImagePointer outputImage = TInputImage::New() ;
+  outputImage->SetRegions(this->m_BaselineImage->GetLargestPossibleRegion() ) ;
+  outputImage->SetOrigin(this->m_BaselineImage->GetOrigin()); 
+  outputImage->SetSpacing(this->m_BaselineImage->GetSpacing()); 
+  outputImage->SetDirection(this->m_BaselineImage->GetDirection()); 
+  outputImage->Allocate() ;
+  
   ImageRegionConstIterator<TInputMask>  bsiMaskIterator(this->m_BSIMask, this->m_BSIMask->GetLargestPossibleRegion());
   ImageRegionConstIterator<TInputImage>  baselineImageIterator(this->m_BaselineImage, 
                                                                this->m_BaselineImage->GetLargestPossibleRegion());
@@ -90,10 +97,14 @@ DoubleWindowBoundaryShiftIntegralCalculator<TInputImage, TInputMask, TOutputImag
   ImageRegionIterator<TOutputImage> bsiMapIterator(this->m_BSIMap, this->m_BSIMap->GetLargestPossibleRegion()); 
   ImageRegionIterator<TOutputImage> secondBSIMapIterator(this->m_SecondBSIMap, this->m_SecondBSIMap->GetLargestPossibleRegion()); 
   
+  typedef itk::ImageRegionIterator< TInputImage > ImageIteratorType ;
+  ImageIteratorType io_iter( outputImage,
+                             outputImage->GetLargestPossibleRegion() ) ;
+  
   // Integrate over the m_BSIMask or over the weight image. 
-  for (baselineImageIterator.GoToBegin(), repeatImageIterator.GoToBegin(), bsiMaskIterator.GoToBegin(), bsiMapIterator.GoToBegin(), secondBSIMapIterator.GoToBegin();
+  for (baselineImageIterator.GoToBegin(), repeatImageIterator.GoToBegin(), bsiMaskIterator.GoToBegin(), bsiMapIterator.GoToBegin(), secondBSIMapIterator.GoToBegin(), io_iter.GoToBegin();
        !bsiMaskIterator.IsAtEnd();
-       ++baselineImageIterator, ++repeatImageIterator, ++bsiMaskIterator, ++bsiMapIterator, ++secondBSIMapIterator)
+       ++baselineImageIterator, ++repeatImageIterator, ++bsiMaskIterator, ++bsiMapIterator, ++secondBSIMapIterator, ++io_iter)
   {
     double weight = 0.0; 
     
@@ -124,7 +135,8 @@ DoubleWindowBoundaryShiftIntegralCalculator<TInputImage, TInputMask, TOutputImag
         
         double bsi = weight*(baselineValue-repeatValue)/(secondUpperCutoffValue-secondLowerCutoffValue); 
         this->m_SecondBoundaryShiftIntegral += bsi;
-        secondBSIMapIterator.Set(static_cast<typename TOutputImage::PixelType>((bsi+1)*1000.)); 
+        secondBSIMapIterator.Set(static_cast<typename TOutputImage::PixelType>((bsi+1)*1000.));
+	io_iter.Set(-bsi); 
       }
     }
     else
@@ -138,9 +150,11 @@ DoubleWindowBoundaryShiftIntegralCalculator<TInputImage, TInputMask, TOutputImag
       double bsi = weight*(baselineValue-repeatValue)/(this->m_UpperCutoffValue-this->m_LowerCutoffValue); 
       this->m_FirstBoundaryShiftIntegral += bsi;
       bsiMapIterator.Set(static_cast<typename TOutputImage::PixelType>((bsi+1)*1000.)); 
+      io_iter.Set(bsi);
     }
   }
-
+  m_BSIMapSIENAStyle=outputImage;
+  
   typename TInputImage::SpacingType samplingSpacing = this->m_RepeatImage->GetSpacing();
   typename TInputImage::SpacingType::ConstIterator samplingSpacingIterator = samplingSpacing.Begin(); 
   double samplingSpacingProduct = 1.0;

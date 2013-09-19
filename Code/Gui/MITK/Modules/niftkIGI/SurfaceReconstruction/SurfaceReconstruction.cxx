@@ -189,6 +189,13 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
       {
         mitk::PointSet::Pointer   points = mitk::PointSet::New();
 
+        mitk::Point4D leftDist = camIntr1->GetValue()->GetDistorsionCoeffsAsPoint4D();
+        mitk::Point4D rightDist = camIntr2->GetValue()->GetDistorsionCoeffsAsPoint4D();
+        cv::Vec<float, 4> leftDistCV(leftDist[0], leftDist[1], leftDist[2], leftDist[3]);
+        cv::Vec<float, 4> rightDistCV(rightDist[0], rightDist[1], rightDist[2], rightDist[3]);
+        cv::Mat left2right_rotation = cv::Mat(3, 3, CV_32F, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 0), sizeof(float) * 4);
+        cv::Mat left2right_translation = cv::Mat(3, 1, CV_32F, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 3), sizeof(float) * 4);
+
         for (unsigned int y = 0; y < height; ++y)
         {
           for (unsigned int x = 0; x < width; ++x)
@@ -199,9 +206,10 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
               BOOST_STATIC_ASSERT((sizeof(CvPoint3D32f) == 3 * sizeof(float)));
               float  error = 0;
               CvPoint3D32f p = niftk::triangulate(
-                                    x,   y, camIntr1->GetValue(),
-                                  r.x, r.y, camIntr2->GetValue(),
-                                  stereoRig->GetValue(),
+                                  x,   y, camIntr1->GetValue()->GetCameraMatrix(),  leftDistCV,
+                                  r.x, r.y, camIntr2->GetValue()->GetCameraMatrix(), rightDistCV,
+                                  left2right_rotation,
+                                  left2right_translation,
                                   &error);
               p.y = -p.y;
               p.z = -p.z;

@@ -83,12 +83,11 @@ void QmitkIGINVidiaDataSourceGui::Initialize(QWidget *parent)
         PreviewGroupBox->layout()->addWidget(m_OglWin);
         m_OglWin->show();
 
-        connect(source, SIGNAL(UpdateDisplay()), this, SLOT(OnUpdateDisplay()));
         // connect gui controls only if everything else is fine
         connect(FieldModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFieldModeChange(int)));
 
         // explicitly update at least once
-        OnUpdateDisplay();
+        Update();
       }
     }
   }
@@ -159,7 +158,7 @@ void QmitkIGINVidiaDataSourceGui::StopPreviewWidget()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
+void QmitkIGINVidiaDataSourceGui::Update()
 {
   QmitkIGINVidiaDataSource *source = this->GetQmitkIGINVidiaDataSource();
   if (source != NULL)
@@ -217,9 +216,13 @@ void QmitkIGINVidiaDataSourceGui::OnUpdateDisplay()
           QmitkVideoPreviewWidget*   g = dynamic_cast<QmitkVideoPreviewWidget*>(w);
           if (g)
           {
-            g->SetVideoDimensions(width, height);
-            g->SetTextureId(source->GetTextureId(0));
-            g->updateGL();
+            // disable preview widget for now.
+            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2745
+            // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2383
+            g->SetTextureId(0);
+            //g->SetVideoDimensions(width, height);
+            //g->SetTextureId(source->GetTextureId(0));
+            //g->updateGL();
             // one preview widget for all input streams
             break;
           }

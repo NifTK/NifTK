@@ -18,7 +18,7 @@ filename=`stat -f "%N" $0`
 binpath=`dirname ${filename}`
 upone=`dirname ${binpath}`
 
-command_string="${upone}/@APP@"
+command_string="${upone}/@FULL_APP_NAME@"
 
 for arg in "$@"
 do

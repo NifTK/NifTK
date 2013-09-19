@@ -43,8 +43,12 @@ public:
   mitkClassMacro(QmitkIGINVidiaDataSource, QmitkIGILocalDataSource);
   mitkNewMacro1Param(QmitkIGINVidiaDataSource, mitk::DataStorage*);
 
+
   // overridden here to ignore it! sdi source does not support background saving.
   virtual void SaveInBackground(bool);
+
+  /** Always returns false. SDI bits use their own form of async io. */
+  virtual bool GetSaveInBackground() const;
 
   /**
    * \brief Defined in base class, so we check that the data type is in fact

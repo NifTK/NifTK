@@ -164,6 +164,9 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
 {
+  // this method is probably not used anymore by the other data-source-manager bits: see GetSaveInBackground().
+  // but we keep it here because the base-class still has that SetSaveInBackground property.
+
   // reset it
   IGIDataSource::SetSaveInBackground(false);
 
@@ -171,6 +174,13 @@ void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
   {
     std::cerr << "WARNING: sdi data source does not support SaveInBackground(true)" << std::endl;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSource::GetSaveInBackground() const
+{ 
+  return false;
 }
 
 

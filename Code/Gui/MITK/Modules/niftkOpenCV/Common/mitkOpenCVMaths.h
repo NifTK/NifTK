@@ -27,12 +27,6 @@
 namespace mitk {
 
 /**
- * \brief Calculates the centroid of a vector of points.
- */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points);
-
-
-/**
  * \brief Subtracts a point (e.g. the centroid) from a list of points.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& point);
@@ -159,6 +153,34 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
   const double& rz
   );
 
+
+/**
+ * \brief multiplies a set of points by a 4x4 transformation matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p);
+/**
+ * \brief multiplies a  point by a 4x4 transformation matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3f operator*(cv::Mat M, const cv::Point3f& p);
+
+/**
+ * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2f FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
+
+/**
+ * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i>, 
+    bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
+/**
+ * \brief Calculates the centroid of a vector of points.
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers = false);
+/**
+ * \brief Calculates the centroid of a vector of points.
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers = false, cv::Point3d* StandardDeviation = NULL);
 
 /**
  * \brief From rotations in radians and translations in millimetres, constructs a 4x4 transformation matrix.

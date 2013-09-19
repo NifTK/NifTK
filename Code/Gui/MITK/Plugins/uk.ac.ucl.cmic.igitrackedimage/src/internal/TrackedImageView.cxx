@@ -91,6 +91,8 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
 
+    m_Controls->m_DoUpdateCheckBox->setChecked(false);
+
     // Set up the Render Window.
     // This currently has to be a 2D view, to generate the 2D plane geometry to render
     // which is then used to drive the moving 2D plane we see in 3D. This is how
@@ -160,6 +162,7 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
       m_PlaneNode->SetProperty("name", mitk::StringProperty::New(mitk::TrackedImageCommand::TRACKED_IMAGE_NODE_NAME));
       m_PlaneNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
       m_PlaneNode->SetProperty("helper object", mitk::BoolProperty::New(true));
+      m_PlaneNode->SetProperty("visible background", mitk::BoolProperty::New(false));
 
       mapper = mitk::Geometry2DDataMapper2D::New();
       m_PlaneNode->SetMapper(mitk::BaseRenderer::Standard2D, mapper);
@@ -184,7 +187,8 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();
   mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
 
-  if (   imageNode.IsNotNull()
+  if (this->m_Controls->m_DoUpdateCheckBox->isChecked()
+      && imageNode.IsNotNull()
       && m_ImageToTrackingSensorTransform != NULL
       && trackingSensorToTrackerTransform.IsNotNull()
      )

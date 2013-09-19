@@ -21,6 +21,7 @@ NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGITrackerSourceGui, "IGI Tra
 
 //-----------------------------------------------------------------------------
 QmitkIGITrackerSourceGui::QmitkIGITrackerSourceGui()
+: m_TrackerSource(NULL)
 {
 
 }
@@ -33,41 +34,24 @@ QmitkIGITrackerSourceGui::~QmitkIGITrackerSourceGui()
 
 
 //-----------------------------------------------------------------------------
-QmitkIGITrackerSource* QmitkIGITrackerSourceGui::GetQmitkIGITrackerSource() const
-{
-  QmitkIGITrackerSource* result = NULL;
-  if (this->GetSource() != NULL)
-  {
-    result = dynamic_cast<QmitkIGITrackerSource*>(this->GetSource());
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGITrackerSourceGui::Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config)
+void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, ClientDescriptorXMLBuilder* /*config*/)
 {
   setupUi(this);
 
-  if (config != NULL)
+  if (this->GetSource() != NULL)
   {
-    TrackerClientDescriptor *trDesc = dynamic_cast<TrackerClientDescriptor*>(config);
-    if (trDesc != NULL)
-    {
-      QmitkIGITrackerSource *source = this->GetQmitkIGITrackerSource();
-      if (source != NULL)
-      {
-        connect (source, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
-      }
-    }
+    m_TrackerSource = dynamic_cast<QmitkIGITrackerSource*>(this->GetSource());
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerSourceGui::OnStatusUpdate(QString message)
+void QmitkIGITrackerSourceGui::Update()
 {
-  m_ConsoleDisplay->setPlainText(message);
-  m_ConsoleDisplay->update();
+  if (m_TrackerSource != NULL)
+  {
+    QString message = m_TrackerSource->GetStatusMessage();
+    m_ConsoleDisplay->setPlainText(message);
+    m_ConsoleDisplay->update();
+  }
 }

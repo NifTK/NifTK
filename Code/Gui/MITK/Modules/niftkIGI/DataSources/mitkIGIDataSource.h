@@ -130,7 +130,12 @@ public:
    * \brief If set to true, the data is saved in a background thread, and if false it is saved synchronously.
    */
   itkThreadSafeSetMacro(SaveInBackground, bool);
-  itkThreadSafeGetConstMacro(SaveInBackground, bool);
+
+  /**
+   * \brief CAREFUL: This method, read only, can be overridden in derived classes,
+   so for example, you could always return true,
+   */
+  virtual bool GetSaveInBackground() const { return m_SaveInBackground; }
 
   /**
    * \brief If set to true, we save when the data is received, and if false, only when we
@@ -138,6 +143,13 @@ public:
    */
   itkThreadSafeSetMacro(SaveOnReceipt, bool);
   itkThreadSafeGetConstMacro(SaveOnReceipt, bool);
+
+  /**
+   * \brief Sets a flag that if true, will not search the buffer for the data matching
+   * a given timestamp, but will always pick the data at the end of the queue.
+   */
+  itkThreadSafeSetMacro(PickLatestData, bool);
+  itkThreadSafeGetConstMacro(PickLatestData, bool);
 
   /**
    * Whether the data source will call Update() as part of its processing.
@@ -168,7 +180,7 @@ public:
   /**
    * \brief Recalculates the frame rate based on the number of items received and stored in the buffer.
    */
-  virtual float UpdateFrameRate();
+  float UpdateFrameRate();
 
   /**
    * \brief Get the time stamp of the most recently requested time-point.
@@ -208,12 +220,12 @@ public:
   /**
    * \brief Atomic method to do all the setup required while holding one mutex lock, to instigate recording.
    */
-  void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
+  virtual void StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt);
 
   /**
    * \brief Stops recording, but does not reset the SaveInBackground flag or the SaveOnReceipt flag.
    */
-  void StopRecording();
+  virtual void StopRecording();
 
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
@@ -302,8 +314,7 @@ protected:
    * closest message to the requested time stamp, and sets the
    * ActualTimeStamp accordingly, or else return NULL if it can't be found.
    */
-  // FIXME: why is this virtual? this method does all sorts of stuff that makes overriding impractical
-  virtual mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
+  mitk::IGIDataType* RequestData(igtlUint64 requestedTimeStamp);
 
   /**
    * \brief Derived classes request a node for a given name. If the node does not exist, it will
@@ -320,16 +331,14 @@ protected:
   void SetRelatedSources(const std::list<std::string>& listOfSourceNames);
 
   /**
-   * \brief So derived classes can access it without using the threadsafe Getters.
+   * \brief Protected members, so derived classes can access it without using the threadsafe Getters.
    */
   std::string        m_SavePrefix;
   std::string        m_Description;
   igtlUint64         m_TimeStampTolerance;
   mitk::DataStorage* m_DataStorage;
-
-  bool        m_ShouldCallUpdate;
-
-  bool        m_IsPlayingBack;
+  bool               m_ShouldCallUpdate;
+  bool               m_IsPlayingBack;
 
 private:
 
@@ -360,6 +369,7 @@ private:
   bool                                            m_SavingMessages;
   bool                                            m_SaveOnReceipt;
   bool                                            m_SaveInBackground;
+  bool                                            m_PickLatestData;
 
   struct TimeStampComparator
   {

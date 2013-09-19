@@ -44,6 +44,11 @@ public:
   static const std::string OPENCV_IMAGE_NAME;
 
   /**
+   * \see mitk::IGIDataSource::GetSaveInBackground()
+   */
+  virtual bool GetSaveInBackground() const { return true; }
+
+  /**
    * \brief Defined in base class, so we check that the data type is in fact
    * a mitk::IGIOpenCVDataType, returning true if it is and false otherwise.
    * \see mitk::IGIDataSource::CanHandleData()
@@ -70,20 +75,25 @@ public:
    */
   bool IsCapturing();
 
-
-  // overridden from IGIDataSource
+  /**
+   * \see mitk::IGIDataSource::ProbeRecordedData()
+   */
   virtual bool ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore);
-  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
-  virtual void StopPlayback();
-  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
-
-signals:
 
   /**
-   * \brief We signal to the GUI that it should be updated.
-   * GUI Clients should register to this signal using a Qt::QueuedConnection.
+   * \see mitk::IGIDataSource::StartPlayback()
    */
-  void UpdateDisplay();
+  virtual void StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp);
+
+  /**
+   * \see mitk::IGIDataSource::StopPlayback()
+   */
+  virtual void StopPlayback();
+
+  /**
+   * \see mitk::IGIDataSource::PlaybackData()
+   */
+  virtual void PlaybackData(igtlUint64 requestedTimeStamp);
 
 protected:
 
@@ -99,7 +109,7 @@ protected:
   virtual void GrabData();
 
   /**
-   * \brief \see IGIDataSource::SaveData();
+   * \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 

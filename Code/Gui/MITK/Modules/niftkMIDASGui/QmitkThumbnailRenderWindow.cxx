@@ -487,15 +487,10 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
             // Store pointers to the display and world geometry, and render window
             m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(focusedWindowRenderer->GetWorldGeometry());
             m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(focusedWindowRenderer->GetDisplayGeometry());
-            MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedWorldGeometry not null? " << m_TrackedWorldGeometry.IsNotNull() << std::endl;
-            MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedDisplayGeometry not null? " << m_TrackedDisplayGeometry.IsNotNull() << std::endl;
 
             if (m_TrackedWorldGeometry.IsNotNull()
                 && m_TrackedDisplayGeometry.IsNotNull())
             {
-              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedWorldGeometry = " << m_TrackedWorldGeometry.GetPointer() << std::endl;
-              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_TrackedDisplayGeometry = " << m_TrackedDisplayGeometry.GetPointer() << std::endl;
-
               m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedWindowRenderer.GetPointer()))->GetSliceNavigationController();
               m_TrackedRenderWindow = focusedWindowRenderWindow;
 
@@ -509,7 +504,6 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
                 itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
               onDisplayGeometryChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnDisplayGeometryChanged );
               m_FocusedWindowDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
-              MITK_INFO << "QmitkThumbnailRenderWindow::OnFocusChanged() m_FocusedWindowDisplayGeometryTag = " << m_FocusedWindowDisplayGeometryTag << std::endl;
 
               itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::Pointer onSliceChangedCommand =
                 itk::ReceptorMemberCommand<QmitkThumbnailRenderWindow>::New();

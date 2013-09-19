@@ -1,0 +1,593 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+#
+# This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 
+# brain extraction process and Boyes et al. Neuroimage 2008 normalization process. 
+#
+# The basic method is:
+# If the user runs niftkBETter.py --xml we respond with the XML function contained herein.
+# All other command line invocations, we pass the parameters onto the underlying program.
+
+# Import needed libraries
+import atexit
+import tempfile
+from datetime import datetime, date, time
+from _niftkCommon import *
+
+###### DEFAULT OPTIONS #######
+
+# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
+n3_options='-clobber -stop 0.000100 -fwhm 0.050000 -distance 150 -iterations 1000 -shrink 2'
+dir_output='noneck/'
+
+# Directory configurations for change the default
+dir_niftyreg=""
+mnidir=""
+n3dir=""
+
+###########################################################################
+###########################################################################
+# Function definition
+###########################################################################
+###########################################################################
+
+# Begin of cleanup function
+def cleanup():
+	"""
+	###########################################################################
+	# Function  : Clean temp working directory 
+	###########################################################################
+	"""
+	global 	dir_output
+	global	debug_mode
+	
+	# Check if we are in the directory that we want to remove
+	if os.path.isdir(os.path.join(os.pardir,dir_output)):
+		os.chdir(os.pardir)
+
+	if os.path.isdir(dir_output):
+		if (not debug_mode) and (len(dir_output)>0) :
+			shutil.rmtree(dir_output) 
+
+	return
+# End of cleanup function
+
+
+# Begin of normalization function
+def normalization(img,dir_output,name,orientation):
+	"""
+	###########################################################################
+	# def normalization(img,dir_output,name,orientation) 
+	# Function  : Data normalization
+	# Param	    : img, input image 
+	# Param	    : dir_output, dir_output where we are working
+	# Param     : name, patient name
+	# Param	    : orientation, volume orientation
+	###########################################################################
+	"""
+	global 	MASK_IMAGE
+	global	mnidir
+	global  dir_niftyreg
+	global  n3_options
+	
+	# Normalization
+	if not os.path.isfile(img+'_n3.nii.gz'):
+		# Delete temporally files
+		remove_files('*.mnc')
+		remove_files(img+'_n3*')
+		remove_files(img+'_ICBM152_mask_register*') 
+		
+		# Move tissues mask to target space
+		execute_command_or_else_stop(dir_niftyreg+'reg_resample \
+			-ref '+img+'.nii.gz \
+			-flo '+MASK_IMAGE+' \
+			-aff source-to-target-12dof.txt \
+			-res '+img+'_ICBM152_mask_register.nii.gz \
+			-NN')
+		
+		# Set tissues mask from float to char
+		execute_command_or_else_stop('fslmaths \
+			'+img+'_ICBM152_mask_register.nii.gz \
+			-bin \
+			'+img+'_ICBM152_mask_register-bin.nii.gz \
+			-odt char')
+
+		# Change format to NIFTI
+		remove_files(img+'_ICBM152_mask_register.nii.gz') 
+		execute_command_or_else_stop('fslchfiletype NIFTI '+img+'_ICBM152_mask_register-bin '+img+'_ICBM152_mask_register.nii')
+		remove_files(img+'_ICBM152_mask_register-bin.*') 
+		execute_command_or_else_stop('fslchfiletype NIFTI '+img+'.nii.gz '+img+'_2.nii')
+		
+		# Change format to mnc
+		execute_command_or_else_stop(mnidir+'nii2mnc '+orientation+' '+img+'_2.nii '+img+'.mnc')
+		execute_command_or_else_stop(mnidir+'nii2mnc '+orientation+' '+img+'_ICBM152_mask_register.nii '+img+'_ICBM152_mask_register.mnc')
+		progress_xml(0.30,'Image ready to be normalized')
+		
+		mask=os.path.join(dir_output,img+'_ICBM152_mask_register.mnc')
+		input_file=os.path.join(dir_output,img+'.mnc')
+		output_file=os.path.join(dir_output,img+'_n3.mnc')
+		output_file_tmp=os.path.join(dir_output,img+'_n3_temp.nii')
+		output_file_final=os.path.join(dir_output,img+'_n3.nii.gz')
+		
+		# This options for n3 has been extracted from Boyes et al. Neuroimage 2008 page 1756
+		if not os.path.isfile(output_file):
+			execute_command_or_else_stop(n3dir+'nu_correct '+n3_options+' \
+			-mask '+mask+' \
+			'+input_file+' \
+			'+output_file+'')
+				
+		progress_xml(0.45,'Image normalized')
+
+		# Change format from mnc to NIFTI
+		execute_command_or_else_stop(mnidir+'mnc2nii -nii '+output_file+' '+output_file_tmp)
+		execute_command_or_else_stop('fslchfiletype NIFTI_GZ '+output_file_tmp+' '+output_file_final)
+		remove_files(output_file_tmp)
+		remove_files('*.mnc')
+	else:
+		print 'File '+img+"_n3.nii.gz exists, we don't repeat the calculation"
+
+	return
+# End of normalization function
+
+
+# Begin of remove_neck function
+def remove_neck(img,name):
+	"""
+	###########################################################################
+	# def remove_neck(img,name)
+	# Function  : This function remove neck from a T1 brain data
+	# Param	    : img, input image
+	# Param     : name, patient name
+	###########################################################################
+	"""
+	global 	HEAD_IMAGE
+	global	HEADMASK_IMAGE
+	global  dir_niftyreg
+	
+	if not os.path.isfile(img+'_no_neck.nii.gz'):
+		progress_xml(0.1,"Registering atlas")
+		
+		# Register atlas to target space
+		execute_command_or_else_stop(dir_niftyreg+'reg_aladin \
+			-ref '+img+'.nii.gz \
+			-flo '+HEAD_IMAGE+' \
+			-aff source-to-target-12dof.txt \
+			-res '+img+'_neck_register.nii.gz \
+			-lp 5') 
+		progress_xml(0.15,"Atlas registered")
+			
+		# Move whole headmask to target space			
+		execute_command_or_else_stop(dir_niftyreg+'reg_resample \
+			-ref '+img+'.nii.gz \
+			-flo '+HEADMASK_IMAGE+' \
+			-aff source-to-target-12dof.txt \
+			-res '+img+'_ICBM152_mask_register.nii.gz \
+			-NN')
+			
+		# Remove neck of input image	
+		execute_command_or_else_stop(dir_niftyreg+'reg_tools \
+			-in '+img+'.nii.gz \
+			-nan '+img+'_ICBM152_mask_register.nii.gz \
+			-out '+img+'_no_neck.nii.gz')
+
+		# Convert nan to 0, if not, BET crashes
+		execute_command_or_else_stop('fslmaths '+img+'_no_neck.nii.gz -nan '+img+'_no_neck-nonan.nii.gz')
+		execute_command_or_else_stop('cp '+img+'_no_neck-nonan.nii.gz '+img+'_no_neck.nii.gz')
+		
+	else:
+		print 'File '+img+"_no_neck.nii.gz exists, we don't repeat the calculation"
+		
+	return
+# End of remove_neck function
+
+
+# Begin of BETter function
+def BETter(img,dir_output,output_result,name,opt,frac,orientation,norm): 
+	"""
+	###########################################################################
+	# def BETter(img,output_result,name,opt,frac,orientation,norm,output_type,suffix="")
+	# Function  : Calculating brain mask following Pospescu 2012 Neuroimage 
+	# Param	    : img, input image
+	# Param	    : output_result, output image
+	# Param     : name, patient name
+	# Param     : opt, options for BET
+	# Param     : frac, fractional intensity threshold
+	# Param	    : orientation, volume orientation
+	# Param	    : norm, apply normalization
+	###########################################################################
+	"""
+	# Starting brain extraction process
+	if not os.path.isfile(output_result):
+		# First remove neck slices according to Popescu 2012 method
+		remove_neck(img,name)
+		progress_xml(0.2,'Neck removed')
+
+		if norm:
+			# Normalize intesity for image following from Boyes et al. Neuroimage 2008 page 1756
+			normalization(img+'_no_neck',dir_output,name,orientation)
+			suffix='_no_neck_n3'
+		else:
+			suffix='_no_neck'
+
+		progress_xml(0.5,'Calculating brain extraction: bet '+opt+' -f '+frac)
+		
+		# Pospescu 2012 Neuroimage article suggests that best parameters could be -B -f 0.1, previously neck removal
+		if not os.path.isfile(img+'_brain.nii.gz'):
+			execute_command_or_else_stop('bet '+img+suffix+' '+img+'_brain '+opt+' -f '+frac) 
+		else:
+			print 'File '+img+"_brain.nii.gz exists, we don't repeat the calculation"
+		
+		progress_xml(0.75,'Applying FAST')
+		
+		if not os.path.isfile(img+'_brain_seg.nii.gz'):
+			execute_command_or_else_stop('fast -n 3 -o '+img+'_brain')
+		else:
+			print 'File '+img+"_fast.nii.gz exists, we don't repeat the calculation"
+
+		execute_command_or_else_stop('fslmaths '+img+'_brain_seg -thr 2 '+img+'_tissues')
+		execute_command_or_else_stop('fslmaths '+img+'_tissues -bin '+img+'_fast -odt char')
+		
+		progress_xml(0.95,'Copying results')
+		
+		# Copy all the results
+		copy_file_to_destination(img+'_fast.nii.gz',output_result)
+		
+	else:
+		print 'File '+output_result+" exists, we don't repeat the calculation"
+	
+	return
+# End of BETter function
+
+
+# XML Definition
+xml="""<?xml version="1.0" encoding="utf-8"?>
+<executable>
+   <category>Multiple Sclerosis Tools.Segmentation</category>
+   <title>BET Brain segmentation improved</title>
+   <description><![CDATA[This script, provided within @NIFTK_PLATFORM@, is for BET mask calculation using Pospescu et al. Neuroimage 2012 
+   brain extraction process.<br>
+   <ul>
+   <li><i>Input image</i>, selects the file that you would like to segment</li>
+   <li><i>Input atlas data</i>, selects the ATLAS data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii, you need to be careful that it exists overlapping between this image and input image.</li>
+   <li><i>Input headmask atlas data</i>, selects the ATLAS headmask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii</li>
+   <li><i>Input mask atlas data</i>, selects the ATLAS mask data file, ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii</li>
+   <li><i>Output image</i> it correponds to the brain mask of the segmented brain</li>
+   </ul>
+   <br>
+   <p><h2>Recomendations:</h2></p>
+   <p>
+   For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
+   atlas head maks, mask and data files. For other data sources you would need to check it.
+   Check that it exists an important overlapping between mask, headmask, head and input file.<br>
+   </p>
+   ]]></description>
+   <version>@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@</version>
+   <documentation-url>http://www.sciencedirect.com/science/article/pii/S1053811912003552</documentation-url>
+   <license>BSD</license>
+   <contributor>Ferran Prados (UCL)</contributor>
+   <parameters advanced="false">
+      <label>Mandatory arguments</label>
+      <description>Input image to be segmented and the name of output image</description>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputImageName</name>
+          <longflag>in</longflag>
+	  <description>Input image name</description>
+	  <label>Input image</label>
+	  <channel>input</channel>
+      </image>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputHead</name>
+          <longflag>atlas</longflag>
+	  <description>Input atlas data</description>
+	  <label>Input atlas data</label>
+	  <channel>input</channel>
+      </image>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputIHeadMask</name>
+          <longflag>headmask</longflag>
+	  <description>Input atlas head mask</description>
+	  <label>Input atlas head mask</label>
+	  <channel>input</channel>
+      </image>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>inputMask</name>
+          <longflag>mask</longflag>
+	  <description>Input atlas mask</description>
+	  <label>Input atlas mask</label>
+	  <channel>input</channel>
+      </image>
+      <image fileExtensions="*.nii,*.nii.gz,*.img">
+          <name>outputImageName</name>
+          <longflag>out</longflag>
+	  <description>Output image name</description>
+	  <label>Output image</label>
+	  <default>output.nii.gz</default>
+          <channel>output</channel>
+      </image>
+   </parameters>
+   <parameters advanced="true">
+   <label>Optional arguments</label>
+    <description>Optional arguments</description>
+    <string-enumeration>
+      <name>BEToptions</name>
+      <longflag>bet</longflag>
+      <description><![CDATA[Variations on default BET functionality: 
+      B - bias field & neck cleanup,
+      S - eye & optic nerve cleanup,
+      R - robust brain centre estimation and
+      Z - improve BET if FOV is very small in Z]]></description>
+      <label>BET options</label>
+      <default>B</default>
+      <element>B</element>
+      <element>S</element>
+      <element>R</element>
+      <element>Z</element>
+    </string-enumeration>
+    <float>
+      <name>FractionalIntensityThreshold</name>
+      <longflag>f</longflag>
+      <description><![CDATA[Fractional intensity threshold (0-1); default=0.1 for Pospescu et al. 2012 paper.
+      In BET, 0.5 is the default value. Lower values than default give larger brain outlines; higher values lead to smaller brain outlines.]]></description>
+      <label>Fractional intensity threshold</label>
+      <default>0.1</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>1</maximum>
+        <step>0.1</step>
+      </constraints>
+    </float>
+    <boolean>
+      <name>normalize</name>
+      <longflag>norm</longflag>
+      <description>Apply Boyes et al. Neuroimage 2008 normalization process</description>
+      <label>Normalization (N3)</label>
+    </boolean>
+    <string-enumeration>
+      <name>orientation</name>
+      <longflag>orient</longflag>
+      <description><![CDATA[Input images are in:
+      A - Axial orientation
+      C - Coronal orientation
+      S - Sagittal orientation]]></description>
+      <label>Input image orientation</label>
+      <default>A</default>
+      <element>A</element>
+      <element>C</element>
+      <element>S</element>
+    </string-enumeration>
+    <boolean>
+          <name>debugMode</name>
+          <longflag>debug</longflag>
+          <description>Debug mode doesn't delete temporary intermediate images</description>
+          <label>Debug mode</label>
+      </boolean>
+      <boolean>
+          <name>same</name>
+          <longflag>same</longflag>
+          <description>Always use the same temp directory for computing (this option is useful mixed with -debug)</description>
+          <label>Same temp directory</label>
+      </boolean>
+    </parameters>
+</executable>"""
+
+# Help usage message definition
+help="""This script is for BET mask calculation using Pospescu et al. Neuroimage 2012 brain extraction process. 
+
+Usage: niftkBETter.py -in input_file -out output_file -headmask head_mask_file -mask mask_file -atlas head_file
+
+Mandatory Arguments:
+ 
+  -in			: is the input file 
+  -out			: is the output file
+  -headmask		: is the headmask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_headmask.nii)
+  -mask			: is the mask atlas file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin_mask.nii)
+  -atlas		: is the atlas data file (ex: ICBM-152/lin-1.0/icbm_avg_152_t1_tal_lin.nii)
+
+Optional Arguments:
+  -bet			: variations on default BET functionality: B, S, R or Z. (see BET for more information), by default B
+  -f			: fractional intensity threshold (0->1); by default 0.1.
+  -norm			: apply Boyes et al. Neuroimage 2008 normalization process.
+  -orient <value>	: input images are in AXIAL (a), CORONAL (c) or SAGITTAL (s) orientation, it is needed for the normalization step
+  -debug		: debug mode doesn't delete temporary intermediate images
+  -same			: Always use the same temp directory for computing (this option is useful mixed with -debug)
+
+Recomendations:
+
+	For ADNI data swaps dimensions x y z to -y -z x and removes s form information of ICBM 152
+	Atlas head maks, mask and data files. For other data sources you would need to check it.
+	Check that it exists an important overlapping between mask, headmask, head and input file."""
+
+
+
+# Program start
+
+# We register cleanup function as a function to be executed at termination 
+atexit.register(cleanup)
+os.environ['FSLOUTPUTTYPE']='NIFTI_GZ'
+# We get the arguments
+arg=len(sys.argv)
+argv=sys.argv
+f='0.1'
+options='-B'
+orientation=''
+norm=False
+debug_mode=False
+same=False
+INPUT_IMAGE=''
+OUTPUT_IMAGE=''
+HEADMASK_IMAGE=''
+MASK_IMAGE=''
+HEAD_IMAGE=''
+
+# If no arguments, we print usage message
+if arg <= 1: 
+	usage(help)
+
+i=1
+# Parse remaining command line options
+while i < arg:
+    # Clean unnecessary whitespaces
+    argv[i]=argv[i].strip()
+    if argv[i].upper() in ['--XML','-XML']:
+	usage(xml,0)
+    
+    elif argv[i].upper() in ['--H','--HELP','-H','-HELP']:
+	usage(text)
+
+    elif argv[i].upper() in ['--IN','-IN']:
+	INPUT_IMAGE=argv[i+1]
+	i=i+1
+
+    elif argv[i].upper() in ['--OUT','-OUT']:
+	OUTPUT_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--HEADMASK','-HEADMASK']:
+	HEADMASK_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--MASK','-MASK']:
+	MASK_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--ATLAS','-ATLAS']:
+	HEAD_IMAGE=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--BET','-BET']:
+	options="-"+argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--F','-F']:
+	f=argv[i+1]
+	i=i+1
+	
+    elif argv[i].upper() in ['--ORIENT','-ORIENT']:
+	if argv[i+1].upper() in ['A']:
+		orientation="-transverse"
+		
+	elif argv[i+1].upper() in ['C']: 
+		orientation="-coronal"
+		
+	elif argv[i+1].upper() in ['S']: 
+		orientation="-sagittal"
+	else:
+		print "\n\nError: orientation ",argv[i]," ",argv[i+1]," not recognised\n\n"
+		usage(help)
+
+	i=i+1
+
+    elif argv[i].upper() in ['--NORM','-NORM']:
+	norm=True
+
+    elif argv[i].upper() in ['--DEBUG','-DEBUG']:
+	debug_mode=True
+
+    elif argv[i].upper() in ['--SAME','-SAME']:
+	same=True
+
+    else:
+	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
+	usage(help)
+	
+    i=i+1
+# end while
+
+if norm :
+	if orientation == '' :
+		exit_program("Failed, specify an orientation is needed --orient")
+
+# Start of the main program
+open_progress_xml('BETter Starts with options: '+options+' -f '+f)
+progress_xml(0.04,'Checking programs')
+
+# Check that all programs exist
+check_program_exists('fslcpgeom')
+check_program_exists('fslchfiletype')
+check_program_exists('bet')
+check_program_exists('fast')
+check_program_exists('fslmaths')
+check_program_exists('reg_aladin')
+check_program_exists('reg_resample')
+check_program_exists('reg_tools')
+check_program_exists('nii2mnc')
+check_program_exists('mnc2nii')
+check_program_exists('nu_correct')
+
+# Checking the correctness of the output file 
+progress_xml(0.08,'Checking input and output file')
+
+# We have an output file name
+if OUTPUT_IMAGE == '':
+	progress_xml(0.08,"Failed, specify an output filename is needed.")
+	exit_program("Failed, specify an output filename is needed.")
+
+# It isn't a directory
+if os.path.isdir(OUTPUT_IMAGE) :
+	progress_xml(0.08,OUTPUT_IMAGE+" is not a file, select a file")
+	exit_program(OUTPUT_IMAGE+" is not a file, select a file")
+
+# It hasn't any file with similar name in the final output directory
+if len(glob.glob(os.path.basename(OUTPUT_IMAGE)+'*'))>0 :
+	progress_xml (0.08,"There are files with the same name of the output file ("+OUTPUT_IMAGE+") in the output directory. It could be a source of conflicts. Please, change the name, or remove the files.")
+	exit_program ("There are files with the same name of the output file ("+OUTPUT_IMAGE+") in the output directory. It could be a source of conflicts. Please, change the name, or remove the files.")
+
+# We put all path in a normalized absolutized version of the pathname
+INPUT_IMAGE=os.path.abspath(INPUT_IMAGE)
+HEAD_IMAGE=os.path.abspath(HEAD_IMAGE)
+MASK_IMAGE=os.path.abspath(MASK_IMAGE)
+HEADMASK_IMAGE=os.path.abspath(HEADMASK_IMAGE)
+OUTPUT_IMAGE=os.path.abspath(OUTPUT_IMAGE)
+
+# Check if all needed files exist
+check_file_exists(INPUT_IMAGE) 
+check_file_exists(HEAD_IMAGE)
+check_file_exists(MASK_IMAGE)
+check_file_exists(HEADMASK_IMAGE)
+
+# Get specific information
+if same:
+	patient='nifTK'
+else:
+	today=datetime.utcnow()
+	date=today.strftime("%Y%B%d-%I%M%S")
+	patient='nifTK_'+date
+
+# Create the work temp dir
+dir_output=os.path.join(tempfile.gettempdir(),patient+"-"+dir_output)
+if not os.path.isdir(dir_output) :
+	os.makedirs(dir_output)
+
+# Copy data to work dir
+copy_file_to_destination(INPUT_IMAGE,os.path.join(dir_output,"input_image.nii.gz"))
+
+# Go to the output directory
+current_dir=os.getcwd()
+os.chdir(dir_output)
+
+# Start process
+BETter("input_image",dir_output,OUTPUT_IMAGE,patient,options,f,orientation,norm)
+
+# Go back to the corresponding directory
+os.chdir(current_dir)
+
+progress_xml(1,"Finish")
+close_progress_xml(OUTPUT_IMAGE)
+
+# End of the main program
+exit(0)

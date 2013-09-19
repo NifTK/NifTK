@@ -354,5 +354,29 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
     fileNames.push_back( full_path.string() );    
   }
 }
+//  -------------------------------------------------------------------------
+bool NumericStringCompare( const std::string &string1, const std::string &string2) 
+{
+  fs::path path1 (string1);
+  fs::path path2 (string2);
+  int d1 = boost::lexical_cast<long long int>(path1.stem());
+  int d2 = boost::lexical_cast<long long int>(path2.stem());
+  return d1 < d2;
+}
+//  -------------------------------------------------------------------------
+std::vector<std::string> FindVideoData( std::string directory) 
+{
+  boost::filesystem::recursive_directory_iterator end_itr;
+  std::vector<std::string> returnStrings;
 
+  for ( boost::filesystem::recursive_directory_iterator it(directory);
+          it != end_itr ; ++it)
+  {
+    if (  it->path().extension() == ".264" )
+    {
+      returnStrings.push_back(it->path().string());
+    }
+  }
+  return returnStrings;
+}
 }

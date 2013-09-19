@@ -22,6 +22,8 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
+  VideoProcessing/mitkProjectPointsOnStereoVideo.cxx
+  VideoProcessing/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
@@ -40,4 +42,5 @@ set(CPP_FILES
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
+  PivotCalibration/mitkPivotCalibration.cxx
 )
