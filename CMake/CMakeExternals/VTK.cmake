@@ -28,6 +28,12 @@ set(VTK_DEPENDS ${proj})
 
 if(NOT DEFINED VTK_DIR)
 
+  if(WIN32)
+    option(VTK_USE_SYSTEM_FREETYPE OFF)
+  else(WIN32)
+    option(VTK_USE_SYSTEM_FREETYPE ON)
+  endif(WIN32)
+
   set(additional_cmake_args )
   if(MINGW)
     set(additional_cmake_args
@@ -39,9 +45,7 @@ if(NOT DEFINED VTK_DIR)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
-  if(APPLE)
-    set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK-5.10-Mac.cmake)
-  endif()
+  set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -DWIN32_OPENGL_RW_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/vtkWin32OpenGLRenderWindow.cxx.vtk-5.10.patched -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK-5.10.cmake)
 
   ExternalProject_Add(${proj}
     SOURCE_DIR ${proj}-src
@@ -65,6 +69,7 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_USE_QTCHARTS:BOOL=ON
         -DVTK_USE_GEOVIS:BOOL=OFF
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=${VTK_USE_SYSTEM_FREETYPE}
+        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
         -DVTK_LEGACY_REMOVE:BOOL=ON
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
