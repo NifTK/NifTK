@@ -374,17 +374,12 @@ std::vector<std::string> FindVideoData( std::string directory)
   for ( boost::filesystem::recursive_directory_iterator it(directory);
           it != end_itr ; ++it)
   {
-    const std::string stringthing = it->path().filename();
-    if ( boost::regex_match (it->path().filename().c_str(), avifilter))
+    if ( boost::regex_match (it->path().string().c_str(), avifilter))
     {
       returnStrings.push_back(it->path().string());
     }
   }
-  if ( returnStrings.size() > 0 )
-  {
-    return returnStrings;
-  }
-  //if no avi files found look for 264 files instead
+  //also look for 264 files, but put them further along the vector
   for ( boost::filesystem::recursive_directory_iterator it(directory);
           it != end_itr ; ++it)
   {
