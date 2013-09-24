@@ -808,7 +808,8 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   }
 } 
 //---------------------------------------------------------------------------
-std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename)
+std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
+    std::vector <cv::Point2d>* leftScreenPoints, std::vector <cv::Point2d>* rightScreenPoints )
 {
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
@@ -831,12 +832,27 @@ std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::stri
       std::string xstring;
       std::string ystring;
       std::string zstring;
+      std::string lxstring;
+      std::string lystring;
+      std::string rxstring;
+      std::string rystring;
 
-      bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring;
+      bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring
+        >> lxstring >> lystring >> rxstring >> rystring;
       if ( parseSuccess )
       {
         pointsInLensCS.push_back(cv::Point3d(
               atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
+        if ( leftScreenPoints != NULL ) 
+        {
+          leftScreenPoints->push_back(cv::Point2d(
+                atof (lxstring.c_str()), atof ( lystring.c_str()) ));
+        }
+        if ( rightScreenPoints != NULL ) 
+        {
+          rightScreenPoints->push_back(cv::Point2d(
+                atof (rxstring.c_str()), atof ( rystring.c_str()) ));
+        }
         if ( frameNumber != linenumber++ )
         {
           MITK_WARN << "Skipped frame detected at line " << linenumber ;

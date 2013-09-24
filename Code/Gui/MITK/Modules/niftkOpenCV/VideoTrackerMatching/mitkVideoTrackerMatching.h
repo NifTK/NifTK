@@ -152,7 +152,9 @@ private:
    * \brief Reads a file that defines the position of a point fixed in world
    * coordinates relative to the camera lens.
    */
-  std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename);
+  std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename, 
+      std::vector <cv::Point2d>* leftScreenPoints = NULL, 
+      std::vector <cv::Point2d>* rightScreenPoints = NULL );
   std::vector<cv::Mat>     m_CameraToTracker;
 
   std::vector <unsigned long long>
