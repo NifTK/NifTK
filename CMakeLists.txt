@@ -145,6 +145,7 @@ endforeach()
 ######################################################################
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
+option(BUILD_CAMINO "Build camino." OFF)
 option(BUILD_NIFTYREG "Build NiftyReg." ON)
 option(BUILD_NIFTYREC "Build NiftyRec." OFF)
 option(BUILD_NIFTYSIM "Build NiftySim." ON)
@@ -223,6 +224,7 @@ set(NIFTK_VERSION_NIFTYSIM "6b7563534a" CACHE STRING "Version of NiftySim" FORCE
 set(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
+set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.bz2" CACHE STRING "Location of Boost" FORCE)
@@ -243,6 +245,7 @@ set(NIFTK_LOCATION_NIFTYSIM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Nift
 set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${NIFTK_VERSION_CGAL}.tar.gz" CACHE STRING  "Location of CGAL" FORCE)
 set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
 set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
+set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -315,6 +318,9 @@ mark_as_advanced(BUILD_SLS_TESTING)
 mark_as_advanced(NIFTK_NIFTYLINK_DEV)
 mark_as_advanced(BUILD_SHARED_LIBS)
 mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
+mark_as_advanced(BUILD_CAMINO)
+mark_as_advanced(NIFTK_LOCATION_CAMINO)
+mark_as_advanced(NIFTK_VERSION_CAMINO)
 
 ######################################################################
 # Make sure Git is available.
@@ -1164,6 +1170,19 @@ if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
   file(GLOB NIFTY_SIM_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySim-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
 endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
+
+# Camino
+if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
+  file(GLOB CAMINO_BIN_FILES
+       ${CMAKE_BINARY_DIR}/../camino-src/bin/*
+      )
+  file(GLOB CAMINO_MAN_FILES
+       ${CMAKE_BINARY_DIR}/../camino-src/man/man1/*
+      )
+  install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+  install(FILES ${CMAKE_BINARY_DIR}/../camino-src/camino.jar DESTINATION . PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif()
 
 ######################################################################
 # Decide what subdirectories we are building, and go and build them.

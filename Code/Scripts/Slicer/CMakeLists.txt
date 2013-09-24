@@ -16,8 +16,7 @@ set(scripts)
 
 if(NOT WIN32)
   set(scripts
-    niftkBET
-    niftkCaminoMakeFAMDTRD
+    niftkBET.sh
     ${scripts}    
   )
 endif()

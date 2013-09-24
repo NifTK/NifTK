@@ -12,20 +12,18 @@
 #
 #============================================================================*/
 
-add_subdirectory(Common)
-add_subdirectory(Freesurfer)
-add_subdirectory(Fluid)
-add_subdirectory(Registration)
-add_subdirectory(SIENA)
-add_subdirectory(GradwarpCorrection)
-add_subdirectory(BoundaryShiftIntegral)
-add_subdirectory(TBSS)
-add_subdirectory(Utilities)
-add_subdirectory(CorticalThickness)
-add_subdirectory(Parcellation)
-add_subdirectory(MAPS)
-add_subdirectory(Slicer)
-add_subdirectory(MSTools)
-if(BUILD_CAMINO)
-  add_subdirectory(Camino)
+set(scripts)
+
+if(NOT WIN32)
+  set(scripts
+    niftkCaminoMakeFAMDTRD.sh
+    ${scripts}    
+  )
 endif()
+
+foreach(script ${scripts})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
+  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+endforeach()
+
+

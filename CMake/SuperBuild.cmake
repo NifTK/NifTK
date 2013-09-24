@@ -110,6 +110,7 @@ include(niftkMacroGetChecksum)
 ######################################################################
 
 set(EXTERNAL_PROJECTS
+  camino
   Boost  
   VTK
   DCMTK
@@ -145,7 +146,7 @@ endforeach()
 if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET)
 
   set(proj NIFTK)
-  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} )
+  set(proj_DEPENDENCIES ${Boost_DEPENDS} ${GDCM_DEPENDS} ${ITK_DEPENDS} ${SlicerExecutionModel_DEPENDS} ${VTK_DEPENDS} ${MITK_DEPENDS} ${camino_DEPENDS})
 
   if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES ${OPENCV_DEPENDS})
@@ -203,6 +204,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.
       -DBUILD_SUPERBUILD:BOOL=OFF           # Must force this to be off, or else you will loop forever.
+      -DBUILD_CAMINO:BOOL=${BUILD_CAMINO}
       -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_COMMAND_LINE_PROGRAMS}
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
       -DBUILD_GUI:BOOL=${BUILD_GUI}
