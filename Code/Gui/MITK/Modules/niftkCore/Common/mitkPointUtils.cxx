@@ -109,9 +109,13 @@ void mitk::Normalise(mitk::Point3D& vector)
 int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
 {
   output.Clear();
-  for (int i = 0; i < input.GetSize(); ++i)
+
+  mitk::PointSet::PointsContainer* inputContainer = input.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputEnd = inputContainer->End();
+  for ( ; inputIt != inputEnd; ++inputIt)
   {
-    output.InsertPoint(i, input.GetPoint(i));
+    output.InsertPoint(inputIt->Index(), inputIt->Value());
   }
   return output.GetSize();
 }

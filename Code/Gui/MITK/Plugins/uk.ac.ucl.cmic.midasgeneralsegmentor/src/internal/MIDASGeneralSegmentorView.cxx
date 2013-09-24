@@ -832,11 +832,14 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
   outputPoints.Clear();
 
   mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
-  unsigned int pointCounter = 0;
 
-  for (int i = 0; i < inputPoints.GetSize(); i++)
+  mitk::PointSet::PointsContainer* inputPointsContainer = inputPoints.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputPointsIt = inputPointsContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPointsContainer->End();
+  for ( ; inputPointsIt != inputPointsEnd; ++inputPointsIt)
   {
-    mitk::PointSet::PointType point = inputPoints.GetPoint(i);
+    mitk::PointSet::PointType point = inputPointsIt->Value();
+    mitk::PointSet::PointIdentifier pointID = inputPointsIt->Index();
 
     singleSeedPointSet->Clear();
     singleSeedPointSet->InsertPoint(0, point);
@@ -845,8 +848,7 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
 
     if (!unenclosed)
     {
-      outputPoints.InsertPoint(pointCounter, point);
-      pointCounter++;
+      outputPoints.InsertPoint(pointID, point);
     }
   }
 }
@@ -3298,22 +3300,20 @@ void MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  mitk::PointSet::PointsContainer* itkInputSeeds = inputSeeds.GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator it = itkInputSeeds->Begin();
-  mitk::PointSet::PointsConstIterator itEnd = itkInputSeeds->End();
-  mitk::PointSet::PointIdentifier pointCounter = 0;
-  while (it != itEnd)
+  mitk::PointSet::PointsContainer* inputSeedsContainer = inputSeeds.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeedsContainer->End();
+  for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
-    PointType inputSeed = it->Value();
+    mitk::PointSet::PointType inputSeed = inputSeedsIt->Value();
+    mitk::PointSet::PointIdentifier inputSeedID = inputSeedsIt->Index();
     IndexType inputSeedIndex;
     itkImage->TransformPhysicalPointToIndex(inputSeed, inputSeedIndex);
 
     if (inputSeedIndex[axis] == slice)
     {
-      outputSeeds.InsertPoint(pointCounter, inputSeed);
-      ++pointCounter;
+      outputSeeds.InsertPoint(inputSeedID, inputSeed);
     }
-    ++it;
   }
 }
 
@@ -3342,9 +3342,6 @@ MIDASGeneralSegmentorView
     typedef typename ImageType::PointType PointType;
     typedef typename ImageType::IndexType IndexType;
 
-    PointType millimetreCoordinate;
-    IndexType voxelCoordinate;
-
     mitk::PointSet::Pointer filteredSeeds = mitk::PointSet::New();
     this->ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axis, slice, *(filteredSeeds.GetPointer()));
 
@@ -3359,9 +3356,15 @@ MIDASGeneralSegmentorView
       max = std::numeric_limits<double>::min();
 
       // Iterate through each point, get voxel value, keep running total of min/max.
-      for (int i = 0; i < filteredSeeds->GetSize(); i++)
+      mitk::PointSet::PointsContainer* filteredSeedsContainer = filteredSeeds->GetPointSet()->GetPoints();
+      mitk::PointSet::PointsConstIterator filteredSeedsIt = filteredSeedsContainer->Begin();
+      mitk::PointSet::PointsConstIterator filteredSeedsEnd = filteredSeedsContainer->End();
+      for ( ; filteredSeedsIt != filteredSeedsEnd; ++filteredSeedsIt)
       {
-        mitk::PointSet::PointType point = filteredSeeds->GetPoint(i);
+        mitk::PointSet::PointType point = filteredSeedsIt->Value();
+
+        PointType millimetreCoordinate;
+        IndexType voxelCoordinate;
 
         millimetreCoordinate[0] = point[0];
         millimetreCoordinate[1] = point[1];
@@ -3405,23 +3408,25 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  PointType voxelIndexInMillimetres;
-  IndexType voxelIndex;
-
-  int pointCounter = 0;
-  for (int i = 0; i < inputSeeds.GetSize(); i++)
+  mitk::PointSet::PointsContainer* inputSeedsContainer = inputSeeds.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeedsContainer->End();
+  for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
+    mitk::PointSet::PointType inputPoint = inputSeedsIt->Value();
+    mitk::PointSet::PointIdentifier inputPointID = inputSeedsIt->Index();
+
     // Copy every point to outputCopyOfInputSeeds.
-    outputCopyOfInputSeeds.InsertPoint(i, inputSeeds.GetPoint(i));
+    outputCopyOfInputSeeds.InsertPoint(inputPointID, inputPoint);
 
     // Only copy points outside of ROI.
-    voxelIndexInMillimetres = inputSeeds.GetPoint(i);
+    PointType voxelIndexInMillimetres = inputPoint;
+    IndexType voxelIndex;
     itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
 
     if (!regionOfInterest.IsInside(voxelIndex))
     {
-      outputNewSeedsNotInRegionOfInterest.InsertPoint(pointCounter, inputSeeds.GetPoint(i));
-      pointCounter++;
+      outputNewSeedsNotInRegionOfInterest.InsertPoint(inputPointID, inputPoint);
     }
   }
 }
@@ -3441,13 +3446,14 @@ bool MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  PointType voxelIndexInMillimetres;
-  IndexType voxelIndex;
-
   bool hasSeeds = false;
-  for (int i = 0; i < seeds->GetSize(); i++)
+  mitk::PointSet::PointsContainer* seedsContainer = seeds->GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator seedsIt = seedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator seedsEnd = seedsContainer->End();
+  for ( ; seedsIt != seedsEnd; ++seedsIt)
   {
-    voxelIndexInMillimetres = seeds->GetPoint(i);
+    PointType voxelIndexInMillimetres = seedsIt->Value();
+    IndexType voxelIndex;
     itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
 
     if (voxelIndex[axis] ==  slice)
@@ -4350,9 +4356,13 @@ MIDASGeneralSegmentorView
 
   // Update the current point set.
   currentSeeds->Clear();
-  for (int i = 0; i < outputSeeds->GetSize(); i++)
+
+  mitk::PointSet::PointsContainer* outputSeedsContainer = outputSeeds->GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator outputSeedsIt = outputSeedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator outputSeedsEnd = outputSeedsContainer->End();
+  for ( ; outputSeedsIt != outputSeedsEnd; ++outputSeedsIt)
   {
-    currentSeeds->InsertPoint(i, outputSeeds->GetPoint(i));
+    currentSeeds->InsertPoint(outputSeedsIt->Index(), outputSeedsIt->Value());
   }
 }
 
@@ -4641,32 +4651,34 @@ void MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  PointType voxelIndexInMillimetres;
-  IndexType voxelIndex;
-  IndexType newVoxelIndex;
-
   bool newSliceHasSeeds = this->ITKSliceDoesHaveSeeds(itkImage, currentSeeds, axis, newSliceNumber);
 
   newSeeds->Clear();
 
-  unsigned int pointCounter = 0;
-  for (int i = 0; i < currentSeeds->GetSize(); i++)
+  mitk::PointSet::PointsContainer* currentSeedsContainer = currentSeeds->GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator currentSeedsIt = currentSeedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator currentSeedsEnd = currentSeedsContainer->End();
+  for ( ; currentSeedsIt != currentSeedsEnd; ++currentSeedsIt)
   {
-    newSeeds->InsertPoint(pointCounter++, currentSeeds->GetPoint(i));
+    mitk::PointSet::PointType currentSeed = currentSeedsIt->Value();
+    mitk::PointSet::PointIdentifier currentSeedID = currentSeedsIt->Index();
+
+    newSeeds->InsertPoint(currentSeedID, currentSeed);
 
     // Don't overwrite any existing seeds on new slice.
     if (!newSliceHasSeeds)
     {
-      voxelIndexInMillimetres = currentSeeds->GetPoint(i);
+      PointType voxelIndexInMillimetres = currentSeed;
+      IndexType voxelIndex;
       itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
 
       if (voxelIndex[axis] == oldSliceNumber)
       {
-        newVoxelIndex = voxelIndex;
+        IndexType newVoxelIndex = voxelIndex;
         newVoxelIndex[axis] = newSliceNumber;
         itkImage->TransformIndexToPhysicalPoint(newVoxelIndex, voxelIndexInMillimetres);
 
-        newSeeds->InsertPoint(pointCounter++, voxelIndexInMillimetres);
+        newSeeds->InsertPoint(currentSeedID, voxelIndexInMillimetres);
       }
     }
   }
