@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     if ( outputLens.length() !=0 )
     {
       std::ofstream fout (outputLens.c_str());
-      std::vector < cv::Point3f >  leftLensPoints = finder->GetPointsInLeftLensCS();
+      std::vector < cv::Point3d >  leftLensPoints = finder->GetPointsInLeftLensCS();
       fout << "#Frame Number " ;
       fout << "PleftLens" <<"[x,y,z]";
       fout << std::endl;

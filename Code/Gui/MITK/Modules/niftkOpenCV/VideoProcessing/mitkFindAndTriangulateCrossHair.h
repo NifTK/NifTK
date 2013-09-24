@@ -60,10 +60,11 @@ public:
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
-  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3f> );
+  itkGetMacro ( PointsInLeftLensCS, std::vector<cv::Point3d> );
   itkGetMacro ( WorldPoints, std::vector<cv::Point3d> );
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( TriangulateOK, bool);
+  std::vector< std::pair <cv::Point2d , cv::Point2d> > GetScreenPoints ();
 
   /**
    * \brief Set the matrix flip state for the VideoTracker matcher
@@ -90,7 +91,7 @@ private:
   std::string                   m_Directory; //the directory containing the data
 
   std::vector<cv::Point3d>      m_WorldPoints;  //the triangulated points in world coordinates
-  std::vector<cv::Point3f>      m_PointsInLeftLensCS;  //the triangulated points in world coordinates
+  std::vector<cv::Point3d>      m_PointsInLeftLensCS;  //the triangulated points in world coordinates
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   mitk::VideoTrackerMatching::Pointer
                                 m_TrackerMatcher; //the tracker matcher
@@ -107,7 +108,7 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
-  std::vector < std::pair<cv::Point2f, cv::Point2f> > 
+  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenPoints; // the projected points
 
   CvCapture*                    m_Capture;

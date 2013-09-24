@@ -166,17 +166,17 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3f operator*(cv::Mat M, const cv::Point
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2f FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
 
 /**
  * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i>, 
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i>, 
     bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false);
 /**
  * \brief Calculates the centroid of a vector of points.
  */

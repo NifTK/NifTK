@@ -334,14 +334,14 @@ cv::Point3f operator*(cv::Mat M, const cv::Point3f& p)
   return returnPoint;
 }
 //-----------------------------------------------------------------------------
-cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
+cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
 {
   double a1;
   double a2;
   double b1;
   double b2;
-  cv::Point2f returnPoint;
+  cv::Point2d returnPoint;
   returnPoint.x = -100.0;
   returnPoint.y = -100.0;
 
@@ -388,7 +388,7 @@ cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   }
   if ( ok == false ) 
   {
-    return ( cv::Point2f (-100.0, -100.0) );
+    return ( cv::Point2d (-100.0, -100.0) );
   }
   else 
   {
@@ -398,14 +398,14 @@ cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
 }
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
 {
-  std::vector<cv::Point2f> returnPoints; 
+  std::vector<cv::Point2d> returnPoints; 
   for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
   {
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      cv::Point2f point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
+      cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
       if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
       {
         returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
@@ -415,9 +415,9 @@ std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
-cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers)
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
 {
-  cv::Point2f centroid;
+  cv::Point2d centroid;
   centroid.x = 0.0;
   centroid.y = 0.0;
 
@@ -436,7 +436,7 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
     return centroid;
   }
   
-  cv::Point2f standardDeviation;
+  cv::Point2d standardDeviation;
   standardDeviation.x = 0.0;
   standardDeviation.y = 0.0;
 
@@ -448,8 +448,8 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
 
-  cv::Point2f highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
-  cv::Point2f lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
+  cv::Point2d highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
+  cv::Point2d lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
 
   centroid.x = 0.0;
   centroid.y = 0.0;
