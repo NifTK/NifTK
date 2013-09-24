@@ -31,7 +31,6 @@ int main(int argc, char** argv)
     return returnStatus;
   }
  
-  bool FlipTracking = ! DontFlipTracking;
   bool FlipExtrin = FlipExtrinsics;
   bool SortByDistance = ! ( DontSortByDistance || SortByAngle );
 
