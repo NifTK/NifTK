@@ -100,32 +100,6 @@ public:
    * tracker indices
    */
   void SetCameraToTrackers ( std::string filename );
-  /**
-   * \brief Pass a file name that defines the position of a point fixed in world
-   * coordinates relative to the camera lens, along with the on screen coordinates
-   * of the point. The VideoLag is adjusted so as to 
-   * minimalise the standard deviation of the reconstructed world point
-   */
-  void TemporalCalibration (std::string filename, int windowLow = -100, int windowHigh = 100, bool visualise = false , std::string fileout = "" );
-
-  /**
-   * \brief Pass a file name that defines the position of a point fixed in world
-   * coordinates relative to the camera lens, along with the on screen coordinates 
-   * of the point. The world position of the point and 
-   * the handeye calibration are optimised to minimise the residual error of the 
-   * reconstructed point
-   */
-  void OptimiseHandeyeCalibration (std::string filename, bool visualise = false , std::string fileout = "" );
-
-  /**
-   * \brief Pass a file name that defines the position of a point fixed in world
-   * coordinates relative to the camera lens, along with the on screen coordinates of 
-   * the point. The world position of the point is 
-   * is determined using a range of perturbed values for the handeye matrix. The
-   * variance in the residual reconstruction error is used to determine the 
-   * sensitivity of the system to errors in the hand eye calibration
-   */
-  void HandeyeSensitivityTest (std::string filename, bool visualise = false , std::string fileout = "" );
 
 protected:
   VideoTrackerMatching();
@@ -133,15 +107,23 @@ protected:
 
   VideoTrackerMatching(const VideoTrackerMatching&); // Purposefully not implemented.
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
-
-private:
+  
   std::vector<unsigned int>             m_FrameNumbers;
-  std::vector<TrackingMatrices>         m_TrackingMatrices; 
   std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
-  std::vector<std::string>              m_TrackingMatrixDirectories;
-  std::string                           m_Directory;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
+
+  /**
+   * \brief Reads a file that defines the position of a point fixed in world
+   * coordinates relative to the camera lens.
+   */
+  std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename, 
+      std::vector <cv::Point2d>* leftScreenPoints = NULL, 
+      std::vector <cv::Point2d>* rightScreenPoints = NULL );
+private:
+  std::vector<TrackingMatrices>         m_TrackingMatrices; 
+  std::vector<std::string>              m_TrackingMatrixDirectories;
+  std::string                           m_Directory;
   std::string                           m_FrameMap;
 
   std::vector<std::string> FindFrameMaps();
@@ -151,13 +133,6 @@ private:
   void                     ProcessFrameMapFile();
   cv::Mat                  ReadTrackerMatrix(std::string filename);
   bool                     CheckTimingErrorStats();
-  /**
-   * \brief Reads a file that defines the position of a point fixed in world
-   * coordinates relative to the camera lens.
-   */
-  std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename, 
-      std::vector <cv::Point2d>* leftScreenPoints = NULL, 
-      std::vector <cv::Point2d>* rightScreenPoints = NULL );
   std::vector<cv::Mat>     m_CameraToTracker;
 
   std::vector <unsigned long long>
