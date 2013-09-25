@@ -267,6 +267,16 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileNa
   {
     LoadMatrixOrCreateDefault(fileName, "niftk.ov.cal", true /* helper object */, m_DataStorage);
     m_TrackingCalibrationFileName = fileName;
+
+    mitk::DataNode *node = m_DataStorage->GetNamedNode("niftk.ov.cal");
+    if (node != NULL)
+    {
+      mitk::CoordinateAxesData::Pointer data = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+      if (data.IsNotNull())
+      {
+        data->GetVtkMatrix(*m_TrackingCalibrationTransform);
+      }
+    }
   }
 }
 
@@ -372,8 +382,8 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
   double origin[4]     = {0, 0,    0,    1};
-  double focalPoint[4] = {0, 0,   -1000, 1};
-  double viewUp[4]     = {0, 1000, 0,    1};
+  double focalPoint[4] = {0, 0,   1000, 1};
+  double viewUp[4]     = {0, -1000, 0,    1};
 
   // If the stereo right to left matrix exists, we must be doing the right hand image.
   // So, in this case, we have an extra transformation to consider.
@@ -411,7 +421,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
       trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
 
       vtkSmartPointer<vtkMatrix4x4> combinedTransform = vtkMatrix4x4::New();
-      vtkMatrix4x4::Multiply4x4(trackingTransformMatrix, m_TrackingCalibrationTransform, combinedTransform);
+      vtkMatrix4x4::Multiply4x4( trackingTransformMatrix , m_TrackingCalibrationTransform, combinedTransform);
 
       combinedTransform->MultiplyPoint(origin, origin);
       combinedTransform->MultiplyPoint(focalPoint, focalPoint);

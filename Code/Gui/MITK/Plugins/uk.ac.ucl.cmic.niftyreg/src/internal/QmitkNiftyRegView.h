@@ -15,7 +15,8 @@
 #ifndef QmitkNiftyRegView_h
 #define QmitkNiftyRegView_h
 
-//#undef _USE_CUDA
+// broken
+#undef _USE_CUDA
 
 #include "ui_QmitkNiftyRegViewControls.h"
 #include <berryISelectionListener.h>
