@@ -134,18 +134,19 @@ void VideoTrackerMatching::FindTrackingMatrixDirectories()
   boost::filesystem::recursive_directory_iterator end_itr;
   for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
-   {
-     if ( boost::filesystem::is_directory (it->status()) )
-     {
-       if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
-       {
-          m_TrackingMatrixDirectories.push_back(it->path().string());
-          //need to init tracking matrix vector
-          TrackingMatrices TempMatrices; 
-          m_TrackingMatrices.push_back(TempMatrices);
-       }
-     }
-   }
+  {
+    if ( boost::filesystem::is_directory (it->status()) )
+    {
+      if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
+      {
+         m_TrackingMatrixDirectories.push_back(it->path().string());
+         //need to init tracking matrix vector
+         TrackingMatrices TempMatrices; 
+         m_TrackingMatrices.push_back(TempMatrices);
+      }
+    }
+  }
+  std::sort (m_TrackingMatrixDirectories.begin(), m_TrackingMatrixDirectories.end());
   return;
 }
 //---------------------------------------------------------------------------
