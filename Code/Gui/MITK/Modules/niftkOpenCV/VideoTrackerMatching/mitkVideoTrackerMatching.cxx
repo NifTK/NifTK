@@ -500,7 +500,11 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
+  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
+  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
+  leftScreenPoints->clear();
+  rightScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
@@ -567,6 +571,8 @@ void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
             pointsInLensCS[frame]);
       }
       cv::Point3d* worldStdDev = new cv::Point3d;
+      //here we want to have an if that enables us to calculate worldStdDev in 
+      //and alternative method.
       mitk::GetCentroid (worldPoints, true, worldStdDev);
       standardDeviations[trackerIndex].push_back(*worldStdDev);
       float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
@@ -663,7 +669,11 @@ void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfil
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
+  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
+  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
+  leftScreenPoints->clear();
+  rightScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
@@ -747,7 +757,11 @@ void VideoTrackerMatching::HandeyeSensitivityTest(std::string calibrationfilenam
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
+  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
+  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
+  leftScreenPoints->clear();
+  rightScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
