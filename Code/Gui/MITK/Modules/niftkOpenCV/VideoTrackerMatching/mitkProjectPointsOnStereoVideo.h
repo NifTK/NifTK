@@ -101,6 +101,8 @@ public:
    */
   void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
 
+  itkSetMacro ( TrackerMatcher, mitk::VideoTrackerMatching::Pointer );
+
 
 protected:
 
