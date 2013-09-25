@@ -22,7 +22,7 @@
 #include <mitkCommon.h>
 #include <cv.h>
 #include <highgui.h>
-#include <mitkVideoTrackerMatching.h>
+#include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
 
