@@ -21,7 +21,6 @@ set(MODULE_CUSTOM_TESTS
   mitkCameraCalibrationTest.cxx
   mitkHandeyeCalibrationTest.cxx
   mitkHandeyeFromDirectoryTest.cxx
-  mitkTagTrackingTest.cxx
   mitkVideoTrackerMatchingTest.cxx
   mitkReprojectionTest.cxx
   mitkProjectPointsOnStereoVideoTest.cxx
