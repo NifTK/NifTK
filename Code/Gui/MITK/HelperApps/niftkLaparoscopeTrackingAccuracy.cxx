@@ -14,8 +14,8 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkVideoTrackerMatching.h>
-#include <niftkGetMatchedTrackingMatrixCLP.h>
+#include <mitkTrackerAnalysis.h>
+#include <niftkLaparoscopeTrackingAccuracyCLP.h>
 
 int main(int argc, char** argv)
 {
@@ -31,16 +31,21 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::VideoTrackerMatching::Pointer trackerMatcherObject = mitk::VideoTrackerMatching::New();
+    mitk::TrackerAnalysis::Pointer trackerMatcherObject = mitk::TrackerAnalysis::New();
     trackerMatcherObject->SetFlipMatrices(FlipTracking);
     trackerMatcherObject->Initialise(trackingInputDirectory);
     if ( handeyes.length() !=0 ) 
     {
       trackerMatcherObject->SetCameraToTrackers(handeyes);
     }
-
-    long long* timingError = new long long;
-    std::cout << trackerMatcherObject->GetTrackerMatrix(frameNumber, timingError, trackerIndex);
+    if ( TemporalCalibration.length() != 0 )
+    {
+      trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true, TCfileout);
+    }
+    if ( OptimiseHandeye.length() != 0 ) 
+    {
+      trackerMatcherObject->OptimiseHandeyeCalibration(OptimiseHandeye, false, TCfileout);
+    }
 
     returnStatus = EXIT_SUCCESS;
   }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Get Matched Tracking Matrix</title>
-  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
+  <title>Perform varisous tracking accuracy tests</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -19,12 +19,31 @@
       <description>The directory containing the corresponding tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
     </directory>    
+    <file>
+      <name>TemporalCalibration</name>
+      <longflag>TemporalCalibration</longflag>
+      <description>A file used for temporal calibration.</description>
+      <label>A file used for temporal calibration</label>
+    </file>    
+    <file>
+      <name>OptimiseHandeye</name>
+      <longflag>OptimiseHandeye</longflag>
+      <description>A file used for handeye optimisation.</description>
+      <label>A file used for handeye optimisation</label>
+    </file>    
+
 
     <file>
       <name>handeyes</name>
       <longflag>handeyes</longflag>
       <description>A file defining the handeye tranforms.</description>
       <label>A file defining the handeye transforms</label>
+    </file>    
+    <file>
+      <name>TCfileout</name>
+      <longflag>TCfileout</longflag>
+      <description>A file to writeout the temporal calibration results.</description>
+      <label>A file to writeout the temporal calibration results</label>
     </file>    
 
 
@@ -42,13 +61,6 @@
       <default>0</default>
     </boolean>
 
-    <integer>
-	<name>frameNumber</name>
-	<longflag>frameNumber</longflag>
-	<description>The video frame number</description>
-	<label>The video frame number</label>
-	<default>0</default>
-    </integer>
     <integer>
 	<name>trackerIndex</name>
 	<longflag>trackerIndex</longflag>
