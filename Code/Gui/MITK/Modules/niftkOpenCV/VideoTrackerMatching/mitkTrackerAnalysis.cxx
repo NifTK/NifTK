@@ -12,6 +12,7 @@
 
 =============================================================================*/
 #include "mitkTrackerAnalysis.h"
+#include "mitkProjectPointsOnStereoVideo.h"
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkUltrasoundPinCalibration.h>
 #include <mitkOpenCVMaths.h>
@@ -101,6 +102,8 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     optimalVideoLagMag.push_back(0);
   }
 
+  mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
+  projector->SetTrackerMatcher (this);
 
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
@@ -131,6 +134,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       //here we want to have an if that enables us to calculate worldStdDev in 
       //and alternative method.
       mitk::GetCentroid (worldPoints, true, worldStdDev);
+
       standardDeviations[trackerIndex].push_back(*worldStdDev);
       float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
           worldStdDev->z * worldStdDev->z);
