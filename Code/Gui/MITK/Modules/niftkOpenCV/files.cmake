@@ -37,8 +37,6 @@ set(CPP_FILES
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
-  TagTracking/mitkMonoTagExtractor.cxx
-  TagTracking/mitkStereoTagExtractor.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
