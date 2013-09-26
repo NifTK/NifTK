@@ -42,6 +42,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SquareSizeInMillimetres(3.0)
 , m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
+, m_NoVideoSupport(false)
 {
 }
 
