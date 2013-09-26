@@ -210,7 +210,6 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
                                       )
 {
   // For each iteration the point set is erased.
-  int debugger = 0;
   pointSet->Clear();
 
   // The user might pass in NULL surface normals, so only clear if necessary.
