@@ -150,17 +150,17 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
-      long long int*  LeftTimingError = new long long;
-      long long int *  RightTimingError = new long long;
+      long long int  LeftTimingError;
+      long long int  RightTimingError;
       cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
-        LeftTimingError, m_TrackerIndex );
+        &LeftTimingError, m_TrackerIndex );
       cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
-        RightTimingError, m_TrackerIndex );
-      if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
-        std::abs(*RightTimingError) > m_AbsTrackerTimingError ) 
+        &RightTimingError, m_TrackerIndex );
+      if ( std::abs(LeftTimingError) > m_AbsTrackerTimingError ||
+        std::abs(RightTimingError) > m_AbsTrackerTimingError ) 
       {
         MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
-          std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+          std::abs(LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
       }
       else
       {
