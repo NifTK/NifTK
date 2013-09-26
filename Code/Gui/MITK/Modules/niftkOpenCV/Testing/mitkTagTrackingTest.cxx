@@ -69,7 +69,6 @@ public:
 
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::PointSet::Pointer normals = mitk::PointSet::New();
-
     mitk::StereoTagExtractor::Pointer extractor = mitk::StereoTagExtractor::New();
 
     // First test normal stereo.

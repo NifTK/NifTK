@@ -471,6 +471,7 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
   MITK_INFO << leftCameraAxesPoints;
   for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
   {
+    MITK_INFO << i;
     std::pair<cv::Point2d, cv::Point2d>  pointPair;
     pointPair.first = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,0),CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,1));
     pointPair.second = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsRight,double,i,0),CV_MAT_ELEM(*output2DAxesPointsRight,double,i,1));

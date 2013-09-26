@@ -103,11 +103,11 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
                    mitk::PointSet::Pointer surfaceNormals
                    )
 {
-  CvMat* leftCameraIntrinsics  = cvCreateMat(3, 3, CV_32FC1);
-  CvMat* rightCameraIntrinsics  = cvCreateMat(3, 3, CV_32FC1);
-  CvMat* rightToLeftRotationMatrix  = cvCreateMat(3, 3, CV_32FC1);
-  CvMat* rightToLeftRotationVector  = cvCreateMat(1, 3, CV_32FC1);
-  CvMat* rightToLeftTranslationVector  = cvCreateMat(1, 3, CV_32FC1);
+  CvMat* leftCameraIntrinsics  = cvCreateMat(3, 3, CV_64FC1);
+  CvMat* rightCameraIntrinsics  = cvCreateMat(3, 3, CV_64FC1);
+  CvMat* rightToLeftRotationMatrix  = cvCreateMat(3, 3, CV_64FC1);
+  CvMat* rightToLeftRotationVector  = cvCreateMat(1, 3, CV_64FC1);
+  CvMat* rightToLeftTranslationVector  = cvCreateMat(1, 3, CV_64FC1);
 
   itk::Matrix<float, 4, 4> txf;
   txf.SetIdentity();
@@ -148,33 +148,33 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
     txf[0][3] = 10;
   }
 
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 0, 0) = leftCam->GetFocalLengthX();
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 0, 1) = 0;
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 0, 2) = leftCam->GetPrincipalPointX();
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 1, 0) = 0;
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 1, 1) = leftCam->GetFocalLengthY();
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 1, 2) = leftCam->GetPrincipalPointY();
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 2, 0) = 0;
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 2, 1) = 0;
-  CV_MAT_ELEM(*leftCameraIntrinsics, float, 2, 2) = 1;
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 0, 0) = leftCam->GetFocalLengthX();
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 0, 1) = 0;
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 0, 2) = leftCam->GetPrincipalPointX();
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 1, 0) = 0;
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 1, 1) = leftCam->GetFocalLengthY();
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 1, 2) = leftCam->GetPrincipalPointY();
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 2, 0) = 0;
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 2, 1) = 0;
+  CV_MAT_ELEM(*leftCameraIntrinsics, double, 2, 2) = 1;
 
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 0, 0) = rightCam->GetFocalLengthX();
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 0, 1) = 0;
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 0, 2) = rightCam->GetPrincipalPointX();
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 1, 0) = 0;
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 1, 1) = rightCam->GetFocalLengthY();
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 1, 2) = rightCam->GetPrincipalPointY();
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 2, 0) = 0;
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 2, 1) = 0;
-  CV_MAT_ELEM(*rightCameraIntrinsics, float, 2, 2) = 1;
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 0, 0) = rightCam->GetFocalLengthX();
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 0, 1) = 0;
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 0, 2) = rightCam->GetPrincipalPointX();
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 1, 0) = 0;
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 1, 1) = rightCam->GetFocalLengthY();
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 1, 2) = rightCam->GetPrincipalPointY();
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 2, 0) = 0;
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 2, 1) = 0;
+  CV_MAT_ELEM(*rightCameraIntrinsics, double, 2, 2) = 1;
 
   for (int i = 0; i < 3; i++)
   {
     for (int j  = 0; j < 3; j++)
     {
-      CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, j) = txf[i][j];
+      CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, j) = static_cast<double>(txf[i][j]);
     }
-    CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, i) = txf[i][3];
+    CV_MAT_ELEM(*rightToLeftTranslationVector, double, 0, i) = static_cast<double>(txf[i][3]);
   }
   cvRodrigues2(rightToLeftRotationMatrix, rightToLeftRotationVector);
 
@@ -210,6 +210,7 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
                                       )
 {
   // For each iteration the point set is erased.
+  int debugger = 0;
   pointSet->Clear();
 
   // The user might pass in NULL surface normals, so only clear if necessary.
@@ -279,9 +280,9 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
         // We are assuming that each marker has similarly ordered point corners.
         // We rescale image coordinates back, as camera calibration is assumed to be done on aspect ratio of 1:1.
 
-        cv::Point2f leftMarker;
-        cv::Point2f rightMarker;
-        std::vector<std::pair<cv::Point2f, cv::Point2f> > pairs;
+        cv::Point2d leftMarker;
+        cv::Point2d rightMarker;
+        std::vector<std::pair<cv::Point2d, cv::Point2d> > pairs;
 
         // If we are doing normals, we need the 4 corners.
         if (surfaceNormals.IsNotNull())
@@ -296,7 +297,7 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
             rightMarker.x /= aspect[0];
             rightMarker.y /= aspect[1];
 
-            std::pair<cv::Point2f, cv::Point2f> pair(leftMarker, rightMarker);
+            std::pair<cv::Point2d, cv::Point2d> pair(leftMarker, rightMarker);
             pairs.push_back(pair);
           }
         }
@@ -310,10 +311,10 @@ void StereoTagExtractorPrivate::ExtractPoints(const mitk::Image::Pointer leftIma
         rightMarker.x /= aspect[0];
         rightMarker.y /= aspect[1];
 
-        std::pair<cv::Point2f, cv::Point2f> centrePoint(leftMarker, rightMarker);
+        std::pair<cv::Point2d, cv::Point2d> centrePoint(leftMarker, rightMarker);
         pairs.push_back(centrePoint);
 
-        std::vector<cv::Point3f> pointsIn3D = mitk::TriangulatePointPairs(
+        std::vector<cv::Point3d> pointsIn3D = mitk::TriangulatePointPairs(
             pairs,
             leftInt,
             rightInt,

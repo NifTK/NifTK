@@ -437,10 +437,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObserve
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
  */
-extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point2f>& inputObservedPoints,
+extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point2d>& inputObservedPoints,
   const cv::Mat& cameraIntrinsics3x3,
   const cv::Mat& cameraDistortionParams5x1,
-  std::vector<cv::Point2f>& outputIdealPoints
+  std::vector<cv::Point2d>& outputIdealPoints
   );
 
 
@@ -466,8 +466,8 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObse
  * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs(
-  const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+  const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
   const cv::Mat& rightToLeftRotationVector,
@@ -481,8 +481,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f TriangulatePointPair(
-  const std::pair<cv::Point2f, cv::Point2f> & inputUndistortedPoints,
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPair(
+  const std::pair<cv::Point2d, cv::Point2d> & inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
   const cv::Mat& rightToLeftRotationMatrix,
@@ -525,8 +525,8 @@ extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
  * \param rightCameraTranslationVector [1x3] matrix for the extrinsic parameters translation vector.
  * \param outputPoints reconstructed 3D points, but only reconstructed up to a an indeterminant scale factor.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3f > TriangulatePointPairs(
-  const std::vector< std::pair<cv::Point2f, cv::Point2f> >& inputUndistortedPoints,
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+  const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& leftCameraRotationVector,
   const cv::Mat& leftCameraTranslationVector,
