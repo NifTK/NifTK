@@ -112,6 +112,7 @@ protected:
   std::vector<TrackingMatrixTimeStamps> m_TrackingMatrixTimeStamps; 
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
+  std::string                           m_Directory;
 
   /**
    * \brief Reads a file that defines the position of a point fixed in world
@@ -123,7 +124,6 @@ protected:
 private:
   std::vector<TrackingMatrices>         m_TrackingMatrices; 
   std::vector<std::string>              m_TrackingMatrixDirectories;
-  std::string                           m_Directory;
   std::string                           m_FrameMap;
 
   std::vector<std::string> FindFrameMaps();

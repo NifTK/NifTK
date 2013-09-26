@@ -71,7 +71,7 @@ protected:
   TrackerAnalysis& operator=(const TrackerAnalysis&); // Purposefully not implemented.
 
 private:
-  
+  std::string m_CalibrationDirectory;    //the directory containing camera intrinsic parameters  
 };
 
 

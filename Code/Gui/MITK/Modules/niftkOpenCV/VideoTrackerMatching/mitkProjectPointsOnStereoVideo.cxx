@@ -36,13 +36,13 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
-, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_LeftDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_RightDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_32FC1))
-, m_LeftCameraToTracker (new cv::Mat(4,4,CV_32FC1))
+, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_LeftDistortionVector (new cv::Mat(5,1,CV_64FC1))
+, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_RightDistortionVector (new cv::Mat(5,1,CV_64FC1))
+, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
+, m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
 {
@@ -181,7 +181,7 @@ void ProjectPointsOnStereoVideo::Project()
     //in general the tracker matrices are trackertoworld
     cv::Mat WorldToLeftCamera = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex).inv();
     
-    std::vector < cv::Point3f > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
+    std::vector < cv::Point3d > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
 
     //project onto screen
@@ -190,22 +190,22 @@ void ProjectPointsOnStereoVideo::Project()
     CvMat* output2DPointsLeft = NULL ;
     CvMat* output2DPointsRight = NULL;
     
-    cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.size(),3,CV_32FC1);
-    cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.size(),3,CV_32FC1);
+    cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.size(),3,CV_64FC1);
+    cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.size(),3,CV_64FC1);
 
     for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
     {
-      leftCameraWorldPoints.at<float>(i,0) = pointsInLeftLensCS[i].x;
-      leftCameraWorldPoints.at<float>(i,1) = pointsInLeftLensCS[i].y;
-      leftCameraWorldPoints.at<float>(i,2) = pointsInLeftLensCS[i].z;
-      leftCameraWorldNormals.at<float>(i,0) = 0.0;
-      leftCameraWorldNormals.at<float>(i,1) = 0.0;
-      leftCameraWorldNormals.at<float>(i,2) = -1.0;
+      leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS[i].x;
+      leftCameraWorldPoints.at<double>(i,1) = pointsInLeftLensCS[i].y;
+      leftCameraWorldPoints.at<double>(i,2) = pointsInLeftLensCS[i].z;
+      leftCameraWorldNormals.at<double>(i,0) = 0.0;
+      leftCameraWorldNormals.at<double>(i,1) = 0.0;
+      leftCameraWorldNormals.at<double>(i,2) = -1.0;
     }
-    cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_32FC1);
-    leftCameraPositionToFocalPointUnitVector.at<float>(0,0)=0.0;
-    leftCameraPositionToFocalPointUnitVector.at<float>(0,1)=0.0;
-    leftCameraPositionToFocalPointUnitVector.at<float>(0,2)=1.0;
+    cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
+    leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
+    leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
+    leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
   
     mitk::ProjectVisible3DWorldPointsToStereo2D
       ( leftCameraWorldPoints,leftCameraWorldNormals,
@@ -218,13 +218,13 @@ void ProjectPointsOnStereoVideo::Project()
         output2DPointsLeft,
         output2DPointsRight);
 
-    std::vector < std::pair < cv::Point2f , cv::Point2f > > screenPoints;
+    std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
     
     for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
     {
-      std::pair<cv::Point2f, cv::Point2f>  pointPair;
-      pointPair.first = cv::Point2f(CV_MAT_ELEM(*output2DPointsLeft,float,i,0),CV_MAT_ELEM(*output2DPointsLeft,float,i,1));
-      pointPair.second = cv::Point2f(CV_MAT_ELEM(*output2DPointsRight,float,i,0),CV_MAT_ELEM(*output2DPointsRight,float,i,1));
+      std::pair<cv::Point2d, cv::Point2d>  pointPair;
+      pointPair.first = cv::Point2d(CV_MAT_ELEM(*output2DPointsLeft,double,i,0),CV_MAT_ELEM(*output2DPointsLeft,double,i,1));
+      pointPair.second = cv::Point2d(CV_MAT_ELEM(*output2DPointsRight,double,i,0),CV_MAT_ELEM(*output2DPointsRight,double,i,1));
       screenPoints.push_back(pointPair);
     }
     m_ProjectedPoints.push_back(screenPoints);
@@ -327,7 +327,7 @@ void ProjectPointsOnStereoVideo::Project()
 }
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
-    (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPointPairs,
+    (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
      unsigned int framenumber)
 {
   if ( ! m_TrackerMatcher->IsReady () ) 
@@ -336,18 +336,18 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     return;
   }
   
-  cv::Mat * twoDPointsLeft = new  cv::Mat(onScreenPointPairs.size(),2,CV_32FC1);
-  cv::Mat * twoDPointsRight =new  cv::Mat(onScreenPointPairs.size(),2,CV_32FC1);
+  cv::Mat * twoDPointsLeft = new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
+  cv::Mat * twoDPointsRight =new  cv::Mat(onScreenPointPairs.size(),2,CV_64FC1);
 
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
   {
-    twoDPointsLeft->at<float>( i, 0) = onScreenPointPairs[i].first.x;
-    twoDPointsLeft->at<float> ( i , 1 ) = onScreenPointPairs[i].first.y;
-    twoDPointsRight->at<float>( i , 0 ) = onScreenPointPairs[i].second.x;
-    twoDPointsRight->at<float>( i , 1 ) = onScreenPointPairs[i].second.y;
+    twoDPointsLeft->at<double>( i, 0) = onScreenPointPairs[i].first.x;
+    twoDPointsLeft->at<double> ( i , 1 ) = onScreenPointPairs[i].first.y;
+    twoDPointsRight->at<double>( i , 0 ) = onScreenPointPairs[i].second.x;
+    twoDPointsRight->at<double>( i , 1 ) = onScreenPointPairs[i].second.y;
   }
-  cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_32FC1);
-  cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_32FC1);
+  cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
+  cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
 
   mitk::UndistortPoints(*twoDPointsLeft,
              *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints);
@@ -355,15 +355,15 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
   mitk::UndistortPoints(*twoDPointsRight,
              *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints);
   
-  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
 
   for ( int i = 0 ; i < 3 ; i ++ )
   {
-    leftCameraTranslationVector.at<float>(i,0) = 0.0;
-    leftCameraRotationVector.at<float>(i,0) = 0.0;
+    leftCameraTranslationVector.at<double>(i,0) = 0.0;
+    leftCameraRotationVector.at<double>(i,0) = 0.0;
   }
   rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
   cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
@@ -376,7 +376,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
   CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
   CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
   CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
-  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (onScreenPointPairs.size(),3,CV_32FC1);
+  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (onScreenPointPairs.size(),3,CV_64FC1);
 
   mitk::TriangulatePointPairs(
     leftScreenPointsMat,
@@ -389,13 +389,13 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     rightCameraTranslationVectorMat,
     *leftCameraTriangulatedWorldPoints);
 
-  std::vector <cv::Point3f> points;
+  std::vector <cv::Point3d> points;
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
   {
-    points.push_back(cv::Point3f (
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,0),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
+    points.push_back(cv::Point3d (
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
   }
 
   m_WorldPoints = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex) * points;
@@ -420,43 +420,43 @@ void ProjectPointsOnStereoVideo::SetFlipMatrices(bool state)
   m_TrackerMatcher->SetFlipMatrices(state);
 }
 
-std::vector < std::vector <cv::Point3f> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
+std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
 {
   return m_PointsInLeftLensCS;
 }
 
-std::vector < std::vector <std::pair <cv::Point2f, cv::Point2f> > > ProjectPointsOnStereoVideo::GetProjectedPoints()
+std::vector < std::vector <std::pair <cv::Point2d, cv::Point2d> > > ProjectPointsOnStereoVideo::GetProjectedPoints()
 {
   return m_ProjectedPoints;
 }
 void ProjectPointsOnStereoVideo::ProjectAxes()
 {
-  cv::Mat leftCameraAxesPoints = cv::Mat (4,3,CV_32FC1);
-  cv::Mat leftCameraAxesNormals = cv::Mat (4,3,CV_32FC1);
+  cv::Mat leftCameraAxesPoints = cv::Mat (4,3,CV_64FC1);
+  cv::Mat leftCameraAxesNormals = cv::Mat (4,3,CV_64FC1);
   for ( int i = 0 ; i < 4 ; i ++ ) 
   {
     int j;
     for ( j = 0 ; j < 2 ; j ++ ) 
     {
-      leftCameraAxesPoints.at<float>(i,j) = 0.0;
-      leftCameraAxesNormals.at<float>(i,j) = 0.0;
+      leftCameraAxesPoints.at<double>(i,j) = 0.0;
+      leftCameraAxesNormals.at<double>(i,j) = 0.0;
     }
-      leftCameraAxesPoints.at<float>(i,j) = 100.0;
-      leftCameraAxesNormals.at<float>(i,j) = -1.0;
+      leftCameraAxesPoints.at<double>(i,j) = 100.0;
+      leftCameraAxesNormals.at<double>(i,j) = -1.0;
   }
-  leftCameraAxesPoints.at<float>(1,0) = 100;
-  leftCameraAxesPoints.at<float>(2,1) = 100;
-  leftCameraAxesPoints.at<float>(3,2) = 200;
+  leftCameraAxesPoints.at<double>(1,0) = 100;
+  leftCameraAxesPoints.at<double>(2,1) = 100;
+  leftCameraAxesPoints.at<double>(3,2) = 200;
       
   CvMat* outputLeftCameraAxesPointsIn3D = NULL;
   CvMat* outputLeftCameraAxesNormalsIn3D = NULL ;
   CvMat* output2DAxesPointsLeft = NULL ;
   CvMat* output2DAxesPointsRight = NULL;
   
-  cv::Mat CameraUnitVector = cv::Mat(1,3,CV_32FC1);
-  CameraUnitVector.at<float>(0,0)=0;
-  CameraUnitVector.at<float>(0,1)=0;
-  CameraUnitVector.at<float>(0,2)=1.0;
+  cv::Mat CameraUnitVector = cv::Mat(1,3,CV_64FC1);
+  CameraUnitVector.at<double>(0,0)=0;
+  CameraUnitVector.at<double>(0,1)=0;
+  CameraUnitVector.at<double>(0,2)=1.0;
   mitk::ProjectVisible3DWorldPointsToStereo2D
     ( leftCameraAxesPoints,leftCameraAxesNormals,
         CameraUnitVector,
@@ -471,9 +471,9 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
   MITK_INFO << leftCameraAxesPoints;
   for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
   {
-    std::pair<cv::Point2f, cv::Point2f>  pointPair;
-    pointPair.first = cv::Point2f(CV_MAT_ELEM(*output2DAxesPointsLeft,float,i,0),CV_MAT_ELEM(*output2DAxesPointsLeft,float,i,1));
-    pointPair.second = cv::Point2f(CV_MAT_ELEM(*output2DAxesPointsRight,float,i,0),CV_MAT_ELEM(*output2DAxesPointsRight,float,i,1));
+    std::pair<cv::Point2d, cv::Point2d>  pointPair;
+    pointPair.first = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,0),CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,1));
+    pointPair.second = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsRight,double,i,0),CV_MAT_ELEM(*output2DAxesPointsRight,double,i,1));
     MITK_INFO << "Left" << pointPair.first << "Right" << pointPair.second;
 
     m_ScreenAxesPoints.push_back(pointPair);

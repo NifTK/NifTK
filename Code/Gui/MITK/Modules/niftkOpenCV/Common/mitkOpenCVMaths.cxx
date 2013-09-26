@@ -293,43 +293,43 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
 }
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p)
+std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
 {
-  cv::Mat src ( 4, p.size(), CV_32F );
+  cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
-    src.at<float>(0,i) = p[i].x;
-    src.at<float>(1,i) = p[i].y;
-    src.at<float>(2,i) = p[i].z;
-    src.at<float>(3,i) = 1.0;
+    src.at<double>(0,i) = p[i].x;
+    src.at<double>(1,i) = p[i].y;
+    src.at<double>(2,i) = p[i].z;
+    src.at<double>(3,i) = 1.0;
   }
   cv::Mat dst = M*src;
-  std::vector <cv::Point3f> returnPoints;
+  std::vector <cv::Point3d> returnPoints;
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
-    cv::Point3f point;
-    point.x = dst.at<float>(0,i);
-    point.y = dst.at<float>(1,i);
-    point.z = dst.at<float>(2,i);
+    cv::Point3d point;
+    point.x = dst.at<double>(0,i);
+    point.y = dst.at<double>(1,i);
+    point.z = dst.at<double>(2,i);
     returnPoints.push_back(point);
   }
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
-cv::Point3f operator*(cv::Mat M, const cv::Point3f& p)
+cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 {
-  cv::Mat src ( 4, 1, CV_32F );
-  src.at<float>(0,0) = p.x;
-  src.at<float>(1,0) = p.y;
-  src.at<float>(2,0) = p.z;
-  src.at<float>(3,0) = 1.0;
+  cv::Mat src ( 4, 1, CV_64F );
+  src.at<double>(0,0) = p.x;
+  src.at<double>(1,0) = p.y;
+  src.at<double>(2,0) = p.z;
+  src.at<double>(3,0) = 1.0;
     
   cv::Mat dst = M*src;
-  cv::Point3f returnPoint;
+  cv::Point3d returnPoint;
   
-  returnPoint.x = dst.at<float>(0,0);
-  returnPoint.y = dst.at<float>(1,0);
-  returnPoint.z = dst.at<float>(2,0);
+  returnPoint.x = dst.at<double>(0,0);
+  returnPoint.y = dst.at<double>(1,0);
+  returnPoint.z = dst.at<double>(2,0);
 
   return returnPoint;
 }

@@ -105,6 +105,8 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
   projector->SetTrackerMatcher (this);
 
+  projector->Initialise(m_Directory,m_CalibrationDirectory);
+
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
     if ( videoLag < 0 ) 
@@ -131,10 +133,16 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
             pointsInLensCS[frame]);
       }
       cv::Point3d* worldStdDev = new cv::Point3d;
+
       //here we want to have an if that enables us to calculate worldStdDev in 
       //and alternative method.
-      mitk::GetCentroid (worldPoints, true, worldStdDev);
-
+      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true, worldStdDev);
+      std::vector <cv::Point3d > worldPoint;
+      worldPoint.clear();
+      worldPoint.push_back(worldCentre);
+      projector->SetWorldPoints(worldPoint);
+      
+      projector->Project();
       standardDeviations[trackerIndex].push_back(*worldStdDev);
       float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
           worldStdDev->z * worldStdDev->z);

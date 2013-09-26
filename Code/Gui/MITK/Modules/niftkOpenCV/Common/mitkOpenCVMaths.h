@@ -157,11 +157,11 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
 /**
  * \brief multiplies a set of points by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p);
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p);
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f operator*(cv::Mat M, const cv::Point3f& p);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
