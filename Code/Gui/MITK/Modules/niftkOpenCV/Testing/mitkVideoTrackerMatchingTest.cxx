@@ -22,25 +22,25 @@ bool CheckTrackerMatrix (cv::Mat matrix)
 {
   double Error = 0.0;
 
-  Error += fabs ( matrix.at<float >(0,0) - ( 0.0536763780 ));
-  Error += fabs ( matrix.at<float>(0,1) - ( -0.9976278543 ));
-  Error += fabs ( matrix.at<float>(0,2) - ( 0.0430984311 ));
-  Error += fabs ( matrix.at<float>(0,3) - ( 261.1099853516 ));
+  Error += fabs ( matrix.at<double >(0,0) - ( 0.0536763780 ));
+  Error += fabs ( matrix.at<double>(0,1) - ( -0.9976278543 ));
+  Error += fabs ( matrix.at<double>(0,2) - ( 0.0430984311 ));
+  Error += fabs ( matrix.at<double>(0,3) - ( 261.1099853516 ));
 
-  Error += fabs ( matrix.at<float>(1,0) - ( 0.1872890294 ));
-  Error += fabs ( matrix.at<float>(1,1) - ( -0.0323365629 ));
-  Error += fabs ( matrix.at<float>(1,2) - ( -0.9817724824 ));
-  Error += fabs ( matrix.at<float>(1,3) - (-106.7399978638 ));
+  Error += fabs ( matrix.at<double>(1,0) - ( 0.1872890294 ));
+  Error += fabs ( matrix.at<double>(1,1) - ( -0.0323365629 ));
+  Error += fabs ( matrix.at<double>(1,2) - ( -0.9817724824 ));
+  Error += fabs ( matrix.at<double>(1,3) - (-106.7399978638 ));
   
-  Error += fabs ( matrix.at<float>(2,0) - ( 0.9808372259 ));
-  Error += fabs ( matrix.at<float>(2,1) - ( 0.0607698523 ));
-  Error += fabs ( matrix.at<float>(2,2) - ( 0.1851090491 ));
-  Error += fabs ( matrix.at<float>(2,3) - ( -1934.9799804688 ));
+  Error += fabs ( matrix.at<double>(2,0) - ( 0.9808372259 ));
+  Error += fabs ( matrix.at<double>(2,1) - ( 0.0607698523 ));
+  Error += fabs ( matrix.at<double>(2,2) - ( 0.1851090491 ));
+  Error += fabs ( matrix.at<double>(2,3) - ( -1934.9799804688 ));
   
-  Error += fabs ( matrix.at<float>(3,0) - ( 0.0 ));
-  Error += fabs ( matrix.at<float>(3,1) - ( 0.0 ));
-  Error += fabs ( matrix.at<float>(3,2) - ( 0.0 ));
-  Error += fabs ( matrix.at<float>(3,3) - ( 1.0 ));
+  Error += fabs ( matrix.at<double>(3,0) - ( 0.0 ));
+  Error += fabs ( matrix.at<double>(3,1) - ( 0.0 ));
+  Error += fabs ( matrix.at<double>(3,2) - ( 0.0 ));
+  Error += fabs ( matrix.at<double>(3,3) - ( 1.0 ));
   if ( Error < 1e-6 ) 
   {
     return true;
