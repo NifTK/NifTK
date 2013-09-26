@@ -268,6 +268,12 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
 {
   std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
   std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
+
+  if (upper == m_TimeStamps.end())
+    --upper;
+  if (lower == m_TimeStamps.end())
+    --lower;
+
   long long deltaUpper = *upper - timestamp ;
   long long deltaLower = timestamp - *lower ;
   unsigned long long returnValue;
@@ -279,7 +285,10 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
   }
   else
   {
-    deltaLower = timestamp - *(--lower);
+    if (lower != m_TimeStamps.begin())
+      --lower;
+
+    deltaLower = timestamp - *lower;
     if ( abs(deltaLower) < abs(deltaUpper) ) 
     {
       returnValue = *lower;
