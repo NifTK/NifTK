@@ -461,6 +461,10 @@ mark_as_advanced(OPENCV_WITH_CUDA)
 set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
 mark_as_advanced(OPENCV_WITH_FFMPEG)
 
+set(NIFTYSIM_USE_CUDA OFF CACHE BOOL "Build NiftySim with CUDA support")
+mark_as_advanced(NIFTYSIM_USE_CUDA)
+
+
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
 # Note: DONT try changing CMAKE_INSTALL_PREFIX. Think of it as reserved.
