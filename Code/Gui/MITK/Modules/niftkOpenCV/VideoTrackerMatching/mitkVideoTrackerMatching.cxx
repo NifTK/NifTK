@@ -226,20 +226,20 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         m_FrameNumbers.push_back(frameNumber);
         for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
         {
-          long long * timingError = new long long;
+          long long timingError;
           unsigned long long TargetTimeStamp; 
           if ( m_VideoLeadsTracking[i] )
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp + m_VideoLag[i],timingError);
+                TimeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp - m_VideoLag[i],timingError);
+                TimeStamp - m_VideoLag[i], &timingError);
           }
           
-          m_TrackingMatrices[i].m_TimingErrors.push_back(*timingError);
+          m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
 
           std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
