@@ -255,6 +255,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           cv::imwrite( leftfilename, LeftFrame );
           cv::imwrite( rightfilename, RightFrame );
         }
+
+        // buffer contents are copied and stuffed into allLeftImagePoints, etc.
+        delete leftImageCorners;
+        delete leftObjectCorners;
+        delete rightImageCorners;
+        delete rightObjectCorners;
       }
       else
       {
