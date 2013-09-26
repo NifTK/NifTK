@@ -204,7 +204,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
       { 
 
-        MITK_INFO << "Using frame pair" << FrameNumber << "," <<FrameNumber+1;
+        MITK_INFO << "Using frame pair " << FrameNumber << "," <<FrameNumber+1;
         std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
         std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
         bool LeftOK = mitk::ExtractChessBoardPoints (
