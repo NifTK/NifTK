@@ -84,6 +84,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
   if ( ! m_TrackerMatcher->IsReady() )
   {
     m_TrackerMatcher->Initialise(m_Directory);
+    m_TrackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker);
   }
   if ( ! m_TrackerMatcher->IsReady() )
   {
@@ -92,7 +93,6 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     return;
   }
   
-  m_TrackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker);
   if ( m_Visualise || m_SaveVideo ) 
   {
     if ( m_Capture == NULL ) 
