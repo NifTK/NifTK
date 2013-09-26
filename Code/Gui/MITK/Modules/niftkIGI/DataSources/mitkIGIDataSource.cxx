@@ -221,11 +221,15 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     {
       m_BufferIterator = m_Buffer.begin();
     }
-    else if (m_Buffer.size() == 1)
+    // do not put an else here and connect it to the rest of this if-chain!
+    // because we are playing back we can jump backwards in time, hence need
+    // to start scanning for the correct sample from the beginning!
+
+    if (m_Buffer.size() == 1)
     {
       m_BufferIterator = m_Buffer.begin();
     }
-    else if (m_PickLatestData)
+    else if (m_PickLatestData && !m_IsPlayingBack)
     {
       m_BufferIterator = m_Buffer.end();
       m_BufferIterator--;
