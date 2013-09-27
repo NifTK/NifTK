@@ -1200,19 +1200,55 @@ std::vector< cv::Point3d > TriangulatePointPairs(
   cv::Mat R2LInv   = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2Inv    = cv::Mat(3, 3, CV_64FC1);
-
+  cv::Mat R2LRotV  = cv::Mat(1, 3, CV_64FC1);
   // Copy data into cv::Mat data types.
   // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
   // These triangulation routines need 64 bit data.
-  cv::Rodrigues(rightToLeftRotationVector, R2LRot64);
+
+  if ( rightToLeftRotationVector.type() == CV_32FC1 )
+  {
+    for ( int i = 0 ; i < 3 ; i ++ ) 
+    {
+      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<float>(0,i);
+    }
+  }
+  else
+  {
+    for ( int i = 0 ; i < 3 ; i ++ ) 
+    {
+      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<double>(0,i);
+    }
+  }
+  cv::Rodrigues(R2LRotV, R2LRot64);
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
     {
-      K1.at<double>(i,j) = leftCameraIntrinsicParams.at<double>(i,j);
-      K2.at<double>(i,j) = rightCameraIntrinsicParams.at<double>(i,j);
+      if ( leftCameraIntrinsicParams.type() == CV_32FC1 )
+      {
+        K1.at<double>(i,j) = leftCameraIntrinsicParams.at<float>(i,j);
+      }
+      else
+      {
+        K1.at<double>(i,j) = leftCameraIntrinsicParams.at<double>(i,j);
+      }
+      if ( rightCameraIntrinsicParams.type() == CV_32FC1 ) 
+      {
+        K2.at<double>(i,j) = rightCameraIntrinsicParams.at<float>(i,j);
+      }
+      else
+      {
+        K2.at<double>(i,j) = rightCameraIntrinsicParams.at<double>(i,j);
+      }
     }
-    R2LTrn64.at<double>(0,i) = rightToLeftTranslationVector.at<double>(0,i);
+    if ( rightToLeftTranslationVector.type() == CV_32FC1 )
+    {
+      R2LTrn64.at<double>(0,i) = rightToLeftTranslationVector.at<float>(0,i);
+    }
+    else
+    {
+      R2LTrn64.at<double>(0,i) = rightToLeftTranslationVector.at<double>(0,i);
+    }
   }
 
   R2LInv = R2LRot64.inv();
