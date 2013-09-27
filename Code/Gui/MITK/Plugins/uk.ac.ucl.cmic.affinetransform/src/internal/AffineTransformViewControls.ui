@@ -19,12 +19,6 @@
     <height>670</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>316</width>
-    <height>16777215</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -73,12 +67,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-180.000000000000000</double>
         </property>
@@ -118,12 +106,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-180.000000000000000</double>
         </property>
@@ -161,12 +143,6 @@
          <size>
           <width>0</width>
           <height>20</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
          </size>
         </property>
         <property name="minimum">
@@ -229,12 +205,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-1000.000000000000000</double>
         </property>
@@ -274,12 +244,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-1000.000000000000000</double>
         </property>
@@ -317,12 +281,6 @@
          <size>
           <width>0</width>
           <height>20</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
          </size>
         </property>
         <property name="minimum">
@@ -388,12 +346,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>10.000000000000000</double>
         </property>
@@ -439,12 +391,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>10.000000000000000</double>
         </property>
@@ -488,12 +434,6 @@
          <size>
           <width>0</width>
           <height>20</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
          </size>
         </property>
         <property name="minimum">
@@ -559,12 +499,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-2.000000000000000</double>
         </property>
@@ -607,12 +541,6 @@
           <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="minimum">
          <double>-2.000000000000000</double>
         </property>
@@ -653,12 +581,6 @@
          <size>
           <width>60</width>
           <height>20</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>60</width>
-          <height>16777215</height>
          </size>
         </property>
         <property name="minimum">
@@ -975,7 +897,6 @@
   <zorder>groupBox_5</zorder>
   <zorder>groupBox_6</zorder>
   <zorder></zorder>
-  <zorder>horizontalSpacer_2</zorder>
  </widget>
  <tabstops>
   <tabstop>rotationSpinBoxX</tabstop>
