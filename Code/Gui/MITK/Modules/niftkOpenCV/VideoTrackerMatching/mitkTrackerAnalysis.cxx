@@ -86,12 +86,6 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   {
     fout << std::endl;
   }
-  
-  std::vector <cv::Point3d> optimalVideoLag(m_TrackingMatrixTimeStamps.size());
-  std::vector <cv::Point3d> minimumSD(m_TrackingMatrixTimeStamps.size());;
-  std::vector <double> minimumSDMag(m_TrackingMatrixTimeStamps.size());;
-  std::vector <int> optimalVideoLagMag(m_TrackingMatrixTimeStamps.size());;
-  double maximumSD = 0;
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
   projector->SetTrackerMatcher (this);
@@ -132,7 +126,6 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
             pointsInLensCS[frame]);
       }
-      cv::Point3d* worldStdDev = new cv::Point3d;
 
       cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true, 
           &reconstructedPointSD[trackerIndex][videoLag - windowLow]);
@@ -145,79 +138,13 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       
       projectedErrorRMS[trackerIndex][videoLag - windowLow] = 
         mitk::RMSError ( projectedPoints[0],  *onScreenPoints ) ;
-
       
-      standardDeviations[trackerIndex].push_back(*worldStdDev);
-      double sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
-          worldStdDev->z * worldStdDev->z);
-
-      if ( videoLag == windowLow )
-      {
-        optimalVideoLag[trackerIndex] = cv::Point3d(videoLag, videoLag,videoLag);
-        minimumSD[trackerIndex] = *worldStdDev;
-        optimalVideoLagMag[trackerIndex] = videoLag;
-        minimumSDMag[trackerIndex] = sdMag;
-      }
-      else
-      {
-        if ( sdMag < minimumSDMag[trackerIndex] ) 
-        {
-          minimumSDMag[trackerIndex] = sdMag;
-          optimalVideoLagMag[trackerIndex] = videoLag;
-        }
-        if ( worldStdDev->x < minimumSD[trackerIndex].x )
-        {
-          minimumSD[trackerIndex].x = worldStdDev->x;
-          optimalVideoLag[trackerIndex].x = videoLag;
-        }
-        if ( worldStdDev->y < minimumSD[trackerIndex].y )
-        {
-          minimumSD[trackerIndex].y = worldStdDev->y;
-          optimalVideoLag[trackerIndex].y = videoLag;
-        }
-        if ( worldStdDev->z < minimumSD[trackerIndex].z )
-        {
-          minimumSD[trackerIndex].z = worldStdDev->z;
-          optimalVideoLag[trackerIndex].z = videoLag;
-        }
-        if ( worldStdDev->x > maximumSD ) 
-        {
-          maximumSD = worldStdDev->x;
-        }
-        if ( worldStdDev->y > maximumSD ) 
-        {
-          maximumSD = worldStdDev->y;
-        }
-        if ( worldStdDev->z > maximumSD ) 
-        {
-          maximumSD = worldStdDev->z;
-        }
-      }
-
-      if ( fout ) 
-      {
-        fout << *worldStdDev << " " << sdMag << " ";
-      }
-    }
-    if ( fout ) 
-    {
-      fout << std::endl;
     }
   }
 
   MITK_INFO << "min sd at " ;
-  for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
-  {
-    MITK_INFO << optimalVideoLag[i] << " " << optimalVideoLagMag[i];
-  }
-  if ( fout ) 
-  {
-    fout << "min sd at " ;
-    for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
-    { 
-      fout << optimalVideoLag[i] << " " << optimalVideoLagMag[i] << " ";
-    } 
-  }
+  //we've filled vectors with projection and recontruction errors, now we need to 
+  //get the optimal values and output them
 
 }
 //---------------------------------------------------------------------------
