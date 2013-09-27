@@ -58,11 +58,9 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
-  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
-  leftScreenPoints->clear();
-  rightScreenPoints->clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
+  std::vector < std::pair < cv::Point2d, cv::Point2d > >* onScreenPoints = new std::vector < std::pair <cv::Point2d, cv::Point2d > >;
+  onScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, onScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
@@ -89,24 +87,25 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     fout << std::endl;
   }
   
-  std::vector <cv::Point3d> optimalVideoLag;
-  std::vector <cv::Point3d> minimumSD;
-  std::vector <float> minimumSDMag;
-  std::vector <int> optimalVideoLagMag;
-  float maximumSD = 0;
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size(); trackerIndex ++ ) 
-  { 
-    optimalVideoLag.push_back(cv::Point3d(0,0,0));
-    minimumSD.push_back(cv::Point3d(0,0,0));
-    minimumSDMag.push_back(0.0);
-    optimalVideoLagMag.push_back(0);
-  }
+  std::vector <cv::Point3d> optimalVideoLag(m_TrackingMatrixTimeStamps.size());
+  std::vector <cv::Point3d> minimumSD(m_TrackingMatrixTimeStamps.size());;
+  std::vector <double> minimumSDMag(m_TrackingMatrixTimeStamps.size());;
+  std::vector <int> optimalVideoLagMag(m_TrackingMatrixTimeStamps.size());;
+  double maximumSD = 0;
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
   projector->SetTrackerMatcher (this);
-
   projector->Initialise(m_Directory,m_CalibrationDirectory);
 
+  std::vector < std::vector < cv::Point3d > > reconstructedPointSD;
+  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS;
+  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ ) 
+  {
+    std::vector < std::pair <double, double > > errors (windowHigh - windowLow);
+    std::vector <cv::Point3d> pointerrors (windowHigh-windowLow);
+    reconstructedPointSD.push_back(pointerrors);
+    projectedErrorRMS.push_back(errors);
+  }
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
     if ( videoLag < 0 ) 
@@ -122,6 +121,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     {
       fout << videoLag << " " ;
     }
+
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
       std::vector <cv::Point3d> worldPoints;
@@ -134,17 +134,21 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       }
       cv::Point3d* worldStdDev = new cv::Point3d;
 
-      //here we want to have an if that enables us to calculate worldStdDev in 
-      //and alternative method.
-      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true, worldStdDev);
-      std::vector <cv::Point3d > worldPoint;
-      worldPoint.clear();
-      worldPoint.push_back(worldCentre);
+      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true, 
+          &reconstructedPointSD[trackerIndex][videoLag - windowLow]);
+      std::vector <cv::Point3d > worldPoint(1);
+      worldPoint[0] = worldCentre;
       projector->SetWorldPoints(worldPoint);
-      
       projector->Project();
+      std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
+        projector->GetProjectedPoints();
+      
+      projectedErrorRMS[trackerIndex][videoLag - windowLow] = 
+        mitk::RMSError ( projectedPoints[0],  *onScreenPoints ) ;
+
+      
       standardDeviations[trackerIndex].push_back(*worldStdDev);
-      float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
+      double sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
           worldStdDev->z * worldStdDev->z);
 
       if ( videoLag == windowLow )
@@ -238,11 +242,9 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
-  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
-  leftScreenPoints->clear();
-  rightScreenPoints->clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
+  std::vector <std::pair <cv::Point2d, cv::Point2d > >* onScreenPoints = new std::vector <std::pair<cv::Point2d, cv::Point2d> >;
+  onScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, onScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
@@ -326,11 +328,9 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
 
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector <cv::Point2d>* leftScreenPoints = new std::vector <cv::Point2d>;
-  std::vector <cv::Point2d>* rightScreenPoints = new std::vector <cv::Point2d>;
-  leftScreenPoints->clear();
-  rightScreenPoints->clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, leftScreenPoints, rightScreenPoints);
+  std::vector <std::pair <cv::Point2d, cv::Point2d > >* onScreenPoints = new std::vector <std::pair<cv::Point2d, cv::Point2d> >;
+  onScreenPoints->clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, onScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {

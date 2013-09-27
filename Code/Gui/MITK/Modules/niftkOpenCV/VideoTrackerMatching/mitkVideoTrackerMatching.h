@@ -119,8 +119,7 @@ protected:
    * coordinates relative to the camera lens.
    */
   std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename, 
-      std::vector <cv::Point2d>* leftScreenPoints = NULL, 
-      std::vector <cv::Point2d>* rightScreenPoints = NULL );
+      std::vector <std::pair < cv::Point2d, cv::Point2d > >* onScreenPoints = NULL);
 private:
   std::vector<TrackingMatrices>         m_TrackingMatrices; 
   std::vector<std::string>              m_TrackingMatrixDirectories;

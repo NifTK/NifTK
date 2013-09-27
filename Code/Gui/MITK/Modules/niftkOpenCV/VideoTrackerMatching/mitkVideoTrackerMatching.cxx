@@ -532,7 +532,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
 } 
 //---------------------------------------------------------------------------
 std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
-    std::vector <cv::Point2d>* leftScreenPoints, std::vector <cv::Point2d>* rightScreenPoints )
+    std::vector < std::pair <cv::Point2d, cv::Point2d > >* onScreenPoints )
 {
   std::vector <cv::Point3d> pointsInLensCS;
   pointsInLensCS.clear();
@@ -566,15 +566,12 @@ std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::stri
       {
         pointsInLensCS.push_back(cv::Point3d(
               atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
-        if ( leftScreenPoints != NULL ) 
+        if ( onScreenPoints != NULL ) 
         {
-          leftScreenPoints->push_back(cv::Point2d(
-                atof (lxstring.c_str()), atof ( lystring.c_str()) ));
-        }
-        if ( rightScreenPoints != NULL ) 
-        {
-          rightScreenPoints->push_back(cv::Point2d(
-                atof (rxstring.c_str()), atof ( rystring.c_str()) ));
+          onScreenPoints->push_back(std::pair<cv::Point2d, cv::Point2d> (cv::Point2d(
+                atof (lxstring.c_str()), atof ( lystring.c_str()) ) ,
+                cv::Point2d(
+                atof (rxstring.c_str()), atof ( rystring.c_str()) )));
         }
         if ( frameNumber != linenumber++ )
         {
