@@ -42,6 +42,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SquareSizeInMillimetres(3.0)
 , m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
+, m_NoVideoSupport(false)
 {
 }
 
@@ -149,17 +150,17 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
-      long long int*  LeftTimingError = new long long;
-      long long int *  RightTimingError = new long long;
+      long long int  LeftTimingError;
+      long long int  RightTimingError;
       cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
-        LeftTimingError, m_TrackerIndex );
+        &LeftTimingError, m_TrackerIndex );
       cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
-        RightTimingError, m_TrackerIndex );
-      if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
-        std::abs(*RightTimingError) > m_AbsTrackerTimingError ) 
+        &RightTimingError, m_TrackerIndex );
+      if ( std::abs(LeftTimingError) > m_AbsTrackerTimingError ||
+        std::abs(RightTimingError) > m_AbsTrackerTimingError ) 
       {
         MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
-          std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+          std::abs(LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
       }
       else
       {
@@ -203,7 +204,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
       { 
 
-        MITK_INFO << "Using frame pair" << FrameNumber << "," <<FrameNumber+1;
+        MITK_INFO << "Using frame pair " << FrameNumber << "," <<FrameNumber+1;
         std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
         std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
         bool LeftOK = mitk::ExtractChessBoardPoints (
@@ -254,6 +255,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           cv::imwrite( leftfilename, LeftFrame );
           cv::imwrite( rightfilename, RightFrame );
         }
+
+        // buffer contents are copied and stuffed into allLeftImagePoints, etc.
+        delete leftImageCorners;
+        delete leftObjectCorners;
+        delete rightImageCorners;
+        delete rightObjectCorners;
       }
       else
       {
