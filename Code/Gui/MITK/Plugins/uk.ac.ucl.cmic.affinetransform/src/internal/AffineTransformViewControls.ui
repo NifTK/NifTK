@@ -187,10 +187,10 @@
       <item row="0" column="1">
        <widget class="QSlider" name="translationSliderX">
         <property name="minimum">
-         <number>-100000</number>
+         <number>-1000000</number>
         </property>
         <property name="maximum">
-         <number>100000</number>
+         <number>1000000</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -206,10 +206,10 @@
          </size>
         </property>
         <property name="minimum">
-         <double>-1000.000000000000000</double>
+         <double>-10000.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>1000.000000000000000</double>
+         <double>10000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -226,10 +226,10 @@
       <item row="1" column="1">
        <widget class="QSlider" name="translationSliderY">
         <property name="minimum">
-         <number>-100000</number>
+         <number>-1000000</number>
         </property>
         <property name="maximum">
-         <number>100000</number>
+         <number>1000000</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -245,10 +245,10 @@
          </size>
         </property>
         <property name="minimum">
-         <double>-1000.000000000000000</double>
+         <double>-10000.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>1000.000000000000000</double>
+         <double>10000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -265,10 +265,10 @@
       <item row="2" column="1">
        <widget class="QSlider" name="translationSliderZ">
         <property name="minimum">
-         <number>-100000</number>
+         <number>-1000000</number>
         </property>
         <property name="maximum">
-         <number>100000</number>
+         <number>1000000</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -284,10 +284,10 @@
          </size>
         </property>
         <property name="minimum">
-         <double>-1000.000000000000000</double>
+         <double>-10000.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>1000.000000000000000</double>
+         <double>10000.000000000000000</double>
         </property>
        </widget>
       </item>
