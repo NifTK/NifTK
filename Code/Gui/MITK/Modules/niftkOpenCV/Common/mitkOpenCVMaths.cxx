@@ -738,8 +738,95 @@ cv::Matx44d ConstructSimilarityTransformationMatrix(
   result = scaling * rigid;
   return result;
 }
-
 //-----------------------------------------------------------------------------
+cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes )
+{
+  cv::Point3d minimumValues;
+
+  if ( inputValues.size() > 0 ) 
+  {
+    minimumValues.x = inputValues[0].x;
+    minimumValues.y = inputValues[0].y;
+    minimumValues.z = inputValues[0].z;
+
+    if ( indexes != NULL )
+    {
+      indexes->x = 0;
+      indexes->y = 0;
+      indexes->z = 0;
+    }
+  }
+  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  {
+    if ( inputValues[i].x < minimumValues.x )
+    {
+      minimumValues.x = inputValues[i].x;
+      if ( indexes != NULL )
+      {
+        indexes->x = i;
+      }
+    }
+    if ( inputValues[i].y < minimumValues.y )
+    {
+      minimumValues.y = inputValues[i].y;
+      if ( indexes != NULL )
+      {
+        indexes->y = i;
+      }
+    }
+    if ( inputValues[i].z < minimumValues.z )
+    {
+      minimumValues.z = inputValues[i].z;
+      if ( indexes != NULL )
+      {
+        indexes->z = i;
+      }
+    }
+
+  }
+  return minimumValues;
+}  
+//-----------------------------------------------------------------------------
+std::pair < double, double >  RMSError (std::vector < std::pair <cv::Point2d, cv::Point2d> > measured , std::vector <std::pair<cv::Point2d, cv::Point2d> > actual)
+{
+  assert ( measured.size() == actual.size() );
+
+  std::pair < double, double>  RMSError;
+  
+  RMSError.first = 0.0 ;
+  RMSError.second = 0.0 ;
+  
+  std::pair < int , int > count;
+  count.first = 0;
+  count.second = 0;
+  for ( unsigned int i = 0 ; i < measured.size() ; i ++ ) 
+  {
+    if ( ! ( boost::math::isnan(measured[i].first.x) || boost::math::isnan(measured[i].first.y) ||
+          boost::math::isnan(actual[i].first.x) || boost::math::isnan(actual[i].first.y) ) )
+    {
+      RMSError.first += ( actual[i].first.x - measured[i].first.x )*(actual[i].first.x - measured[i].first.x) +
+        ( actual[i].first.y - measured[i].first.y )*(actual[i].first.y - measured[i].first.y) ;
+      count.first ++;
+    }
+    if ( ! ( boost::math::isnan(measured[i].second.x) || boost::math::isnan(measured[i].second.y) ||
+          boost::math::isnan(actual[i].second.x) || boost::math::isnan(actual[i].second.y) ) )
+    {
+      RMSError.second += ( actual[i].second.x - measured[i].second.x )*(actual[i].second.x - measured[i].second.x) +
+        ( actual[i].second.y - measured[i].second.y )*(actual[i].second.y - measured[i].second.y) ;
+      count.second ++;
+    }
+  }
+  if ( count.first > 0 ) 
+  {
+    RMSError.first = sqrt ( RMSError.first / count.first );
+  }
+  if ( count.second > 0 ) 
+  {
+    RMSError.second = sqrt ( RMSError.second / count.second );
+  }
+  return RMSError;
+}
+
 } // end namespace
 
 
