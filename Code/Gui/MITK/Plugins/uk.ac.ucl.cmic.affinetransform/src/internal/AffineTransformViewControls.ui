@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>AffineTransformWidget</class>
  <widget class="QWidget" name="AffineTransformWidget">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -63,7 +60,7 @@
        <widget class="QDoubleSpinBox" name="rotationSpinBoxX">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -102,7 +99,7 @@
        <widget class="QDoubleSpinBox" name="rotationSpinBoxY">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -141,7 +138,7 @@
        <widget class="QDoubleSpinBox" name="rotationSpinBoxZ">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -201,7 +198,7 @@
        <widget class="QDoubleSpinBox" name="translationSpinBoxX">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -240,7 +237,7 @@
        <widget class="QDoubleSpinBox" name="translationSpinBoxY">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -279,7 +276,7 @@
        <widget class="QDoubleSpinBox" name="translationSpinBoxZ">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -342,7 +339,7 @@
        <widget class="QDoubleSpinBox" name="scalingSpinBoxX">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -387,7 +384,7 @@
        <widget class="QDoubleSpinBox" name="scalingSpinBoxY">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -432,7 +429,7 @@
        <widget class="QDoubleSpinBox" name="scalingSpinBoxZ">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>60</width>
           <height>20</height>
          </size>
         </property>
@@ -638,12 +635,6 @@
        <horstretch>1</horstretch>
        <verstretch>1</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>100</height>
-      </size>
      </property>
      <property name="autoFillBackground">
       <bool>true</bool>
