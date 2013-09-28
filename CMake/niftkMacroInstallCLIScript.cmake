@@ -13,7 +13,7 @@
 #============================================================================*/
 
 ####################################################################################
-# Note: This is just to generate the wrapper script that goes in cli-modules folder.
+# Note: This is just to copy the CLI wrapper into its final destination.
 ####################################################################################
 
 macro(NIFTK_INSTALL_CLI_SCRIPT)
@@ -24,7 +24,7 @@ macro(NIFTK_INSTALL_CLI_SCRIPT)
   list(FIND ARGS DESTINATION _destination_index)
   
   if(_destination_index GREATER -1)
-    message(SEND_ERROR "MITK_INSTALL macro must not be called with a DESTINATION parameter.")  
+    message(SEND_ERROR "NIFTK_INSTALL_CLI_SCRIPT: macro must not be called with a DESTINATION parameter.")
   else()
     if(NOT MACOSX_BUNDLE_NAMES)
       install(${ARGS} DESTINATION bin/cli-modules)
