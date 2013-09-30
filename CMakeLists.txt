@@ -217,7 +217,7 @@ set(NIFTK_VERSION_CTK "65879c5fae" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "37ee6a2a31" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
-set(NIFTK_VERSION_NIFTYREG "360" CACHE STRING "Version of NiftyReg" FORCE)
+set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
 set(NIFTK_VERSION_NIFTYREC "14" CACHE STRING "Version of NiftyRec" FORCE)
 set(NIFTK_VERSION_NIFTYSIM "6b7563534a" CACHE STRING "Version of NiftySim" FORCE)
@@ -349,6 +349,7 @@ include(mitkFunctionGetVersion)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroGetGitBranch)
 include(niftkMacroBuildCLI)
+include(niftkMacroGenerateCLIScript)
 include(niftkMacroInstallCLIScript)
 include(niftkMacroCreateCommandLineApplication)
 include(niftkMacroCreateCommandLineScript)
@@ -470,6 +471,10 @@ set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a lon
 mark_as_advanced(OPENCV_WITH_CUDA)
 set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
 mark_as_advanced(OPENCV_WITH_FFMPEG)
+
+set(NIFTYSIM_USE_CUDA OFF CACHE BOOL "Build NiftySim with CUDA support")
+mark_as_advanced(NIFTYSIM_USE_CUDA)
+
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -1124,10 +1129,10 @@ if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
   file(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftyReg-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/reg_aladin)
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/reg_f3d)
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/reg_jacobian)
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/reg_resample)
+  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_aladin)
+  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_f3d)
+  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_jacobian)
+  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_resample)
 endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
@@ -1140,9 +1145,9 @@ if(BUILD_NIFTYSEG)
 
   file(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../NiftySeg-install/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/seg_EM)
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/cli-modules/seg_LabFusion)
-  
+  NIFTK_GENERATE_CLI_SCRIPT(NAME seg_EM)
+  NIFTK_GENERATE_CLI_SCRIPT(NAME seg_LabFusion)
+
   file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
   install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
 endif(BUILD_NIFTYSEG)

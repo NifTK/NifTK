@@ -134,18 +134,19 @@ void VideoTrackerMatching::FindTrackingMatrixDirectories()
   boost::filesystem::recursive_directory_iterator end_itr;
   for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
       it != end_itr ; ++it)
-   {
-     if ( boost::filesystem::is_directory (it->status()) )
-     {
-       if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
-       {
-          m_TrackingMatrixDirectories.push_back(it->path().string());
-          //need to init tracking matrix vector
-          TrackingMatrices TempMatrices; 
-          m_TrackingMatrices.push_back(TempMatrices);
-       }
-     }
-   }
+  {
+    if ( boost::filesystem::is_directory (it->status()) )
+    {
+      if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
+      {
+         m_TrackingMatrixDirectories.push_back(it->path().string());
+         //need to init tracking matrix vector
+         TrackingMatrices TempMatrices; 
+         m_TrackingMatrices.push_back(TempMatrices);
+      }
+    }
+  }
+  std::sort (m_TrackingMatrixDirectories.begin(), m_TrackingMatrixDirectories.end());
   return;
 }
 //---------------------------------------------------------------------------
@@ -225,20 +226,20 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         m_FrameNumbers.push_back(frameNumber);
         for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
         {
-          long long * timingError = new long long;
+          long long timingError;
           unsigned long long TargetTimeStamp; 
           if ( m_VideoLeadsTracking[i] )
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp + m_VideoLag[i],timingError);
+                TimeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
             TargetTimeStamp = m_TrackingMatrixTimeStamps[i].GetNearestTimeStamp(
-                TimeStamp - m_VideoLag[i],timingError);
+                TimeStamp - m_VideoLag[i], &timingError);
           }
           
-          m_TrackingMatrices[i].m_TimingErrors.push_back(*timingError);
+          m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
 
           std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
@@ -267,6 +268,12 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
 {
   std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
   std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
+
+  if (upper == m_TimeStamps.end())
+    --upper;
+  if (lower == m_TimeStamps.end())
+    --lower;
+
   long long deltaUpper = *upper - timestamp ;
   long long deltaLower = timestamp - *lower ;
   unsigned long long returnValue;
@@ -278,7 +285,10 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
   }
   else
   {
-    deltaLower = timestamp - *(--lower);
+    if (lower != m_TimeStamps.begin())
+      --lower;
+
+    deltaLower = timestamp - *lower;
     if ( abs(deltaLower) < abs(deltaUpper) ) 
     {
       returnValue = *lower;

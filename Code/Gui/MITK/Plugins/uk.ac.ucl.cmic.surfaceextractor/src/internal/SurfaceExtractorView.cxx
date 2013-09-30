@@ -240,7 +240,7 @@ void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
     m_Controls = new Ui::SurfaceExtractorViewControls();
     m_Controls->setupUi(parent);
 
-    m_Controls->spbThreshold->setMinimum(0);
+    m_Controls->spbThreshold->setMinimum(std::numeric_limits<int>::min());
     m_Controls->spbThreshold->setMaximum(std::numeric_limits<int>::max());
     m_Controls->spbMaxNumberOfPolygons->setMinimum(1);
     m_Controls->spbMaxNumberOfPolygons->setMaximum(std::numeric_limits<int>::max());

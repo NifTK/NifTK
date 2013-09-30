@@ -23,6 +23,7 @@ int main(int argc, char** argv)
   int returnStatus = EXIT_FAILURE;
   std::vector<double> ReprojectionError;
 
+  bool SortByDistance = !DontSortByDistance;
   try
   {
     mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();

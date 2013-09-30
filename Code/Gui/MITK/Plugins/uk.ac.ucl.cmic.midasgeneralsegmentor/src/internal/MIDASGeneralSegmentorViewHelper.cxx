@@ -17,21 +17,21 @@
 //-----------------------------------------------------------------------------
 void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points)
 {
-  mitk::Point3D mitkPointIn3DMillimetres;
-  PointSetPointType itkPointIn3DMillimetres;
-
-  unsigned long numberOfSeeds = seeds->GetSize();
   unsigned long numberOfPoints = points->GetNumberOfPoints();
-  PointSetType::PointsContainer* itkContainer = points->GetPoints();
+  PointSetType::PointsContainer* pointsContainer = points->GetPoints();
 
-  for (unsigned long seedCounter = 0; seedCounter < numberOfSeeds; seedCounter++)
+  mitk::PointSet::PointsContainer* seedsContainer = seeds->GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator seedsIt = seedsContainer->Begin();
+  mitk::PointSet::PointsConstIterator seedsEnd = seedsContainer->End();
+  for ( ; seedsIt != seedsEnd; ++seedsIt)
   {
-    mitkPointIn3DMillimetres = seeds->GetPoint(seedCounter);
+    mitk::Point3D mitkPointIn3DMillimetres = seedsIt->Value();
+    PointSetPointType itkPointIn3DMillimetres;
     for (int i = 0; i < 3; i++)
     {
       itkPointIn3DMillimetres[i] = mitkPointIn3DMillimetres[i];
     }
-    itkContainer->InsertElement(numberOfPoints, itkPointIn3DMillimetres);
+    pointsContainer->InsertElement(numberOfPoints, itkPointIn3DMillimetres);
     numberOfPoints++;
   }
 }

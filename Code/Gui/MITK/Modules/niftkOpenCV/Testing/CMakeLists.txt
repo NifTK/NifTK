@@ -36,10 +36,6 @@ mitkAddCustomModuleTest(Handeye-Calibration-DistanceSort mitkHandeyeCalibrationT
 
 mitkAddCustomModuleTest(Handeye-Calibration-AngleSort mitkHandeyeCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/Extrinsics.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices Angles ${NIFTK_DATA_DIR}/Input/CameraCalibration/Handeye_Angles_Result.txt )
 
-# Trac 2227: Using ARUCO and OpenCV we detect AR-Tag style markers.
-# Trac 2608: Added surface normal calculations.
-mitkAddCustomModuleTest(SLS-TagTracking mitkTagTrackingTest ${NIFTK_DATA_DIR}/Input/TagTracking/left.png ${NIFTK_DATA_DIR}/Input/TagTracking/right.png ${NIFTK_DATA_DIR}/Input/TagTracking/left.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/right.intrinsic.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.rot.xml ${NIFTK_DATA_DIR}/Input/TagTracking/r2l.trn.xml)
-
 mitkAddCustomModuleTest(Video-Tracker_Matching mitkVideoTrackerMatchingTest ${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy)
   
 mitkAddCustomModuleTest(Reprojection-Test mitkReprojectionTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)

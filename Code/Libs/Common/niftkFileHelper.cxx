@@ -22,6 +22,7 @@
 #include <deque>
 #include "niftkFileHelper.h"
 #include "niftkEnvironmentHelper.h"
+#include <boost/regex.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -369,6 +370,16 @@ std::vector<std::string> FindVideoData( std::string directory)
   boost::filesystem::recursive_directory_iterator end_itr;
   std::vector<std::string> returnStrings;
 
+  boost::regex avifilter ( "(.+)(.avi)", boost::regex::icase);
+  for ( boost::filesystem::recursive_directory_iterator it(directory);
+          it != end_itr ; ++it)
+  {
+    if ( boost::regex_match (it->path().string().c_str(), avifilter))
+    {
+      returnStrings.push_back(it->path().string());
+    }
+  }
+  //also look for 264 files, but put them further along the vector
   for ( boost::filesystem::recursive_directory_iterator it(directory);
           it != end_itr ; ++it)
   {

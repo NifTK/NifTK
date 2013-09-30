@@ -91,7 +91,6 @@ set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi:ON
   Plugins/uk.ac.ucl.cmic.igioverlayeditor:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
-  Plugins/uk.ac.ucl.cmic.igitagtracker:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
   Plugins/uk.ac.ucl.cmic.igitrackedimage:ON
   Plugins/uk.ac.ucl.cmic.igitrackedpointer:ON
