@@ -559,7 +559,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationCo
 MIDASOrientation QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
+  const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
   if (sliceNavigationController != NULL)
   {
     mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();

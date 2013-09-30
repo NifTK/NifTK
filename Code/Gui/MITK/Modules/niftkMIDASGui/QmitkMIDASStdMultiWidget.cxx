@@ -986,7 +986,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
       sliceNavigationController->SetViewDirectionToDefault();
 
       // Get the view/orientation flags.
-      mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
+      mitk::SliceNavigationController::ViewDirection viewDirection = const_cast<const mitk::SliceNavigationController*>(sliceNavigationController)->GetViewDirection();
 
       if (i < 3)
       {
