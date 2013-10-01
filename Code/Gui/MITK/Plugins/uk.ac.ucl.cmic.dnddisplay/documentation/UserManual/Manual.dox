@@ -1,0 +1,129 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.midaseditor} The Drag and Drop Display
+
+\li \ref DragAndDropIntro
+\li \ref DragAndDropUsage
+\li \ref DragAndDropUsageLaunching
+\li \ref DragAndDropUsageDropping
+\li \ref DragAndDropControls
+\li \ref DragAndDropPreferences
+
+\section DragAndDropIntro Introduction
+
+NiftyView provides the "Drag and Drop Display" Editor in addition to the standard
+MITK based "Display". Both of these Editors can display images, surfaces, point-sets and so on. However
+
+\li Display: by default shows all data sets that are marked as visible in the Data Manager, and manages a global "Geometry"
+that is normally aligned with the global (also called "world") X,Y,Z coordinate axes. This display is perhaps more suitable
+for image-guided surgery applications, or general viewing.
+\li Drag and Drop Display: each viewer shows only the data sets that have been dropped into that viewer, and the "Geometry" is 
+defined by the bounding box of the first image, and is aligned with that image. This Editor was developed as a replacement
+for the MIDAS application at University College London's Dementia Research Centre.
+ 
+\section DragAndDropUsage Usage
+
+\subsection DragAndDropUsageLaunching Launching the Drag and Drop Display
+
+The Drag and Drop Display should by default be available on application startup. If for any reason it has been closed,
+then it can be relaunched by right-clicking on a data-set (i.e. an image) in the Data Manager. See Figure 1.
+
+\image html DragDropLaunching.png "Figure 1. Launch the Drag and Drop Display by right clicking on a data-set in the DataManager and selecting Drag and Drop Display."
+
+There are several user preferences that control the operation of the Drag and Drop Display and are particularly relevant at
+startup. See Figure 2.
+
+\image html DragDropPreferences.png "Figure 2. The preference page includes several options to control the dropping operation"
+
+The preferences are:
+
+<ul>
+  <li>image interpolation: the user may select none (nearest neighbour), linear or cubic, and it takes effect the next time an image is dropped.
+      Changing the default interpolation and then dropping the image into a viewer will set a persistant property on the image, 
+      so that the image is rendered consistently in all views. </li> 
+  <li>initial number of rows: the default number of rows of viewers when the Drag and Drop Display is first launched.</li>
+  <li>initial number of columns: the default number of columns of viewers when the Drag and Drop Display is first launched.</li>
+  <li>default view: when an image is dropped, you can select the default orientation (axial, coronal, sagittal, "as acquired").</li> 
+      The "as acquired" option selects whatever view is in the X-Y plane of the image data.</li>
+  <li> default drop type: when the user selects more than a single image, and drops them into a viewer, there are several choices about
+       how these images are distributed across the available viewing panes.
+    <ul>
+      <li>single: all selected images are dropped into a single viewer</li>
+      <li>multiple: all selected images are dropped into multiple viewers. So, if 3 images are selected they are dropped into 3 successive viewers</li>
+      <li>all: all selected images are dropped into all available viewers. The maximum number is 5x5, so the screen switches to a 5x5 display, showing a thumbnail view of evenly spaced slices.</li>
+    </ul>
+  </li>
+</li> 
+
+The Drag and Drop Display can have up to 5 rows of 5 columns of Viewers. However, each Viewer can contain either an axial,
+sagittal, coronal layout, or indeed an orthogonal layout containing a linked axial, sagittal, and coronal layout. This provides
+a lot of flexibility on layouts. For example, if the user clicks the 2x2 button, to get two rows of two columns of viewers
+they can be configured as in Figure 3 with a sagittal view, an ortho-viewer, an axial view and a coronal view, with different 
+images available in each view, and optionally linked cursors.
+
+\image html DragDrop2x2.png "Figure 3. The Drag and Drop Display allows up to 5 rows of 5 columns of viewers, where each viewer can contain different images, and different layouts, including an ortho-viewer which itself contains an axial, sagittal, coronal and 3D view."
+
+\subsection DragAndDropUsageDropping Viewing Images in the Drag and Drop Display
+
+The user can select one or more data-sets and drop them into the main Drag and Drop Display viewing area. If a data-set has
+derived child nodes, these will also be selected. See Figure 3.
+
+\image html DragDropDroppingParentAndChildImage.png "Figure 3. If a parent is selected for drag and drop, the child image (called tmp) is also implicitly selected and dropped."
+
+If 2 images are selected, and the default drop type is "single", then both images are dropped into the same viewer. This means
+that one image will be rendered on top of the other. The images are rendererd in bottom-to-top order, as displayed in the DataManager
+View. i.e. the top most image in the DataManager is painted on top of the other images. See Figure 4. To see both images in the same
+viewer, the user must toggle visibility (checkbox to the left of the image name in the DataManager View). 
+
+\image html DragDropSingle.png "Figure 4. 2 images dropped into the first viewer. The PET image is on top of the MR image."
+
+If 2 images are selected, and the default drop type is "multiple" then images will be dropped across two windows. See Figure 5.
+
+\image html DragDropMultiple.png "Figure 5. 2 images dropped into multiple (2) viewers. The PET image is first because it was selected first. The MR image is second."
+
+If 2 images are selected, and the default drop type is "all" then both images are dropped into all 25 (5 rows of 5 columns) window
+and the Drag and Drop Display arranges itself to display 25 thumbnail images. See Figure 6. In this example, the opacity of
+the PET image is set to be semi-transparent, allowing simultaneous visualisation of the PET and MR data.
+
+\image html DragDropAll.png "Figure 6. 2 images dropped into all viewers. Both images can be seen by toggling visibility or opacity in DataManager, and NiftyView displays evenly spaced thumbnail images."
+
+\subsection DragAndDropControls The Main Controls of the Drag and Drop Display
+
+By default the Drag and Drop Display controls remain hidden when they are not being used to allow the most amount of screen
+space to be visible. The controls become visible when the user places the mouse cursor over a 15 pixel wide bar, at the top of
+the Drag and Drop Display. 
+
+\image html DragDropControls.png "Figure 7. The main controls appear when the mouse hovers at the top of the display."
+
+The "currently selected viewer" can be selected by left mouse clicking on the image. The currently selected viewer is
+indicated by a coloured border.
+
+The main controls are 
+\li Slice selection - applies to the currently selected viewer.
+\li Magnification - applies to the currently selected viewer.
+\li Time step - applies to the currently selected viewer allowing 4D images to be viewed.
+\li Layout - buttons for 1x1, 1x2, 1x3, 2x2 and spin boxes for rows (1-5), and columns (1-5) to enable the user to select
+the desired number of views. Remember that a "view" can itself be an ortho-viewer.
+\li Orientation - select axial, sagittal, coronal, 3D, ortho-view, 3H (axial, sagittal and coronal displayed horizontally),
+and 3V (axial, sagittal, coronal displayed vertically). 
+\li Drop type - the user can switch between single, multiple, all as described above. In addition there is a checkbox
+so the user can decide whether to drop images cumulatively into a viewer.
+\li Bind type - The Drag and Drop Display can also link or "Bind" viewers together, where there is the option to bind
+just the cursors, the magnification, or the geometry.
+ 
+\subsection DragAndDropPreferences User Preferences for the Drag and Drop Display
+
+The user preferences control important defaults that affect the operation of the Drag and Drop Display when it 
+is launched and these have been described above. Refering to Figure 2 we additionally have
+
+\li show drop type checkboxes - controls whether they are visible on the main control panel.
+\li show layout buttons - controls whether they are visible on the main control panel.
+\li show magnification slider - controls whether this is visible on the main control panel, as the user can alternatively 
+right click and move to change the magnification.
+\li show 3D view in orthoview - simply turns it on/off.
+\li show 2D cursors - simply turn them on/off.
+\li background colour - change the background of the 2D displays.
+
+It can be seen that these are largely related to showing or hiding controls to try and reduce screen clutter.
+ 
+*/
+

@@ -19,8 +19,6 @@
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkImageAccessByItk.h>
-#include <mitkMIDASTool.h>
-#include <mitkMIDASPolyTool.h>
 #include <vtkRenderWindow.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
@@ -280,6 +278,10 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
   // So, as soon as a drawing tool creates them, they must be visible.
   // Then they are removed from data storage when no longer needed.
   // So, for now, we just make sure they are not processed by this class.
+
+  // TODO Commented out when the niftkDnDDisplay has been separated from niftkMIDASGui.
+
+/*
   std::string name = node->GetName();
   if (   name.find("FeedbackContourTool") != std::string::npos
       || name.find("MIDASContourTool") != std::string::npos
@@ -300,7 +302,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
   {
     return;
   }
-
+*/
   this->UpdateObserverToVisibilityMap();
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
 }

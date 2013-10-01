@@ -15,7 +15,7 @@
 #ifndef mitkMIDASNodeAddedVisibilitySetter_h
 #define mitkMIDASNodeAddedVisibilitySetter_h
 
-#include "niftkMIDASExports.h"
+#include "niftkDnDDisplayExports.h"
 #include <vector>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageListener.h>
@@ -44,7 +44,7 @@ class BaseRenderer;
  *
  * \see DataStorageListener::AddFilter
  */
-class NIFTKMIDAS_EXPORT MIDASNodeAddedVisibilitySetter : public DataStorageListener
+class NIFTKDNDDISPLAY_EXPORT MIDASNodeAddedVisibilitySetter : public DataStorageListener
 {
 public:
 

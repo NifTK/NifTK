@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASMultiViewVisibilityManager_h
 #define QmitkMIDASMultiViewVisibilityManager_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 #include <mitkMIDASEnums.h>
 #include "QmitkMIDASSingleViewWidget.h"
 #include <QWidget>
@@ -33,7 +33,7 @@ class QmitkMIDASSingleViewWidget;
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visibility" property in DataStorage.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
 {
   Q_OBJECT
 

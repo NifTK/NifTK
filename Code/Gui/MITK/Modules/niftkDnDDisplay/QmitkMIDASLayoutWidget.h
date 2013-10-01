@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASLayoutWidget_h
 #define QmitkMIDASLayoutWidget_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 #include "ui_QmitkMIDASLayoutWidget.h"
 #include <mitkMIDASEnums.h>
 
@@ -31,7 +31,7 @@ class QButtonGroup;
  * for any number of layouts, and still keep a reasonably compact screen layout.
  *
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASLayoutWidget : public QWidget, private Ui_QmitkMIDASLayoutWidget
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASLayoutWidget : public QWidget, private Ui_QmitkMIDASLayoutWidget
 {
   Q_OBJECT
 

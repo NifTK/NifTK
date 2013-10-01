@@ -14,8 +14,6 @@
 
 set(CPP_FILES
   Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cxx
-  DataManagement/mitkMIDASDataNodeNameStringFilter.cxx
-  DataManagement/mitkMIDASNodeAddedVisibilitySetter.cxx
   Interactions/mitkMIDASTool.cxx
   Interactions/mitkMIDASContourToolEventInterface.cxx
   Interactions/mitkMIDASContourToolOpAccumulateContour.cxx
@@ -33,13 +31,10 @@ set(CPP_FILES
   Interactions/mitkMIDASPaintbrushToolEventInterface.cxx
   Interactions/mitkMIDASPaintbrushToolOpEditImage.cxx
   Interactions/mitkMIDASPaintbrushTool.cxx
-  Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASToolKeyPressStateMachine.cxx
-  Interactions/mitkMIDASDisplayInteractor.cxx
 )
 
 set(RESOURCE_FILES
   Interactions/DisplayConfigMIDASTool.xml
   Interactions/DisplayConfigMIDASPaintbrushTool.xml
-  Interactions/DisplayInteraction.xml
 )

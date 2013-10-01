@@ -15,14 +15,14 @@
 #ifndef QmitkMIDASSlidersWidget_h
 #define QmitkMIDASSlidersWidget_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 #include "ui_QmitkMIDASSlidersWidget.h"
 
 /**
  * \class QmitkMIDASSlidersWidget
  * \brief Qt Widget class to contain sliders for slice, time and magnification.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSlidersWidget : public QWidget, private Ui_QmitkMIDASSlidersWidget
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSlidersWidget : public QWidget, private Ui_QmitkMIDASSlidersWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT

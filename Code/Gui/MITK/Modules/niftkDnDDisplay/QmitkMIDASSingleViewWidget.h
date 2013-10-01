@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASSingleViewWidget_h
 #define QmitkMIDASSingleViewWidget_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 
 #include <deque>
 
@@ -28,8 +28,8 @@
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
-#include <mitkMIDASViewKeyPressResponder.h>
-#include <mitkMIDASViewKeyPressStateMachine.h>
+#include "Interactions/mitkMIDASViewKeyPressResponder.h"
+#include "Interactions/mitkMIDASViewKeyPressStateMachine.h"
 #include "QmitkMIDASStdMultiWidget.h"
 
 class QGridLayout;
@@ -69,7 +69,7 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa QmitkMIDASStdMultiWidget
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.

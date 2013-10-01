@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASSingleViewWidgetListVisibilityManager_h
 #define QmitkMIDASSingleViewWidgetListVisibilityManager_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 #include "QmitkMIDASSingleViewWidgetListManager.h"
 #include <vector>
 #include <mitkDataStorage.h>
@@ -24,7 +24,7 @@
  * \class QmitkMIDASSingleViewWidgetListVisibilityManager
  * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility properties.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidgetListVisibilityManager : public QmitkMIDASSingleViewWidgetListManager
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidgetListVisibilityManager : public QmitkMIDASSingleViewWidgetListManager
 {
 
 public:
