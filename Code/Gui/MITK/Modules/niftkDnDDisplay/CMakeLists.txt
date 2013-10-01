@@ -23,3 +23,7 @@ MITK_CREATE_MODULE(niftkDnDDisplay
 target_link_libraries(niftkDnDDisplay
   niftkITK
   )
+  
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

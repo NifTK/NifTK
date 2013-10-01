@@ -12,11 +12,8 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-)
+MITK_CREATE_MODULE_TESTS(LABELS niftkDnDDisplay)
 
-set(MODULE_CUSTOM_TESTS
-  mitkMIDASPaintbrushToolTest.cxx
-  mitkMIDASMorphologicalSegmentorPipelineManagerTest.cxx
-)
+# Trac 1683 - When nodes created via segmentation tools, the data sets much be visible in viewers
+#             such as the thumbnail viewer, and the segmentation views.
+mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest mitkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
