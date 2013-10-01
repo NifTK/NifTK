@@ -40,7 +40,8 @@ int main(int argc, char** argv)
     }
     if ( TemporalCalibration.length() != 0 )
     {
-      trackerMatcherObject->TemporalCalibration(TemporalCalibration, -100, 100, true, TCfileout);
+      trackerMatcherObject->SetCalibrationDirectory(cameraCalibration);
+      trackerMatcherObject->TemporalCalibration(TemporalCalibration, temporalWindowLow, temporalWindowHigh, true, TCfileout);
     }
     if ( OptimiseHandeye.length() != 0 ) 
     {

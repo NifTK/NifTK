@@ -31,6 +31,12 @@
       <description>A file used for handeye optimisation.</description>
       <label>A file used for handeye optimisation</label>
     </file>    
+    <directory>
+      <name>cameraCalibration</name>
+      <longflag>cameraCalibration</longflag>
+      <description>The directory containing the intrinsic calibration for the camera</description>
+      <label>The directory containing the intrinsic calibration for the camera</label>
+    </directory>    
 
 
     <file>
@@ -44,8 +50,7 @@
       <longflag>TCfileout</longflag>
       <description>A file to writeout the temporal calibration results.</description>
       <label>A file to writeout the temporal calibration results</label>
-    </file>    
-
+    </file>
 
   </parameters>
   
@@ -67,6 +72,22 @@
 	<description>The tracker index to use</description>
 	<label>The tracker index to use</label>
 	<default>0</default>
+    </integer>
+
+    <integer>
+	<name>temporalWindowLow</name>
+	<longflag>temporalWindowLow</longflag>
+	<description>The lower value (ms) for the temporal calibration window</description>
+	<label>The lower valuer (ms) for the temporal calibration window</label>
+	<default>-50</default>
+    </integer>
+
+    <integer>
+	<name>temporalWindowHigh</name>
+	<longflag>temporalWindowHigh</longflag>
+	<description>The upper value (ms) for the temporal calibration window</description>
+	<label>The upper valuer (ms) for the temporal calibration window</label>
+	<default>50</default>
     </integer>
   </parameters>
   
