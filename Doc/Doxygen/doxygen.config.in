@@ -331,7 +331,7 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.igiundistort/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagestatistics/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midaseditor/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.dnddisplay/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.mitksegmentation/documentation/UserManual \
@@ -347,7 +347,7 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.gui.qt.niftyview \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagelookuptables \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagestatistics \
-                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midaseditor \
+                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.dnddisplay \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasgeneralsegmentor \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasmorphologicalsegmentor \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.mitksegmentation \
