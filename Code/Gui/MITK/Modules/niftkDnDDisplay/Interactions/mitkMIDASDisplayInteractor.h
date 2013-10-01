@@ -15,7 +15,7 @@
 #ifndef mitkMIDASDisplayInteractor_h
 #define mitkMIDASDisplayInteractor_h
 
-#include <niftkMIDASExports.h>
+#include <niftkDnDDisplayExports.h>
 
 #include <mitkDisplayInteractor.h>
 
@@ -39,7 +39,7 @@ namespace mitk
    * Inherits from mitk::InteractionEventObserver since it doesn't alter any data (only their representation),
    * and its actions cannot be associated with a DataNode. Also inherits from EventStateMachine
    */
-  class NIFTKMIDAS_EXPORT MIDASDisplayInteractor: public DisplayInteractor
+  class NIFTKDNDDISPLAY_EXPORT MIDASDisplayInteractor: public DisplayInteractor
   {
   public:
     mitkClassMacro(MIDASDisplayInteractor, DisplayInteractor)
