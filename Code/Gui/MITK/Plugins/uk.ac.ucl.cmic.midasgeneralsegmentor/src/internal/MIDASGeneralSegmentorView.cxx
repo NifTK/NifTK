@@ -101,8 +101,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
 {
-  RegisterSegmentationObjectFactory();
-
   m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
 }
