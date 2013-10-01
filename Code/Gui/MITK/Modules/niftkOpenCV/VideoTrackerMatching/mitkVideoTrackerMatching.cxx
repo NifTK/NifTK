@@ -531,10 +531,11 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   }
 } 
 //---------------------------------------------------------------------------
-std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
-    std::vector < std::pair <cv::Point2d, cv::Point2d > >* onScreenPoints )
+std::vector < std::vector <cv::Point3d> > VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
+    int PointsPerFrame, 
+    std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d > > > * onScreenPoints )
 {
-  std::vector <cv::Point3d> pointsInLensCS;
+  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
   pointsInLensCS.clear();
   std::ifstream fin(calibrationfilename.c_str());
   if ( !fin )
@@ -546,42 +547,55 @@ std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::stri
   unsigned int frameNumber; 
   unsigned int linenumber = 0;
   
-
-  while ( getline(fin,line) )
+  bool ok = getline (fin,line); 
+  while ( ok )
   {
-    if ( line[0] != '#' )
+    std::vector <cv::Point3d>  framePointsInLensCS;
+    std::vector <std::pair < cv::Point2d , cv::Point2d > > frameOnScreenPoints;
+    framePointsInLensCS.clear();
+    frameOnScreenPoints.clear();
+    for ( int pointID = 0 ; pointID < PointsPerFrame ; pointID ++ ) 
     {
-      std::stringstream linestream(line);
-      std::string xstring;
-      std::string ystring;
-      std::string zstring;
-      std::string lxstring;
-      std::string lystring;
-      std::string rxstring;
-      std::string rystring;
-
-      bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring
-        >> lxstring >> lystring >> rxstring >> rystring;
-      if ( parseSuccess )
+      if ( line[0] != '#' )
       {
-        pointsInLensCS.push_back(cv::Point3d(
-              atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
-        if ( onScreenPoints != NULL ) 
+        std::stringstream linestream(line);
+        std::string xstring;
+        std::string ystring;
+        std::string zstring;
+        std::string lxstring;
+        std::string lystring;
+        std::string rxstring;
+        std::string rystring;
+
+        bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring
+         >> lxstring >> lystring >> rxstring >> rystring;
+        if ( parseSuccess )
         {
-          onScreenPoints->push_back(std::pair<cv::Point2d, cv::Point2d> (cv::Point2d(
+          framePointsInLensCS.push_back(cv::Point3d(
+              atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
+          if ( onScreenPoints != NULL ) 
+          {
+            frameOnScreenPoints.push_back(std::pair<cv::Point2d, cv::Point2d> (cv::Point2d(
                 atof (lxstring.c_str()), atof ( lystring.c_str()) ) ,
                 cv::Point2d(
                 atof (rxstring.c_str()), atof ( rystring.c_str()) )));
-        }
-        if ( frameNumber != linenumber++ )
+          }
+          if ( frameNumber != linenumber++ )
+          {
+            MITK_WARN << "Skipped frame detected at line " << linenumber ;
+          }
+        } 
+        else
         {
-          MITK_WARN << "Skipped frame detected at line " << linenumber ;
+          MITK_WARN << "Parse failure at line " << linenumber;
         }
-      } 
-      else
-      {
-        MITK_WARN << "Parse failure at line " << linenumber;
       }
+      ok = getline (fin, line);
+    }
+    pointsInLensCS.push_back(framePointsInLensCS);
+    if ( onScreenPoints != NULL )
+    {
+      onScreenPoints->push_back(frameOnScreenPoints);
     }
   }
   fin.close();

@@ -138,6 +138,7 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
+  /* m_ProjectPoints [framenumber][pointID](left.right);*/
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >
                                 m_ProjectedPoints; // the projected points
   std::vector < std::vector <cv::Point3d> >    

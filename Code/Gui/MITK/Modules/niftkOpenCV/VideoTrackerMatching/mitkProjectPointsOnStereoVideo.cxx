@@ -228,10 +228,6 @@ void ProjectPointsOnStereoVideo::Project()
       screenPoints.push_back(pointPair);
     }
     m_ProjectedPoints.push_back(screenPoints);
-    
-
-
-
 
     if ( m_Visualise || m_SaveVideo ) 
     {

@@ -117,9 +117,12 @@ protected:
   /**
    * \brief Reads a file that defines the position of a point fixed in world
    * coordinates relative to the camera lens.
+   * [framenumber][pointID]
+   * [framenumber][pointID](left,right)
    */
-  std::vector<cv::Point3d> ReadPointsInLensCSFile (std::string filename, 
-      std::vector <std::pair < cv::Point2d, cv::Point2d > >* onScreenPoints = NULL);
+  std::vector < std::vector <cv::Point3d> >  ReadPointsInLensCSFile (std::string filename, 
+      int PointsPerFrame = 1 ,
+      std::vector < std::vector <std::pair < cv::Point2d, cv::Point2d > > >* onScreenPoints = NULL);
 private:
   std::vector<TrackingMatrices>         m_TrackingMatrices; 
   std::vector<std::string>              m_TrackingMatrixDirectories;
