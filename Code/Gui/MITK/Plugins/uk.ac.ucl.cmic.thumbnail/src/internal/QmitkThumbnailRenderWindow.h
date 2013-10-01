@@ -15,7 +15,6 @@
 #ifndef QmitkThumbnailRenderWindow_h
 #define QmitkThumbnailRenderWindow_h
 
-#include <niftkMIDASGuiExports.h>
 #include <QColor>
 #include <QmitkRenderWindow.h>
 #include <mitkDataStorage.h>
@@ -60,7 +59,7 @@ class QmitkWheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class NIFTKMIDASGUI_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class QmitkThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 
