@@ -2081,8 +2081,8 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
     // Here we create our own display interactor...
     m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers);
 
-    us::Module* niftkMIDASModule = us::ModuleRegistry::GetModule("niftkMIDAS");
-    m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkMIDASModule);
+    us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
+    m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkDnDDisplayModule);
     m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 
     // ... and register it as listener via the micro services.
