@@ -15,7 +15,7 @@
 #ifndef mitkMIDASViewKeyPressResponder_h
 #define mitkMIDASViewKeyPressResponder_h
 
-#include "niftkMIDASExports.h"
+#include "niftkDnDDisplayExports.h"
 
 namespace mitk {
 
@@ -30,7 +30,7 @@ namespace mitk {
  * \sa MIDASToolKeyPressResponder
  * \sa StateMachine
  */
-class NIFTKMIDAS_EXPORT MIDASViewKeyPressResponder
+class NIFTKDNDDISPLAY_EXPORT MIDASViewKeyPressResponder
 {
 public:
 

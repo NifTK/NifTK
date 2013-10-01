@@ -15,7 +15,7 @@
 #ifndef mitkMIDASViewKeyPressStateMachine_h
 #define mitkMIDASViewKeyPressStateMachine_h
 
-#include "niftkMIDASExports.h"
+#include "niftkDnDDisplayExports.h"
 #include "mitkMIDASViewKeyPressResponder.h"
 #include <mitkStateMachine.h>
 
@@ -31,7 +31,7 @@ class BaseRenderer;
  * and pass them onto any registered MIDASViewKeyPressResponder.
  * \sa MIDASViewKeyPressResponder
  */
-class NIFTKMIDAS_EXPORT MIDASViewKeyPressStateMachine : public StateMachine
+class NIFTKDNDDISPLAY_EXPORT MIDASViewKeyPressStateMachine : public StateMachine
 {
 
 public:
