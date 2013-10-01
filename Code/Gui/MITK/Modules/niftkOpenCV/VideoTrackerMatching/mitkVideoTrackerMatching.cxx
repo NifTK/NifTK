@@ -67,18 +67,18 @@ void VideoTrackerMatching::Initialise(std::string directory)
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
-        cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_32F);
+        cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
         for ( int i = 0 ; i < 4 ; i ++ ) 
         {
           for ( int j = 0 ; j < 4 ; j ++ )
           {
             if ( i == j ) 
             {
-              tempCameraToTracker.at<float>(i,j) = 1.0;
+              tempCameraToTracker.at<double>(i,j) = 1.0;
             }
             else
             {
-              tempCameraToTracker.at<float>(i,j) = 0.0;
+              tempCameraToTracker.at<double>(i,j) = 0.0;
             }
           }
         }
@@ -503,10 +503,10 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<float>(row,0) >>
-        m_CameraToTracker[indexnumber].at<float>(row,1) >>
-        m_CameraToTracker[indexnumber].at<float>(row,2) >>
-        m_CameraToTracker[indexnumber].at<float>(row,3);
+      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<double>(row,0) >>
+        m_CameraToTracker[indexnumber].at<double>(row,1) >>
+        m_CameraToTracker[indexnumber].at<double>(row,2) >>
+        m_CameraToTracker[indexnumber].at<double>(row,3);
 
       if ( parseSuccess )
       {
