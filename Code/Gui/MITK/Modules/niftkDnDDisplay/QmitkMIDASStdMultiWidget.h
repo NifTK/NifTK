@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASStdMultiWidget_h
 #define QmitkMIDASStdMultiWidget_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 
 //#include <itkConversionUtils.h>
 
@@ -27,7 +27,7 @@
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
-#include <mitkMIDASDisplayInteractor.h>
+#include "Interactions/mitkMIDASDisplayInteractor.h"
 
 #include <mitkMIDASEnums.h>
 
@@ -77,7 +77,7 @@ class SliceNavigationController;
  * \sa QmitkMIDASSingleViewWidget
  * \sa QmitkMIDASMultiViewWidget
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
 {
 
   Q_OBJECT

@@ -15,6 +15,7 @@
 set(MODULE_DIRS
   niftkCore
   niftkCoreGui
+  niftkDnDDisplay
   niftkMIDAS
   niftkMIDASGui
 )

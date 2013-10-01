@@ -15,7 +15,7 @@
 #ifndef mitkMIDASDataNodeNameStringFilter_h
 #define mitkMIDASDataNodeNameStringFilter_h
 
-#include "niftkMIDASExports.h"
+#include "niftkDnDDisplayExports.h"
 #include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
 
@@ -42,7 +42,7 @@ namespace mitk
  * Paintbrush_Node
  * </pre>
  */
-class NIFTKMIDAS_EXPORT MIDASDataNodeNameStringFilter : public mitk::DataNodeStringPropertyFilter
+class NIFTKDNDDISPLAY_EXPORT MIDASDataNodeNameStringFilter : public mitk::DataNodeStringPropertyFilter
 {
 
 public:

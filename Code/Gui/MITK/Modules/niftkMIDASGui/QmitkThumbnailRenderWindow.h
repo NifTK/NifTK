@@ -23,7 +23,7 @@
 #include <mitkCuboid.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkDataStorageVisibilityTracker.h>
-#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;

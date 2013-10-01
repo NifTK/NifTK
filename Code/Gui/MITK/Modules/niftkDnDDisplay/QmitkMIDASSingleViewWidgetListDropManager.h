@@ -15,7 +15,7 @@
 #ifndef QmitkMIDASSingleViewWidgetListDropManager_h
 #define QmitkMIDASSingleViewWidgetListDropManager_h
 
-#include <niftkMIDASGuiExports.h>
+#include <niftkDnDDisplayExports.h>
 #include <vector>
 #include "QmitkMIDASSingleViewWidgetListManager.h"
 #include <mitkMIDASEnums.h>
@@ -36,7 +36,7 @@ class QmitkMIDASSingleViewWidgetListVisibilityManager;
  *
  * This class needs to have SetVisibilityManager and SetDataStorage called prior to use.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASSingleViewWidgetListDropManager : public QmitkMIDASSingleViewWidgetListManager
+class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidgetListDropManager : public QmitkMIDASSingleViewWidgetListManager
 {
 
 public:

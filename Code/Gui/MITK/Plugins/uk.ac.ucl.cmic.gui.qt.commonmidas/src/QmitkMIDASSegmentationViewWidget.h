@@ -20,7 +20,7 @@
 #include <QWidget>
 #include <QString>
 #include <mitkMIDASEnums.h>
-#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
 
 namespace mitk
