@@ -46,13 +46,19 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     return;
   }
 
-  std::ofstream fout;
+  std::vector < std::ofstream* > fout;
   if ( fileout.length() != 0 ) 
   {
-    fout.open(fileout.c_str());
-    if ( !fout )
+    for ( unsigned int i = 0 ; i <  m_TrackingMatrixTimeStamps.size() ; i ++ ) 
     {
-      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
+      std::string thisfileout = fileout + boost::lexical_cast<std::string>(i) + ".txt";
+      std::ofstream* thisfout = new std::ofstream();
+      thisfout->open ( thisfileout.c_str() );
+      if ( !thisfout )
+      {
+        MITK_WARN << "Failed to open output file for temporal calibration " << thisfileout;
+      }
+      fout.push_back(thisfout);
     }
   }
 
@@ -66,25 +72,6 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   {
     MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
     return;
-  }
-
-  std::vector < std::vector <cv::Point3d> > standardDeviations;
-  if ( fout ) 
-  {
-    fout << "#lag " ;
-  }
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i++ )
-  {
-    std::vector <cv::Point3d> pointvector;
-    standardDeviations.push_back(pointvector);
-    if ( fout ) 
-    {
-      fout << "SDx SDy SDz";
-    }
-  }
-  if ( fout ) 
-  {
-    fout << std::endl;
   }
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
@@ -111,11 +98,6 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
     }
    
-    if ( fout ) 
-    {
-      fout << videoLag << " " ;
-    }
-
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
       std::vector <cv::Point3d> worldPoints;
@@ -142,9 +124,34 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     }
   }
 
-  MITK_INFO << "min sd at " ;
-  //we've filled vectors with projection and recontruction errors, now we need to 
-  //get the optimal values and output them
+
+  if ( fout[0] ) 
+  {
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    {
+      *fout[trackerIndex] << "#lag SDx SDy SDz RMSLeft RMSRight" << std::endl;
+      for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
+      {
+        *fout[trackerIndex] << videoLag << " " << 
+        reconstructedPointSD[trackerIndex][videoLag - windowLow].x << " " <<
+        reconstructedPointSD[trackerIndex][videoLag - windowLow].y << " " <<
+        reconstructedPointSD[trackerIndex][videoLag - windowLow].z << " " <<
+        projectedErrorRMS[trackerIndex][videoLag - windowLow].first << " " <<
+        projectedErrorRMS[trackerIndex][videoLag - windowLow].second << std::endl;
+      }
+      fout[trackerIndex]->close();
+    }
+
+  }
+
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  {
+    std::pair < unsigned int , unsigned int > * minIndexes = new std::pair < unsigned int , unsigned int >;
+    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], minIndexes );
+    MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << minIndexes->first + windowLow << " ms ";  ;
+    MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << minIndexes->second + windowLow << " ms ";  ;
+    delete minIndexes;
+  }
 
 }
 //---------------------------------------------------------------------------

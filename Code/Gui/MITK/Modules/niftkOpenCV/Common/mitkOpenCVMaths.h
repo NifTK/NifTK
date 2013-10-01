@@ -243,6 +243,14 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
 
+/**
+ * \brief Takes a vector of pairs and finds the minimum value in each dimension. Returns the 
+ * minimum values. Optionally returns the indexes of the minium values.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair < double, double > FindMinimumValues
+  ( std::vector < std::pair < double, double>  > inputValues, 
+    std::pair <unsigned int , unsigned int > * indexes = NULL ); 
+
 /** 
  * \brief Returns the RMS error between two point vectors
  */

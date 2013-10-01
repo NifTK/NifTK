@@ -62,7 +62,8 @@ public:
    * sensitivity of the system to errors in the hand eye calibration
    */
   void HandeyeSensitivityTest (std::string filename, bool visualise = false , std::string fileout = "" );
-
+  
+  itkSetMacro (CalibrationDirectory, std::string);
 protected:
   TrackerAnalysis();
   virtual ~TrackerAnalysis();

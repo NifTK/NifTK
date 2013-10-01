@@ -787,6 +787,44 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
   return minimumValues;
 }  
 //-----------------------------------------------------------------------------
+std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < double, double > > inputValues, std::pair < unsigned int , unsigned int >  * indexes )
+{
+  std::pair < double , double > minimumValues;
+
+  if ( inputValues.size() > 0 ) 
+  {
+    minimumValues.first = inputValues[0].first;
+    minimumValues.second = inputValues[0].second;
+
+    if ( indexes != NULL )
+    {
+      indexes->first = 0;
+      indexes->second = 0;
+    }
+  }
+  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  {
+    if ( inputValues[i].first < minimumValues.first )
+    {
+      minimumValues.first = inputValues[i].first;
+      if ( indexes != NULL )
+      {
+        indexes->first = i;
+      }
+    }
+    if ( inputValues[i].second < minimumValues.second )
+    {
+      minimumValues.second = inputValues[i].second;
+      if ( indexes != NULL )
+      {
+        indexes->second = i;
+      }
+    }
+  }
+  return minimumValues;
+}
+
+//-----------------------------------------------------------------------------
 std::pair < double, double >  RMSError (std::vector < std::pair <cv::Point2d, cv::Point2d> > measured , std::vector <std::pair<cv::Point2d, cv::Point2d> > actual)
 {
   assert ( measured.size() == actual.size() );
