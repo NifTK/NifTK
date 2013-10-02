@@ -33,7 +33,7 @@
   <customwidget>
    <class>QmitkThumbnailRenderWindow</class>
    <extends>QWidget</extends>
-   <header>QmitkThumbnailRenderWindow.h</header>
+   <header>internal/QmitkThumbnailRenderWindow.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
