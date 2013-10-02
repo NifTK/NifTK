@@ -39,7 +39,6 @@ TrackerAnalysis::~TrackerAnalysis ()
 void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
     int windowLow, int windowHigh, bool visualise, std::string fileout)
 {
-
   if ( !m_Ready )
   {
     MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
@@ -64,9 +63,9 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 
   std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > >* onScreenPoints = new std::vector <std::vector < std::pair <cv::Point2d, cv::Point2d > > >;
-  onScreenPoints->clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , onScreenPoints);
+  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > onScreenPoints;
+  onScreenPoints.clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
@@ -75,18 +74,10 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
   }
 
   mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
-  projector->SetTrackerMatcher (this);
   projector->Initialise(m_Directory,m_CalibrationDirectory);
 
-  std::vector < std::vector < cv::Point3d > > reconstructedPointSD;
-  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS;
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ ) 
-  {
-    std::vector < std::pair <double, double > > errors (windowHigh - windowLow);
-    std::vector <cv::Point3d> pointerrors (windowHigh-windowLow);
-    reconstructedPointSD.push_back(pointerrors);
-    projectedErrorRMS.push_back(errors);
-  }
+  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TrackingMatrixTimeStamps.size());
+  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TrackingMatrixTimeStamps.size());
   for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
   {
     if ( videoLag < 0 ) 
@@ -108,25 +99,26 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
         worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
             pointsInLensCS[frame][0]);
       }
+      
+      cv::Point3d pointSpread;
+      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
 
-      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true, 
-          &reconstructedPointSD[trackerIndex][videoLag - windowLow]);
+      reconstructedPointSD[trackerIndex].push_back(pointSpread);
       std::vector <cv::Point3d > worldPoint(1);
       worldPoint[0] = worldCentre;
       projector->SetWorldPoints(worldPoint);
-      projector->Project();
+      projector->SetTrackerIndex(trackerIndex);
+      projector->Project(this);
       std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
         projector->GetProjectedPoints();
-     
-      std::cerr << projectedPoints.size() << " " << projectedPoints[0].size() ;
-      projectedErrorRMS[trackerIndex][videoLag - windowLow] = 
-        mitk::RMSError ( projectedPoints,  *onScreenPoints ) ;
+      
+      std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
+      projectedErrorRMS[trackerIndex].push_back(projectedRMS);
       
     }
   }
 
-
-  if ( fout[0] ) 
+  if ( fileout.length() != 0 ) 
   {
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
@@ -147,11 +139,10 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
   {
-    std::pair < unsigned int , unsigned int > * minIndexes = new std::pair < unsigned int , unsigned int >;
-    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], minIndexes );
-    MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << minIndexes->first + windowLow << " ms ";  ;
-    MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << minIndexes->second + windowLow << " ms ";  ;
-    delete minIndexes;
+    std::pair < unsigned int , unsigned int > minIndexes;
+    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
+    MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << (int)minIndexes.first + windowLow << " ms ";  ;
+    MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << (int)minIndexes.second + windowLow << " ms ";  ;
   }
 
 }
@@ -204,8 +195,8 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
        frame -- ;
       }
     }
-    bool optimiseScaling = false;
-    bool optimiseInvariantPoint = true;
+    //bool optimiseScaling = false;
+    //bool optimiseInvariantPoint = true;
     std::vector<double> rigidBodyTransformation;
     cv::Point3d invariantPoint;
     //initial values for point and transform. Could use known handeye and reconstructed point, 
