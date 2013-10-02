@@ -258,7 +258,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError (
  * \brief Returns the RMS error between two point vectors
  */
 extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
-    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 );
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
+    double outlierSD = 2.0 );
 } // end namespace
 
 #endif

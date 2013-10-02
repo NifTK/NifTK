@@ -827,7 +827,7 @@ std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < doubl
 
 //-----------------------------------------------------------------------------
 std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
-    int indexToUse)
+    int indexToUse , double outlierSD)
 {
   assert ( measured.size() == actual.size() * 2 );
 
@@ -835,7 +835,21 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   
   RMSError.first = 0.0 ;
   RMSError.second = 0.0 ;
-  
+ 
+  std::pair < cv::Point2d, cv::Point2d > errorStandardDeviations;
+  std::pair < cv::Point2d, cv::Point2d > errorMeans;
+  errorMeans = mitk::MeanError (measured, actual, &errorStandardDeviations, indexToUse);
+  std::pair < cv::Point2d , cv::Point2d > lowLimit;
+  std::pair < cv::Point2d , cv::Point2d > highLimit;
+  lowLimit.first.x = errorMeans.first.x - outlierSD * errorStandardDeviations.first.x; 
+  lowLimit.first.y = errorMeans.first.y - outlierSD * errorStandardDeviations.first.y; 
+  lowLimit.second.x = errorMeans.second.x - outlierSD * errorStandardDeviations.second.x; 
+  lowLimit.second.y = errorMeans.second.y - outlierSD * errorStandardDeviations.second.y; 
+  highLimit.first.x = errorMeans.first.x + outlierSD * errorStandardDeviations.first.x; 
+  highLimit.first.y = errorMeans.first.y + outlierSD * errorStandardDeviations.first.y; 
+  highLimit.second.x = errorMeans.second.x + outlierSD * errorStandardDeviations.second.x; 
+  highLimit.second.y = errorMeans.second.y + outlierSD * errorStandardDeviations.second.y; 
+
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
@@ -848,25 +862,31 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    std::cerr << "Actual Size = " << actual.size() << std::endl;
-    std::cerr << "Measured Size = " << measured.size() << std::endl;
     for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
     {
       if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
           boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
       {
-        RMSError.first += ( actual[i][index].first.x - measured[i*2][index].first.x )*(actual[i][index].first.x - measured[i*2][index].first.x) +
-        ( actual[i][index].first.y - measured[i*2][index].first.y )*(actual[i][index].first.y - measured[i*2][index].first.y) ;
-        std::cerr << "first (" << actual[i][index].first.x << "," <<  actual[i][index].first.y << ") , (" << measured[i*2][index].first.x << "," << measured[i*2][index].first.y << ") " << count.first << " : " << sqrt( RMSError.first /( count.first + 1) ) <<  std::endl;
-        count.first ++;
+        double xerror = actual[i][index].first.x - measured[i*2][index].first.x;
+        double yerror = actual[i][index].first.y - measured[i*2][index].first.y;
+        if ( ( xerror > lowLimit.first.x ) && ( xerror < highLimit.first.x ) &&
+             ( yerror > lowLimit.first.y ) && ( yerror < highLimit.first.y ) )
+        {
+          RMSError.first += ( xerror * xerror ) + ( yerror * yerror );
+          count.first ++;
+        }
       }
       if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
           boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
       {
-        RMSError.second += ( actual[i][index].second.x - measured[i*2][index].second.x )*(actual[i][index].second.x - measured[i*2][index].second.x) +
-          ( actual[i][index].second.y - measured[i*2][index].second.y )*(actual[i][index].second.y - measured[i*2][index].second.y) ;
-        std::cerr << "second (" << actual[i][index].second.x << "," <<  actual[i][index].second.y << ") , (" << measured[i*2][index].second.x << "," << measured[i*2][index].second.y << ") " << count.second << " : " << sqrt (RMSError.second/ ( count.second + 1 )) <<  std::endl;
-        count.second ++;
+        double xerror = actual[i][index].second.x - measured[i*2][index].second.x;
+        double yerror = actual[i][index].second.y - measured[i*2][index].second.y;
+        if ( ( xerror > lowLimit.second.x ) && ( xerror < highLimit.second.x ) &&
+             ( yerror > lowLimit.second.y ) && ( yerror < highLimit.second.y ) )
+        {
+          RMSError.second += ( xerror * xerror ) + ( yerror * yerror );
+          count.second ++;
+        }
       }
     }
   }
