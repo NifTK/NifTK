@@ -758,6 +758,7 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
   }
   for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
   {
+    std::cerr << i << std::endl;
     if ( inputValues[i].x < minimumValues.x )
     {
       minimumValues.x = inputValues[i].x;
@@ -825,9 +826,10 @@ std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < doubl
 }
 
 //-----------------------------------------------------------------------------
-std::pair < double, double >  RMSError (std::vector < std::pair <cv::Point2d, cv::Point2d> > measured , std::vector <std::pair<cv::Point2d, cv::Point2d> > actual)
+std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    int indexToUse)
 {
-  assert ( measured.size() == actual.size() );
+  assert ( measured.size() == actual.size() * 2 );
 
   std::pair < double, double>  RMSError;
   
@@ -837,21 +839,31 @@ std::pair < double, double >  RMSError (std::vector < std::pair <cv::Point2d, cv
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
-  for ( unsigned int i = 0 ; i < measured.size() ; i ++ ) 
+  int lowIndex = 0;
+  int highIndex = measured[0].size();
+  if ( indexToUse != -1 )
   {
-    if ( ! ( boost::math::isnan(measured[i].first.x) || boost::math::isnan(measured[i].first.y) ||
-          boost::math::isnan(actual[i].first.x) || boost::math::isnan(actual[i].first.y) ) )
+    lowIndex = indexToUse; 
+    highIndex = indexToUse;
+  }
+  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+  {
+    for ( unsigned int i = 0 ; i < actual[index].size() ; i ++ ) 
     {
-      RMSError.first += ( actual[i].first.x - measured[i].first.x )*(actual[i].first.x - measured[i].first.x) +
-        ( actual[i].first.y - measured[i].first.y )*(actual[i].first.y - measured[i].first.y) ;
-      count.first ++;
-    }
-    if ( ! ( boost::math::isnan(measured[i].second.x) || boost::math::isnan(measured[i].second.y) ||
-          boost::math::isnan(actual[i].second.x) || boost::math::isnan(actual[i].second.y) ) )
-    {
-      RMSError.second += ( actual[i].second.x - measured[i].second.x )*(actual[i].second.x - measured[i].second.x) +
-        ( actual[i].second.y - measured[i].second.y )*(actual[i].second.y - measured[i].second.y) ;
-      count.second ++;
+      if ( ! ( boost::math::isnan(measured[index][i*2].first.x) || boost::math::isnan(measured[index][i*2].first.y) ||
+          boost::math::isnan(actual[index][i].first.x) || boost::math::isnan(actual[index][i].first.y) ) )
+      {
+        RMSError.first += ( actual[index][i].first.x - measured[index][i*2].first.x )*(actual[index][i].first.x - measured[index][i*2].first.x) +
+        ( actual[index][i].first.y - measured[index][i*2].first.y )*(actual[index][i].first.y - measured[index][i*2].first.y) ;
+        count.first ++;
+      }
+      if ( ! ( boost::math::isnan(measured[index][i*2].second.x) || boost::math::isnan(measured[index][i*2].second.y) ||
+          boost::math::isnan(actual[index][i].second.x) || boost::math::isnan(actual[index][i].second.y) ) )
+      {
+        RMSError.second += ( actual[index][i].second.x - measured[index][i*2].second.x )*(actual[index][i].second.x - measured[index][i*2].second.x) +
+          ( actual[index][i].second.y - measured[index][i*2].second.y )*(actual[index][i].second.y - measured[index][i*2].second.y) ;
+        count.second ++;
+      }
     }
   }
   if ( count.first > 0 ) 
