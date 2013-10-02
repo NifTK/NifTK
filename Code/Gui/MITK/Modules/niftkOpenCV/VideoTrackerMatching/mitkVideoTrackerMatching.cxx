@@ -305,7 +305,6 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
   {
     *Delta = delta;
   }
-  MITK_INFO << "Wanted " << timestamp << " Got " << returnValue << " D = " << delta;
   return returnValue;
 }
 
