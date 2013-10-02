@@ -49,15 +49,17 @@ int main(int argc, char** argv)
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
+    mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
+    matcher->Initialise(trackingInputDirectory);
     if ( videoLag != 0 ) 
     {
       if ( videoLag < 0 )
       {
-        projector->SetVideoLagMilliseconds(videoLag,true);
+        matcher->SetVideoLagMilliseconds(videoLag,true);
       }
       else 
       {
-        projector->SetVideoLagMilliseconds(videoLag,false);
+        matcher->SetVideoLagMilliseconds(videoLag,false);
       }
     }
 
@@ -66,8 +68,9 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    projector->SetFlipMatrices(FlipTracking);
+    matcher->SetFlipMatrices(FlipTracking);
     projector->SetTrackerIndex(trackerIndex);
+    projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
@@ -86,7 +89,7 @@ int main(int argc, char** argv)
         screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber);
+      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber,matcher);
     }
   if ( input3D.length() != 0 ) 
     {
@@ -102,7 +105,7 @@ int main(int argc, char** argv)
       fin.close();
     }
 
-    projector->Project();
+    projector->Project(matcher);
    
     if ( output2D.length() != 0 ) 
     {
