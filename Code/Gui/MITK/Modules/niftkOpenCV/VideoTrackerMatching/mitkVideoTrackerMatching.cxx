@@ -590,6 +590,10 @@ std::vector < std::vector <cv::Point3d> > VideoTrackerMatching::ReadPointsInLens
           MITK_WARN << "Parse failure at line " << linenumber;
         }
       }
+      else
+      {
+        pointID --;
+      }
       ok = getline (fin, line);
     }
     pointsInLensCS.push_back(framePointsInLensCS);
