@@ -127,6 +127,12 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
   if (!m_ImageAndSegmentationSelector)
   {
 
+    // Connect the ToolManager to DataStorage straight away.
+    mitk::ToolManager* toolManager = this->GetToolManager();
+    assert ( toolManager );
+    toolManager->SetDataStorage( *(this->GetDataStorage()) );
+    toolManager->InitializeTools();
+
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForSelectorWidget = new QWidget(parent);
@@ -158,11 +164,6 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
 
-    // Connect the ToolManager to DataStorage straight away.
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert ( toolManager );
-    toolManager->SetDataStorage( *(this->GetDataStorage()) );
-
     // Set up the ctkEventAdmin stuff.
     m_Context = mitk::MIDASActivator::GetPluginContext();
     m_EventAdminRef = m_Context->getServiceReference<ctkEventAdmin>();
@@ -176,7 +177,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 //-----------------------------------------------------------------------------
 mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 {
-  return m_ToolSelector->m_ManualToolSelectionBox->GetToolManager();
+  return m_ToolSelector->GetToolManager();
 }
 
 
