@@ -56,7 +56,14 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Project();
+  void  Project(mitk::VideoTrackerMatching::Pointer matcher);
+  
+  /**
+   * \brief
+   * Sets the cameratotracker matrix for the passed matcher 
+   * to match the matrix for the projector
+   */
+  void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
   /**
    * \brief save the projected coordinates for each frame to a text file
@@ -79,7 +86,7 @@ public:
    */
   void SetWorldPointsByTriangulation 
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
-     unsigned int FrameNumber);
+     unsigned int frameNumber , mitk::VideoTrackerMatching::Pointer matcher);
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
@@ -91,18 +98,6 @@ public:
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
-
-  /**
-   * \brief Set the matrix flip state for the VideoTracker matcher
-   */
-  void SetFlipMatrices (bool);
-  /** 
-   * \brief set the video lag parameters for the tracker matcher
-   */
-  void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
-
-  itkSetMacro ( TrackerMatcher, mitk::VideoTrackerMatching::Pointer );
-
 
 protected:
 
@@ -121,8 +116,6 @@ private:
   std::vector<cv::Point3d>      m_WorldPoints;  //the world points to project
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
-  mitk::VideoTrackerMatching::Pointer
-                                m_TrackerMatcher; //the tracker matcher
  
   bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;

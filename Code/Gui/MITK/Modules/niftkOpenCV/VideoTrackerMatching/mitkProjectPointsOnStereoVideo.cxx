@@ -31,7 +31,6 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoOut("")
 , m_Directory("")
 , m_TrackerIndex(0)
-, m_TrackerMatcher(NULL)
 , m_DrawLines(false)
 , m_InitOK(false)
 , m_ProjectOK(false)
@@ -56,6 +55,17 @@ ProjectPointsOnStereoVideo::~ProjectPointsOnStereoVideo()
 }
 
 //-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer trackerMatcher)
+{
+  if ( ! m_InitOK ) 
+  {
+    MITK_ERROR << "Can't set trackerMatcher handeye before projector initialiastion";
+    return;
+  }
+  trackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker, m_TrackerIndex);
+  return;
+}
+//-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::Initialise(std::string directory, 
     std::string calibrationParameterDirectory)
 {
@@ -77,21 +87,6 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     return;
   }
   ProjectAxes(); 
-  if ( m_TrackerMatcher.IsNull() ) 
-  {
-    m_TrackerMatcher = mitk::VideoTrackerMatching::New();
-  }
-  if ( ! m_TrackerMatcher->IsReady() )
-  {
-    m_TrackerMatcher->Initialise(m_Directory);
-    m_TrackerMatcher->SetCameraToTracker(*m_LeftCameraToTracker);
-  }
-  if ( ! m_TrackerMatcher->IsReady() )
-  {
-    MITK_ERROR << "Failed to initialise tracker matcher";
-    m_InitOK = false;
-    return;
-  }
   
   if ( m_Visualise || m_SaveVideo ) 
   {
@@ -148,8 +143,9 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
   m_InitOK = false;
   return;
 }
+
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::Project()
+void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
   if ( ! m_InitOK )
   {
@@ -174,12 +170,12 @@ void ProjectPointsOnStereoVideo::Project()
   int framenumber = 0 ;
   int key = 0;
   bool drawProjection = true;
-  while ( framenumber < m_TrackerMatcher->GetNumberOfFrames() && key != 'q')
+  while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex).inv();
+    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex).inv();
     
     std::vector < cv::Point3d > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
@@ -296,8 +292,6 @@ void ProjectPointsOnStereoVideo::Project()
         cvResize (&image, smallimage,CV_INTER_LINEAR);
         if ( framenumber %2 == 0 ) 
         {
-         
-
           cvShowImage("Left Channel" , smallimage);
         }
         else
@@ -324,9 +318,9 @@ void ProjectPointsOnStereoVideo::Project()
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
-     unsigned int framenumber)
+     unsigned int framenumber , mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
-  if ( ! m_TrackerMatcher->IsReady () ) 
+  if ( ! trackerMatcher->IsReady () ) 
   {
     MITK_ERROR << "Attempted to triangulate points without tracking matrices.";
     return;
@@ -394,7 +388,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
   }
 
-  m_WorldPoints = m_TrackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex) * points;
+  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex) * points;
 
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
   {
@@ -402,18 +396,6 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
       << onScreenPointPairs[i].second << " => " << points[i] << " => " << m_WorldPoints[i];
   }
 
-}
-
-//-----------------------------------------------------------------------------
-                                          
-void ProjectPointsOnStereoVideo::SetFlipMatrices(bool state)
-{
-  if ( m_TrackerMatcher.IsNull() ) 
-  {
-    MITK_ERROR << "Tried to set flip matrices before initialisation";
-    return;
-  }
-  m_TrackerMatcher->SetFlipMatrices(state);
 }
 
 std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
@@ -475,16 +457,6 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
 
     m_ScreenAxesPoints.push_back(pointPair);
   }
-}
-//-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking)
-{
-  if ( m_TrackerMatcher.IsNull()  || (! m_TrackerMatcher->IsReady()) )
-  {
-    MITK_ERROR << "Need to initialise before setting video lag";
-    return;
-  } 
-  m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
 }
 
 } // end namespace

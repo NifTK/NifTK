@@ -64,9 +64,12 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   mitk::ProjectPointsOnStereoVideo::Pointer Projector = mitk::ProjectPointsOnStereoVideo::New();
   Projector->SetVisualise(true);
   Projector->Initialise(argv[1], argv[2]);
-  Projector->SetFlipMatrices(false);
   Projector->SetTrackerIndex(2);
   Projector->SetDrawAxes(true);
+  mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
+  matcher->Initialise(argv[1]);
+  matcher->SetFlipMatrices(false);
+  Projector->SetMatcherCameraToTracker(matcher);
   //check it initialised, check it gets the right matrix with the right time error
   MITK_TEST_CONDITION_REQUIRED (Projector->GetInitOK() , "Testing mitkProjectPointsOnStereoVideo Initialised OK"); 
 
@@ -99,9 +102,9 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   frame1400ScreenPoints.push_back (std::pair<cv::Point2d,cv::Point2d>
       ( cv::Point2d(216,240), cv::Point( 122,220)) );
 
-  Projector->SetWorldPointsByTriangulation(frame1400ScreenPoints,1400);
+  Projector->SetWorldPointsByTriangulation(frame1400ScreenPoints,1400, matcher);
 //  Projector->SetWorldPointsByTriangulation(frame1155ScreenPoints,1155);
-  Projector->SetWorldPointsByTriangulation(frame0000ScreenPoints,2);
+  Projector->SetWorldPointsByTriangulation(frame0000ScreenPoints,2, matcher);
  
   Projector->SetDrawLines(true);
 
@@ -112,7 +115,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   WorldGridPoints.push_back ( cv::Point3d(-820.8,-166.1,-2033.7));
   WorldGridPoints.push_back ( cv::Point3d(-826.8,-168.4,-2007.0));
   Projector->SetWorldPoints(WorldGridPoints);
-  Projector->Project();
+  Projector->Project(matcher);
   MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK"); 
 
   MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS()), "Testing projected points");
