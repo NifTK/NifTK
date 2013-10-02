@@ -848,20 +848,24 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   }
   for ( int index = lowIndex; index < highIndex ; index ++ ) 
   {
-    for ( unsigned int i = 0 ; i < actual[index].size() ; i ++ ) 
+    std::cerr << "Actual Size = " << actual.size() << std::endl;
+    std::cerr << "Measured Size = " << measured.size() << std::endl;
+    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
     {
-      if ( ! ( boost::math::isnan(measured[index][i*2].first.x) || boost::math::isnan(measured[index][i*2].first.y) ||
-          boost::math::isnan(actual[index][i].first.x) || boost::math::isnan(actual[index][i].first.y) ) )
+      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
       {
-        RMSError.first += ( actual[index][i].first.x - measured[index][i*2].first.x )*(actual[index][i].first.x - measured[index][i*2].first.x) +
-        ( actual[index][i].first.y - measured[index][i*2].first.y )*(actual[index][i].first.y - measured[index][i*2].first.y) ;
+        RMSError.first += ( actual[i][index].first.x - measured[i*2][index].first.x )*(actual[i][index].first.x - measured[i*2][index].first.x) +
+        ( actual[i][index].first.y - measured[i*2][index].first.y )*(actual[i][index].first.y - measured[i*2][index].first.y) ;
+        std::cerr << "first (" << actual[i][index].first.x << "," <<  actual[i][index].first.y << ") , (" << measured[i*2][index].first.x << "," << measured[i*2][index].first.y << ") " << count.first << " : " << sqrt( RMSError.first /( count.first + 1) ) <<  std::endl;
         count.first ++;
       }
-      if ( ! ( boost::math::isnan(measured[index][i*2].second.x) || boost::math::isnan(measured[index][i*2].second.y) ||
-          boost::math::isnan(actual[index][i].second.x) || boost::math::isnan(actual[index][i].second.y) ) )
+      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
       {
-        RMSError.second += ( actual[index][i].second.x - measured[index][i*2].second.x )*(actual[index][i].second.x - measured[index][i*2].second.x) +
-          ( actual[index][i].second.y - measured[index][i*2].second.y )*(actual[index][i].second.y - measured[index][i*2].second.y) ;
+        RMSError.second += ( actual[i][index].second.x - measured[i*2][index].second.x )*(actual[i][index].second.x - measured[i*2][index].second.x) +
+          ( actual[i][index].second.y - measured[i*2][index].second.y )*(actual[i][index].second.y - measured[i*2][index].second.y) ;
+        std::cerr << "second (" << actual[i][index].second.x << "," <<  actual[i][index].second.y << ") , (" << measured[i*2][index].second.x << "," << measured[i*2][index].second.y << ") " << count.second << " : " << sqrt (RMSError.second/ ( count.second + 1 )) <<  std::endl;
         count.second ++;
       }
     }
