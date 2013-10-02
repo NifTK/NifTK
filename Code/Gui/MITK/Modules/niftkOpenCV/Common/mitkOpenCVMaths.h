@@ -251,6 +251,9 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair < double, double > FindMinimumValues
   ( std::vector < std::pair < double, double>  > inputValues, 
     std::pair <unsigned int , unsigned int > * indexes = NULL ); 
 
+extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
+    std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
 /** 
  * \brief Returns the RMS error between two point vectors
  */

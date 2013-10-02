@@ -880,7 +880,110 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   }
   return RMSError;
 }
+//-----------------------------------------------------------------------------
+std::pair < cv::Point2d, cv::Point2d >  MeanError (
+    std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , 
+    std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    std::pair < cv::Point2d, cv::Point2d >* StandardDeviations, int indexToUse)
+{
+  assert ( measured.size() == actual.size() * 2 );
 
+  std::pair < cv::Point2d, cv::Point2d>  meanError;
+  
+  meanError.first.x = 0.0 ;
+  meanError.first.y = 0.0 ;
+  meanError.second.x = 0.0 ;
+  meanError.second.y = 0.0 ;
+  
+  std::pair < int , int > count;
+  count.first = 0;
+  count.second = 0;
+  int lowIndex = 0;
+  int highIndex = measured[0].size();
+  if ( indexToUse != -1 )
+  {
+    lowIndex = indexToUse; 
+    highIndex = indexToUse;
+  }
+  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+  {
+    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+    {
+      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+      {
+        meanError.first.x +=  actual[i][index].first.x - measured[i*2][index].first.x ;
+        meanError.first.y +=  actual[i][index].first.y - measured[i*2][index].first.y ;
+        count.first ++;
+      }
+      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+      {
+        meanError.second.x +=  actual[i][index].second.x - measured[i*2][index].second.x ;
+        meanError.second.y +=  actual[i][index].second.y - measured[i*2][index].second.y ;
+        count.second ++;
+      }
+    }
+  }
+  if ( count.first > 0 ) 
+  {
+    meanError.first.x =  meanError.first.x / count.first ;
+    meanError.first.y =  meanError.first.y / count.first ;
+  }
+  if ( count.second > 0 ) 
+  {
+    meanError.second.x =  meanError.second.x / count.second ;
+    meanError.second.y =  meanError.second.y / count.second ;
+  }
+  if ( StandardDeviations == NULL ) 
+  {
+    return meanError;
+  }
+  else
+  {
+    StandardDeviations->first.x = 0.0;
+    StandardDeviations->first.y = 0.0;
+    StandardDeviations->second.x = 0.0;
+    StandardDeviations->second.y = 0.0;
+    for ( int index = lowIndex; index < highIndex ; index ++ ) 
+    {
+      for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+      {
+        if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+            boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+        {
+          double xerror = actual[i][index].first.x - measured[i*2][index].first.x - meanError.first.x;
+          double yerror = actual[i][index].first.y - measured[i*2][index].first.y - meanError.first.y;
+          StandardDeviations->first.x += xerror * xerror;
+          StandardDeviations->first.y += yerror * yerror;
+          count.first ++;
+        }
+        if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+            boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+        {
+          double xerror = actual[i][index].second.x - measured[i*2][index].second.x - meanError.second.x;
+          double yerror = actual[i][index].second.y - measured[i*2][index].second.y - meanError.second.y;
+          StandardDeviations->second.x += xerror * xerror;
+          StandardDeviations->second.y += yerror * yerror;
+          count.second ++;
+        }
+      }
+    }
+    if ( count.first > 0 ) 
+    {
+      StandardDeviations->first.x =  sqrt(StandardDeviations->first.x / count.first);
+      StandardDeviations->first.y =  sqrt(StandardDeviations->first.y / count.first) ;
+    }
+    if ( count.second > 0 ) 
+    {
+      StandardDeviations->second.x = sqrt( StandardDeviations->second.x / count.second) ;
+      StandardDeviations->second.y = sqrt( StandardDeviations->second.y / count.second) ;
+    }
+
+  }
+  return meanError;
+
+}
 } // end namespace
 
 
