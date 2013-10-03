@@ -1,13 +1,35 @@
-@echo ***** NifTK Automated Build Script - v.17 *****
+@echo ***** NifTK Automated Build Script - v.18 *****
 @echo. 
+
+@REM ************************************************************************************
+@REM *****                                                                          *****
+@REM ***** Usage:                                                                   *****
+@REM *****                                                                          *****
+@REM *****     doAutomatedBuild.bat  [<branch>]  [Release|Debug]  [<folder>]        *****
+@REM *****                                                                          *****
+@REM ***** The script checks out the sources of NifTK to %BUILD_ROOT%\<folder>      *****
+@REM ***** builds them under %BUILD_ROOT%\<folder>-<date> and prints the output of  *****
+@REM ***** the build under %BUILD_ROOT%\<folder>-<date>-logs.                       *****
+@REM *****                                                                          *****
+@REM ***** The defaults are "dev", "Release" and "NifTK".                           *****
+@REM *****                                                                          *****
+@REM ***** E.g. if BUILD_ROOT is "C:" (default) then the following command          *****
+@REM *****                                                                          *****
+@REM *****     doAutomatedBuild.bat b2711-MITK-upgrade Debug a                      *****
+@REM *****                                                                          *****
+@REM ***** will create the directories C:\a (sources), C:\a-131002 (build folder on *****
+@REM ***** 2nd October 2013) and C:\a-1301002-logs (build and test output), and     *****
+@REM ***** will make a Debug build of the b2711-MITK-upgrade branch.                *****
+@REM *****                                                                          *****
+@REM ************************************************************************************
 
 @REM ***** Attempt to enable Command extensions *****
 @setlocal enableextensions 
 
 @REM *****  Setting localised variables - Change these to match your system!!  *****
 @set "VS_LOCATION=c:\Program Files (x86)\Microsoft Visual Studio 10.0"
-@set "CMAKE_LOCATION=c:\Program Files\CMake_2.8.9-git\bin"
-@set "BUILD_LOCATION=d:\a"
+@set "CMAKE_LOCATION=c:\Program Files\CMake\bin"
+@set "BUILD_ROOT=C:"
 @set "PUTTY_LOCATION=c:\Program Files (x86)\PuTTY\"
 @set "OPENSSL_LOCATION=c:\OpenSSL-Win64\bin\"
 
@@ -34,17 +56,27 @@
 
 @REM *****  Configuring the date-stamp  *****
 @set DATESTAMP=%date%
-@set DATESTAMP=%DATESTAMP: =-%
-@set DATESTAMP=%DATESTAMP::=%
-@set DATESTAMP=%DATESTAMP:/=-%
-@set DATESTAMP=%DATESTAMP:.=-%
+set DATESTAMP=%DATESTAMP:~12,2%%DATESTAMP:~4,2%%DATESTAMP:~7,2%
 
-@echo Visual Studio location: %VS_LOCATION%
-@echo Visual Studio version:  %VSVER%
-@echo CMake location:         %CMAKE_LOCATION%
-@echo Build folder:           %BUILD_LOCATION%
-@echo CMake generator:        %CMAKE_GENERATOR%
-@echo Date Stamp:             %DATESTAMP%
+@REM *****  Configure project name. The source and build directories will be named after this name. Defaults to NifTK. *****
+@if [%3]==[] (
+  @set PROJECT_NAME=NifTK
+) else (
+  @set "PROJECT_NAME=%3"
+)
+
+@set "BUILD_SRC=%BUILD_ROOT%\%PROJECT_NAME%"
+@set "BUILD_BIN=%BUILD_ROOT%\%PROJECT_NAME%-%DATESTAMP%"
+@set "BUILD_LOG=%BUILD_BIN%-logs"
+
+echo Visual Studio location: %VS_LOCATION%
+echo Visual Studio version:  %VSVER%
+echo CMake location:         %CMAKE_LOCATION%
+echo Source folder:          %BUILD_SRC%
+echo Build folder:           %BUILD_BIN%
+echo Log folder:             %BUILD_LOG%
+echo CMake generator:        %CMAKE_GENERATOR%
+echo Date Stamp:             %DATESTAMP%
 @echo.
 
 @rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
@@ -92,75 +124,79 @@
 @set BC=%BCONF%
 @set BC=%BC:~0,3%
 
-@set "BUILDPATH=%BUILD_LOCATION%\%BR%-%BC%-%DATESTAMP%"
-@REM @echo %BUILDPATH%
+@rem set "BUILD_BIN=%BUILD_BIN%-%BR%-%BC%-%DATESTAMP%"
+@rem set "BUILDPATH=%BUILD_SRC%B"
+@REM @echo "Build folder: %BUILD_BIN%"
 
 @REM *****  Configure the current VS Config Script  *****
 @set "VSCONFSTRING=%BCONF%^|%BTYPE%"	
 	
 @REM *****  Disable GIT ssl verification  *****
 @set GIT_SSL_NO_VERIFY=1
-
 @echo.
 @REM *****  Clean off the local NIFTK repo  *****
 @echo Cleaning the local NifTK repository....
-@if exist "%BUILD_LOCATION%\NifTK" rd /s /q "%BUILD_LOCATION%\NifTK"
+@if exist "%BUILD_SRC%" rd /s /q "%BUILD_SRC%"
 
 @REM *****  Cleaning off the local build folder  *****
 @echo Cleaning the previous builds....
-@REM @echo Build Location: %BUILD_LOCATION%
-@FOR /D %%X in ("%BUILD_LOCATION%\%BR%-%BC%-*") DO @(
-  @rd /s /q %%X
-  @if exist [%%X] rd /s /q %%X
+@REM @echo Build Location: %BUILD_BIN%
+@rem FOR /D %%X in ("%BUILD_BIN%") DO @(
+  @rem rd /s /q %%X
+  @rem if exist [%%X] rd /s /q %%X
 )
+@if exist "%BUILD_BIN%" rd /s /q "%BUILD_BIN%"
 
 @REM pause
 @REM *****  Create new local build folder  *****
-@md %BUILDPATH%
+@md %BUILD_BIN%
 
 @REM *****  Clear buildlogs  *****
 @echo Cleaning previous build logs....
-@cd %BUILD_LOCATION%
-@del log_*
+@if exist "%BUILD_LOG%" rd /s /q "%BUILD_LOG%"
+@md %BUILD_LOG%
+
+@cd %BUILD_ROOT%
 
 @REM pause
 @echo.
 @echo *****  Fetch the latest source from GIT  *****
-call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
-@cd "%BUILD_LOCATION%\NifTK"
+call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK %BUILD_SRC%
+@cd "%BUILD_SRC%"
 @call git checkout %BRANCH%
 @call git pull origin %BRANCH%
 
 @echo.
 @echo *****  Configuring the build with CMake  *****
 @echo Building %BRANCH%-%BCONF%-%BTYPE%
-@echo To: %BUILDPATH%
+@echo To: %BUILD_BIN%
 @echo Current VS Config string is: %VSCONFSTRING%
 @echo.
 @REM pause
 
 @REM *****  Run CMAKE  *****
 @echo Running CMake....
-@cd %BUILDPATH%
-@call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_LOCATION%\NIFTK" >"%BUILD_LOCATION%\log_cmake.txt"
+@cd %BUILD_BIN%
+set "PATH=%CMAKE_LOCATION%;%PATH%"
+call "%CMAKE_LOCATION%\cmake.exe" -DCMAKE_BUILD_TYPE=%BCONF% -DNIFTK_BUILD_ALL_APPS=ON -DNIFTK_USE_CUDA=OFF -DNIFTK_USE_GIT_PROTOCOL=ON -DBUILD_TESTING=ON -DBUILD_COMMAND_LINE_PROGRAMS=ON -DBUILD_COMMAND_LINE_SCRIPTS=ON -DNIFTK_GENERATE_DOXYGEN_HELP=ON -G "%CMAKE_GENERATOR%" "%BUILD_SRC%" >"%BUILD_LOG%\log_cmake.txt"
 @echo. 
 
 @REM pause
 
 @REM *****  Run Visual Studio to build the current build conf  *****
 @echo Running VS....
-"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project ALL_BUILD /projectconfig %VSCONFSTRING% /out %BUILD_LOCATION%\log_build-%BRANCH%-%BCONF%.txt %BUILDPATH%\NIFTK-SUPERBUILD.sln
+"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project ALL_BUILD /projectconfig %VSCONFSTRING% /out %BUILD_LOG%\log_build-%BRANCH%-%BCONF%.txt %BUILD_BIN%\NIFTK-SUPERBUILD.sln
   
 @echo. 
 @REM pause  
 
 @REM  *****  Set PATH and Environment for NifTK  *****
-@cd "%BUILDPATH%\NIFTK-build\"
+@cd "%BUILD_BIN%\NIFTK-build\"
 @set CL=/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 @set LINK=/LARGEADDRESSAWARE
 @set NIFTK_DRC_ANALYZE=ON
 
-@set "BATFILEPATH=%BUILDPATH%\NIFTK-build\bin\startNiftyView_%BCONF%.bat"
+@set "BATFILEPATH=%BUILD_BIN%\NIFTK-build\bin\startNiftyView_%BCONF%.bat"
 @set PATHSTRING=" "
 
 @echo Reading %BATFILEPATH%....
@@ -190,20 +226,20 @@ call git clone https://cmicdev.cs.ucl.ac.uk/git/NifTK
 
 @REM *****  Run CTEST  *****
 @echo Running CTest....
-"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyStart >%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyConfigure >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyBuild >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyTest >>%BUILD_LOCATION%\log_ctest.txt
-"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlySubmit >>%BUILD_LOCATION%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyStart >%BUILD_LOG%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyConfigure >>%BUILD_LOG%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyBuild >>%BUILD_LOG%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlyTest >>%BUILD_LOG%\log_ctest.txt
+"%CMAKE_LOCATION%\ctest.exe" -C %BCONF% -E CTE-Stream -D NightlySubmit >>%BUILD_LOG%\log_ctest.txt
 @echo.
 
 @REM *****  Package the installer *****
 @echo Packaging....
-"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project PACKAGE /projectconfig %VSCONFSTRING% /out "%BUILD_LOCATION%\log_build-package.txt" NIFTK.sln
+"%VS_LOCATION%\Common7\IDE\%VSVER%" /build %BCONF% /project PACKAGE /projectconfig %VSCONFSTRING% /out "%BUILD_LOG%\log_build-package.txt" NIFTK.sln
 @echo.
 
 @echo Uploading package to server....
-CALL "%BUILD_LOCATION%\copy_exe_nightly.bat"
+CALL "%BUILD_ROOT%\copy_exe_nightly.bat"
 
 @echo.
 @echo ***** NifTK Automated Build Script FINISHED *****
