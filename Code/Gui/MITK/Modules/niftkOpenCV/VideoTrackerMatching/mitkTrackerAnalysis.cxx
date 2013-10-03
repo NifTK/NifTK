@@ -236,7 +236,7 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
 }
 //---------------------------------------------------------------------------
 void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
-    double windowHigh, double windowLow , double stepSize, std::string fileout)
+    double windowLow, double windowHigh , double stepSize, std::string fileout)
 {
   if ( !m_Ready )
   {
@@ -323,7 +323,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
     for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
     {
       *fout[trackerIndex] << "#lag SDx SDy SDz RMSLeft RMSRight" << std::endl;
-      for ( unsigned int i = 0 ; i  <= stateVector.size() ; i ++ )
+      for ( unsigned int i = 0 ; i  < stateVector.size() ; i ++ )
       {
         *fout[trackerIndex] << stateVector[i][0] << " " << 
         stateVector[i][1] << " " << 
@@ -339,7 +339,6 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
       }
       fout[trackerIndex]->close();
     }
-
   }
 
   for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
