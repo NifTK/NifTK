@@ -12,11 +12,18 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_gui_qt_commonapps)
-
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE CMIC_QT_COMMONAPPS
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES CTK QmitkExt niftkCoreGui niftkDnDDisplay
+MITK_CREATE_MODULE(niftkDnDDisplay
+  EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
+  INCLUDE_DIRS Events Dialogs LookupTables
+  DEPENDS Mitk Qmitk niftkCore niftkCoreGui
+  PACKAGE_DEPENDS QT QVTK CTK
+  QT_MODULE 
 )
 
+target_link_libraries(niftkDnDDisplay
+  niftkITK
+  )
+  
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

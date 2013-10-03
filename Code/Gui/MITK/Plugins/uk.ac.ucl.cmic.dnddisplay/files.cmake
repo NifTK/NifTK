@@ -13,24 +13,22 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
+  mitkMIDASDataStorageEditorInput.cxx
+  QmitkMIDASMultiViewEditor.cxx
+  QmitkMIDASMultiViewEditorPreferencePage.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkThumbnailRenderWindow.cxx
-  QmitkThumbnailViewPreferencePage.cxx
-  ThumbnailViewActivator.cxx
-  ThumbnailView.cxx
+  uk_ac_ucl_cmic_dnddisplay_Activator.cxx
 )
 
 set(UI_FILES
-  src/internal/ThumbnailViewControls.ui
 )
 
 set(MOC_H_FILES
-  src/internal/QmitkThumbnailRenderWindow.h
-  src/internal/QmitkThumbnailViewPreferencePage.h
-  src/internal/ThumbnailViewActivator.h
-  src/internal/ThumbnailView.h
+  src/internal/uk_ac_ucl_cmic_dnddisplay_Activator.h
+  src/QmitkMIDASMultiViewEditor.h
+  src/QmitkMIDASMultiViewEditorPreferencePage.h  
 )
 
 # list of resource files which can be used by the plug-in
@@ -38,14 +36,12 @@ set(MOC_H_FILES
 # for example the icon used in the menu and tabs for the
 # plug-in views in the workbench
 set(CACHED_RESOURCE_FILES
-  resources/icon.xpm
   plugin.xml
 )
 
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-
 )
 
 set(CPP_FILES )

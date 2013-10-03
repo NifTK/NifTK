@@ -22,7 +22,7 @@
 #include <mitkModule.h>
 #include <mitkModuleRegistry.h>
 
-#include "mitkMIDASDisplayInteractor.h"
+#include <Interactions/mitkMIDASDisplayInteractor.h>
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");

@@ -19,5 +19,4 @@ set(MODULE_TESTS
 set(MODULE_CUSTOM_TESTS
   mitkMIDASPaintbrushToolTest.cxx
   mitkMIDASMorphologicalSegmentorPipelineManagerTest.cxx
-  mitkMIDASSegmentationNodeAddedVisibilityTest.cxx
 )
