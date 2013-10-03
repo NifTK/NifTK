@@ -482,10 +482,21 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 }
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
+cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation )
 {
    cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
-   return TrackerMatrix * m_CameraToTracker[TrackerIndex];
+   if ( Perturbation == NULL ) 
+   {
+     return TrackerMatrix * m_CameraToTracker[TrackerIndex];
+   }
+   else
+   {
+     assert ( Perturbation->size() == 6 );
+     return TrackerMatrix * 
+       mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
+            Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
+            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5));
+   }
 }
 
 //---------------------------------------------------------------------------
