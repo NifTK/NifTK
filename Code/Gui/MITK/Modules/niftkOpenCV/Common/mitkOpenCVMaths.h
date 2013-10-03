@@ -262,7 +262,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector 
     double outlierSD = 2.0 );
 
 /**
- * \brief perturbs a 4x4 matrix with a 6 dof rigid transform;
+ * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
+ * defined by three translations and 3 rotations, in Degrees
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
     const cv::Mat transformIn,

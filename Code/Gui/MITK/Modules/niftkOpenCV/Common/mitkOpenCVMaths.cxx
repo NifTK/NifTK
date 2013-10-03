@@ -1014,9 +1014,9 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
   cv::Mat rotationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat rotationMatrix = cv::Mat (3,3,CV_64FC1);
   cv::Mat perturbationMatrix = cv::Mat (4,4,CV_64FC1);
-  rotationVector.at<double>(0,0) = rx;
-  rotationVector.at<double>(1,0) = ry;
-  rotationVector.at<double>(2,0) = rz;
+  rotationVector.at<double>(0,0) = rx * CV_PI/180;
+  rotationVector.at<double>(1,0) = ry * CV_PI/180;
+  rotationVector.at<double>(2,0) = rz * CV_PI/180;
   
   cv::Rodrigues ( rotationVector,rotationMatrix );
   for ( int row = 0 ; row < 3 ; row ++ )
