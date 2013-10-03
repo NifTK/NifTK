@@ -1004,6 +1004,37 @@ std::pair < cv::Point2d, cv::Point2d >  MeanError (
   return meanError;
 
 }
+
+//-----------------------------------------------------------------------------
+cv::Mat PerturbTransform (const cv::Mat transformIn , 
+    const double tx, const double ty, const double tz,
+    const double rx, const double ry, const double rz)
+{
+
+  cv::Mat rotationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rotationMatrix = cv::Mat (3,3,CV_64FC1);
+  cv::Mat perturbationMatrix = cv::Mat (4,4,CV_64FC1);
+  rotationVector.at<double>(0,0) = rx;
+  rotationVector.at<double>(1,0) = ry;
+  rotationVector.at<double>(2,0) = rz;
+  
+  cv::Rodrigues ( rotationVector,rotationMatrix );
+  for ( int row = 0 ; row < 3 ; row ++ )
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      perturbationMatrix.at<double>(row,col) = rotationMatrix.at<double>(row,col);
+    }
+  }
+  perturbationMatrix.at<double>(0,3) = tx;
+  perturbationMatrix.at<double>(1,3) = ty;
+  perturbationMatrix.at<double>(2,3) = tz;
+  perturbationMatrix.at<double>(3,0) = 0.0;
+  perturbationMatrix.at<double>(3,1) = 0.0;
+  perturbationMatrix.at<double>(3,2) = 0.0;
+  perturbationMatrix.at<double>(3,3) = 1.0;
+
+  return transformIn * perturbationMatrix;
+}
+
 } // end namespace
-
-

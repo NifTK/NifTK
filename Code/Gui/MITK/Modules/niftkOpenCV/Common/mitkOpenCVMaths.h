@@ -260,6 +260,14 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError (
 extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
     double outlierSD = 2.0 );
+
+/**
+ * \brief perturbs a 4x4 matrix with a 6 dof rigid transform;
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
+    const cv::Mat transformIn,
+    const double tx, const double ty, const double tz, 
+    const double rx, const double ry, const double rz );
 } // end namespace
 
 #endif
