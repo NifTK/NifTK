@@ -56,7 +56,7 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Project(mitk::VideoTrackerMatching::Pointer matcher);
+  void  Project(mitk::VideoTrackerMatching::Pointer matcher, std::vector<double> * perturbation = NULL);
   
   /**
    * \brief
@@ -86,7 +86,8 @@ public:
    */
   void SetWorldPointsByTriangulation 
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
-     unsigned int frameNumber , mitk::VideoTrackerMatching::Pointer matcher);
+     unsigned int frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
+     std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);

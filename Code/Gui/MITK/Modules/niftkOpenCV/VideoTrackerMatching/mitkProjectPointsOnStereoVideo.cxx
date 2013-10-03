@@ -145,7 +145,8 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
+void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+    std::vector<double>* perturbation)
 {
   if ( ! m_InitOK )
   {
@@ -175,7 +176,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex).inv();
+    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex, perturbation).inv();
     
     std::vector < cv::Point3d > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
@@ -318,7 +319,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
-     unsigned int framenumber , mitk::VideoTrackerMatching::Pointer trackerMatcher)
+     unsigned int framenumber , mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+     std::vector<double> * perturbation)
 {
   if ( ! trackerMatcher->IsReady () ) 
   {
@@ -388,7 +390,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
   }
 
-  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex) * points;
+  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex, perturbation) * points;
 
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
   {
