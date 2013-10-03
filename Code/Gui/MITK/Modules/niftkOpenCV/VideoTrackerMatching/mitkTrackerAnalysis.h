@@ -61,7 +61,8 @@ public:
    * variance in the residual reconstruction error is used to determine the 
    * sensitivity of the system to errors in the hand eye calibration
    */
-  void HandeyeSensitivityTest (std::string filename, bool visualise = false , std::string fileout = "" );
+  void HandeyeSensitivityTest (std::string filename, double windowLow, double windowHigh,
+      double stepSize, std::string fileout = "" );
   
   itkSetMacro (CalibrationDirectory, std::string);
 protected:

@@ -150,6 +150,8 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
 void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename ,
     bool visualise, std::string fileout)
 {
+  MITK_ERROR << "TrackerAnalysis::OptimiseHandeyeCalibration is currently broken, do not use";
+  return;
   if ( !m_Ready )
   {
     MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
@@ -234,34 +236,120 @@ void TrackerAnalysis::OptimiseHandeyeCalibration(std::string calibrationfilename
 }
 //---------------------------------------------------------------------------
 void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
-    bool visualise, std::string fileout)
+    double windowHigh, double windowLow , double stepSize, std::string fileout)
 {
- if ( !m_Ready )
+  if ( !m_Ready )
   {
-    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
+    MITK_ERROR << "Initialise video tracker matcher before attempting handeye sensitivity";
     return;
   }
 
-  std::ofstream fout;
+  std::vector < std::ofstream* > fout;
   if ( fileout.length() != 0 ) 
   {
-    fout.open(fileout.c_str());
-    if ( !fout )
+    for ( unsigned int i = 0 ; i <  m_TrackingMatrixTimeStamps.size() ; i ++ ) 
     {
-      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
+      std::string thisfileout = fileout + boost::lexical_cast<std::string>(i) + ".txt";
+      std::ofstream* thisfout = new std::ofstream();
+      thisfout->open ( thisfileout.c_str() );
+      if ( !thisfout )
+      {
+        MITK_WARN << "Failed to open output file for handeye sensitivity " << thisfileout;
+      }
+      fout.push_back(thisfout);
     }
   }
 
-  std::vector < std::vector <cv::Point3d> > pointsInLensCS;
+  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
   pointsInLensCS.clear();
-  std::vector < std::vector <std::pair <cv::Point2d, cv::Point2d > > > * onScreenPoints = new std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > >;
-  onScreenPoints->clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename,1, onScreenPoints);
+  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > onScreenPoints;
+  onScreenPoints.clear();
+  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename, 1 , &onScreenPoints);
 
   if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
   {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
+    MITK_ERROR << "Handeye sensitivity file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
     return;
   }
+
+  mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
+  projector->Initialise(m_Directory,m_CalibrationDirectory);
+
+  std::vector < std::vector < cv::Point3d > > reconstructedPointSD (m_TrackingMatrixTimeStamps.size());
+  std::vector < std::vector < std::pair <double, double > > > projectedErrorRMS (m_TrackingMatrixTimeStamps.size());
+  std::vector < std::vector <double> > stateVector;
+  for ( double tx = windowLow; tx <= windowHigh ; tx += stepSize )
+  {
+    std::vector<double> state;
+    state.push_back(tx);
+    state.push_back(0.0);
+    state.push_back(0.0);
+    state.push_back(0.0);
+    state.push_back(0.0);
+    state.push_back(0.0);
+
+    stateVector.push_back( state );
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    {
+      std::vector <cv::Point3d> worldPoints;
+      worldPoints.clear();
+      for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
+      {
+        int framenumber = frame * 2;
+        worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
+            pointsInLensCS[frame][0]);
+      }
+      
+      cv::Point3d pointSpread;
+      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
+
+      reconstructedPointSD[trackerIndex].push_back(pointSpread);
+      std::vector <cv::Point3d > worldPoint(1);
+      worldPoint[0] = worldCentre;
+      projector->SetWorldPoints(worldPoint);
+      projector->SetTrackerIndex(trackerIndex);
+      projector->Project(this, &state);
+      std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
+        projector->GetProjectedPoints();
+      
+      std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
+      projectedErrorRMS[trackerIndex].push_back(projectedRMS);
+      
+    }
+  }
+
+  if ( fileout.length() != 0 ) 
+  {
+    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    {
+      *fout[trackerIndex] << "#lag SDx SDy SDz RMSLeft RMSRight" << std::endl;
+      for ( unsigned int i = 0 ; i  <= stateVector.size() ; i ++ )
+      {
+        *fout[trackerIndex] << stateVector[i][0] << " " << 
+        stateVector[i][1] << " " << 
+        stateVector[i][2] << " " << 
+        stateVector[i][3] << " " << 
+        stateVector[i][4] << " " << 
+        stateVector[i][5] << " : " << 
+        reconstructedPointSD[trackerIndex][i].x << " " <<
+        reconstructedPointSD[trackerIndex][i].y << " " <<
+        reconstructedPointSD[trackerIndex][i].z << " " <<
+        projectedErrorRMS[trackerIndex][i].first << " " <<
+        projectedErrorRMS[trackerIndex][i].second << std::endl;
+      }
+      fout[trackerIndex]->close();
+    }
+
+  }
+
+  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+  {
+    std::pair < unsigned int , unsigned int > minIndexes;
+    std::pair < double , double > minValues = mitk::FindMinimumValues ( projectedErrorRMS[trackerIndex], &minIndexes );
+    MITK_INFO << "Tracker Index " << trackerIndex << " min left RMS " << minValues.first << " at " << (int)minIndexes.first + windowLow << " ms ";  ;
+    MITK_INFO << "Tracker Index " << trackerIndex << " min right RMS " << minValues.second << " at " << (int)minIndexes.second + windowLow << " ms ";  ;
+  }
+
+
 }
 } // namespace
