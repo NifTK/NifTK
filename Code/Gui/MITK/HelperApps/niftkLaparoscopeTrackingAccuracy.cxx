@@ -47,7 +47,13 @@ int main(int argc, char** argv)
     {
       trackerMatcherObject->OptimiseHandeyeCalibration(OptimiseHandeye, false, TCfileout);
     }
-
+    if ( HandeyeSensitivity.length() != 0 )
+    {
+      trackerMatcherObject->SetCalibrationDirectory(cameraCalibration);
+      trackerMatcherObject->SetVideoLagMilliseconds(videoLag);
+      trackerMatcherObject->HandeyeSensitivityTest(HandeyeSensitivity, handeyeWindowLow, handeyeWindowHigh, handeyeStepSize, HEfileout);
+    }
+ 
     returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)

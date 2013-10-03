@@ -37,7 +37,13 @@
       <description>The directory containing the intrinsic calibration for the camera</description>
       <label>The directory containing the intrinsic calibration for the camera</label>
     </directory>    
-
+    <file>
+      <name>HandeyeSensitivity</name>
+      <longflag>HandeyeSensitivity</longflag>
+      <description>A file used for handeye sensitivity analysis.</description>
+      <label>A file used for handeye sensitivity analysis</label>
+    </file>    
+ 
 
     <file>
       <name>handeyes</name>
@@ -50,6 +56,12 @@
       <longflag>TCfileout</longflag>
       <description>A file to writeout the temporal calibration results.</description>
       <label>A file to writeout the temporal calibration results</label>
+    </file>
+    <file>
+      <name>HEfileout</name>
+      <longflag>HEfileout</longflag>
+      <description>A file to writeout the handeye sensitivity results.</description>
+      <label>A file to writeout the temporal handeye sensitivity results</label>
     </file>
 
   </parameters>
@@ -73,6 +85,14 @@
 	<label>The tracker index to use</label>
 	<default>0</default>
     </integer>
+  
+    <integer>
+	<name>videoLag</name>
+	<longflag>videoLag</longflag>
+	<description>The video lag in ms</description>
+	<label>The video lag in ms</label>
+	<default>50</default>
+    </integer>
 
     <integer>
 	<name>temporalWindowLow</name>
@@ -88,7 +108,31 @@
 	<description>The upper value (ms) for the temporal calibration window</description>
 	<label>The upper valuer (ms) for the temporal calibration window</label>
 	<default>50</default>
-    </integer>
+</integer>
+
+     <float>
+	<name>handeyeWindowLow</name>
+	<longflag>handeyeWindowLow</longflag>
+	<description>The lower value (mm/deg) for the handeye sensitivity window</description>
+	<label>The lower valuer (mm/deg) for the handeye sensitivity window</label>
+	<default>-12.0</default>
+    </float>
+
+    <float>
+	<name>handeyeWindowHigh</name>
+	<longflag>handeyeWindowHigh</longflag>
+	<description>The upper value (mm/deg) for the handeye sensitivity window</description>
+	<label>The upper valuer (mm/deg) for the handeye sensitivity window</label>
+	<default>12.0</default>
+    </float>
+    <float>
+	<name>handeyeStepSize</name>
+	<longflag>handeyeStepSize</longflag>
+	<description>The step size value (mm/deg) for the handeye sensitivity window</description>
+	<label>The step size (mm/deg) for the handeye sensitivity window</label>
+	<default>4.0</default>
+    </float>
+
   </parameters>
   
 </executable>
