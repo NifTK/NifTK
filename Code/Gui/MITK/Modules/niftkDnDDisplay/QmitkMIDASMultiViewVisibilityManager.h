@@ -23,7 +23,7 @@
 #include <mitkBaseProperty.h>
 #include <mitkProperties.h>
 #include <itkImage.h>
-#include <DataManagement/mitkDataNodeStringPropertyFilter.h>
+#include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkRenderWindow;
 class QmitkMIDASSingleViewWidget;

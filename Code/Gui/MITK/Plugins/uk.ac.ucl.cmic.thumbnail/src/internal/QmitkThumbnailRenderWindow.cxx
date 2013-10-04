@@ -28,8 +28,6 @@
 #include <QmitkWheelEventEater.h>
 #include <mitkDataStorageUtils.h>
 
-#include <mitkDataNodeStringPropertyFilter.h>
-
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
@@ -89,25 +87,26 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 
   // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
   //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
-  mitk::DataNodeStringPropertyFilter::Pointer filter = mitk::DataNodeStringPropertyFilter::New();
-  filter->SetPropertyName("name");
-  filter->AddToList("FeedbackContourTool");
-  filter->AddToList("MIDASContourTool");
-  filter->AddToList("MIDAS_SEEDS");
-  filter->AddToList("MIDAS_CURRENT_CONTOURS");
-  filter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-  filter->AddToList("MIDAS_PRIOR_CONTOURS");
-  filter->AddToList("MIDAS_NEXT_CONTOURS");
-  filter->AddToList("MIDAS_DRAW_CONTOURS");
-  filter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-  filter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-  filter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-  filter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-  filter->AddToList("MIDAS PolyTool anchor points");
-  filter->AddToList("MIDAS PolyTool previous contour");
-  filter->AddToList("Paintbrush_Node");
 
-  m_NodeAddedSetter->AddFilter(filter.GetPointer());
+  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_MIDASToolNodeNameFilter->SetPropertyName("name");
+  m_MIDASToolNodeNameFilter->AddToList("FeedbackContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+
+  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
   m_NodeAddedSetter->SetRenderers(renderers);
   m_NodeAddedSetter->SetVisibility(false);
 

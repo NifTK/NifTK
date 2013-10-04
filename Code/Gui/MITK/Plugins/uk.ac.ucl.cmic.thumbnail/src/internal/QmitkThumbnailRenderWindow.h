@@ -22,7 +22,8 @@
 #include <mitkCuboid.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkDataStorageVisibilityTracker.h>
-#include <DataManagement/mitkDataNodeAddedVisibilitySetter.h>
+#include <mitkDataNodeAddedVisibilitySetter.h>
+#include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;
@@ -235,6 +236,7 @@ private:
   // This
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
+  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
 };
 
 

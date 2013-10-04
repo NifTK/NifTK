@@ -27,7 +27,6 @@
 #include <mitkSliceNavigationController.h>
 #include <mitkBaseRenderer.h>
 #include <itkCommand.h>
-#include <mitkMIDASDataNodeNameStringFilter.h>
 
 
 //-----------------------------------------------------------------------------
@@ -79,8 +78,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   renderers.push_back(m_ViewerWidget->GetCoronalWindow()->GetRenderer());
 
   m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
-  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
-  m_NodeAddedSetter->AddFilter(filter.GetPointer());
+  m_MIDASToolNodeNameFilter = mitk::MIDASDataNodeNameStringFilter::New();
+  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
   m_NodeAddedSetter->SetRenderers(renderers);
   m_NodeAddedSetter->SetVisibility(false);
 

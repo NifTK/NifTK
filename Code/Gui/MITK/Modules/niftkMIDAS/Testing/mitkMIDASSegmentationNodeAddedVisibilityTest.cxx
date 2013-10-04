@@ -32,8 +32,8 @@
 
 #include <mitkNifTKCoreObjectFactory.h>
 #include <mitkMIDASImageUtils.h>
-#include <DataManagement/mitkMIDASDataNodeNameStringFilter.h>
-#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkMIDASDataNodeNameStringFilter.h>
+#include <mitkMIDASNodeAddedVisibilitySetter.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPolyTool.h>
 
