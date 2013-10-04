@@ -37,6 +37,30 @@ QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk:
   m_Widgets.clear();
   m_ObserverToVisibilityMap.clear();
 
+  // TODO: Is there a way round this, because its ugly.
+  // Basically, when drawing on an image, you interactively add/remove contours or seeds.
+  // So, these objects are not "dropped" into a window, they are like overlays.
+  // So, as soon as a drawing tool creates them, they must be visible.
+  // Then they are removed from data storage when no longer needed.
+  // So, for now, we just make sure they are not processed by this class.
+  m_NodeFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_NodeFilter->SetPropertyName("name");
+  m_NodeFilter->AddToList("FeedbackContourTool");
+  m_NodeFilter->AddToList("MIDASContourTool");
+  m_NodeFilter->AddToList("MIDAS_SEEDS");
+  m_NodeFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_NodeFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_NodeFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_NodeFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_NodeFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_NodeFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_NodeFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_NodeFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_NodeFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_NodeFilter->AddToList("MIDAS PolyTool anchor points");
+  m_NodeFilter->AddToList("MIDAS PolyTool previous contour");
+  m_NodeFilter->AddToList("Paintbrush_Node");
+
   m_DataStorage->AddNodeEvent.AddListener(
       mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
     ( this, &QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy ) );
@@ -279,30 +303,11 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
   // Then they are removed from data storage when no longer needed.
   // So, for now, we just make sure they are not processed by this class.
 
-  // TODO Commented out when the niftkDnDDisplay has been separated from niftkMIDASGui.
-
-/*
-  std::string name = node->GetName();
-  if (   name.find("FeedbackContourTool") != std::string::npos
-      || name.find("MIDASContourTool") != std::string::npos
-      || name.find(mitk::MIDASTool::SEED_POINT_SET_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::CURRENT_CONTOURS_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::PRIOR_CONTOURS_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::NEXT_CONTOURS_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::DRAW_CONTOURS_NAME) != std::string::npos
-      || name.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS) != std::string::npos
-      || name.find(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS) != std::string::npos
-      || name.find(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS) != std::string::npos
-      || name.find(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS) != std::string::npos
-      || name.find(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS) != std::string::npos
-      || name.find(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR) != std::string::npos
-      || name.find("Paintbrush_Node") != std::string::npos
-      )
+  if (!m_NodeFilter->Pass(node))
   {
     return;
   }
-*/
+
   this->UpdateObserverToVisibilityMap();
   this->SetInitialNodeProperties(const_cast<mitk::DataNode*>(node));
 }

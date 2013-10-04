@@ -20,7 +20,7 @@
 #include <QWidget>
 #include <QString>
 #include <mitkMIDASEnums.h>
-#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
+#include <DataManagement/mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
 
 namespace mitk
@@ -157,7 +157,7 @@ private:
   QmitkRenderWindow* m_MainWindow3d;
   mitk::BaseRenderer* m_CurrentRenderer;
 
-  mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   double m_Magnification;

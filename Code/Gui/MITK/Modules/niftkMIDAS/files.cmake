@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  DataManagement/mitkMIDASDataNodeNameStringFilter.cxx
   Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cxx
   Interactions/mitkMIDASTool.cxx
   Interactions/mitkMIDASContourToolEventInterface.cxx

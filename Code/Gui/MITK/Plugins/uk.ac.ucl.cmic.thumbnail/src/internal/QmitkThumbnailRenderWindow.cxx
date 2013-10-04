@@ -28,6 +28,7 @@
 #include <QmitkWheelEventEater.h>
 #include <mitkDataStorageUtils.h>
 
+#include <mitkDataNodeStringPropertyFilter.h>
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
@@ -84,7 +85,29 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   std::vector<mitk::DataNode*> nodesToIgnore;
   nodesToIgnore.push_back(m_BoundingBoxNode);
 
-  m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
+  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
+
+  // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
+  //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+  mitk::DataNodeStringPropertyFilter::Pointer filter = mitk::DataNodeStringPropertyFilter::New();
+  filter->SetPropertyName("name");
+  filter->AddToList("FeedbackContourTool");
+  filter->AddToList("MIDASContourTool");
+  filter->AddToList("MIDAS_SEEDS");
+  filter->AddToList("MIDAS_CURRENT_CONTOURS");
+  filter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  filter->AddToList("MIDAS_PRIOR_CONTOURS");
+  filter->AddToList("MIDAS_NEXT_CONTOURS");
+  filter->AddToList("MIDAS_DRAW_CONTOURS");
+  filter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  filter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  filter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  filter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  filter->AddToList("MIDAS PolyTool anchor points");
+  filter->AddToList("MIDAS PolyTool previous contour");
+  filter->AddToList("Paintbrush_Node");
+
+  m_NodeAddedSetter->AddFilter(filter.GetPointer());
   m_NodeAddedSetter->SetRenderers(renderers);
   m_NodeAddedSetter->SetVisibility(false);
 

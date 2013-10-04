@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataManagement/mitkMIDASDataNodeNameStringFilter.cxx
   QmitkMIDASSlidersWidget.cxx
   QmitkMIDASLayoutWidget.cxx
   QmitkMIDASStdMultiWidget.cxx
@@ -25,7 +24,6 @@ set(CPP_FILES
   QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
   QmitkMIDASSingleViewWidgetListDropManager.cxx
   vtkSideAnnotation.cxx
-  DataManagement/mitkMIDASNodeAddedVisibilitySetter.cxx
   Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASDisplayInteractor.cxx
 )

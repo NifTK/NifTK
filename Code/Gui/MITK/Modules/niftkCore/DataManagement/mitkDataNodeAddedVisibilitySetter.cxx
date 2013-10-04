@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkMIDASNodeAddedVisibilitySetter.h"
+#include "mitkDataNodeAddedVisibilitySetter.h"
 #include <mitkDataNode.h>
 #include <mitkProperties.h>
 
@@ -20,30 +20,27 @@ namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter()
+DataNodeAddedVisibilitySetter::DataNodeAddedVisibilitySetter()
 : m_Visibility(false)
-, m_Filter(NULL)
 {
-  m_Filter = mitk::MIDASDataNodeNameStringFilter::New();
-  this->AddFilter(m_Filter.GetPointer());
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::MIDASNodeAddedVisibilitySetter(mitk::DataStorage::Pointer dataStorage)
+DataNodeAddedVisibilitySetter::DataNodeAddedVisibilitySetter(mitk::DataStorage::Pointer dataStorage)
 : DataStorageListener(dataStorage)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASNodeAddedVisibilitySetter::~MIDASNodeAddedVisibilitySetter()
+DataNodeAddedVisibilitySetter::~DataNodeAddedVisibilitySetter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
+void DataNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer*>& list)
 {
   m_Renderers = list;
   this->Modified();
@@ -51,7 +48,7 @@ void MIDASNodeAddedVisibilitySetter::SetRenderers(std::vector<mitk::BaseRenderer
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::ClearRenderers()
+void DataNodeAddedVisibilitySetter::ClearRenderers()
 {
   m_Renderers.clear();
   this->Modified();
@@ -59,7 +56,7 @@ void MIDASNodeAddedVisibilitySetter::ClearRenderers()
 
 
 //-----------------------------------------------------------------------------
-void MIDASNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
+void DataNodeAddedVisibilitySetter::NodeAdded(mitk::DataNode* node)
 {
   if (m_Renderers.size() > 0)
   {

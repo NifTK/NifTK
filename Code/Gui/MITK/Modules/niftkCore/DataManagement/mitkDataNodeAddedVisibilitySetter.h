@@ -12,14 +12,13 @@
 
 =============================================================================*/
 
-#ifndef mitkMIDASNodeAddedVisibilitySetter_h
-#define mitkMIDASNodeAddedVisibilitySetter_h
+#ifndef mitkDataNodeAddedVisibilitySetter_h
+#define mitkDataNodeAddedVisibilitySetter_h
 
-#include "niftkDnDDisplayExports.h"
+#include "niftkCoreExports.h"
 #include <vector>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageListener.h>
-#include "mitkMIDASDataNodeNameStringFilter.h"
 
 namespace mitk
 {
@@ -28,7 +27,7 @@ class DataNode;
 class BaseRenderer;
 
 /**
- * \class MIDASNodeAddedVisibilitySetter
+ * \class DataNodeAddedVisibilitySetter
  * \brief When a node is added to data storage, will set initial visibility properties.
  *
  * The usage is as follows:
@@ -44,13 +43,13 @@ class BaseRenderer;
  *
  * \see DataStorageListener::AddFilter
  */
-class NIFTKDNDDISPLAY_EXPORT MIDASNodeAddedVisibilitySetter : public DataStorageListener
+class NIFTKCORE_EXPORT DataNodeAddedVisibilitySetter : public DataStorageListener
 {
 public:
 
-  mitkClassMacro(MIDASNodeAddedVisibilitySetter, DataStorageListener);
-  itkNewMacro(MIDASNodeAddedVisibilitySetter);
-  mitkNewMacro1Param(MIDASNodeAddedVisibilitySetter, const mitk::DataStorage::Pointer);
+  mitkClassMacro(DataNodeAddedVisibilitySetter, DataStorageListener);
+  itkNewMacro(DataNodeAddedVisibilitySetter);
+  mitkNewMacro1Param(DataNodeAddedVisibilitySetter, const mitk::DataStorage::Pointer);
 
   /// \brief Sets the list of renderers to update.
   void SetRenderers(std::vector<mitk::BaseRenderer*>& list);
@@ -64,12 +63,12 @@ public:
 
 protected:
 
-  MIDASNodeAddedVisibilitySetter();
-  MIDASNodeAddedVisibilitySetter(const mitk::DataStorage::Pointer);
-  virtual ~MIDASNodeAddedVisibilitySetter();
+  DataNodeAddedVisibilitySetter();
+  DataNodeAddedVisibilitySetter(const mitk::DataStorage::Pointer);
+  virtual ~DataNodeAddedVisibilitySetter();
 
-  MIDASNodeAddedVisibilitySetter(const MIDASNodeAddedVisibilitySetter&); // Purposefully not implemented.
-  MIDASNodeAddedVisibilitySetter& operator=(const MIDASNodeAddedVisibilitySetter&); // Purposefully not implemented.
+  DataNodeAddedVisibilitySetter(const DataNodeAddedVisibilitySetter&); // Purposefully not implemented.
+  DataNodeAddedVisibilitySetter& operator=(const DataNodeAddedVisibilitySetter&); // Purposefully not implemented.
 
   /// \see DataStorageListener::NodeAdded
   virtual void NodeAdded(mitk::DataNode* node);
@@ -78,7 +77,6 @@ private:
 
   bool m_Visibility;
   std::vector<mitk::BaseRenderer*> m_Renderers;
-  mitk::MIDASDataNodeNameStringFilter::Pointer m_Filter;
 };
 
 } // end namespace

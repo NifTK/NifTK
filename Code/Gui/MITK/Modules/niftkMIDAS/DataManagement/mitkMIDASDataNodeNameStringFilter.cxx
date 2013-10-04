@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkMIDASDataNodeNameStringFilter.h"
-//#include <mitkMIDASTool.h>
-//#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPolyTool.h>
 
 namespace mitk
 {
@@ -22,23 +22,20 @@ namespace mitk
 //-----------------------------------------------------------------------------
 MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
 {
-// TODO Commented out when DnDDisplay was separated from MIDASGui
   this->AddToList("FeedbackContourTool");
   this->AddToList("MIDASContourTool");
-/*
   this->AddToList(mitk::MIDASTool::SEED_POINT_SET_NAME);
   this->AddToList(mitk::MIDASTool::CURRENT_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME);
   this->AddToList(mitk::MIDASTool::PRIOR_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
-  this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
+  this->AddToList(mitk::MIDASTool::DRAW_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
-*/
   this->AddToList("Paintbrush_Node");
   this->SetPropertyName("name");
 }

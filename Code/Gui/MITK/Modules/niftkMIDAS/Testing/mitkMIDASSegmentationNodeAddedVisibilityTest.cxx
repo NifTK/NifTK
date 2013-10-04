@@ -34,8 +34,8 @@
 #include <mitkMIDASImageUtils.h>
 #include <DataManagement/mitkMIDASDataNodeNameStringFilter.h>
 #include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
-//#include <mitkMIDASTool.h>
-//#include <mitkMIDASPolyTool.h>
+#include <mitkMIDASTool.h>
+#include <mitkMIDASPolyTool.h>
 
 /**
  * \brief Test class for mitkMIDASSegmentationNodeAddedVisibilityTest.
@@ -123,6 +123,8 @@ public:
 
     // Create the setter we are testing.
     mitk::MIDASNodeAddedVisibilitySetter::Pointer setter = mitk::MIDASNodeAddedVisibilitySetter::New();
+    mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+    setter->AddFilter(filter);
     setter->SetVisibility(false);
     setter->SetDataStorage(dataStorage);
     if (doRendererSpecific)
@@ -174,8 +176,6 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
 
   testClass->TestCreateFilter();
   testClass->TestFilterPassWithNoPropertiesSet();
-  // TODO Commented out when moving DnD Display to its own module.
-/*
   testClass->TestFilterFailWithGivenString("FeedbackContourTool");
   testClass->TestFilterFailWithGivenString("MIDASContourTool");
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::SEED_POINT_SET_NAME);
@@ -190,7 +190,6 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");
-*/
   testClass->TestVisibilitySetter(argv, false); // global
   testClass->TestVisibilitySetter(argv, true); // renderer specific
 

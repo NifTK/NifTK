@@ -22,7 +22,7 @@
 #include <mitkCuboid.h>
 #include <mitkTimeSlicedGeometry.h>
 #include <mitkDataStorageVisibilityTracker.h>
-#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
+#include <DataManagement/mitkDataNodeAddedVisibilitySetter.h>
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;
@@ -230,7 +230,7 @@ private:
   bool m_InDataStorageChanged;
 
   // To track visibility changes.
-  mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
 
   // This
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
