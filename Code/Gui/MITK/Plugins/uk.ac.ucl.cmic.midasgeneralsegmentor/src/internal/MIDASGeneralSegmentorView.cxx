@@ -165,7 +165,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
-    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
+    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
 
     this->CreateConnections();
   }

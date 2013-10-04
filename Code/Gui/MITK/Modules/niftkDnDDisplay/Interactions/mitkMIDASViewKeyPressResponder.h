@@ -23,10 +23,10 @@ namespace mitk {
  * \class MIDASViewKeyPressResponder
  * \brief Pure Virtual Interface to be implemented by classes that want to
  * respond to MIDAS key events relevant to how the image is viewed where events
- * are passed through from the MIDASKeyPressStateMachine which is a subclass of
+ * are passed through from the MIDASViewKeyPressStateMachine which is a subclass of
  * StateMachine, and hence registered with the interaction loop.
  *
- * \sa MIDASKeyPressStateMachine
+ * \sa MIDASViewKeyPressStateMachine
  * \sa MIDASToolKeyPressResponder
  * \sa StateMachine
  */

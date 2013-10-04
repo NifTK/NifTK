@@ -234,22 +234,6 @@ QmitkCommonAppsApplicationPlugin
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::RegisterMIDASGlobalInteractionPatterns()
-{
-  // TODO Commented out when niftkDnDDisplay has been separated from niftkMIDASGui
-/*
-  mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML);
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML);
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML);
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML);
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML);
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_KEYPRESS_STATE_MACHINE_XML);
-*/
-}
-
-
-//-----------------------------------------------------------------------------
 berry::IPreferences* QmitkCommonAppsApplicationPlugin::GetPreferencesNode(
     const std::string& preferencesNodeName)
 {

@@ -20,6 +20,30 @@
 namespace mitk
 {
 
+const std::string mitk::MIDASViewKeyPressStateMachine::STATE_MACHINE_XML =
+    "<stateMachine NAME=\"MIDASViewKeyPressStateMachine\">"
+    "  <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
+    "    <transition NAME=\"keyPressA\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4001\">"
+    "      <action ID=\"350001\" />"
+    "    </transition>"
+    "    <transition NAME=\"keyPressZ\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4019\">"
+    "      <action ID=\"350002\" />"
+    "    </transition>"
+    "    <transition NAME=\"keyPressQ\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4013\">"
+    "      <action ID=\"350003\" />"
+    "    </transition>"
+    "    <transition NAME=\"keyPressW\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4016\">"
+    "      <action ID=\"350004\" />"
+    "    </transition>"
+    "    <transition NAME=\"keyPressE\" NEXT_STATE_ID=\"1\" EVENT_ID=\"19\">"
+    "      <action ID=\"350005\" />"
+    "    </transition>"
+    "    <transition NAME=\"mouseButtonLeftDoubleClick\" NEXT_STATE_ID=\"1\" EVENT_ID=\"8\">"
+    "      <action ID=\"350013\" />"
+    "    </transition>"
+    "  </state>"
+    "</stateMachine>";
+
 //-----------------------------------------------------------------------------
 MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char* stateMachinePattern, MIDASViewKeyPressResponder* responder)
 : StateMachine(stateMachinePattern)
