@@ -38,6 +38,9 @@ public:
   mitkClassMacro(MIDASViewKeyPressStateMachine, StateMachine); // this creates the Self typedef
   mitkNewMacro2Param(Self, const char*, MIDASViewKeyPressResponder*);
 
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string STATE_MACHINE_XML;
+
   /// \brief Tells if the state machine listens to the key events of the renderer.
   bool HasRenderer(const mitk::BaseRenderer* renderer) const;
 

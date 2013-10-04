@@ -28,7 +28,6 @@
 #include <QmitkWheelEventEater.h>
 #include <mitkDataStorageUtils.h>
 
-
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
@@ -84,7 +83,30 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   std::vector<mitk::DataNode*> nodesToIgnore;
   nodesToIgnore.push_back(m_BoundingBoxNode);
 
-  m_NodeAddedSetter = mitk::MIDASNodeAddedVisibilitySetter::New();
+  m_NodeAddedSetter = mitk::DataNodeAddedVisibilitySetter::New();
+
+  // TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
+  //  mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+
+  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_MIDASToolNodeNameFilter->SetPropertyName("name");
+  m_MIDASToolNodeNameFilter->AddToList("FeedbackContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
+  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+
+  m_NodeAddedSetter->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
   m_NodeAddedSetter->SetRenderers(renderers);
   m_NodeAddedSetter->SetVisibility(false);
 

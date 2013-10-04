@@ -20,8 +20,9 @@
 #include <QWidget>
 #include <QString>
 #include <mitkMIDASEnums.h>
-#include <DataManagement/mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataStorageVisibilityTracker.h>
+#include <mitkMIDASDataNodeNameStringFilter.h>
 
 namespace mitk
 {
@@ -157,7 +158,7 @@ private:
   QmitkRenderWindow* m_MainWindow3d;
   mitk::BaseRenderer* m_CurrentRenderer;
 
-  mitk::MIDASNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
+  mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   double m_Magnification;
@@ -165,6 +166,8 @@ private:
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each layout of the main window.
   QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+
+  mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
 };
 

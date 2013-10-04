@@ -24,10 +24,10 @@ namespace mitk {
  * \class MIDASToolKeyPressResponder
  * \brief Pure Virtual Interface to be implemented by classes that want to
  * respond to MIDAS key events relevant to which tool is selected where events
- * are passed through from the MIDASKeyPressStateMachine which is a subclass of
+ * are passed through from the MIDASToolKeyPressStateMachine which is a subclass of
  * StateMachine, and hence registered with the interaction loop.
  *
- * \sa MIDASKeyPressStateMachine
+ * \sa MIDASToolKeyPressStateMachine
  * \sa MIDASViewKeyPressResponder
  * \sa StateMachine
  */

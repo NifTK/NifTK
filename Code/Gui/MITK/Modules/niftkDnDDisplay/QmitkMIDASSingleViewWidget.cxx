@@ -134,7 +134,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   QObject::connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
 
   // Create/Connect the state machine
-  m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
+  m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASViewKeyPressStateMachine", this);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned j = 0; j < renderWindows.size(); ++j)
   {
