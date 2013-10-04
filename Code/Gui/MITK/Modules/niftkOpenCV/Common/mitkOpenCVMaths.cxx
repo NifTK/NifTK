@@ -18,31 +18,6 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points)
-{
-  cv::Point3d centroid;
-  centroid.x = 0;
-  centroid.y = 0;
-  centroid.z = 0;
-
-  unsigned int numberOfPoints = points.size();
-
-  for (unsigned int i = 0; i < numberOfPoints; ++i)
-  {
-    centroid.x += points[i].x;
-    centroid.y += points[i].y;
-    centroid.z += points[i].z;
-  }
-
-  centroid.x /= (double) numberOfPoints;
-  centroid.y /= (double) numberOfPoints;
-  centroid.z /= (double) numberOfPoints;
-
-  return centroid;
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& centroid)
 {
   std::vector<cv::Point3d> result;
@@ -496,9 +471,9 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
   return centroid;
 }
 //-----------------------------------------------------------------------------
-cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOutliers , cv::Point3f* StandardDeviation)
+cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers , cv::Point3d* StandardDeviation)
 {
-  cv::Point3f centroid;
+  cv::Point3d centroid;
   centroid.x = 0.0;
   centroid.y = 0.0;
   centroid.z = 0.0;
@@ -527,7 +502,7 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
     return centroid;
   }
   
-  cv::Point3f standardDeviation;
+  cv::Point3d standardDeviation;
   standardDeviation.x = 0.0;
   standardDeviation.y = 0.0;
   standardDeviation.z = 0.0;
@@ -552,9 +527,9 @@ cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOu
     *StandardDeviation = standardDeviation;
     return centroid;
   }
-  cv::Point3f highLimit (centroid.x + 2 * standardDeviation.x , 
+  cv::Point3d highLimit (centroid.x + 2 * standardDeviation.x , 
       centroid.y + 2 * standardDeviation.y, centroid.z + standardDeviation.z);
-  cv::Point3f lowLimit (centroid.x - 2 * standardDeviation.x , 
+  cv::Point3d lowLimit (centroid.x - 2 * standardDeviation.x , 
       centroid.y - 2 * standardDeviation.y, centroid.z - standardDeviation.z);
 
   centroid.x = 0.0;

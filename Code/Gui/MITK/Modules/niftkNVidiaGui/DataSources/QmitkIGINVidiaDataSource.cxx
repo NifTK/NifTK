@@ -164,6 +164,9 @@ bool QmitkIGINVidiaDataSource::CanHandleData(mitk::IGIDataType* data) const
 //-----------------------------------------------------------------------------
 void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
 {
+  // this method is probably not used anymore by the other data-source-manager bits: see GetSaveInBackground().
+  // but we keep it here because the base-class still has that SetSaveInBackground property.
+
   // reset it
   IGIDataSource::SetSaveInBackground(false);
 
@@ -171,6 +174,13 @@ void QmitkIGINVidiaDataSource::SaveInBackground(bool s)
   {
     std::cerr << "WARNING: sdi data source does not support SaveInBackground(true)" << std::endl;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGINVidiaDataSource::GetSaveInBackground() const
+{ 
+  return false;
 }
 
 
@@ -637,9 +647,29 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
-  // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(path) + QDir::separator() + QString("QmitkIGINVidiaDataSource");
+  QString directoryPath = QString::fromStdString(path);
+  // path used to be fixed. but now there's a suffix, so enum directories.
   QDir directory(directoryPath);
+  if (!directory.exists())
+  {
+    return false;
+  }
+
+  directory.setNameFilters(QStringList() << "QmitkIGINVidiaDataSource*");
+  directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
+  QStringList possibledirs = directory.entryList();
+  if (possibledirs.size() > 1)
+  {
+    // yes, die here if in debug mode!
+    assert(false);
+    MITK_ERROR << "QmitkIGINVidiaDataSource: Warning: found more than one data directory, will use " + possibledirs[0].toStdString() + " only!" << std::endl;
+  }
+  if (possibledirs.size() == 0)
+  {
+    return false;
+  }
+
+  directory = (directoryPath + QDir::separator()) + possibledirs[0];
   if (directory.exists())
   {
     QStringList filters;
@@ -651,19 +681,19 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
     // currently, we are only writing a single huge file.
     if (nalfiles.size() > 1)
     {
-      std::cerr << "QmitkIGINVidiaDataSource: Warning: found more than one NAL file, will use " + nalfiles[0].toStdString() + " only!" << std::endl;
+      MITK_ERROR << "QmitkIGINVidiaDataSource: Warning: found more than one NAL file, will use " + nalfiles[0].toStdString() + " only!" << std::endl;
     }
     if (nalfiles.size() >= 1)
     {
       QString     basename = nalfiles[0].split(".264")[0];
-      std::string nalfilename = (directoryPath + QDir::separator() + basename + ".264").toStdString();
+      std::string nalfilename = (directory.path() + QDir::separator() + basename + ".264").toStdString();
 
       // try to open video file
       m_Pimpl->TryPlayback(nalfilename);
 
       // now we need to correlate frame numbers with timestamps
       index.clear();
-      std::string     framemapfilename = (directoryPath + QDir::separator() + basename + ".framemap.log").toStdString();
+      std::string     framemapfilename = (directory.path() + QDir::separator() + basename + ".framemap.log").toStdString();
       std::ifstream   framemapfile(framemapfilename.c_str());
       if (framemapfile.good())
       {
@@ -709,7 +739,7 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
         }
 
         int   fieldmode = -1;
-        std::string     fieldmodefilename = (directoryPath + QDir::separator() + basename + ".fieldmode").toStdString();
+        std::string     fieldmodefilename = (directory.path() + QDir::separator() + basename + ".fieldmode").toStdString();
         std::ifstream   fieldmodefile(fieldmodefilename.c_str());
         if (fieldmodefile.good())
         {
@@ -719,7 +749,7 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
         switch (fieldmode)
         {
           default:
-            std::cerr << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
+            MITK_ERROR << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
             fieldmode = STACK_FIELDS;
             // STACK_FIELDS used to be the default for previous pig recordings. but it has been deprecated since.
             // we still set this on pimpl, so that Update() will do the right thing of implicitly converting it to DROP_ONE_FIELD.

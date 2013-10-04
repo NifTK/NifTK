@@ -91,10 +91,10 @@
 	<default>30</default>
     </integer>
     <boolean>
-      <name>SortByDistance</name>
-      <longflag>SortByDistance</longflag>
-      <description>Sort the tracking matrices by distance when doing the handeye</description>
-      <label>Sort the tracking matrices by distance when doing the handeye</label>
+      <name>DontSortByDistance</name>
+      <longflag>DontSortByDistance</longflag>
+      <description>Dont Sort the tracking matrices by distance when doing the handeye</description>
+      <label>Dont Sort the tracking matrices by distance when doing the handeye</label>
       <default>0</default>
     </boolean>
    

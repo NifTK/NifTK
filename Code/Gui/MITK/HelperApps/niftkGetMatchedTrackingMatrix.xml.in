@@ -25,6 +25,13 @@
       <description>A file used for temporal calibration.</description>
       <label>A file used for temporal calibration</label>
     </file>    
+    <file>
+      <name>OptimiseHandeye</name>
+      <longflag>OptimiseHandeye</longflag>
+      <description>A file used for handeye optimisation.</description>
+      <label>A file used for handeye optimisation</label>
+    </file>    
+
 
     <file>
       <name>handeyes</name>

@@ -20,12 +20,14 @@
 #include <Common/NiftyLinkXMLBuilder.h>
 #include "QmitkIGIUltrasonixTool.h"
 #include "QmitkIGIDataSourceMacro.h"
+#include <mitkRenderingManager.h>
 
 NIFTK_IGISOURCE_GUI_MACRO(NIFTKIGIGUI_EXPORT, QmitkIGIUltrasonixToolGui, "IGI Ultrasonix Tool Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixToolGui::QmitkIGIUltrasonixToolGui()
-: m_PixmapLabel(NULL)
+: m_UltrasonixTool(NULL)
+, m_Image(NULL)
 {
 
 }
@@ -38,58 +40,58 @@ QmitkIGIUltrasonixToolGui::~QmitkIGIUltrasonixToolGui()
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIUltrasonixTool* QmitkIGIUltrasonixToolGui::GetQmitkIGIUltrasonixTool() const
+void QmitkIGIUltrasonixToolGui::InitializeImage()
 {
-  QmitkIGIUltrasonixTool* result = NULL;
-
-  if (this->GetSource() != NULL)
+  if (m_UltrasonixTool != NULL)
   {
-    result = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());
-  }
+    mitk::DataStorage* dataStorage = m_UltrasonixTool->GetDataStorage();
+    assert(dataStorage);
 
-  return result;
+    mitk::DataNode* node = dataStorage->GetNamedNode(QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME);
+    if (node != NULL)
+    {
+      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+      if (image != NULL)
+      {
+        mitk::RenderingManager::GetInstance()->InitializeView(this->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
+      }
+    }
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixToolGui::Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config)
+void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptorXMLBuilder* /*config*/)
 {
   setupUi(this);
 
-  if (m_PixmapLabel != NULL)
+  if (this->GetSource() != NULL)
   {
-    delete m_PixmapLabel;
-  }
+    m_UltrasonixTool = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());
+    assert(m_UltrasonixTool);
 
-  m_PixmapLabel = new QLabel(this);
-  m_ScrollArea->setWidget(m_PixmapLabel);
-  m_PixmapLabel->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-  m_PixmapLabel->setAlignment(Qt::AlignCenter);
+    if (m_UltrasonixTool != NULL)
+    {
+      mitk::DataStorage* dataStorage = m_UltrasonixTool->GetDataStorage();
+      assert(dataStorage);
 
-  // Connect to signals from the tool.
-  QmitkIGIUltrasonixTool *tool = this->GetQmitkIGIUltrasonixTool();
-  if (tool != NULL)
-  {
-    connect (tool, SIGNAL(StatusUpdate(QString)), this, SLOT(OnStatusUpdate(QString)));
-    connect (tool, SIGNAL(UpdatePreviewDisplay(QImage*, float)), this, SLOT(OnUpdatePreviewDisplay(QImage*, float)));
+      this->m_RenderWindow->GetRenderer()->SetDataStorage(dataStorage);
+      mitk::BaseRenderer::GetInstance(this->m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard2D);
+
+      this->InitializeImage();
+    }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixToolGui::OnStatusUpdate(QString message)
+void QmitkIGIUltrasonixToolGui::Update()
 {
-  qDebug() << "QmitkIGIUltrasonixToolGui::OnStatusUpdate: received" << message;
+  if (m_UltrasonixTool != NULL)
+  {
+    float motorPosition = m_UltrasonixTool->GetCurrentMotorPosition();
+    m_MotorPositionLCDLabel->display(motorPosition);
+    m_MotorPositionLCDLabel->repaint();
+  }
+  this->InitializeImage();
 }
-
-
-//-----------------------------------------------------------------------------
-void QmitkIGIUltrasonixToolGui::OnUpdatePreviewDisplay(QImage* image, float motorPosition)
-{
-  m_PixmapLabel->setPixmap(QPixmap::fromImage(*image));
-  m_PixmapLabel->repaint();
-
-  lcdNumber->display(motorPosition);
-  lcdNumber->repaint();
-}
-

@@ -21,7 +21,10 @@ else(NOT NIFTYREG_DIR)
   set(NIFTYREG_DIR @NIFTYREG_DIR@ CACHE PATH "Directory containing NiftyReg installation")
 endif(NOT NIFTYREG_DIR)
 
-if(CUDA_FOUND)
+# disabled for now: niftyreg is never build with cuda enabled.
+# so the gpu-related files will never be found.
+# https://cmicdev.cs.ucl.ac.uk/trac/ticket/2764
+if(FALSE AND CUDA_FOUND)
 
   find_path(NIFTYREG_INCLUDE_DIR
     NAME _reg_tools_gpu.h
@@ -35,7 +38,7 @@ if(CUDA_FOUND)
     NO_DEFAULT_PATH
     )
 
-else(CUDA_FOUND)
+else()
 
   find_path(NIFTYREG_INCLUDE_DIR
     NAME _reg_tools.h
@@ -49,7 +52,7 @@ else(CUDA_FOUND)
     NO_DEFAULT_PATH
     )
 
-endif(CUDA_FOUND)
+endif()
 
 if(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
   set(NIFTYREG_FOUND 1)

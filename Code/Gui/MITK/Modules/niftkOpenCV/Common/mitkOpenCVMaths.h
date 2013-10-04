@@ -27,12 +27,6 @@
 namespace mitk {
 
 /**
- * \brief Calculates the centroid of a vector of points.
- */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points);
-
-
-/**
  * \brief Subtracts a point (e.g. the centroid) from a list of points.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> listOfPoints, const cv::Point3d& point);
@@ -186,7 +180,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2f GetCentroid(const std::vector<cv::Po
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f GetCentroid(const std::vector<cv::Point3f>& points, bool RefineForOutliers = false, cv::Point3f* StandardDeviation = NULL);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers = false, cv::Point3d* StandardDeviation = NULL);
 
 /**
  * \brief From rotations in radians and translations in millimetres, constructs a 4x4 transformation matrix.

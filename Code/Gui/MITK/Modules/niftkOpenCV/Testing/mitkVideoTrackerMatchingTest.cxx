@@ -62,7 +62,7 @@ int mitkVideoTrackerMatchingTest(int argc, char * argv[])
   MITK_TEST_CONDITION_REQUIRED (Matcher->IsReady() , "Testing that VideoTrackerMatcherInitialised OK"); 
   
   long long *TimingError = new long long;
-  cv::Mat TrackingMatrix = Matcher->GetTrackerMatrix(20, TimingError, 0);
+  cv::Mat TrackingMatrix = Matcher->GetTrackerMatrix(20, TimingError, 1);
 
   //1374066239681720400-1374066239683720400 = -2000000
   //1374854436963960800-1374854436966961200 = -3000400

@@ -248,7 +248,7 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 # Help usage message definition
 help="""This script is for N3 normalization using Boyes et al. Neuroimage 2008 normalization process. 
 
-Usage: $0 -in input_file -orient <value> -out output_file -mask mask_file -atlas head_file
+Usage: niftkNormalization.py -in input_file -orient <value> -out output_file -mask mask_file -atlas head_file
 
 Mandatory Arguments:
  
@@ -292,6 +292,8 @@ if arg <= 1:
 i=1
 # Parse remaining command line options
 while i < arg:
+    # Clean unnecessary whitespaces
+    argv[i]=argv[i].strip()
     if argv[i].upper() in ['--XML','-XML']:
 	usage(xml,0)
     
@@ -336,7 +338,7 @@ while i < arg:
 	same=True
 
     else:
-	print "\n\ERROR: option ",argv[i]," not recognised\n\n"
+	print "\n\nERROR: option ",argv[i]," not recognised\n\n"
 	usage(help)
 	
     i=i+1

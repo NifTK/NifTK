@@ -61,7 +61,7 @@ void UltrasoundPinCalibrationCostFunction::SetMatrices(const std::vector< cv::Ma
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundPinCalibrationCostFunction::SetPoints(const std::vector< cv::Point2d > points)
+void UltrasoundPinCalibrationCostFunction::SetPoints(const std::vector< cv::Point3d > points)
 {
   m_Points = points;
   m_NumberOfValues = points.size() * 3;
@@ -103,10 +103,10 @@ double UltrasoundPinCalibrationCostFunction::GetResidual(const MeasureType & val
   {
     for (unsigned int i = 0; i < numberOfValues; i++)
     {
-      rmsError += values[i]*values[i];
+      rmsError += values[i];
     }
 
-    rmsError /= (double)(numberOfValues / 3.0);
+    rmsError /= (double)(numberOfValues);
     rmsError = sqrt(rmsError);
   }
 
@@ -203,12 +203,12 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
   for (unsigned int i = 0; i < m_Matrices.size(); i++)
   {
     cv::Matx44d trackerTransformation(m_Matrices[i]);
-    cv::Matx44d combinedTransformation = (invariantPointTranslation * (trackerTransformation * (rigidTransformation * scalingTransformation)));
+    cv::Matx44d combinedTransformation = (invariantPointTranslation.inv() * (trackerTransformation * (rigidTransformation * scalingTransformation)));
     cv::Matx41d point, transformedPoint;
 
     point(0,0) = m_Points[i].x;
     point(1,0) = m_Points[i].y;
-    point(2,0) = 0;
+    point(2,0) = m_Points[i].z;
     point(3,0) = 1;
 
     transformedPoint = combinedTransformation * point;

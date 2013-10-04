@@ -45,6 +45,11 @@ public:
   static const float RAD_TO_DEGREES;
 
   /**
+   * \see mitk::IGIDataSource::GetSaveInBackground()
+   */
+  virtual bool GetSaveInBackground() const { return true; }
+
+  /**
    * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
    * \see mitk::IGIDataSource::CanHandleData()
    */
@@ -56,17 +61,18 @@ public:
    */
   virtual bool Update(mitk::IGIDataType* data);
 
+  /**
+   * \brief Retrieves the current motor position from the m_CurrentMatrix;
+   * NOTE: This method is not thread safe, and is for just checking that *something* is being updated.
+   */
+  float GetCurrentMotorPosition() const;
+
 public slots:
 
   /**
    * \brief Main message handler routine for this tool.
    */
   virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
-
-signals:
-
-  void StatusUpdate(QString statusUpdateMessage);
-  void UpdatePreviewDisplay(QImage *image, float motorPosition);
 
 protected:
 
@@ -77,7 +83,7 @@ protected:
   QmitkIGIUltrasonixTool& operator=(const QmitkIGIUltrasonixTool&); // Purposefully not implemented.
 
   /**
-   * \brief \see IGIDataSource::SaveData();
+   * \see IGIDataSource::SaveData();
    */
   virtual bool SaveData(mitk::IGIDataType* data, std::string& outputFileName);
 
@@ -86,7 +92,12 @@ private:
   /**
    * \brief Retrieves the motor position from the most recent data available.
    */
-  float GetMotorPos(igtl::Matrix4x4& matrix);
+  float GetMotorPos(const igtl::Matrix4x4& matrix) const;
+
+  /**
+   * \brief Stores the most recent matrix processed by InterpretMessage.
+   */
+  igtl::Matrix4x4 m_CurrentMatrix;
 
 }; // end class
 

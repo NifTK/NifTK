@@ -17,6 +17,7 @@
 #include <mitkOpenCVMaths.h>
 #include <cv.h>
 #include <highgui.h>
+#include <niftkFileHelper.h>
 
 #include <boost/filesystem.hpp>
 
@@ -96,7 +97,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
   {
     if ( m_Capture == NULL ) 
     {
-      std::vector <std::string> videoFiles = FindVideoData();
+      std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
       if ( videoFiles.size() == 0 ) 
       {
         MITK_ERROR << "Failed to find any video files";
@@ -408,21 +409,6 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
 }
 
 //-----------------------------------------------------------------------------
-std::vector<std::string> ProjectPointsOnStereoVideo::FindVideoData()
-{
-  boost::filesystem::recursive_directory_iterator end_itr;
-  std::vector<std::string> returnStrings;
-
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory);
-         it != end_itr ; ++it)
-  {
-    if (  it->path().extension() == ".264" )
-    {
-      returnStrings.push_back(it->path().string());
-    }
-  }
-  return returnStrings;
-}
                                           
 void ProjectPointsOnStereoVideo::SetFlipMatrices(bool state)
 {

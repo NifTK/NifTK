@@ -157,6 +157,12 @@ namespace niftk
    */
   NIFTKCOMMON_WINEXPORT bool NumericStringCompare(const std::string& string1, const std::string& string2);
 
+  /**
+   * Recursively searches a directory looking for video files
+   * \param fullDirectoryName
+   * \return vector of matching files
+   */
+  NIFTKCOMMON_WINEXPORT std::vector<std::string> FindVideoData(std::string directory); 
 
 } // end namespace
 

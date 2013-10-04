@@ -43,10 +43,9 @@ void QmitkIGIDataSource::EmitDataSourceStatusUpdatedSignal()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSource::SetSavingMessages(bool isSaving)
+void QmitkIGIDataSource::StartRecording(const std::string& directoryPrefix, const bool& saveInBackground, const bool& saveOnReceipt)
 {
-  // FIXME: race-condition between data-grabbing thread and UI thread setting m_SavingMessages!
-  mitk::IGIDataSource::SetSavingMessages(isSaving);
+  mitk::IGIDataSource::StartRecording(directoryPrefix, saveInBackground, saveOnReceipt);
   if (!m_SaveThread->isRunning())
   {
     m_SaveThread->start();

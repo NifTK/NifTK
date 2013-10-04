@@ -42,6 +42,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_SquareSizeInMillimetres(3.0)
 , m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
+, m_NoVideoSupport(false)
 {
 }
 
@@ -55,7 +56,7 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
 //-----------------------------------------------------------------------------
 void HandeyeCalibrateFromDirectory::InitialiseVideo()
 {
-  std::vector<std::string> filenames = FindVideoData();
+  std::vector<std::string> filenames = niftk::FindVideoData(m_Directory);
   if ( filenames.size() == 0 ) 
   {
     MITK_ERROR << "Failed to find any video files";
@@ -96,23 +97,6 @@ void HandeyeCalibrateFromDirectory::InitialiseTracking()
   {
     m_TrackingDataInitialised = true;
   }
-}
-
-//-----------------------------------------------------------------------------
-std::vector<std::string> HandeyeCalibrateFromDirectory::FindVideoData()
-{
-  boost::filesystem::recursive_directory_iterator end_itr;
-  std::vector<std::string> returnStrings;
-
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory);
-            it != end_itr ; ++it)
-  {
-    if (  it->path().extension() == ".264" )
-    {
-      returnStrings.push_back(it->path().string());
-    }
-  }
-  return returnStrings;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,17 +150,17 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
-      long long int*  LeftTimingError = new long long;
-      long long int *  RightTimingError = new long long;
+      long long int  LeftTimingError;
+      long long int  RightTimingError;
       cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
-        LeftTimingError, m_TrackerIndex );
+        &LeftTimingError, m_TrackerIndex );
       cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
-        RightTimingError, m_TrackerIndex );
-      if ( std::abs(*LeftTimingError) > m_AbsTrackerTimingError ||
-        std::abs(*RightTimingError) > m_AbsTrackerTimingError ) 
+        &RightTimingError, m_TrackerIndex );
+      if ( std::abs(LeftTimingError) > m_AbsTrackerTimingError ||
+        std::abs(RightTimingError) > m_AbsTrackerTimingError ) 
       {
         MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
-          std::abs(*LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+          std::abs(LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
       }
       else
       {
@@ -220,7 +204,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
       { 
 
-        MITK_INFO << "Using frame pair" << FrameNumber << "," <<FrameNumber+1;
+        MITK_INFO << "Using frame pair " << FrameNumber << "," <<FrameNumber+1;
         std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
         std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
         bool LeftOK = mitk::ExtractChessBoardPoints (
@@ -271,6 +255,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           cv::imwrite( leftfilename, LeftFrame );
           cv::imwrite( rightfilename, RightFrame );
         }
+
+        // buffer contents are copied and stuffed into allLeftImagePoints, etc.
+        delete leftImageCorners;
+        delete leftObjectCorners;
+        delete rightImageCorners;
+        delete rightObjectCorners;
       }
       else
       {
@@ -458,6 +448,9 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   fs_leftIntrinsic.close();
   fs_rightIntrinsic.close();
   fs_r2l.close();
+
+  std::string trackerDirectory = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex);
+  niftk::CreateDirectoryAndParents(trackerDirectory);
   for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 
@@ -473,7 +466,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
         NULL, m_TrackerIndex );
 
-    std::string trackerFilename = m_Directory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) + "/" + boost::lexical_cast<std::string>(view) + ".txt";
+    std::string trackerFilename = trackerDirectory + "/" + boost::lexical_cast<std::string>(view) + ".txt";
     MITK_INFO << "Saving matrix for frame " << LeftFramesToUse[view] << "to " << trackerFilename;    
     std::ofstream fs_tracker;
     fs_tracker.open(trackerFilename.c_str(), std::ios::out);

@@ -15,6 +15,9 @@
 #ifndef NiftyRegParameters_h
 #define NiftyRegParameters_h
 
+// broken
+#undef _USE_CUDA
+
 #include "RegAladinParameters.h"
 #include "RegF3dParameters.h"
 
