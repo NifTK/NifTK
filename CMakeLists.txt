@@ -1126,10 +1126,11 @@ if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
   file(GLOB NIFTY_REG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYREG/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
-  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_aladin)
-  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_f3d)
-  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_jacobian)
-  NIFTK_GENERATE_CLI_SCRIPT(NAME reg_resample)
+
+  foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
+    set(FULL_APP_NAME ${prog})
+    NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
+  endforeach()
 endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
 
 # NiftySeg
@@ -1142,8 +1143,11 @@ if(BUILD_NIFTYSEG)
 
   file(GLOB NIFTY_SEG_BIN_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/bin/*)
   MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
-  NIFTK_GENERATE_CLI_SCRIPT(NAME seg_EM)
-  NIFTK_GENERATE_CLI_SCRIPT(NAME seg_LabFusion)
+
+  foreach(prog seg_EM seg_LabFusion)
+    set(FULL_APP_NAME ${prog})
+    NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
+  endforeach()
 
   file(GLOB NIFTY_SEG_PRIORS_FILES ${CMAKE_BINARY_DIR}/../CMakeExternals/Install/NIFTYSEG/priors/*)
   install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
