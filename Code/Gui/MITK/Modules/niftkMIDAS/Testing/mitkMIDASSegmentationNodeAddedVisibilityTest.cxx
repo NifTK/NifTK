@@ -33,7 +33,7 @@
 #include <mitkNifTKCoreObjectFactory.h>
 #include <mitkMIDASImageUtils.h>
 #include <mitkMIDASDataNodeNameStringFilter.h>
-#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPolyTool.h>
 
@@ -122,9 +122,9 @@ public:
     renderers.push_back(renderWindow->GetRenderer());
 
     // Create the setter we are testing.
-    mitk::MIDASNodeAddedVisibilitySetter::Pointer setter = mitk::MIDASNodeAddedVisibilitySetter::New();
+    mitk::DataNodeAddedVisibilitySetter::Pointer setter = mitk::DataNodeAddedVisibilitySetter::New();
     mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
-    setter->AddFilter(filter);
+    setter->AddFilter(filter.GetPointer());
     setter->SetVisibility(false);
     setter->SetDataStorage(dataStorage);
     if (doRendererSpecific)
