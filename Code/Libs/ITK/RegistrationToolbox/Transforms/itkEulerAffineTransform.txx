@@ -185,18 +185,29 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
  
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
-const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType & 
+const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType 
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::GetJacobian( const InputPointType & p ) const
+::GetJacobian( const InputPointType &p ) const
 {
-  int dof = this->GetNumberOfDOF();
+  JacobianType tmp;
+  this->ComputeJacobianWithRespectToParameters( p, tmp );
+  return tmp;	
+}
+ 
+template<class TScalarType, unsigned int NInputDimensions,
+                            unsigned int NOutputDimensions>
+void
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeJacobianWithRespectToParameters( const InputPointType &p, JacobianType &jacobian ) const
+{
+  unsigned int dof = this->GetNumberOfDOF();
   double toRadians = vnl_math::pi/180.0;
 
   int i = 0;
   
   if ( InputSpaceDimension == 2 )
     {
-      this->m_Jacobian.SetSize(2, dof);
+      jacobian.SetSize(2, dof);
       
       double cx=this->GetCenter()[0];
       double cy=this->GetCenter()[1];
@@ -212,21 +223,21 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       if (this->GetOptimiseRotation())
         {
           // dx/dtheta, dy/dtheta
-          this->m_Jacobian[0][i]= -sth*one + cth*two;
-          this->m_Jacobian[1][i]= -cth*one - sth*two;
+          jacobian[0][i]= -sth*one + cth*two;
+          jacobian[1][i]= -cth*one - sth*two;
           i++;
         }
         
       if (this->GetOptimiseTranslation())
         {
           // dx/dtx, dy/dtx
-          this->m_Jacobian[0][i]=1;
-          this->m_Jacobian[1][i]=0;
+          jacobian[0][i]=1;
+          jacobian[1][i]=0;
           i++;
           
           // dy/dtx, dy/dty
-          this->m_Jacobian[0][i]=0;
-          this->m_Jacobian[1][i]=1;
+          jacobian[0][i]=0;
+          jacobian[1][i]=1;
           i++;          
         }
         
@@ -234,14 +245,14 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
           // dx/dsx, dy/dsx
           double oneDerivSx = (p[0]-cx) - k0*(p[1]-cy);
-          this->m_Jacobian[0][i]=  cth*(oneDerivSx);
-          this->m_Jacobian[1][i]= -sth*(oneDerivSx);
+          jacobian[0][i]=  cth*(oneDerivSx);
+          jacobian[1][i]= -sth*(oneDerivSx);
           i++;
 
           // dx/dsy, dy/dsy
           double twoDerivSy = (p[1]-cy);
-          this->m_Jacobian[0][i] = sth*(twoDerivSy);
-          this->m_Jacobian[1][i] = cth*(twoDerivSy);
+          jacobian[0][i] = sth*(twoDerivSy);
+          jacobian[1][i] = cth*(twoDerivSy);
           i++;
         }
       
@@ -249,14 +260,14 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
           // dx/dk1, dy/dk1
           double sxTimesDerivSy = -sx*(p[1]-cy);
-          this->m_Jacobian[0][i] = cth*(sxTimesDerivSy);
-          this->m_Jacobian[1][i] = -sth*(sxTimesDerivSy);
+          jacobian[0][i] = cth*(sxTimesDerivSy);
+          jacobian[1][i] = -sth*(sxTimesDerivSy);
           i++;        
         }
     }
   else if ( InputSpaceDimension == 3 )
     {
-      this->m_Jacobian.SetSize(3, dof);
+      jacobian.SetSize(3, dof);
 
       double cx=this->GetCenter()[0];
       double cy=this->GetCenter()[1];
@@ -289,21 +300,21 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
           
           // dx,y,z w.r.t. rx.
-          this->m_Jacobian[0][i] = 0;
-          this->m_Jacobian[1][i] = one * ( srx*srz + crx*sry*crz) + two * (crx*sry*srz - srx*crz) + three * (crx*cry);
-          this->m_Jacobian[2][i] = one * ( crx*srz - srx*sry*crz) + two * (-crx*crz - srx*sry*srz) + three * (-srx*cry);
+          jacobian[0][i] = 0;
+          jacobian[1][i] = one * ( srx*srz + crx*sry*crz) + two * (crx*sry*srz - srx*crz) + three * (crx*cry);
+          jacobian[2][i] = one * ( crx*srz - srx*sry*crz) + two * (-crx*crz - srx*sry*srz) + three * (-srx*cry);
           i++;
 
           // dx,y,z w.r.t. ry
-          this->m_Jacobian[0][i] = one * ( -sry*crz) + two * (-sry*srz) + three * (-cry);
-          this->m_Jacobian[1][i] = one * (srx*cry*crz) + two * (srx*cry*srz) + three * (-srx*sry);
-          this->m_Jacobian[2][i] = one * (crx*cry*crz) + two * (crx*cry*srz) + three * (-crx*sry);
+          jacobian[0][i] = one * ( -sry*crz) + two * (-sry*srz) + three * (-cry);
+          jacobian[1][i] = one * (srx*cry*crz) + two * (srx*cry*srz) + three * (-srx*sry);
+          jacobian[2][i] = one * (crx*cry*crz) + two * (crx*cry*srz) + three * (-crx*sry);
           i++;
 
           // dx,y,z w.r.t. rz
-          this->m_Jacobian[0][i] = one * (-cry*srz) + two * (cry*crz);
-          this->m_Jacobian[1][i] = one * (-crx*crz - srx*sry*srz) + two * (-crx*srz + srx*sry*crz);
-          this->m_Jacobian[2][i] = one * ( srx*crz - crx*sry*srz) + two * (srx*srz + crx*sry*crz);
+          jacobian[0][i] = one * (-cry*srz) + two * (cry*crz);
+          jacobian[1][i] = one * (-crx*crz - srx*sry*srz) + two * (-crx*srz + srx*sry*crz);
+          jacobian[2][i] = one * ( srx*crz - crx*sry*srz) + two * (srx*srz + crx*sry*crz);
           i++;
            
         }
@@ -312,21 +323,21 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
 
           // dx,y,z w.r.t. tx
-          this->m_Jacobian[0][i] = 1;
-          this->m_Jacobian[1][i] = 0;
-          this->m_Jacobian[2][i] = 0;
+          jacobian[0][i] = 1;
+          jacobian[1][i] = 0;
+          jacobian[2][i] = 0;
           i++;
 
           // dx,y,z w.r.t. ty
-          this->m_Jacobian[0][i] = 0;
-          this->m_Jacobian[1][i] = 1;
-          this->m_Jacobian[2][i] = 0;
+          jacobian[0][i] = 0;
+          jacobian[1][i] = 1;
+          jacobian[2][i] = 0;
           i++;
 
           // dx,y,z w.r.t. tz
-          this->m_Jacobian[0][i] = 0;
-          this->m_Jacobian[1][i] = 0;
-          this->m_Jacobian[2][i] = 1;
+          jacobian[0][i] = 0;
+          jacobian[1][i] = 0;
+          jacobian[2][i] = 1;
           i++;
         }
 
@@ -334,23 +345,23 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
           // dx,y,z w.r.t. sx
           double derivOneWrtSx = ((p[0]-cx) + k1*(p[1]-cy) + k2*(p[2]-cz));
-          this->m_Jacobian[0][i] = r1 * derivOneWrtSx;
-          this->m_Jacobian[1][i] = r4 * derivOneWrtSx;
-          this->m_Jacobian[2][i] = r7 * derivOneWrtSx;
+          jacobian[0][i] = r1 * derivOneWrtSx;
+          jacobian[1][i] = r4 * derivOneWrtSx;
+          jacobian[2][i] = r7 * derivOneWrtSx;
           i++;
 
           // dx,y,z w.r.t. sy
           double derivTwoWrtSy = ((p[1]-cy) + k3*(p[2]-cz));
-          this->m_Jacobian[0][i] = r2 * derivTwoWrtSy;
-          this->m_Jacobian[1][i] = r5 * derivTwoWrtSy;
-          this->m_Jacobian[2][i] = r8 * derivTwoWrtSy;
+          jacobian[0][i] = r2 * derivTwoWrtSy;
+          jacobian[1][i] = r5 * derivTwoWrtSy;
+          jacobian[2][i] = r8 * derivTwoWrtSy;
           i++;
 
           // dx,y,z w.r.t. sz
           double derivThreeWrtSz = (p[2]-cz);
-          this->m_Jacobian[0][i] = r3 * derivThreeWrtSz;
-          this->m_Jacobian[1][i] = r6 * derivThreeWrtSz;
-          this->m_Jacobian[2][i] = r9 * derivThreeWrtSz;
+          jacobian[0][i] = r3 * derivThreeWrtSz;
+          jacobian[1][i] = r6 * derivThreeWrtSz;
+          jacobian[2][i] = r9 * derivThreeWrtSz;
           i++;
         }
 
@@ -359,23 +370,23 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
         {
           // dx,y,z w.r.t. k1
           double derivOneWrtK1 = sx*(p[1]-cy);
-          this->m_Jacobian[0][i] = r1 * derivOneWrtK1;
-          this->m_Jacobian[1][i] = r4 * derivOneWrtK1;
-          this->m_Jacobian[2][i] = r7 * derivOneWrtK1;
+          jacobian[0][i] = r1 * derivOneWrtK1;
+          jacobian[1][i] = r4 * derivOneWrtK1;
+          jacobian[2][i] = r7 * derivOneWrtK1;
           i++;
 
           // dx,y,z w.r.t. k2
           double derivOneWrtK2 = sx*(p[2]-cz);
-          this->m_Jacobian[0][i] = r1 * derivOneWrtK2;
-          this->m_Jacobian[1][i] = r4 * derivOneWrtK2;
-          this->m_Jacobian[2][i] = r7 * derivOneWrtK2;
+          jacobian[0][i] = r1 * derivOneWrtK2;
+          jacobian[1][i] = r4 * derivOneWrtK2;
+          jacobian[2][i] = r7 * derivOneWrtK2;
           i++;
 
           // dx,y,z w.r.t. k3
           double derivTwoWrtK3 = sy*(p[2]-cz);
-          this->m_Jacobian[0][i] = r2 * derivTwoWrtK3;
-          this->m_Jacobian[1][i] = r5 * derivTwoWrtK3;
-          this->m_Jacobian[2][i] = r8 * derivTwoWrtK3;
+          jacobian[0][i] = r2 * derivTwoWrtK3;
+          jacobian[1][i] = r5 * derivTwoWrtK3;
+          jacobian[2][i] = r8 * derivTwoWrtK3;
           i++;
         }
     }
@@ -383,8 +394,30 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     {
       itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");
     }
+}
 
-  return this->m_Jacobian;
+// Return jacobian with respect to position.
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
+void
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeJacobianWithRespectToPosition(const InputPointType  &p,
+                                       JacobianType &jac) const
+{
+  jac.SetSize( OutputSpaceDimension, ParametersDimension );
+  jac = GetJacobian( p );
+}
+
+// Return jacobian with respect to position.
+template <class TScalarType, 
+          unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
+void
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeInverseJacobianWithRespectToPosition(const InputPointType  &,
+                                              JacobianType & jac) const
+{
+  itkExceptionMacro( << "EulerAffineTransform, ComputeInverseJacobianWithRespectToPosition not implemented");
 }
 
 template<class TScalarType, unsigned int NInputDimensions,
@@ -460,6 +493,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   GetInv(inverse);
   out = inverse->TransformPoint(point);       
 }
+
 template<class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>

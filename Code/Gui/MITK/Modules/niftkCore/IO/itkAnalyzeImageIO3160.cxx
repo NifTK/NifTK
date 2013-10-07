@@ -34,6 +34,46 @@
 namespace itk
 {
 
+const char *const AnalyzeImageIO3160::ANALYZE_ScanNumber = "ANALYZE_ScanNumber";
+const char *const AnalyzeImageIO3160::ANALYZE_O_MAX = "ANALYZE_O_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_O_MIN = "ANALYZE_O_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_S_MAX = "ANALYZE_S_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_S_MIN = "ANALYZE_S_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_CAL_MAX = "ANALYZE_CAL_MAX";
+const char *const AnalyzeImageIO3160::ANALYZE_CAL_MIN = "ANALYZE_CAL_MIN";
+const char *const AnalyzeImageIO3160::ANALYZE_GLMAX = "ANALYZE_GLMAX";
+const char *const AnalyzeImageIO3160::ANALYZE_GLMIN = "ANALYZE_GLMIN";
+const char *const AnalyzeImageIO3160::ANALYZE_AUX_FILE_NAME = "ANALYZE_AUX_FILE_NAME";
+const char *const AnalyzeImageIO3160::ANALYZE_CALIBRATIONUNITS = "ANALYZE_CALIBRATIONUNITS";
+
+//An array of the Analyze v7.5 known DataTypes
+const char DataTypes[12][10] =
+  {
+  "UNKNOWN", "BINARY", "CHAR", "SHORT", "INT", "FLOAT",
+  "COMPLEX", "DOUBLE", "RGB", "ALL", "USHORT", "UINT"
+  };
+
+//An array with the corresponding number of bits for each image type.
+//NOTE: the following two line should be equivalent.
+const short int DataTypeSizes[12] = { 0, 1, 8, 16, 32, 32, 64, 64, 24, 0, 16, 32 };
+
+//An array with Data type key sizes
+const short int DataTypeKey[12] =
+  {
+  ANALYZE_DT_UNKNOWN,
+  ANALYZE_DT_BINARY,
+  ANALYZE_DT_UNSIGNED_CHAR,
+  ANALYZE_DT_SIGNED_SHORT,
+  ANALYZE_DT_SIGNED_INT,
+  ANALYZE_DT_FLOAT,
+  ANALYZE_DT_COMPLEX,
+  ANALYZE_DT_DOUBLE,
+  ANALYZE_DT_RGB,
+  ANALYZE_DT_ALL,
+  SPMANALYZE_DT_UNSIGNED_SHORT,
+  SPMANALYZE_DT_UNSIGNED_INT
+  };
+
 static std::string
 GetExtension( const std::string& filename )
 {

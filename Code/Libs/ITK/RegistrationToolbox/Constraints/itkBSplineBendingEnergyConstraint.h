@@ -16,7 +16,7 @@
 #define itkBSplineBendingEnergyConstraint_h
 
 #include "itkConstraint.h"
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 
 
 namespace itk
@@ -26,10 +26,10 @@ namespace itk
  * \class BSplineBendingEnergyConstraint
  * \brief Calculated the bending energy, to be used as regulariser in FFD.
  *
- * In practice, you create this object, create your BSplineTransform,
- * and inject the BSplineTransform into this class.
+ * In practice, you create this object, create your UCLBSplineTransform,
+ * and inject the UCLBSplineTransform into this class.
  * When EvaluateContraint is called, this class delegates back to 
- * the BSplineTransform, as the BSplineTransform can calculate it's
+ * the UCLBSplineTransform, as the UCLBSplineTransform can calculate it's
  * own bending energy.
  * 
  * \ingroup RegistrationMetrics
@@ -54,7 +54,7 @@ public:
   typedef Superclass::ParametersType     ParametersType;
 
   /**  Type of the Transform . */
-  typedef typename itk::BSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar > TransformType;
+  typedef typename itk::UCLBSplineTransform<TFixedImage, TScalarType, NDimensions, TDeformationScalar > TransformType;
   typedef typename TransformType::Pointer                                                            TransformPointer;
 
   /** Method for creation through the object factory. */

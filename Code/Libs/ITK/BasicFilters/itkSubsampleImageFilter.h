@@ -64,7 +64,7 @@ public:
 
   /** Directly Set/Get the array of subsampling factors for each image dimension */
   void SetSubsamplingFactors(double data[]);
-  itkGetVectorMacro(SubsamplingFactors, const double, ::itk::GetImageDimension<TInputImage>::ImageDimension);
+  itkGetVectorMacro(SubsamplingFactors, const double, TInputImage::ImageDimension);
 
   /** SubsampleImageFilter produces images which are of
    * different resolution and different pixel spacing than its input image.
@@ -105,7 +105,7 @@ protected:
 
   double          m_MaximumError; 
 
-  double m_SubsamplingFactors[::itk::GetImageDimension<TInputImage>::ImageDimension];
+  double m_SubsamplingFactors[TInputImage::ImageDimension];
 
 private:
   SubsampleImageFilter(const Self&); //purposely not implemented

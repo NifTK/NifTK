@@ -24,53 +24,40 @@
 #include <itkImageFileWriter.h>
 #include <itkImage.h>
 
+#include <niftkSubsampleImageCLP.h>
 
-struct niftk::CommandLineArgumentDescription clArgList[] = {
 
-  {OPT_SWITCH, "v", NULL, "Verbose output."},
-  {OPT_SWITCH, "dbg", NULL, "Output debugging info."},
+// -------------------------------------------------------------------------
+// arguments
+// -------------------------------------------------------------------------
 
-  {OPT_DOUBLEx3|OPT_REQ, "sub", "value", "The subsampling factor (greater than 1) eg. 1.5,1.5,2."},
+struct arguments
+{
+  float subx;
+  float suby;
+  float subz;
 
-  {OPT_STRING, "o", "filename", "The output sub-sampled image."},
+  std::string fileInputImage;
+  std::string fileOutputImage;
 
-  {OPT_STRING|OPT_LONELY|OPT_REQ, NULL, "filename", "The input image."},
-  
-  {OPT_DONE, NULL, NULL, 
-   "Program to subsample an image by a certain factor and apply the "
-   "appropriate blurring (equivalent to voxel averaging for integer "
-   "subsampling factors)."
+  arguments() {
+
+    subx = 1.;
+    suby = 1.;
+    subz = 1.;
   }
 };
 
 
-enum {
-  O_VERBOSE,
-  O_DEBUG,
-
-  O_SUBSAMPLING_FACTOR,
-
-  O_OUTPUT_IMAGE,
-  O_INPUT_IMAGE
-};
-
-
-
-struct arguments
-{
-  bool flgVerbose;
-  bool flgDebug;
-
-  double *factor;
-
-  std::string fileOutputImage;
-  std::string fileInputImage;
-};
-
+// -------------------------------------------------------------------------
+// DoMain(arguments args)
+// -------------------------------------------------------------------------
 
 template <int Dimension>
-int DoMain(arguments args)
+int DoMain(arguments &args)
 {
+  double factor[3];
+
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
 
@@ -107,7 +94,16 @@ int DoMain(arguments args)
 
   typename SubsampleImageFilterType::Pointer sampler = SubsampleImageFilterType::New();
 
-  sampler->SetSubsamplingFactors( args.factor );
+  factor[0] = args.subx;
+  factor[1] = args.suby;
+  factor[2] = args.subz;
+
+  std::cout << "Subsampling by: " 
+            << factor[0] << ", " 
+            << factor[1] << ", " 
+            << factor[2] << std::endl;
+
+  sampler->SetSubsamplingFactors( factor );
 
   sampler->SetInput( imageReader->GetOutput() );
   
@@ -149,28 +145,34 @@ int DoMain(arguments args)
   return EXIT_SUCCESS;
 }
 
+
+// -------------------------------------------------------------------------
+// main( int argc, char *argv[] )
+// -------------------------------------------------------------------------
+
 int main( int argc, char *argv[] )
 {
   // To pass around command line args
-  struct arguments args;
+  arguments args;
 
-  // Set defaults
-  args.factor = 0;
+  // Validate command line args
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  // Create the command line parser, passing the
-  // 'CommandLineArgumentDescription' structure. The final boolean
-  // parameter indicates whether the command line options should be
-  // printed out as they are parsed.
+  PARSE_ARGS;
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  if ( fileInputImage.length() == 0 || fileOutputImage.length() == 0 )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
 
-  CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );
+  args.subx = subx;
+  args.suby = suby;
+  args.subz = subz;
 
-  CommandLineOptions.GetArgument( O_SUBSAMPLING_FACTOR, args.factor );
-
-  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, args.fileOutputImage );
-  CommandLineOptions.GetArgument( O_INPUT_IMAGE, args.fileInputImage );
-
+  args.fileInputImage  = fileInputImage;
+  args.fileOutputImage = fileOutputImage;
+  
 
   unsigned int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fileInputImage);
 

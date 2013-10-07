@@ -27,7 +27,7 @@
 #include <itkRelaxStreamlinesFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkJorgesInitializationRelaxStreamlinesFilter.h>
-#include <itkSubtractConstantFromImageFilter.h>
+  #include <itkSubtractImageFilter.h>
 #include <itkZeroCrossingImageFilter.h>
 
 /*!
@@ -318,14 +318,14 @@ int DoMain(arguments args)
   // Optionally write out the midline image, generated from middle of Laplacian
   if (args.midlineImage.length() > 0)
     {
-	  typedef typename itk::SubtractConstantFromImageFilter<OutputImageType, double, OutputImageType> SubtractFilterType;
+    typedef typename itk::SubtractImageFilter<OutputImageType> SubtractFilterType;
 	  typedef typename itk::ZeroCrossingImageFilter<OutputImageType, OutputImageType> ZeroCrossingFilterType;
 
 	  typename SubtractFilterType::Pointer subtractFilter = SubtractFilterType::New();
 	  typename ZeroCrossingFilterType::Pointer zeroCrossingFilter = ZeroCrossingFilterType::New();
 
-	  subtractFilter->SetInput(laplaceFilter->GetOutput());
-	  subtractFilter->SetConstant((args.high + args.low)/2.0);
+		subtractFilter->SetInput1(laplaceFilter->GetOutput());
+		subtractFilter->SetConstant2((args.high + args.low)/2.0);
 
 	  zeroCrossingFilter->SetInput(subtractFilter->GetOutput());
 

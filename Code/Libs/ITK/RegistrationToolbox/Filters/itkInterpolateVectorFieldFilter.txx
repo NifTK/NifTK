@@ -54,6 +54,14 @@ InterpolateVectorFieldFilter<TScalarType, NDimensions>
 template <class TScalarType, unsigned int NDimensions>
 void
 InterpolateVectorFieldFilter<TScalarType, NDimensions>
+::VerifyInputInformation()
+{
+  // Do nothing for now.
+}
+
+template <class TScalarType, unsigned int NDimensions>
+void
+InterpolateVectorFieldFilter<TScalarType, NDimensions>
 ::SetNthInput(unsigned int idx, const InputImageType *image)
 {
   this->ProcessObject::SetNthInput(idx, const_cast< InputImageType* >(image));
@@ -115,7 +123,7 @@ void
 InterpolateVectorFieldFilter<TScalarType, NDimensions>
 ::ThreadedGenerateData(
   const OutputImageRegionType& outputRegionForThread,
-  int threadId)
+  ThreadIdType threadId)
 {
   niftkitkDebugMacro(<<"ThreadedGenerateData():Executing thread:" << threadId);
 

@@ -119,7 +119,7 @@ namespace itk
 
   template <class TInputImage1, class TInputImage2, class TOutputImage>
   void MIDASMeanIntensityWithinARegionFilter<TInputImage1, TInputImage2, TOutputImage>
-    ::ThreadedGenerateData(const InputMainImageRegionType &outputRegionForThread, int ThreadID)
+    ::ThreadedGenerateData(const InputMainImageRegionType &outputRegionForThread, ThreadIdType ThreadID)
   {   
     // Get the input and output pointers
     InputMainImageConstPointer  inputMainImgPtr = static_cast<InputMainImageType*>(this->ProcessObject::GetInput(0));

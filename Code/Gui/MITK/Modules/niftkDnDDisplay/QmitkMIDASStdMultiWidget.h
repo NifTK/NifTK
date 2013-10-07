@@ -449,7 +449,7 @@ private:
    * Reference to the service registration of the display interactor.
    * It is needed to unregister the observer on unload.
    */
-  mitk::ServiceRegistration m_DisplayInteractorService;
+  us::ServiceRegistrationU m_DisplayInteractorService;
 };
 
 #endif

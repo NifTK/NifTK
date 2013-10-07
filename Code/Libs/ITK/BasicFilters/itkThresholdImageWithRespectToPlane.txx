@@ -100,7 +100,7 @@ template <typename TInputImage, typename TOutputImage>
 void 
 ThresholdImageWithRespectToPlane<TInputImage,TOutputImage>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
   double distanceToPlane;
   OutputImagePointType point;

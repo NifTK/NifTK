@@ -802,7 +802,7 @@ add_executable(itkBSILocalTests itkLocalTests.cxx
                itkMultipleDilateImageFilterTest.cxx
                itkSimpleKMeansClusteringImageFilterTest.cxx)
                
-target_link_libraries(itkBSILocalTests ITKCommon ITKIO)
+target_link_libraries(itkBSILocalTests ${NIFTK_ITK_LIB})
 
              
                

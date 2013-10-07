@@ -109,14 +109,6 @@ bool AffineTransformDataNodeProperty::Assign(const BaseProperty& property)
 
 
 //-----------------------------------------------------------------------------
-AffineTransformDataNodeProperty::Pointer AffineTransformDataNodeProperty::Clone() const
-{
-  AffineTransformDataNodeProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 itk::LightObject::Pointer AffineTransformDataNodeProperty::InternalClone() const
 {
   itk::LightObject::Pointer result(new Self(*this));

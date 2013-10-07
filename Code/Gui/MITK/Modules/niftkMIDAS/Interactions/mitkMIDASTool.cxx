@@ -18,9 +18,9 @@
 #include <itkCommand.h>
 
 // MicroServices
-#include <mitkGetModuleContext.h>
-#include <mitkModule.h>
-#include <mitkModuleRegistry.h>
+#include <usGetModuleContext.h>
+#include <usModule.h>
+#include <usModuleRegistry.h>
 
 #include <Interactions/mitkMIDASDisplayInteractor.h>
 
@@ -279,17 +279,17 @@ void mitk::MIDASTool::Activated()
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
   // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
   m_DisplayInteractorConfigs.clear();
-  std::list<mitk::ServiceReference> listEventObserver = GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
-  for (std::list<mitk::ServiceReference>::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
+  std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
+  for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
     MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
-                                                    GetModuleContext()->GetService<InteractionEventObserver>(*it));
+                                                    us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor != NULL)
     {
       // remember the original configuration
       m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
       // here the alternative configuration is loaded
-      displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", GetModuleContext()->GetModule());
+      displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
     }
   }
 }
@@ -319,13 +319,13 @@ void mitk::MIDASTool::Deactivated()
 
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
-  for (std::map<mitk::ServiceReference, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
+  for (std::map<us::ServiceReferenceU, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
        it != m_DisplayInteractorConfigs.end(); ++it)
   {
     if (it->first)
     {
       MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
-                                               GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
+                                               us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor != NULL)
       {
         // here the regular configuration is loaded again

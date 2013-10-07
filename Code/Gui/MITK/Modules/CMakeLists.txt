@@ -16,9 +16,17 @@ set(MODULE_DIRS
   niftkCore
   niftkCoreGui
   niftkDnDDisplay
-  niftkMIDAS
-  niftkMIDASGui
 )
+
+if(BUILD_MIDAS)
+
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    niftkMIDAS
+    niftkMIDASGui
+  )
+
+endif()
 
 if(BUILD_IGI)
 

@@ -17,6 +17,7 @@ set(NIFTK_MESHING_TEST_LINK_LIBRARIES
   niftkITK
   niftkVTK
   niftkcommon 
+  ${NIFTK_ITK_LIB}
   )
 
 set(MESHING_UNITTEST_SRCS

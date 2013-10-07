@@ -14,8 +14,7 @@
 
 set(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES 
   niftkITK 
-  ITKCommon 
-  ITKIO      
+  ${NIFTK_ITK_LIB}
   )
 
 # This is the name of the actual executable that gets run.  

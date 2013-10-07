@@ -101,8 +101,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
 {
-  RegisterSegmentationObjectFactory();
-
   m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
 }
@@ -483,7 +481,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
     pointSetNode->SetBoolProperty("helper object", true);
     pointSetNode->SetBoolProperty("show distant lines", false);
-    pointSetNode->SetBoolProperty("show distant points", false);
+    pointSetNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
     pointSetNode->SetBoolProperty("show distances", false);
     pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
     pointSetNode->SetColor(1.0, 0.0, 0.0);
@@ -511,7 +509,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     initialSeedsNode->SetBoolProperty("helper object", true);
     initialSeedsNode->SetBoolProperty("visible", false);
     initialSeedsNode->SetBoolProperty("show distant lines", false);
-    initialSeedsNode->SetBoolProperty("show distant points", false);
+    initialSeedsNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
     initialSeedsNode->SetBoolProperty("show distances", false);
     initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
     initialSeedsNode->SetColor(1.0, 0.0, 0.0);

@@ -45,7 +45,7 @@ MeanCurvatureImageFilter<TInputImage, TOutputImage>
 template <typename TInputImage, typename TOutputImage>
 void
 MeanCurvatureImageFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData(const ImageRegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const ImageRegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
 
   TInputImage  *inputImage  = static_cast< TInputImage  * >(this->ProcessObject::GetInput(0));

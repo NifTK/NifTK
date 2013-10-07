@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Subsample Image</title>
+  <description><![CDATA[Subsamples the input image by a certain factor and applies the appropriate blurring (equivalent to voxel averaging for integer subsampling factors).]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor> </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>CroppedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Subsampling factors</label>
+    <description><![CDATA[Parameters that specify the subsampling factors in x, y and z]]></description>
+
+    <float>
+      <longflag>subx</longflag>
+      <description>
+	The subsampling factor (greater than 1) in x
+      </description>
+      <label>x subsampling</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <longflag>suby</longflag>
+      <description>
+	The subsampling factor (greater than 1) in y
+      </description>
+      <label>y subsampling</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <longflag>subz</longflag>
+      <description>
+	The subsampling factor (greater than 1) in z
+      </description>
+      <label>z subsampling</label>
+      <default>1</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+  </parameters>
+
+</executable>

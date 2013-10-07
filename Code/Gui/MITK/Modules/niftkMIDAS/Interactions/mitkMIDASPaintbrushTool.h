@@ -25,6 +25,7 @@
 #include <mitkImage.h>
 #include <mitkGeometry3D.h>
 #include <itkImage.h>
+#include <usServiceReference.h>
 
 namespace mitk
 {
@@ -193,7 +194,7 @@ private:
 
   // Stores the current display interactor configurations when this tool is activated.
   // The configurations are restored when the tool is deactivated.
-  std::map<mitk::ServiceReference, mitk::EventConfig> m_DisplayInteractorConfigs;
+  std::map<us::ServiceReferenceU, mitk::EventConfig> m_DisplayInteractorConfigs;
 
 };//class
 

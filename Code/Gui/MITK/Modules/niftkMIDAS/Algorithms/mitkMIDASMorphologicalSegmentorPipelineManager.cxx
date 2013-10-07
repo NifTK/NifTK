@@ -34,7 +34,6 @@ const std::string MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MOR
 //-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorPipelineManager::MIDASMorphologicalSegmentorPipelineManager()
 {
-  RegisterSegmentationObjectFactory();
 }
 
 

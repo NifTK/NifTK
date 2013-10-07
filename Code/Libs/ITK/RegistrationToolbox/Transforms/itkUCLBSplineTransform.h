@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef itkBSplineTransform_h
-#define itkBSplineTransform_h
+#ifndef itkUCLBSplineTransform_h
+#define itkUCLBSplineTransform_h
 
 #include <iostream>
 #include "itkDeformableTransform.h"
@@ -31,7 +31,7 @@ namespace itk
 {
 
 /** 
- * \class BSplineTransform
+ * \class UCLBSplineTransform
  * \brief Deformable transform using a BSpline representation.
  * 
  * SetParameters and GetParameters are used by the standard ITK optimizers.
@@ -53,13 +53,13 @@ template <
     unsigned int NDimensions,            // Number of Dimensions i.e. 2D or 3D
     class TDeformationScalar             // Data type in the deformation field. 
     >            
-class ITK_EXPORT BSplineTransform : 
+class ITK_EXPORT UCLBSplineTransform : 
           public DeformableTransform< TFixedImage, TScalarType, NDimensions, TDeformationScalar >
 {
 public:
   
   /** Standard class typedefs. */
-  typedef BSplineTransform                                            Self;
+  typedef UCLBSplineTransform                                            Self;
   typedef DeformableTransform< TFixedImage, TScalarType, NDimensions, TDeformationScalar> Superclass;
   typedef SmartPointer<Self>                                          Pointer;
   typedef SmartPointer<const Self>                                    ConstPointer;
@@ -68,7 +68,7 @@ public:
   itkNewMacro( Self );
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro( BSplineTransform, DeformableTransform );
+  itkTypeMacro( UCLBSplineTransform, DeformableTransform );
 
   /** Get the number of dimensions. */
   itkStaticConstMacro(SpaceDimension, unsigned int, NDimensions);
@@ -201,14 +201,14 @@ public:
 
 protected:
 
-  BSplineTransform();
-  virtual ~BSplineTransform();
+  UCLBSplineTransform();
+  virtual ~UCLBSplineTransform();
 
   /** Print contents of an BSplineDeformableTransform. */
   void PrintSelf(std::ostream &os, Indent indent) const;
 
 private:
-  BSplineTransform(const Self&); // purposely not implemented
+  UCLBSplineTransform(const Self&); // purposely not implemented
   void operator=(const Self&);   // purposely not implemented
 
   /** Size of lookup table for BSpline weights. */
@@ -320,13 +320,13 @@ private:
       return 0;
     }
   
-}; // class BSplineTransform
+}; // class UCLBSplineTransform
 
 
 }  // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkBSplineTransform.txx"
+#include "itkUCLBSplineTransform.txx"
 #endif
 
-#endif /* __itkBSplineTransform_h */
+#endif /* itkUCLBSplineTransform_h */

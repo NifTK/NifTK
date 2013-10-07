@@ -34,29 +34,48 @@ class NIFTKMIDASGUI_EXPORT QmitkMIDASToolSelectorWidget : public QWidget, public
 
 public:
 
-  /// \brief Constructor.
+  /**
+   * \brief Constructor.
+   */
   QmitkMIDASToolSelectorWidget(QWidget *parent = 0);
 
-  /// \brief Destructor.
+  /**
+   * \brief Destructor.
+   */
   ~QmitkMIDASToolSelectorWidget();
 
-  /// \brief Set the widget to be enabled / disabled.
+  /**
+   * \brief Set the widget to be enabled / disabled.
+   */
   void SetEnabled(bool enabled);
 
-  /// \brief Get the enabled status.
+  /**
+   * \brief Get the enabled status.
+   */
   bool GetEnabled() const;
 
-  /// \brief Retrieves the current tool ID.
+  /**
+   * \brief Retrieves the current tool ID.
+   */
   int GetActiveToolID();
+
+  /**
+   * \brief Retrieves the tool manager using the micro services API.
+   */
+  mitk::ToolManager* GetToolManager() const;
 
 signals:
 
-  /// \brief Emits the tool selected signal from the contained QmitkToolSelectionBox.
+  /**
+   * \brief Emits the tool selected signal from the contained QmitkToolSelectionBox.
+   */
   void ToolSelected(int);
 
 public slots:
 
-  /// \brief We connect the QmitkToolSelectionBox ToolSelected signal to this OnToolSelected slot.
+  /**
+   * \brief We connect the QmitkToolSelectionBox ToolSelected signal to this OnToolSelected slot.
+   */
   void OnToolSelected(int);
 
 protected:

@@ -473,7 +473,7 @@ public:
   /**
    * The number of parameters is the number of Dof.
    */
-  virtual unsigned int GetNumberOfParameters() const 
+  virtual itk::TransformBase::NumberOfParametersType GetNumberOfParameters() const 
     { 
       return this->GetNumberOfDOF();
     }
@@ -481,7 +481,7 @@ public:
   /**
    * Returns the number of DOF actually being optimised.
    */
-  int GetNumberOfDOF() const;
+  unsigned int GetNumberOfDOF() const;
   
   /**
    * Sets the number of DOF actually being optimised.
@@ -570,7 +570,7 @@ public:
    * 
    * Note that the size of this will depend on how many parameters being optimised.
    * */
-  virtual const JacobianType & GetJacobian(const InputPointType & point ) const = 0;
+  virtual const JacobianType GetJacobian(const InputPointType & point ) const = 0;
   
   /** 
    * Create inverse of an affine transformation. 

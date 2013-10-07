@@ -11,7 +11,7 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
- 
+
 #ifndef ITKSHAPEBASEDAVERAGINGIMAGEFILTER_TXX_
 #define ITKSHAPEBASEDAVERAGINGIMAGEFILTER_TXX_
 
@@ -22,34 +22,34 @@
 #include <map>
 // #include <../../../Prototype/kkl/STAPLE/itkSegmentationReliabilityCalculator.h>
 
-namespace itk 
+namespace itk
 {
 
 
 template<class TInputImage, class TOutputImage>
-void 
+void
 ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 ::GenerateData()
 {
-  typedef Image<int, TInputImage::ImageDimension> IntImageType; 
+  typedef Image<int, TInputImage::ImageDimension> IntImageType;
   typedef typename Superclass::DataObjectPointerArraySizeType ArraySizeType;
   typedef SignedMaurerDistanceMapImageFilter<IntImageType, FloatImageType> SignedMaurerDistanceMapImageFilterType;
-  typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType; 
-  typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType; 
-  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType; 
-  typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType; 
-  typedef std::map<typename TInputImage::PixelType, int> LabelMapType; 
-  unsigned short numberOfLabels = 0; 
+  typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType;
+  typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType;
+  typedef ImageRegionIterator<TOutputImage> OutputImageIteratorType;
+  typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType;
+  typedef std::map<typename TInputImage::PixelType, int> LabelMapType;
+  unsigned short numberOfLabels = 0;
   const unsigned int numberOfInputs = this->GetNumberOfInputs();
   typedef ImageRegionIteratorWithIndex<FloatImageType> VariabilityMapIteratorType;
   typedef ImageRegionIteratorWithIndex<FloatImageType> ProbabilityMapIteratorType;
-  
-  std::cout << "Mean mode:" << this->m_MeanMode << std::endl; 
-  // Forcing mean mode to simple mean if the number of input is less than 4. 
+
+  std::cout << "Mean mode:" << this->m_MeanMode << std::endl;
+  // Forcing mean mode to simple mean if the number of input is less than 4.
   if (numberOfInputs < 4 && m_MeanMode == INTERQUARTILE_MEAN)
   {
-    m_MeanMode = MEAN; 
-    std::cerr << "Warning: forcing to simple mean mode when the number of input is less than 4." << std::endl; 
+    m_MeanMode = MEAN;
+    std::cerr << "Warning: forcing to simple mean mode when the number of input is less than 4." << std::endl;
   }
 
   typename TInputImage::SpacingType spacing = this->GetInput(0)->GetSpacing();
@@ -57,32 +57,32 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   for (int i = 0; i < TInputImage::ImageDimension; i++)
     averageSpacingLinear += spacing[i]/2.;
   averageSpacingLinear /= static_cast<double>(TInputImage::ImageDimension);
-  
-  // this->m_SegmentationReliability.resize(numberOfInputs, 1.0); 
-  
-  // Look for different labels in the input images. 
-  LabelMapType labelMap; 
+
+  // this->m_SegmentationReliability.resize(numberOfInputs, 1.0);
+
+  // Look for different labels in the input images.
+  LabelMapType labelMap;
   for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
   {
-    InputImageIteratorType it(this->GetInput(imageIndex), this->GetInput(imageIndex)->GetLargestPossibleRegion()); 
-    
+    InputImageIteratorType it(this->GetInput(imageIndex), this->GetInput(imageIndex)->GetLargestPossibleRegion());
+
     for (it.GoToBegin(); !it.IsAtEnd(); ++it)
     {
-      labelMap[it.Get()] = 1; 
+      labelMap[it.Get()] = 1;
     }
   }
   if (labelMap.size() >= std::numeric_limits<unsigned short>::max())
     itkExceptionMacro("ShapeBasedAveragingImageFilter: number of labels found greater than " << std::numeric_limits<unsigned short>::max() << ". Are you sure your input images are correct?");
-  numberOfLabels = labelMap.size(); 
+  numberOfLabels = labelMap.size();
   if (!this->m_IsUserDefinedLabelForUndecidedPixels)
   {
-    this->m_LabelForUndecidedPixels = static_cast<typename TOutputImage::PixelType>(labelMap.rbegin()->first+1); 
+    this->m_LabelForUndecidedPixels = static_cast<typename TOutputImage::PixelType>(labelMap.rbegin()->first+1);
   }
-  // Allocate space for the output merged image. 
-  this->SetNumberOfOutputs(1); 
-  this->AllocateOutputs(); 
-  
-  // Allocate space for the average distance map and initialise it to max.   
+  // Allocate space for the output merged image.
+  this->SetNumberOfIndexedOutputs(1);
+  this->AllocateOutputs();
+
+  // Allocate space for the average distance map and initialise it to max.
   m_AverageDistanceMap = FloatImageType::New();
   m_AverageDistanceMap->SetOrigin(this->GetInput(0)->GetOrigin());
   m_AverageDistanceMap->SetSpacing(this->GetInput(0)->GetSpacing());
@@ -93,7 +93,7 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   AverageDistanceMapIteratorType it(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it)
   {
-    it.Set(std::numeric_limits<float>::max()); 
+    it.Set(std::numeric_limits<float>::max());
   }
   // Allocate space for the variability map.
   std::cerr << "Allocating space for variability map..." << std::endl;
@@ -112,37 +112,37 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
   m_ProbabilityMap->Allocate();
 
   typename SignedMaurerDistanceMapImageFilterType::Pointer *distanceMapFilter = new typename SignedMaurerDistanceMapImageFilterType::Pointer[numberOfInputs];
-  typename CastImageFilterType::Pointer *castImageFilter = new typename CastImageFilterType::Pointer[numberOfInputs]; 
+  typename CastImageFilterType::Pointer *castImageFilter = new typename CastImageFilterType::Pointer[numberOfInputs];
 
-  // Loop over all labels. 
+  // Loop over all labels.
   for (typename LabelMapType::iterator labelMapIt = labelMap.begin(); labelMapIt != labelMap.end(); ++labelMapIt)
   {
     typename TInputImage::PixelType label = labelMapIt->first;
-        
-    // Loop over all input images to calculate the distance transform.  
+
+    // Loop over all input images to calculate the distance transform.
     for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
     {
       castImageFilter[imageIndex] = CastImageFilterType::New();
-      castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex)); 
-      
-      distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New(); 
-      distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput()); 
-      distanceMapFilter[imageIndex]->SetUseImageSpacing(true); 
-      
+      castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex));
+
+      distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New();
+      distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput());
+      distanceMapFilter[imageIndex]->SetUseImageSpacing(true);
+
       // Filter only allows background value for the distance transform
       // therefore - have to set the background to the label and set the sign to be +ve inside
-      // so that this keeps the convention the same as the paper (inside -ve, outside +ve). 
-      distanceMapFilter[imageIndex]->SetBackgroundValue(label); 
-      distanceMapFilter[imageIndex]->SetInsideIsPositive(true); 
-      distanceMapFilter[imageIndex]->Update(); 
+      // so that this keeps the convention the same as the paper (inside -ve, outside +ve).
+      distanceMapFilter[imageIndex]->SetBackgroundValue(label);
+      distanceMapFilter[imageIndex]->SetInsideIsPositive(true);
+      distanceMapFilter[imageIndex]->Update();
     }
-      
-    // Loop over all voxels. 
-    AverageDistanceMapIteratorType averageDistanceMapIt(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion()); 
-    OutputImageIteratorType outputImageIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion()); 
+
+    // Loop over all voxels.
+    AverageDistanceMapIteratorType averageDistanceMapIt(m_AverageDistanceMap, m_AverageDistanceMap->GetLargestPossibleRegion());
+    OutputImageIteratorType outputImageIt(this->GetOutput(), this->GetOutput()->GetLargestPossibleRegion());
     VariabilityMapIteratorType variabilityMaptIt(m_VariabilityMap, m_VariabilityMap->GetLargestPossibleRegion());
     ProbabilityMapIteratorType probabilityMaptIt(m_ProbabilityMap, m_ProbabilityMap->GetLargestPossibleRegion());
-    
+
     //for (averageDistanceMapIt.GoToBegin(), outputImageIt.GoToBegin();
     //    !averageDistanceMapIt.IsAtEnd();
     //    ++averageDistanceMapIt, ++outputImageIt)
@@ -150,9 +150,9 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
         !averageDistanceMapIt.IsAtEnd();
         ++averageDistanceMapIt, ++outputImageIt, ++variabilityMaptIt, ++probabilityMaptIt)
     {
-      // Compuate the average distance. 
-      double averageDistance = 0.; 
-      std::vector<double> allDistances; 
+      // Compuate the average distance.
+      double averageDistance = 0.;
+      std::vector<double> allDistances;
       double averageSpacing = averageSpacingLinear*averageSpacingLinear;
 
       double sumOfSquare = 0.;
@@ -161,44 +161,44 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 
       for (ArraySizeType imageIndex = 0; imageIndex < numberOfInputs; imageIndex++)
       {
-        averageDistance += distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()); 
+        averageDistance += distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex());
         //allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex())/this->m_SegmentationReliability[imageIndex]);
-        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));  
+        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));
       }
       switch (m_MeanMode)
       {
         case MEAN:
-          averageDistance /= static_cast<double>(numberOfInputs); 
-          break; 
-          
-        case MEDIAN: 
-          sort(allDistances.begin(), allDistances.end()); 
+          averageDistance /= static_cast<double>(numberOfInputs);
+          break;
+
+        case MEDIAN:
+          sort(allDistances.begin(), allDistances.end());
           nth_element(allDistances.begin(), allDistances.begin()+allDistances.size()/2, allDistances.end());
           if ((allDistances.size() % 2) == 0)
             averageDistance = (*(allDistances.begin()+allDistances.size()/2) + *(allDistances.begin()+allDistances.size()/2-1))/2;
           else
             averageDistance = *(allDistances.begin()+allDistances.size()/2);
-          break; 
-          
-        case INTERQUARTILE_MEAN: 
+          break;
+
+        case INTERQUARTILE_MEAN:
         {
-          int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0)); 
-          int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1; 
+          int start = static_cast<int>(floor(static_cast<double>(numberOfInputs)/4.0));
+          int end = static_cast<int>(floor(3.0*static_cast<double>(numberOfInputs)/4.0))-1;
 
           double correctAverageDistance = 0.;
           sumOfSquare = 0.0;
 
-          sort(allDistances.begin(), allDistances.end()); 
-          averageDistance = 0.0; 
-          for (int i = start; i <= end; i++) 
+          sort(allDistances.begin(), allDistances.end());
+          averageDistance = 0.0;
+          for (int i = start; i <= end; i++)
           {
-            averageDistance = *(allDistances.begin()+i); 
+            averageDistance = *(allDistances.begin()+i);
 
             double distance = *(allDistances.begin()+i);
             correctAverageDistance += distance;
             sumOfSquare += distance*distance;
           }
-          averageDistance /= static_cast<double>(end-start+1); 
+          averageDistance /= static_cast<double>(end-start+1);
 
           number = static_cast<double>(end-start+1);
           correctAverageDistance /= number;
@@ -234,15 +234,15 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
         }
           break;
 
-          
-        default: 
-          assert(false); 
+
+        default:
+          assert(false);
       }
-      // Update the distance map and output image. 
+      // Update the distance map and output image.
       if (averageDistance < averageDistanceMapIt.Get())
       {
-        outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label)); 
-        averageDistanceMapIt.Set(static_cast<float>(averageDistance)); 
+        outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label));
+        averageDistanceMapIt.Set(static_cast<float>(averageDistance));
 
         double adjustedDistance = 0.;
         if (label == 0)
@@ -270,27 +270,27 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
       }
       else if (averageDistance == averageDistanceMapIt.Get())
       {
-        // Quick hack to have some randomness when the voxels are equi-distance from two labels. 
+        // Quick hack to have some randomness when the voxels are equi-distance from two labels.
         if (this->m_LabelForUndecidedPixels == 240)
         {
           if (static_cast<double>(rand())/static_cast<double>(RAND_MAX) < 0.5)
-            outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label)); 
+            outputImageIt.Set(static_cast<typename TOutputImage::PixelType>(label));
         }
         else
         {
-          outputImageIt.Set(this->m_LabelForUndecidedPixels); 
+          outputImageIt.Set(this->m_LabelForUndecidedPixels);
         }
       }
 
     }
-        
-    //std::cout << "totalVariance=" << CalculateVariance(averageDistanceMap) << std::endl; 
+
+    //std::cout << "totalVariance=" << CalculateVariance(averageDistanceMap) << std::endl;
   }
-  if (distanceMapFilter != NULL) 
+  if (distanceMapFilter != NULL)
     delete [] distanceMapFilter;
-  if (castImageFilter != NULL) 
+  if (castImageFilter != NULL)
     delete [] castImageFilter;
-  
+
 }
 
 
@@ -374,114 +374,114 @@ ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 
 #if 0
 template<class TInputImage, class TOutputImage>
-void 
+void
 ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 ::CalculateReliability()
 {
   typedef itk::SegmentationReliabilityCalculator<TInputImage, TInputImage, TInputImage> SegmentationReliabilityFilterType;
-  typedef itk::CastImageFilter<TInputImage, TInputImage> CastImageFilterType; 
+  typedef itk::CastImageFilter<TInputImage, TInputImage> CastImageFilterType;
 
   typename SegmentationReliabilityFilterType::Pointer reliabilityFilter = SegmentationReliabilityFilterType::New();
-  typename CastImageFilterType::Pointer castFilter = CastImageFilterType::New(); 
-  
+  typename CastImageFilterType::Pointer castFilter = CastImageFilterType::New();
+
   const unsigned int numberOfInputFiles = this->GetNumberOfInputs();
   for (unsigned int i = 0; i < numberOfInputFiles; i++)
   {
     reliabilityFilter->SetBaselineImage(this->GetOutput());
     reliabilityFilter->SetBaselineMask(this->GetOutput());
-    castFilter->SetInput(this->GetInput(i)); 
-    castFilter->Update(); 
-    // TODO: slightly dodgy here - fix it later. 
-    reliabilityFilter->SetRepeatImage(const_cast<TInputImage*>(this->GetInput(i))); 
+    castFilter->SetInput(this->GetInput(i));
+    castFilter->Update();
+    // TODO: slightly dodgy here - fix it later.
+    reliabilityFilter->SetRepeatImage(const_cast<TInputImage*>(this->GetInput(i)));
     reliabilityFilter->SetRepeatMask(const_cast<TInputImage*>(this->GetInput(i)));
     reliabilityFilter->SetNumberOfErosion(1);
     reliabilityFilter->SetNumberOfDilation(1);
     reliabilityFilter->Compute();
-    this->m_SegmentationReliability[i] = reliabilityFilter->GetSegmentationReliability(); 
+    this->m_SegmentationReliability[i] = reliabilityFilter->GetSegmentationReliability();
     std::cout << reliabilityFilter->GetSegmentationReliability() << std::endl;
   }
   std::cout << std::endl;
-  
+
 }
 #endif
 
 
 #if 0
 template<class TInputImage, class TOutputImage>
-double 
+double
 ShapeBasedAveragingImageFilter<TInputImage, TOutputImage>
 ::CalculateVariance(typename AverageDistanceMapType::Pointer averageDistanceMap)
 {
-  typedef Image<int, TInputImage::ImageDimension> IntImageType; 
+  typedef Image<int, TInputImage::ImageDimension> IntImageType;
   typedef typename Superclass::DataObjectPointerArraySizeType ArraySizeType;
   typedef SignedMaurerDistanceMapImageFilter<IntImageType, FloatImageType> SignedMaurerDistanceMapImageFilterType;
-  typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType; 
-  typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType; 
-  typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType; 
-  typedef std::map<typename TInputImage::PixelType, int> LabelMapType; 
-  
-  double totalVariance = 0.0; 
-  
-  // Look for different labels in the input images. 
-  LabelMapType labelMap; 
+  typedef CastImageFilter<TInputImage, IntImageType> CastImageFilterType;
+  typedef ImageRegionIteratorWithIndex<AverageDistanceMapType> AverageDistanceMapIteratorType;
+  typedef ImageRegionConstIterator<TInputImage> InputImageIteratorType;
+  typedef std::map<typename TInputImage::PixelType, int> LabelMapType;
+
+  double totalVariance = 0.0;
+
+  // Look for different labels in the input images.
+  LabelMapType labelMap;
   for (ArraySizeType imageIndex = 0; imageIndex < this->GetNumberOfInputs(); imageIndex++)
   {
-    InputImageIteratorType it(this->GetInput(imageIndex), this->GetInput(imageIndex)->GetLargestPossibleRegion()); 
-    
+    InputImageIteratorType it(this->GetInput(imageIndex), this->GetInput(imageIndex)->GetLargestPossibleRegion());
+
     for (it.GoToBegin(); !it.IsAtEnd(); ++it)
     {
-      labelMap[it.Get()] = 1; 
+      labelMap[it.Get()] = 1;
     }
   }
-  
-  typename SignedMaurerDistanceMapImageFilterType::Pointer distanceMapFilter[this->GetNumberOfInputs()]; 
-  typename CastImageFilterType::Pointer castImageFilter[this->GetNumberOfInputs()]; 
-  
-  // Loop over all labels. 
+
+  typename SignedMaurerDistanceMapImageFilterType::Pointer distanceMapFilter[this->GetNumberOfInputs()];
+  typename CastImageFilterType::Pointer castImageFilter[this->GetNumberOfInputs()];
+
+  // Loop over all labels.
   for (typename LabelMapType::iterator labelMapIt = labelMap.begin(); labelMapIt != labelMap.end(); ++labelMapIt)
   {
     typename TInputImage::PixelType label = labelMapIt->first;
-        
-    // Loop over all input images to calculate the distance transform.  
+
+    // Loop over all input images to calculate the distance transform.
     for (ArraySizeType imageIndex = 0; imageIndex < this->GetNumberOfInputs(); imageIndex++)
     {
       castImageFilter[imageIndex] = CastImageFilterType::New();
-      castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex)); 
-      distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New(); 
-      distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput()); 
-      distanceMapFilter[imageIndex]->SetUseImageSpacing(true); 
+      castImageFilter[imageIndex]->SetInput(this->GetInput(imageIndex));
+      distanceMapFilter[imageIndex] = SignedMaurerDistanceMapImageFilterType::New();
+      distanceMapFilter[imageIndex]->SetInput(castImageFilter[imageIndex]->GetOutput());
+      distanceMapFilter[imageIndex]->SetUseImageSpacing(true);
       // Filter only allows background value for the distance transform
       // therefore - have to set the background to the label and set the sign to be +ve inside
-      // so that this keeps the convention the same as the paper (inside -ve, outside +ve). 
-      distanceMapFilter[imageIndex]->SetBackgroundValue(label); 
-      distanceMapFilter[imageIndex]->SetInsideIsPositive(true); 
-      distanceMapFilter[imageIndex]->Update(); 
+      // so that this keeps the convention the same as the paper (inside -ve, outside +ve).
+      distanceMapFilter[imageIndex]->SetBackgroundValue(label);
+      distanceMapFilter[imageIndex]->SetInsideIsPositive(true);
+      distanceMapFilter[imageIndex]->Update();
     }
-      
-    // Loop over all voxels. 
-    AverageDistanceMapIteratorType averageDistanceMapIt(averageDistanceMap, averageDistanceMap->GetLargestPossibleRegion()); 
-    
+
+    // Loop over all voxels.
+    AverageDistanceMapIteratorType averageDistanceMapIt(averageDistanceMap, averageDistanceMap->GetLargestPossibleRegion());
+
     for (averageDistanceMapIt.GoToBegin();
         !averageDistanceMapIt.IsAtEnd();
         ++averageDistanceMapIt)
     {
-      // Compuate the average distance. 
-      double averageDistance = averageDistanceMapIt.Get(); 
-      std::vector<double> allDistances; 
+      // Compuate the average distance.
+      double averageDistance = averageDistanceMapIt.Get();
+      std::vector<double> allDistances;
       for (ArraySizeType imageIndex = 0; imageIndex < this->GetNumberOfInputs(); imageIndex++)
       {
-        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));  
+        allDistances.push_back(distanceMapFilter[imageIndex]->GetOutput()->GetPixel(averageDistanceMapIt.GetIndex()));
       }
-        
-      double currentVariance = 0.0; 
+
+      double currentVariance = 0.0;
       for (unsigned int j = 0; j < allDistances.size(); j++)
-        currentVariance += (averageDistance-allDistances[j])*(averageDistance-allDistances[j]); 
-      currentVariance /= allDistances.size()-1; 
-      totalVariance += currentVariance; 
+        currentVariance += (averageDistance-allDistances[j])*(averageDistance-allDistances[j]);
+      currentVariance /= allDistances.size()-1;
+      totalVariance += currentVariance;
     }
   }
-  
-  return totalVariance; 
+
+  return totalVariance;
 }
 #endif
 

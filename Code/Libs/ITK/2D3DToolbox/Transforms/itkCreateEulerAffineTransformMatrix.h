@@ -170,7 +170,7 @@ protected:
    * \sa CreateEulerAffineTransformMatrixBaseClass::ThreadedGenerateData(),
    *     CreateEulerAffineTransformMatrixBaseClass::GenerateData() */
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   /** The size of the output projected image */
   OutputImageSizeType m_OutputImageSize;

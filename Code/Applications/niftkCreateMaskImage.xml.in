@@ -2,7 +2,7 @@
 <executable>
   <category>Binary Mask Image Operators</category>
   <title>Create Mask Image</title>
-  <description><![CDATA[Creates a mask using the input image and a user specified bounding box.]]></description>
+  <description><![CDATA[Creates a rectangular mask image using an input image, to define the mask extent and resolution, and a user specified bounding box, to specify the voxels in the image that will be set to true. All voxels outside the bounding box will be set to false.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>

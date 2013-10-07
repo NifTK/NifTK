@@ -15,10 +15,7 @@
 set(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES 
   niftkcommon 
   niftkITK 
-  ITKCommon 
-  ITKIO
-  ITKStatistics
-  ITKAlgorithms  
+  ${NIFTK_ITK_LIB}
   ${Boost_LIBRARIES}
   )
 

@@ -95,8 +95,7 @@ public:
 
   typedef float InternalRealType;
 
-  typedef Image< InternalRealType, 
-                 ::itk::GetImageDimension<TInputImage>::ImageDimension > RealImageType;
+  typedef Image< InternalRealType, TInputImage::ImageDimension > RealImageType;
 
   typedef typename RealImageType::Pointer RealImagePointer;
 
@@ -252,7 +251,7 @@ protected:
    * \sa ImageToImageFilter::ThreadedGenerateData(),
    *     ImageToImageFilter::GenerateData() */
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);

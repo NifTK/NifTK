@@ -22,8 +22,8 @@
 #include <QGridLayout>
 #include <mitkMIDASOrientationUtils.h>
 
-#include <mitkGetModuleContext.h>
-#include <mitkModuleRegistry.h>
+#include <usGetModuleContext.h>
+#include <usModuleRegistry.h>
 #include <mitkVtkLayerController.h>
 
 #include "vtkSideAnnotation.h"
@@ -928,9 +928,18 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
     permutedSpacing[2] = geometry->GetSpacing()[permutedAxes[2]];
 
     mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
-    permutedMatrix.set_column(0, inverseTransformMatrix.get_row(permutedAxes[0]) * flippedAxes[0]);
-    permutedMatrix.set_column(1, inverseTransformMatrix.get_row(permutedAxes[1]) * flippedAxes[1]);
-    permutedMatrix.set_column(2, inverseTransformMatrix.get_row(permutedAxes[2]) * flippedAxes[2]);
+    permutedMatrix.set_identity();
+
+    // permutedMatrix(column) = inverseTransformMatrix(row) * flippedAxes
+    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * flippedAxes[0];
+    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * flippedAxes[0];
+    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * flippedAxes[0];
+    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * flippedAxes[1];
+    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * flippedAxes[1];
+    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * flippedAxes[1];
+    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * flippedAxes[2];
+    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * flippedAxes[2];
+    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * flippedAxes[2];
 
     m_OrientationToAxisMap.clear();
     m_OrientationToAxisMap.insert(std::pair<MIDASOrientation, int>(MIDAS_ORIENTATION_AXIAL,    dominantAxisSI));
@@ -977,7 +986,7 @@ void QmitkMIDASStdMultiWidget::SetGeometry(mitk::Geometry3D* geometry)
       sliceNavigationController->SetViewDirectionToDefault();
 
       // Get the view/orientation flags.
-      mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
+      mitk::SliceNavigationController::ViewDirection viewDirection = const_cast<const mitk::SliceNavigationController*>(sliceNavigationController)->GetViewDirection();
 
       if (i < 3)
       {
@@ -2072,15 +2081,15 @@ void QmitkMIDASStdMultiWidget::SetDisplayInteractionsEnabled(bool enabled)
     // Here we create our own display interactor...
     m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers);
 
-    mitk::Module* niftkDnDDisplayModule = mitk::ModuleRegistry::GetModule("niftkDnDDisplay");
+    us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkDnDDisplayModule);
     m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
 
     // ... and register it as listener via the micro services.
-    mitk::ServiceProperties props;
+    us::ServiceProperties props;
     props["name"] = std::string("DisplayInteractor");
 
-    mitk::ModuleContext* moduleContext = mitk::GetModuleContext();
+    us::ModuleContext* moduleContext = us::GetModuleContext();
     m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
   }
   else

@@ -96,6 +96,7 @@ int ExtractEdgeImageTest(int argc, char * argv[])
 
   resampleFilter->SetInput(reader->GetOutput());
   extractType->SetInput(resampleFilter->GetOutput());
+  extractType->SetDirectionCollapseToIdentity();
   thresholdFilter->SetInput(extractType->GetOutput());
   dilateFilter->SetInput(thresholdFilter->GetOutput());
   erodeFilter->SetInput(dilateFilter->GetOutput());

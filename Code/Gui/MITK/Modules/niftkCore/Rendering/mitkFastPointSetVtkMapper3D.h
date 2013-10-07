@@ -20,6 +20,7 @@
 #include <mitkVtkMapper.h>
 #include <mitkBaseRenderer.h>
 #include <vtkSmartPointer.h>
+#include <mitkLocalStorageHandler.h>
 
 class vtkPoints;
 class vtkIdTypeArray;
@@ -81,7 +82,7 @@ protected:
     itk::TimeStamp m_ShaderTimestampUpdate;
   };
 
-  mitk::Mapper::LocalStorageHandler<LocalStorage> m_LocalStorage;
+  mitk::LocalStorageHandler<LocalStorage> m_LocalStorage;
 
   virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
   virtual void ResetMapper( mitk::BaseRenderer* renderer );

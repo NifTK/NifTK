@@ -16,7 +16,7 @@
 #define itkVelocityFieldMultiResolutionMethod_h
 
 #include "itkMultiResolutionDeformableImageRegistrationMethod.h"
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 #include <itkVelocityFieldDeformableTransform.h>
 
 namespace itk

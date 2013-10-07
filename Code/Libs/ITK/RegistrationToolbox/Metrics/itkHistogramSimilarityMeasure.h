@@ -18,7 +18,6 @@
 #include "itkUCLHistogram.h"
 #include "itkFiniteDifferenceGradientSimilarityMeasure.h"
 
-
 namespace itk
 {
 /** 
@@ -59,7 +58,7 @@ public:
   typedef typename HistogramType::Pointer                 HistogramPointer;
   typedef typename HistogramType::SizeType                HistogramSizeType;
   typedef typename HistogramType::MeasurementVectorType   HistogramMeasurementVectorType;
-  typedef typename HistogramType::FrequencyType           HistogramFrequencyType;
+  typedef typename HistogramType::AbsoluteFrequencyType   HistogramFrequencyType;
   typedef typename HistogramType::Iterator                HistogramIteratorType;
   
   /** Initializes the metric. */
@@ -72,7 +71,7 @@ public:
       niftkitkDebugMacro(<< "HistogramSimilarityMeasure():Setting size to [" << niftk::ConvertToString((int)x) \
           << "," << niftk::ConvertToString((int)y) << "]");
       
-      HistogramSizeType size;
+      HistogramSizeType size(2);
       size[0] = x;
       size[1] = y;
       this->SetHistogramSize(size);
@@ -120,10 +119,10 @@ protected:
    */
   void ResetCostFunction() 
     {
-      HistogramMeasurementVectorType lowerBounds;
+      HistogramMeasurementVectorType lowerBounds(2);
       lowerBounds[0] = this->GetFixedLowerBound();
       lowerBounds[1] = this->GetMovingLowerBound();
-      HistogramMeasurementVectorType upperBounds;
+      HistogramMeasurementVectorType upperBounds(2);
       upperBounds[0] = this->GetFixedUpperBound();
       upperBounds[1] = this->GetMovingUpperBound();
       

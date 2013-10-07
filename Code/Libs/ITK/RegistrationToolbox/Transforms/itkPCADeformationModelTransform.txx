@@ -25,7 +25,7 @@ namespace itk
 //
 template<class ScalarType, unsigned int NDimensions>
 PCADeformationModelTransform<ScalarType, NDimensions>::
-PCADeformationModelTransform() : Superclass(NDimensions, 0)
+PCADeformationModelTransform() : Superclass(0)
 {
   this->m_meanCoefficient = 0;
   this->m_NumberOfFields = 0;
@@ -250,15 +250,25 @@ TransformPoint(const InputPointType &point) const
 // Compute the Jacobian of the transformation
 // It follows the same order of Parameters vector 
 template<class ScalarType, unsigned int NDimensions>
-const typename PCADeformationModelTransform<ScalarType, NDimensions>::JacobianType &
+const typename PCADeformationModelTransform<ScalarType, NDimensions>::JacobianType
 PCADeformationModelTransform<ScalarType, NDimensions>
 ::GetJacobian( const InputPointType & p ) const
+{
+  JacobianType tmp;
+  this->ComputeJacobianWithRespectToParameters( p, tmp );
+  return tmp;	
+}
+ 
+template<class ScalarType, unsigned int NDimensions>
+void
+PCADeformationModelTransform<ScalarType, NDimensions>
+::ComputeJacobianWithRespectToParameters( const InputPointType &p, JacobianType &jacobian ) const
 {
   DisplacementType displacement;
   unsigned long int numberOfParameters = this->m_Parameters.GetSize();
 
   //std::cout << "GetJacobian " << std::endl;
-  this->m_Jacobian.Fill(0.0);
+  jacobian.Fill(0.0);
 
   // dT_x/dc_i at p = T_ix(p)
   // change of transformed point as parameter c_i is changed
@@ -271,11 +281,9 @@ PCADeformationModelTransform<ScalarType, NDimensions>
       displacement =  m_Interpolators[k+1]->Evaluate(p);
       for(unsigned int j = 0; j < NDimensions; j++ )
 	{
-	  this->m_Jacobian[j][k] = displacement[j];
+	  jacobian[j][k] = displacement[j];
 	}
     }
-	
-  return this->m_Jacobian;
 }
 
 
@@ -296,7 +304,7 @@ PCADeformationModelTransform<ScalarType, NDimensions>::GetSingleDeformationField
   
   FieldIterator itField( this->m_SingleField, this->m_SingleField->GetLargestPossibleRegion() );
   
-  for ( itField.Begin(); !itField.IsAtEnd(); ++itField)
+  for ( itField.GoToBegin(); !itField.IsAtEnd(); ++itField)
     {
       Findex = itField.GetIndex();
       // mean displacement

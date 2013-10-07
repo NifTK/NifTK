@@ -23,7 +23,7 @@ the internal network. See <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasP
 
 <b>A</b>: Having performed a complete NifTK SuperBuild, you run CMake with the source folder as
 \verbatim
-<my-build>/CMakeExternals/Source/MITK
+<my-build>/MITK-src
 \endverbatim
 and the build folder as
 \verbatim

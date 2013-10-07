@@ -113,7 +113,7 @@ protected:
     virtual void AfterThreadedGenerateData();
 
     // The main method to implement in derived classes, note, its threaded.
-    virtual void ThreadedGenerateData(const TimeVaryingVelocityRegionType &regionForThread, int);
+    virtual void ThreadedGenerateData(const TimeVaryingVelocityRegionType &regionForThread, ThreadIdType threadId);
 
 private:
 

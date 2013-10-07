@@ -40,7 +40,8 @@ public:
   typedef SmartPointer< const Self >                                  ConstPointer;
   typedef typename Superclass::InputPointType                         InputPointType;
   typedef typename Superclass::OutputPointType                        OutputPointType;
-  
+  typedef typename Superclass::JacobianType                           JacobianType;
+
   /** Run-time type information (and related methods). */
   itkTypeMacro( UCLBaseTransform, Transform );
 
@@ -52,7 +53,7 @@ public:
 
 protected:
   UCLBaseTransform() {}; 
-  UCLBaseTransform(unsigned int Dimension, unsigned int NumberOfParameters) : Transform<TScalarType, NInputDimensions, NOutputDimensions>(Dimension, NumberOfParameters) {};
+  UCLBaseTransform(unsigned int Dimension, itk::TransformBase::NumberOfParametersType NumberOfParameters) : Transform<TScalarType, NInputDimensions, NOutputDimensions>(NumberOfParameters) {};
   virtual ~UCLBaseTransform() {}
 
 private:

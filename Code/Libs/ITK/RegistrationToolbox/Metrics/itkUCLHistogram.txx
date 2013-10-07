@@ -26,6 +26,7 @@ template< class TMeasurement, unsigned int VMeasurementVectorSize,
 UCLHistogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
 ::UCLHistogram()
 {
+  this->SetMeasurementVectorSize( VMeasurementVectorSize );
 }
 
 template < class TMeasurement, unsigned int VMeasurementVectorSize, class TFrequencyContainer>
@@ -152,11 +153,11 @@ UCLHistogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
       freq = this->GetFrequency(i, 0);
       if (freq > 0)
         {
-          entropyFixed += freq*vcl_log(freq);
+          entropyFixed += freq * vcl_log(static_cast<MeasureType>(freq));
         }
     }
 
-  entropyFixed = -entropyFixed/static_cast<MeasureType>(totalFreq) + vcl_log(totalFreq);
+  entropyFixed = -entropyFixed / static_cast<MeasureType>(totalFreq) + vcl_log(static_cast<MeasureType>(totalFreq));
   return entropyFixed;
 }
 
@@ -175,11 +176,11 @@ UCLHistogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
       freq = this->GetFrequency(i, 1);
       if (freq > 0)
         {
-          entropyY += freq*vcl_log(freq);
+          entropyY += freq * vcl_log(static_cast<MeasureType>(freq));
         }
     }
 
-  entropyY = -entropyY/static_cast<MeasureType>(totalFreq) + vcl_log(totalFreq);
+  entropyY = -entropyY / static_cast<MeasureType>(totalFreq) + vcl_log(static_cast<MeasureType>(totalFreq));
   return entropyY;
 }
 
@@ -200,13 +201,12 @@ UCLHistogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
       freq = it.GetFrequency();
       if (freq > 0)
         {
-          jointEntropy += freq*vcl_log(freq);
+          jointEntropy += freq * vcl_log(static_cast<MeasureType>(freq));
         }
       ++it;
       }
 
-  jointEntropy = -jointEntropy/
-      static_cast<MeasureType>(totalFreq) + vcl_log(totalFreq );
+  jointEntropy = -jointEntropy / static_cast<MeasureType>(totalFreq) + vcl_log(static_cast<MeasureType>(totalFreq));
   return jointEntropy;
 }
 

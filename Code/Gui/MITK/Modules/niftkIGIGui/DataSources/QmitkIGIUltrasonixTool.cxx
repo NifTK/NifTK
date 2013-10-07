@@ -14,11 +14,11 @@
 
 #include "QmitkIGIUltrasonixTool.h"
 #include <QImage>
-#include <QmitkCommonFunctionality.h>
 #include "QmitkIGINiftyLinkDataType.h"
 #include "QmitkIGIDataSourceMacro.h"
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
+#include <mitkIOUtil.h>
 #include <QCoreApplication>
 
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
@@ -255,7 +255,7 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
 
           if (image.IsNotNull())
           {
-            CommonFunctionality::SaveImage( image, fileName.toAscii() );
+            mitk::IOUtil::SaveImage( image, fileName.toStdString() );
             outputFileName = fileName.toStdString();
             success = true;
           }
