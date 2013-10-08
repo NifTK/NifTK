@@ -45,7 +45,7 @@ FFDMultiResolutionMethod<TInputImageType, TScalarType, NDimensions, TDeformation
   
   if (m_Transform.IsNull())
     {
-      itkExceptionMacro(<<"Transform is null, you should connect the BSplineTransform to the FFDMultiResolutionMethod");
+      itkExceptionMacro(<<"Transform is null, you should connect the UCLBSplineTransform to the FFDMultiResolutionMethod");
     }
 
   if (this->m_CurrentLevel == 0)
@@ -106,7 +106,7 @@ FFDMultiResolutionMethod<TInputImageType, TScalarType, NDimensions, TDeformation
 {
   if (m_Transform.IsNull())
     {
-      itkExceptionMacro(<<"Transform is null, you should connect the BSplineTransform to the FFDMultiResolutionMethod");
+      itkExceptionMacro(<<"Transform is null, you should connect the UCLBSplineTransform to the FFDMultiResolutionMethod");
     }
 
   m_Transform->WriteControlPointImage(filename);

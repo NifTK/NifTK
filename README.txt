@@ -58,7 +58,10 @@ License : Doc/Licenses/DCMTK.txt (mainly BSD, but a mixture)
 Library : ITK
 Website : http://www.itk.org
 Purpose : Image processing algorithms
-License : Doc/Licenses/ITK.txt (BSD license)
+License : Doc/Licenses/ITK.txt (Apache license)
+Mods    : 4.3.2.1: Removed path length check in top level CMakeLists.txt
+          4.3.2.2: Raised https://issues.itk.org/jira/browse/ITK-3206
+                   Applied patch directly to our 4.3.2.1 version.
 
 Library : OpenCV
 Website : http://opencv.willowgarage.com/wiki/

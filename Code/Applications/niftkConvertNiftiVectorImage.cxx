@@ -19,7 +19,7 @@
 #include <itkVector.h>
 #include <itkExceptionObject.h>
 #include <itkImageAdaptor.h>
-#include <itkMultiplyByConstantImageFilter.h>
+#include <itkMultiplyImageFilter.h>
 
 #include <niftkCommandLineParser.h>
 #include <itkDisplacementVectorCoordinateAdaptionPixelAccessor.h>
@@ -291,12 +291,13 @@ int main(int argc, char ** argv)
 	adaptor->SetPixelAccessor( accessor );
 	adaptor->SetImage( reader->GetOutput() );
 
-	typedef itk::MultiplyByConstantImageFilter< AdaptorType,
-			                                    VectorElementType ,
-			                                    ImageType >          MultiplyFilerType;
-	typedef MultiplyFilerType::Pointer                               MultiplyFilerPointerType;
+        typedef itk::MultiplyImageFilter< AdaptorType,
+                                          itk::Image<VectorElementType, Dimension>,
+	                                  ImageType > MultiplyFilterType;
 
-	MultiplyFilerPointerType doNothingFilter = MultiplyFilerType::New();
+	typedef MultiplyFilterType::Pointer MultiplyFilterPointerType;
+
+	MultiplyFilterPointerType doNothingFilter = MultiplyFilterType::New();
 	doNothingFilter->SetConstant( 1.0f );
 
 	doNothingFilter->SetInput( adaptor );

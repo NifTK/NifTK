@@ -167,7 +167,6 @@ int itkHistogramRegistrationForceGeneratorTest(int, char* [])
   inputImageA->SetPixel(index, 18);           
   inputImageB->SetPixel(index, 28);          
   
-  
   typedef itk::NMILocalHistogramDerivativeForceFilter<ImageType1, ImageType1, float> NMILocalHistogramDerivativeForceFilterType;
   NMILocalHistogramDerivativeForceFilterType::Pointer forceGenerator = NMILocalHistogramDerivativeForceFilterType::New();
   
@@ -178,7 +177,7 @@ int itkHistogramRegistrationForceGeneratorTest(int, char* [])
   typedef itk::NearestNeighborInterpolateImageFunction<ImageType1, double> InterpolatorType;
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
-  NMILocalHistogramDerivativeForceFilterType::HistogramSizeType histogramSize;
+  NMILocalHistogramDerivativeForceFilterType::HistogramSizeType histogramSize(2);
   histogramSize[0] = 4;
   histogramSize[1] = 4;
   itk::Array<double> dummyParameters;

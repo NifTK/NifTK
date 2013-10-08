@@ -157,7 +157,7 @@ void
 InvResampleImageFilter<TInputImage,TOutputImage,TInterpolatorPrecisionType>
 ::ThreadedGenerateData(
   const OutputImageRegionType& outputRegionForThread,
-  int threadId)
+  ThreadIdType threadId)
 {
   // Check whether the input or the output is a
   // SpecialCoordinatesImage.  If either are, then we cannot use the

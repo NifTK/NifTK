@@ -149,7 +149,7 @@ TranslationPCADeformationModelTransform<ScalarType, NDimensions>::GetSingleDefor
 
     FieldIterator itField( this->m_SingleField, this->m_SingleField->GetLargestPossibleRegion() );
       
-    for ( itField.Begin(); !itField.IsAtEnd(); ++itField)
+    for ( itField.GoToBegin(); !itField.IsAtEnd(); ++itField)
       {
         Findex = itField.GetIndex();
         // mean displacement

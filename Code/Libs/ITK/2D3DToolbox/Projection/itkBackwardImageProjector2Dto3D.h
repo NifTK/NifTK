@@ -129,7 +129,7 @@ protected:
 
   /** This function is modified to thread based on the input 2D image */
   void ThreadedGenerateData(const InputImageRegionType& inputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   /** Split the output's RequestedRegion into "num" pieces, returning
    * region "i" as "splitRegion". This method is called "num" times. The

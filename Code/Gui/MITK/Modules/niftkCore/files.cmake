@@ -23,6 +23,7 @@ set(CPP_FILES
   Common/mitkMIDASOrientationUtils.cxx
   Common/mitkPointUtils.cxx
   DataManagement/mitkDataNodeBoolPropertyFilter.cxx
+  DataManagement/mitkDataNodeAddedVisibilitySetter.cxx
   DataManagement/mitkDataNodeStringPropertyFilter.cxx
   DataManagement/mitkDataStorageUtils.cxx
   DataManagement/mitkDataStorageListener.cxx

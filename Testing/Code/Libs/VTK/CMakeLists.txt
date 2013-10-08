@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES 
-  ITKIO
+  ${NIFTK_ITK_LIB}
   vtkIO
   vtkImaging
   niftkVTK

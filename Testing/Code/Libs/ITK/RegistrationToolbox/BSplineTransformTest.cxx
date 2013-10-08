@@ -19,7 +19,7 @@
 #include <memory>
 #include <math.h>
 #include <niftkConversionUtils.h>
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkLinearInterpolateImageFunction.h>
@@ -57,7 +57,7 @@ int BSplineTransformTest(int argc, char * argv[])
   typedef itk::Image< PixelType, Dimension >                          ImageType;
   typedef itk::ImageFileReader< ImageType  >                          ImageReaderType;
   typedef itk::ImageFileWriter< ImageType  >                          ImageWriterType;
-  typedef itk::BSplineTransform< ImageType, double, Dimension, float> TransformType;
+  typedef itk::UCLBSplineTransform< ImageType, double, Dimension, float> TransformType;
   typedef ImageType::SpacingType                                      SpacingType;
   typedef itk::Array<double>                                          ParametersType;
   typedef itk::Vector< float, Dimension >                             DeformationFieldPixelType;

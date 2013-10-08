@@ -124,7 +124,7 @@ protected:
    * \sa ImageToImageFilter::ThreadedGenerateData(),
    *     ImageToImageFilter::GenerateData() */
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
   // The value to set voxels on the opposite side of the plane to the normal to
   OutputImagePixelType m_ThresholdValue;

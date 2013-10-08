@@ -34,8 +34,6 @@ public:
   itkNewMacro(NamedLookupTableProperty);
   mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
 
-  Pointer Clone() const;
-
   virtual std::string GetValueAsString() const;
 
 protected:

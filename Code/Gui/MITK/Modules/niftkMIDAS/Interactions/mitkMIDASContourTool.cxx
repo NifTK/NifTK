@@ -116,6 +116,7 @@ void mitk::MIDASContourTool::SetBackgroundContourVisible(bool visible)
 
 void mitk::MIDASContourTool::ClearData()
 {
+/* MJC: temporary 
   mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
   feedbackContour->Initialize();
   feedbackContour->SetClosed(m_ContourClosed);
@@ -125,6 +126,7 @@ void mitk::MIDASContourTool::ClearData()
   backgroundContour->Initialize();
   backgroundContour->SetClosed(m_ContourClosed);
   backgroundContour->SetWidth(m_ContourWidth);
+*/
 }
 
 void mitk::MIDASContourTool::SetBackgroundContourColor( float r, float g, float b )
@@ -144,7 +146,10 @@ mitk::Contour* mitk::MIDASContourTool::GetBackgroundContour()
 
 mitk::Contour* mitk::MIDASContourTool::GetContour()
 {
+/* MJC: temporary 
   return FeedbackContourTool::GetFeedbackContour();
+*/
+  return NULL;
 }
 
 void mitk::MIDASContourTool::SetFeedbackContourVisible(bool b)

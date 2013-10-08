@@ -53,7 +53,7 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   axes->SetVtkMatrix(*matrix);
 
   // Create a rendering helper - contains window and data storage.
-  mitkRenderingTestHelper renderingHelper(640, 480, argc, argv);
+  mitk::RenderingTestHelper renderingHelper(640, 480, argc, argv);
   renderingHelper.SetMapperID(mitk::BaseRenderer::Standard3D);
   renderingHelper.AddNodeToStorage(axesNode);
 

@@ -115,7 +115,7 @@ protected:
   /**
    * Override to add randomness. 
    */
-  virtual void ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread, int itkNotUsed); 
+  virtual void ThreadedGenerateData(const OutputImageRegionType &outputRegionForThread, ThreadIdType threadId);
   
 protected:
   /**

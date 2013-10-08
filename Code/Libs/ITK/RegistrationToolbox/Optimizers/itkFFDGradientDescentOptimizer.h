@@ -19,7 +19,7 @@
 #include <niftkITKWin32ExportHeader.h>
 #include "itkLocalSimilarityMeasureGradientDescentOptimizer.h"
 #include <itkImageToImageMetricWithConstraint.h>
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 #include <itkRegistrationForceFilter.h>
 #include <itkBSplineSmoothVectorFieldFilter.h>
 #include <itkInterpolateVectorFieldFilter.h>
@@ -60,9 +60,9 @@ public:
   typedef DeformableTransform<TFixedImage, TScalarType, 
                               Dimension, TDeformationScalar>               DeformableTransformType;
   typedef typename DeformableTransformType::Pointer                        DeformableTransformPointer;
-  typedef BSplineTransform<TFixedImage, TScalarType, 
-                           Dimension, TDeformationScalar>                  BSplineTransformType;
-  typedef BSplineTransformType*                                            BSplineTransformPointer;
+  typedef UCLBSplineTransform<TFixedImage, TScalarType, 
+                           Dimension, TDeformationScalar>                  UCLBSplineTransformType;
+  typedef UCLBSplineTransformType*                                            UCLBSplineTransformPointer;
   
   typedef TScalarType                                                      MeasureType;
   typedef ImageToImageMetricWithConstraint<TFixedImage, TMovingImage>      SimilarityMeasureType;
@@ -70,7 +70,7 @@ public:
   typedef typename SimilarityMeasureType::TransformParametersType          ParametersType;
   typedef typename SimilarityMeasureType::DerivativeType                   DerivativeType;
 
-  typedef typename BSplineTransformType::GridImageType                     GridImageType;
+  typedef typename UCLBSplineTransformType::GridImageType                     GridImageType;
   typedef GridImageType*                                                   GridImagePointer;
   
   typedef Vector< TDeformationScalar, itkGetStaticConstMacro(Dimension) >  VectorPixelType;

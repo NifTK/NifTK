@@ -62,7 +62,7 @@ SetOutputVectorToCurrentPositionFilter<TScalarType, NDimensions>
 template <class TScalarType, unsigned int NDimensions>
 void
 SetOutputVectorToCurrentPositionFilter<TScalarType, NDimensions>
-::ThreadedGenerateData(const InputImageRegionType& outputRegionForThread, int threadNumber) 
+::ThreadedGenerateData(const InputImageRegionType& outputRegionForThread, ThreadIdType threadNumber)
 {
   
   niftkitkDebugMacro(<<"ThreadedGenerateData():Started thread:" << threadNumber);

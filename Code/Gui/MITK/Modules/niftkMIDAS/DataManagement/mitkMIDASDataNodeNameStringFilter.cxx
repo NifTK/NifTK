@@ -29,7 +29,7 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
   this->AddToList(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME);
   this->AddToList(mitk::MIDASTool::PRIOR_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
-  this->AddToList(mitk::MIDASTool::NEXT_CONTOURS_NAME);
+  this->AddToList(mitk::MIDASTool::DRAW_CONTOURS_NAME);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
   this->AddToList(mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);

@@ -40,6 +40,8 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
     message(FATAL_ERROR "NIFTK_CREATE_COMMAND_LINE_APPLICATION: NAME argument cannot be empty.")
   endif()
 
+  set(FULL_APP_NAME ${_APP_NAME})
+
   if(_APP_BUILD_SLICER)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${_APP_NAME}.xml.in ${CMAKE_CURRENT_BINARY_DIR}/${_APP_NAME}.xml @ONLY )
     SEMMacroBuildNifTKCLI(

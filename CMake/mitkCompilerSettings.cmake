@@ -27,11 +27,11 @@ if(BUILD_IGI)
 endif(BUILD_IGI)
 
 # Print out other versions.
-message("BOOST version=${NIFTK_VERSION_BOOST}")                 
-message("GDCM version=${NIFTK_VERSION_GDCM}")                   
+message("Boost version=${NIFTK_VERSION_Boost}")
+message("GDCM version=${NIFTK_VERSION_GDCM}")
 message("DCMTK version=${NIFTK_VERSION_DCMTK}")
-message("ITK version=${NIFTK_VERSION_ITK}") 
-message("VTK version=${NIFTK_VERSION_VTK}")                     
+message("ITK version=${NIFTK_VERSION_ITK}")
+message("VTK version=${NIFTK_VERSION_VTK}")
 message("MITK version=${NIFTK_VERSION_MITK}")
 
 # MinGW does not export all symbols automatically, so no need to set flags

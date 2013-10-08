@@ -64,7 +64,7 @@ protected:
   virtual ~MeanCurvatureImageFilter();
 
   // The main method to implement in derived classes, note, its threaded.
-  virtual void ThreadedGenerateData( const ImageRegionType &outputRegionForThread, int);
+  virtual void ThreadedGenerateData( const ImageRegionType &outputRegionForThread, ThreadIdType threadId);
 
 private:
 

@@ -123,7 +123,7 @@ protected:
   void PrintSelf(std::ostream& os, Indent indent) const;
 
   // The main method to implement in derived classes, note, its threaded.
-  virtual void ThreadedGenerateData( const InputScalarImageRegionType &outputRegionForThread, int);
+  virtual void ThreadedGenerateData( const InputScalarImageRegionType &outputRegionForThread, ThreadIdType threadId);
 
 private:
   

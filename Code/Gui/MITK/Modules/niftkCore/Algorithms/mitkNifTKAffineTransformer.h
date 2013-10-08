@@ -18,7 +18,6 @@
 #include <itkObject.h>
 #include <mitkBaseData.h>
 #include <mitkDataStorage.h>
-#include <mitkToolManager.h>
 #include <mitkImage.h>
 #include <vtkSmartPointer.h>
 #include <vtkLinearTransform.h>

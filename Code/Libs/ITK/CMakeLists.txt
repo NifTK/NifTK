@@ -25,6 +25,8 @@ RegistrationToolbox/Commands/itkIterationUpdateCommand.cxx
 RegistrationToolbox/Commands/itkVnlIterationUpdateCommand.cxx 
 IO/itkINRImageIO.cxx
 IO/itkINRImageIOFactory.cxx
+IO/itkAnalyzeImageIO.cxx
+IO/itkAnalyzeImageIOFactory.cxx
 IO/itkDRCAnalyzeImageIO.cxx
 IO/itkDRCAnalyzeImageIOFactory.cxx
 IO/itkNIFTKTransformIOFactory.cxx

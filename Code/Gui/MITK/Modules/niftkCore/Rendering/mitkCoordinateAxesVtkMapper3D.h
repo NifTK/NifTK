@@ -20,6 +20,7 @@
 #include <mitkBaseRenderer.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkVtkMapper.h>
+#include <mitkLocalStorageHandler.h>
 
 class vtkAxesActor;
 
@@ -62,7 +63,7 @@ protected:
       ~LocalStorage();
   };
 
-  mitk::Mapper::LocalStorageHandler<LocalStorage> m_LocalStorage;
+  mitk::LocalStorageHandler<LocalStorage> m_LocalStorage;
 
   virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
   virtual void ResetMapper( mitk::BaseRenderer* renderer );

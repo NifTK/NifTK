@@ -20,7 +20,7 @@ set(NIFTK_APPLICATION_LINK_LIBRARIES
   niftkcommon 
   niftkITK
   ${NIFTK_ITK_LIB}
-  ${Boost_LIBRARIES} 
+  ${Boost_LIBRARIES}
 )
 
 set(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
@@ -79,7 +79,10 @@ if(SlicerExecutionModel_FOUND)
     niftkInvertImage
     niftkLogInvertImage
     niftkMultiply
+    niftkN4BiasFieldCorrection
     niftkNegateImage
+    niftkOtsuThresholdImage
+    niftkSubsampleImage
     niftkSubtract
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
@@ -211,7 +214,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkComputeJointHistogram
   niftkComputeMeanTransformation
   niftkConnectedComponents
-  niftkContourExtractor2DImageFilter
+  #niftkContourExtractor2DImageFilter
   #niftkConvertDofToFsl
   niftkConvertMidasStrToNii
   niftkConvertToMidasStr
@@ -242,7 +245,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkExtractRegion
   niftkExtractScalp
   niftkExtractZeroCrossing
-  niftkFFD
+  #niftkFFD
   niftkFillHoles
   niftkForwardAndBackProjectionDifferenceFilter
   niftkForwardProject3Dto2D
@@ -275,7 +278,6 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkShiftScale
   niftkShrinkImage
   niftkSTAPLE
-  niftkSubsampleImage
   niftkSubtractSliceFromVolume
   niftkSwapIntensity
   niftkTestCompareImage

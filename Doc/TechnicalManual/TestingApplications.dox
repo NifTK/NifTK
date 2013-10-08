@@ -52,7 +52,7 @@ can specify BUILD_TESTING = ON, in the SuperBuild, and the SuperBuild will downl
 and set this variable automatically to:
 
 \verbatim
-${NIFTK_INPUT_DATA}       = <your build folder>/CMakeExternals/Source/NifTKData
+${NIFTK_INPUT_DATA}       = <your build folder>/NifTKData
 \endverbatim
 
 The testing method works as follows, where we use a simple example, running niftkAdd.

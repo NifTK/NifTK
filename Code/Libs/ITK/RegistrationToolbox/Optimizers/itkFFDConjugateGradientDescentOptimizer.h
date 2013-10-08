@@ -18,7 +18,7 @@
 
 #include "itkFFDGradientDescentOptimizer.h"
 #include <itkImageToImageMetricWithConstraint.h>
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 #include <itkRegistrationForceFilter.h>
 #include <itkBSplineSmoothVectorFieldFilter.h>
 #include <itkInterpolateVectorFieldFilter.h>
@@ -60,7 +60,7 @@ public:
   /** Typedefs. */
   typedef typename Superclass::SimilarityMeasureType                   SimilarityMeasureType;
   typedef typename SimilarityMeasureType::TransformParametersType      ParametersType;
-  typedef typename Superclass::BSplineTransformPointer                 BSplineTransformPointer;
+  typedef typename Superclass::UCLBSplineTransformPointer              UCLBSplineTransformPointer;
   typedef typename Superclass::GridImagePointer                        GridImagePointer;
   typedef typename Superclass::OutputImageSizeType                     OutputImageSizeType;
   

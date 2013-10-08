@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkMIDASToolSelectorWidget.h"
-
+#include <mitkToolManagerProvider.h>
 
 //-----------------------------------------------------------------------------
 QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
@@ -27,6 +27,13 @@ QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 QmitkMIDASToolSelectorWidget::~QmitkMIDASToolSelectorWidget()
 {
 
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::ToolManager* QmitkMIDASToolSelectorWidget::GetToolManager() const
+{
+  return mitk::ToolManagerProvider::GetInstance()->GetToolManager();
 }
 
 

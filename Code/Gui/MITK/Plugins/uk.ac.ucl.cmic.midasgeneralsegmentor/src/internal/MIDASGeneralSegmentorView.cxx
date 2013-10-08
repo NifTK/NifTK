@@ -101,8 +101,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
 {
-  RegisterSegmentationObjectFactory();
-
   m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
 }
@@ -165,7 +163,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
-    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASKeyPressStateMachine", this);
+    m_ToolKeyPressStateMachine = mitk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
 
     this->CreateConnections();
   }
@@ -483,7 +481,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
     pointSetNode->SetBoolProperty("helper object", true);
     pointSetNode->SetBoolProperty("show distant lines", false);
-    pointSetNode->SetBoolProperty("show distant points", false);
+    pointSetNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
     pointSetNode->SetBoolProperty("show distances", false);
     pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
     pointSetNode->SetColor(1.0, 0.0, 0.0);
@@ -511,7 +509,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     initialSeedsNode->SetBoolProperty("helper object", true);
     initialSeedsNode->SetBoolProperty("visible", false);
     initialSeedsNode->SetBoolProperty("show distant lines", false);
-    initialSeedsNode->SetBoolProperty("show distant points", false);
+    initialSeedsNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
     initialSeedsNode->SetBoolProperty("show distances", false);
     initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
     initialSeedsNode->SetColor(1.0, 0.0, 0.0);
@@ -1702,14 +1700,14 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
           mitk::OpThresholdApply *undoThresholdOp = new mitk::OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, currentCheckboxStatus);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doThresholdOp);
+          this->ExecuteOperation(doThresholdOp);
 
           message = tr("Propagate seeds on slice %1").arg(oldSliceNumber);
           mitk::OpPropagateSeeds *doPropOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, newSliceNumber, axisNumber, outputSeeds);
           mitk::OpPropagateSeeds *undoPropOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, oldSliceNumber, axisNumber, copyOfInputSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent( m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          ExecuteOperation(doPropOp);
+          this->ExecuteOperation(doPropOp);
 
           drawTool->ClearWorkingData();
 
@@ -1999,14 +1997,14 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
           mitk::OpPropagateSeeds *undoPropOp = new mitk::OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, beforeSliceNumber, axisNumber, copyOfCurrentSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent( m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          ExecuteOperation(doPropOp);
+          this->ExecuteOperation(doPropOp);
 
           message = tr("Change slice from %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
           mitk::OpChangeSliceCommand *doOp = new mitk::OpChangeSliceCommand(OP_CHANGE_SLICE, true, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
           mitk::OpChangeSliceCommand *undoOp = new mitk::OpChangeSliceCommand(OP_CHANGE_SLICE, false, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          ExecuteOperation(doOp);
+          this->ExecuteOperation(doOp);
         }
         catch(const mitk::AccessByItkException& e)
         {
@@ -3562,7 +3560,6 @@ MIDASGeneralSegmentorView
   params.m_DrawContours = &drawContours;
   params.m_PolyContours = &polyContours;
   params.m_EraseFullSlice = true;
-  MITK_INFO << "seed number when pipeline starts: " << seeds.GetSize() << std::endl;
 
   // Update pipeline.
   if (!skipUpdate)
@@ -3577,6 +3574,14 @@ MIDASGeneralSegmentorView
     // will mean that the pipeline will copy its data to the output image.
     pipeline->m_OutputImage = regionGrowingToItk->GetOutput();
     pipeline->Update(params);
+
+    //mitk::Image::Pointer segmentationContourImage = mitk::ImportItkImage(pipeline->m_SegmentationContourImage);
+    //mitk::Image::Pointer manualContourImage = mitk::ImportItkImage(pipeline->m_ManualContourImage);
+
+    //mitk::DataNode::Pointer segmentationContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //segmentationContourImageNode->SetData(segmentationContourImage);
+    //mitk::DataNode::Pointer manualContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //manualContourImageNode->SetData(manualContourImage);
 
     // To make sure we release all smart pointers.
     pipeline->DisconnectPipeline();
@@ -4354,6 +4359,9 @@ MIDASGeneralSegmentorView
 
   processor->SetDestinationImage(NULL);
 
+  int axis = op->GetAxisNumber();
+  int slice = op->GetSliceNumber();
+
   // Update the current point set.
   currentSeeds->Clear();
 
@@ -4362,7 +4370,15 @@ MIDASGeneralSegmentorView
   mitk::PointSet::PointsConstIterator outputSeedsEnd = outputSeedsContainer->End();
   for ( ; outputSeedsIt != outputSeedsEnd; ++outputSeedsIt)
   {
-    currentSeeds->InsertPoint(outputSeedsIt->Index(), outputSeedsIt->Value());
+    mitk::PointSet::PointIdentifier outputSeedID = outputSeedsIt->Index();
+    mitk::PointSet::PointType outputSeed = outputSeedsIt->Value();
+    typename BinaryImageType::IndexType outputSeedIndex;
+    itkImage->TransformPhysicalPointToIndex(outputSeed, outputSeedIndex);
+    // If it's a do/redo then we do not copy back the seeds from the current slice. (Wipe them.)
+    if (!redo || outputSeedIndex[axis] != slice)
+    {
+      currentSeeds->InsertPoint(outputSeedID, outputSeed);
+    }
   }
 }
 

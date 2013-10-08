@@ -28,6 +28,7 @@
 #include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkAffineTransform.h>
 #include <itkImage.h>
+#include <itkImageIOBase.h>
 #include <itkImageFileWriter.h>
 #include <itkRGBAPixel.h>
 #include <itkRGBPixel.h>
@@ -763,40 +764,40 @@ void AffineTransformer::ApplyResampleToCurrentNode()
     {
       #define APPLY_MULTICHANNEL_RGB(TBaseType) APPLY_MULTICHANNEL(itk::RGBPixel< TBaseType >)
 
-      if (image->GetPixelType().GetTypeId() == typeid(signed char) && image->GetPixelType().GetBitsPerComponent() == 8)
+      if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::CHAR && image->GetPixelType().GetBitsPerComponent() == 8)
       {
         MITK_DEBUG << "Assuming RGB (signed char)\n" <<"ITK typeID: " << typeid(itk::RGBPixel<signed char>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGB(signed char);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(unsigned char) && image->GetPixelType().GetBitsPerComponent() == 8)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::UCHAR && image->GetPixelType().GetBitsPerComponent() == 8)
       {
         MITK_DEBUG << "Assuming RGB (unsigned char)\n"
           << "ITK typeID: " << typeid(itk::RGBPixel<unsigned char>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGB(unsigned char);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(signed short) && image->GetPixelType().GetBitsPerComponent() == 16)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::SHORT && image->GetPixelType().GetBitsPerComponent() == 16)
       {
         APPLY_MULTICHANNEL_RGB(signed short);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(unsigned short) && image->GetPixelType().GetBitsPerComponent() == 16)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::USHORT && image->GetPixelType().GetBitsPerComponent() == 16)
       {
         APPLY_MULTICHANNEL_RGB(unsigned short);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(float) && image->GetPixelType().GetBitsPerComponent() == 32)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::FLOAT && image->GetPixelType().GetBitsPerComponent() == 32)
       {
         MITK_DEBUG << "Assuming RGB (float)\n" << "ITK typeID: " << typeid(itk::RGBPixel<float>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGB(float);
       }
-      else if (image->GetPixelType().GetTypeId()== typeid(double) && image->GetPixelType().GetBitsPerComponent() == 64)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::DOUBLE && image->GetPixelType().GetBitsPerComponent() == 64)
       {
         APPLY_MULTICHANNEL_RGB(double);
       }
       else
       {
-        MITK_ERROR << "pixel type " << image->GetPixelType().GetItkTypeAsString() << " is not supported.\n";
+        MITK_ERROR << "pixel type " << image->GetPixelType().GetPixelTypeAsString() << " is not supported.\n";
       }
 
       #undef APPLY_MULTICHANNEL_RGB
@@ -805,39 +806,39 @@ void AffineTransformer::ApplyResampleToCurrentNode()
     {
       #define APPLY_MULTICHANNEL_RGBA(TBaseType) APPLY_MULTICHANNEL(itk::RGBAPixel< TBaseType >)
 
-      if (image->GetPixelType().GetTypeId() == typeid(unsigned char) && image->GetPixelType().GetBitsPerComponent() == 8)
+      if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::UCHAR && image->GetPixelType().GetBitsPerComponent() == 8)
       {
         MITK_DEBUG << "Assuming RGB (unsigned char)\n" << "ITK typeID: " << typeid(itk::RGBAPixel<unsigned char>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGBA(signed char);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(signed char) && image->GetPixelType().GetBitsPerComponent() == 8)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::CHAR && image->GetPixelType().GetBitsPerComponent() == 8)
       {
         MITK_DEBUG << "Assuming RGB (signed char)\n"
           << "ITK typeID: " << typeid(itk::RGBAPixel<signed char>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGBA(unsigned char);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(signed short) && image->GetPixelType().GetBitsPerComponent() == 16)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::SHORT && image->GetPixelType().GetBitsPerComponent() == 16)
       {
         APPLY_MULTICHANNEL_RGBA(signed short);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(unsigned short) && image->GetPixelType().GetBitsPerComponent() == 16)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::USHORT && image->GetPixelType().GetBitsPerComponent() == 16)
       {
         APPLY_MULTICHANNEL_RGBA(unsigned short);
       }
-      else if (image->GetPixelType().GetTypeId() == typeid(float) && image->GetPixelType().GetBitsPerComponent() == 32)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::FLOAT && image->GetPixelType().GetBitsPerComponent() == 32)
       {
         MITK_DEBUG << "Assuming RGB (float)\n" << "ITK typeID: " << typeid(itk::RGBAPixel<float>).name() << std::endl;
 
         APPLY_MULTICHANNEL_RGBA(float);
       }
-      else if (image->GetPixelType().GetTypeId()== typeid(double) && image->GetPixelType().GetBitsPerComponent() == 64)
+      else if (image->GetPixelType().GetComponentType() == itk::ImageIOBase::DOUBLE && image->GetPixelType().GetBitsPerComponent() == 64)
       {
         APPLY_MULTICHANNEL_RGBA(double);
       }
       else
-        MITK_ERROR << "pixel type " << image->GetPixelType().GetItkTypeAsString() << " is not supported.\n";
+        MITK_ERROR << "pixel type " << image->GetPixelType().GetPixelTypeAsString() << " is not supported.\n";
 
       #undef APPLY_MULTICHANNEL_RGBA
     }

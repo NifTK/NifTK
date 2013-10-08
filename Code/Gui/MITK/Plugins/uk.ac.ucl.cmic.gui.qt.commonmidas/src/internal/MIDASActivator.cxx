@@ -14,6 +14,8 @@
 
 #include "MIDASActivator.h"
 #include <QtPlugin>
+#include <mitkGlobalInteraction.h>
+#include <mitkMIDASTool.h>
 
 namespace mitk {
 
@@ -23,6 +25,15 @@ ctkPluginContext* MIDASActivator::s_PluginContext(NULL);
 void MIDASActivator::start(ctkPluginContext* context)
 {
   s_PluginContext = context;
+
+  mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
+
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML);
 }
 
 

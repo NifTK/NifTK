@@ -125,7 +125,10 @@ protected:
   virtual void GenerateOutputInformation();
 
   /** Yes, this one's multi-threaded. */
-  virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId );
+  virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, ThreadIdType threadId );
+
+  /** Base class checks that all inputs have the same size. We don't want this. */
+  virtual void VerifyInputInformation();
 
 private:
   

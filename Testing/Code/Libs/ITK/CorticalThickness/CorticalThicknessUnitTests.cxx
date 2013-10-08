@@ -30,8 +30,6 @@ void RegisterTests()
   REGISTER_TEST(Bourgeat2008Test);
   REGISTER_TEST(FourthOrderRungeKuttaVelocityFieldTest);
   REGISTER_TEST(FourthOrderRungeKuttaVelocityFieldThicknessTest);
-  REGISTER_TEST(DemonsRegistrationFilterTest);
-  REGISTER_TEST(DemonsRegistrationFilterUpdateTest);
   REGISTER_TEST(AddUpdateToTimeVaryingVelocityFilterTest);
   REGISTER_TEST(GaussianSmoothVectorFieldFilterTest);
   REGISTER_TEST(RegistrationBasedCorticalThicknessFilterTest);

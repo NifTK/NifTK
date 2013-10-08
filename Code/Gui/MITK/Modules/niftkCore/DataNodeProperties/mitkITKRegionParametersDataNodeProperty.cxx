@@ -159,14 +159,6 @@ bool ITKRegionParametersDataNodeProperty::Assign(const BaseProperty& property)
 
 
 //-----------------------------------------------------------------------------
-ITKRegionParametersDataNodeProperty::Pointer ITKRegionParametersDataNodeProperty::Clone() const
-{
-  ITKRegionParametersDataNodeProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 itk::LightObject::Pointer ITKRegionParametersDataNodeProperty::InternalClone() const
 {
   itk::LightObject::Pointer result(new Self(*this));

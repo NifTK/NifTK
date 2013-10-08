@@ -35,8 +35,6 @@ public:
   mitkClassMacro(AffineTransformDataNodeProperty, mitk::BaseProperty);
   itkNewMacro(Self);
 
-  Pointer Clone() const;
-
   /**
    * \return R/W access to transform.
    */

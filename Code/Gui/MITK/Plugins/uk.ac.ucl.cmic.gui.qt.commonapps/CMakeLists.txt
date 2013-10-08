@@ -17,6 +17,6 @@ project(uk_ac_ucl_cmic_gui_qt_commonapps)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE CMIC_QT_COMMONAPPS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES CTK QmitkExt niftkCoreGui niftkMIDAS
+  MODULE_DEPENDENCIES CTK QmitkExt niftkCoreGui niftkDnDDisplay
 )
 

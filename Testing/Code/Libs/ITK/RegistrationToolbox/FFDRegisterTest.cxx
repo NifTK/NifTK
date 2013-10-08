@@ -86,7 +86,7 @@ int FFDRegisterTest( int argc, char *argv[] )
   GlobalTransformType::Pointer globalTransform = GlobalTransformType::New();
   globalTransform->SetIdentity();
   
-  typedef itk::BSplineTransform<FixedImageType, double, Dimension, float> TransformType;
+  typedef itk::UCLBSplineTransform<FixedImageType, double, Dimension, float> TransformType;
   TransformType::Pointer transform = TransformType::New();
 
   typedef itk::LinearInterpolateImageFunction< MovingImageType, double> LinearInterpolatorType;

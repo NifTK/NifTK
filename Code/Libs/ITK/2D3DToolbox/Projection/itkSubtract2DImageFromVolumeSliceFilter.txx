@@ -152,7 +152,7 @@ template< class IntensityType>
 void
 Subtract2DImageFromVolumeSliceFilter<IntensityType>
 ::ThreadedGenerateData( const OutputSubtractedImageRegionType &outputRegionForThread,
-                        int threadId)
+                        ThreadIdType threadId)
 {
   // We use dynamic_cast since inputs are stored as DataObjects.  The
   // ImageToImageFilter::GetInput(int) always returns a pointer to a

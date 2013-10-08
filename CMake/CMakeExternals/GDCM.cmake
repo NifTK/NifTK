@@ -26,6 +26,16 @@ if(DEFINED GDCM_DIR AND NOT EXISTS ${GDCM_DIR})
   message(FATAL_ERROR "GDCM_DIR variable is defined but corresponds to non-existing directory \"${GDCM_DIR}\".")
 endif()
 
+# Check if an external ITK build tree was specified.
+# If yes, use the GDCM from ITK, otherwise ITK will complain
+if(ITK_DIR)
+  find_package(ITK)
+  if(ITK_GDCM_DIR)
+    set(GDCM_DIR ${ITK_GDCM_DIR})
+  endif()
+endif()
+
+
 set(proj GDCM)
 set(proj_DEPENDENCIES )
 set(GDCM_DEPENDS ${proj})
@@ -35,24 +45,24 @@ if(NOT DEFINED GDCM_DIR)
   niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
 
   ExternalProject_Add(${proj}
-     URL ${NIFTK_LOCATION_GDCM}
-     URL_MD5 ${NIFTK_CHECKSUM_GDCM}
-     BINARY_DIR ${proj}-build
-     INSTALL_COMMAND ""
-     PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-2.0.18.cmake
-     CMAKE_GENERATOR ${GEN}
-     CMAKE_ARGS
-       ${EP_COMMON_ARGS}
-       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-       -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
-     DEPENDS ${proj_DEPENDENCIES}
-    )
-  set(GDCM_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+    SOURCE_DIR ${proj}-src
+    BINARY_DIR ${proj}-build
+    PREFIX ${proj}-cmake
+    INSTALL_DIR ${proj}-install
+    URL ${NIFTK_LOCATION_GDCM}
+    URL_MD5 ${NIFTK_CHECKSUM_GDCM}
+    INSTALL_COMMAND ""
+    CMAKE_GENERATOR ${GEN}
+    CMAKE_ARGS
+      ${EP_COMMON_ARGS}
+      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+      -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
+      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
+    DEPENDS ${proj_DEPENDENCIES}
+  )
+  set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
-
-  set(GDCM_IS_2_0_18 TRUE)
 
 else()
 
@@ -60,10 +70,4 @@ else()
 
   find_package(GDCM)
 
-  if( GDCM_BUILD_VERSION EQUAL "18")
-    set(GDCM_IS_2_0_18 TRUE)
-  else()
-    set(GDCM_IS_2_0_18 FALSE)
-  endif()
- 
 endif()
