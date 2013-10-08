@@ -73,6 +73,11 @@ Website : http://www.uco.es/investiga/grupos/ava/node/26
 Purpose : AR marker tracking
 License : Doc/Licenses/Aruco.txt (BSD license)
 
+Library : EIGEN
+Website : http://eigen.tuxfamily.org/
+Purpose : Matrix library used by AprilTags, PCL etc.
+License : http://www.mozilla.org/MPL/2.0/ (Mozilla Public License 2.0)
+
 Library : MITK
 Website : http://www.mitk.org
 Purpose : Application framework, common medical imaging specific classes.
