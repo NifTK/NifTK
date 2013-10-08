@@ -62,7 +62,7 @@ public:
   IntensityProfileViewPrivate();
 
   static const int MaxSymbols = 8;
-  static QwtSymbol Symbols[MaxSymbols];
+  static QwtSymbol* Symbols[MaxSymbols];
 
   QWidget* m_Parent;
 
@@ -111,7 +111,7 @@ public:
 
 };
 
-QwtSymbol IntensityProfileViewPrivate::Symbols[MaxSymbols];
+QwtSymbol* IntensityProfileViewPrivate::Symbols[MaxSymbols];
 IntensityProfileViewPrivate::StaticInit IntensityProfileViewPrivate::staticInit2;
 
 void
@@ -133,22 +133,26 @@ IntensityProfileViewPrivate::staticInit()
 //  Symbols[5].setBrush(QColor(Qt::darkBlue));
 //  Symbols[6].setBrush(QColor(Qt::darkMagenta));
 //  Symbols[7].setBrush(QColor(Qt::darkGreen));
-  Symbols[0].setStyle(QwtSymbol::Ellipse);
-  Symbols[1].setStyle(QwtSymbol::Rect);
-  Symbols[2].setStyle(QwtSymbol::Diamond);
-  Symbols[3].setStyle(QwtSymbol::Triangle);
-  Symbols[4].setStyle(QwtSymbol::Ellipse);
-  Symbols[5].setStyle(QwtSymbol::Rect);
-  Symbols[6].setStyle(QwtSymbol::Diamond);
-  Symbols[7].setStyle(QwtSymbol::Triangle);
-  Symbols[0].setSize(5);
-  Symbols[1].setSize(5);
-  Symbols[2].setSize(5);
-  Symbols[3].setSize(5);
-  Symbols[4].setSize(5);
-  Symbols[5].setSize(5);
-  Symbols[6].setSize(5);
-  Symbols[7].setSize(5);
+  for (int i = 0; i < MaxSymbols; ++i)
+  {
+    Symbols[i] = new QwtSymbol();
+  }
+  Symbols[0]->setStyle(QwtSymbol::Ellipse);
+  Symbols[1]->setStyle(QwtSymbol::Rect);
+  Symbols[2]->setStyle(QwtSymbol::Diamond);
+  Symbols[3]->setStyle(QwtSymbol::Triangle);
+  Symbols[4]->setStyle(QwtSymbol::Ellipse);
+  Symbols[5]->setStyle(QwtSymbol::Rect);
+  Symbols[6]->setStyle(QwtSymbol::Diamond);
+  Symbols[7]->setStyle(QwtSymbol::Triangle);
+  Symbols[0]->setSize(5);
+  Symbols[1]->setSize(5);
+  Symbols[2]->setSize(5);
+  Symbols[3]->setSize(5);
+  Symbols[4]->setSize(5);
+  Symbols[5]->setSize(5);
+  Symbols[6]->setSize(5);
+  Symbols[7]->setSize(5);
 }
 
 IntensityProfileViewPrivate::IntensityProfileViewPrivate()
@@ -813,7 +817,7 @@ IntensityProfileView::calculateCrosshairProfiles(mitk::Point3D crosshairPos)
       xValuesOrdered[t] = xValues[xValueOrder[t]];
       yValues[t] = image4D->GetPixelValueByIndex(p, xValueOrder[t]);
     }
-    d->crosshairProfiles[node]->setData(xValuesOrdered, yValues);
+    d->crosshairProfiles[node]->setSamples(xValuesOrdered, yValues);
 
     symbolIndex = (symbolIndex + 1) % IntensityProfileViewPrivate::MaxSymbols;
   }
@@ -918,7 +922,7 @@ void IntensityProfileView::plotRoiProfile(mitk::DataNode* node, mitk::DataNode* 
   if (nodeSymbolIndex == -1) {
     return;
   }
-  const QwtSymbol& nodeSymbol = IntensityProfileViewPrivate::Symbols[nodeSymbolIndex];
+  QwtSymbol* nodeSymbol = IntensityProfileViewPrivate::Symbols[nodeSymbolIndex];
 
   QVector<double> xValues(timeSteps);
   QVector<unsigned> xValueOrder(timeSteps);
@@ -946,9 +950,9 @@ void IntensityProfileView::plotRoiProfile(mitk::DataNode* node, mitk::DataNode* 
         arg(QString::fromStdString(node->GetName())).
         arg(QString::fromStdString(roi->GetName()));
     QwtPlotCurve* curve = new QwtPlotCurve(title);
-    curve->setData(xValuesOrdered, yValues);
+    curve->setSamples(xValuesOrdered, yValues);
     float color[3];
-    QwtSymbol roiSymbol = nodeSymbol;
+    QwtSymbol* roiSymbol = nodeSymbol;
     if (roi->GetColor(color)) {
       QPen pen = curve->pen();
       int red = static_cast<int>(color[0] * 255);
@@ -957,7 +961,7 @@ void IntensityProfileView::plotRoiProfile(mitk::DataNode* node, mitk::DataNode* 
       QColor qColor(red, green, blue);
       pen.setColor(qColor);
       curve->setPen(pen);
-      roiSymbol.setPen(pen);
+      roiSymbol->setPen(pen);
     }
     curve->setSymbol(roiSymbol);
 
@@ -1000,7 +1004,7 @@ IntensityProfileView::plotProfileNode(mitk::DataNode::Pointer node) {
     yValues[t] = profile.GetTableValue(xValueOrder[t]);
   }
   QwtPlotCurve* nodeProfile = new QwtPlotCurve(node->GetName().c_str());
-  nodeProfile->setData(xValuesOrdered, yValues);
+  nodeProfile->setSamples(xValuesOrdered, yValues);
   float color[3];
   if (node->GetColor(color)) {
     QPen pen = nodeProfile->pen();
@@ -1190,7 +1194,7 @@ IntensityProfileView::on_copyStatisticsButton_clicked()
         arg(d->crosshairIndex[2]);
       clipboard = clipboard.append("Time step \t X value \t Intensity\n");
       for (int i = 0; i < timeSteps; ++i) {
-        clipboard = clipboard.append( "%L1\t%L2\t%L3\n" ).arg(i).arg(xValues[i]).arg(d->crosshairProfiles[node]->y(i));
+        clipboard = clipboard.append( "%L1\t%L2\t%L3\n" ).arg(i).arg(xValues[i]).arg(d->crosshairProfiles[node]->sample(i).y());
       }
     }
     else {
@@ -1222,7 +1226,7 @@ IntensityProfileView::on_copyStatisticsButton_clicked()
         row = row.append("%L1").arg(t);
         row = row.append("\t%L1").arg(xValues[t]);
         if (d->showCrosshairProfile) {
-          row = row.append("\t%L1").arg(d->crosshairProfiles[node]->y(t));
+          row = row.append("\t%L1").arg(d->crosshairProfiles[node]->sample(t).y());
         }
 
         // iterate over the roi statistics
