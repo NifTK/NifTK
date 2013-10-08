@@ -280,41 +280,57 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
   std::vector < std::vector <double> > stateVector;
   for ( double tx = windowLow; tx <= windowHigh ; tx += stepSize )
   {
-    std::vector<double> state;
-    state.push_back(tx);
-    state.push_back(0.0);
-    state.push_back(0.0);
-    state.push_back(0.0);
-    state.push_back(0.0);
-    state.push_back(0.0);
-
-    stateVector.push_back( state );
-    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+    MITK_INFO << "tx=" << tx;
+    for ( double ty = windowLow; ty <= windowHigh ; ty += stepSize )
     {
-      std::vector <cv::Point3d> worldPoints;
-      worldPoints.clear();
-      for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
+      for ( double tz = windowLow; tz <= windowHigh ; tz += stepSize )
       {
-        int framenumber = frame * 2;
-        worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
-            pointsInLensCS[frame][0]);
-      }
-      
-      cv::Point3d pointSpread;
-      cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
+        for ( double rx = windowLow; rx <= windowHigh ; rx += stepSize )
+        {
+          MITK_INFO << "rx="<< rx;
+          for ( double ry = windowLow; ry <= windowHigh ; ry += stepSize )
+          {
+            for ( double rz = windowLow; rz <= windowHigh ; rz += stepSize )
+            {
+              std::vector<double> state;
+              state.push_back(tx);
+              state.push_back(ty);
+              state.push_back(tz);
+              state.push_back(rx);
+              state.push_back(ry);
+              state.push_back(rz);
 
-      reconstructedPointSD[trackerIndex].push_back(pointSpread);
-      std::vector <cv::Point3d > worldPoint(1);
-      worldPoint[0] = worldCentre;
-      projector->SetWorldPoints(worldPoint);
-      projector->SetTrackerIndex(trackerIndex);
-      projector->Project(this, &state);
-      std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
-        projector->GetProjectedPoints();
-      
-      std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
-      projectedErrorRMS[trackerIndex].push_back(projectedRMS);
-      
+              stateVector.push_back( state );
+              for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
+              {
+                std::vector <cv::Point3d> worldPoints;
+                worldPoints.clear();
+                for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
+                {
+                  int framenumber = frame * 2;
+                  worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex, &state ) *
+                      pointsInLensCS[frame][0]);
+                }
+                
+                cv::Point3d pointSpread;
+                cv::Point3d worldCentre = mitk::GetCentroid (worldPoints, true,  &pointSpread);
+                reconstructedPointSD[trackerIndex].push_back(pointSpread);
+                std::vector <cv::Point3d > worldPoint(1);
+                worldPoint[0] = worldCentre;
+                projector->SetWorldPoints(worldPoint);
+                projector->SetTrackerIndex(trackerIndex);
+                projector->Project(this, &state);
+                std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
+                projector->GetProjectedPoints();
+                
+                std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
+                projectedErrorRMS[trackerIndex].push_back(projectedRMS);
+                
+              }
+            }
+          }
+        }
+      }
     }
   }
 
