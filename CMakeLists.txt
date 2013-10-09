@@ -226,6 +226,7 @@ set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
 set(NIFTK_VERSION_EIGEN "3.1.3" CACHE STRING "Version of EIGEN" FORCE)
+set(NIFTK_VERSION_APRILTAGS "008237aa13" CACHE STRING "Version of AprilTags" FORCE)
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.bz2" CACHE STRING "Location of Boost" FORCE)
@@ -248,6 +249,7 @@ set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-Sl
 set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
 set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/Eigen-${NIFTK_VERSION_EIGEN}.tar.gz" CACHE STRING "Location of Eigen" FORCE)
+set(NIFTK_LOCATION_APRILTAGS "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTK-apriltags-${NIFTK_VERSION_APRILTAGS}.tar.gz" CACHE STRING "Location of AprilTags" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -325,6 +327,8 @@ mark_as_advanced(NIFTK_LOCATION_CAMINO)
 mark_as_advanced(NIFTK_VERSION_CAMINO)
 mark_as_advanced(NIFTK_LOCATION_EIGEN)
 mark_as_advanced(NIFTK_VERSION_EIGEN)
+mark_as_advanced(NIFTK_LOCATION_APRILTAGS)
+mark_as_advanced(NIFTK_VERSION_APRILTAGS)
 
 ######################################################################
 # Make sure Git is available.
