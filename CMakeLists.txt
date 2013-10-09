@@ -701,6 +701,8 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEIGEN.cmake
   ${CMAKE_BINARY_DIR}/FindEIGEN.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake
+  ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
 
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
@@ -833,6 +835,14 @@ if (BUILD_IGI)
     set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${EIGEN_INCLUDE_DIR})
   endif()
 
+  find_package(apriltags REQUIRED)
+  if(apriltags_FOUND)
+    message("Found AprilTags include dir=${apriltags_INCLUDE_DIR}")
+    message("Found AprilTags lib dir    =${apriltags_LIBRARY_DIRS}")
+    message("Found AprilTags library    =${apriltags_LIBRARIES}") 
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${apriltags_INCLUDE_DIR})
+    link_directories(${apriltags_LIBRARY_DIRS})
+  endif()
 endif()
 
 ######################################################################

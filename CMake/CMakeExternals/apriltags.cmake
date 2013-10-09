@@ -28,7 +28,8 @@ if(BUILD_IGI)
   set(proj_DEPENDENCIES OpenCV EIGEN)
   set(apriltags_DEPENDS ${proj})
   set(proj_BUILD ${CMAKE_BINARY_DIR}/${proj}-build)
-  
+  set(proj_SOURCE ${CMAKE_BINARY_DIR}/${proj}-src)
+ 
   if(NOT DEFINED apriltags_DIR)
   
     niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
@@ -51,10 +52,13 @@ if(BUILD_IGI)
           -DEIGEN_DIR:PATH=${CMAKE_BINARY_DIR}/EIGEN-src
        DEPENDS ${proj_DEPENDENCIES}
       )
-  
+
+    set(apriltags_SOURCE_DIR ${proj_SOURCE})  
     set(apriltags_DIR ${proj_BUILD})
-    message("SuperBuild loading AprilTags from ${apriltags_DIR}")
-  
+
+    message("SuperBuild loading AprilTags headers from ${apriltags_SOURCE_DIR}")
+    message("SuperBuild loading AprilTags libraries from ${apriltags_DIR}")
+ 
   else(NOT DEFINED apriltags_DIR)
   
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
