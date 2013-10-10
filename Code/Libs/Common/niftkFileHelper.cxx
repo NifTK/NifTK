@@ -360,8 +360,8 @@ bool NumericStringCompare( const std::string &string1, const std::string &string
 {
   fs::path path1 (string1);
   fs::path path2 (string2);
-  int d1 = boost::lexical_cast<long long int>(path1.stem());
-  int d2 = boost::lexical_cast<long long int>(path2.stem());
+  int d1 = boost::lexical_cast<long long int>(path1.stem().string());
+  int d2 = boost::lexical_cast<long long int>(path2.stem().string());
   return d1 < d2;
 }
 //  -------------------------------------------------------------------------

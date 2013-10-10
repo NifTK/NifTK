@@ -293,55 +293,55 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
 }
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p)
+std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
 {
-  cv::Mat src ( 4, p.size(), CV_32F );
+  cv::Mat src ( 4, p.size(), CV_64F );
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
-    src.at<float>(0,i) = p[i].x;
-    src.at<float>(1,i) = p[i].y;
-    src.at<float>(2,i) = p[i].z;
-    src.at<float>(3,i) = 1.0;
+    src.at<double>(0,i) = p[i].x;
+    src.at<double>(1,i) = p[i].y;
+    src.at<double>(2,i) = p[i].z;
+    src.at<double>(3,i) = 1.0;
   }
   cv::Mat dst = M*src;
-  std::vector <cv::Point3f> returnPoints;
+  std::vector <cv::Point3d> returnPoints;
   for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
   {
-    cv::Point3f point;
-    point.x = dst.at<float>(0,i);
-    point.y = dst.at<float>(1,i);
-    point.z = dst.at<float>(2,i);
+    cv::Point3d point;
+    point.x = dst.at<double>(0,i);
+    point.y = dst.at<double>(1,i);
+    point.z = dst.at<double>(2,i);
     returnPoints.push_back(point);
   }
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
-cv::Point3f operator*(cv::Mat M, const cv::Point3f& p)
+cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 {
-  cv::Mat src ( 4, 1, CV_32F );
-  src.at<float>(0,0) = p.x;
-  src.at<float>(1,0) = p.y;
-  src.at<float>(2,0) = p.z;
-  src.at<float>(3,0) = 1.0;
+  cv::Mat src ( 4, 1, CV_64F );
+  src.at<double>(0,0) = p.x;
+  src.at<double>(1,0) = p.y;
+  src.at<double>(2,0) = p.z;
+  src.at<double>(3,0) = 1.0;
     
   cv::Mat dst = M*src;
-  cv::Point3f returnPoint;
+  cv::Point3d returnPoint;
   
-  returnPoint.x = dst.at<float>(0,0);
-  returnPoint.y = dst.at<float>(1,0);
-  returnPoint.z = dst.at<float>(2,0);
+  returnPoint.x = dst.at<double>(0,0);
+  returnPoint.y = dst.at<double>(1,0);
+  returnPoint.z = dst.at<double>(2,0);
 
   return returnPoint;
 }
 //-----------------------------------------------------------------------------
-cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
+cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
 {
   double a1;
   double a2;
   double b1;
   double b2;
-  cv::Point2f returnPoint;
+  cv::Point2d returnPoint;
   returnPoint.x = -100.0;
   returnPoint.y = -100.0;
 
@@ -388,7 +388,7 @@ cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
   }
   if ( ok == false ) 
   {
-    return ( cv::Point2f (-100.0, -100.0) );
+    return ( cv::Point2d (-100.0, -100.0) );
   }
   else 
   {
@@ -398,14 +398,14 @@ cv::Point2f FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
 }
 
 //-----------------------------------------------------------------------------
-std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
+std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
 {
-  std::vector<cv::Point2f> returnPoints; 
+  std::vector<cv::Point2d> returnPoints; 
   for ( unsigned int i = 0 ; i < lines.size() ; i ++ ) 
   {
     for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
     {
-      cv::Point2f point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
+      cv::Point2d point =  FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular);
       if ( ! ( point.x == -100.0 && point.y == -100.0 ) )
       {
         returnPoints.push_back ( FindIntersect (lines[i], lines[j], RejectIfNotOnALine, RejectIfNotPerpendicular)) ;
@@ -415,9 +415,9 @@ std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
   return returnPoints;
 }
 //-----------------------------------------------------------------------------
-cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers)
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
 {
-  cv::Point2f centroid;
+  cv::Point2d centroid;
   centroid.x = 0.0;
   centroid.y = 0.0;
 
@@ -436,7 +436,7 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
     return centroid;
   }
   
-  cv::Point2f standardDeviation;
+  cv::Point2d standardDeviation;
   standardDeviation.x = 0.0;
   standardDeviation.y = 0.0;
 
@@ -448,8 +448,8 @@ cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
 
-  cv::Point2f highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
-  cv::Point2f lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
+  cv::Point2d highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
+  cv::Point2d lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
 
   centroid.x = 0.0;
   centroid.y = 0.0;
@@ -738,8 +738,303 @@ cv::Matx44d ConstructSimilarityTransformationMatrix(
   result = scaling * rigid;
   return result;
 }
+//-----------------------------------------------------------------------------
+cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes )
+{
+  cv::Point3d minimumValues;
+
+  if ( inputValues.size() > 0 ) 
+  {
+    minimumValues.x = inputValues[0].x;
+    minimumValues.y = inputValues[0].y;
+    minimumValues.z = inputValues[0].z;
+
+    if ( indexes != NULL )
+    {
+      indexes->x = 0;
+      indexes->y = 0;
+      indexes->z = 0;
+    }
+  }
+  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  {
+    std::cerr << i << std::endl;
+    if ( inputValues[i].x < minimumValues.x )
+    {
+      minimumValues.x = inputValues[i].x;
+      if ( indexes != NULL )
+      {
+        indexes->x = i;
+      }
+    }
+    if ( inputValues[i].y < minimumValues.y )
+    {
+      minimumValues.y = inputValues[i].y;
+      if ( indexes != NULL )
+      {
+        indexes->y = i;
+      }
+    }
+    if ( inputValues[i].z < minimumValues.z )
+    {
+      minimumValues.z = inputValues[i].z;
+      if ( indexes != NULL )
+      {
+        indexes->z = i;
+      }
+    }
+
+  }
+  return minimumValues;
+}  
+//-----------------------------------------------------------------------------
+std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < double, double > > inputValues, std::pair < unsigned int , unsigned int >  * indexes )
+{
+  std::pair < double , double > minimumValues;
+
+  if ( inputValues.size() > 0 ) 
+  {
+    minimumValues.first = inputValues[0].first;
+    minimumValues.second = inputValues[0].second;
+
+    if ( indexes != NULL )
+    {
+      indexes->first = 0;
+      indexes->second = 0;
+    }
+  }
+  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  {
+    if ( inputValues[i].first < minimumValues.first )
+    {
+      minimumValues.first = inputValues[i].first;
+      if ( indexes != NULL )
+      {
+        indexes->first = i;
+      }
+    }
+    if ( inputValues[i].second < minimumValues.second )
+    {
+      minimumValues.second = inputValues[i].second;
+      if ( indexes != NULL )
+      {
+        indexes->second = i;
+      }
+    }
+  }
+  return minimumValues;
+}
 
 //-----------------------------------------------------------------------------
+std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    int indexToUse , double outlierSD)
+{
+  assert ( measured.size() == actual.size() * 2 );
+
+  std::pair < double, double>  RMSError;
+  
+  RMSError.first = 0.0 ;
+  RMSError.second = 0.0 ;
+ 
+  std::pair < cv::Point2d, cv::Point2d > errorStandardDeviations;
+  std::pair < cv::Point2d, cv::Point2d > errorMeans;
+  errorMeans = mitk::MeanError (measured, actual, &errorStandardDeviations, indexToUse);
+  std::pair < cv::Point2d , cv::Point2d > lowLimit;
+  std::pair < cv::Point2d , cv::Point2d > highLimit;
+  lowLimit.first.x = errorMeans.first.x - outlierSD * errorStandardDeviations.first.x; 
+  lowLimit.first.y = errorMeans.first.y - outlierSD * errorStandardDeviations.first.y; 
+  lowLimit.second.x = errorMeans.second.x - outlierSD * errorStandardDeviations.second.x; 
+  lowLimit.second.y = errorMeans.second.y - outlierSD * errorStandardDeviations.second.y; 
+  highLimit.first.x = errorMeans.first.x + outlierSD * errorStandardDeviations.first.x; 
+  highLimit.first.y = errorMeans.first.y + outlierSD * errorStandardDeviations.first.y; 
+  highLimit.second.x = errorMeans.second.x + outlierSD * errorStandardDeviations.second.x; 
+  highLimit.second.y = errorMeans.second.y + outlierSD * errorStandardDeviations.second.y; 
+
+  std::pair < int , int > count;
+  count.first = 0;
+  count.second = 0;
+  int lowIndex = 0;
+  int highIndex = measured[0].size();
+  if ( indexToUse != -1 )
+  {
+    lowIndex = indexToUse; 
+    highIndex = indexToUse;
+  }
+  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+  {
+    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+    {
+      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+      {
+        double xerror = actual[i][index].first.x - measured[i*2][index].first.x;
+        double yerror = actual[i][index].first.y - measured[i*2][index].first.y;
+        if ( ( xerror > lowLimit.first.x ) && ( xerror < highLimit.first.x ) &&
+             ( yerror > lowLimit.first.y ) && ( yerror < highLimit.first.y ) )
+        {
+          RMSError.first += ( xerror * xerror ) + ( yerror * yerror );
+          count.first ++;
+        }
+      }
+      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+      {
+        double xerror = actual[i][index].second.x - measured[i*2][index].second.x;
+        double yerror = actual[i][index].second.y - measured[i*2][index].second.y;
+        if ( ( xerror > lowLimit.second.x ) && ( xerror < highLimit.second.x ) &&
+             ( yerror > lowLimit.second.y ) && ( yerror < highLimit.second.y ) )
+        {
+          RMSError.second += ( xerror * xerror ) + ( yerror * yerror );
+          count.second ++;
+        }
+      }
+    }
+  }
+  if ( count.first > 0 ) 
+  {
+    RMSError.first = sqrt ( RMSError.first / count.first );
+  }
+  if ( count.second > 0 ) 
+  {
+    RMSError.second = sqrt ( RMSError.second / count.second );
+  }
+  return RMSError;
+}
+//-----------------------------------------------------------------------------
+std::pair < cv::Point2d, cv::Point2d >  MeanError (
+    std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , 
+    std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    std::pair < cv::Point2d, cv::Point2d >* StandardDeviations, int indexToUse)
+{
+  assert ( measured.size() == actual.size() * 2 );
+
+  std::pair < cv::Point2d, cv::Point2d>  meanError;
+  
+  meanError.first.x = 0.0 ;
+  meanError.first.y = 0.0 ;
+  meanError.second.x = 0.0 ;
+  meanError.second.y = 0.0 ;
+  
+  std::pair < int , int > count;
+  count.first = 0;
+  count.second = 0;
+  int lowIndex = 0;
+  int highIndex = measured[0].size();
+  if ( indexToUse != -1 )
+  {
+    lowIndex = indexToUse; 
+    highIndex = indexToUse;
+  }
+  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+  {
+    for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+    {
+      if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+          boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+      {
+        meanError.first.x +=  actual[i][index].first.x - measured[i*2][index].first.x ;
+        meanError.first.y +=  actual[i][index].first.y - measured[i*2][index].first.y ;
+        count.first ++;
+      }
+      if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+          boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+      {
+        meanError.second.x +=  actual[i][index].second.x - measured[i*2][index].second.x ;
+        meanError.second.y +=  actual[i][index].second.y - measured[i*2][index].second.y ;
+        count.second ++;
+      }
+    }
+  }
+  if ( count.first > 0 ) 
+  {
+    meanError.first.x =  meanError.first.x / count.first ;
+    meanError.first.y =  meanError.first.y / count.first ;
+  }
+  if ( count.second > 0 ) 
+  {
+    meanError.second.x =  meanError.second.x / count.second ;
+    meanError.second.y =  meanError.second.y / count.second ;
+  }
+  if ( StandardDeviations == NULL ) 
+  {
+    return meanError;
+  }
+  else
+  {
+    StandardDeviations->first.x = 0.0;
+    StandardDeviations->first.y = 0.0;
+    StandardDeviations->second.x = 0.0;
+    StandardDeviations->second.y = 0.0;
+    for ( int index = lowIndex; index < highIndex ; index ++ ) 
+    {
+      for ( unsigned int i = 0 ; i < actual.size() ; i ++ ) 
+      {
+        if ( ! ( boost::math::isnan(measured[i*2][index].first.x) || boost::math::isnan(measured[i*2][index].first.y) ||
+            boost::math::isnan(actual[i][index].first.x) || boost::math::isnan(actual[i][index].first.y) ) )
+        {
+          double xerror = actual[i][index].first.x - measured[i*2][index].first.x - meanError.first.x;
+          double yerror = actual[i][index].first.y - measured[i*2][index].first.y - meanError.first.y;
+          StandardDeviations->first.x += xerror * xerror;
+          StandardDeviations->first.y += yerror * yerror;
+          count.first ++;
+        }
+        if ( ! ( boost::math::isnan(measured[i*2][index].second.x) || boost::math::isnan(measured[i*2][index].second.y) ||
+            boost::math::isnan(actual[i][index].second.x) || boost::math::isnan(actual[i][index].second.y) ) )
+        {
+          double xerror = actual[i][index].second.x - measured[i*2][index].second.x - meanError.second.x;
+          double yerror = actual[i][index].second.y - measured[i*2][index].second.y - meanError.second.y;
+          StandardDeviations->second.x += xerror * xerror;
+          StandardDeviations->second.y += yerror * yerror;
+          count.second ++;
+        }
+      }
+    }
+    if ( count.first > 0 ) 
+    {
+      StandardDeviations->first.x =  sqrt(StandardDeviations->first.x / count.first);
+      StandardDeviations->first.y =  sqrt(StandardDeviations->first.y / count.first) ;
+    }
+    if ( count.second > 0 ) 
+    {
+      StandardDeviations->second.x = sqrt( StandardDeviations->second.x / count.second) ;
+      StandardDeviations->second.y = sqrt( StandardDeviations->second.y / count.second) ;
+    }
+
+  }
+  return meanError;
+
+}
+
+//-----------------------------------------------------------------------------
+cv::Mat PerturbTransform (const cv::Mat transformIn , 
+    const double tx, const double ty, const double tz,
+    const double rx, const double ry, const double rz)
+{
+
+  cv::Mat rotationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rotationMatrix = cv::Mat (3,3,CV_64FC1);
+  cv::Mat perturbationMatrix = cv::Mat (4,4,CV_64FC1);
+  rotationVector.at<double>(0,0) = rx * CV_PI/180;
+  rotationVector.at<double>(1,0) = ry * CV_PI/180;
+  rotationVector.at<double>(2,0) = rz * CV_PI/180;
+  
+  cv::Rodrigues ( rotationVector,rotationMatrix );
+  for ( int row = 0 ; row < 3 ; row ++ )
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      perturbationMatrix.at<double>(row,col) = rotationMatrix.at<double>(row,col);
+    }
+  }
+  perturbationMatrix.at<double>(0,3) = tx;
+  perturbationMatrix.at<double>(1,3) = ty;
+  perturbationMatrix.at<double>(2,3) = tz;
+  perturbationMatrix.at<double>(3,0) = 0.0;
+  perturbationMatrix.at<double>(3,1) = 0.0;
+  perturbationMatrix.at<double>(3,2) = 0.0;
+  perturbationMatrix.at<double>(3,3) = 1.0;
+
+  return transformIn * perturbationMatrix;
+}
+
 } // end namespace
-
-

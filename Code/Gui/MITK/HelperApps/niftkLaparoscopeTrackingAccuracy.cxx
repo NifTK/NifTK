@@ -14,8 +14,8 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkVideoTrackerMatching.h>
-#include <niftkGetMatchedTrackingMatrixCLP.h>
+#include <mitkTrackerAnalysis.h>
+#include <niftkLaparoscopeTrackingAccuracyCLP.h>
 
 int main(int argc, char** argv)
 {
@@ -31,17 +31,29 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::VideoTrackerMatching::Pointer trackerMatcherObject = mitk::VideoTrackerMatching::New();
+    mitk::TrackerAnalysis::Pointer trackerMatcherObject = mitk::TrackerAnalysis::New();
     trackerMatcherObject->SetFlipMatrices(FlipTracking);
     trackerMatcherObject->Initialise(trackingInputDirectory);
     if ( handeyes.length() !=0 ) 
     {
       trackerMatcherObject->SetCameraToTrackers(handeyes);
     }
-
-    long long* timingError = new long long;
-    std::cout << trackerMatcherObject->GetTrackerMatrix(frameNumber, timingError, trackerIndex);
-
+    if ( TemporalCalibration.length() != 0 )
+    {
+      trackerMatcherObject->SetCalibrationDirectory(cameraCalibration);
+      trackerMatcherObject->TemporalCalibration(TemporalCalibration, temporalWindowLow, temporalWindowHigh, true, TCfileout);
+    }
+    if ( OptimiseHandeye.length() != 0 ) 
+    {
+      trackerMatcherObject->OptimiseHandeyeCalibration(OptimiseHandeye, false, TCfileout);
+    }
+    if ( HandeyeSensitivity.length() != 0 )
+    {
+      trackerMatcherObject->SetCalibrationDirectory(cameraCalibration);
+      trackerMatcherObject->SetVideoLagMilliseconds(videoLag);
+      trackerMatcherObject->HandeyeSensitivityTest(HandeyeSensitivity, handeyeWindowLow, handeyeWindowHigh, handeyeStepSize, HEfileout);
+    }
+ 
     returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)

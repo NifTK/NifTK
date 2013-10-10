@@ -89,15 +89,18 @@ int main(int argc, char** argv)
     if ( outputLens.length() !=0 )
     {
       std::ofstream fout (outputLens.c_str());
-      std::vector < cv::Point3f >  leftLensPoints = finder->GetPointsInLeftLensCS();
+      std::vector < cv::Point3d >  leftLensPoints = finder->GetPointsInLeftLensCS();
+      std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints = finder->GetScreenPoints();
       fout << "#Frame Number " ;
-      fout << "PleftLens" <<"[x,y,z]";
+      fout << "PleftLens" << "[x,y,z]" << "PLeftScreen [x,y] , PRightScreen [x,y]";
       fout << std::endl;
       for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
       {
         fout << i << " ";
         fout << leftLensPoints[i].x << " " <<  leftLensPoints[i].y <<
-             " " << leftLensPoints[i].z << " " ;
+             " " << leftLensPoints[i].z << " " <<
+             screenPoints[i].first.x << " " << screenPoints[i].first.y << " " <<
+             screenPoints[i].second.x << " " << screenPoints[i].second.y ;
         fout << std::endl;
       }
       fout.close();
