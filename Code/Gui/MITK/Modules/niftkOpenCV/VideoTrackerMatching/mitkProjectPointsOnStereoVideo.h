@@ -22,7 +22,7 @@
 #include <mitkCommon.h>
 #include <cv.h>
 #include <highgui.h>
-#include <mitkVideoTrackerMatching.h>
+#include "mitkVideoTrackerMatching.h"
 
 namespace mitk {
 
@@ -56,7 +56,14 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Project();
+  void  Project(mitk::VideoTrackerMatching::Pointer matcher, std::vector<double> * perturbation = NULL);
+  
+  /**
+   * \brief
+   * Sets the cameratotracker matrix for the passed matcher 
+   * to match the matrix for the projector
+   */
+  void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
   /**
    * \brief save the projected coordinates for each frame to a text file
@@ -71,36 +78,27 @@ public:
   /**
    * \brief Set the world points directly
    */
- // void SetWorldPoints (std::vector<cv::Point3f> worldPoints);
+ // void SetWorldPoints (std::vector<cv::Point3d> worldPoints);
 
   /**
    * \brief Set the world points by triangulating their position from the
    * on screen coordinates for the specified frame
    */
   void SetWorldPointsByTriangulation 
-    (std::vector< std::pair<cv::Point2f,cv::Point2f> > onScreenPointPairs, 
-     unsigned int FrameNumber);
+    (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
+     unsigned int frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
+     std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
-  itkSetMacro ( WorldPoints, std::vector<cv::Point3f> );
-  std::vector < std::vector <cv::Point3f> > GetPointsInLeftLensCS();
-  std::vector < std::vector < std::pair<cv::Point2f, cv::Point2f> > >  GetProjectedPoints();
+  itkSetMacro ( WorldPoints, std::vector<cv::Point3d> );
+  std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
+  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
-
-  /**
-   * \brief Set the matrix flip state for the VideoTracker matcher
-   */
-  void SetFlipMatrices (bool);
-  /** 
-   * \brief set the video lag parameters for the tracker matcher
-   */
-  void SetVideoLagMilliseconds (unsigned long long VideoLag, bool VideoLeadsTracking = false);
-
 
 protected:
 
@@ -116,11 +114,9 @@ private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
-  std::vector<cv::Point3f>      m_WorldPoints;  //the world points to project
+  std::vector<cv::Point3d>      m_WorldPoints;  //the world points to project
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
-  mitk::VideoTrackerMatching::Pointer
-                                m_TrackerMatcher; //the tracker matcher
  
   bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;
@@ -136,11 +132,12 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
-  std::vector < std::vector < std::pair<cv::Point2f, cv::Point2f> > >
+  /* m_ProjectPoints [framenumber][pointID](left.right);*/
+  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::vector <cv::Point3f> >    
+  std::vector < std::vector <cv::Point3d> >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
-  std::vector < std::pair<cv::Point2f, cv::Point2f> > 
+  std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points
 
   CvCapture*                    m_Capture;

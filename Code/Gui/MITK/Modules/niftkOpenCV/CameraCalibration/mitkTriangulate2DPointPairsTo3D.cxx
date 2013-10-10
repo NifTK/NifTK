@@ -62,7 +62,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       std::cout << "Opened " << input2DPointPairsFileName << std::endl;
     }
 
-    std::vector< std::pair<cv::Point2f, cv::Point2f> > pointPairs;
+    std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
     double numbersOnLine[4];
 
     while(!reader.eof())
@@ -76,15 +76,15 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       {
         break;
       }
-      cv::Point2f leftPoint;
-      cv::Point2f rightPoint;
+      cv::Point2d leftPoint;
+      cv::Point2d rightPoint;
 
       leftPoint.x = numbersOnLine[0];
       leftPoint.y = numbersOnLine[1];
       rightPoint.x = numbersOnLine[2];
       rightPoint.y = numbersOnLine[3];
 
-      pointPairs.push_back(std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
+      pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint, rightPoint));
     }
     reader.close();
 
@@ -108,10 +108,10 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     LoadStereoTransformsFromPlainText(rightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
     // Triangulate each point.
-    std::vector< cv::Point3f > pointsIn3D;
+    std::vector< cv::Point3d > pointsIn3D;
     for (unsigned int i = 0; i < pointPairs.size(); i++)
     {
-      cv::Point3f pointIn3D = mitk::TriangulatePointPair(
+      cv::Point3d pointIn3D = mitk::TriangulatePointPair(
           pointPairs[i],
           leftIntrinsic,
           rightIntrinsic,

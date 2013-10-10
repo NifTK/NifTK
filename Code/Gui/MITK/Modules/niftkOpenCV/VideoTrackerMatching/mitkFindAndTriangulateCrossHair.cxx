@@ -192,9 +192,9 @@ void FindAndTriangulateCrossHair::Triangulate()
     cv::vector<cv::Vec4i> linesright;
     cv::HoughLinesP (leftCanny, linesleft,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
     cv::HoughLinesP (rightCanny, linesright,m_HoughRho,m_HoughTheta, m_HoughThreshold, m_HoughLineLength , m_HoughLineGap);  
-    std::pair <cv::Point2f, cv::Point2f> screenPoints;
-    screenPoints.first = cv::Point2f(-100.0, -100.0);
-    screenPoints.second = cv::Point2f(-100.0, -100.0);
+    std::pair <cv::Point2d, cv::Point2d> screenPoints;
+    screenPoints.first = cv::Point2d(-100.0, -100.0);
+    screenPoints.second = cv::Point2d(-100.0, -100.0);
     for ( unsigned int i = 0 ; i < linesleft.size() ; i ++ )
     {
       cv::line(leftFrame,cvPoint(linesleft[i][0],linesleft[i][1]),
@@ -205,8 +205,8 @@ void FindAndTriangulateCrossHair::Triangulate()
       cv::line(rightFrame,cvPoint(linesright[i][0],linesright[i][1]),
           cvPoint(linesright[i][2],linesright[i][3]),cvScalar(255,0,0));
     }
-    std::vector <cv::Point2f> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
-    std::vector <cv::Point2f> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
+    std::vector <cv::Point2d> leftIntersectionPoints = mitk::FindIntersects (linesleft, true, true);
+    std::vector <cv::Point2d> rightIntersectionPoints = mitk::FindIntersects (linesright, true, true);
     screenPoints.first = mitk::GetCentroid(leftIntersectionPoints,true);
     screenPoints.second = mitk::GetCentroid(rightIntersectionPoints,true);
     cv::circle(leftFrame , screenPoints.first,10, cvScalar(0,0,255),2,8,0);
@@ -313,7 +313,7 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
 
   for ( unsigned int i = 0 ; i < m_ScreenPoints.size() ; i ++ ) 
   {
-    m_PointsInLeftLensCS.push_back(cv::Point3f (
+    m_PointsInLeftLensCS.push_back(cv::Point3d (
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,0),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,1),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
@@ -357,6 +357,12 @@ void FindAndTriangulateCrossHair::SetVideoLagMilliseconds ( unsigned long long V
     return;
   }
   m_TrackerMatcher->SetVideoLagMilliseconds (VideoLag, VideoLeadsTracking);
+}
+
+//-----------------------------------------------------------------------------
+std::vector < std::pair < cv::Point2d , cv::Point2d > > FindAndTriangulateCrossHair::GetScreenPoints () 
+{
+  return m_ScreenPoints;
 }
 
 } // end namespace
