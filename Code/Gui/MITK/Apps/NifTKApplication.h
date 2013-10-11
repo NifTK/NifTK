@@ -160,7 +160,7 @@ int ApplicationMain(int argc, char** argv,
   // When the plugin mechanism unloads these they trash the ITK class factory, leaving dead pointers.
   // The next factory trying to register itself then causes a crash. This is very hard to debug.
   // The few libs here are found by trial-and-error.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "libuk_ac_ucl_cmic_midasmorphologicalsegmentor,libuk_ac_ucl_cmic_midasgeneralsegmentor,libuk_ac_ucl_cmic_gui_qt_commonmidas,libuk_ac_ucl_cmic_niftyreg,libit_unito_cim_intensityprofile");
+//  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "libuk_ac_ucl_cmic_midasmorphologicalsegmentor,libuk_ac_ucl_cmic_midasgeneralsegmentor,libuk_ac_ucl_cmic_gui_qt_commonmidas,libuk_ac_ucl_cmic_niftyreg,libit_unito_cim_intensityprofile");
 #endif
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.
