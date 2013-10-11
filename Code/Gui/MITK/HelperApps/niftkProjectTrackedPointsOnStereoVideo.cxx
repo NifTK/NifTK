@@ -70,6 +70,7 @@ int main(int argc, char** argv)
     }
     matcher->SetFlipMatrices(FlipTracking);
     projector->SetTrackerIndex(trackerIndex);
+    projector->SetTrackerIndex(referenceIndex);
     projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
