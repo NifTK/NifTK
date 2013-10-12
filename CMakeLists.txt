@@ -225,6 +225,7 @@ set(NIFTK_VERSION_CGAL "3.8" CACHE STRING "Version of CGAL" FORCE)
 set(NIFTK_VERSION_ARUCO "1.2.4" CACHE STRING "Version of aruco" FORCE)
 set(NIFTK_VERSION_SEM "7365853e2b" CACHE STRING "Version of Slicer Execution Module package" FORCE)
 set(NIFTK_VERSION_CAMINO "1221" CACHE STRING "Version of Camino" FORCE)
+set(NIFTK_VERSION_EIGEN "3.1.3" CACHE STRING "Version of EIGEN" FORCE)
 set(NIFTK_LOCATION_DATA_GIT "https://cmicdev.cs.ucl.ac.uk/git/NifTKData" CACHE STRING "Version of NifTKData in git" FORCE)
 set(NIFTK_LOCATION_DATA_TAR "http://cmic.cs.ucl.ac.uk/platform/dependencies/NifTKData-${NIFTK_VERSION_DATA_TAR}.tar.gz" CACHE STRING "Location of NifTKData" FORCE)
 set(NIFTK_LOCATION_Boost "http://cmic.cs.ucl.ac.uk/platform/dependencies/boost_${NIFTK_VERSION_Boost}.tar.bz2" CACHE STRING "Location of Boost" FORCE)
@@ -246,6 +247,7 @@ set(NIFTK_LOCATION_CGAL "http://cmic.cs.ucl.ac.uk/platform/dependencies/CGAL-${N
 set(NIFTK_LOCATION_SEM "http://cmic.cs.ucl.ac.uk/platform/dependencies/Slicer-SlicerExecutionModel-${NIFTK_VERSION_SEM}.tar.gz" CACHE STRING  "Location of Slicer Execution Module package" FORCE)
 set(NIFTK_LOCATION_ARUCO "http://cmic.cs.ucl.ac.uk/platform/dependencies/aruco-${NIFTK_VERSION_ARUCO}.tar.gz" CACHE STRING  "Location of Aruco package" FORCE)
 set(NIFTK_LOCATION_CAMINO "http://cmic.cs.ucl.ac.uk/platform/dependencies/camino-${NIFTK_VERSION_CAMINO}.tar.gz" CACHE STRING "Location of Camino package" FORCE)
+set(NIFTK_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/Eigen-${NIFTK_VERSION_EIGEN}.tar.gz" CACHE STRING "Location of Eigen" FORCE)
 
 ######################################################################
 # Hide these variables from the user, unless they are 'advanced' :-)
@@ -321,6 +323,8 @@ mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(NIFTK_LOCATION_CAMINO)
 mark_as_advanced(NIFTK_VERSION_CAMINO)
+mark_as_advanced(NIFTK_LOCATION_EIGEN)
+mark_as_advanced(NIFTK_VERSION_EIGEN)
 
 ######################################################################
 # Make sure Git is available.
@@ -691,6 +695,8 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEIGEN.cmake
+  ${CMAKE_BINARY_DIR}/FindEIGEN.cmake @ONLY)
 
 if (BUILD_MESHING)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCGAL.cmake
@@ -803,19 +809,26 @@ endif (BUILD_MESHING)
 # Find NiftyLink
 ######################################################################
 if (BUILD_IGI)
-  find_package(NiftyLink)
+  find_package(NiftyLink REQUIRED)
   if (NiftyLink_FOUND)
     message("Found NiftyLink")
     include(${NiftyLink_USE_FILE})
     add_definitions(-DBUILD_IGI)
   endif()
 
-  find_package(aruco)
+  find_package(aruco REQUIRED)
   if(aruco_FOUND)
     message("Found aruco in ${aruco_DIR}")
     link_directories(${aruco_DIR}/lib)
     set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${aruco_DIR}/include)
   endif()
+
+  find_package(EIGEN REQUIRED)
+  if(EIGEN_FOUND)
+    message("Found EIGEN in ${EIGEN_DIR}")
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${EIGEN_INCLUDE_DIR})
+  endif()
+
 endif()
 
 ######################################################################
@@ -1086,6 +1099,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt ${CMAKE_BINARY_DIR}
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySim.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt ${CMAKE_BINARY_DIR}/LICENSE_OpenCV.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICENSE_Qt.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt ${CMAKE_BINARY_DIR}/LICENSE_EIGEN.txt)
 
 #############################################################################################
 # These represent the libraries that the apps, libraries and unit tests actually link against
@@ -1115,6 +1129,7 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Aruco.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/EIGEN.txt DESTINATION ${NIFTK_INSTALL_DOC_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/INSTALLATION.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
