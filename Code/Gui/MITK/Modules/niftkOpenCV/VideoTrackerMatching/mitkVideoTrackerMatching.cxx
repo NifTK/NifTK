@@ -500,7 +500,7 @@ cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber
        {  
          *TimingError = refTimingError;
        }
-       return (trackerMatrix * m_CameraToTracker[TrackerIndex]) * toReference.inv();
+       return (toReference.inv() * (trackerMatrix * m_CameraToTracker[TrackerIndex]));
      }
 
    }
@@ -523,11 +523,11 @@ cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber
        {  
          *TimingError = refTimingError;
        }
-       return (trackerMatrix *  
+       return toReference.inv() * 
+          (trackerMatrix *  
           mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
             Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
-            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5)) ) *
-            toReference.inv();
+            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5)) );
      }
    }
 }
