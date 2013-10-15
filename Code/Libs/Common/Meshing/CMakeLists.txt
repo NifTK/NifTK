@@ -28,7 +28,19 @@ else(VTK_FOUND)
 endif(VTK_FOUND)	
 
 if(ITK_FOUND)
+
+  message("Found ITK")
+
+  # The variable should be set to 1 before including ITK_USE_FILE,
+  # so that the ITK_IO_FACTORY_REGISTER_MANAGER preprocessor define
+  # is not added. The factory register manager should be enabled only
+  # in the MITK core library.
+  if(DEFINED ITK_NO_IO_FACTORY_REGISTER_MANAGER)
+    set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 1)
+  endif()
+
   include(${ITK_USE_FILE})
+
 else(ITK_FOUND)
   message(FATAL_ERROR
     "ITK not found. Please set ITK_DIR.")

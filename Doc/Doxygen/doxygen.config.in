@@ -288,6 +288,8 @@ EXCLUDE_PATTERNS      =
 
 EXAMPLE_PATH     = @CMAKE_BINARY_DIR@/LICENSE.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_Aruco.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_AprilTags.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_EIGEN.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_Boost.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_CTK.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_DCMTK.txt \
