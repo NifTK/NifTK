@@ -14,49 +14,30 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(MEDIT_LIBS  
-	vtkGraphics
+set(MEDIT_LIBS
+  vtkGraphics
   vtkIO
- 	vtkCommon
+  vtkCommon
 )
 
 if(VTK_FOUND)
   include(${VTK_USE_FILE})
-else(VTK_FOUND)  
+else(VTK_FOUND)
   message(FATAL_ERROR
-    "This program requires the VTK library, and will not be compiled.")  
-endif(VTK_FOUND)	
-
-if(ITK_FOUND)
-
-  message("Found ITK")
-
-  # The variable should be set to 1 before including ITK_USE_FILE,
-  # so that the ITK_IO_FACTORY_REGISTER_MANAGER preprocessor define
-  # is not added. The factory register manager should be enabled only
-  # in the MITK core library.
-  if(DEFINED ITK_NO_IO_FACTORY_REGISTER_MANAGER)
-    set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 1)
-  endif()
-
-  include(${ITK_USE_FILE})
-
-else(ITK_FOUND)
-  message(FATAL_ERROR
-    "ITK not found. Please set ITK_DIR.")
-endif(ITK_FOUND)
+    "This program requires the VTK library, and will not be compiled.")
+endif(VTK_FOUND)
 
 if(CGAL_FOUND)
  include(${CGAL_USE_FILE})
-else(CGAL_FOUND)  
+else(CGAL_FOUND)
  message(FATAL_ERROR
-   "This program requires the CGAL library, and will not be compiled.")  
-endif(CGAL_FOUND)	
+   "This program requires the CGAL library, and will not be compiled.")
+endif(CGAL_FOUND)
 
 #### Build CGAL meshing module
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG};-frounding-math;-fPIC")
-else ()  
+else ()
   if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(NIFTK_CGAL_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE};-frounding-math;-fPIC")
   else ()
@@ -64,7 +45,7 @@ else ()
   endif ()
 endif ()
 
-if (WIN32)  
+if (WIN32)
   add_library(niftkMeshingLib
     niftkCGALMesherBackEnd.cxx
     niftkMeditMeshParser.cxx
@@ -80,11 +61,11 @@ if (WIN32)
     niftkcommon
     )
 
-else (WIN32)  
+else (WIN32)
   add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o
-    COMMAND ${CMAKE_CXX_COMPILER} 
-    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/CGALMesherBackEnd.cxx 
+    COMMAND ${CMAKE_CXX_COMPILER}
+    ARGS -c -o ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CGALMesherBackEnd.o ${CMAKE_CURRENT_SOURCE_DIR}/CGALMesherBackEnd.cxx
     ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../Exceptions -I${CGAL_INCLUDE_DIRS}
     ARGS `echo ${NIFTK_CGAL_CXX_FLAGS}`
     SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/CGALMesherBackEnd.cxx
@@ -102,12 +83,12 @@ else (WIN32)
     vtkHybrid
     niftkITK
     niftkVTK
-    niftkcommon    
+    niftkcommon
     )
 endif (WIN32)
 
 install(TARGETS niftkMeshingLib
-  LIBRARY DESTINATION ${NIFTK_INSTALL_LIB_DIR} 
-  ARCHIVE DESTINATION ${NIFTK_INSTALL_LIB_DIR} 
-  COMPONENT libraries 
+  LIBRARY DESTINATION ${NIFTK_INSTALL_LIB_DIR}
+  ARCHIVE DESTINATION ${NIFTK_INSTALL_LIB_DIR}
+  COMPONENT libraries
 )

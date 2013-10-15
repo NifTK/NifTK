@@ -16,10 +16,13 @@
 # Setup variables describing the library requirements.
 ###############################################################
 
-set(NIFTK_APPLICATION_LINK_LIBRARIES 
-  niftkcommon 
+set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
+include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
+
+set(NIFTK_APPLICATION_LINK_LIBRARIES
+  niftkcommon
   niftkITK
-  ${NIFTK_ITK_LIB}
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -89,7 +92,7 @@ if(SlicerExecutionModel_FOUND)
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
 
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
-  
+
   foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME ${APP}
@@ -100,7 +103,7 @@ if(SlicerExecutionModel_FOUND)
   endforeach()
 
   if(VTK_FOUND)
-  
+
     #-------------------------------------------------------------
     # Add new programs to this list.
     #-------------------------------------------------------------
@@ -113,9 +116,9 @@ if(SlicerExecutionModel_FOUND)
     list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
 
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
-    
+
     foreach(APP ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK})
-      NIFTK_CREATE_COMMAND_LINE_APPLICATION(      
+      NIFTK_CREATE_COMMAND_LINE_APPLICATION(
         NAME ${APP}
         BUILD_SLICER
         INSTALL_SCRIPT
@@ -141,18 +144,18 @@ if(SlicerExecutionModel_FOUND)
           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         endif(OPENMP_FOUND)
       endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-      
+
       add_definitions(-DUSE_NIFTYREG)
       link_directories(${NIFTYREG_LIBRARY_DIR})
       include_directories(${NIFTYREG_INCLUDE_DIR})
-      
+
       set(NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES
-        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES} 
+        ${NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES}
         niftkITK
         niftkVTKNiftyReg
         ${NIFTYREG_LIBRARIES}
       )
-      
+
       foreach(APP ${VTK_APPS_DEPENDING_ON_SLICER_AND_NIFTYREG_LINK_LIBRARIES})
         NIFTK_CREATE_COMMAND_LINE_APPLICATION(
           NAME ${APP}
@@ -161,14 +164,14 @@ if(SlicerExecutionModel_FOUND)
           TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_NIFTYREG_LINK_LIBRARIES}
         )
       endforeach()
-    endif(NIFTYREG_FOUND)  
-    
-  endif(VTK_FOUND)  
-  
+    endif(NIFTYREG_FOUND)
+
+  endif(VTK_FOUND)
+
 endif()
 
 ###############################################################
-# The following applications don't use TCLAP but they do 
+# The following applications don't use TCLAP but they do
 # produce the SlicerExecutionModel xml code, and hence need
 # just the script generating.
 ###############################################################
@@ -298,13 +301,13 @@ foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
     TARGET_LIBRARIES ${NIFTK_APPLICATION_LINK_LIBRARIES}
   )
 endforeach()
-  
+
 ##############################################################
 # Other command line applications, that require VTK.
 ##############################################################
 
 if(VTK_FOUND)
-  
+
   ##############################################################
   # Add new programs to this list.
   ##############################################################
@@ -329,26 +332,26 @@ if(VTK_FOUND)
     )
   endforeach()
 
-  if (BUILD_MESHING) 
+  if (BUILD_MESHING)
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME niftkMeshFromLabels
       BUILD_CLI
       TARGET_LIBRARIES ${NIFTK_MESHING_APPLICATION_LIBRARIES}
     )
-  endif (BUILD_MESHING) 
+  endif (BUILD_MESHING)
 
 endif()
 
 ##############################################################
 # Other command line applications, that require VTK and QT.
 ##############################################################
-  
+
 if(VTK_FOUND)
   if(QT_FOUND)
 
     ##############################################################
     # Add new programs to this list.
-    ##############################################################      
+    ##############################################################
     set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES
       niftkCreateBreastMesh
     )
@@ -361,14 +364,14 @@ if(VTK_FOUND)
         TARGET_LIBRARIES ${NIFTK_APPLICATION_WITH_VTK_AND_QT_LINK_LIBRARIES}
       )
     endforeach()
-  
+
   endif(QT_FOUND)
 endif(VTK_FOUND)
-  
+
 ##############################################################
 # Other command line applications, that require CUDA.
 ##############################################################
-  
+
 if(CUDA_FOUND)
 
   #include(${CMAKE_SOURCE_DIR}/CMake/cuda/FindCUDA.cmake)
@@ -379,13 +382,13 @@ if(CUDA_FOUND)
   #set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
   #  niftkCUDAInfo
   #)
-      
+
   #foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES})
   #  add_executable(${APP} ${APP}.cxx )
   #  target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
   #  install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   #endforeach()
-  
+
 endif(CUDA_FOUND)
 
 ##############################################################
@@ -397,4 +400,3 @@ if(NOT BUILD_GUI)
     NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_all_command_line_apps})
   endif()
 endif()
-

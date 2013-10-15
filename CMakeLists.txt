@@ -720,27 +720,6 @@ endif(Boost_FOUND)
 
 
 ######################################################################
-# Find ITK.
-######################################################################
-find_package(ITK REQUIRED)
-if(ITK_FOUND)
-
-  message("Found ITK")
-
-  # The variable should be set to 1 before including ITK_USE_FILE,
-  # so that the ITK_IO_FACTORY_REGISTER_MANAGER preprocessor define
-  # is not added. The factory register manager should be enabled only
-  # in the MITK core library.
-  if(DEFINED ITK_NO_IO_FACTORY_REGISTER_MANAGER)
-    set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 1)
-  endif()
-
-  include(${ITK_USE_FILE})
-
-endif(ITK_FOUND)
-
-
-######################################################################
 # Find VTK.
 ######################################################################
 find_package(VTK REQUIRED)
@@ -1091,7 +1070,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICEN
 # These represent the libraries that the apps, libraries and unit tests actually link against
 #############################################################################################
 
-set(NIFTK_ITK_LIB ${ITK_LIBRARIES} )
 set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering vtkHybrid )
 set(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 

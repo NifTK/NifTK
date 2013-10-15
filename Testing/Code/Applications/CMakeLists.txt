@@ -19,4 +19,3 @@ add_test(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TE
 
 # Additional image checks can be added to niftkTestCompareImage to make it more useful.
 # Additional ctest tests should be added below, eventually covering all the applications in NifTK/Code/Applications.
-                                                                  

@@ -12,12 +12,12 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES 
-  niftkITK 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
+  niftkITK
+  ${ITK_LIBRARIES}
   )
 
-# This is the name of the actual executable that gets run.  
+# This is the name of the actual executable that gets run.
 set(MIDAS_IRREG_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASIrregularVolumeEditorUnitTests)
 set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
@@ -41,16 +41,16 @@ add_test(MIDAS-Irreg-RegionGrowingImageFilter ${MIDAS_IRREG_INTEGRATION_TESTS} i
 #################################################################################
 # Build instructions.
 #################################################################################
-set( MIDASIrregUnitTests_SRCS
-itkMIDASImageUpdateClearRegionProcessorTest.cxx
-itkMIDASImageUpdateCopyRegionProcessorTest.cxx
-itkMIDASImageUpdatePixelWiseSingleValueProcessorTest.cxx
-itkMIDASRegionOfInterestCalculatorTest.cxx
-itkMIDASRegionOfInterestCalculatorBySlicesTest.cxx
-itkMIDASRetainMarksNoThresholdingTest.cxx
-itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest.cxx
-itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
-itkMIDASRegionGrowingImageFilterTest2.cxx
+set(MIDASIrregUnitTests_SRCS
+  itkMIDASImageUpdateClearRegionProcessorTest.cxx
+  itkMIDASImageUpdateCopyRegionProcessorTest.cxx
+  itkMIDASImageUpdatePixelWiseSingleValueProcessorTest.cxx
+  itkMIDASRegionOfInterestCalculatorTest.cxx
+  itkMIDASRegionOfInterestCalculatorBySlicesTest.cxx
+  itkMIDASRetainMarksNoThresholdingTest.cxx
+  itkMIDASRegionOfInterestCalculatorSplitExistingRegionTest.cxx
+  itkMIDASRegionOfInterestCalculatorMinimumRegionTest.cxx
+  itkMIDASRegionGrowingImageFilterTest2.cxx
 )
 
 add_executable(itkMIDASIrregularVolumeEditorUnitTests itkMIDASIrregularVolumeEditorUnitTests.cxx ${MIDASIrregUnitTests_SRCS})

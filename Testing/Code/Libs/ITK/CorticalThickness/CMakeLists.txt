@@ -12,14 +12,14 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES 
-  niftkcommon 
-  niftkITK 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_TEST_EXT_ITK_CORTICAL_THICKNESS_LINK_LIBRARIES
+  niftkcommon
+  niftkITK
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
 
-# This is the name of the actual executable that gets run.  
+# This is the name of the actual executable that gets run.
 set(CORTICAL_THICKNESS_UNIT_TESTS ${CXX_TEST_PATH}/CorticalThicknessUnitTests)
 set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
@@ -52,7 +52,7 @@ add_test(CTE-Stream-Ordered-2 ${CORTICAL_THICKNESS_UNIT_TESTS} StreamlinesFilter
 add_test(CTE-Stream-Ordered-3 ${CORTICAL_THICKNESS_UNIT_TESTS} StreamlinesFilterTest ${INPUT_DATA}/cte_330_x_330_wiggly.png ${TEMPORARY_OUTPUT}/CTE-Stream-Ordered-3_out.png  255 127 0 0 1 10000 0.0000001 ON -1     -1 -1       165 227  30.3868   0.01)
 add_test(CTE-Correct-PVMap ${CORTICAL_THICKNESS_UNIT_TESTS} CorrectGMUsingPVMapTest)
 add_test(CTE-Correct-Neighbourhood ${CORTICAL_THICKNESS_UNIT_TESTS} CorrectGMUsingNeighbourhoodTest)
-add_test(CTE-Lagrange-Init-1 ${CORTICAL_THICKNESS_UNIT_TESTS} LagrangianInitializedStreamlinesFilterTest ${TEMPORARY_OUTPUT}/CTE-Lagrange-Init-1.png ) 
+add_test(CTE-Lagrange-Init-1 ${CORTICAL_THICKNESS_UNIT_TESTS} LagrangianInitializedStreamlinesFilterTest ${TEMPORARY_OUTPUT}/CTE-Lagrange-Init-1.png )
 add_test(CTE-Bourgeat-1 ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/CTE-Bourgeat-1_out.png ${TEMPORARY_OUTPUT}/CTE-Bourgeat-1_out.png Bourgeat2008Test ${INPUT_DATA}/cte_330_x_330_wiggly.png ${INPUT_DATA}/cte_330_x_330_wiggly_pv.png ${TEMPORARY_OUTPUT}/CTE-Bourgeat-1_out.png 255 127 0 200 0.000001 200 0.0000000001 0.9 0.5 0.001 2.0 153 242 59.528 0.001)
 add_test(CTE-RungeKutta-1 ${CORTICAL_THICKNESS_UNIT_TESTS} FourthOrderRungeKuttaVelocityFieldTest)
 add_test(CTE-RungeKutta-2 ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/CTE-RungeKutta-2-out.nii ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii FourthOrderRungeKuttaVelocityFieldThicknessTest ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii)
@@ -63,19 +63,19 @@ add_test(CTE-Smooth ${CORTICAL_THICKNESS_UNIT_TESTS} GaussianSmoothVectorFieldFi
 #################################################################################
 # Build instructions.
 #################################################################################
-set( CorticalThicknessUnitTests_SRCS
-LaplacianSolverImageFilterTest.cxx
-ScalarImageToNormalizedGradientVectorImageFilterTest.cxx
-StreamlinesFilterTest.cxx
-CorrectGMUsingPVMapTest.cxx
-CorrectGMUsingNeighbourhoodTest.cxx
-LagrangianInitializedStreamlinesFilterTest.cxx
-Bourgeat2008Test.cxx
-FourthOrderRungeKuttaVelocityFieldTest.cxx
-FourthOrderRungeKuttaVelocityFieldThicknessTest.cxx
-AddUpdateToTimeVaryingVelocityFilterTest.cxx
-GaussianSmoothVectorFieldFilterTest.cxx
-RegistrationBasedCorticalThicknessFilterTest.cxx
+set(CorticalThicknessUnitTests_SRCS
+  LaplacianSolverImageFilterTest.cxx
+  ScalarImageToNormalizedGradientVectorImageFilterTest.cxx
+  StreamlinesFilterTest.cxx
+  CorrectGMUsingPVMapTest.cxx
+  CorrectGMUsingNeighbourhoodTest.cxx
+  LagrangianInitializedStreamlinesFilterTest.cxx
+  Bourgeat2008Test.cxx
+  FourthOrderRungeKuttaVelocityFieldTest.cxx
+  FourthOrderRungeKuttaVelocityFieldThicknessTest.cxx
+  AddUpdateToTimeVaryingVelocityFilterTest.cxx
+  GaussianSmoothVectorFieldFilterTest.cxx
+  RegistrationBasedCorticalThicknessFilterTest.cxx
 )
 
 add_executable(CorticalThicknessUnitTests CorticalThicknessUnitTests.cxx ${CorticalThicknessUnitTests_SRCS})

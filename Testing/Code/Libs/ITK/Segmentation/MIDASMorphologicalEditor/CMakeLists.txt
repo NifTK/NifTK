@@ -12,12 +12,12 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES 
-  niftkITK 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_TEST_EXT_ITK_SEGMENTATION_LINK_LIBRARIES
+  niftkITK
+  ${ITK_LIBRARIES}
   )
 
-# This is the name of the actual executable that gets run.  
+# This is the name of the actual executable that gets run.
 set(MIDAS_MORPH_INTEGRATION_TESTS ${CXX_TEST_PATH}/itkMIDASMorphologicalEditorUnitTests)
 set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
@@ -54,17 +54,17 @@ add_test(MIDAS-Morph-PipeRethresh6 ${MIDAS_MORPH_INTEGRATION_TESTS} --compare ${
 #################################################################################
 # Build instructions.
 #################################################################################
-set( MIDASMorphUnitTests_SRCS
-itkMIDASLimitByRegionFunctionTest.cxx
-itkMIDASMeanIntensityWithinARegionFilterTest.cxx
-itkMIDASConditionalErosionFilterTest.cxx
-itkMIDASConditionalDilationFilterTest.cxx
-itkMIDASDownSamplingFilterTest.cxx
-itkMIDASUpSamplingFilterTest.cxx
-itkMIDASRethresholdingFilterTest.cxx
-itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest.cxx
-itkMIDASMaskByRegionFilterTest.cxx
-itkMIDASPipelineTest.cxx 
+set(MIDASMorphUnitTests_SRCS
+  itkMIDASLimitByRegionFunctionTest.cxx
+  itkMIDASMeanIntensityWithinARegionFilterTest.cxx
+  itkMIDASConditionalErosionFilterTest.cxx
+  itkMIDASConditionalDilationFilterTest.cxx
+  itkMIDASDownSamplingFilterTest.cxx
+  itkMIDASUpSamplingFilterTest.cxx
+  itkMIDASRethresholdingFilterTest.cxx
+  itkMIDASMorphologicalSegmentorLargestConnectedComponentFilterTest.cxx
+  itkMIDASMaskByRegionFilterTest.cxx
+  itkMIDASPipelineTest.cxx
 )
 
 add_executable(itkMIDASMorphologicalEditorUnitTests itkMIDASMorphologicalEditorUnitTests.cxx ${MIDASMorphUnitTests_SRCS})
