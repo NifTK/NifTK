@@ -45,6 +45,20 @@
       <label>Overwrite output image if it exists?</label>
     </boolean>
 
+    <boolean>
+      <name>flgRescaleIntensitiesToMaxRange</name>
+      <longflag>rescale</longflag>
+      <description>Rescale the image intensities to the maximum allowable range.</description>
+      <label>Rescale intensities to max range</label>
+    </boolean>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Verbose</label>
+    </boolean>
+
   </parameters>
 
 </executable>

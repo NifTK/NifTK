@@ -327,6 +327,7 @@ int DoMain(arguments args)
 
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
+    itksys_ios::ostringstream value;
 
     typedef typename itk::RescaleIntensityImageFilter<InputImageType, 
 						      InputImageType> RescaleFilterType;
@@ -348,6 +349,33 @@ int DoMain(arguments args)
     image = rescaleFilter->GetOutput();
     image->DisconnectPipeline();
 
+    // Set the pixel intensity relationship sign to linear
+    value.str("");
+    value << "LIN";
+    itk::EncapsulateMetaData<std::string>(dictionary,"0028|1040", value.str());
+
+    // Set the pixel intensity relationship sign to one
+    value.str("");
+    value << 1;
+    itk::EncapsulateMetaData<std::string>(dictionary,"0028|1041", value.str());
+
+    // Set the new window centre tag value
+    value.str("");
+    value << itk::NumericTraits<InputPixelType>::max() / 2;
+    itk::EncapsulateMetaData<std::string>(dictionary,"0028|1050", value.str());
+
+    // Set the new window width tag value
+    value.str("");
+    value << itk::NumericTraits<InputPixelType>::max();
+    itk::EncapsulateMetaData<std::string>(dictionary,"0028|1051", value.str());
+
+    // Set the rescale intercept and slope to zero and one 
+    value.str("");
+    value << 0;
+    itk::EncapsulateMetaData<std::string>(dictionary, "0028|1052", value.str());
+    value.str("");
+    value << 1;
+    itk::EncapsulateMetaData<std::string>(dictionary, "0028|1053", value.str());
   }
   else {
     image = reader->GetOutput();
@@ -435,7 +463,7 @@ int DoMain(arguments args)
 		<< ") is: " << tagPhotoInterpValue << std::endl;
 
       std::size_t found = tagPhotoInterpValue.find( strMonochrome1 );
-      if (found!=std::string::npos)
+      if (found != std::string::npos)
       {
 	std::cout << "Image is MONOCHROME1 - inverting" << std::endl;
 
@@ -450,6 +478,7 @@ int DoMain(arguments args)
 	image->DisconnectPipeline();
 
 	SetTag( dictionary, "0028|0004", "MONOCHROME2" );
+        SetTag( dictionary, "2050|0020", "IDENITY" ); // Presentation LUT Shape
       }
     }
   }
@@ -648,12 +677,18 @@ int DoMain(arguments args)
   }
   else
   {
+    image->DisconnectPipeline();
+    image->SetMetaDataDictionary( dictionary );
+  
+    if ( args.flgVerbose )
+    {
+      PrintDictionary( dictionary );
+    }
 
     typename WriterType::Pointer writer = WriterType::New();
 
     writer->SetFileName( fileOutputFullPath );
     writer->SetInput( image );
-    writer->UseInputMetaDataDictionaryOff();
     writer->SetImageIO( gdcmImageIO );
 
     try
