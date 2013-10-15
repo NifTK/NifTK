@@ -62,7 +62,7 @@ public:
   /**
    * \brief Return the tracking matrix multiplied by the camera to tracker matrix for a given video frame number
    */
-  cv::Mat GetCameraTrackingMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 , std::vector <double> * Perturbation = NULL  );
+  cv::Mat GetCameraTrackingMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 , std::vector <double> * Perturbation = NULL , int ReferenceIndex = -1 );
 
   /**
    * \brief returns state of m_Ready

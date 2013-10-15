@@ -371,8 +371,8 @@ endif(VTK_FOUND)
 ##############################################################
 # Other command line applications, that require CUDA.
 ##############################################################
-
-if(CUDA_FOUND)
+  
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
 
   #include(${CMAKE_SOURCE_DIR}/CMake/cuda/FindCUDA.cmake)
 
@@ -388,8 +388,8 @@ if(CUDA_FOUND)
   #  target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
   #  install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
   #endforeach()
-
-endif(CUDA_FOUND)
+  
+endif()
 
 ##############################################################
 # If no GUI, we still need to make sure we have all the
