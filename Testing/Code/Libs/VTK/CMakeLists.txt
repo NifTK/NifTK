@@ -12,8 +12,8 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES
+  ${ITK_LIBRARIES}
   vtkIO
   vtkImaging
   niftkVTK
@@ -28,7 +28,7 @@ set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 #################################################################################
 # Build instructions for Unit Tests.
 #################################################################################
-set( VTKUnitTests_SRCS
+set(VTKUnitTests_SRCS
   niftkVTKLoadSaveMatrix4x4Test.cxx
 )
 
@@ -42,10 +42,10 @@ add_test(VTK-LoadSaveMatrix4x4Test ${VTK_UNIT_TESTS} niftkVTKLoadSaveMatrix4x4Te
 #################################################################################
 # Build instructions for Integration Tests.
 #################################################################################
-set( VTKIntegrationTests_SRCS
-     niftkVTKIterativeClosestPointTest.cxx
-     niftkVTKTextFileReaderTests.cxx
-     niftkVTKDistanceToSurfaceTests.cxx
+set(VTKIntegrationTests_SRCS
+  niftkVTKIterativeClosestPointTest.cxx
+  niftkVTKTextFileReaderTests.cxx
+  niftkVTKDistanceToSurfaceTests.cxx
 )
 
 add_executable(niftkVTKIntegrationTests niftkVTKIntegrationTests.cxx ${VTKIntegrationTests_SRCS})
@@ -62,5 +62,3 @@ if(BUILD_SLS_TESTING)
   add_test(SLS-VTK-ICP-Perturb-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk perturb)
   add_test(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointRepeatTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk)
 endif()
-
-

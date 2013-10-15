@@ -34,7 +34,7 @@ if(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 target_link_libraries(niftkcommon
-  ${NIFTK_ITK_LIB}
+  ${ITK_LIBRARIES}
   vtkCommon
   vtkIO
   ${Boost_LIBRARIES}

@@ -12,14 +12,14 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES 
-  niftkcommon 
-  niftkITK 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES
+  niftkcommon
+  niftkITK
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
 
-# These are the names of the actual executable that gets run.  
+# These are the names of the actual executable that gets run.
 set(REGISTRATION_TOOLBOX_INTEGRATION_TESTS ${CXX_TEST_PATH}/RegistrationToolboxUnitTests)
 
 # This is where we should dump any output files.
@@ -37,7 +37,7 @@ set(TEMP_DIR ${NIFTK_BINARY_DIR}/Testing/Temporary )
 add_test(Switch-Affine-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SwitchableAffineTransformTest)
 add_test(Switch-Affine-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} SwitchableAffine2DTransformTest)
 
-# 2D coordinate tests. The columns are...............................................           cx cy rz tx  ty sx  sy  ipx  ipy exx exy 
+# 2D coordinate tests. The columns are...............................................           cx cy rz tx  ty sx  sy  ipx  ipy exx exy
 add_test(Affine2D-Coords-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  0  0  0  0   0  1   1   0    0   0   0   )
 add_test(Affine2D-Coords-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  0  0  90 0   0  1   1   1    0   0   -1  )
 add_test(Affine2D-Coords-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  0  0  0  1   0  1   1   1    2   2   2   )
@@ -46,7 +46,7 @@ add_test(Affine2D-Coords-5 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine
 add_test(Affine2D-Coords-6 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  0  0  0  0  -1  1   1   4    5   4   4   )
 add_test(Affine2D-Coords-7 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  0  0  0  0   0  1.1 1.1 1    2   1.1 2.2 )
 
-# If you had an image 200, 150 with 1.5, 1.4 mm voxels, and the origin in ITK terms (top left of image), 
+# If you had an image 200, 150 with 1.5, 1.4 mm voxels, and the origin in ITK terms (top left of image),
 # is (0,0,0) and you wanted to rotate about the centre, the centre is: 149.25, 104.3
 add_test(Affine2D-Coords-7 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  149.25 104.3  0   0  0  1  1  149.25 104.3 149.25 104.3)
 add_test(Affine2D-Coords-8 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine2DTransformTest  149.25 104.3  90  0  0  1  1  150.25 104.3 149.25 103.3)
@@ -67,7 +67,7 @@ add_test(Affine3D-Coords-11 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffin
 add_test(Affine3D-Coords-12 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine3DTransformTest 0  0  0  0   0  0  0  0  0  1    1.1  1   1    2   3   1   2.2 3   )
 add_test(Affine3D-Coords-13 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine3DTransformTest 0  0  0  0   0  0  0  0  0  1    1    1.1 1    2   3   1   2   3.3 )
 
-# If you had an image 200, 150, 100 with 1.5, 1.4, 1.3 mm voxels, and the origin in ITK terms (top left of image), 
+# If you had an image 200, 150, 100 with 1.5, 1.4, 1.3 mm voxels, and the origin in ITK terms (top left of image),
 # is (0,0,0) and you wanted to rotate about the centre, the centre is: 149.25, 104.3, 64.35
 add_test(Affine3D-Coords-14 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine3DTransformTest 149.25 104.3  64.35 0   0  0  0  0  0  1  1  1  150.25 104.3 64.35 150.25 104.3 64.35   )
 add_test(Affine3D-Coords-15 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine3DTransformTest 149.25 104.3  64.35 90  0  0  0  0  0  1  1  1  150.25 104.3 64.35 150.25 104.3 64.35   )
@@ -79,7 +79,7 @@ add_test(Affine2DJacobianTest ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAff
 # One long script to test 3D jacobian. Not really sure how to test it, so this test needs expanding.
 add_test(Affine3DJacobianTest ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} EulerAffine3DJacobianTest)
 
-# The columns are............................................................. cx cy cz rx  ry rz tx ty tz sx   sy   sz 
+# The columns are............................................................. cx cy cz rx  ry rz tx ty tz sx   sy   sz
 add_test(MatrixLinearCombinationFunctionsTests-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MatrixLinearCombinationFunctionsTests  0  0  0  30   0  0  1  1  1  1   1  1)
 add_test(MatrixLinearCombinationFunctionsTests-2 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MatrixLinearCombinationFunctionsTests  0  0  0  0   60  0  1  1  1  1   1  1)
 add_test(MatrixLinearCombinationFunctionsTests-3 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} MatrixLinearCombinationFunctionsTests  0  0  0  0   0  90  1  1  1  1   1  1)
@@ -191,7 +191,7 @@ add_test(Metric-CR-5 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} ImageMetricTest2D
 
 #################################################################################
 # Pure Optimizer tests. These are really so we can make sure we understand what the
-# optimizers actually do, and whether the parameters work. 
+# optimizers actually do, and whether the parameters work.
 # Also, it works as a regression test.
 #################################################################################
 
@@ -261,7 +261,7 @@ add_test(RegFilter1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} ImageRegistrationF
 #################################################################################
 # Deformable stuff.
 #################################################################################
-#                                                                                                                                                                         scaleByGradient    scaleComponentWise constraintGradient parzenWindows bins weighting                 
+#                                                                                                                                                                         scaleByGradient    scaleComponentWise constraintGradient parzenWindows bins weighting
 add_test(FFD-Reg-Circle-01 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} FFDRegisterTest ${INPUT_DATA}/fluid_fixed.png ${INPUT_DATA}/fluid_moving.png             15 15 10 1 FALSE              FALSE              FALSE              FALSE         64   0.000001  ${TEMP_DIR}/ffd_register_op_1.png ${TEMP_DIR}/ffd_register_grid_1.png ${TEMP_DIR}/ffd_register_after_diff_1.png ${TEMP_DIR}/ffd_register_before_diff_1.png ${TEMP_DIR}/ffd_register_op_1.txt ${BASELINE}/ffd_register_op_1.txt)
 #add_test(FFD-Reg-Circle-02 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} FFDRegisterTest ${INPUT_DATA}/fluid_fixed.png ${INPUT_DATA}/fluid_moving.png             10 10 1  2 FALSE              FALSE              FALSE              FALSE         64   0.000001  ${TEMP_DIR}/ffd_register_op_2.png ${TEMP_DIR}/ffd_register_grid_2.png ${TEMP_DIR}/ffd_register_after_diff_2.png ${TEMP_DIR}/ffd_register_before_diff_2.png ${TEMP_DIR}/ffd_register_op_2.txt ${BASELINE}/ffd_register_op_2.txt)
 #add_test(FFD-Reg-Circle-03 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS} FFDRegisterTest ${INPUT_DATA}/fluid_fixed.png ${INPUT_DATA}/fluid_moving.png              5  5 1  3 FALSE              FALSE              FALSE              FALSE         64   0.000001  ${TEMP_DIR}/ffd_register_op_3.png ${TEMP_DIR}/ffd_register_grid_3.png ${TEMP_DIR}/ffd_register_after_diff_3.png ${TEMP_DIR}/ffd_register_before_diff_3.png ${TEMP_DIR}/ffd_register_op_3.txt ${BASELINE}/ffd_register_op_3.txt)
@@ -284,37 +284,36 @@ add_test(JacTest-1 ${REGISTRATION_TOOLBOX_INTEGRATION_TESTS}  ForwardDifferenceD
 #################################################################################
 # Build instructions.
 #################################################################################
-set( RegistrationToolboxUnitTests_SRCS
-SwitchableAffineTransformTest.cxx
-SwitchableAffine2DTransformTest.cxx
-EulerAffine2DJacobianTest.cxx
-EulerAffine2DTransformTest.cxx
-EulerAffine3DTransformTest.cxx
-EulerAffine3DJacobianTest.cxx
-ImageMetricTest2D.cxx
-SingleRes2DMeanSquaresTest.cxx
-SingleRes2DCorrelationMaskTest.cxx
-SingleRes2DMultiStageMethodTest.cxx
-MultiRes2DMeanSquaresTest.cxx
-ImageRegistrationFilterTest.cxx
-SquaredUCLSimplexTest.cxx
-SquaredUCLRegularStepOptimizerTest.cxx
-SquaredUCLGradientDescentOptimizerTest.cxx
-BSplineTransformTest.cxx
-NMILocalHistogramDerivativeForceFilterTest.cxx
-itkHistogramRegistrationForceGeneratorTest.cxx
-BSplineSmoothTest.cxx
-BSplineInterpolateTest.cxx
-FFDRegisterTest.cxx
-NondirectionalDerivativeOperatorTest.cxx
-HistogramParzenWindowDerivativeForceFilterTest.cxx
-SingleRes2DBlockMatchingTest.cxx
-MatrixLinearCombinationFunctionsTests.cxx
-SSDRegistrationForceFilterTest.cxx
-CrossCorrelationDerivativeForceFilterTest.cxx
-ForwardDifferenceDisplacementFieldJacobianDeterminantFilterTest.cxx
+set(RegistrationToolboxUnitTests_SRCS
+  SwitchableAffineTransformTest.cxx
+  SwitchableAffine2DTransformTest.cxx
+  EulerAffine2DJacobianTest.cxx
+  EulerAffine2DTransformTest.cxx
+  EulerAffine3DTransformTest.cxx
+  EulerAffine3DJacobianTest.cxx
+  ImageMetricTest2D.cxx
+  SingleRes2DMeanSquaresTest.cxx
+  SingleRes2DCorrelationMaskTest.cxx
+  SingleRes2DMultiStageMethodTest.cxx
+  MultiRes2DMeanSquaresTest.cxx
+  ImageRegistrationFilterTest.cxx
+  SquaredUCLSimplexTest.cxx
+  SquaredUCLRegularStepOptimizerTest.cxx
+  SquaredUCLGradientDescentOptimizerTest.cxx
+  BSplineTransformTest.cxx
+  NMILocalHistogramDerivativeForceFilterTest.cxx
+  itkHistogramRegistrationForceGeneratorTest.cxx
+  BSplineSmoothTest.cxx
+  BSplineInterpolateTest.cxx
+  FFDRegisterTest.cxx
+  NondirectionalDerivativeOperatorTest.cxx
+  HistogramParzenWindowDerivativeForceFilterTest.cxx
+  SingleRes2DBlockMatchingTest.cxx
+  MatrixLinearCombinationFunctionsTests.cxx
+  SSDRegistrationForceFilterTest.cxx
+  CrossCorrelationDerivativeForceFilterTest.cxx
+  ForwardDifferenceDisplacementFieldJacobianDeterminantFilterTest.cxx
 )
 
 add_executable(RegistrationToolboxUnitTests RegistrationToolboxUnitTests.cxx ${RegistrationToolboxUnitTests_SRCS})
 target_link_libraries(RegistrationToolboxUnitTests ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES} )
-

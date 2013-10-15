@@ -12,12 +12,12 @@
 #
 #============================================================================*/
 
-set(NIFTK_MESHING_TEST_LINK_LIBRARIES 
+set(NIFTK_MESHING_TEST_LINK_LIBRARIES
   niftkMeshingLib
   niftkITK
   niftkVTK
-  niftkcommon 
-  ${NIFTK_ITK_LIB}
+  niftkcommon
+  ${ITK_LIBRARIES}
   )
 
 set(MESHING_UNITTEST_SRCS

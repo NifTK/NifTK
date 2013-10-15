@@ -12,12 +12,12 @@
 #
 #============================================================================*/
 
-set(NIFTK_COMMON_TEST_LINK_LIBRARIES 
-  niftkcommon 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_COMMON_TEST_LINK_LIBRARIES
+  niftkcommon
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
-  
+
 #--------------------------------------------------------------------------------------
 # Dont forget its:  add_test(<test name> <exe name> <test name> <argument1> <argument2>
 #--------------------------------------------------------------------------------------
@@ -29,21 +29,21 @@ add_test(Conv-Utils-05 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkConve
 add_test(Conv-Utils-06 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkConversionUtilsTest 6)
 add_test(Deliberate-Memory-Leak ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkDeliberateMemoryLeakTest )
 
-set( CommonUnitTests_SRCS
-niftkConversionUtilsTest.cxx
-niftkDeliberateMemoryLeakTest.cxx
+set(CommonUnitTests_SRCS
+  niftkConversionUtilsTest.cxx
+  niftkDeliberateMemoryLeakTest.cxx
 )
 
 add_executable(niftkCommonUnitTests niftkCommonUnitTests.cxx ${CommonUnitTests_SRCS})
 target_link_libraries(niftkCommonUnitTests ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
 
-set(NIFTK_FILE_TEST_LINK_LIBRARIES 
-  niftkcommon 
-  ${NIFTK_ITK_LIB}
+set(NIFTK_FILE_TEST_LINK_LIBRARIES
+  niftkcommon
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
 
-  
+
 #--------------------------------------------------------------------------------------
 # Dont forget its:  add_test(<test name> <exe name> <test name> <argument1> <argument2>
 #--------------------------------------------------------------------------------------
@@ -55,8 +55,8 @@ add_test(File-Helper-5 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHel
 add_test(File-Helper-6 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 6)
 add_test(File-Helper-7 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 7)
 
-set( FileUnitTests_SRCS
-niftkFileHelperTest.cxx
+set(FileUnitTests_SRCS
+  niftkFileHelperTest.cxx
 )
 
 add_executable(niftkFileUnitTests niftkFileUnitTests.cxx ${FileUnitTests_SRCS})

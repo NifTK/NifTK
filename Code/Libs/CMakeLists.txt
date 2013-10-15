@@ -14,7 +14,9 @@
 
 add_subdirectory(Common)
 
+find_package(ITK)
 if(ITK_FOUND)
+  include("${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake")
   add_subdirectory(ITK)
 endif(ITK_FOUND)
 
