@@ -31,6 +31,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoOut("")
 , m_Directory("")
 , m_TrackerIndex(0)
+, m_ReferenceIndex(-1)
 , m_DrawLines(false)
 , m_InitOK(false)
 , m_ProjectOK(false)
@@ -176,7 +177,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex, perturbation).inv();
+    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
     
     std::vector < cv::Point3d > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
@@ -390,7 +391,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
   }
 
-  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex, perturbation) * points;
+  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex, perturbation, m_ReferenceIndex) * points;
 
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
   {

@@ -482,20 +482,53 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 }
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation )
+cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation, int ReferenceIndex )
 {
-   cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
+   cv::Mat trackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
    if ( Perturbation == NULL ) 
    {
-     return TrackerMatrix * m_CameraToTracker[TrackerIndex];
+     if ( ReferenceIndex == -1 ) 
+     {
+       return trackerMatrix * m_CameraToTracker[TrackerIndex];
+     }
+     else
+     {
+       long long  refTimingError;
+       cv::Mat referenceMatrix = GetTrackerMatrix ( FrameNumber, &refTimingError, ReferenceIndex );
+       cv::Mat toReference = referenceMatrix * m_CameraToTracker[ReferenceIndex];
+       if ( TimingError != NULL && refTimingError > *TimingError )
+       {  
+         *TimingError = refTimingError;
+       }
+       return (toReference.inv() * (trackerMatrix * m_CameraToTracker[TrackerIndex]));
+     }
+
    }
    else
    {
      assert ( Perturbation->size() == 6 );
-     return TrackerMatrix * 
-       mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
+     if ( ReferenceIndex == -1 )
+     {
+        return trackerMatrix * 
+          mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
             Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
             Perturbation->at(3), Perturbation->at(4), Perturbation->at(5));
+     }
+     else
+     {
+       long long  refTimingError;
+       cv::Mat referenceMatrix = GetTrackerMatrix ( FrameNumber, &refTimingError, ReferenceIndex );
+       cv::Mat toReference = referenceMatrix * m_CameraToTracker[ReferenceIndex];
+       if ( TimingError != NULL && refTimingError > *TimingError )
+       {  
+         *TimingError = refTimingError;
+       }
+       return toReference.inv() * 
+          (trackerMatrix *  
+          mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
+            Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
+            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5)) );
+     }
    }
 }
 

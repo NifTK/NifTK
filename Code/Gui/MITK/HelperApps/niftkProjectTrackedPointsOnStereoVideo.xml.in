@@ -97,8 +97,6 @@
       <default>0</default>
     </boolean>
 
-
-
     <integer>
 	<name>trackerIndex</name>
 	<longflag>trackerIndex</longflag>
@@ -106,6 +104,15 @@
 	<label>The tracker index to use</label>
 	<default>0</default>
     </integer>
+
+    <integer>
+	<name>referenceIndex</name>
+	<longflag>referenceIndex</longflag>
+	<description>The reference index to use</description>
+	<label>The reference index to use</label>
+	<default>-1</default>
+    </integer>
+
   </parameters>
   
 </executable>

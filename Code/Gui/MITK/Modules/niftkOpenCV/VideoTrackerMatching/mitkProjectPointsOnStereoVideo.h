@@ -92,6 +92,7 @@ public:
   void SetVisualise( bool) ;
   void SetSaveVideo( bool);
   itkSetMacro ( TrackerIndex, int);
+  itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( WorldPoints, std::vector<cv::Point3d> );
@@ -117,6 +118,7 @@ private:
   std::vector<cv::Point3d>      m_WorldPoints;  //the world points to project
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
+  int                           m_ReferenceIndex; //the reference index to use for frame matching, not used by default
  
   bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;
