@@ -44,4 +44,35 @@ NIFTKIGIGUI_EXPORT bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QStri
  */
 NIFTKIGIGUI_EXPORT void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageCheckableComboBox& comboBox);
 
+/**
+ * \brief For visualisation purposes, creates a representation of the laparoscope.
+ * \param the rigid body filename to define the location of the tracking markers
+ * \param the handeye calibration to define the tool origin
+ */
+NIFTKIGIGUI_EXPORT mitk::Surface::Pointer MakeLaparoscope(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+
+/**
+ * \brief For visualisation purposes, creates a representation of the pointer.
+ * \param the rigid body filename to define the location of the tracking markers
+ * \param the handeye calibration to define the tool origin
+ */
+NIFTKIGIGUI_EXPORT mitk::Surface::Pointer MakePointer(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+
+/**
+ * \brief For visualisation purposes, creates a representation of the reference.
+ * \param the rigid body filename to define the location of the tracking markers
+ * \param the handeye calibration to define the tool origin
+ */
+NIFTKIGIGUI_EXPORT mitk::Surface::Pointer MakeReference(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+
+/**
+ * \brief For visualisation purposes, make a wall of a cube
+ * \param the size of the cube in mm 
+ * \param which wall to make 
+ * \param the xoffset, room will be centred at x= size * xOffset 
+ * */
+NIFTKIGIGUI_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const float& size = 3000,
+    const float& xOffset = 0.0 , const float& yOffset = 0.0, const float& zOffset = -0.3, 
+    const float& thickness = 10.0);
+
 #endif
