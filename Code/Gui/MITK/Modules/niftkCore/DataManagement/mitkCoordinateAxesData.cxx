@@ -40,7 +40,7 @@ CoordinateAxesData::CoordinateAxesData()
   m_RequestedRegion.SetSize(s);
   m_RequestedRegion.SetIndex(i);
 
-  Superclass::InitializeTimeSlicedGeometry();
+  Superclass::InitializeTimeGeometry();
 }
 
 
@@ -54,7 +54,7 @@ CoordinateAxesData::~CoordinateAxesData()
 void CoordinateAxesData::UpdateOutputInformation()
 {
   Superclass::UpdateOutputInformation();
-  this->GetTimeSlicedGeometry()->UpdateInformation();
+  this->GetTimeGeometry()->Update();
 }
 
 
