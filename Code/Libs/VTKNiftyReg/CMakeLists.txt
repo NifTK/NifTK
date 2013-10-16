@@ -35,6 +35,7 @@ target_link_libraries(niftkVTKNiftyReg
   niftkcommon
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
   ${Boost_LIBRARIES}
+  ITKniftiio
   ${NIFTYREG_LIBRARIES}
   )
 
