@@ -27,8 +27,8 @@
       <name>fileOutputBiasField</name>
       <longflag>outBiasField</longflag>
       <description>Output bias field image</description>      
-      <default>BiasField.nii</default>
       <label>Output bias field image</label>
+      <default>BiasField.nii</default>
       <channel>output</channel>
     </image>
 
