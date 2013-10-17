@@ -749,7 +749,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     {
       if (this->GetDataStorage()->GetNamedDerivedNode("BoundingObject", node))
       {
-        m_boundingObject->FitGeometry(m_currentDataObject->GetTimeSlicedGeometry());
+        m_boundingObject->FitGeometry(m_currentDataObject->GetGeometry());
         mitk::RenderingManager::GetInstance()->RequestUpdateAll();
         return;
       }
@@ -828,7 +828,7 @@ void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, 
     this->GetDataStorage()->Add(m_boundingObjectNode, node);
     if (fit)
     {
-      m_boundingObject->FitGeometry(m_currentDataObject->GetTimeSlicedGeometry());
+      m_boundingObject->FitGeometry(m_currentDataObject->GetGeometry());
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AffineInteractor3D );
   }
