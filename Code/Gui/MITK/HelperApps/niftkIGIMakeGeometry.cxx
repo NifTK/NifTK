@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <QmitkIGIUtils.h>
+#include <mitkMakeGeometry.h>
 
 #include <niftkIGIMakeGeometryCLP.h>
 
@@ -21,47 +21,29 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
-
-  if ( leftCameraInputDirectory.length() == 0 || outputCalibrationData.length() == 0 )
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  if ( geometry == "backwall" )
   {
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
+    surface = MakeAWall(0);
   }
-
-  try
+  if ( geometry == "frontwall" )
   {
-    if (   (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
-        || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
-        )
-    {
-      mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
-      if (rightCameraInputDirectory.length() != 0)
-      {
-        reprojectionError = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
-      }
-      else
-      {
-        reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
-      }
-    }
-    else
-    {
-      mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calibrationObject = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
-    }
-    returnStatus = EXIT_SUCCESS;
+    surface = MakeAWall(2);
   }
-  catch (std::exception& e)
+  if ( geometry == "leftwall" )
   {
-    MITK_ERROR << "Caught std::exception:" << e.what();
-    returnStatus = -1;
+    surface = MakeAWall(1);
   }
-  catch (...)
+  if ( geometry == "rightwall" )
   {
-    MITK_ERROR << "Caught unknown exception:";
-    returnStatus = -2;
+    surface = MakeAWall(3);
   }
-
-  std::cout << "Reprojection error=" << reprojectionError << ", return status = " << returnStatus << std::endl;
-  return returnStatus;
+  if ( geometry == "ceiling" )
+  {
+    surface = MakeAWall(4);
+  }
+  if ( geometry == "floor" )
+  {
+    surface = MakeAWall(5);
+  }
 }

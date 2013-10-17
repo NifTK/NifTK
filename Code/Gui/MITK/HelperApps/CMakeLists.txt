@@ -88,6 +88,7 @@ if(SlicerExecutionModel_FOUND)
       niftkUltrasoundPinCalibration
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
+      niftkIGIMakeGeometry
     )
   endif()  
 
