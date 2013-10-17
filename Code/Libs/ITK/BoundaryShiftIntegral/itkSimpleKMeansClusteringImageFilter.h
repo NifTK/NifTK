@@ -21,6 +21,7 @@
 #include <itkKdTreeBasedKmeansEstimator.h>
 #include <itkListSample.h>
 
+
 namespace itk
 {
 
@@ -72,20 +73,31 @@ public:
   itkGetMacro(RSS, double);
   itkGetMacro(NumberOfSamples, double);
   itkGetMacro(FinalClassSizes, ParametersType);
+  itkGetMacro(IsEstimateInitValuesUsingMask, bool);
   
 protected:
   /**
    * Constructor. 
    */
-  SimpleKMeansClusteringImageFilter() { this->m_NumberOfClasses = 3; this->m_RSS = 0.0; this->m_NumberOfSamples = 0.0; }
+  SimpleKMeansClusteringImageFilter()
+  {
+      this->m_NumberOfClasses = 3;
+      this->m_RSS = 0.0;
+      this->m_NumberOfSamples = 0.0;
+      this->m_IsEstimateInitValuesUsingMask = false;
+  }
   /**
    * Destructor. 
    */
   virtual ~SimpleKMeansClusteringImageFilter() {}
   /**
-   * 
+   * Do k-means.
    */
   void GenerateData();
+  /**
+   * Roughly estiamte the tissue intensity using the mask.
+   */
+  void EstimateIntensityFromDilatedMask(double& csfMean, double& csfSd, double& gmMean, double& wmMean);
   
 private:
   /**
@@ -114,6 +126,10 @@ private:
    * Number of samples. 
    */
   double m_NumberOfSamples; 
+  /**
+   * Estimate initial values using mask?
+   */
+  bool m_IsEstimateInitValuesUsingMask;
   
 
 };
