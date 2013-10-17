@@ -46,7 +46,7 @@ NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeReference(QString& rigidBodyFilena
  * \param which wall to make 
  * \param the xoffset, room will be centred at x= size * xOffset 
  * */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const float& size = 3000,
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const float& size = 4000,
     const float& xOffset = 0.0 , const float& yOffset = 0.0, const float& zOffset = -0.3, 
     const float& thickness = 10.0);
 
@@ -54,6 +54,6 @@ NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const
  * \brief get the IRED positions from a rigid body definition file
  * \param the file name
  */
-NIFTKOPENCV_EXPORT std::vector<float [3]> ReadRigidBodyDefinitionFile(QString& rigidBodyFilename);
+NIFTKOPENCV_EXPORT std::vector<std::vector <float> > ReadRigidBodyDefinitionFile(std::string rigidBodyFilename);
 
 #endif

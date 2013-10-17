@@ -101,12 +101,49 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
       return NULL;
     }
   }
-/*  vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New(); 
-  poly->SetInput(wall->GetOutput());
-  poly->Update();*/
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(wall->GetOutput());
   mitk::IOUtil::SaveSurface (surface,"/dev/shm/output.vtp");
   return surface;
 
 }
+
+//-----------------------------------------------------------------------------
+std::vector<std::vector <float > > ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
+{
+  std::vector < std::vector <float > > returnVector;
+  ifstream fin;
+  fin.open(rigidBodyFilename.c_str());
+  if ( ! fin ) 
+  {
+    MITK_ERROR << "Failed to open " << rigidBodyFilename;
+    return returnVector;
+  }
+  std::string line;
+  std::vector <float> position;
+  for ( int i = 0 ; i < 3 ; i++ )
+  {
+    position.push_back(0.0);
+  }
+  unsigned int counter;
+  int views;
+  while ( getline(fin,line) ) 
+  {
+    std::stringstream linestream(line);
+    bool parseSuccess;
+    parseSuccess = linestream >> counter >> position[0] >> position[1] >> position[2] >> views;
+    if ( parseSuccess )
+    {
+      returnVector.push_back(position);
+      if ( counter != returnVector.size() )
+      {
+        MITK_ERROR << "Error reading " << rigidBodyFilename;
+        return returnVector;
+      }
+    }
+  }
+  fin.close();
+  return returnVector;
+}
+    
+
