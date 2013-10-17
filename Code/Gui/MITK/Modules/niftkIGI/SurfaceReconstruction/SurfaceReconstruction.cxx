@@ -245,8 +245,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
             // TODO Adapt this to the changes in the MITK geometry framework.
             // Before the changes mitk::Geometry3D was derived from itk::AffineGeometryFrame3D
             // that had this SetObjectNodeToTransform function, but with the changes this
-            // superclass has removed.
-            // Check if this is needed at all.
+            // superclass has been removed.
+            // Check if this is needed at all and remove if not.
             MITK_WARN << "SurfaceReconstruction::Run(...): adapt this code to the MITK geometry changes." << std::endl;
             //points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
           }
