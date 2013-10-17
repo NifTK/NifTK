@@ -242,7 +242,13 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
             points->GetGeometry()->SetSpacing(geom->GetSpacing());
             points->GetGeometry()->SetOrigin(geom->GetOrigin());
             points->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
-            points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
+            // TODO Adapt this to the changes in the MITK geometry framework.
+            // Before the changes mitk::Geometry3D was derived from itk::AffineGeometryFrame3D
+            // that had this SetObjectNodeToTransform function, but with the changes this
+            // superclass has removed.
+            // Check if this is needed at all.
+            MITK_WARN << "SurfaceReconstruction::Run(...): adapt this code to the MITK geometry changes." << std::endl;
+            //points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
           }
         }
 
