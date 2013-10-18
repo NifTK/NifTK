@@ -271,6 +271,14 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         {
           imgData4Node->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, undist1bp);
         }
+        // copy input geometry too. so that a field-dropped input image
+        // doesnt cause the ouput to look squashed.
+        const mitk::Geometry3D::Pointer geom = static_cast<mitk::Geometry3D*>(
+            image1->GetGeometry()->Clone().GetPointer());
+        imgData4Node->GetGeometry()->SetSpacing(geom->GetSpacing());
+        imgData4Node->GetGeometry()->SetOrigin(geom->GetOrigin());
+        imgData4Node->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
+        imgData4Node->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
 
         //outputNode->SetData(imgData4Node);
         return imgData4Node.GetPointer();
