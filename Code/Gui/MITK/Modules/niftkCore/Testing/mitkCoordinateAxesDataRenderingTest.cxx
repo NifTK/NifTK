@@ -59,7 +59,7 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
 
   // Set up the view.
   mitk::DataStorage::Pointer storage = renderingHelper.GetDataStorage();
-  mitk::TimeSlicedGeometry::Pointer geometry =  storage->ComputeBoundingGeometry3D(renderingHelper.GetDataStorage()->GetAll());
+  mitk::TimeGeometry::Pointer geometry =  storage->ComputeBoundingGeometry3D(renderingHelper.GetDataStorage()->GetAll());
   mitk::RenderingManager::GetInstance()->InitializeViews( geometry );
 
   // Get image out

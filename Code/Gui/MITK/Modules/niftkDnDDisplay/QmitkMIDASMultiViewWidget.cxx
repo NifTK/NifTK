@@ -672,7 +672,7 @@ void QmitkMIDASMultiViewWidget::SetViewNumber(int viewRows, int viewColumns, boo
   if (m_ControlPanel->AreViewGeometriesBound())
   {
     QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-    mitk::Geometry3D* geometry = selectedView->GetGeometry();
+    mitk::TimeGeometry* geometry = selectedView->GetGeometry();
 
     foreach (QmitkMIDASSingleViewWidget* otherView, m_SingleViewWidgets)
     {
@@ -1103,7 +1103,7 @@ void QmitkMIDASMultiViewWidget::OnLayoutChanged(QmitkMIDASSingleViewWidget* sele
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidget::OnGeometryChanged(QmitkMIDASSingleViewWidget* /*selectedView*/, mitk::Geometry3D* geometry)
+void QmitkMIDASMultiViewWidget::OnGeometryChanged(QmitkMIDASSingleViewWidget* /*selectedView*/, mitk::TimeGeometry* geometry)
 {
   if (m_ControlPanel->AreViewGeometriesBound())
   {
@@ -1625,7 +1625,7 @@ void QmitkMIDASMultiViewWidget::OnViewGeometryBindingChanged()
   if (m_ControlPanel->AreViewGeometriesBound())
   {
     QmitkMIDASSingleViewWidget* selectedView = this->GetSelectedView();
-    mitk::Geometry3D* geometry = selectedView->GetGeometry();
+    mitk::TimeGeometry* geometry = selectedView->GetGeometry();
 
     foreach (QmitkMIDASSingleViewWidget* view, m_SingleViewWidgets)
     {

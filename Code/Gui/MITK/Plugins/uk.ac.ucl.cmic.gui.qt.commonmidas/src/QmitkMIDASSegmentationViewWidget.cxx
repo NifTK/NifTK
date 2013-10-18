@@ -19,11 +19,9 @@
 #include <QHBoxLayout>
 #include <QSpacerItem>
 #include <mitkDataStorage.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkGeometry3D.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkSliceNavigationController.h>
 #include <mitkBaseRenderer.h>
 #include <itkCommand.h>
@@ -400,18 +398,18 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   if (mainWindowChanged || m_CurrentRenderer == NULL || (mainWindowLayout != MIDAS_LAYOUT_UNKNOWN && m_Layout == MIDAS_LAYOUT_UNKNOWN))
   {
-    const mitk::Geometry3D* worldGeometry = mainWindowAxial->GetRenderer()->GetWorldGeometry();
-    if (worldGeometry)
+    const mitk::TimeGeometry* worldTimeGeometry = mainWindowAxial->GetRenderer()->GetTimeWorldGeometry();
+    if (worldTimeGeometry)
     {
-      mitk::Geometry3D::Pointer geometry = const_cast<mitk::Geometry3D*>(worldGeometry);
-      assert(geometry);
+      mitk::TimeGeometry::Pointer timeGeometry = const_cast<mitk::TimeGeometry*>(worldTimeGeometry);
+      assert(timeGeometry);
 
       m_MainWindowAxial = mainWindowAxial;
       m_MainWindowSagittal = mainWindowSagittal;
       m_MainWindowCoronal = mainWindowCoronal;
       m_MainWindow3d = mainWindow3d;
 
-      m_ViewerWidget->SetGeometry(geometry);
+      m_ViewerWidget->SetGeometry(timeGeometry);
       m_ViewerWidget->SetBoundGeometryActive(false);
       m_ViewerWidget->SetNavigationControllerEventListening(true);
       m_ViewerWidget->SetDisplay2DCursorsLocally(true);

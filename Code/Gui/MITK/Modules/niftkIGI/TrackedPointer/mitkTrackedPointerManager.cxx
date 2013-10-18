@@ -17,7 +17,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <mitkSurface.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkRenderingManager.h>
 #include <mitkPointSetUpdate.h>
 #include <mitkPointUtils.h>

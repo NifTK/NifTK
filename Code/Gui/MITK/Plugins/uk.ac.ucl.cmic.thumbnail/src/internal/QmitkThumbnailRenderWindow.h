@@ -20,7 +20,6 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkCuboid.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkDataStorageVisibilityTracker.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataNodeStringPropertyFilter.h>
