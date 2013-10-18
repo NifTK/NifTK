@@ -211,8 +211,6 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
                                   left2right_rotation,
                                   left2right_translation,
                                   &error);
-              p.y = -p.y;
-              p.z = -p.z;
               if (error < maxTriangulationError)
               {
                 float   depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
