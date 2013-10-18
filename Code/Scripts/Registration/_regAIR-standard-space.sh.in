@@ -35,6 +35,7 @@ BASELINE_MASK=$6
 REPEAT_IMG=$7        # Target image here. 
 REPEAT_MASK=$8
 RREG_INIT=$9
+dof9=${10}
 
 # Include necessary functions
 source _regInclude.sh
@@ -149,12 +150,15 @@ ${AIR_BIN}/alignlinear $seconReg
 FINAL_REG_RESULT_INI=$SECOND_REG_OUTPUT_INI
 FINAL_REG_RESULT_AIR=$SECOND_REG_OUTPUT_AIR
 
-# Convert the air file to 6dof by converting the ini file from 9dof to 6dof, use alignlinear again for 0 iterations
-rm -f $SECOND_REG_OUTPUT_AIR
-TEMP_OUTPUT_INIT=/tmp/${BASE_OUTPUT_NAME}-ini_temp_file0000.ini
-head -6 $SECOND_REG_OUTPUT_INI > ${TEMP_OUTPUT_INIT}
-$AIR_BIN/alignlinear ${tmpdir}/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $SECOND_REG_OUTPUT_AIR -m 6 -f ${TEMP_OUTPUT_INIT}  -e1 ${tmpdir}/${BASELINE_IMG}_mask -e2 $REG_TMP_DIR/${REPEAT_IMG}_mask -p1 1 -p2 1 -s 1 1 1  -h 1 -c 100  -r 0  -x 1 -t1 $t1 -t2 $t2 -v 
-rm -f ${TEMP_OUTPUT_INIT}
+if [ "${dof9}" == "no" ]
+then
+  # Convert the air file to 6dof by converting the ini file from 9dof to 6dof, use alignlinear again for 0 iterations
+  rm -f $SECOND_REG_OUTPUT_AIR
+  TEMP_OUTPUT_INIT=/tmp/${BASE_OUTPUT_NAME}-ini_temp_file0000.ini
+  head -6 $SECOND_REG_OUTPUT_INI > ${TEMP_OUTPUT_INIT}
+  $AIR_BIN/alignlinear ${tmpdir}/$BASELINE_IMG $REG_TMP_DIR/$REPEAT_IMG $SECOND_REG_OUTPUT_AIR -m 6 -f ${TEMP_OUTPUT_INIT}  -e1 ${tmpdir}/${BASELINE_IMG}_mask -e2 $REG_TMP_DIR/${REPEAT_IMG}_mask -p1 1 -p2 1 -s 1 1 1  -h 1 -c 100  -r 0  -x 1 -t1 $t1 -t2 $t2 -v
+  rm -f ${TEMP_OUTPUT_INIT}
+fi
 
 # Reslice image.
 RESLICED_IMAGE=$REG_RESULTS_DIR/${BASE_OUTPUT_NAME}
