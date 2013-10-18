@@ -235,8 +235,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           if (camnodebasedata.IsNotNull())
           {
             // it's actually irrelevant what type the data is
-            const mitk::Geometry3D::Pointer geom = camnodebasedata->GetGeometry();
-            // is there no usable clone???
+            const mitk::Geometry3D::Pointer geom = static_cast<mitk::Geometry3D*>(
+                camnodebasedata->GetGeometry()->Clone().GetPointer());
             points->GetGeometry()->SetSpacing(geom->GetSpacing());
             points->GetGeometry()->SetOrigin(geom->GetOrigin());
             points->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
