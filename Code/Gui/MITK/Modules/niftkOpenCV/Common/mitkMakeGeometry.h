@@ -50,10 +50,4 @@ NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const
     const float& xOffset = 0.0 , const float& yOffset = 0.0, const float& zOffset = -0.3, 
     const float& thickness = 10.0);
 
-/** 
- * \brief get the IRED positions from a rigid body definition file
- * \param the file name
- */
-NIFTKOPENCV_EXPORT std::vector<std::vector <float> > ReadRigidBodyDefinitionFile(std::string rigidBodyFilename);
-
 #endif
