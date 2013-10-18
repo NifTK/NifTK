@@ -139,7 +139,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
   typename OutputItkImage::Pointer output = converter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::ImportItkImage( output , GeomImage->GetGeometry());
+  mitkImage = mitk::ImportItkImage( output , GeomImage->GetGeometry()->Clone().GetPointer());
   return mitkImage;
 }
 
@@ -207,7 +207,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
   typename OutputItkImage::Pointer output = importFilter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::ImportItkImage( output, GeomImage->GetGeometry() );
+  mitkImage = mitk::ImportItkImage( output, GeomImage->GetGeometry()->Clone().GetPointer() );
   return mitkImage;
 }
 
