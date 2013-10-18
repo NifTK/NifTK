@@ -20,7 +20,7 @@
 #include <mitkOperationActor.h>
 #include <mitkTool.h>
 #include <mitkToolManager.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 
 namespace mitk
 {
@@ -38,17 +38,17 @@ public:
       mitk::OperationType type,
       bool redo,
       int dataSetNumber,
-      mitk::ContourSet::Pointer contourSet
+      mitk::ContourModelSet::Pointer contourSet
       );
   ~MIDASContourToolOpAccumulateContour() {};
   bool IsRedo() const { return m_Redo; }
   int GetDataSetNumber() const { return m_DataSetNumber; }
-  mitk::ContourSet::Pointer GetContourSet() const { return m_ContourSet;}
+  mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet;}
 
 private:
   bool m_Redo;
   int  m_DataSetNumber;
-  mitk::ContourSet::Pointer m_ContourSet;
+  mitk::ContourModelSet::Pointer m_ContourSet;
 };
 
 } // end namespace

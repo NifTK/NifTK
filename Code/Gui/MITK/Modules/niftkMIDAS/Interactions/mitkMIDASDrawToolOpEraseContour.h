@@ -19,7 +19,7 @@
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkTool.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 
 namespace mitk
 {
@@ -35,15 +35,15 @@ public:
 
   MIDASDrawToolOpEraseContour(
       mitk::OperationType type,
-      mitk::ContourSet* contour,
+      mitk::ContourModelSet* contour,
       const int& workingNodeNumber
       );
   ~MIDASDrawToolOpEraseContour() {};
-  mitk::ContourSet* GetContourSet() const { return m_ContourSet;}
+  mitk::ContourModelSet* GetContourModelSet() const { return m_ContourModelSet;}
   int GetWorkingNode() const { return m_WorkingNodeNumber; }
 
 private:
-  mitk::ContourSet::Pointer m_ContourSet;
+  mitk::ContourModelSet::Pointer m_ContourModelSet;
   int m_WorkingNodeNumber;
 };
 
