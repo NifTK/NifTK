@@ -73,7 +73,7 @@ public:
   itkGetMacro(RSS, double);
   itkGetMacro(NumberOfSamples, double);
   itkGetMacro(FinalClassSizes, ParametersType);
-  itkGetMacro(IsEstimateInitValuesUsingMask, bool);
+  itkSetMacro(IsEstimateInitValuesUsingMask, bool);
   
 protected:
   /**

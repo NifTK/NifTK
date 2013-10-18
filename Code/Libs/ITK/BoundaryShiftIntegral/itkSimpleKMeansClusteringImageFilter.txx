@@ -19,6 +19,7 @@
 #include <itkImageRegionIterator.h>
 #include <itkBinariseUsingPaddingImageFilter.h>
 #include <itkSubtractImageFilter.h>
+#include <itkMultipleDilateImageFilter.h>
 #include <itkMultipleErodeImageFilter.h>
 
 namespace itk 
@@ -116,7 +117,7 @@ SimpleKMeansClusteringImageFilter<TInputImage, TInputMask, TOutputImage>
     }
     csfSd = sqrt(csfSd/count);
 
-    // std::cerr << "csfMean=" << csfMean << ", gmMean=" << gmMean << ", wmMean=" << wmMean << std::endl;
+    //std::cerr << "csfMean=" << csfMean << ", gmMean=" << gmMean << ", wmMean=" << wmMean << std::endl;
 
 }
 
@@ -137,6 +138,22 @@ SimpleKMeansClusteringImageFilter<TInputImage, TInputMask, TOutputImage>
         {
             EstimateIntensityFromDilatedMask(m_InitialMeans[0], dummy, m_InitialMeans[1], dummy);
         }
+
+        typedef BinariseUsingPaddingImageFilter<TInputMask,TInputMask> BinariseUsingPaddingType;
+        typename BinariseUsingPaddingType::Pointer binariseUsingPadding = BinariseUsingPaddingType::New();
+        binariseUsingPadding->SetInput(this->m_InputMask);
+        binariseUsingPadding->SetPaddingValue(0);
+        binariseUsingPadding->Update();
+
+        typedef itk::MultipleDilateImageFilter<TInputMask> MultipleDilateImageFilterType;
+        typename MultipleDilateImageFilterType::Pointer multipleDilateImageFilter = MultipleDilateImageFilterType::New();
+
+        // Dilate multiple times.
+        multipleDilateImageFilter->SetNumberOfDilations(3);
+        multipleDilateImageFilter->SetInput(binariseUsingPadding->GetOutput());
+        multipleDilateImageFilter->Update();
+        this->m_InputMask = multipleDilateImageFilter->GetOutput();
+        this->m_InputMask->DisconnectPipeline();
     }
 
     typename TInputImage::ConstPointer inputImage = this->GetInput();
