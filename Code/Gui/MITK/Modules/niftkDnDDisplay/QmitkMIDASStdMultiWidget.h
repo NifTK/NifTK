@@ -126,7 +126,7 @@ public:
 
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetGeometry(mitk::Geometry3D* geometry);
+  void SetGeometry(mitk::TimeGeometry* geometry);
 
   /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
   void SetLayout(MIDASLayout layout);
@@ -428,6 +428,7 @@ private:
   double m_ScaleFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
+  mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Voxel size in millimetres.
   mitk::Vector3D m_MmPerVx;

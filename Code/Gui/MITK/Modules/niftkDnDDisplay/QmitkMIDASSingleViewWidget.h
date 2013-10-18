@@ -21,6 +21,7 @@
 
 #include <mitkDataStorage.h>
 #include <mitkGeometry3D.h>
+#include <mitkTimeGeometry.h>
 #include <mitkRenderingManager.h>
 #include <QmitkRenderWindow.h>
 
@@ -197,13 +198,13 @@ public:
   void RequestUpdate();
 
   /// \brief Sets the world geometry that we are sampling and sends a GeometryChanged signal.
-  void SetGeometry(mitk::Geometry3D::Pointer geometry);
+  void SetGeometry(mitk::TimeGeometry::Pointer timeGeometry);
 
   /// \brief Gets the world geometry, to pass to other viewers for when slices are bound.
-  mitk::Geometry3D::Pointer GetGeometry();
+  mitk::TimeGeometry::Pointer GetGeometry();
 
   /// \brief Sets the world geometry that we are sampling when we are in bound mode.
-  void SetBoundGeometry(mitk::Geometry3D::Pointer geometry);
+  void SetBoundGeometry(mitk::TimeGeometry::Pointer geometry);
 
   /// \brief Sets the geometry binding 'on' or 'off'. If 'on' then the geometry of
   /// this viewer will be bound to other viewers in the same multi viewer widget.
@@ -342,7 +343,7 @@ signals:
   void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
 
   /// \brief Emitted when the geometry of this view has changed.
-  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::Geometry3D* geometry);
+  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::TimeGeometry* geometry);
 
 protected slots:
 
@@ -385,8 +386,8 @@ private:
   QmitkMIDASStdMultiWidget* m_MultiWidget;
 
   bool m_IsBoundGeometryActive;
-  mitk::Geometry3D::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
-  mitk::Geometry3D::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
+  mitk::TimeGeometry::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
+  mitk::TimeGeometry::Pointer m_BoundGeometry;  // Passed in, when we do "bind", so shared amongst multiple windows.
 
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
