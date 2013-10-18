@@ -214,7 +214,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
               if (error < maxTriangulationError)
               {
                 float   depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
-                if (depth >= minDepth)
+                if (depth >= minDepth && p.z > minDepth)
                 {
                   if (depth <= maxDepth)
                   {
