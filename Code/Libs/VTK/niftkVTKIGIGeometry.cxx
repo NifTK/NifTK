@@ -11,29 +11,29 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-
-#include "mitkMakeGeometry.h"
-#include <mitkFileIOUtils.h>
-#include <mitkIOUtil.h>
+#include "niftkVTKIGIGeometry.h"
 
 #include <vtkCubeSource.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 
+#include <sstream>
+namespace niftk
+{ 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {}
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {}
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {}
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size, 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, const float& size, 
    const float& xOffset,  const float& yOffset,  const float& zOffset , 
    const float& thickness ) 
 {
@@ -97,26 +97,23 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
     }
     default: //a mistake
     {
-      MITK_WARN << "Passed a bad number to MakeAWall : " << whichwall;
+      std::cerr << "Passed a bad number to MakeAWall : " << whichwall;
       return NULL;
     }
   }
-  mitk::Surface::Pointer surface = mitk::Surface::New();
-  surface->SetVtkPolyData(wall->GetOutput());
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/output.vtp");
-  return surface;
+  return wall->GetOutput();
 
 }
 
 //-----------------------------------------------------------------------------
-std::vector<std::vector <float > > ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
+std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
 {
   std::vector < std::vector <float > > returnVector;
   ifstream fin;
   fin.open(rigidBodyFilename.c_str());
   if ( ! fin ) 
   {
-    MITK_ERROR << "Failed to open " << rigidBodyFilename;
+    std::cerr << "Failed to open " << rigidBodyFilename;
     return returnVector;
   }
   std::string line;
@@ -137,7 +134,7 @@ std::vector<std::vector <float > > ReadRigidBodyDefinitionFile(std::string rigid
       returnVector.push_back(position);
       if ( counter != returnVector.size() )
       {
-        MITK_ERROR << "Error reading " << rigidBodyFilename;
+        std::cerr << "Error reading " << rigidBodyFilename;
         return returnVector;
       }
     }
@@ -146,4 +143,4 @@ std::vector<std::vector <float > > ReadRigidBodyDefinitionFile(std::string rigid
   return returnVector;
 }
     
-
+} //end namespace niftk
