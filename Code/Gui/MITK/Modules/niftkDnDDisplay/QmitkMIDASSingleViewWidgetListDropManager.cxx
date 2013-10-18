@@ -130,7 +130,7 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
 
     MITK_DEBUG << "Dropped single" << std::endl;
 
-    mitk::TimeSlicedGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, -1);
+    mitk::TimeGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, -1);
     if (geometry.IsNull())
     {
       MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;
@@ -180,7 +180,7 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
         dropIndex = 0;
       }
 
-      mitk::TimeSlicedGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, i);
+      mitk::TimeGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, i);
       if (geometry.IsNull())
       {
         MITK_ERROR << "Error, dropping node " << i << ", from a list of " << nodes.size() << " nodes into window " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
@@ -212,7 +212,7 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
   {
     MITK_DEBUG << "Dropped thumbnail" << std::endl;
 
-    mitk::TimeSlicedGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, -1);
+    mitk::TimeGeometry::Pointer geometry = mitk::GetPreferredGeometry(m_DataStorage, nodes, -1);
     if (geometry.IsNull())
     {
       MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;

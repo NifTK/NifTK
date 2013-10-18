@@ -528,14 +528,14 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetGeometry(mitk::Geometry3D::Pointer geometry)
+void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
 {
-  assert(geometry);
-  m_Geometry = geometry;
+  assert(timeGeometry);
+  m_Geometry = timeGeometry;
 
   if (!m_IsBoundGeometryActive)
   {
-    m_MultiWidget->SetGeometry(geometry);
+    m_MultiWidget->SetGeometry(timeGeometry);
 
     this->ResetRememberedPositions();
 
@@ -546,12 +546,12 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::Geometry3D::Pointer geometry)
     m_LastCursorPosition = m_CursorPosition;
   }
 
-  emit GeometryChanged(this, geometry);
+  emit GeometryChanged(this, timeGeometry);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Geometry3D::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
+mitk::TimeGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
 {
   assert(m_Geometry);
   return m_Geometry;
@@ -559,7 +559,7 @@ mitk::Geometry3D::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::Geometry3D::Pointer geometry)
+void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geometry)
 {
   assert(geometry);
   m_BoundGeometry = geometry;
@@ -595,7 +595,7 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometryActive(bool isBoundGeometryActi
     return;
   }
 
-  mitk::Geometry3D* geometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  mitk::TimeGeometry* geometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
   m_MultiWidget->SetGeometry(geometry);
 
   m_IsBoundGeometryActive = isBoundGeometryActive;
@@ -651,7 +651,7 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout)
 {
   if (layout != MIDAS_LAYOUT_UNKNOWN)
   {
-    mitk::Geometry3D* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+    mitk::TimeGeometry* geometry = m_IsBoundGeometryActive ? m_BoundGeometry : m_Geometry;
 
     // If for whatever reason, we have no geometry... bail out.
     if (!geometry)

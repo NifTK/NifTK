@@ -460,7 +460,7 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
 
   mitk::Geometry3D::Pointer   geomp = m_Image->GetGeometry();
   // FIXME: should clone it!
-  //mitk::Geometry3D* geom = dynamic_cast<mitk::Geometry3D*>(geomp->Clone().GetPointer());
+  //mitk::Geometry3D* geom = geomp->Clone().GetPointer();
   outputImage->SetGeometry(geomp);
 }
 
