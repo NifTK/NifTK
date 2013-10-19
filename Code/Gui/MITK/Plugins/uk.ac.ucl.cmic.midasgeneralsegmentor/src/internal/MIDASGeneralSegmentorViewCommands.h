@@ -19,7 +19,7 @@
 #include <mitkDataNode.h>
 #include <mitkTool.h>
 #include <mitkPointSet.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 #include <itkMIDASHelper.h>
 #include <itkMIDASImageUpdateClearRegionProcessor.h>
 #include <itkMIDASImageUpdatePasteRegionProcessor.h>
@@ -260,16 +260,16 @@ public:
   OpClean(
       mitk::OperationType type,
       bool redo,
-      mitk::ContourSet::Pointer contourSet
+      mitk::ContourModelSet::Pointer contourSet
       )
   : mitk::OpGeneralSegmentorBaseCommand(type, redo)
   , m_ContourSet(contourSet)
   {
   };
-  ~OpClean() {};
-  mitk::ContourSet::Pointer GetContourSet() const { return m_ContourSet; }
+  ~OpClean() {}
+  mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet; }
 private:
-  mitk::ContourSet::Pointer m_ContourSet;
+  mitk::ContourModelSet::Pointer m_ContourSet;
 };
 
 
