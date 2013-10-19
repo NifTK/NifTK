@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>DICOM Tools</category>
+  <title><![CDATA[Export DICOM Tags to CSV File]]></title>
+  <description><![CDATA[Search for DICOM files in a directory and export specific tags specified by the user to a csv (comma-separated values) file. This file can then be imported into a spreadsheet or database.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters advanced="false">
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <directory>
+      <name>dcmDirectoryIn</name>
+      <longflag>inDir</longflag>
+      <description>Input top-level directory to search for DICOM files</description>
+      <label>Input directory to search</label>
+      <default></default>
+      <channel>input</channel>
+    </directory>
+
+    <file>
+      <name>fileInputTagKeys</name>
+      <flag>i</flag>
+      <longflag>fileTags</longflag>
+      <description><![CDATA[The input text file of tag keys, eg. "0008|0060" to be extracted from the DICOM file headers.]]></description>
+      <label>Input text file of tag keys</label>
+      <default></default>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileOutputCSV</name>
+      <flag>o</flag>
+      <longflag>fileCSV</longflag>
+      <description>The output csv (comma-separated values) file containing the tag values of all the DICOM files found in the directory specified, with one row per file. </description>
+      <label>Output csv file of tag values</label>
+      <default>Tags.csv</default>
+      <channel>output</channel>
+    </file>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Verbose</label>
+    </boolean>
+
+  </parameters>
+
+</executable>
