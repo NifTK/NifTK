@@ -88,11 +88,12 @@ public:
 
 
 // -------------------------------------------------------------------------
-// arguments
+// Arguments
 // -------------------------------------------------------------------------
 
-struct arguments
+class Arguments
 {
+public:
   float subsampling;
   float splineOrder;
   float nHistogramBins;
@@ -111,7 +112,7 @@ struct arguments
   std::string fileOutputSubsampledImage;
   std::string fileOutputSubsampledMask;
 
-  arguments() {
+  Arguments() {
 
     subsampling = 4.;
     splineOrder = 3;
@@ -122,6 +123,29 @@ struct arguments
     ConvergenceThreshold = 0.001;
     NumberOfFittingLevels = 4;
     NumberOfControlPoints = 0;
+  }
+
+  void Print(void) {
+    std::cout << std::endl;
+
+    std::cout << "ARG: Sub-sampling factor: " << subsampling << std::endl;
+    std::cout << "ARG: Spline order: " << splineOrder << std::endl;
+    std::cout << "ARG: No. of histogram bins: " << nHistogramBins << std::endl;
+    std::cout << "ARG: Weinder filter noise level: " << WeinerFilterNoise << std::endl;
+    std::cout << "ARG: Bias field FWHM: " << BiasFieldFullWidthAtHalfMaximum << std::endl;
+    std::cout << "ARG: Max no. of iterations: " << MaximumNumberOfIterations << std::endl;
+    std::cout << "ARG: Convergence threshold: " << ConvergenceThreshold << std::endl;
+    std::cout << "ARG: No. of fitting levels: " << NumberOfFittingLevels << std::endl;
+    std::cout << "ARG: No of control points: " << NumberOfControlPoints << std::endl;
+    
+    std::cout << "ARG: Input image file: " << fileInputImage << std::endl;
+    std::cout << "ARG: Output bias field: " << fileOutputBiasField << std::endl;
+    std::cout << "ARG: Output corrected image: " << fileOutputImage << std::endl;
+    
+    std::cout << "ARG: Output mask file: " << fileOutputMask << std::endl;
+    std::cout << "ARG: Output subsampled image: " << fileOutputSubsampledImage << std::endl;
+    std::cout << "ARG: Output sub-sampled mask: " << fileOutputSubsampledMask << std::endl;
+    std::cout << std::endl;
   }
 };
 
@@ -157,12 +181,16 @@ bool WriteImageToFile( std::string &fileOutput, const char *description,
 
 
 // -------------------------------------------------------------------------
-// DoMain(arguments args)
+// DoMain(Arguments args)
 // -------------------------------------------------------------------------
 
 template <int Dimension, class OutputPixelType>
-int DoMain(arguments &args)
+int DoMain(Arguments &args)
 {
+  float progress = 0.;
+  float iStep = 0.;
+  float nSteps = 13;
+
   double factor[3];
 
 
@@ -181,7 +209,7 @@ int DoMain(arguments &args)
 
   try
   { 
-    std::cout << "Reading the input image" << std::endl;
+    std::cout << "Reading the input image: " << args.fileInputImage << std::endl;
     imageReader->Update();
   }
   catch (itk::ExceptionObject &ex)
@@ -193,6 +221,10 @@ int DoMain(arguments &args)
   typename InputImageType::Pointer imOriginal = imageReader->GetOutput();
   imOriginal->DisconnectPipeline();
 
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
 
   // Create a mask by thresholding
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -221,6 +253,11 @@ int DoMain(arguments &args)
     std::cerr << e << std::endl;
   }
 
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Write the mask image to a file?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -231,6 +268,11 @@ int DoMain(arguments &args)
                                        thresholder->GetOutput() );
   }
   
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Shrink the image and the mask
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -255,6 +297,11 @@ int DoMain(arguments &args)
     std::cerr << e << std::endl;
     return EXIT_FAILURE;
   }
+
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
  
   if ( args.fileOutputSubsampledImage.length() != 0 ) 
   {
@@ -263,6 +310,10 @@ int DoMain(arguments &args)
                                         shrinkFilter->GetOutput() );
   }
 
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
 
   typedef itk::ShrinkImageFilter <MaskImageType, MaskImageType> ShrinkMaskFilterType;
  
@@ -284,6 +335,11 @@ int DoMain(arguments &args)
     std::cerr << e << std::endl;
     return EXIT_FAILURE;
   }
+
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
  
   if ( args.fileOutputSubsampledMask.length() != 0 ) 
   {
@@ -292,6 +348,11 @@ int DoMain(arguments &args)
                                        maskShrinkFilter->GetOutput() );
   }
   
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Compute the N4 Bias Field Correction
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -346,7 +407,7 @@ int DoMain(arguments &args)
   {
     std::cout << "Computing the bias field" << std::endl;
     biasFieldFilter->UpdateLargestPossibleRegion();
-    biasFieldFilter->Print( std::cout );
+    //biasFieldFilter->Print( std::cout );
   }
   catch (itk::ExceptionObject &e)
   {
@@ -354,11 +415,11 @@ int DoMain(arguments &args)
     return EXIT_FAILURE;
   }
 
-  std::string fileout( "LowResCorrectedImg.nii.gz" );
-  WriteImageToFile< InputImageType >( fileout, 
-                                      "low-res corrected image",
-                                      biasFieldFilter->GetOutput() );
-  
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Reconstruction of the bias field
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -388,6 +449,11 @@ int DoMain(arguments &args)
     std::cerr << e << std::endl;
     return EXIT_FAILURE;
   }
+
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
 
   // And then the exponential
 
@@ -420,6 +486,11 @@ int DoMain(arguments &args)
     return EXIT_FAILURE;
   }
 
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Write the bias field image to a file?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -430,6 +501,11 @@ int DoMain(arguments &args)
                                         expFilter->GetOutput() );
   }
   
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
+
 
   // Correct the original input image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,6 +527,11 @@ int DoMain(arguments &args)
       iterOriginal.Set( iterOriginal.Get() / iterBiasField.Get() );
     }
   }    
+
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
  
 
   // Write the bias field corrected image to a file?
@@ -462,7 +543,10 @@ int DoMain(arguments &args)
                                         imOriginal );
   }
 
-
+  progress = ++iStep/nSteps;
+  std::cout << "<filter-progress>" << std::endl
+	    << progress << std::endl
+	    << "</filter-progress>" << std::endl;
 
   return EXIT_SUCCESS;
 }
@@ -475,18 +559,12 @@ int DoMain(arguments &args)
 int main( int argc, char *argv[] )
 {
   // To pass around command line args
-  arguments args;
+  Arguments args;
 
   // Validate command line args
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   PARSE_ARGS;
-
-  if ( fileInputImage.length() == 0 || fileOutputImage.length() == 0 )
-  {
-    commandLine.getOutput()->usage(commandLine);
-    return EXIT_FAILURE;
-  }
 
   args.subsampling                     = subsampling;
   args.splineOrder                     = splineOrder;                       
@@ -505,6 +583,14 @@ int main( int argc, char *argv[] )
   args.fileOutputMask            = fileOutputMask;
   args.fileOutputSubsampledImage = fileOutputSubsampledImage;
   args.fileOutputSubsampledMask  = fileOutputSubsampledMask;
+
+  args.Print();
+
+  if ( args.fileInputImage.length() == 0 || args.fileOutputImage.length() == 0 )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
 
   int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fileInputImage);
   if (dims != 3)
