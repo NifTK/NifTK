@@ -76,6 +76,7 @@ if(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkDilate
     niftkErode
+    niftkExportDICOMTagsToCSVFile
     niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
     niftkHistogramEqualization
