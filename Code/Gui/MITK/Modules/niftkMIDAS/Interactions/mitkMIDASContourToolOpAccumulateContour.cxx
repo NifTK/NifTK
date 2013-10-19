@@ -20,7 +20,7 @@ MIDASContourToolOpAccumulateContour::MIDASContourToolOpAccumulateContour(
   mitk::OperationType type,
   bool redo,
   int dataSetNumber,
-  mitk::ContourSet::Pointer contourSet
+  mitk::ContourModelSet::Pointer contourSet
   )
 : mitk::Operation(type)
 , m_Redo(redo)

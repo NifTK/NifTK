@@ -19,8 +19,8 @@
 #include "mitkMIDASContourToolEventInterface.h"
 #include "mitkMIDASTool.h"
 #include <mitkPointUtils.h>
-#include <mitkContour.h>
-#include <mitkContourSet.h>
+#include <mitkContourModel.h>
+#include <mitkContourModelSet.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkExtractImageFilter.h>
@@ -64,19 +64,19 @@ public:
   virtual void ClearData();
 
   /// \brief Get a pointer to the current feedback contour.
-  virtual mitk::Contour* GetContour();
+  virtual mitk::ContourModel* GetContour();
 
   /// \brief Turns the feedback contour on/off.
   virtual void SetFeedbackContourVisible(bool);
 
   /// \brief Copies contour from a to b.
-  static void CopyContour(mitk::Contour &a, mitk::Contour &b);
+  static void CopyContour(mitk::ContourModel &a, mitk::ContourModel &b);
 
   /// \brief Copies contour set from a to b.
-  static void CopyContourSet(mitk::ContourSet &a, mitk::ContourSet &b, bool initialise=true);
+  static void CopyContourSet(mitk::ContourModelSet &a, mitk::ContourModelSet &b, bool initialise=true);
 
   /// \brief Initialises the output contour b with properties like, closed, width and selected, copied from the reference contour a.
-  static void InitialiseContour(mitk::Contour &a, mitk::Contour &b);
+  static void InitialiseContour(mitk::ContourModel &a, mitk::ContourModel &b);
 
   /// \brief Used to signal that the contours have changed.
   Message<> ContoursHaveChanged;
@@ -94,7 +94,7 @@ protected:
   void Disable3dRenderingOfNode(mitk::DataNode* node);
 
   /// \brief Adds the given contour to the Working Data registered with mitk::ToolManager, where the ToolManager can have multiple data sets registered, so we add the contour to the dataset specified by dataSetNumber.
-  void AccumulateContourInWorkingData(mitk::Contour& contour, int dataSetNumber);
+  void AccumulateContourInWorkingData(mitk::ContourModel& contour, int dataSetNumber);
 
   // Utility methods for helping draw lines that require m_Geometry to be set.
   void ConvertPointToVoxelCoordinate(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
@@ -114,13 +114,13 @@ protected:
       const mitk::PlaneGeometry& planeGeometry, // input
       const mitk::Point3D& currentPoint,        // input
       const mitk::Point3D& previousPoint,       // input
-      mitk::Contour& contourAroundCorners,      // output
-      mitk::Contour& contourAlongLine           // output
+      mitk::ContourModel& contourAroundCorners,      // output
+      mitk::ContourModel& contourAlongLine           // output
       );
 
   // Methods for manipulating the "BackgroundContour", which typically doesn't get drawn, but is useful for converting to image coordinates, e.g. for rendering into images for boundaries.
-  Contour* GetBackgroundContour();
-  void SetBackgroundContour(Contour&);
+  mitk::ContourModel* GetBackgroundContour();
+  void SetBackgroundContour(mitk::ContourModel&);
   void Disable3dRenderingOfBackgroundContour();
   void SetBackgroundContourVisible(bool);
   void SetBackgroundContourColor( float r, float g, float b );
@@ -145,7 +145,7 @@ protected:
   mitk::Image* m_ReferenceImage;
 
   // Like the base class mitkFeedbackContourTool, we keep a contour that is the straight line, exaclty as we iterate, not working around voxel corners.
-  mitk::Contour::Pointer  m_BackgroundContour;
+  mitk::ContourModel::Pointer  m_BackgroundContour;
   mitk::DataNode::Pointer m_BackgroundContourNode;
   bool                    m_BackgroundContourVisible;
 

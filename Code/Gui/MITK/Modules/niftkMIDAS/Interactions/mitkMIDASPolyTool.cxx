@@ -22,7 +22,7 @@
 #include <mitkPointUtils.h>
 #include <mitkToolManager.h>
 #include <mitkBaseRenderer.h>
-#include <mitkContour.h>
+#include <mitkContourModel.h>
 
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
 const std::string mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
@@ -51,8 +51,8 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   CONNECT_ACTION( 76, OnMiddleMouseReleased );
 
   // These are not added to DataStorage as they are never drawn, they are just an internal data structure
-  m_ReferencePoints = Contour::New();
-  m_PreviousContourReferencePoints = Contour::New();
+  m_ReferencePoints = mitk::ContourModel::New();
+  m_PreviousContourReferencePoints = mitk::ContourModel::New();
 
   // This point set is so we can highlight the first point (or potentially all points).
   m_PolyLinePointSet = mitk::PointSet::New();
@@ -64,13 +64,13 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   m_PolyLinePointSetNode->SetProperty("color", ColorProperty::New(1, 1, 0));
 
   // This is so we can draw the previous contour, as we stretch, and minipulate the contour with middle mouse button.
-  m_PreviousContour = Contour::New();
-  m_PreviousContourNode = DataNode::New();
+  m_PreviousContour = mitk::ContourModel::New();
+  m_PreviousContourNode = mitk::DataNode::New();
   m_PreviousContourNode->SetData( m_PreviousContour );
   m_PreviousContourNode->SetProperty("name", StringProperty::New(MIDAS_POLY_TOOL_PREVIOUS_CONTOUR));
   m_PreviousContourNode->SetProperty("visible", BoolProperty::New(true));
   m_PreviousContourNode->SetProperty("helper object", BoolProperty::New(true));
-  m_PreviousContourNode->SetProperty("Width", FloatProperty::New(1));
+  m_PreviousContourNode->SetProperty("Width", FloatProperty::New(m_ContourWidth));
   m_PreviousContourNode->SetProperty("color", ColorProperty::New(0, 1, 0));
 
   this->Disable3dRenderingOfPreviousContour();
@@ -124,18 +124,24 @@ void mitk::MIDASPolyTool::ClearData()
 
   // These are added to the DataManager, but only drawn when the middle mouse is down (and subsequently moved).
   m_PreviousContour->Initialize();
-  m_PreviousContour->SetClosed(m_ContourClosed);
-  m_PreviousContour->SetWidth(m_ContourWidth);
+  m_PreviousContour->SetIsClosed(m_ContourClosed);
+  // TODO Removed at from the new MITK segmentation framework.
+  // Some property of the node controls this.
+//  m_PreviousContour->SetWidth(m_ContourWidth);
 
   // These are not added to the DataManager, so will never be drawn.
   m_ReferencePoints->Initialize();
-  m_ReferencePoints->SetClosed(m_ContourClosed);
-  m_ReferencePoints->SetWidth(m_ContourWidth);
+  m_ReferencePoints->SetIsClosed(m_ContourClosed);
+  // TODO Removed at from the new MITK segmentation framework.
+  // Some property of the node controls this.
+//  m_ReferencePoints->SetWidth(m_ContourWidth);
 
   // These are not added to the DataManager, so will never be drawn.
   m_PreviousContourReferencePoints->Initialize();
-  m_PreviousContourReferencePoints->SetClosed(m_ContourClosed);
-  m_PreviousContourReferencePoints->SetWidth(m_ContourWidth);
+  m_PreviousContourReferencePoints->SetIsClosed(m_ContourClosed);
+  // TODO Removed at from the new MITK segmentation framework.
+  // Some property of the node controls this.
+//  m_PreviousContourReferencePoints->SetWidth(m_ContourWidth);
 }
 
 void mitk::MIDASPolyTool::Activated()
@@ -176,10 +182,10 @@ void mitk::MIDASPolyTool::Deactivated()
 /* MJC: temporary
   Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 */
-  Contour* feedbackContour = NULL;
+  mitk::ContourModel* feedbackContour = NULL;
   assert(feedbackContour); // fixme
 
-  if (feedbackContour != NULL && feedbackContour->GetNumberOfPoints() > 0)
+  if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
   {
     int workingDataNodeNumber = 2;
     if (m_ToolManager->GetWorkingData(workingDataNodeNumber))
@@ -242,48 +248,40 @@ void mitk::MIDASPolyTool::SetPolyLinePointSetVisible(bool visible)
 }
 
 void mitk::MIDASPolyTool::DrawWholeContour(
-    const mitk::Contour& contourReferencePointsInput,
+    const mitk::ContourModel& contourReferencePointsInput,
     const PlaneGeometry& planeGeometry,
-    mitk::Contour& feedbackContour,
-    mitk::Contour& backgroundContour
+    mitk::ContourModel& feedbackContour,
+    mitk::ContourModel& backgroundContour
     )
 {
   // If these are not set, something is fundamentally wrong.
   assert(m_WorkingImage);
   assert(m_WorkingImageGeometry);
 
-  // Get the vector of points.
-  mitk::Contour::PointsContainerPointer points = contourReferencePointsInput.GetPoints();
-
   // Reset the contours, as we are redrawing the whole thing.
   feedbackContour.Initialize();
   backgroundContour.Initialize();
 
   // Only bother drawing if we have at least two points
-  if (points->Size() > 1)
+  if (contourReferencePointsInput.GetNumberOfVertices() > 1)
   {
-    mitk::Point3D p1;
-    mitk::Point3D p2;
+    const mitk::ContourModel::VertexType* v1 = contourReferencePointsInput.GetVertexAt(0);
 
-    p1 = points->ElementAt(0);
-
-    for (unsigned long i = 1; i < points->Size(); i++)
+    for (unsigned long i = 1; i < contourReferencePointsInput.GetNumberOfVertices(); i++)
     {
-      p2 = points->ElementAt(i);
+      const mitk::ContourModel::VertexType* v2 = contourReferencePointsInput.GetVertexAt(i);
 
-      this->DrawLineAroundVoxelEdges
-        (
-            *m_WorkingImage,
-            *m_WorkingImageGeometry,
-            planeGeometry,
-            p2,
-            p1,
-            feedbackContour,
-            backgroundContour
-        );
+      this->DrawLineAroundVoxelEdges(
+        *m_WorkingImage,
+        *m_WorkingImageGeometry,
+        planeGeometry,
+        v2->Coordinates,
+        v1->Coordinates,
+        feedbackContour,
+        backgroundContour
+      );
 
-      p1 = p2;
-
+      v1 = v2;
     }
   }
 }
@@ -292,9 +290,9 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
     bool registerNewPoint,
     const mitk::Point3D& closestCornerPoint,
     const PlaneGeometry& planeGeometry,
-    mitk::Contour& contourReferencePointsInput,
-    mitk::Contour& feedbackContour,
-    mitk::Contour& backgroundContour,
+    mitk::ContourModel& contourReferencePointsInput,
+    mitk::ContourModel& feedbackContour,
+    mitk::ContourModel& backgroundContour,
     bool provideUndo
     )
 {
@@ -303,15 +301,13 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
   float closestDistance = std::numeric_limits<float>::max();
   mitk::Point3D closestPoint;
   mitk::Point3D p1;
-  mitk::Point3D p2;
-  mitk::Contour::PointsContainerPointer points = contourReferencePointsInput.GetPoints();
 
   if (registerNewPoint)
   {
     m_DraggedPointIndex = 0;
-    for (unsigned long i = 0; i < contourReferencePointsInput.GetNumberOfPoints(); i++)
+    for (unsigned long i = 0; i < contourReferencePointsInput.GetNumberOfVertices(); i++)
     {
-      p1 = points->ElementAt(i);
+      p1 = contourReferencePointsInput.GetVertexAt(i)->Coordinates;
       distance = mitk::GetSquaredDistanceBetweenPoints(p1, closestCornerPoint);
       if (distance < closestDistance)
       {
@@ -336,7 +332,7 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
     mitk::MIDASPolyToolOpUpdateFeedbackContour *undoOp = new mitk::MIDASPolyToolOpUpdateFeedbackContour(
         MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR,
         m_DraggedPointIndex,
-        m_PreviousContourReferencePoints->GetPoints()->GetElement(m_DraggedPointIndex),
+        m_PreviousContourReferencePoints->GetVertexAt(m_DraggedPointIndex)->Coordinates,
         &contourReferencePointsInput,
         &planeGeometry
         );
@@ -347,14 +343,15 @@ void mitk::MIDASPolyTool::UpdateFeedbackContour(
   }
   else
   {
-    points->SetElement(m_DraggedPointIndex, closestCornerPoint);
+    mitk::ContourModel::VertexType* v = const_cast<mitk::ContourModel::VertexType*>(contourReferencePointsInput.GetVertexAt(m_DraggedPointIndex));
+    v->Coordinates = closestCornerPoint;
     this->DrawWholeContour(contourReferencePointsInput, planeGeometry, feedbackContour, backgroundContour);
   }
 }
 
 void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo, bool registerNewPoint)
 {
-  if (m_ReferencePoints->GetNumberOfPoints() > 1)
+  if (m_ReferencePoints->GetNumberOfVertices() > 1)
   {
     // Don't forget to call baseclass method.
     MIDASContourTool::OnMousePressed(action, stateEvent);
@@ -364,9 +361,9 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
     assert(m_WorkingImageGeometry);
 
     // Make sure we have valid contours, otherwise no point continuing.
-    Contour* feedbackContour = NULL; // MJC: temporary, (FIXME) FeedbackContourTool::GetFeedbackContour();
+    mitk::ContourModel* feedbackContour = NULL; // MJC: temporary, (FIXME) FeedbackContourTool::GetFeedbackContour();
     assert(feedbackContour);
-    Contour* backgroundContour = NULL; // MJC: temporary, (FIXME) MIDASContourTool::GetBackgroundContour();
+    mitk::ContourModel* backgroundContour = NULL; // MJC: temporary, (FIXME) MIDASContourTool::GetBackgroundContour();
     assert(backgroundContour);
 
     // Make sure we have a valid position event, otherwise no point continuing.
@@ -419,15 +416,15 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
   this->ConvertPointToNearestVoxelCentreInMillimetreCoordinates(positionEvent->GetWorldPosition(), closestCornerPoint);
 
   mitk::Point3D previousPoint;
-  if (m_ReferencePoints->GetNumberOfPoints() > 0)
+  if (m_ReferencePoints->GetNumberOfVertices() > 0)
   {
-    previousPoint = m_ReferencePoints->GetPoints()->GetElement(m_ReferencePoints->GetNumberOfPoints() -1);
+    previousPoint = m_ReferencePoints->GetVertexAt(m_ReferencePoints->GetNumberOfVertices() - 1)->Coordinates;
   }
 
-  mitk::Contour::Pointer currentPoints = mitk::Contour::New();
+  mitk::ContourModel::Pointer currentPoints = mitk::ContourModel::New();
   this->CopyContour(*(m_ReferencePoints.GetPointer()), *(currentPoints.GetPointer()));
 
-  mitk::Contour::Pointer nextPoints = mitk::Contour::New();
+  mitk::ContourModel::Pointer nextPoints = mitk::ContourModel::New();
   this->CopyContour(*(m_ReferencePoints.GetPointer()), *(nextPoints.GetPointer()));
   nextPoints->AddVertex(closestCornerPoint);
 
@@ -491,11 +488,11 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
 
   mitk::MIDASContourTool::ExecuteOperation(operation);
 
-  mitk::Contour* feedbackContour = NULL; // MJC: temporary (FIXME)  FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* feedbackContour = NULL; // MJC: temporary (FIXME)  FeedbackContourTool::GetFeedbackContour();
   assert(feedbackContour);
 
   // Retrieve the background contour, used to plot the closest straight line.
-  mitk::Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
   assert(backgroundContour);
 
   switch (operation->GetOperationType())
@@ -506,10 +503,10 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
       if (op != NULL)
       {
         mitk::Point3D point = op->GetPoint();
-        mitk::Contour* contour = op->GetContour();
+        mitk::ContourModel* contour = op->GetContour();
         const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
 
-        if (contour->GetNumberOfPoints() == 1)
+        if (contour->GetNumberOfVertices() == 1)
         {
           m_PolyLinePointSet->InsertPoint(0, point);
           this->SetPolyLinePointSetVisible(true);
@@ -531,12 +528,13 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
       {
         unsigned int pointId = op->GetPointId();
         mitk::Point3D point = op->GetPoint();
-        mitk::Contour* contour = op->GetContour();
+        mitk::ContourModel* contour = op->GetContour();
         const mitk::PlaneGeometry* planeGeometry = op->GetPlaneGeometry();
 
-        if (pointId >= 0 && pointId < contour->GetNumberOfPoints())
+        if (pointId >= 0 && pointId < contour->GetNumberOfVertices())
         {
-          contour->GetPoints()->SetElement(pointId, point);
+          mitk::ContourModel::VertexType* v = const_cast<mitk::ContourModel::VertexType*>(contour->GetVertexAt(pointId));
+          v->Coordinates = point;
           this->DrawWholeContour(*contour, *planeGeometry, *feedbackContour, *backgroundContour);
         }
         else
