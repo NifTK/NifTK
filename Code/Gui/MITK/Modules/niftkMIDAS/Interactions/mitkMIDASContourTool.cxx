@@ -419,14 +419,14 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
         this->GetClosestCornerPoint2D(mostRecentPointInMillimetres, whichTwoAxesInVoxelSpace, closestCornerPointToMostRecentPoint);
         this->GetClosestCornerPoint2D(incrementedPoint, whichTwoAxesInVoxelSpace, closestCornerPointToIncrementedPoint);
 
-        int currentNumberOfPoints = contourAroundCorners.GetNumberOfPoints();
+        int currentNumberOfPoints = contourAroundCorners.GetNumberOfVertices();
         if (currentNumberOfPoints == 0)
         {
           pointToCheckForDifference = closestCornerPointToMostRecentPoint;
         }
         else
         {
-          mostRecentPointInContourInMillimetres = contourAroundCorners.GetPoints()->GetElement(currentNumberOfPoints-1);
+          mostRecentPointInContourInMillimetres = contourAroundCorners.GetVertexAt(currentNumberOfPoints - 1)->Coordinates;
           pointToCheckForDifference = mostRecentPointInContourInMillimetres;
         }
 
@@ -484,19 +484,22 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
 
 void mitk::MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::ContourModel& b)
 {
-  b.SetClosed(a.GetClosed());
-  b.SetSelected(a.GetSelected());
-  b.SetWidth(a.GetWidth());
+  b.SetIsClosed(a.IsClosed());
+  // TODO Removed at from the new MITK segmentation framework.
+  // Some property of the node controls this.
+//  b.SetSelected(a.GetSelected());
+  // TODO Removed at from the new MITK segmentation framework.
+  // Some property of the node controls this.
+//  b.SetWidth(a.GetWidth());
 }
 
 void mitk::MIDASContourTool::CopyContour(mitk::ContourModel &a, mitk::ContourModel &b)
 {
   b.Initialize();
   mitk::MIDASContourTool::InitialiseContour(a, b);
-  mitk::ContourModel::PointsContainerPointer currentPoints = a.GetPoints();
-  for (unsigned long i = 0; i < currentPoints->Size(); i++)
+  for (unsigned long i = 0; i < a.GetNumberOfVertices(); i++)
   {
-    b.AddVertex(currentPoints->GetElement(i));
+    b.AddVertex(const_cast<mitk::ContourModel::VertexType&>(*a.GetVertexAt(i)));
   }
   b.UpdateOutputInformation();
 }
@@ -508,19 +511,16 @@ void mitk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Cont
     b.Initialize();
   }
 
-  mitk::ContourModelSet::ContourVectorType contourVec = a.GetContours();
-  mitk::ContourModelSet::ContourIterator contourIt = contourVec.begin();
+  mitk::ContourModelSet::ContourModelSetIterator contourIt = a.Begin();
 
-  unsigned int contourCounter = 0;
-  while ( contourIt != contourVec.end() )
+  while ( contourIt != a.End() )
   {
-    mitk::ContourModel* nextContour = ((*contourIt).second).GetPointer();
+    mitk::ContourModel* nextContour = (*contourIt).GetPointer();
     mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
 
     mitk::MIDASContourTool::CopyContour(*nextContour, *(outputContour.GetPointer()));
 
-    b.AddContour(contourCounter, outputContour);
-    contourCounter++;
+    b.AddContourModel(outputContour);
 
     ++contourIt;
   }
@@ -545,7 +545,7 @@ void mitk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& 
   mitk::ContourModel::Pointer copyOfInputContour = mitk::ContourModel::New();
   mitk::MIDASContourTool::CopyContour(contour, *(copyOfInputContour.GetPointer()));
 
-  newContourSet->AddContour(newContourSet->GetNumberOfContours(), copyOfInputContour);
+  newContourSet->AddContourModel(copyOfInputContour);
 
   mitk::MIDASContourToolOpAccumulateContour *doOp = new mitk::MIDASContourToolOpAccumulateContour(
       MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,

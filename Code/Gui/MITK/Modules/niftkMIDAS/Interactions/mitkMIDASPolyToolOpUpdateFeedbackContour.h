@@ -42,7 +42,7 @@ public:
       mitk::ContourModel* contour,
       const mitk::PlaneGeometry* geometry
       );
-  ~MIDASPolyToolOpUpdateFeedbackContour() {};
+  ~MIDASPolyToolOpUpdateFeedbackContour() {}
   unsigned int GetPointId() const { return m_PointId; }
   const mitk::Point3D GetPoint() const { return m_Point; }
   mitk::ContourModel* GetContour() const { return m_Contour.GetPointer(); }
