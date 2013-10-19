@@ -20,6 +20,7 @@
       <longflag>inImage</longflag>
       <description>Input image</description>
       <label>Image</label>
+      <default></default>
       <channel>input</channel>
     </image>
 
@@ -28,7 +29,7 @@
       <longflag>outBiasField</longflag>
       <description>Output bias field image</description>      
       <label>Output bias field image</label>
-      <default>BiasField.nii</default>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -55,6 +56,7 @@
       <longflag>outMask</longflag>
       <description>Output mask image</description>      
       <label>Output mask</label>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -63,6 +65,7 @@
       <longflag>outSubsampledImage</longflag>
       <description>Output subsampled image</description>      
       <label>Output subsampled field image</label>
+      <default></default>
       <channel>output</channel>
     </image>
 
@@ -71,6 +74,7 @@
       <longflag>outSubsampledMask</longflag>
       <description>Output subsampled mask</description>      
       <label>Output subsampled field mask</label>
+      <default></default>
       <channel>output</channel>
     </image>
 
