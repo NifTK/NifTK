@@ -52,7 +52,7 @@ mitk::MIDASContourTool::MIDASContourTool(const char* type) : MIDASTool(type)
   m_BackgroundContourNode->SetProperty("name", StringProperty::New(MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR));
   m_BackgroundContourNode->SetProperty("visible", BoolProperty::New(false));
   m_BackgroundContourNode->SetProperty("helper object", BoolProperty::New(true));
-  m_BackgroundContourNode->SetProperty("Width", FloatProperty::New(1));
+  m_BackgroundContourNode->SetProperty("contour.width", FloatProperty::New(m_ContourWidth));
 
   this->Disable3dRenderingOfBackgroundContour();
   this->SetBackgroundContourColorDefault();
@@ -132,6 +132,7 @@ void mitk::MIDASContourTool::ClearData()
 void mitk::MIDASContourTool::SetBackgroundContourColor( float r, float g, float b )
 {
   m_BackgroundContourNode->SetProperty("color", ColorProperty::New(r, g, b));
+  m_BackgroundContourNode->SetProperty("contour.color", ColorProperty::New(r, g, b));
 }
 
 void mitk::MIDASContourTool::SetBackgroundContourColorDefault()

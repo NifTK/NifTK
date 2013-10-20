@@ -379,13 +379,13 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingNodesFrom
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
-
   mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
+
   mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
 
-  contourSetNode->SetColor(col->GetColor());
-  contourSetNode->SetProperty( "name", mitk::StringProperty::New( name ) );
+  contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
   contourSetNode->SetBoolProperty("helper object", true);
   contourSetNode->SetBoolProperty("visible", visible);
   contourSetNode->SetProperty("layer", mitk::IntProperty::New(layer));
