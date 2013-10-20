@@ -70,8 +70,9 @@ mitk::MIDASPolyTool::MIDASPolyTool() : MIDASContourTool("MIDASPolyTool")
   m_PreviousContourNode->SetProperty("name", StringProperty::New(MIDAS_POLY_TOOL_PREVIOUS_CONTOUR));
   m_PreviousContourNode->SetProperty("visible", BoolProperty::New(true));
   m_PreviousContourNode->SetProperty("helper object", BoolProperty::New(true));
-  m_PreviousContourNode->SetProperty("Width", FloatProperty::New(m_ContourWidth));
+  m_PreviousContourNode->SetProperty("contour.width", FloatProperty::New(m_ContourWidth));
   m_PreviousContourNode->SetProperty("color", ColorProperty::New(0, 1, 0));
+  m_PreviousContourNode->SetProperty("contour.color", ColorProperty::New(0, 1, 0));
 
   this->Disable3dRenderingOfPreviousContour();
 
