@@ -21,7 +21,6 @@
 #include <mitkProperties.h>
 #include <mitkStringProperty.h>
 #include <mitkColorProperty.h>
-#include <mitkExtractImageFilter.h>
 #include <mitkDataNodeObject.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
@@ -3891,6 +3890,7 @@ MIDASGeneralSegmentorView
 
   // Extract 2D slice, and the contours, using ITK pipelines.
   typename ExtractSliceFilterType::Pointer extractSliceFilter = ExtractSliceFilterType::New();
+  extractSliceFilter->SetDirectionCollapseToIdentity();
   extractSliceFilter->SetInput(itkImage);
   extractSliceFilter->SetExtractionRegion(region);
 
@@ -4070,6 +4070,7 @@ MIDASGeneralSegmentorView
 
   // We are going to repeatedly extract each slice, and calculate new seeds on a per slice basis.
   typename ExtractImageFilterType::Pointer extractSliceFilter = ExtractImageFilterType::New();
+  extractSliceFilter->SetDirectionCollapseToIdentity();
   extractSliceFilter->SetInput(itkImage);
 
   typename ConnectedComponentFilterType::Pointer connectedComponentsFilter = ConnectedComponentFilterType::New();

@@ -23,7 +23,6 @@
 #include <mitkContourModelSet.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
-#include <mitkExtractImageFilter.h>
 #include <mitkMessage.h>
 
 namespace mitk {
