@@ -50,7 +50,9 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
   m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
+  m_ExtractGreyRegionOfInterestFilter->SetDirectionCollapseToIdentity();
   m_ExtractBinaryRegionOfInterestFilter->SetInput(segmentationImage);
+  m_ExtractBinaryRegionOfInterestFilter->SetDirectionCollapseToIdentity();
 
   m_SliceNumber = p.m_SliceNumber;
   m_AxisNumber = p.m_AxisNumber;

@@ -21,7 +21,6 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkGeometry3D.h>
-#include <mitkExtractImageFilter.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkContourModelSet.h>
 #include "mitkMIDASContourToolOpAccumulateContour.h"
