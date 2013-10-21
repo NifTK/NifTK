@@ -180,7 +180,7 @@ void mitk::MIDASPolyTool::Deactivated()
 {
   MIDASTool::Deactivated();
 
-  Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
   if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
   {
