@@ -391,9 +391,15 @@ if(CMAKE_GENERATOR MATCHES Make AND NOT (CMAKE_GENERATOR MATCHES NMake) )
   getuname(osname -s)
   getuname(cpu    -m)
 
-  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(CompilerName "gcc")
+  elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    set(CompilerName "clang")
+  else()
+    set(CompilerName "${CMAKE_CXX_COMPILER_ID}")
+  endif()
 
-  set(CTBN "${osname}-${cpu}-gcc-${GCC_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+  set(CTBN "${osname}-${cpu}-${CompilerName}-${CMAKE_CXX_COMPILER_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
 
 else()
 
