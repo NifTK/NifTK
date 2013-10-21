@@ -180,11 +180,7 @@ void mitk::MIDASPolyTool::Deactivated()
 {
   MIDASTool::Deactivated();
 
-/* MJC: temporary
   Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-*/
-  mitk::ContourModel* feedbackContour = NULL;
-  assert(feedbackContour); // fixme
 
   if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
   {
@@ -362,9 +358,9 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
     assert(m_WorkingImageGeometry);
 
     // Make sure we have valid contours, otherwise no point continuing.
-    mitk::ContourModel* feedbackContour = NULL; // MJC: temporary, (FIXME) FeedbackContourTool::GetFeedbackContour();
+    mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
     assert(feedbackContour);
-    mitk::ContourModel* backgroundContour = NULL; // MJC: temporary, (FIXME) MIDASContourTool::GetBackgroundContour();
+    mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
     assert(backgroundContour);
 
     // Make sure we have a valid position event, otherwise no point continuing.
@@ -489,7 +485,7 @@ void mitk::MIDASPolyTool::ExecuteOperation(Operation* operation)
 
   mitk::MIDASContourTool::ExecuteOperation(operation);
 
-  mitk::ContourModel* feedbackContour = NULL; // MJC: temporary (FIXME)  FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
   assert(feedbackContour);
 
   // Retrieve the background contour, used to plot the closest straight line.

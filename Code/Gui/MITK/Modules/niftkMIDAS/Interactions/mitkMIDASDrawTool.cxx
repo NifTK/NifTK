@@ -164,13 +164,8 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
 
   // Retrieve the contour that we will add points to.
-/* MJC: temporary
-  mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
   mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
-*/
-  mitk::ContourModel* feedbackContour = NULL;
-  mitk::ContourModel* backgroundContour = NULL;
-  assert(feedbackContour); // fixme
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
   unsigned int numberAdded = this->DrawLineAroundVoxelEdges
@@ -209,11 +204,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
   if (!positionEvent) return false;
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
-/* MJC: temporary 
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-*/
-  mitk::ContourModel* feedbackContour = NULL;
-  assert(feedbackContour); // fixme
 
   this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
