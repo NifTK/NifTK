@@ -59,7 +59,7 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
     ParametricPathType::Pointer itkContour = ParametricPathType::New();
     mitk::ContourModel::VertexIterator vertexIter = mitkContour->Begin();
     mitk::ContourModel::VertexIterator vertexEnd = mitkContour->End();
-    while (vertexIter != vertexEnd)
+    for ( ; vertexIter != vertexEnd; ++vertexIter)
     {
       ParametricPathType::ContinuousIndexType idx;
       mitk::ContourModel::VertexType* vertex = *vertexIter;
