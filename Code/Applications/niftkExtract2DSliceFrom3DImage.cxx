@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 
   // The size of the arrays must be the same as the number if input dimensions.
   int dims = itk::PeekAtImageDimension(args.inputImage);
-  if (dims != 3 || dims != 4)
+  if (dims != 3 && dims != 4)
   {
     std::cerr << "ERROR: Unsuported image dimension" << std::endl;
     return EXIT_FAILURE;
