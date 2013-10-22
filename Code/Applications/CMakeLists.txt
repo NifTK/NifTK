@@ -77,8 +77,9 @@ if(SlicerExecutionModel_FOUND)
     niftkDilate
     niftkErode
     niftkExportDICOMTagsToCSVFile
-    niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkExtract2DSliceFrom3DImage
+    niftkExtrudeMaskToVolume
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
@@ -244,7 +245,6 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
-  niftkExtract2DSliceFrom3DImage
   niftkExtractCurvatures
   niftkExtractRegion
   niftkExtractScalp
