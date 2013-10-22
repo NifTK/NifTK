@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Extract Slice from Volume</title>
+  <description><![CDATA[Extracts a Slice from a Volume.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+    <integer-vector>
+      <name>regionSize</name>
+      <longflag>size</longflag>
+      <description>A vector of integers representing the output region size. The number of integers must match the number of input dimensions. One integer must be zero.</description>
+      <label>Region size</label>
+    </integer-vector>
+    <integer-vector>
+      <name>startingIndex</name>
+      <longflag>index</longflag>
+      <description>A vector of integers representing the starting index.</description>
+      <label>Starting index</label>
+    </integer-vector>
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>
+      <label>Output image</label>
+      <default>output.nii.gz</default>
+      <channel>output</channel>
+    </image>
+  </parameters>
+</executable>
