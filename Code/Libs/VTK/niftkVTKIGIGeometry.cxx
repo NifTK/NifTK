@@ -14,15 +14,21 @@
 #include "niftkVTKIGIGeometry.h"
 
 #include <vtkCubeSource.h>
+#include <vtkSphereSource.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
+#include <vtkAppendPolyData.h>
 
 #include <sstream>
+#include <cassert>
 namespace niftk
 { 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
-{}
+{
+  std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
+  return this->MakeIREDs(positions);
+}
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
@@ -141,6 +147,23 @@ std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(s
   }
   fin.close();
   return returnVector;
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeIREDs(std::vector < std::vector <float> > IREDPositions, float Radius, int ThetaRes, int PhiRes )
+{
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  for ( int i = 0 ; i < IREDPositions.size() ; i ++ ) 
+  {
+    assert ( IREDPositions[i].size() == 3 );
+    vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
+    sphere->SetRadius(Radius);
+    sphere->SetThetaResolution(ThetaRes);
+    sphere->SetPhiResolution(PhiRes);
+    sphere->SetCenter(IREDPositions[i][0],IREDPositions[i][1],IREDPositions[i][2]);
+    appenderer->AddInput(sphere->GetOutput());
+  }
+  return appenderer->GetOutput();
 }
     
 } //end namespace niftk

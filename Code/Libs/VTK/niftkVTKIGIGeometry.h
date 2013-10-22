@@ -68,6 +68,8 @@ private:
   /**
   * \brief put put down spheres to represent each IRED
   */
+  vtkSmartPointer<vtkPolyData> MakeIREDs ( std::vector <std::vector <float> > IREDPositions,
+      float Radius = 3.0, int ThetaResolution = 8 , int PhiResolution = 8 );
 };
 } // end namespace
 #endif

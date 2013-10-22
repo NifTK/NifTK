@@ -24,21 +24,21 @@
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeLaparoscope(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeLaparoscope(QString& rigidBodyFilename, QString& handeyeFilename );
 
 /**
  * \brief For visualisation purposes, creates a representation of the pointer.
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakePointer(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakePointer(QString& rigidBodyFilename, QString& handeyeFilename );
 
 /**
  * \brief For visualisation purposes, creates a representation of the reference.
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeReference(QString& rigidBodyFilename, const vtkMatrix4x4& handeye );
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeReference(QString& rigidBodyFilename, QString& handeyeFilename );
 
 /**
  * \brief For visualisation purposes, make a wall of a cube

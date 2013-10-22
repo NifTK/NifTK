@@ -23,16 +23,37 @@
 #include <niftkVTKIGIGeometry.h>
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{}
+mitk::Surface::Pointer MakeLaparoscope ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(laparoscope);
+  mitk::IOUtil::SaveSurface (surface,"/dev/shm/laparoscope.vtp");
+  return surface;
+}
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{}
+mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> pointer = maker.MakePointer(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(pointer);
+  mitk::IOUtil::SaveSurface (surface,"/dev/shm/pointer.vtp");
+  return surface;
+}
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{}
+mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> reference = maker.MakeReference(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(reference);
+  mitk::IOUtil::SaveSurface (surface,"/dev/shm/reference.vtp");
+  return surface;
+}
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size, 
@@ -45,7 +66,7 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
 
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(wall);
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/output.vtp");
+  mitk::IOUtil::SaveSurface (surface,"/dev/shm/wall.vtp");
   return surface;
 }
 
