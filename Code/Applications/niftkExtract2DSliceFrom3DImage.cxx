@@ -63,7 +63,8 @@ int DoMain(arguments args)
   typename ExtractImageFilterType::Pointer filter = ExtractImageFilterType::New();
   filter->SetInput(imageReader->GetOutput());
   filter->SetExtractionRegion(regionType);
-  
+  filter->SetDirectionCollapseToIdentity();
+
   typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
   imageWriter->SetFileName(args.outputImage);
   imageWriter->SetInput(filter->GetOutput());
