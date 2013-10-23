@@ -21,7 +21,6 @@
 #include <mitkProperties.h>
 #include <mitkStringProperty.h>
 #include <mitkColorProperty.h>
-#include <mitkExtractImageFilter.h>
 #include <mitkDataNodeObject.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
@@ -45,7 +44,7 @@
 #include <mitkUndoController.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkImageStatisticsHolder.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 #include <mitkFocusManager.h>
 #include <mitkSegmentationObjectFactory.h>
 #include <mitkSurface.h>
@@ -379,13 +378,13 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingNodesFrom
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
+  mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
 
-  mitk::ContourSet::Pointer contourSet = mitk::ContourSet::New();
   mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
 
-  contourSetNode->SetColor(col->GetColor());
-  contourSetNode->SetProperty( "name", mitk::StringProperty::New( name ) );
+  contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
   contourSetNode->SetBoolProperty("helper object", true);
   contourSetNode->SetBoolProperty("visible", visible);
   contourSetNode->SetProperty("layer", mitk::IntProperty::New(layer));
@@ -760,7 +759,7 @@ void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Poin
     int axisNumber,
     int sliceNumber,
     int projectedSliceNumber,
-    mitk::ContourSet::Pointer outputContourSet
+    mitk::ContourModelSet::Pointer outputContourSet
     )
 {
   try
@@ -1241,14 +1240,14 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
   assert(toolManager);
 
   mitk::ToolManager::DataVectorType workingNodes = this->GetWorkingNodes();
-  mitk::ContourSet::Pointer contourSet = dynamic_cast<mitk::ContourSet*>(workingNodes[2]->GetData());
+  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[2]->GetData());
   assert(contourSet);
 
   if (sliceNumber >= 0 && axisNumber >= 0)
   {
     this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
-    if (contourSet->GetNumberOfContours() > 0)
+    if (contourSet->GetSize() > 0)
     {
       workingNodes[2]->Modified();
 
@@ -1290,15 +1289,15 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
   mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
   assert(polyTool);
 
-  mitk::ContourSet::Pointer polyToolContours = mitk::ContourSet::New();
-  mitk::Contour* polyToolContour = polyTool->GetContour();
-  if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
+  mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
+  mitk::ContourModel* polyToolContour = polyTool->GetContour();
+  if (polyToolContour != NULL && !polyToolContour->IsEmpty())
   {
-    polyToolContours->AddContour(0, polyToolContour);
+    polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourSet* segmentationContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
-  mitk::ContourSet* drawToolContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
 
   double lowerThreshold = m_GeneralControls->m_LowerThresholdSliderWidget->value();
   double upperThreshold = m_GeneralControls->m_UpperThresholdSliderWidget->value();
@@ -1426,10 +1425,10 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 
   if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
   {
-    mitk::ContourSet::Pointer contourSet = dynamic_cast<mitk::ContourSet*>(workingNodes[4]->GetData());
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[4]->GetData());
     this->GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
 
-    if (contourSet->GetNumberOfContours() > 0)
+    if (contourSet->GetSize() > 0)
     {
       workingNodes[4]->Modified();
 
@@ -1442,10 +1441,10 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 
   if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
   {
-    mitk::ContourSet::Pointer contourSet = dynamic_cast<mitk::ContourSet*>(workingNodes[5]->GetData());
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[5]->GetData());
     this->GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
 
-    if (contourSet->GetNumberOfContours() > 0)
+    if (contourSet->GetSize() > 0)
     {
       workingNodes[5]->Modified();
 
@@ -1556,16 +1555,16 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
       mitk::MIDASPolyTool *polyTool = static_cast<mitk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>()));
       assert(polyTool);
 
-      mitk::ContourSet::Pointer polyToolContours = mitk::ContourSet::New();
+      mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
-      mitk::Contour* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
+      mitk::ContourModel* polyToolContour = polyTool->GetContour();
+      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() > 0)
       {
-        polyToolContours->AddContour(0, polyToolContour);
+        polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourSet* segmentationContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
-      mitk::ContourSet* drawToolContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
 
       int axisNumber = this->GetViewAxis();
 
@@ -2084,18 +2083,18 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       mitk::MIDASDrawTool *drawTool = static_cast<mitk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>()));
       assert(drawTool);
 
-      mitk::ContourSet::Pointer polyToolContours = mitk::ContourSet::New();
+      mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
-      mitk::Contour* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetPoints()->Size() > 0)
+      mitk::ContourModel* polyToolContour = polyTool->GetContour();
+      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() > 0)
       {
-        polyToolContours->AddContour(0, polyToolContour);
+        polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourSet* segmentationContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
       assert(segmentationContours);
 
-      mitk::ContourSet* drawToolContours = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[3]->GetData());
       assert(drawToolContours);
 
       mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(mitk::MIDASTool::REGION_GROWING_IMAGE_NAME.c_str(), workingNode, true);
@@ -2108,8 +2107,8 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
       double upperThreshold = m_GeneralControls->m_UpperThresholdSliderWidget->value();
       int axisNumber = this->GetViewAxis();
 
-      mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
-      mitk::ContourSet::Pointer outputContourSet = mitk::ContourSet::New();
+      mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
+      mitk::ContourModelSet::Pointer outputContourSet = mitk::ContourModelSet::New();
 
       if (axisNumber != -1 && sliceNumber != -1)
       {
@@ -3016,10 +3015,10 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         mitk::OpClean* op = dynamic_cast<mitk::OpClean*>(operation);
         assert(op);
 
-        mitk::ContourSet* newContours = op->GetContourSet();
+        mitk::ContourModelSet* newContours = op->GetContourSet();
         assert(newContours);
 
-        mitk::ContourSet* contoursToReplace = dynamic_cast<mitk::ContourSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
+        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodesFromToolManager()[2]->GetData());
         assert(contoursToReplace);
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
@@ -3507,9 +3506,9 @@ MIDASGeneralSegmentorView
     bool skipUpdate,
     mitk::Image &workingImage,
     mitk::PointSet &seeds,
-    mitk::ContourSet &segmentationContours,
-    mitk::ContourSet &drawContours,
-    mitk::ContourSet &polyContours,
+    mitk::ContourModelSet &segmentationContours,
+    mitk::ContourModelSet &drawContours,
+    mitk::ContourModelSet &polyContours,
     int sliceNumber,
     int axisNumber,
     double lowerThreshold,
@@ -3823,7 +3822,7 @@ MIDASGeneralSegmentorView
     int axisNumber,
     int sliceNumber,
     int projectedSliceNumber,
-    mitk::ContourSet::Pointer outputContourSet
+    mitk::ContourModelSet::Pointer outputContourSet
     )
 {
   // NOTE: This function is only meant to be called on binary images,
@@ -3891,6 +3890,7 @@ MIDASGeneralSegmentorView
 
   // Extract 2D slice, and the contours, using ITK pipelines.
   typename ExtractSliceFilterType::Pointer extractSliceFilter = ExtractSliceFilterType::New();
+  extractSliceFilter->SetDirectionCollapseToIdentity();
   extractSliceFilter->SetInput(itkImage);
   extractSliceFilter->SetExtractionRegion(region);
 
@@ -3907,10 +3907,11 @@ MIDASGeneralSegmentorView
   unsigned int numberOfContours = extractContoursFilter->GetNumberOfOutputs();
   for (unsigned int i = 0; i < numberOfContours; i++)
   {
-    mitk::Contour::Pointer contour = mitk::Contour::New();
-    contour->SetClosed(false);
-    contour->SetSelected(false);
-    contour->SetWidth(1);
+    mitk::ContourModel::Pointer contour = mitk::ContourModel::New();
+    contour->SetIsClosed(false);
+    // TODO These functions are not provided by the new MITK contour classes.
+//    contour->SetSelected(false);
+//    contour->SetWidth(1);
     mitk::Point3D pointInMillimetres;
 
     typename PathType::Pointer path = extractContoursFilter->GetOutput(i);
@@ -3927,7 +3928,7 @@ MIDASGeneralSegmentorView
 
       contour->AddVertex(pointInMillimetres);
     }
-    outputContourSet->AddContour(i, contour);
+    outputContourSet->AddContourModel(contour);
   }
 }
 
@@ -4069,6 +4070,7 @@ MIDASGeneralSegmentorView
 
   // We are going to repeatedly extract each slice, and calculate new seeds on a per slice basis.
   typename ExtractImageFilterType::Pointer extractSliceFilter = ExtractImageFilterType::New();
+  extractSliceFilter->SetDirectionCollapseToIdentity();
   extractSliceFilter->SetInput(itkImage);
 
   typename ConnectedComponentFilterType::Pointer connectedComponentsFilter = ConnectedComponentFilterType::New();
@@ -4431,9 +4433,9 @@ void MIDASGeneralSegmentorView
 ::ITKSliceDoesHaveUnEnclosedSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::PointSet &seeds,
-    mitk::ContourSet &segmentationContours,
-    mitk::ContourSet &polyToolContours,
-    mitk::ContourSet &drawToolContours,
+    mitk::ContourModelSet &segmentationContours,
+    mitk::ContourModelSet &polyToolContours,
+    mitk::ContourModelSet &drawToolContours,
     mitk::Image &workingImage,
     double lowerThreshold,
     double upperThreshold,
@@ -4501,16 +4503,16 @@ void MIDASGeneralSegmentorView
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::Image &workingImage,
     mitk::PointSet &seeds,
-    mitk::ContourSet &segmentationContours,
-    mitk::ContourSet &drawToolContours,
-    mitk::ContourSet &polyToolContours,
+    mitk::ContourModelSet &segmentationContours,
+    mitk::ContourModelSet &drawToolContours,
+    mitk::ContourModelSet &polyToolContours,
     int axis,
     int slice,
     double lowerThreshold,
     double upperThreshold,
     bool isThresholding,
-    mitk::ContourSet &outputCopyOfInputContours,
-    mitk::ContourSet &outputContours
+    mitk::ContourModelSet &outputCopyOfInputContours,
+    mitk::ContourModelSet &outputContours
     )
 {
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
@@ -4521,7 +4523,7 @@ void MIDASGeneralSegmentorView
   workingImageToItk->Update();
 
   // Input contour set could be empty, so nothing to filter.
-  if (segmentationContours.GetNumberOfContours() == 0)
+  if (segmentationContours.GetSize() == 0)
   {
     return;
   }
@@ -4571,17 +4573,15 @@ void MIDASGeneralSegmentorView
 
   unsigned int size = 0;
   mitk::Point3D pointInContour;
-  int contourNumber = 0;
   PointType pointInMillimetres;
   ContinuousIndexType continuousVoxelIndex;
   IndexType voxelIndex;
 
-  mitk::ContourSet::ContourVectorType contourVec = outputCopyOfInputContours.GetContours();
-  mitk::ContourSet::ContourIterator contourIt = contourVec.begin();
-  mitk::Contour::Pointer firstContour = (*contourIt).second;
+  mitk::ContourModelSet::ContourModelSetIterator contourIt = outputCopyOfInputContours.Begin();
+  mitk::ContourModel::Pointer firstContour = *contourIt;
 
   outputContours.Initialize();
-  mitk::Contour::Pointer outputContour = mitk::Contour::New();
+  mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
   mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
   RegionType neighbourhoodRegion;
@@ -4590,15 +4590,14 @@ void MIDASGeneralSegmentorView
   neighbourhoodSize.Fill(2);
   neighbourhoodSize[axis] = 1;
 
-  while ( contourIt != contourVec.end() )
+  while ( contourIt != outputCopyOfInputContours.End() )
   {
-    mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
-    mitk::Contour::PointsContainerPointer nextPoints = nextContour->GetPoints();
+    mitk::ContourModel::Pointer nextContour = *contourIt;
 
-    size = nextContour->GetNumberOfPoints();
+    size = nextContour->GetNumberOfVertices();
     for (unsigned int i = 0; i < size; i++)
     {
-      pointInContour = nextPoints->GetElement(i);
+      pointInContour = nextContour->GetVertexAt(i)->Coordinates;
       for (unsigned int j = 0; j < SizeType::GetSizeDimension(); j++)
       {
         pointInMillimetres[j] = pointInContour[j];
@@ -4630,20 +4629,18 @@ void MIDASGeneralSegmentorView
       {
         outputContour->AddVertex(pointInContour);
       }
-      else if (!isNearRegion && outputContour->GetNumberOfPoints() > 0)
+      else if (!isNearRegion && outputContour->GetNumberOfVertices() > 0)
       {
-        outputContours.AddContour(contourNumber, outputContour);
-        outputContour = mitk::Contour::New();
+        outputContours.AddContourModel(outputContour);
+        outputContour = mitk::ContourModel::New();
         mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-        contourNumber++;
       }
     }
-    if (outputContour->GetNumberOfPoints() > 0)
+    if (outputContour->GetNumberOfVertices() > 0)
     {
-      outputContours.AddContour(contourNumber, outputContour);
-      outputContour = mitk::Contour::New();
+      outputContours.AddContourModel(outputContour);
+      outputContour = mitk::ContourModel::New();
       mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-      contourNumber++;
     }
     contourIt++;
   }

@@ -18,11 +18,11 @@ namespace mitk {
 
 MIDASDrawToolOpEraseContour::MIDASDrawToolOpEraseContour(
   mitk::OperationType type,
-  mitk::ContourSet* contourSet,
+  mitk::ContourModelSet* contourModelSet,
   const int& workingNodeNumber
   )
 : mitk::Operation(type)
-, m_ContourSet(contourSet)
+, m_ContourModelSet(contourModelSet)
 , m_WorkingNodeNumber(workingNodeNumber)
 {
 

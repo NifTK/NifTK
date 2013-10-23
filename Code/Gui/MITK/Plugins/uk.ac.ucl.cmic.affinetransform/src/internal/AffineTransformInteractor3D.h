@@ -124,7 +124,6 @@ private:
   mitk::Geometry3D::Pointer  m_Geometry;
 
   mitk::Geometry3D::Pointer  m_OriginalGeometry;
-  //mitk::SlicedGeometry3D::Pointer m_OriginalTimeSlicedGeometry;
 
   mitk::Vector3D             m_ObjectNormal;
   

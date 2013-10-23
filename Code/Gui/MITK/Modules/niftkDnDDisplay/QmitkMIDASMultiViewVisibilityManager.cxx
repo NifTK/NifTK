@@ -454,9 +454,9 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
+mitk::TimeGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
-  mitk::TimeSlicedGeometry::Pointer geometry = NULL;
+  mitk::TimeGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
 
   // If nodeIndex < 0, we are choosing the best geometry from all available nodes.
@@ -470,7 +470,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
       if (image.IsNotNull())
       {
-        geometry = image->GetTimeSlicedGeometry();
+        geometry = image->GetTimeGeometry();
         indexThatWeActuallyUsed = i;
         break;
       }
@@ -484,7 +484,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
         mitk::BaseData::Pointer data = nodes[i]->GetData();
         if (data.IsNotNull())
         {
-          geometry = data->GetTimeSlicedGeometry();
+          geometry = data->GetTimeGeometry();
           indexThatWeActuallyUsed = i;
           break;
         }
@@ -497,7 +497,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
     mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
     if (data.IsNotNull())
     {
-      geometry = data->GetTimeSlicedGeometry();
+      geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = nodeIndex;
     }
   }
@@ -507,7 +507,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
     mitk::BaseData::Pointer data = nodes[0]->GetData();
     if (data.IsNotNull())
     {
-      geometry = data->GetTimeSlicedGeometry();
+      geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = 0;
     }
   }
@@ -525,7 +525,7 @@ mitk::TimeSlicedGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeome
         mitk::BaseData::Pointer data = nodes[0]->GetData();
         if (data.IsNotNull())
         {
-          geometry = data->GetTimeSlicedGeometry();
+          geometry = data->GetTimeGeometry();
         }
       }
     }
@@ -665,7 +665,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
 
       MITK_DEBUG << "Dropped single" << std::endl;
 
-      mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
+      mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
       if (geometry.IsNull())
       {
         MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;
@@ -715,7 +715,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
           dropIndex = 0;
         }
 
-        mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, i);
+        mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, i);
         if (geometry.IsNull())
         {
           MITK_ERROR << "Error, dropping node " << i << ", from a list of " << nodes.size() << " nodes into window " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
@@ -747,7 +747,7 @@ void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *win
     {
       MITK_DEBUG << "Dropped thumbnail" << std::endl;
 
-      mitk::TimeSlicedGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
+      mitk::TimeGeometry::Pointer geometry = this->GetGeometry(nodes, -1);
       if (geometry.IsNull())
       {
         MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into window " << windowIndex << ", could not find geometry which must be a programming bug." << std::endl;

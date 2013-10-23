@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Make Grid of Images</title>
+  <description><![CDATA[Takes filename prefix and suffix, searches for matching images, and tiles them into a grid pattern.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson.</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/Output file parameters]]></description>
+    <string>
+       <name>directoryName</name>
+       <longflag>directoryName</longflag>
+       <description>Directory containing images to use.</description>
+       <label>Directory name</label>
+     </string>
+    <integer-vector>
+      <name>imageSize</name>
+      <longflag>imageSize</longflag>
+      <description>A vector containing the output image size in pixels.</description>
+      <label>Image size</label>
+    </integer-vector>
+    <integer-vector>
+      <name>gridDimensions</name>
+      <longflag>gridDimensions</longflag>
+      <description>A vector containing the grid size, which is how many tiles in the x and y direction.</description>
+      <label>Grid size</label>
+    </integer-vector>
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>
+      <label>Output image</label>
+      <channel>output</channel>
+    </image>
+  </parameters>
+</executable>

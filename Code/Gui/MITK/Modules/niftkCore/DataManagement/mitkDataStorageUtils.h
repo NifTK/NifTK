@@ -18,7 +18,7 @@
 #include "niftkCoreExports.h"
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkTimeSlicedGeometry.h>
+#include <mitkTimeGeometry.h>
 #include <mitkMIDASEnums.h>
 #include <mitkMIDASImageUtils.h>
 
@@ -59,7 +59,7 @@ namespace mitk
    *
    * \param nodes A vector of mitk::DataNode pointers where we assume each node has a Geometry (which should always be the case).
    * \param nodeIndex if we specify a node number/index that is a valid node in the vector <code>nodes</code> we just short-cut the search and pick that one.
-   * \return mitk::TimeSlicedGeometry::Pointer A pointer to the chosen TimeSlicedGeometry or NULL if we didn't find one.
+   * \return mitk::TimeGeometry::Pointer A pointer to the chosen TimeGeometry or NULL if we didn't find one.
    *
    * The algorithm is:
    * <pre>
@@ -74,7 +74,7 @@ namespace mitk
    *   Try to find a parent grey-scale image, and if successful return that geometry.
    * </pre>
    */
-  NIFTKCORE_EXPORT mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex=-1);
+  NIFTKCORE_EXPORT mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex=-1);
 
   /**
    * \brief Loads a 4x4 matrix from a plain textfile, and puts in data storage with the given nodeName, or else creates Identity matrix.

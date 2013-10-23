@@ -205,7 +205,7 @@ set(NIFTK_NIGHTLY_DOCS "https://cmicdev.cs.ucl.ac.uk/NifTK/html/index.html" CACH
 set(NIFTK_BUILD_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html" CACHE STRING "Build instructions")
 set(NIFTK_INSTALL_INSTRUCTIONS "http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html" CACHE STRING "Installation instructions")
 set(NIFTK_ARCHTYPE_DATA "git" CACHE STRING "Archive type NifTKData (git or tar)" FORCE)
-set(NIFTK_VERSION_DATA "b9d928e2dc" CACHE STRING "Version of NifTKData" FORCE)
+set(NIFTK_VERSION_DATA "f5b27aeb5a" CACHE STRING "Version of NifTKData" FORCE)
 set(NIFTK_VERSION_Boost "1_54_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.2.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
@@ -214,8 +214,8 @@ set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
 set(NIFTK_VERSION_CTK "84f24b8d90" CACHE STRING "Version of CTK" FORCE)
-set(NIFTK_VERSION_OPENCV "2.4.6.1" CACHE STRING "Version of OpenCV" FORCE)
-set(NIFTK_VERSION_MITK "c707cbfd78" CACHE STRING "Version of MITK" FORCE)
+set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
+set(NIFTK_VERSION_MITK "fe8ff07f62" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
 set(NIFTK_VERSION_NIFTYREG "380" CACHE STRING "Version of NiftyReg" FORCE)
 set(NIFTK_VERSION_NIFTYSEG "122" CACHE STRING "Version of NiftySeg" FORCE)
@@ -391,9 +391,15 @@ if(CMAKE_GENERATOR MATCHES Make AND NOT (CMAKE_GENERATOR MATCHES NMake) )
   getuname(osname -s)
   getuname(cpu    -m)
 
-  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+  if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(CompilerName "gcc")
+  elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    set(CompilerName "clang")
+  else()
+    set(CompilerName "${CMAKE_CXX_COMPILER_ID}")
+  endif()
 
-  set(CTBN "${osname}-${cpu}-gcc-${GCC_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
+  set(CTBN "${osname}-${cpu}-${CompilerName}-${CMAKE_CXX_COMPILER_VERSION}-${NIFTK_BRANCH_NAME}-${NIFTK_REVISION_SHORTID}")
 
 else()
 

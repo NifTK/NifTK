@@ -20,7 +20,7 @@
 #include <mitkOperationActor.h>
 #include <mitkTool.h>
 #include <mitkToolManager.h>
-#include <mitkContour.h>
+#include <mitkContourModel.h>
 #include <mitkPlaneGeometry.h>
 
 namespace mitk
@@ -38,17 +38,17 @@ public:
   MIDASPolyToolOpAddToFeedbackContour(
       mitk::OperationType type,
       mitk::Point3D &point,
-      mitk::Contour* contour,
+      mitk::ContourModel* contour,
       const mitk::PlaneGeometry* geometry
       );
   ~MIDASPolyToolOpAddToFeedbackContour() {};
   mitk::Point3D GetPoint() const { return m_Point;}
-  mitk::Contour* GetContour() const { return m_Contour.GetPointer();}
+  mitk::ContourModel* GetContour() const { return m_Contour.GetPointer();}
   const mitk::PlaneGeometry* GetPlaneGeometry() { return m_PlaneGeometry; }
 
 private:
   mitk::Point3D m_Point;
-  mitk::Contour::Pointer m_Contour;
+  mitk::ContourModel::Pointer m_Contour;
   const mitk::PlaneGeometry* m_PlaneGeometry;
 };
 

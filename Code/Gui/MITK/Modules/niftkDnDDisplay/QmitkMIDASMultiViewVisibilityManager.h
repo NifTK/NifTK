@@ -170,7 +170,7 @@ private:
   //   Picks out the geometry of the object for that index.
   // Else
   //   Picks out the first geometry.
-  mitk::TimeSlicedGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
+  mitk::TimeGeometry::Pointer GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
   // This object MUST be connected to a datastorage, hence it is passed in via the constructor.
   mitk::DataStorage::Pointer m_DataStorage;
