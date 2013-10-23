@@ -26,6 +26,10 @@ int main(int argc, char** argv)
   bool SortByDistance = !DontSortByDistance;
   try
   {
+    mitk::Point2D pixelScales;
+    pixelScales[0] = pixelScaleFactors[0];
+    pixelScales[1] = pixelScaleFactors[1];
+
     mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();
     Calibrator->SetDirectory(trackingInputDirectory);
     Calibrator->SetTrackerIndex(trackerIndex);
@@ -35,6 +39,7 @@ int main(int argc, char** argv)
     Calibrator->SetFlipTracking(FlipTracking);
     Calibrator->SetFlipExtrinsic(FlipExtrinsic);
     Calibrator->SetSortByAngle(false);
+    Calibrator->SetPixelScaleFactor(pixelScales);
     Calibrator->InitialiseTracking();
     Calibrator->InitialiseVideo();
 

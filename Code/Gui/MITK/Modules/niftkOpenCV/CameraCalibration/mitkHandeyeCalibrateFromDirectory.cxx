@@ -44,6 +44,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_WriteOutCalibrationImages(true)
 , m_NoVideoSupport(false)
 {
+  m_PixelScaleFactor.Fill(1);
 }
 
 
@@ -210,14 +211,14 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         bool LeftOK = mitk::ExtractChessBoardPoints (
           LeftFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
-          true, m_SquareSizeInMillimetres,
+          true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
           leftImageCorners, leftObjectCorners);
         std::vector <cv::Point2f>* rightImageCorners = new std::vector<cv::Point2f>;
         std::vector <cv::Point3f>* rightObjectCorners = new std::vector<cv::Point3f>;
         bool RightOK = mitk::ExtractChessBoardPoints (
           RightFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
-          true, m_SquareSizeInMillimetres,
+          true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
           rightImageCorners, rightObjectCorners);
 
         if ( LeftOK && RightOK )

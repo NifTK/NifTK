@@ -43,6 +43,7 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
     const int& numberCornersX,
     const int& numberCornersY,
     const float& sizeSquareMillimeters,
+    const mitk::Point2D& pixelScaleFactor,
     const std::string& outputFile,
     const bool& writeImages
     )
@@ -84,7 +85,7 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CheckConstImageSize(images, width, height);
   CvSize imageSize = cvGetSize(images[0]);
 
-  ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
+  ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, pixelScaleFactor, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
 
   int numberOfSuccessfulViews = successfullImages.size();
   CvMat *rotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);

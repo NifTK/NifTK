@@ -19,6 +19,7 @@
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
+#include <mitkVector.h>
 
 /**
  * \file mitkCameraCalibrationFacade
@@ -59,6 +60,7 @@ extern "C++" NIFTKOPENCV_EXPORT void CheckConstImageSize(
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param drawCorners if true will dump images in the same directory as the input images, to indicate which points were found (usefull for debugging).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
  * \param outputImages list of successfully processed images, which are just pointers back to the same images as in the first parameter vector, i.e. they are not copied, so don't de-allocate the images twice.
  * \param outputFileNames corresponding list of successfully processed image filenames,
  * \param outputImagePoints output image points, array size = (number of successes (M) * numberOfCorners (N)) x 2, and caller must de-allocate.
@@ -74,6 +76,7 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
+  const mitk::Point2D& pixelScaleFactor,
   std::vector<IplImage*>& outputImages,
   std::vector<std::string>& outputFileNames,
   CvMat*& outputImagePoints,
@@ -88,6 +91,7 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
  * \param numberCornersWidth the number of internal corners along the width axis (X).
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
  * \param outputImagePoints output image points, array size = (1 * numberOfCorners (N)) x 2, and caller must de-allocate.
  * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
  */
@@ -97,6 +101,7 @@ extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
+  const mitk::Point2D& pixelScaleFactor,
   std::vector<cv::Point2f>*& outputImagePoints,
   std::vector<cv::Point3f>*& outputObjectPoints
   );
