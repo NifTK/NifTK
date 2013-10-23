@@ -89,6 +89,7 @@ bool ExtractChessBoardPoints(const cv::Mat image,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
+                             const mitk::Point2D& pixelScaleFactor,
                              std::vector <cv::Point2d>*& corners,
                              std::vector <cv::Point3d>*& objectPoints
                              )
@@ -99,17 +100,28 @@ bool ExtractChessBoardPoints(const cv::Mat image,
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
+  // Scale up the image. Normally, the pixelAspectRatio is 1,1, so normally this has no effect.
+  cv::Mat resizedImage;
+  cv::resize(image, resizedImage, cv::Size(0, 0), pixelScaleFactor[0], pixelScaleFactor[1], cv::INTER_NEAREST);
+
   std::vector<cv::Point2f> floatcorners;
-  bool found = cv::findChessboardCorners(image, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+  bool found = cv::findChessboardCorners(resizedImage, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
   if ( floatcorners.size() == 0 )
   {
     return false;
   }
   cv::Mat greyImage;
-  cv::cvtColor(image, greyImage, CV_BGR2GRAY);
+  cv::cvtColor(resizedImage, greyImage, CV_BGR2GRAY);
   cv::cornerSubPix(greyImage, floatcorners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
-//END FIX
+
+  // Scale down the coordinates, again if pixelAspectRatio contains 1,1, this has no effect.
+  for (unsigned int k = 0; k < floatcorners.size(); k++)
+  {
+    floatcorners[k].x /= pixelScaleFactor[0];
+    floatcorners[k].y /= pixelScaleFactor[1];
+  }
+
   if (drawCorners)
   {
     cv::drawChessboardCorners(image, boardSize, floatcorners, found);
@@ -144,6 +156,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
+                             const mitk::Point2D& pixelScaleFactor,
                              std::vector<IplImage*>& outputImages,
                              std::vector<std::string>& outputFileNames,
                              CvMat*& outputImagePoints,
@@ -163,6 +176,8 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   unsigned int numberOfChessBoards = images.size();
   unsigned int numberOfCorners = numberCornersWidth * numberCornersHeight;
   CvSize boardSize = cvSize(numberCornersWidth, numberCornersHeight);
+  CvSize imageSize = cvGetSize(images[0]);
+  CvSize resizedSize = cvSize(imageSize.width * pixelScaleFactor[0], imageSize.height * pixelScaleFactor[1]);
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
@@ -175,19 +190,30 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   int successes = 0;
   int step = 0;
 
-  IplImage *greyImage = cvCreateImage(cvGetSize(images[0]), 8, 1);
+  IplImage *greyImage = cvCreateImage(resizedSize, 8, 1);
+  IplImage *resizedImage = cvCreateImage(resizedSize, 8, 3);
 
   // Iterate over each image, finding corners.
   for (unsigned int i = 0; i < images.size(); i++)
   {
     std::cout << "Processing file " << fileNames[i] << std::endl;
 
-    int found = cvFindChessboardCorners(images[i], boardSize, corners, &cornerCount,
+    // Scale up the image. Normally, the pixelAspectRatio is 1,1, so normally this has no effect.
+    cvResize( images[i], resizedImage, CV_INTER_NN);
+
+    int found = cvFindChessboardCorners(resizedImage, boardSize, corners, &cornerCount,
         CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
     // Get sub-pixel accuracy.
-    cvCvtColor(images[i], greyImage, CV_BGR2GRAY);
+    cvCvtColor(resizedImage, greyImage, CV_BGR2GRAY);
     cvFindCornerSubPix(greyImage, corners, cornerCount, cvSize(11,11), cvSize(-1,-1), cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+
+    // Scale down the coordinates, again if pixelAspectRatio contains 1,1, this has no effect.
+    for (unsigned int k = 0; k < cornerCount; k++)
+    {
+      corners[k].x /= pixelScaleFactor[0];
+      corners[k].y /= pixelScaleFactor[1];
+    }
 
     if (drawCorners)
     {
@@ -245,6 +271,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   cvReleaseMat(&imagePoints);
   cvReleaseMat(&pointCounts);
   cvReleaseImage(&greyImage);
+  cvReleaseImage(&resizedImage);
   delete [] corners;
 
   std::cout << "Successfully processed " << successes << " out of " << images.size() << std::endl;

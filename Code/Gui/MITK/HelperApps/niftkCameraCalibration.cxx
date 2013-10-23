@@ -17,6 +17,7 @@
 #include <mitkCameraCalibrationFromDirectory.h>
 #include <mitkStereoCameraCalibrationFromTwoDirectories.h>
 #include <niftkCameraCalibrationCLP.h>
+#include <mitkVector.h>
 
 int main(int argc, char** argv)
 {
@@ -32,6 +33,10 @@ int main(int argc, char** argv)
 
   try
   {
+    mitk::Point2D pixelScales;
+    pixelScales[0] = pixelScaleFactors[0];
+    pixelScales[1] = pixelScaleFactors[1];
+
     if (   (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
         || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
         )
@@ -39,17 +44,17 @@ int main(int argc, char** argv)
       mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
       if (rightCameraInputDirectory.length() != 0)
       {
-        reprojectionError = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+        reprojectionError = calibrationObject->Calibrate(rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
       }
       else
       {
-        reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+        reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
       }
     }
     else
     {
       mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calibrationObject = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, outputCalibrationData, writeImages);
+      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
     }
     returnStatus = EXIT_SUCCESS;
   }

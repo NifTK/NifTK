@@ -20,6 +20,7 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <mitkVector.h>
 
 namespace mitk {
 
@@ -37,12 +38,15 @@ public:
 
   /**
    * \brief Calibration function that returns the reprojection error (squared error).
+   * \param squareSizeInMillimetres the physical size of the square as printed out on the calibration object.
+   * \param pixelScaleFactor the caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
    */
   double Calibrate(const std::string& leftDirectoryName,
       const std::string& rightDirectoryName,
       const int& numberCornersX,
       const int& numberCornersY,
       const double& sizeSquareMillimeters,
+      const mitk::Point2D& pixelScaleFactor,
       const std::string& outputFileName,
       const bool& writeImages
       );

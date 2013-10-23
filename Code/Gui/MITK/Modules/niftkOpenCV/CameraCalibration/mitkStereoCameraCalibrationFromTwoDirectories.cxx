@@ -44,6 +44,7 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     const int& numberCornersX,
     const int& numberCornersY,
     const double& sizeSquareMillimeters,
+    const mitk::Point2D& pixelScaleFactor,
     const std::string& outputFileName,
     const bool& writeImages
     )
@@ -112,8 +113,8 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
 
   CvSize imageSize = cvGetSize(allImages[0]);
 
-  ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
-  ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
+  ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, pixelScaleFactor, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
+  ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, pixelScaleFactor, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
 
   std::vector<std::string> allSuccessfulFileNames;
   allSuccessfulFileNames.insert(allSuccessfulFileNames.begin(), successfullFileNamesLeft.begin(), successfullFileNamesLeft.end());
