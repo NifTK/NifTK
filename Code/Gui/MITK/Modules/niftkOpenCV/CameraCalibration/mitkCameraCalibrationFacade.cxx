@@ -89,8 +89,8 @@ bool ExtractChessBoardPoints(const cv::Mat image,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
-                             std::vector <cv::Point2f>*& corners,
-                             std::vector <cv::Point3f>*& objectPoints
+                             std::vector <cv::Point2d>*& corners,
+                             std::vector <cv::Point3d>*& objectPoints
                              )
 {
 
@@ -119,7 +119,7 @@ bool ExtractChessBoardPoints(const cv::Mat image,
   {
     for ( int k=0; k<(int)numberOfCorners; ++k)
     {
-      cv::Point3f objectCorner;
+      cv::Point3d objectCorner;
       objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
       objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
       objectCorner.z = 0; 
@@ -159,10 +159,10 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
-  CvMat* imagePoints  = cvCreateMat(numberOfChessBoards * numberOfCorners, 2, CV_32FC1);
-  CvMat* objectPoints = cvCreateMat(numberOfChessBoards * numberOfCorners, 3, CV_32FC1);
-  CvMat* pointCounts = cvCreateMat(numberOfChessBoards, 1, CV_32FC1);
-  CvPoint2D32f* corners = new CvPoint2D32f[numberOfCorners];
+  CvMat* imagePoints  = cvCreateMat(numberOfChessBoards * numberOfCorners, 2, CV_64FC1);
+  CvMat* objectPoints = cvCreateMat(numberOfChessBoards * numberOfCorners, 3, CV_64FC1);
+  CvMat* pointCounts = cvCreateMat(numberOfChessBoards, 1, CV_64FC1);
+  CvPoint2D32d* corners = new CvPoint2D32d[numberOfCorners];
 
   int cornerCount = 0;
   int successes = 0;
@@ -195,11 +195,11 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
       step = successes * numberOfCorners;
       for (int j=step, k=0; k<(int)numberOfCorners; ++j, ++k)
       {
-        CV_MAT_ELEM(*imagePoints, float, j, 0) = corners[k].x;
-        CV_MAT_ELEM(*imagePoints, float, j, 1) = corners[k].y;
-        CV_MAT_ELEM(*objectPoints, float, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
-        CV_MAT_ELEM(*objectPoints, float, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
-        CV_MAT_ELEM(*objectPoints, float, j, 2) = 0;
+        CV_MAT_ELEM(*imagePoints, double, j, 0) = corners[k].x;
+        CV_MAT_ELEM(*imagePoints, double, j, 1) = corners[k].y;
+        CV_MAT_ELEM(*objectPoints, double, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 2) = 0;
       }
       CV_MAT_ELEM(*pointCounts, int, successes, 0) = numberOfCorners;
       successes++;
@@ -217,17 +217,17 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   }
 
   // Now re-allocate points based on what we found.
-  outputObjectPoints = cvCreateMat(successes*numberOfCorners,3,CV_32FC1);
-  outputImagePoints  = cvCreateMat(successes*numberOfCorners,2,CV_32FC1);
+  outputObjectPoints = cvCreateMat(successes*numberOfCorners,3,CV_64FC1);
+  outputImagePoints  = cvCreateMat(successes*numberOfCorners,2,CV_64FC1);
   outputPointCounts  = cvCreateMat(successes,1,CV_32SC1);
 
   for (int i = 0; i < successes*(int)numberOfCorners; ++i)
   {
-    CV_MAT_ELEM(*outputImagePoints, float, i, 0) = CV_MAT_ELEM(*imagePoints, float, i, 0);
-    CV_MAT_ELEM(*outputImagePoints, float, i, 1) = CV_MAT_ELEM(*imagePoints, float, i, 1);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 0) = CV_MAT_ELEM(*objectPoints, float, i, 0);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 1) = CV_MAT_ELEM(*objectPoints, float, i, 1);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 2) = CV_MAT_ELEM(*objectPoints, float, i, 2);
+    CV_MAT_ELEM(*outputImagePoints, double, i, 0) = CV_MAT_ELEM(*imagePoints, double, i, 0);
+    CV_MAT_ELEM(*outputImagePoints, double, i, 1) = CV_MAT_ELEM(*imagePoints, double, i, 1);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 0) = CV_MAT_ELEM(*objectPoints, double, i, 0);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 1) = CV_MAT_ELEM(*objectPoints, double, i, 1);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 2) = CV_MAT_ELEM(*objectPoints, double, i, 2);
   }
   for (int i = 0; i < successes; ++i)
   {
@@ -601,28 +601,28 @@ double CalibrateStereoCameraParameters(
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
 
   // OpenCV calculates left to right, so we want right to left.
-  CvMat *leftToRight = cvCreateMat(4,4,CV_32FC1);
-  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_32FC1);
+  CvMat *leftToRight = cvCreateMat(4,4,CV_64FC1);
+  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_64FC1);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
     {
-      CV_MAT_ELEM(*leftToRight, float, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, float, i, j);
+      CV_MAT_ELEM(*leftToRight, double, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, double, i, j);
     }
-    CV_MAT_ELEM(*leftToRight, float, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0);
+    CV_MAT_ELEM(*leftToRight, double, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0);
   }
-  CV_MAT_ELEM(*leftToRight, float, 3, 0) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 1) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 2) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 3) = 1;
+  CV_MAT_ELEM(*leftToRight, double, 3, 0) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 1) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 2) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 3) = 1;
   cvInvert(leftToRight, leftToRightInverted);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
     {
-      CV_MAT_ELEM(outputRightToLeftRotation, float, i, j) = CV_MAT_ELEM(*leftToRightInverted, float, i, j);
+      CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightInverted, double, i, j);
     }
-    CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0) = CV_MAT_ELEM(*leftToRightInverted, float, i, 3);
+    CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightInverted, double, i, 3);
   }
 
   double leftProjectError2 = cvCalibrateCamera2(

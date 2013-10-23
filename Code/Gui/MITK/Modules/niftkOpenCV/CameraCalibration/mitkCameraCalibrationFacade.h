@@ -97,8 +97,8 @@ extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
-  std::vector<cv::Point2f>*& outputImagePoints,
-  std::vector<cv::Point3f>*& outputObjectPoints
+  std::vector<cv::Point2d>*& outputImagePoints,
+  std::vector<cv::Point3d>*& outputObjectPoints
   );
 
 
