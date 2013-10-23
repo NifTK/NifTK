@@ -99,23 +99,24 @@ bool ExtractChessBoardPoints(const cv::Mat image,
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
-  bool found = cv::findChessboardCorners(image, boardSize, *corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+  std::vector<cv::Point2f> floatcorners;
+  bool found = cv::findChessboardCorners(image, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
-  if ( corners->size() == 0 )
+  if ( floatcorners.size() == 0 )
   {
     return false;
   }
   cv::Mat greyImage;
   cv::cvtColor(image, greyImage, CV_BGR2GRAY);
-  cv::cornerSubPix(greyImage, *corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+  cv::cornerSubPix(greyImage, floatcorners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
 //END FIX
   if (drawCorners)
   {
-    cv::drawChessboardCorners(image, boardSize, *corners, found);
+    cv::drawChessboardCorners(image, boardSize, floatcorners, found);
   }
 
   // If we got the right number of corners, add it to our data.
-  if (found  && corners->size() == ( unsigned int)numberOfCorners)
+  if (found  && floatcorners.size() == ( unsigned int)numberOfCorners)
   {
     for ( int k=0; k<(int)numberOfCorners; ++k)
     {
@@ -126,6 +127,12 @@ bool ExtractChessBoardPoints(const cv::Mat image,
       objectPoints->push_back(objectCorner);
     }
   }
+  for ( unsigned int i = 0 ; i < floatcorners.size() ; i ++ ) 
+  {
+    corners->push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
+  }
+  assert ( floatcorners.size() == corners->size());
+
   return found;
 }
 
