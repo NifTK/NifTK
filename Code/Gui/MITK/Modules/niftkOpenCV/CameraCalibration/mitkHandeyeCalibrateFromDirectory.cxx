@@ -205,15 +205,15 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       { 
 
         MITK_INFO << "Using frame pair " << FrameNumber << "," <<FrameNumber+1;
-        std::vector <cv::Point2f>* leftImageCorners = new std::vector<cv::Point2f>;
-        std::vector <cv::Point3f>* leftObjectCorners = new std::vector<cv::Point3f>;
+        std::vector <cv::Point2d>* leftImageCorners = new std::vector<cv::Point2d>;
+        std::vector <cv::Point3d>* leftObjectCorners = new std::vector<cv::Point3d>;
         bool LeftOK = mitk::ExtractChessBoardPoints (
           LeftFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres,
           leftImageCorners, leftObjectCorners);
-        std::vector <cv::Point2f>* rightImageCorners = new std::vector<cv::Point2f>;
-        std::vector <cv::Point3f>* rightObjectCorners = new std::vector<cv::Point3f>;
+        std::vector <cv::Point2d>* rightImageCorners = new std::vector<cv::Point2d>;
+        std::vector <cv::Point3d>* rightObjectCorners = new std::vector<cv::Point3d>;
         bool RightOK = mitk::ExtractChessBoardPoints (
           RightFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
@@ -274,10 +274,10 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
   MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
 
-  cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_32FC1);
-  cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_32FC1);
-  cv::Mat rightImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_32FC1);
-  cv::Mat rightObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_32FC1);
+  cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_64FC1);
+  cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_64FC1);
+  cv::Mat rightImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_64FC1);
+  cv::Mat rightObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_64FC1);
   
   cv::Mat leftPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
   cv::Mat rightPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
@@ -314,29 +314,29 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     MITK_INFO << "Filling "  << i;
     for ( unsigned int j = 0 ; j < m_NumberCornersWidth * m_NumberCornersHeight ; j ++ ) 
     {
-      leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allLeftImagePoints[i].at<float>(j,0);
-      leftImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allLeftImagePoints[i].at<float>(j,1);
+      leftImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allLeftImagePoints[i].at<double>(j,0);
+      leftImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allLeftImagePoints[i].at<double>(j,1);
      
-      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allLeftObjectPoints[i].at<float>(j,0);
-      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allLeftObjectPoints[i].at<float>(j,1);
-      leftObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
-        allLeftObjectPoints[i].at<float>(j,2);
+      leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allLeftObjectPoints[i].at<double>(j,0);
+      leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allLeftObjectPoints[i].at<double>(j,1);
+      leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
+        allLeftObjectPoints[i].at<double>(j,2);
 
-      rightImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allRightImagePoints[i].at<float>(j,0);
-      rightImagePoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allRightImagePoints[i].at<float>(j,1);
+      rightImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allRightImagePoints[i].at<double>(j,0);
+      rightImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allRightImagePoints[i].at<double>(j,1);
       
-      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allRightObjectPoints[i].at<float>(j,0);
-      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allRightObjectPoints[i].at<float>(j,1);
-      rightObjectPoints.at<float>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
-        allRightObjectPoints[i].at<float>(j,2);
+      rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
+        allRightObjectPoints[i].at<double>(j,0);
+      rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
+        allRightObjectPoints[i].at<double>(j,1);
+      rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
+        allRightObjectPoints[i].at<double>(j,2);
 
     }
     leftPointCounts.at<int>(i,0) = m_NumberCornersWidth * m_NumberCornersHeight;
@@ -372,18 +372,18 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
 
   MITK_INFO << "Starting intrinisic calibration";
-  CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_32FC1);
-  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(5,1,CV_32FC1);
-  CvMat* outputRotationVectorsLeft = cvCreateMat(LeftFramesToUse.size(),3,CV_32FC1);
-  CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_32FC1);
-  CvMat* outputIntrinsicMatrixRight= cvCreateMat(3,3,CV_32FC1);
-  CvMat* outputDistortionCoefficientsRight= cvCreateMat(5,1,CV_32FC1);
-  CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_32FC1);
-  CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_32FC1);
-  CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_32FC1);
-  CvMat* outputRightToLeftTranslation = cvCreateMat(3,1,CV_32FC1);
-  CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_32FC1);
-  CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_32FC1);
+  CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputRotationVectorsLeft = cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputIntrinsicMatrixRight= cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputDistortionCoefficientsRight= cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputRightToLeftTranslation = cvCreateMat(3,1,CV_64FC1);
+  CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
 
 
   mitk::CalibrateStereoCameraParameters(
@@ -427,22 +427,22 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   {
     for ( int col = 0 ; col < 3 ; col ++ ) 
     {
-      fs_leftIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixLeft, float, row,col) << " ";
-      fs_rightIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixRight, float, row,col) << " ";
-      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, float , row,col) << " ";
+      fs_leftIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixLeft, double, row,col) << " ";
+      fs_rightIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixRight, double, row,col) << " ";
+      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, double , row,col) << " ";
     }
     fs_leftIntrinsic << std::endl;
     fs_rightIntrinsic << std::endl;
     fs_r2l << std::endl;
   }
-  for ( int i = 0 ; i < 5 ; i ++ )  
+  for ( int i = 0 ; i < 4 ; i ++ )  
   {
-    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, float , i, 0 ) << " ";
-    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, float , i, 0 ) << " ";
+    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , i, 0 ) << " ";
+    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , i, 0 ) << " ";
   }
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
-    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, float , i, 0 ) << " ";
+    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, double , i, 0 ) << " ";
   }
 
   fs_leftIntrinsic.close();
@@ -455,11 +455,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 
     {
-      fs_ext << CV_MAT_ELEM ( *outputRotationVectorsLeft , float  , view, i) << " ";
+      fs_ext << CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, i) << " ";
     }
     for ( int i = 0 ; i < 3 ; i ++ ) 
     {
-      fs_ext << CV_MAT_ELEM ( *outputTranslationVectorsLeft , float  , view, i) << " ";
+      fs_ext << CV_MAT_ELEM ( *outputTranslationVectorsLeft , double  , view, i) << " ";
     }
     fs_ext << std::endl; 
 
@@ -474,7 +474,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       for ( int col = 0 ; col < 4 ; col ++ ) 
       {
-        fs_tracker << LeftTrackingMatrix.at<float>(row,col) << " " ;
+        fs_tracker << LeftTrackingMatrix.at<double>(row,col) << " " ;
       }
       fs_tracker << std::endl;
     }

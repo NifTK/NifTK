@@ -89,8 +89,8 @@ bool ExtractChessBoardPoints(const cv::Mat image,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
-                             std::vector <cv::Point2f>*& corners,
-                             std::vector <cv::Point3f>*& objectPoints
+                             std::vector <cv::Point2d>*& corners,
+                             std::vector <cv::Point3d>*& objectPoints
                              )
 {
 
@@ -99,33 +99,40 @@ bool ExtractChessBoardPoints(const cv::Mat image,
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
-  bool found = cv::findChessboardCorners(image, boardSize, *corners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+  std::vector<cv::Point2f> floatcorners;
+  bool found = cv::findChessboardCorners(image, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
-  if ( corners->size() == 0 )
+  if ( floatcorners.size() == 0 )
   {
     return false;
   }
   cv::Mat greyImage;
   cv::cvtColor(image, greyImage, CV_BGR2GRAY);
-  cv::cornerSubPix(greyImage, *corners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+  cv::cornerSubPix(greyImage, floatcorners, cv::Size(11,11), cv::Size(-1,-1), cv::TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
 //END FIX
   if (drawCorners)
   {
-    cv::drawChessboardCorners(image, boardSize, *corners, found);
+    cv::drawChessboardCorners(image, boardSize, floatcorners, found);
   }
 
   // If we got the right number of corners, add it to our data.
-  if (found  && corners->size() == ( unsigned int)numberOfCorners)
+  if (found  && floatcorners.size() == ( unsigned int)numberOfCorners)
   {
     for ( int k=0; k<(int)numberOfCorners; ++k)
     {
-      cv::Point3f objectCorner;
+      cv::Point3d objectCorner;
       objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
       objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
       objectCorner.z = 0; 
       objectPoints->push_back(objectCorner);
     }
   }
+  for ( unsigned int i = 0 ; i < floatcorners.size() ; i ++ ) 
+  {
+    corners->push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
+  }
+  assert ( floatcorners.size() == corners->size());
+
   return found;
 }
 
@@ -159,9 +166,9 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   std::cout << "Searching for " << numberCornersWidth << " x " << numberCornersHeight << " = " << numberOfCorners << std::endl;
 
-  CvMat* imagePoints  = cvCreateMat(numberOfChessBoards * numberOfCorners, 2, CV_32FC1);
-  CvMat* objectPoints = cvCreateMat(numberOfChessBoards * numberOfCorners, 3, CV_32FC1);
-  CvMat* pointCounts = cvCreateMat(numberOfChessBoards, 1, CV_32FC1);
+  CvMat* imagePoints  = cvCreateMat(numberOfChessBoards * numberOfCorners, 2, CV_64FC1);
+  CvMat* objectPoints = cvCreateMat(numberOfChessBoards * numberOfCorners, 3, CV_64FC1);
+  CvMat* pointCounts = cvCreateMat(numberOfChessBoards, 1, CV_64FC1);
   CvPoint2D32f* corners = new CvPoint2D32f[numberOfCorners];
 
   int cornerCount = 0;
@@ -195,11 +202,11 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
       step = successes * numberOfCorners;
       for (int j=step, k=0; k<(int)numberOfCorners; ++j, ++k)
       {
-        CV_MAT_ELEM(*imagePoints, float, j, 0) = corners[k].x;
-        CV_MAT_ELEM(*imagePoints, float, j, 1) = corners[k].y;
-        CV_MAT_ELEM(*objectPoints, float, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
-        CV_MAT_ELEM(*objectPoints, float, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
-        CV_MAT_ELEM(*objectPoints, float, j, 2) = 0;
+        CV_MAT_ELEM(*imagePoints, double, j, 0) = static_cast<double>(corners[k].x);
+        CV_MAT_ELEM(*imagePoints, double, j, 1) = static_cast<double>(corners[k].y);
+        CV_MAT_ELEM(*objectPoints, double, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
+        CV_MAT_ELEM(*objectPoints, double, j, 2) = 0;
       }
       CV_MAT_ELEM(*pointCounts, int, successes, 0) = numberOfCorners;
       successes++;
@@ -217,17 +224,17 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   }
 
   // Now re-allocate points based on what we found.
-  outputObjectPoints = cvCreateMat(successes*numberOfCorners,3,CV_32FC1);
-  outputImagePoints  = cvCreateMat(successes*numberOfCorners,2,CV_32FC1);
+  outputObjectPoints = cvCreateMat(successes*numberOfCorners,3,CV_64FC1);
+  outputImagePoints  = cvCreateMat(successes*numberOfCorners,2,CV_64FC1);
   outputPointCounts  = cvCreateMat(successes,1,CV_32SC1);
 
   for (int i = 0; i < successes*(int)numberOfCorners; ++i)
   {
-    CV_MAT_ELEM(*outputImagePoints, float, i, 0) = CV_MAT_ELEM(*imagePoints, float, i, 0);
-    CV_MAT_ELEM(*outputImagePoints, float, i, 1) = CV_MAT_ELEM(*imagePoints, float, i, 1);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 0) = CV_MAT_ELEM(*objectPoints, float, i, 0);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 1) = CV_MAT_ELEM(*objectPoints, float, i, 1);
-    CV_MAT_ELEM(*outputObjectPoints, float, i, 2) = CV_MAT_ELEM(*objectPoints, float, i, 2);
+    CV_MAT_ELEM(*outputImagePoints, double, i, 0) = CV_MAT_ELEM(*imagePoints, double, i, 0);
+    CV_MAT_ELEM(*outputImagePoints, double, i, 1) = CV_MAT_ELEM(*imagePoints, double, i, 1);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 0) = CV_MAT_ELEM(*objectPoints, double, i, 0);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 1) = CV_MAT_ELEM(*objectPoints, double, i, 1);
+    CV_MAT_ELEM(*outputObjectPoints, double, i, 2) = CV_MAT_ELEM(*objectPoints, double, i, 2);
   }
   for (int i = 0; i < successes; ++i)
   {
@@ -283,8 +290,8 @@ double CalibrateSingleCameraIntrinsicUsing3Passes(
   cvSet(&outputIntrinsicMatrix, zero);
   cvSet(&outputDistortionCoefficients, zero);
 
-  CV_MAT_ELEM(outputIntrinsicMatrix, float, 0, 0) = 1.0f;
-  CV_MAT_ELEM(outputIntrinsicMatrix, float, 1, 1) = 1.0f;
+  CV_MAT_ELEM(outputIntrinsicMatrix, double, 0, 0) = 1.0f;
+  CV_MAT_ELEM(outputIntrinsicMatrix, double, 1, 1) = 1.0f;
 
   double reprojectionError1 = CalibrateSingleCameraIntrinsicParameters(
       objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
@@ -601,28 +608,28 @@ double CalibrateStereoCameraParameters(
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;
 
   // OpenCV calculates left to right, so we want right to left.
-  CvMat *leftToRight = cvCreateMat(4,4,CV_32FC1);
-  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_32FC1);
+  CvMat *leftToRight = cvCreateMat(4,4,CV_64FC1);
+  CvMat *leftToRightInverted = cvCreateMat(4,4,CV_64FC1);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
     {
-      CV_MAT_ELEM(*leftToRight, float, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, float, i, j);
+      CV_MAT_ELEM(*leftToRight, double, i, j) = CV_MAT_ELEM(outputRightToLeftRotation, double, i, j);
     }
-    CV_MAT_ELEM(*leftToRight, float, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0);
+    CV_MAT_ELEM(*leftToRight, double, i, 3) = CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0);
   }
-  CV_MAT_ELEM(*leftToRight, float, 3, 0) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 1) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 2) = 0;
-  CV_MAT_ELEM(*leftToRight, float, 3, 3) = 1;
+  CV_MAT_ELEM(*leftToRight, double, 3, 0) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 1) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 2) = 0;
+  CV_MAT_ELEM(*leftToRight, double, 3, 3) = 1;
   cvInvert(leftToRight, leftToRightInverted);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
     {
-      CV_MAT_ELEM(outputRightToLeftRotation, float, i, j) = CV_MAT_ELEM(*leftToRightInverted, float, i, j);
+      CV_MAT_ELEM(outputRightToLeftRotation, double, i, j) = CV_MAT_ELEM(*leftToRightInverted, double, i, j);
     }
-    CV_MAT_ELEM(outputRightToLeftTranslation, float, i, 0) = CV_MAT_ELEM(*leftToRightInverted, float, i, 3);
+    CV_MAT_ELEM(outputRightToLeftTranslation, double, i, 0) = CV_MAT_ELEM(*leftToRightInverted, double, i, 3);
   }
 
   double leftProjectError2 = cvCalibrateCamera2(
@@ -669,7 +676,7 @@ void OutputCalibrationData(
     const CvMat& distortionCoeffs,
     const CvMat& rotationVectors,
     const CvMat& translationVectors,
-    const float& projectionError,
+    const double& projectionError,
     const int& sizeX,
     const int& sizeY,
     const int& cornersX,
@@ -680,12 +687,12 @@ void OutputCalibrationData(
   int pointCount = cornersX * cornersY;
   int numberOfFilesUsed = fileNames.size();
 
-  CvMat *extrinsicMatrix = cvCreateMat(4,4,CV_32FC1);
-  CvMat *modelPointInputHomogeneous = cvCreateMat(4,1,CV_32FC1);
-  CvMat *modelPointOutputHomogeneous = cvCreateMat(4,1,CV_32FC1);
-  CvMat *extrinsicRotationVector = cvCreateMat(1,3,CV_32FC1);
-  CvMat *extrinsicTranslationVector = cvCreateMat(1,3,CV_32FC1);
-  CvMat *projectedImagePoints = cvCreateMat(numberOfFilesUsed*pointCount, 2, CV_32FC1);
+  CvMat *extrinsicMatrix = cvCreateMat(4,4,CV_64FC1);
+  CvMat *modelPointInputHomogeneous = cvCreateMat(4,1,CV_64FC1);
+  CvMat *modelPointOutputHomogeneous = cvCreateMat(4,1,CV_64FC1);
+  CvMat *extrinsicRotationVector = cvCreateMat(1,3,CV_64FC1);
+  CvMat *extrinsicTranslationVector = cvCreateMat(1,3,CV_64FC1);
+  CvMat *projectedImagePoints = cvCreateMat(numberOfFilesUsed*pointCount, 2, CV_64FC1);
 
   ProjectAllPoints(
       numberOfFilesUsed,
@@ -713,18 +720,18 @@ void OutputCalibrationData(
   os << "Intrinsic matrix" << std::endl;
   for (int i = 0; i < 3; i++)
   {
-    os << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+    os << CV_MAT_ELEM(intrinsicMatrix, double, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, double, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, double, i, 2) << std::endl;
     if (writeIntrinsicToFlatFile)
     {
-      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, float, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, float, i, 2) << std::endl;
+      intrinsicFileOutput << CV_MAT_ELEM(intrinsicMatrix, double, i, 0) << " " << CV_MAT_ELEM(intrinsicMatrix, double, i, 1) << " " << CV_MAT_ELEM(intrinsicMatrix, double, i, 2) << std::endl;
     }
   }
 
   os << "Distortion vector (k1, k2, p1, p2)" << std::endl;
-  os << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+  os << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 3, 0) << std::endl;
   if (writeIntrinsicToFlatFile)
   {
-    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, float, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 1, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 2, 0) << " " << CV_MAT_ELEM(distortionCoeffs, float, 3, 0) << std::endl;
+    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 1, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 2, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 3, 0) << std::endl;
   }
   if(intrinsicFileOutput.is_open())
   {
@@ -751,13 +758,13 @@ void OutputCalibrationData(
   {
     os << fileNames[i] << std::endl;
 
-    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
-    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
-    CV_MAT_ELEM(*extrinsicRotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
+    CV_MAT_ELEM(*extrinsicRotationVector, double, 0, 0) = CV_MAT_ELEM(rotationVectors, double, i, 0);
+    CV_MAT_ELEM(*extrinsicRotationVector, double, 0, 1) = CV_MAT_ELEM(rotationVectors, double, i, 1);
+    CV_MAT_ELEM(*extrinsicRotationVector, double, 0, 2) = CV_MAT_ELEM(rotationVectors, double, i, 2);
 
-    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
-    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
-    CV_MAT_ELEM(*extrinsicTranslationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+    CV_MAT_ELEM(*extrinsicTranslationVector, double, 0, 0) = CV_MAT_ELEM(translationVectors, double, i, 0);
+    CV_MAT_ELEM(*extrinsicTranslationVector, double, 0, 1) = CV_MAT_ELEM(translationVectors, double, i, 1);
+    CV_MAT_ELEM(*extrinsicTranslationVector, double, 0, 2) = CV_MAT_ELEM(translationVectors, double, i, 2);
 
     ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
         rotationVectors,
@@ -785,7 +792,7 @@ void OutputCalibrationData(
     {
       for (int b = 0; b < 4; b++)
       {
-        os << CV_MAT_ELEM(*extrinsicMatrix, float, a, b);
+        os << CV_MAT_ELEM(*extrinsicMatrix, double, a, b);
         if (b < 3)
         {
           os << ", ";
@@ -793,7 +800,7 @@ void OutputCalibrationData(
       }
       if (writeExtrinsicToFlatFile)
       {
-        extrinsicFileOutput << CV_MAT_ELEM(*extrinsicMatrix, float, a, 0) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 1) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 2) << " " << CV_MAT_ELEM(*extrinsicMatrix, float, a, 3) << std::endl;
+        extrinsicFileOutput << CV_MAT_ELEM(*extrinsicMatrix, double, a, 0) << " " << CV_MAT_ELEM(*extrinsicMatrix, double, a, 1) << " " << CV_MAT_ELEM(*extrinsicMatrix, double, a, 2) << " " << CV_MAT_ELEM(*extrinsicMatrix, double, a, 3) << std::endl;
       }
       os << std::endl;
     }
@@ -804,17 +811,17 @@ void OutputCalibrationData(
 
     for (unsigned int j = 0; j < numberOfPoints; j++)
     {
-      CV_MAT_ELEM(*modelPointInputHomogeneous, float, 0 ,0) = CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 0);
-      CV_MAT_ELEM(*modelPointInputHomogeneous, float, 1, 0) = CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 1);
-      CV_MAT_ELEM(*modelPointInputHomogeneous, float, 2, 0) = CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 2);
-      CV_MAT_ELEM(*modelPointInputHomogeneous, float, 3, 0) = 1;
+      CV_MAT_ELEM(*modelPointInputHomogeneous, double, 0 ,0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0);
+      CV_MAT_ELEM(*modelPointInputHomogeneous, double, 1, 0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 1);
+      CV_MAT_ELEM(*modelPointInputHomogeneous, double, 2, 0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 2);
+      CV_MAT_ELEM(*modelPointInputHomogeneous, double, 3, 0) = 1;
 
       cvGEMM(extrinsicMatrix, modelPointInputHomogeneous, 1, NULL, 0, modelPointOutputHomogeneous);
 
-      os << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, float, i*numberOfPoints + j, 2) \
-          << " transforms to " << CV_MAT_ELEM(*modelPointOutputHomogeneous, float, 0 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, float, 1 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, float, 2 ,0) \
-          << " and then projects to " << CV_MAT_ELEM(*projectedImagePoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, float, i*numberOfPoints + j, 1) \
-          << " compared with " << CV_MAT_ELEM(imagePoints, float, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, float, i*numberOfPoints + j, 1) \
+      os << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 2) \
+          << " transforms to " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 0 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 1 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 2 ,0) \
+          << " and then projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
+          << " compared with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
           << " detected in image " \
           << std::endl;
     }
