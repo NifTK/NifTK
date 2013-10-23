@@ -98,7 +98,7 @@ int main(int argc, char** argv)
   }
 
   // create output image.
-  cv::Mat output = cvCreateMat (imageSize[0], imageSize[1], CV_8UC1);
+  cv::Mat output = cvCreateMat (imageSize[1], imageSize[0], CV_8UC1);
 
   for (int y = 0; y < gridDimensions[1]; y++)
   {
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
         {
           int outputPixelX = x*firstImage.cols + i;
           int outputPixelY = y*firstImage.rows + j;
-          output.at<uchar>(outputPixelX, outputPixelY, 0) = images[imageNumber].at<uchar>(i, j, 0);
+          output.at<uchar>(outputPixelY, outputPixelX, 0) = images[imageNumber].at<uchar>(j, i, 0);
         }
       }
     }
