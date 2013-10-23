@@ -41,7 +41,7 @@ public:
   double Calibrate(const std::string& fullDirectoryName,
       const int& numberCornersX,
       const int& numberCornersY,
-      const float& sizeSquareMillimeters,
+      const double& sizeSquareMillimeters,
       const std::string& outputFile,
       const bool& writeImages
       );

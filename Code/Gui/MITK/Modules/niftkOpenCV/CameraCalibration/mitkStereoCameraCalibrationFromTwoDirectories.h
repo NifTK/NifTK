@@ -42,7 +42,7 @@ public:
       const std::string& rightDirectoryName,
       const int& numberCornersX,
       const int& numberCornersY,
-      const float& sizeSquareMillimeters,
+      const double& sizeSquareMillimeters,
       const std::string& outputFileName,
       const bool& writeImages
       );

@@ -42,7 +42,7 @@ CameraCalibrationFromDirectory::~CameraCalibrationFromDirectory()
 double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirectoryName,
     const int& numberCornersX,
     const int& numberCornersY,
-    const float& sizeSquareMillimeters,
+    const double& sizeSquareMillimeters,
     const std::string& outputFile,
     const bool& writeImages
     )
@@ -76,8 +76,8 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   CvMat *objectPoints = NULL;
   CvMat *pointCounts = NULL;
 
-  CvMat *intrinsicMatrix = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffs = cvCreateMat(4, 1, CV_32FC1);
+  CvMat *intrinsicMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat *distortionCoeffs = cvCreateMat(4, 1, CV_64FC1);
 
   LoadChessBoardsFromDirectory(fullDirectoryName, images, fileNames);
 
@@ -87,8 +87,8 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   ExtractChessBoardPoints(images, fileNames, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImages, successfullFileNames, imagePoints, objectPoints, pointCounts);
 
   int numberOfSuccessfulViews = successfullImages.size();
-  CvMat *rotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
-  CvMat *translationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
+  CvMat *rotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
+  CvMat *translationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
   reprojectionError = CalibrateSingleCameraParameters(
       *objectPoints,

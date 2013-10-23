@@ -276,7 +276,7 @@ extern "C++" NIFTKOPENCV_EXPORT void OutputCalibrationData(
   const CvMat& distortionCoefficients,
   const CvMat& rotationVectors,
   const CvMat& translationVectors,
-  const float& projectionError,
+  const double& projectionError,
   const int& sizeX,
   const int& sizeY,
   const int& cornersX,
