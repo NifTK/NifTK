@@ -105,7 +105,7 @@ bool ExtractChessBoardPoints(const cv::Mat image,
   cv::resize(image, resizedImage, cv::Size(0, 0), pixelScaleFactor[0], pixelScaleFactor[1], cv::INTER_NEAREST);
 
   std::vector<cv::Point2f> floatcorners;
-  bool found = cv::findChessboardCorners(image, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+  bool found = cv::findChessboardCorners(resizedImage, boardSize, floatcorners,CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
   if ( floatcorners.size() == 0 )
   {
@@ -190,7 +190,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   int successes = 0;
   int step = 0;
 
-  IplImage *greyImage = cvCreateImage(imageSize, 8, 1);
+  IplImage *greyImage = cvCreateImage(resizedSize, 8, 1);
   IplImage *resizedImage = cvCreateImage(resizedSize, 8, 3);
 
   // Iterate over each image, finding corners.
