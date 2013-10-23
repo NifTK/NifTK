@@ -162,7 +162,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
   CvMat* imagePoints  = cvCreateMat(numberOfChessBoards * numberOfCorners, 2, CV_64FC1);
   CvMat* objectPoints = cvCreateMat(numberOfChessBoards * numberOfCorners, 3, CV_64FC1);
   CvMat* pointCounts = cvCreateMat(numberOfChessBoards, 1, CV_64FC1);
-  CvPoint2D32d* corners = new CvPoint2D32d[numberOfCorners];
+  CvPoint2D32f* corners = new CvPoint2D32f[numberOfCorners];
 
   int cornerCount = 0;
   int successes = 0;
@@ -195,8 +195,8 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
       step = successes * numberOfCorners;
       for (int j=step, k=0; k<(int)numberOfCorners; ++j, ++k)
       {
-        CV_MAT_ELEM(*imagePoints, double, j, 0) = corners[k].x;
-        CV_MAT_ELEM(*imagePoints, double, j, 1) = corners[k].y;
+        CV_MAT_ELEM(*imagePoints, double, j, 0) = static_cast<double>(corners[k].x);
+        CV_MAT_ELEM(*imagePoints, double, j, 1) = static_cast<double>(corners[k].y);
         CV_MAT_ELEM(*objectPoints, double, j, 0) = (k/numberCornersWidth)*squareSizeInMillimetres;
         CV_MAT_ELEM(*objectPoints, double, j, 1) = (k%numberCornersWidth)*squareSizeInMillimetres;
         CV_MAT_ELEM(*objectPoints, double, j, 2) = 0;
@@ -283,8 +283,8 @@ double CalibrateSingleCameraIntrinsicUsing3Passes(
   cvSet(&outputIntrinsicMatrix, zero);
   cvSet(&outputDistortionCoefficients, zero);
 
-  CV_MAT_ELEM(outputIntrinsicMatrix, float, 0, 0) = 1.0f;
-  CV_MAT_ELEM(outputIntrinsicMatrix, float, 1, 1) = 1.0f;
+  CV_MAT_ELEM(outputIntrinsicMatrix, double, 0, 0) = 1.0f;
+  CV_MAT_ELEM(outputIntrinsicMatrix, double, 1, 1) = 1.0f;
 
   double reprojectionError1 = CalibrateSingleCameraIntrinsicParameters(
       objectPoints, imagePoints, pointCounts, imageSize, outputIntrinsicMatrix, outputDistortionCoefficients,
