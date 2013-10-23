@@ -474,7 +474,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     {
       for ( int col = 0 ; col < 4 ; col ++ ) 
       {
-        fs_tracker << LeftTrackingMatrix.at<float>(row,col) << " " ;
+        fs_tracker << LeftTrackingMatrix.at<double>(row,col) << " " ;
       }
       fs_tracker << std::endl;
     }
