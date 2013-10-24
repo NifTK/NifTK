@@ -206,6 +206,11 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
+  if (feedbackContour->IsEmpty())
+  {
+    return true;
+  }
+
   this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
   // Re-initialize contours to zero length.
