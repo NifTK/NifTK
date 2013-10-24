@@ -583,6 +583,8 @@ void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)
         mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>((m_ToolManager->GetWorkingData(dataSetNumber))->GetData());
         assert(contoursToReplace);
 
+        contoursToReplace->Clear();
+
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
 
         contoursToReplace->UpdateOutputInformation();
