@@ -230,7 +230,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     if ( m_Visualise || m_SaveVideo ) 
     {
       cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-      MITK_INFO << framenumber << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
+      MITK_INFO << framenumber << " " << m_WorldPoints[0] << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
       if ( drawProjection )
       {
         if ( ! m_DrawLines ) 
