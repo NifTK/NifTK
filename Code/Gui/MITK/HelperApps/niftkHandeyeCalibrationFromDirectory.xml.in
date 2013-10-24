@@ -103,7 +103,7 @@
       <longflag>pixelScaleFactors</longflag>
       <description>A vector of integers representing scale factors to multiply the number of pixels by.</description>
       <label>Pixel Scale Factors</label>
-      <default>1,1</default>
+      <default>1,2</default>
     </integer-vector>
 
   </parameters>
