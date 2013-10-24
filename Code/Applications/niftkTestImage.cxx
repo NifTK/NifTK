@@ -17,6 +17,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkContinuousIndex.h>
+#include <itkExtractImageFilter.h>
 
 /*!
  * \file niftkTestImage.cxx
@@ -50,6 +51,7 @@ void Usage(char *exec)
     std::cout << "                              3 = generate testcard image" << std::endl;
     std::cout << "                              4 - generate distance from centre image" << std::endl;
     std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
+    std::cout << "                              6 - make calibration chessboard" << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;  
     std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
@@ -73,6 +75,10 @@ void Usage(char *exec)
     std::cout << "  3" << std::endl;
     std::cout << "      none" << std::endl;
     std::cout << "  4" << std::endl;
+    std::cout << "      none" << std::endl;
+    std::cout << "  5" << std::endl;
+    std::cout << "      none" << std::endl;
+    std::cout << "  6" << std::endl;
     std::cout << "      none" << std::endl;
   }
 
@@ -218,7 +224,7 @@ int main(int argc, char** argv)
     }            
   }
 
-  if (mode < 0 || mode > 5)
+  if (mode < 0 || mode > 6)
   {
     std::cerr << "Invalid mode" << std::endl;
     return EXIT_FAILURE;
@@ -427,12 +433,62 @@ int main(int argc, char** argv)
           }
       }
   }
-  
-  typedef itk::ImageFileWriter< ImageType  > ImageWriterType;
-  ImageWriterType::Pointer writer = ImageWriterType::New();
-  writer->SetFileName(outputImage);
-  writer->SetInput(testImage);
-  writer->Update();
+  else if (mode == 6)
+  {
+    for (int z = 0; z < nz; z++)
+      {
+        for (int y = 0; y < ny; y++)
+          {
+            for (int x = 0; x < nx; x++)
+              {
+
+                index[0] = x;
+                index[1] = y;
+                index[2] = z;
+
+
+                if ( x%2 == 0 && y%2 == 0
+                     || x%2 == 1 && y%2 == 1)
+                {
+                  testImage->SetPixel(index, 255);
+                }
+              }
+          }
+      }
+  }
+
+  if (mode != 6)
+  {
+    typedef itk::ImageFileWriter< ImageType  > ImageWriterType;
+    ImageWriterType::Pointer writer = ImageWriterType::New();
+    writer->SetFileName(outputImage);
+    writer->SetInput(testImage);
+    writer->Update();
+  }
+  else
+  {
+    typedef itk::Image<ScalarType, 2> OutputImageType;
+    typedef itk::ExtractImageFilter<ImageType, OutputImageType> ExtractImageFilterType;
+    typedef itk::ImageFileWriter< OutputImageType  > OutputImageWriterType;
+
+    ImageType::SizeType outputSize;
+    ImageType::RegionType outputRegion;
+
+    outputRegion = testImage->GetLargestPossibleRegion();
+    outputSize = outputRegion.GetSize();
+    outputSize[2] = 0;
+    outputRegion.SetSize(outputSize);
+
+    ExtractImageFilterType::Pointer filter = ExtractImageFilterType::New();
+    filter->SetInput(testImage);
+    filter->SetExtractionRegion(outputRegion);
+    filter->SetDirectionCollapseToIdentity();
+
+    OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
+    imageWriter->SetFileName(outputImage);
+    imageWriter->SetInput(filter->GetOutput());
+    imageWriter->Update();
+  }
   
   return 0;
 }
