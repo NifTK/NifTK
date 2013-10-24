@@ -14,6 +14,7 @@
 
 #include "mitkHandeyeCalibrate.h"
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkOpenCVMaths.h>
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -284,7 +285,21 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::cout << "Camera To Marker Matrix = " << std::endl << CameraToMarker << std::endl;
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
-
+  
+  std::ofstream handeyeStream;
+  handeyeStream.open("calib.left.handeye.txt");
+  if ( handeyeStream ) 
+  {
+    for ( int i = 0 ; i < 4 ; i ++ ) 
+    {
+      for ( int j = 0 ; j < 4 ; j ++ )
+      {
+        handeyeStream << CameraToMarker.at<double>(i,j) << " ";
+      }
+      handeyeStream << std::endl;
+    }
+  }
+  handeyeStream.close();
   if ( m_DoGridToWorld ) 
   {
     std::vector<cv::Mat> gridToWorlds;
@@ -293,12 +308,44 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
       cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
       cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
 
-      cameraToWorld =  MarkerToWorld[i]*CameraToMarker; 
-      gridToWorld = cameraToWorld *GridToCamera[i].inv();
+      cameraToWorld =  MarkerToWorld[i]*(CameraToMarker); 
+      gridToWorld = cameraToWorld *(GridToCamera[i]);
       gridToWorlds.push_back(gridToWorld);
+      std::ofstream gridCornersStream;
+      std::string gridCornersName = "calib.gridcorners" +boost::lexical_cast<std::string>(i) + ".txt";
+      gridCornersStream.open (gridCornersName.c_str());
+      if (gridCornersStream )
+      {
+        for ( int i = 0 ; i < 2 ; i ++ ) 
+        {
+          for ( int j = 0 ; j < 2 ; j ++ ) 
+          {  
+            cv::Point3d x = cv::Point3d (i*(27.0)  , j * (39.0) , 0.0 );
+            cv::Point3d y = gridToWorld * x;
+            gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
+          }
+        }
+        gridCornersStream.close();
+      }
+
     }
     cv::Mat AverageMatrix = mitk::AverageMatrices (gridToWorlds);
     MITK_INFO << "Average Grid to World Transform" << std::endl << AverageMatrix;
+    std::ofstream gridCornersStream;
+    gridCornersStream.open("calib.gridcorners.txt");
+    if ( gridCornersStream )
+    {
+      for ( int i = 0 ; i < 2 ; i ++ ) 
+      {
+        for ( int j = 0 ; j < 2 ; j ++ ) 
+        {  
+          cv::Point3d x = cv::Point3d (i*(27.0) , j * (39.0), 0.0 );
+          cv::Point3d y = AverageMatrix * x;
+          gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
+        }
+      }
+      gridCornersStream.close();
+    }
   }
   if ( GroundTruthSolution.length() > 0  )
   {
