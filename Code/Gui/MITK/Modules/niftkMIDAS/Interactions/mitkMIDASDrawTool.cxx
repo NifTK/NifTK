@@ -107,7 +107,7 @@ void mitk::MIDASDrawTool::ClearWorkingData()
   mitk::ContourModelSet* contours = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
 
   // Delete all contours.
-  contours->Initialize();
+  contours->Clear();
 }
 
 
@@ -468,7 +468,7 @@ void mitk::MIDASDrawTool::ITKCleanContours(
 
   itk::ContinuousIndex<double, VImageDimension> voxelContinousIndex;
 
-  outputContours.Initialize();
+  outputContours.Clear();
 
 //  mitk::ContourModelSet::ContourVectorType contourVec = inputContours.GetContours();
   mitk::ContourModelSet::ContourModelSetIterator contourIt = inputContours.Begin();

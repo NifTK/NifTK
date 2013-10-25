@@ -778,7 +778,7 @@ void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Poin
   catch(const mitk::AccessByItkException& e)
   {
     MITK_ERROR << "Failed in ITKGenerateOutlineFromBinaryImage due to:" << e.what();
-    outputContourSet->Initialize();
+    outputContourSet->Clear();
   }
 }
 
@@ -3828,8 +3828,7 @@ MIDASGeneralSegmentorView
   // NOTE: This function is only meant to be called on binary images,
   // so we are assuming that TPixel is only ever unsigned char.
 
-  // Initialise contour set i.e. clear it.
-  outputContourSet->Initialize();
+  outputContourSet->Clear();
 
   // Get the largest possible region of the input 3D image.
   Region3DType region = itkImage->GetLargestPossibleRegion();
@@ -4580,7 +4579,7 @@ void MIDASGeneralSegmentorView
   mitk::ContourModelSet::ContourModelSetIterator contourIt = outputCopyOfInputContours.Begin();
   mitk::ContourModel::Pointer firstContour = *contourIt;
 
-  outputContours.Initialize();
+  outputContours.Clear();
   mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
   mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
