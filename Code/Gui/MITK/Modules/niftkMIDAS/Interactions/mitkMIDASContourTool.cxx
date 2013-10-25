@@ -503,7 +503,7 @@ void mitk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Cont
 {
   if (initialise)
   {
-    b.Initialize();
+    b.Clear();
   }
 
   mitk::ContourModelSet::ContourModelSetIterator contourIt = a.Begin();
@@ -582,8 +582,6 @@ void mitk::MIDASContourTool::ExecuteOperation(Operation* operation)
 
         mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>((m_ToolManager->GetWorkingData(dataSetNumber))->GetData());
         assert(contoursToReplace);
-
-        contoursToReplace->Clear();
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
 
