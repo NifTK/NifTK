@@ -15,12 +15,11 @@
   
 set(apriltags_FOUND 0)
 
-set(apriltags_SOURCE_DIR @apriltags_SOURCE_DIR@)
 set(apriltags_DIR @apriltags_DIR@)
 
 find_path(APRILTAGS_INC
   AprilTags/Tag16h5.h 
-  PATHS ${apriltags_SOURCE_DIR}
+  PATHS ${apriltags_DIR}
   NO_DEFAULT_PATH
   )
 
@@ -39,5 +38,5 @@ if(APRILTAGS_INC AND APRILTAGS_LIB)
   set(apriltags_LIBRARIES ${APRILTAGS_LIB})
 
   get_filename_component(_lib_dir ${APRILTAGS_LIB} PATH)
-  set(apriltags_LIBRARY_DIRS ${_lib_dir})
+  set(apriltags_LIBRARY_DIR ${_lib_dir})
 endif()
