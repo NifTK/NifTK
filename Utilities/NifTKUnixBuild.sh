@@ -14,8 +14,11 @@
 #
 #============================================================================*/
 
+# If the NIFTK_MAKE_PACKAGE variable is defined then a 'make package'
+# command is executed.
+
 # If the NIFTK_INSTALL_PREFIX variable is defined then a 'make install'
-# command is executed as well.
+# command is executed.
 
 # If the NIFTK_CTEST_TYPE variable is defined then it determines the type of test
 # to run. Valid values are "Nightly", "Continuous" and "Experimental".
@@ -117,7 +120,7 @@ run_command "make -j ${THREADS}"
 run_command "cd NifTK-build"
 run_command "${BUILD_COMMAND}" # Note that the submit task fails with http timeout, but we want to carry on regardless to get to the package bit.
 
-if [ "${TYPE}" = "Release" ]; then
+if [ "${TYPE}" = "Release" -a ! -z "${NIFTK_MAKE_PACKAGE}" ]; then
   run_command "make package"
 fi
 
