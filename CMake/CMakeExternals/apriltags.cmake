@@ -27,8 +27,7 @@ if(BUILD_IGI)
   set(proj apriltags)
   set(proj_DEPENDENCIES OpenCV EIGEN)
   set(apriltags_DEPENDS ${proj})
-  set(proj_BUILD ${CMAKE_BINARY_DIR}/${proj}-build)
-  set(proj_SOURCE ${CMAKE_BINARY_DIR}/${proj}-src)
+  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
  
   if(NOT DEFINED apriltags_DIR)
   
@@ -42,7 +41,6 @@ if(BUILD_IGI)
       URL ${NIFTK_LOCATION_APRILTAGS}
       URL_MD5 ${NIFTK_CHECKSUM_APRILTAGS}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_APRILTAGS}
-      INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
           ${EP_COMMON_ARGS}
@@ -53,11 +51,8 @@ if(BUILD_IGI)
        DEPENDS ${proj_DEPENDENCIES}
       )
 
-    set(apriltags_SOURCE_DIR ${proj_SOURCE})  
-    set(apriltags_DIR ${proj_BUILD})
-
-    message("SuperBuild loading AprilTags headers from ${apriltags_SOURCE_DIR}")
-    message("SuperBuild loading AprilTags libraries from ${apriltags_DIR}")
+    set(apriltags_DIR ${proj_INSTALL})
+    message("SuperBuild loading AprilTags from ${apriltags_DIR}")
  
   else(NOT DEFINED apriltags_DIR)
   
