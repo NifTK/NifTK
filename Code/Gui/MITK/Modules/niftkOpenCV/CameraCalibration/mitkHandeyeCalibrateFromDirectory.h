@@ -59,6 +59,7 @@ public:
   itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
   itkSetMacro(NoVideoSupport,bool);
+  itkSetMacro(SwapVideoChannels, bool);
 
 protected:
 
@@ -105,6 +106,7 @@ private:
 
   bool                                m_NoVideoSupport; //for testing, enable running 
 
+  bool                                m_SwapVideoChannels;
 
 
 }; // end class

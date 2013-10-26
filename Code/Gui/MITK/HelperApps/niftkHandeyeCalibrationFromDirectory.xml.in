@@ -105,6 +105,14 @@
       <label>Pixel Scale Factors</label>
       <default>1,1</default>
     </integer-vector>
+	
+    <boolean>
+      <name>swapVideoChannels</name>
+      <longflag>swapVideoChannels</longflag>
+      <description>Swap left and right video channel.</description>
+      <label>Swap video channels</label>
+      <default>false</default>
+    </boolean>
 
   </parameters>
   

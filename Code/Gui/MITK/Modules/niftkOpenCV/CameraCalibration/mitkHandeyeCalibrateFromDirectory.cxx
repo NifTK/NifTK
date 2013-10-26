@@ -43,6 +43,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
 , m_NoVideoSupport(false)
+, m_SwapVideoChannels(false)
 {
   m_PixelScaleFactor.Fill(1);
 }
@@ -194,9 +195,16 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     cv::Mat LeftFrame_orig;
     cv::Mat RightFrame_orig;
     capture >> TempFrame;
-    LeftFrame = TempFrame.clone();
+    if (!m_SwapVideoChannels)
+      LeftFrame = TempFrame.clone();
+    else
+      RightFrame = TempFrame.clone();
     capture >> TempFrame;
-    RightFrame = TempFrame.clone();
+    if (!m_SwapVideoChannels)
+      RightFrame = TempFrame.clone();
+    else
+      LeftFrame = TempFrame.clone();
+
     LeftFrame_orig = LeftFrame.clone();
     RightFrame_orig = RightFrame.clone();
     imageSize=RightFrame.size();
@@ -213,6 +221,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
           leftImageCorners, leftObjectCorners);
+
         std::vector <cv::Point2d>* rightImageCorners = new std::vector<cv::Point2d>;
         std::vector <cv::Point3d>* rightObjectCorners = new std::vector<cv::Point3d>;
         bool RightOK = mitk::ExtractChessBoardPoints (

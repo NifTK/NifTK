@@ -40,6 +40,7 @@ int main(int argc, char** argv)
     Calibrator->SetFlipExtrinsic(FlipExtrinsic);
     Calibrator->SetSortByAngle(false);
     Calibrator->SetPixelScaleFactor(pixelScales);
+    Calibrator->SetSwapVideoChannels(swapVideoChannels);
     Calibrator->InitialiseTracking();
     Calibrator->InitialiseVideo();
 
