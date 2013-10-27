@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewVisibilityManager_h
-#define QmitkMIDASMultiViewVisibilityManager_h
+#ifndef niftkMultiViewerVisibilityManager_h
+#define niftkMultiViewerVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
 #include <mitkMIDASEnums.h>
@@ -34,17 +34,17 @@ class niftkSingleViewerWidget;
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visibility" property in DataStorage.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
+class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject
 {
   Q_OBJECT
 
 public:
 
   /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
-  QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage);
+  niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Destructor, which unregisters all the listeners.
-  virtual ~QmitkMIDASMultiViewVisibilityManager();
+  virtual ~niftkMultiViewerVisibilityManager();
 
   /// \brief Each new niftkSingleViewerWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterWidget(niftkSingleViewerWidget *widget);

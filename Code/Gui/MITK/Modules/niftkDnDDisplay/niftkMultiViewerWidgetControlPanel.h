@@ -12,29 +12,29 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewWidgetControlPanel_h
-#define QmitkMIDASMultiViewWidgetControlPanel_h
+#ifndef niftkMultiViewerWidgetControlPanel_h
+#define niftkMultiViewerWidgetControlPanel_h
 
 #include <QWidget>
-#include "ui_QmitkMIDASMultiViewWidgetControlPanel.h"
+#include "ui_niftkMultiViewerWidgetControlPanel.h"
 
 #include <mitkMIDASEnums.h>
 
 /**
- * \class QmitkMIDASMultiViewWidgetControlPanel
+ * \class niftkMultiViewerWidgetControlPanel
  * \brief Control panel for the DnD display.
  */
-class QmitkMIDASMultiViewWidgetControlPanel : public QWidget, private Ui_QmitkMIDASMultiViewWidgetControlPanel
+class niftkMultiViewerWidgetControlPanel : public QWidget, private Ui_niftkMultiViewerWidgetControlPanel
 {
   Q_OBJECT
   
 public:
 
-  /// \brief Constructs the QmitkMIDASMultiViewWidgetControlPanel object.
-  explicit QmitkMIDASMultiViewWidgetControlPanel(QWidget *parent = 0);
+  /// \brief Constructs the niftkMultiViewerWidgetControlPanel object.
+  explicit niftkMultiViewerWidgetControlPanel(QWidget *parent = 0);
 
-  /// \brief Destructs the QmitkMIDASMultiViewWidgetControlPanel object.
-  virtual ~QmitkMIDASMultiViewWidgetControlPanel();
+  /// \brief Destructs the niftkMultiViewerWidgetControlPanel object.
+  virtual ~niftkMultiViewerWidgetControlPanel();
   
   /// \brief Tells if the magnification controls are visible.
   bool AreMagnificationControlsVisible() const;
@@ -301,4 +301,4 @@ private:
   bool m_ShowDropTypeControls;
 };
 
-#endif // QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
+#endif

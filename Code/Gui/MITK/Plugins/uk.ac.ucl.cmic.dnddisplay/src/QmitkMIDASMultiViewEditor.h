@@ -35,8 +35,7 @@
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
 
 #include <mitkMIDASEnums.h>
-#include <QmitkMIDASMultiViewWidget.h>
-#include <QmitkMIDASMultiViewVisibilityManager.h>
+#include <niftkMultiViewerVisibilityManager.h>
 
 namespace mitk {
   class DataNode;
@@ -55,7 +54,7 @@ namespace mitk {
  */
 
 class QmitkMIDASMultiViewEditorPrivate;
-class QmitkMIDASMultiViewWidget;
+class niftkMultiViewerWidget;
 class QmitkRenderWindow;
 
 class DNDDISPLAY_EXPORT QmitkMIDASMultiViewEditor :
@@ -72,8 +71,8 @@ public:
 
   static const std::string EDITOR_ID;
 
-  /// \brief Get hold of the internal QmitkMIDASMultiViewWidget.
-  QmitkMIDASMultiViewWidget* GetMIDASMultiViewWidget();
+  /// \brief Get hold of the internal niftkMultiViewerWidget.
+  niftkMultiViewerWidget* GetMultiViewerWidget();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -159,7 +158,7 @@ public:
 
 protected:
 
-  /// \brief Tells the contained QmitkMIDASMultiViewWidget to setFocus().
+  /// \brief Tells the contained niftkMultiViewerWidget to setFocus().
   virtual void SetFocus();
 
   /// \brief Called when the preferences object of this editor changed.

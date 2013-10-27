@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASMultiViewVisibilityManager.h"
+#include "niftkMultiViewerVisibilityManager.h"
 #include <QmitkRenderWindow.h>
 #include "niftkSingleViewerWidget.h"
 #include <mitkBaseRenderer.h>
@@ -25,7 +25,7 @@
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage)
+niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
 : m_InDataStorageChanged(false)
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
@@ -62,27 +62,27 @@ QmitkMIDASMultiViewVisibilityManager::QmitkMIDASMultiViewVisibilityManager(mitk:
   m_NodeFilter->AddToList("Paintbrush_Node");
 
   m_DataStorage->AddNodeEvent.AddListener(
-      mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
-    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy ) );
+      mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+    ( this, &niftkMultiViewerVisibilityManager::NodeAddedProxy ) );
 
   m_DataStorage->RemoveNodeEvent.AddListener(
-      mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
-    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy ) );
+      mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+    ( this, &niftkMultiViewerVisibilityManager::NodeRemovedProxy ) );
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASMultiViewVisibilityManager::~QmitkMIDASMultiViewVisibilityManager()
+niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->AddNodeEvent.RemoveListener(
-        mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
-    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy ));
+        mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+    ( this, &niftkMultiViewerVisibilityManager::NodeAddedProxy ));
 
     m_DataStorage->RemoveNodeEvent.RemoveListener(
-        mitk::MessageDelegate1<QmitkMIDASMultiViewVisibilityManager, const mitk::DataNode*>
-    ( this, &QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy ));
+        mitk::MessageDelegate1<niftkMultiViewerVisibilityManager, const mitk::DataNode*>
+    ( this, &niftkMultiViewerVisibilityManager::NodeRemovedProxy ));
 
     m_DataStorage = NULL;
   }
@@ -91,7 +91,7 @@ QmitkMIDASMultiViewVisibilityManager::~QmitkMIDASMultiViewVisibilityManager()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::RemoveAllFromObserverToVisibilityMap()
+void niftkMultiViewerVisibilityManager::RemoveAllFromObserverToVisibilityMap()
 {
   for( std::map<unsigned long, mitk::BaseProperty::Pointer>::iterator iter = m_ObserverToVisibilityMap.begin(); iter != m_ObserverToVisibilityMap.end(); ++iter )
   {
@@ -102,7 +102,7 @@ void QmitkMIDASMultiViewVisibilityManager::RemoveAllFromObserverToVisibilityMap(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::UpdateObserverToVisibilityMap()
+void niftkMultiViewerVisibilityManager::UpdateObserverToVisibilityMap()
 {
   this->RemoveAllFromObserverToVisibilityMap();
 
@@ -125,15 +125,15 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateObserverToVisibilityMap()
     }
 
     /* register listener for changes in visible property */
-    itk::ReceptorMemberCommand<QmitkMIDASMultiViewVisibilityManager>::Pointer command = itk::ReceptorMemberCommand<QmitkMIDASMultiViewVisibilityManager>::New();
-    command->SetCallbackFunction(this, &QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty);
+    itk::ReceptorMemberCommand<niftkMultiViewerVisibilityManager>::Pointer command = itk::ReceptorMemberCommand<niftkMultiViewerVisibilityManager>::New();
+    command->SetCallbackFunction(this, &niftkMultiViewerVisibilityManager::UpdateVisibilityProperty);
     m_ObserverToVisibilityMap[it->Value()->GetProperty("visible")->AddObserver( itk::ModifiedEvent(), command )] = it->Value()->GetProperty("visible");
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(niftkSingleViewerWidget *widget)
+void niftkMultiViewerVisibilityManager::RegisterWidget(niftkSingleViewerWidget *widget)
 {
   widget->SetDataStorage(m_DataStorage);
 
@@ -144,14 +144,14 @@ void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(niftkSingleViewerWidge
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::DeRegisterAllWidgets()
+void niftkMultiViewerVisibilityManager::DeRegisterAllWidgets()
 {
   this->DeRegisterWidgets(0, m_Widgets.size()-1);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
+void niftkMultiViewerVisibilityManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
 {
   for (unsigned int i = startWindowIndex; i <= endWindowIndex; i++)
   {
@@ -163,14 +163,14 @@ void QmitkMIDASMultiViewVisibilityManager::DeRegisterWidgets(unsigned int startW
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::ClearAllWindows()
+void niftkMultiViewerVisibilityManager::ClearAllWindows()
 {
   this->ClearWindows(0, m_Widgets.size()-1);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::ClearWindows(unsigned int startWindowIndex, unsigned int endWindowIndex)
+void niftkMultiViewerVisibilityManager::ClearWindows(unsigned int startWindowIndex, unsigned int endWindowIndex)
 {
   for (unsigned int i = startWindowIndex; i <= endWindowIndex; i++)
   {
@@ -180,7 +180,7 @@ void QmitkMIDASMultiViewVisibilityManager::ClearWindows(unsigned int startWindow
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForAllWindows(bool visibility)
+void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForAllWindows(bool visibility)
 {
   assert(m_DataStorage);
 
@@ -197,7 +197,7 @@ void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForAllWindows(boo
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForAllWindows(mitk::DataNode* node, bool visibility)
+void niftkMultiViewerVisibilityManager::SetNodeVisibilityForAllWindows(mitk::DataNode* node, bool visibility)
 {
   for (unsigned int i = 0; i < m_Widgets.size(); i++)
   {
@@ -207,7 +207,7 @@ void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForAllWindows(mitk::
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForWindow(unsigned int widgetIndex, bool visibility)
+void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForWindow(unsigned int widgetIndex, bool visibility)
 {
   assert(m_DataStorage);
 
@@ -224,7 +224,7 @@ void QmitkMIDASMultiViewVisibilityManager::SetAllNodeVisibilityForWindow(unsigne
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForWindow(mitk::DataNode* node, unsigned int widgetIndex, bool visibility)
+void niftkMultiViewerVisibilityManager::SetNodeVisibilityForWindow(mitk::DataNode* node, unsigned int widgetIndex, bool visibility)
 {
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back(node);
@@ -233,7 +233,7 @@ void QmitkMIDASMultiViewVisibilityManager::SetNodeVisibilityForWindow(mitk::Data
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* renderWindow)
+int niftkMultiViewerVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* renderWindow)
 {
   int result = -1;
 
@@ -251,7 +251,7 @@ int QmitkMIDASMultiViewVisibilityManager::GetIndexFromWindow(QmitkRenderWindow* 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy( const mitk::DataNode* node )
+void niftkMultiViewerVisibilityManager::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
   if(!m_InDataStorageChanged)
@@ -264,7 +264,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeRemovedProxy( const mitk::DataNod
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::NodeRemoved( const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 {
   this->UpdateObserverToVisibilityMap();
 
@@ -281,7 +281,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeRemoved( const mitk::DataNode* no
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode* node )
+void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeAdded()
   if(!m_InDataStorageChanged)
@@ -294,7 +294,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAddedProxy( const mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::NodeAdded( const mitk::DataNode* node)
 {
   // TODO: Is there a way round this, because its ugly.
   // Basically, when drawing on an image, you interactively add/remove contours or seeds.
@@ -314,7 +314,7 @@ void QmitkMIDASMultiViewVisibilityManager::NodeAdded( const mitk::DataNode* node
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::SetInitialNodeProperties(mitk::DataNode* node)
 {
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   this->SetNodeVisibilityForAllWindows(node, false);
@@ -345,7 +345,7 @@ void QmitkMIDASMultiViewVisibilityManager::SetInitialNodeProperties(mitk::DataNo
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::EventObject&)
+void niftkMultiViewerVisibilityManager::UpdateVisibilityProperty(const itk::EventObject&)
 {
   // We have to iterate through all nodes registered with DataStorage,
   // and see if the global visibility property should override the renderer specific one for any
@@ -394,7 +394,7 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::RemoveNodesFromWindow(int windowIndex)
+void niftkMultiViewerVisibilityManager::RemoveNodesFromWindow(int windowIndex)
 {
   niftkSingleViewerWidget *widget = m_Widgets[windowIndex];
   assert(widget);
@@ -413,7 +413,7 @@ void QmitkMIDASMultiViewVisibilityManager::RemoveNodesFromWindow(int windowIndex
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewVisibilityManager::GetNodesInWindow(int windowIndex)
+int niftkMultiViewerVisibilityManager::GetNodesInWindow(int windowIndex)
 {
   int result = m_DataNodes[windowIndex].size();
   return result;
@@ -421,7 +421,7 @@ int QmitkMIDASMultiViewVisibilityManager::GetNodesInWindow(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility)
+void niftkMultiViewerVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility)
 {
   niftkSingleViewerWidget *widget = m_Widgets[windowIndex];
   assert(widget);
@@ -454,7 +454,7 @@ void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
+mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
   mitk::TimeGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
@@ -537,7 +537,7 @@ mitk::TimeGeometry::Pointer QmitkMIDASMultiViewVisibilityManager::GetGeometry(st
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
+niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(
     itk::Image<TPixel, VImageDimension>* itkImage,
     MIDASOrientation &outputOrientation
     )
@@ -586,7 +586,7 @@ QmitkMIDASMultiViewVisibilityManager::GetAsAcquiredOrientation(
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASMultiViewVisibilityManager::GetLayout(std::vector<mitk::DataNode*> nodes)
+MIDASLayout niftkMultiViewerVisibilityManager::GetLayout(std::vector<mitk::DataNode*> nodes)
 {
 
   MIDASLayout layout = m_DefaultLayout;
@@ -613,12 +613,12 @@ MIDASLayout QmitkMIDASMultiViewVisibilityManager::GetLayout(std::vector<mitk::Da
       }
       catch (const mitk::AccessByItkException &e)
       {
-        MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
+        MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
       }
     }
     else
     {
-      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
+      MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
     }
 
     if (orientation == MIDAS_ORIENTATION_AXIAL)
@@ -635,7 +635,7 @@ MIDASLayout QmitkMIDASMultiViewVisibilityManager::GetLayout(std::vector<mitk::Da
     }
     else
     {
-      MITK_ERROR << "QmitkMIDASMultiViewVisibilityManager::OnNodesDropped defaulting to layout=" << layout << std::endl;
+      MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped defaulting to layout=" << layout << std::endl;
     }
   }
   return layout;
@@ -643,7 +643,7 @@ MIDASLayout QmitkMIDASMultiViewVisibilityManager::GetLayout(std::vector<mitk::Da
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
 
   int windowIndex = this->GetIndexFromWindow(window);

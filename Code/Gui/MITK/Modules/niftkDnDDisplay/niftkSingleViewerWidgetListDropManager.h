@@ -32,7 +32,7 @@ class niftkSingleViewerWidgetListVisibilityManager;
 /**
  * \class niftkSingleViewerWidgetListDropManager
  * \brief Class to coordinate the necessary operations for when we drop images into a
- * MIDAS QmitkMIDASMultiViewWidget, coordinating across many niftkSingleViewerWidget.
+ * MIDAS niftkMultiViewerWidget, coordinating across many niftkSingleViewerWidget.
  *
  * This class needs to have SetVisibilityManager and SetDataStorage called prior to use.
  */

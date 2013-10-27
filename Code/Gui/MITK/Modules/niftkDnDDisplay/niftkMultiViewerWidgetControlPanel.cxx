@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASMultiViewWidgetControlPanel.h"
+#include "niftkMultiViewerWidgetControlPanel.h"
 
 #include <mitkLogMacros.h>
 
 //-----------------------------------------------------------------------------
-QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWidget *parent)
+niftkMultiViewerWidgetControlPanel::niftkMultiViewerWidgetControlPanel(QWidget *parent)
 : QWidget(parent)
 , m_ShowMagnificationControls(true)
 , m_ShowShowOptions(true)
@@ -68,20 +68,20 @@ QmitkMIDASMultiViewWidgetControlPanel::QmitkMIDASMultiViewWidgetControlPanel(QWi
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASMultiViewWidgetControlPanel::~QmitkMIDASMultiViewWidgetControlPanel()
+niftkMultiViewerWidgetControlPanel::~niftkMultiViewerWidgetControlPanel()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreMagnificationControlsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreMagnificationControlsVisible() const
 {
   return m_ShowMagnificationControls;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationControlsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetMagnificationControlsVisible(bool visible)
 {
   m_ShowMagnificationControls = visible;
   m_SlidersWidget->SetMagnificationControlsVisible(visible);
@@ -89,14 +89,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationControlsVisible(bool
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreShowOptionsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreShowOptionsVisible() const
 {
   return m_ShowShowOptions;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetShowOptionsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetShowOptionsVisible(bool visible)
 {
   m_ShowShowOptions = visible;
   m_ShowOptionsWidget->setVisible(visible);
@@ -105,14 +105,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetShowOptionsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowLayoutControlsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreWindowLayoutControlsVisible() const
 {
   return m_ShowWindowLayoutControls;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowLayoutControlsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetWindowLayoutControlsVisible(bool visible)
 {
   m_ShowWindowLayoutControls = visible;
   m_WindowLayoutSeparator->setVisible(visible);
@@ -123,14 +123,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowLayoutControlsVisible(bool 
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewNumberControlsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreViewNumberControlsVisible() const
 {
   return m_ViewNumberWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetViewNumberControlsVisible(bool visible)
 {
   m_ViewNumberWidget->setVisible(visible);
   m_ViewBindingSeparator->setVisible(visible);
@@ -140,14 +140,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumberControlsVisible(bool vi
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreDropTypeControlsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreDropTypeControlsVisible() const
 {
   return m_DropTypeWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetDropTypeControlsVisible(bool visible)
 {
   m_DropTypeWidget->setVisible(visible);
   m_DropTypeSeparator->setVisible(visible);
@@ -155,14 +155,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropTypeControlsVisible(bool visi
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreSingleViewControlsEnabled() const
+bool niftkMultiViewerWidgetControlPanel::AreSingleViewControlsEnabled() const
 {
   return m_SlidersWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetSingleViewControlsEnabled(bool enabled)
+void niftkMultiViewerWidgetControlPanel::SetSingleViewControlsEnabled(bool enabled)
 {
   m_SlidersWidget->setEnabled(enabled);
   m_ShowOptionsSeparator->setEnabled(enabled);
@@ -174,147 +174,147 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetSingleViewControlsEnabled(bool en
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreMultiViewControlsEnabled() const
+bool niftkMultiViewerWidgetControlPanel::AreMultiViewControlsEnabled() const
 {
   return m_ViewNumberWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMultiViewControlsEnabled(bool enabled)
+void niftkMultiViewerWidgetControlPanel::SetMultiViewControlsEnabled(bool enabled)
 {
   m_ViewNumberWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetSliceIndexTracking(bool tracking)
+void niftkMultiViewerWidgetControlPanel::SetSliceIndexTracking(bool tracking)
 {
   m_SlidersWidget->SetSliceIndexTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetTimeStepTracking(bool tracking)
+void niftkMultiViewerWidgetControlPanel::SetTimeStepTracking(bool tracking)
 {
   m_SlidersWidget->SetTimeStepTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMagnificationTracking(bool tracking)
+void niftkMultiViewerWidgetControlPanel::SetMagnificationTracking(bool tracking)
 {
   m_SlidersWidget->SetMagnificationTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetMaxSliceIndex() const
+int niftkMultiViewerWidgetControlPanel::GetMaxSliceIndex() const
 {
   return m_SlidersWidget->GetMaxSliceIndex();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMaxSliceIndex(int maxSliceIndex)
+void niftkMultiViewerWidgetControlPanel::SetMaxSliceIndex(int maxSliceIndex)
 {
   m_SlidersWidget->SetMaxSliceIndex(maxSliceIndex);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetSliceIndex() const
+int niftkMultiViewerWidgetControlPanel::GetSliceIndex() const
 {
   return m_SlidersWidget->GetSliceIndex();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetSliceIndex(int sliceIndex)
+void niftkMultiViewerWidgetControlPanel::SetSliceIndex(int sliceIndex)
 {
   m_SlidersWidget->SetSliceIndex(sliceIndex);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetMaxTimeStep() const
+int niftkMultiViewerWidgetControlPanel::GetMaxTimeStep() const
 {
   return m_SlidersWidget->GetMaxTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMaxTimeStep(int maxTimeStep)
+void niftkMultiViewerWidgetControlPanel::SetMaxTimeStep(int maxTimeStep)
 {
   m_SlidersWidget->SetMaxTimeStep(maxTimeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetTimeStep() const
+int niftkMultiViewerWidgetControlPanel::GetTimeStep() const
 {
   return m_SlidersWidget->GetTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetTimeStep(int timeStep)
+void niftkMultiViewerWidgetControlPanel::SetTimeStep(int timeStep)
 {
   m_SlidersWidget->SetTimeStep(timeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASMultiViewWidgetControlPanel::GetMinMagnification() const
+double niftkMultiViewerWidgetControlPanel::GetMinMagnification() const
 {
   return m_SlidersWidget->GetMinMagnification();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMinMagnification(double minMagnification)
+void niftkMultiViewerWidgetControlPanel::SetMinMagnification(double minMagnification)
 {
   m_SlidersWidget->SetMinMagnification(minMagnification);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASMultiViewWidgetControlPanel::GetMaxMagnification() const
+double niftkMultiViewerWidgetControlPanel::GetMaxMagnification() const
 {
   return m_SlidersWidget->GetMaxMagnification();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMaxMagnification(double maxMagnification)
+void niftkMultiViewerWidgetControlPanel::SetMaxMagnification(double maxMagnification)
 {
   m_SlidersWidget->SetMaxMagnification(maxMagnification);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASMultiViewWidgetControlPanel::GetMagnification() const
+double niftkMultiViewerWidgetControlPanel::GetMagnification() const
 {
   return m_SlidersWidget->GetMagnification();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMagnification(double magnification)
+void niftkMultiViewerWidgetControlPanel::SetMagnification(double magnification)
 {
   m_SlidersWidget->SetMagnification(magnification);
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASMultiViewWidgetControlPanel::GetLayout() const
+MIDASLayout niftkMultiViewerWidgetControlPanel::GetLayout() const
 {
   return m_LayoutWidget->GetLayout();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetLayout(MIDASLayout layout)
+void niftkMultiViewerWidgetControlPanel::SetLayout(MIDASLayout layout)
 {
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
   m_LayoutWidget->SetLayout(layout);
@@ -325,14 +325,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetLayout(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowCursorsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreWindowCursorsBound() const
 {
   return m_BindWindowCursorsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowCursorsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetWindowCursorsBound(bool bound)
 {
   bool wasBlocked = m_BindWindowCursorsCheckBox->blockSignals(true);
   m_BindWindowCursorsCheckBox->setChecked(bound);
@@ -341,14 +341,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowCursorsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreWindowMagnificationsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreWindowMagnificationsBound() const
 {
   return m_BindWindowMagnificationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetWindowMagnificationsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetWindowMagnificationsBound(bool bound)
 {
   bool wasBlocked = m_BindWindowMagnificationsCheckBox->blockSignals(true);
   m_BindWindowMagnificationsCheckBox->setChecked(bound);
@@ -357,14 +357,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetWindowMagnificationsBound(bool bo
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::IsCursorVisible() const
+bool niftkMultiViewerWidgetControlPanel::IsCursorVisible() const
 {
   return m_ShowCursorCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetCursorVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetCursorVisible(bool visible)
 {
   bool wasBlocked = m_ShowCursorCheckBox->blockSignals(true);
   m_ShowCursorCheckBox->setChecked(visible);
@@ -373,14 +373,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreDirectionAnnotationsVisible() const
+bool niftkMultiViewerWidgetControlPanel::AreDirectionAnnotationsVisible() const
 {
   return m_ShowDirectionAnnotationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetDirectionAnnotationsVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::SetDirectionAnnotationsVisible(bool visible)
 {
   bool wasBlocked = m_ShowDirectionAnnotationsCheckBox->blockSignals(true);
   m_ShowDirectionAnnotationsCheckBox->setChecked(visible);
@@ -389,14 +389,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDirectionAnnotationsVisible(bool 
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::Is3DWindowVisible() const
+bool niftkMultiViewerWidgetControlPanel::Is3DWindowVisible() const
 {
   return m_Show3DWindowCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::Set3DWindowVisible(bool visible)
+void niftkMultiViewerWidgetControlPanel::Set3DWindowVisible(bool visible)
 {
   bool wasBlocked = m_Show3DWindowCheckBox->blockSignals(true);
   m_Show3DWindowCheckBox->setChecked(visible);
@@ -405,21 +405,21 @@ void QmitkMIDASMultiViewWidgetControlPanel::Set3DWindowVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetMaxViewRows() const
+int niftkMultiViewerWidgetControlPanel::GetMaxViewRows() const
 {
   return m_ViewRowsSpinBox->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetMaxViewColumns() const
+int niftkMultiViewerWidgetControlPanel::GetMaxViewColumns() const
 {
   return m_ViewColumnsSpinBox->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetMaxViewNumber(int maxRows, int maxColumns)
+void niftkMultiViewerWidgetControlPanel::SetMaxViewNumber(int maxRows, int maxColumns)
 {
   bool wasBlocked = m_1x2ViewsButton->blockSignals(true);
   m_1x2ViewsButton->setEnabled(maxColumns >= 2);
@@ -452,21 +452,21 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetMaxViewNumber(int maxRows, int ma
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetViewRows() const
+int niftkMultiViewerWidgetControlPanel::GetViewRows() const
 {
   return m_ViewRowsSpinBox->value();
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASMultiViewWidgetControlPanel::GetViewColumns() const
+int niftkMultiViewerWidgetControlPanel::GetViewColumns() const
 {
   return m_ViewColumnsSpinBox->value();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
+void niftkMultiViewerWidgetControlPanel::SetViewNumber(int rows, int columns)
 {
   if (rows > m_ViewRowsSpinBox->maximum() || columns > m_ViewColumnsSpinBox->maximum())
   {
@@ -513,14 +513,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewNumber(int rows, int columns)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewPositionsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreViewPositionsBound() const
 {
   return m_BindViewPositionsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewPositionsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetViewPositionsBound(bool bound)
 {
   bool wasBlocked = m_BindViewPositionsCheckBox->blockSignals(true);
   m_BindViewPositionsCheckBox->setChecked(bound);
@@ -529,14 +529,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewPositionsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewCursorsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreViewCursorsBound() const
 {
   return m_BindViewCursorsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewCursorsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetViewCursorsBound(bool bound)
 {
   bool wasBlocked = m_BindViewCursorsCheckBox->blockSignals(true);
   m_BindViewCursorsCheckBox->setChecked(bound);
@@ -545,14 +545,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewCursorsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewMagnificationsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreViewMagnificationsBound() const
 {
   return m_BindViewMagnificationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewMagnificationsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetViewMagnificationsBound(bool bound)
 {
   bool wasBlocked = m_BindViewMagnificationsCheckBox->blockSignals(true);
   m_BindViewMagnificationsCheckBox->setChecked(bound);
@@ -561,14 +561,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewMagnificationsBound(bool boun
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewLayoutsBound() const
+bool niftkMultiViewerWidgetControlPanel::AreViewLayoutsBound() const
 {
   return m_BindViewLayoutsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewLayoutsBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetViewLayoutsBound(bool bound)
 {
   bool wasBlocked = m_BindViewLayoutsCheckBox->blockSignals(true);
   m_BindViewLayoutsCheckBox->setChecked(bound);
@@ -577,14 +577,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewLayoutsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASMultiViewWidgetControlPanel::AreViewGeometriesBound() const
+bool niftkMultiViewerWidgetControlPanel::AreViewGeometriesBound() const
 {
   return m_BindViewGeometriesCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetViewGeometriesBound(bool bound)
+void niftkMultiViewerWidgetControlPanel::SetViewGeometriesBound(bool bound)
 {
   bool wasBlocked = m_BindViewGeometriesCheckBox->blockSignals(true);
   m_BindViewGeometriesCheckBox->setChecked(bound);
@@ -593,7 +593,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetViewGeometriesBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-MIDASDropType QmitkMIDASMultiViewWidgetControlPanel::GetDropType() const
+MIDASDropType niftkMultiViewerWidgetControlPanel::GetDropType() const
 {
   MIDASDropType dropType = MIDAS_DROP_TYPE_SINGLE;
 
@@ -611,7 +611,7 @@ MIDASDropType QmitkMIDASMultiViewWidgetControlPanel::GetDropType() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::SetDropType(MIDASDropType dropType)
+void niftkMultiViewerWidgetControlPanel::SetDropType(MIDASDropType dropType)
 {
   switch (dropType)
   {
@@ -625,14 +625,14 @@ void QmitkMIDASMultiViewWidgetControlPanel::SetDropType(MIDASDropType dropType)
     m_DropThumbnailRadioButton->setChecked(true);
     break;
   default:
-    MITK_ERROR << "QmitkMIDASMultiViewControlPanel::SetDropType: Invalid MIDASDropType=" << dropType << std::endl;
+    MITK_ERROR << "niftkMultiViewerControlPanel::SetDropType: Invalid MIDASDropType=" << dropType << std::endl;
     break;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnLayoutChanged(MIDASLayout layout)
+void niftkMultiViewerWidgetControlPanel::OnLayoutChanged(MIDASLayout layout)
 {
   m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(layout));
 
@@ -641,7 +641,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnLayoutChanged(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On1x1ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On1x1ViewsButtonClicked()
 {
   this->SetViewNumber(1, 1);
   emit ViewNumberChanged(1, 1);
@@ -649,7 +649,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On1x1ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On1x2ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On1x2ViewsButtonClicked()
 {
   this->SetViewNumber(1, 2);
   emit ViewNumberChanged(1, 2);
@@ -657,7 +657,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On1x2ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On1x3ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On1x3ViewsButtonClicked()
 {
   this->SetViewNumber(1, 3);
   emit ViewNumberChanged(1, 3);
@@ -665,7 +665,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On1x3ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On2x1ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On2x1ViewsButtonClicked()
 {
   this->SetViewNumber(2, 1);
   emit ViewNumberChanged(2, 1);
@@ -673,7 +673,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On2x1ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On2x2ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On2x2ViewsButtonClicked()
 {
   this->SetViewNumber(2, 2);
   emit ViewNumberChanged(2, 2);
@@ -681,7 +681,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On2x2ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::On2x3ViewsButtonClicked()
+void niftkMultiViewerWidgetControlPanel::On2x3ViewsButtonClicked()
 {
   this->SetViewNumber(2, 3);
   emit ViewNumberChanged(2, 3);
@@ -689,7 +689,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::On2x3ViewsButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnViewRowsSpinBoxValueChanged(int rows)
+void niftkMultiViewerWidgetControlPanel::OnViewRowsSpinBoxValueChanged(int rows)
 {
   int columns = m_ViewColumnsSpinBox->value();
   this->SetViewNumber(rows, columns);
@@ -698,7 +698,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnViewRowsSpinBoxValueChanged(int ro
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnViewColumnsSpinBoxValueChanged(int columns)
+void niftkMultiViewerWidgetControlPanel::OnViewColumnsSpinBoxValueChanged(int columns)
 {
   int rows = m_ViewRowsSpinBox->value();
   this->SetViewNumber(rows, columns);
@@ -707,7 +707,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnViewColumnsSpinBoxValueChanged(int
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnViewPositionBindingChanged(bool bound)
+void niftkMultiViewerWidgetControlPanel::OnViewPositionBindingChanged(bool bound)
 {
   if (!bound && this->AreViewCursorsBound())
   {
@@ -719,7 +719,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnViewPositionBindingChanged(bool bo
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnViewCursorBindingChanged(bool bound)
+void niftkMultiViewerWidgetControlPanel::OnViewCursorBindingChanged(bool bound)
 {
   if (bound && !this->AreViewPositionsBound())
   {
@@ -731,7 +731,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnViewCursorBindingChanged(bool boun
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnDropSingleRadioButtonToggled(bool toggled)
+void niftkMultiViewerWidgetControlPanel::OnDropSingleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
@@ -741,7 +741,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnDropSingleRadioButtonToggled(bool 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnDropMultipleRadioButtonToggled(bool toggled)
+void niftkMultiViewerWidgetControlPanel::OnDropMultipleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
@@ -751,7 +751,7 @@ void QmitkMIDASMultiViewWidgetControlPanel::OnDropMultipleRadioButtonToggled(boo
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewWidgetControlPanel::OnDropThumbnailRadioButtonToggled(bool toggled)
+void niftkMultiViewerWidgetControlPanel::OnDropThumbnailRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {

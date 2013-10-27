@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QmitkMIDASMultiViewWidgetControlPanel</class>
- <widget class="QWidget" name="QmitkMIDASMultiViewWidgetControlPanel">
+ <class>niftkMultiViewerWidgetControlPanel</class>
+ <widget class="QWidget" name="niftkMultiViewerWidgetControlPanel">
   <property name="geometry">
    <rect>
     <x>0</x>

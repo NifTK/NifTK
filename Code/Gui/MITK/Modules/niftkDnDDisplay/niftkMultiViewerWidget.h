@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewWidget_h
-#define QmitkMIDASMultiViewWidget_h
+#ifndef niftkMultiViewerWidget_h
+#define niftkMultiViewerWidget_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -27,7 +27,7 @@
 #include <mitkMIDASEnums.h>
 
 #include <niftkSingleViewerWidget.h>
-#include <QmitkMIDASMultiViewVisibilityManager.h>
+#include <niftkMultiViewerVisibilityManager.h>
 #include <QmitkMIDASLayoutWidget.h>
 #include <QmitkMIDASSlidersWidget.h>
 
@@ -47,17 +47,17 @@ class QButtonGroup;
 class QToolButton;
 class ctkPopupWidget;
 
-class QmitkMIDASMultiViewWidgetControlPanel;
+class niftkMultiViewerWidgetControlPanel;
 
 /**
- * \class QmitkMIDASMultiViewWidget
+ * \class niftkMultiViewerWidget
  * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image
  * viewing panes, arranged as rows and columns.
  *
  * This is a large, composite widget, containing a central area that can be
  * used to view images, several controls located at the top of the widget and
  * all the necessary plumbing to make it work. This widget is used as the
- * main editor widget of the QmitkMIDASMultiViewEditor.
+ * main editor widget of the niftkMultiViewerEditor.
  *
  * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
@@ -66,7 +66,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASMultiViewWidget : public QWidget
+class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 {
   Q_OBJECT
 
@@ -75,8 +75,8 @@ public:
   /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero,
   /// the default drop type to MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
-  QmitkMIDASMultiViewWidget(
-      QmitkMIDASMultiViewVisibilityManager* visibilityManager,
+  niftkMultiViewerWidget(
+      niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
       mitk::DataStorage::Pointer dataStorage,
       int defaultNumberOfRows,
@@ -84,9 +84,9 @@ public:
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically,
-  /// and we don't create or own the QmitkMIDASMultiViewVisibilityManager, so the remaining thing to
+  /// and we don't create or own the niftkMultiViewerVisibilityManager, so the remaining thing to
   /// do is to disconnect from the mitk::FocusManager.
-  virtual ~QmitkMIDASMultiViewWidget();
+  virtual ~niftkMultiViewerWidget();
 
   /// \brief Used to activate the whole widget.
   void Activated();
@@ -170,13 +170,13 @@ public:
   /// \brief Sets the magnification slider to be tracking.
   void SetMagnificationTracking(bool tracking);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice index.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes slice index.
   void SetSelectedWindowSliceIndex(int sliceIndex);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
 
   /// \brief Shows or hides the cursor.
@@ -304,7 +304,7 @@ protected slots:
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateChanged(bool checked);
 
-  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
+  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected position has changed in a render window of a view.
@@ -381,7 +381,7 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  QmitkMIDASMultiViewWidgetControlPanel* CreateControlPanel(QWidget* parent);
+  niftkMultiViewerWidgetControlPanel* CreateControlPanel(QWidget* parent);
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -400,7 +400,7 @@ private:
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
-  QmitkMIDASMultiViewVisibilityManager* m_VisibilityManager;
+  niftkMultiViewerVisibilityManager* m_VisibilityManager;
   mitk::DataStorage* m_DataStorage;
   mitk::RenderingManager* m_RenderingManager;
 
@@ -424,7 +424,7 @@ private:
   MIDASLayout m_SingleWindowLayout;
   MIDASLayout m_MultiWindowLayout;
 
-  QmitkMIDASMultiViewWidgetControlPanel* m_ControlPanel;
+  niftkMultiViewerWidgetControlPanel* m_ControlPanel;
 };
 
 #endif
