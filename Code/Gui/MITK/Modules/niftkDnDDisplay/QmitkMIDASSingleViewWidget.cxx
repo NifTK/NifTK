@@ -24,7 +24,7 @@
 #include <mitkPointUtils.h>
 #include <mitkMIDASOrientationUtils.h>
 #include "QmitkMIDASSingleViewWidget.h"
-#include "QmitkMIDASStdMultiWidget.h"
+#include "niftkMultiWindowWidget.h"
 
 
 //-----------------------------------------------------------------------------
@@ -114,8 +114,8 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
     m_LayoutInitialised[i] = false;
   }
 
-  // Create the main QmitkMIDASStdMultiWidget
-  m_MultiWidget = new QmitkMIDASStdMultiWidget(this, NULL, m_RenderingManager, m_DataStorage);
+  // Create the main niftkMultiWindowWidget
+  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager, m_DataStorage);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->SetNavigationControllerEventListening(false);
@@ -127,8 +127,8 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   m_GridLayout->setHorizontalSpacing(0);
   m_GridLayout->addWidget(m_MultiWidget);
 
-  // Connect to QmitkMIDASStdMultiWidget, so we can listen for signals.
-  QObject::connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkMIDASStdMultiWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  // Connect to niftkMultiWindowWidget, so we can listen for signals.
+  QObject::connect(m_MultiWidget, SIGNAL(NodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   QObject::connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
   QObject::connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
   QObject::connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
@@ -152,9 +152,9 @@ QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void QmitkMIDASSingleViewWidget::OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
-  // Try not to emit the QmitkMIDASStdMultiWidget pointer.
+  // Try not to emit the niftkMultiWindowWidget pointer.
   emit NodesDropped(window, nodes);
 }
 

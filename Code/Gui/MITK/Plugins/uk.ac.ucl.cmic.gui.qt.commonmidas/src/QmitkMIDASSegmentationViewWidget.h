@@ -70,7 +70,7 @@ public:
    * \brief Sets the containing functionality for callback purposes.
    *
    * The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
-   * rather than have any hard coded reference to any widget such as QmitkMIDASStdMultiWidget.
+   * rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
    *
    * \param functionality In old terminology, the "functionality" that contains this widget,
    * is the child of QmitkAbstractView that contains this widget.

@@ -31,23 +31,23 @@
 #include <mitkMIDASEnums.h>
 #include "Interactions/mitkMIDASViewKeyPressResponder.h"
 #include "Interactions/mitkMIDASViewKeyPressStateMachine.h"
-#include "QmitkMIDASStdMultiWidget.h"
+#include "niftkMultiWindowWidget.h"
 
 class QGridLayout;
 
 /**
  * \class QmitkMIDASSingleViewWidget
- * \brief A widget to wrap a single QmitkMIDASStdMultiWidget view,
+ * \brief A widget to wrap a single niftkMultiWindowWidget view,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
  *
- * IMPORTANT: This class acts as a wrapper for QmitkMIDASStdMultiWidget.
- * Do not expose QmitkMIDASStdMultiWidget, or any member variables, or any
- * dependency from QmitkMIDASStdMultiWidget to the rest of the application.
+ * IMPORTANT: This class acts as a wrapper for niftkMultiWindowWidget.
+ * Do not expose niftkMultiWindowWidget, or any member variables, or any
+ * dependency from niftkMultiWindowWidget to the rest of the application.
  *
  * Additionally, this widget contains its own mitk::RenderingManager which is passed to the
- * QmitkMIDASStdMultiWidget, which is itself a sub-class of QmitkStdMultiWidget.
- * This means the QmitkMIDASStdMultiWidget will update and render independently of the
+ * niftkMultiWindowWidget, which is itself a sub-class of QmitkStdMultiWidget.
+ * This means the niftkMultiWindowWidget will update and render independently of the
  * rest of the application, and care must be taken to manage this. The reason is that
  * each of these windows in a MIDAS layout could have it's own geometry, and sometimes
  * a very different geometry from other windows, and then when the "Bind Slices" button
@@ -68,7 +68,7 @@ class QGridLayout;
  * </pre>
  *
  * \sa QmitkRenderWindow
- * \sa QmitkMIDASStdMultiWidget
+ * \sa niftkMultiWindowWidget
  */
 class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
@@ -348,7 +348,7 @@ signals:
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  virtual void OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected slice has changed in a render window.
   virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
@@ -383,7 +383,7 @@ private:
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   QGridLayout* m_GridLayout;
-  QmitkMIDASStdMultiWidget* m_MultiWidget;
+  niftkMultiWindowWidget* m_MultiWidget;
 
   bool m_IsBoundGeometryActive;
   mitk::TimeGeometry::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.

@@ -67,7 +67,7 @@ bool mitk::MIDASDisplayInteractor::InitZoom(StateMachineAction* action, Interact
   }
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
-  // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
+  // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
   m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);

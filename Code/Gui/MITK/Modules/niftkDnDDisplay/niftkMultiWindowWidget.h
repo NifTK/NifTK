@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASStdMultiWidget_h
-#define QmitkMIDASStdMultiWidget_h
+#ifndef niftkMultiWindowWidget_h
+#define niftkMultiWindowWidget_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -44,7 +44,7 @@ class SliceNavigationController;
 }
 
 /**
- * \class QmitkMIDASStdMultiWidget
+ * \class niftkMultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
  * by having convenient methods to control geometry, background, cursors on/off etc.
  * via calling methods in the base class QmitkStdMultiWidget.
@@ -77,7 +77,7 @@ class SliceNavigationController;
  * \sa QmitkMIDASSingleViewWidget
  * \sa QmitkMIDASMultiViewWidget
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
+class NIFTKDNDDISPLAY_EXPORT niftkMultiWindowWidget : public QmitkStdMultiWidget
 {
 
   Q_OBJECT
@@ -85,13 +85,13 @@ class NIFTKDNDDISPLAY_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidg
 public:
 
   /// \brief Constructor.
-  QmitkMIDASStdMultiWidget(QWidget* parent = 0,
+  niftkMultiWindowWidget(QWidget* parent = 0,
                            Qt::WindowFlags f = 0,
                            mitk::RenderingManager* renderingManager = 0,
                            mitk::DataStorage* dataStorage = 0);
 
   /// \brief Destructor.
-  virtual ~QmitkMIDASStdMultiWidget();
+  virtual ~niftkMultiWindowWidget();
 
   /// \brief There are several things we turn off/on depending on whether the widget is
   /// visible or considered active, so we group them all under this Enabled(true/false) flag.
@@ -307,7 +307,7 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(niftkMultiWindowWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);

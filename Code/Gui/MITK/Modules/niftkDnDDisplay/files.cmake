@@ -15,7 +15,7 @@
 set(CPP_FILES
   QmitkMIDASSlidersWidget.cxx
   QmitkMIDASLayoutWidget.cxx
-  QmitkMIDASStdMultiWidget.cxx
+  niftkMultiWindowWidget.cxx
   QmitkMIDASMultiViewVisibilityManager.cxx
   QmitkMIDASMultiViewWidget.cxx
   QmitkMIDASMultiViewWidgetControlPanel.cxx
@@ -33,7 +33,7 @@ set(MOC_H_FILES
   QmitkMIDASLayoutWidget.h
   QmitkMIDASMultiViewWidget.h
   QmitkMIDASMultiViewWidgetControlPanel.h
-  QmitkMIDASStdMultiWidget.h
+  niftkMultiWindowWidget.h
   QmitkMIDASSingleViewWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
 )

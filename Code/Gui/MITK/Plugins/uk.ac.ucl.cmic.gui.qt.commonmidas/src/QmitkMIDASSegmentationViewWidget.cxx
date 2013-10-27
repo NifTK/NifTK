@@ -376,7 +376,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   // Check if the user selected a completely different main window widget, or
   // if the user selected a different layout (axial, coronal, sagittal) within
-  // the same QmitkMIDASStdMultiWidget.
+  // the same DnDMultiWindowWidget.
   bool mainWindowChanged = false;
   if (   mainAxialWindow    != m_MainAxialWindow
       || mainSagittalWindow != m_MainSagittalWindow

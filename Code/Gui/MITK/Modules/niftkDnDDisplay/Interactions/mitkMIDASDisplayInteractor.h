@@ -64,12 +64,12 @@ namespace mitk
 
   private:
     /**
-     * Renderers of the MIDASStdMultiWidget that this display interactor belongs to.
+     * Renderers of the niftkMultiWindowWidget that this display interactor belongs to.
      */
     std::vector<mitk::BaseRenderer*> m_Renderers;
 
     /**
-     * Slice navigation controllers of the MIDASStdMultiWidget that this display interactor belongs to.
+     * Slice navigation controllers of the niftkMultiWindowWidget that this display interactor belongs to.
      */
     mitk::SliceNavigationController* m_SliceNavigationControllers[3];
   };

@@ -62,7 +62,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
  * m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget each of which itself wraps
- * a QmitkMIDASStdMultiViewWidget which derives from QmitkStdMultiWidget,
+ * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
  */
