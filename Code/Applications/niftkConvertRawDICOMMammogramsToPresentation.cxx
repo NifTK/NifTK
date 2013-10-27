@@ -403,8 +403,8 @@ int DoMain(arguments args)
 
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
-    InputPixelType min = itk::NumericTraits<InputPixelType>::ZeroValue();
-    InputPixelType max = itk::NumericTraits<InputPixelType>::max();
+    OutputPixelType min = itk::NumericTraits<OutputPixelType>::ZeroValue();
+    OutputPixelType max = itk::NumericTraits<OutputPixelType>::max();
 
     if ( static_cast<double>(max) > 32767. ) 
     {

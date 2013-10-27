@@ -334,7 +334,7 @@ int DoMain(arguments args)
 
     if ( static_cast<double>(max) > 32767. ) 
     {
-      max = 32767;
+      max = static_cast<InputPixelType>( 32767 );
     }
 
     typedef typename itk::RescaleIntensityImageFilter<InputImageType, 
@@ -523,8 +523,6 @@ int DoMain(arguments args)
 	
     image = invertFilter->GetOutput();
     image->DisconnectPipeline();
-
-    SetTag( dictionary, "2050|0020", "IDENITY" ); // Presentation LUT Shape
   }
 
   // Anonymise the image label
