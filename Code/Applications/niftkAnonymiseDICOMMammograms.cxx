@@ -64,6 +64,7 @@ struct arguments
   bool flgAnonymiseDICOMHeader;
   bool flgAnonymiseImageLabel;
   bool flgRescaleIntensitiesToMaxRange;
+  bool flgInvert;
   bool flgVerbose;
 
   float labelWidth;
@@ -328,6 +329,13 @@ int DoMain(arguments args)
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
     itksys_ios::ostringstream value;
+    InputPixelType min = itk::NumericTraits<InputPixelType>::ZeroValue();
+    InputPixelType max = itk::NumericTraits<InputPixelType>::max();
+
+    if ( static_cast<double>(max) > 32767. ) 
+    {
+      max = 32767;
+    }
 
     typedef typename itk::RescaleIntensityImageFilter<InputImageType, 
 						      InputImageType> RescaleFilterType;
@@ -336,13 +344,11 @@ int DoMain(arguments args)
 
     rescaleFilter->SetInput( reader->GetOutput() );
 
-    rescaleFilter->SetOutputMinimum( itk::NumericTraits<InputPixelType>::ZeroValue() );
-    rescaleFilter->SetOutputMaximum( itk::NumericTraits<InputPixelType>::max() );  
+    rescaleFilter->SetOutputMinimum( min );
+    rescaleFilter->SetOutputMaximum( max );  
   
     std::cout << "Scaling image intensity range from: " 
-	      << itk::NumericTraits<InputPixelType>::ZeroValue()
-	      << " to " << itk::NumericTraits<InputPixelType>::max()
-	      << std::endl;
+	      << min << " to " << max << std::endl;
 
     rescaleFilter->Update();
 
@@ -361,12 +367,12 @@ int DoMain(arguments args)
 
     // Set the new window centre tag value
     value.str("");
-    value << itk::NumericTraits<InputPixelType>::max() / 2;
+    value << max / 2;
     itk::EncapsulateMetaData<std::string>(dictionary,"0028|1050", value.str());
 
     // Set the new window width tag value
     value.str("");
-    value << itk::NumericTraits<InputPixelType>::max();
+    value << max;
     itk::EncapsulateMetaData<std::string>(dictionary,"0028|1051", value.str());
 
     // Set the rescale intercept and slope to zero and one 
@@ -442,6 +448,37 @@ int DoMain(arguments args)
   }
 
 
+  // Check if the DICOM Inverse tag is set
+
+  std::string tagInverse = "2050|0020";
+  
+  DictionaryType::ConstIterator tagInverseItr = dictionary.Find( tagInverse );
+  DictionaryType::ConstIterator tagInverseEnd = dictionary.End();
+  
+  if ( tagInverseItr != tagInverseEnd )
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagInverseItr->second.GetPointer() );
+    
+    if ( entryvalue )
+    {
+      std::string strInverse( "INVERSE" );
+      std::string tagInverseValue = entryvalue->GetMetaDataObjectValue();
+      
+      std::cout << "Tag (" << tagInverse 
+		<< ") is: " << tagInverseValue << std::endl;
+
+      std::size_t foundInverse = tagInverseValue.find( strInverse );
+      if (foundInverse != std::string::npos)
+      {
+	args.flgInvert = true;
+	std::cout << "Image is INVERSE - inverting" << std::endl;
+	SetTag( dictionary, tagInverse, "IDENTITY" );
+      }
+    }
+  }
+
+
   // Fix the MONOCHROME1 issue
 
   std::string tagPhotoInterpID = "0028|0004";
@@ -462,25 +499,32 @@ int DoMain(arguments args)
       std::cout << "Tag (" << tagPhotoInterpID 
 		<< ") is: " << tagPhotoInterpValue << std::endl;
 
-      std::size_t found = tagPhotoInterpValue.find( strMonochrome1 );
-      if (found != std::string::npos)
+      std::size_t foundMonochrome1 = tagPhotoInterpValue.find( strMonochrome1 );
+      if (foundMonochrome1 != std::string::npos)
       {
+	args.flgInvert = true;
 	std::cout << "Image is MONOCHROME1 - inverting" << std::endl;
-
-	typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
-
-	typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
-	invertFilter->SetInput( image );
-
-	invertFilter->Update( );
-  
-	image = invertFilter->GetOutput();
-	image->DisconnectPipeline();
-
-	SetTag( dictionary, "0028|0004", "MONOCHROME2" );
-        SetTag( dictionary, "2050|0020", "IDENITY" ); // Presentation LUT Shape
+	SetTag( dictionary, tagPhotoInterpID, "MONOCHROME2" );
       }
     }
+  }
+
+
+  // Invert the image
+
+  if ( args.flgInvert )
+  {
+    typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
+    
+    typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+    invertFilter->SetInput( image );
+
+    invertFilter->Update( );
+	
+    image = invertFilter->GetOutput();
+    image->DisconnectPipeline();
+
+    SetTag( dictionary, "2050|0020", "IDENITY" ); // Presentation LUT Shape
   }
 
   // Anonymise the image label
@@ -754,6 +798,7 @@ int main( int argc, char *argv[] )
   args.flgVerbose              = flgVerbose;    
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
+  args.flgInvert = flgInvert;
 				   	                                                 
   args.labelWidth  = labelWidth;                         
   args.labelHeight = labelHeight;                        
@@ -836,7 +881,7 @@ int main( int argc, char *argv[] )
       break;
 
     case itk::ImageIOBase::USHORT:
-      result = DoMain<unsigned short>(args);  
+      result = DoMain<unsigned short>(args);
       break;
 
     case itk::ImageIOBase::SHORT:
