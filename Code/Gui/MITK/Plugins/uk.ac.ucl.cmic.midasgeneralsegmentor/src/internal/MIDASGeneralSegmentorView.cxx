@@ -192,6 +192,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeNextCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeImageCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_LowerThresholdSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdValueChanged()));
+    connect(m_GeneralControls->m_UpperThresholdSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdValueChanged()));
     connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
   }
 }
@@ -2132,6 +2133,8 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           if (thresholdCheckBox)
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
+
+            this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
 
             // Get seeds just on the current slice
             mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
