@@ -90,6 +90,7 @@ if(SlicerExecutionModel_FOUND)
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
+    niftkMammogramMaskSegmentation
     niftkMultiply
     niftkN4BiasFieldCorrection
     niftkNegateImage
