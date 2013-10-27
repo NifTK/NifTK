@@ -25,6 +25,7 @@
 #include <mitkColorProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkUndoController.h>
+#include <mitkMIDASImageUtils.h>
 #include <mitkMIDASOrientationUtils.h>
 
 #include <itkConversionUtils.h>

@@ -18,7 +18,7 @@
 #include <niftkDnDDisplayExports.h>
 #include <vector>
 #include "niftkSingleViewerWidgetListManager.h"
-#include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
 #include <mitkDataStorage.h>
 
 namespace mitk

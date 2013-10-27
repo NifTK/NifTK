@@ -17,7 +17,9 @@
 
 #include <niftkDnDDisplayExports.h>
 #include "ui_QmitkMIDASLayoutWidget.h"
+
 #include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
 
 class QButtonGroup;
 

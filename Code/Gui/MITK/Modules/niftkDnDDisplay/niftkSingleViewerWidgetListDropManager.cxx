@@ -113,8 +113,25 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
     MITK_ERROR << "Calling niftkSingleViewerWidgetListDropManager::OnNodesDropped with an invalid window. Surely a bug?" << std::endl;
   }
 
-  MIDASLayout defaultLayout = MIDAS_LAYOUT_CORONAL;
-  MIDASLayout layout = GetAsAcquiredView(defaultLayout, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
+  MIDASOrientation defaultOrientation = MIDAS_ORIENTATION_CORONAL;
+  MIDASOrientation orientation = GetAsAcquiredOrientation(defaultOrientation, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
+  MIDASLayout layout;
+  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  {
+    layout = MIDAS_LAYOUT_AXIAL;
+  }
+  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  {
+    layout = MIDAS_LAYOUT_SAGITTAL;
+  }
+  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  {
+    layout = MIDAS_LAYOUT_CORONAL;
+  }
+  else
+  {
+    layout = MIDAS_LAYOUT_CORONAL;
+  }
 
   for (unsigned int i = 0; i < nodes.size(); i++)
   {

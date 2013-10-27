@@ -30,6 +30,7 @@
 #include "Interactions/mitkMIDASDisplayInteractor.h"
 
 #include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
 
 class QGridLayout;
 class QStackedLayout;
