@@ -384,6 +384,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNo
 
   contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
   contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetFloatProperty("opacity", 1.0f);
   contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
   contourSetNode->SetBoolProperty("helper object", true);
   contourSetNode->SetBoolProperty("visible", visible);
@@ -464,6 +465,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
+    newSegmentation->SetFloatProperty("opacity", 1.0f);
     newSegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
     // Make sure these are up to date, even though we don't use them right now.
@@ -475,7 +477,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     mitk::DataNode::Pointer pointSetNode = mitk::DataNode::New();
     pointSetNode->SetData(pointSet);
     pointSetNode->SetProperty("name", mitk::StringProperty::New(mitk::MIDASTool::SEED_POINT_SET_NAME));
-    pointSetNode->SetProperty("opacity", mitk::FloatProperty::New(1.0f));
+    pointSetNode->SetFloatProperty("opacity", 1.0f);
     pointSetNode->SetProperty("point line width", mitk::IntProperty::New(1));
     pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
     pointSetNode->SetBoolProperty("helper object", true);
@@ -500,6 +502,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     initialSegmentationNode->SetBoolProperty("helper object", true);
     initialSegmentationNode->SetBoolProperty("visible", false);
     initialSegmentationNode->SetProperty("layer", mitk::IntProperty::New(99));
+    initialSegmentationNode->SetFloatProperty("opacity", 1.0f);
     initialSegmentationNode->SetColor(tmpColor);
     initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
