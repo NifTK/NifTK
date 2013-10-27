@@ -403,8 +403,16 @@ int DoMain(arguments args)
 
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
-    intensityRescaler->SetOutputMinimum( itk::NumericTraits<OutputPixelType>::ZeroValue() );
-    intensityRescaler->SetOutputMaximum( itk::NumericTraits<OutputPixelType>::max() );
+    OutputPixelType min = itk::NumericTraits<OutputPixelType>::ZeroValue();
+    OutputPixelType max = itk::NumericTraits<OutputPixelType>::max();
+
+    if ( static_cast<double>(max) > 32767. ) 
+    {
+      max = 32767;
+    }
+
+    intensityRescaler->SetOutputMinimum( min );
+    intensityRescaler->SetOutputMaximum( max );
 
     // Set the pixel intensity relationship sign to linear
     value.str("");
@@ -418,12 +426,12 @@ int DoMain(arguments args)
 
     // Set the new window centre tag value
     value.str("");
-    value << itk::NumericTraits<OutputPixelType>::max() / 2;
+    value << max / 2;
     itk::EncapsulateMetaData<std::string>(dictionary,"0028|1050", value.str());
 
     // Set the new window width tag value
     value.str("");
-    value << itk::NumericTraits<OutputPixelType>::max();
+    value << max;
     itk::EncapsulateMetaData<std::string>(dictionary,"0028|1051", value.str());
 
     // Set the rescale intercept and slope to zero and one 
@@ -642,7 +650,7 @@ int main( int argc, char *argv[] )
       break;
 
     case itk::ImageIOBase::USHORT:
-      result = DoMain<unsigned short>(args);  
+      result = DoMain<unsigned short>(args);
       break;
 
     case itk::ImageIOBase::SHORT:
