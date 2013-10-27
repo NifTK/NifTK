@@ -119,6 +119,8 @@ set(EXTERNAL_PROJECTS
   aruco
   EIGEN
   apriltags
+  FLANN
+  PCL
   ITK          
   CTK          
   MITK         
@@ -130,7 +132,6 @@ set(EXTERNAL_PROJECTS
   NiftySeg
   NifTKData  
   SlicerExecutionModel 
-  FLANN 
 )
 
 if(BUILD_IGI)

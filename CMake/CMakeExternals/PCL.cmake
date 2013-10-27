@@ -14,50 +14,52 @@
 
 
 #-----------------------------------------------------------------------------
-# FLANN - external project needed by PCL.
+# PCL - Point Cloud Library..
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED FLANN_DIR AND NOT EXISTS ${FLANN_DIR})
-  message(FATAL_ERROR "FLANN_DIR variable is defined but corresponds to non-existing directory \"${FLANN_DIR}\".")
+if(DEFINED PCL_DIR AND NOT EXISTS ${PCL_DIR})
+  message(FATAL_ERROR "PCL_DIR variable is defined but corresponds to non-existing directory \"${PCL_DIR}\".")
 endif()
 
 if(BUILD_IGI)
 
-  set(proj FLANN)
-  set(proj_DEPENDENCIES)
-  set(FLANN_DEPENDS ${proj})
+  set(proj PCL)
+  set(proj_DEPENDENCIES Boost EIGEN FLANN VTK)
+  set(PCL_DEPENDS ${proj})
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
   
-  if(NOT DEFINED FLANN_DIR)
+  if(NOT DEFINED PCL_DIR)
   
-    niftkMacroGetChecksum(NIFTK_CHECKSUM_FLANN ${NIFTK_LOCATION_FLANN})
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_PCL ${NIFTK_LOCATION_PCL})
   
     ExternalProject_Add(${proj}
       SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
       PREFIX ${proj}-cmake
       INSTALL_DIR ${proj}-install
-      URL ${NIFTK_LOCATION_FLANN}
-      URL_MD5 ${NIFTK_CHECKSUM_FLANN}
+      URL ${NIFTK_LOCATION_PCL}
+      URL_MD5 ${NIFTK_CHECKSUM_PCL}
+      UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_PCL}
       CMAKE_GENERATOR ${GEN}
       CMAKE_ARGS
           ${EP_COMMON_ARGS}
-          -DBUILD_MATLAB_BINDINGS:BOOL=OFF
-          -DBUILD_PYTHON_BINDINGS:BOOL=OFF
-          -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
           -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+          -DBOOST_ROOT:PATH=${BOOST_ROOT}
+          -DEIGEN_ROOT:PATH=${EIGEN_DIR}
+          -DFLANN_ROOT:PATH=${FLANN_DIR}
+          -DVTK_DIR:PATH=${VTK_DIR}
        DEPENDS ${proj_DEPENDENCIES}
       )
   
-    set(FLANN_DIR ${proj_INSTALL})
-    message("SuperBuild loading FLANN from ${FLANN_DIR}")
+    set(PCL_DIR ${proj_INSTALL})
+    message("SuperBuild loading PCL from ${PCL_DIR}")
   
-  else(NOT DEFINED FLANN_DIR)
+  else(NOT DEFINED PCL_DIR)
   
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
   
-  endif(NOT DEFINED FLANN_DIR)
+  endif(NOT DEFINED PCL_DIR)
 
 endif()
 
