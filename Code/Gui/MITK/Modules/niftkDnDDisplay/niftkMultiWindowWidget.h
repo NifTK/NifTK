@@ -53,9 +53,9 @@ class SliceNavigationController;
  * subclass QmitkStdMultiWidget so that we can optionally have 3D views, ortho-views etc.
  *
  * Please do NOT expose this class to the rest of the NiftyView code-base, or else
- * dependency management becomes a bit of an issue.  The class QmitkMIDASSingleViewWidget
+ * dependency management becomes a bit of an issue.  The class niftkSingleViewerWidget
  * wraps this one, and the rest of our application should only deal with
- * QmitkMIDASSingleViewWidget.
+ * niftkSingleViewerWidget.
  *
  * Note: The requirements specification for MIDAS style zoom basically says:
  * <pre>
@@ -74,7 +74,7 @@ class SliceNavigationController;
  * the size of the longest side of the voxels is used for the calculation.
  *
  * \sa QmitkStdMultiWidget
- * \sa QmitkMIDASSingleViewWidget
+ * \sa niftkSingleViewerWidget
  * \sa QmitkMIDASMultiViewWidget
  */
 class NIFTKDNDDISPLAY_EXPORT niftkMultiWindowWidget : public QmitkStdMultiWidget

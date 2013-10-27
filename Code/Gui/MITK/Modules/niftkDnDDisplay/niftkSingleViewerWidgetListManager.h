@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASSingleViewWidgetListManager_h
-#define QmitkMIDASSingleViewWidgetListManager_h
+#ifndef niftkSingleViewerWidgetListManager_h
+#define niftkSingleViewerWidgetListManager_h
 
 #include <vector>
 #include <set>
@@ -24,13 +24,13 @@ class DataNode;
 }
 
 class QmitkRenderWindow;
-class QmitkMIDASSingleViewWidget;
+class niftkSingleViewerWidget;
 
 /**
- * \class QmitkMIDASSingleViewWidgetListManager
- * \brief Base class for objects that manipulate nodes over a list of QmitkMIDASSingleViewWidget.
+ * \class niftkSingleViewerWidgetListManager
+ * \brief Base class for objects that manipulate nodes over a list of niftkSingleViewerWidget.
  *
- * This class contains a vector of widgets that it knows about. So each QmitkMIDASSingleViewWidget
+ * This class contains a vector of widgets that it knows about. So each niftkSingleViewerWidget
  * must be "registered", which means adding to this list.  This class also provides
  * a vector of sets of nodes. So derived classes can "associate" nodes with a given widget.
  * It is up to derived classes to decide what it means for a node to be "associated" with a
@@ -39,19 +39,19 @@ class QmitkMIDASSingleViewWidget;
  * So, in this class, "registering" means simply adding a window or node to the right list.
  * "De-registering" means simply removing it. Subclasses should provide additional functionality.
  */
-class QmitkMIDASSingleViewWidgetListManager
+class niftkSingleViewerWidgetListManager
 {
 
 public:
 
   /// \brief Constructor.
-  QmitkMIDASSingleViewWidgetListManager();
+  niftkSingleViewerWidgetListManager();
 
   /// \brief Destructor.
-  virtual ~QmitkMIDASSingleViewWidgetListManager();
+  virtual ~niftkSingleViewerWidgetListManager();
 
-  /// \brief Each new QmitkMIDASSingleViewWidget should first be registered with this class
-  virtual void RegisterWidget(QmitkMIDASSingleViewWidget *widget);
+  /// \brief Each new niftkSingleViewerWidget should first be registered with this class
+  virtual void RegisterWidget(niftkSingleViewerWidget *widget);
 
   /// \brief Used to de-register all the widgets, which means removing them from m_DataNodes and m_Widgets.
   virtual void DeRegisterAllWidgets();
@@ -62,7 +62,7 @@ public:
   /// \brief Given a window, will return the corresponding list index, or -1 if not found.
   virtual int GetIndexFromWindow(QmitkRenderWindow* window);
 
-  /// \brief Gets the number of nodes currently "registered" with a certain QmitkMIDASSingleViewWidget.
+  /// \brief Gets the number of nodes currently "registered" with a certain niftkSingleViewerWidget.
   virtual int GetNumberOfNodesRegisteredWithWidget(int windowIndex);
 
   /// \brief Removes the node, or "de-registers" it from all widgets.
@@ -75,7 +75,7 @@ protected:
   std::vector< std::set<mitk::DataNode*> > m_DataNodes;
 
   // Additionally, we manage a list of widgets, where m_DataNodes.size() == m_Widgets.size() should always be true.
-  std::vector< QmitkMIDASSingleViewWidget* > m_Widgets;
+  std::vector< niftkSingleViewerWidget* > m_Widgets;
 
 private:
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef QmitkMIDASSingleViewWidget_h
-#define QmitkMIDASSingleViewWidget_h
+#ifndef niftkSingleViewerWidget_h
+#define niftkSingleViewerWidget_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -36,7 +36,7 @@
 class QGridLayout;
 
 /**
- * \class QmitkMIDASSingleViewWidget
+ * \class niftkSingleViewerWidget
  * \brief A widget to wrap a single niftkMultiWindowWidget view,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
@@ -70,7 +70,7 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa niftkMultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
 {
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
@@ -80,16 +80,16 @@ public:
 
   friend class QmitkMIDASSegmentationViewWidget;
 
-  QmitkMIDASSingleViewWidget(QWidget* parent);
+  niftkSingleViewerWidget(QWidget* parent);
 
-  QmitkMIDASSingleViewWidget(QString windowName,
+  niftkSingleViewerWidget(QString windowName,
                              double minimumMagnification,
                              double maximumMagnification,
                              QWidget* parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0
                              );
-  ~QmitkMIDASSingleViewWidget();
+  ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -331,19 +331,19 @@ signals:
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this view.
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
+  void SelectedPositionChanged(niftkSingleViewerWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
 
   /// \brief Emitted when the cursor position has changed in this view.
-  void CursorPositionChanged(QmitkMIDASSingleViewWidget* thisView, const mitk::Vector3D& cursorPosition);
+  void CursorPositionChanged(niftkSingleViewerWidget* thisView, const mitk::Vector3D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this view.
-  void ScaleFactorChanged(QmitkMIDASSingleViewWidget* thisView, double scaleFactor);
+  void ScaleFactorChanged(niftkSingleViewerWidget* thisView, double scaleFactor);
 
   /// \brief Emitted when the window layout has changed in this view.
-  void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
+  void LayoutChanged(niftkSingleViewerWidget* thisView, MIDASLayout layout);
 
   /// \brief Emitted when the geometry of this view has changed.
-  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::TimeGeometry* geometry);
+  void GeometryChanged(niftkSingleViewerWidget* thisView, mitk::TimeGeometry* geometry);
 
 protected slots:
 

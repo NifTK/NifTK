@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASSingleViewWidgetListDropManager_h
-#define QmitkMIDASSingleViewWidgetListDropManager_h
+#ifndef niftkSingleViewerWidgetListDropManager_h
+#define niftkSingleViewerWidgetListDropManager_h
 
 #include <niftkDnDDisplayExports.h>
 #include <vector>
-#include "QmitkMIDASSingleViewWidgetListManager.h"
+#include "niftkSingleViewerWidgetListManager.h"
 #include <mitkMIDASEnums.h>
 #include <mitkDataStorage.h>
 
@@ -27,31 +27,31 @@ class DataNode;
 }
 
 class QmitkRenderWindow;
-class QmitkMIDASSingleViewWidgetListVisibilityManager;
+class niftkSingleViewerWidgetListVisibilityManager;
 
 /**
- * \class QmitkMIDASSingleViewWidgetListDropManager
+ * \class niftkSingleViewerWidgetListDropManager
  * \brief Class to coordinate the necessary operations for when we drop images into a
- * MIDAS QmitkMIDASMultiViewWidget, coordinating across many QmitkMIDASSingleViewWidget.
+ * MIDAS QmitkMIDASMultiViewWidget, coordinating across many niftkSingleViewerWidget.
  *
  * This class needs to have SetVisibilityManager and SetDataStorage called prior to use.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidgetListDropManager : public QmitkMIDASSingleViewWidgetListManager
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidgetListDropManager : public niftkSingleViewerWidgetListManager
 {
 
 public:
 
   /// \brief Constructor.
-  QmitkMIDASSingleViewWidgetListDropManager();
+  niftkSingleViewerWidgetListDropManager();
 
   /// \brief Destructor.
-  virtual ~QmitkMIDASSingleViewWidgetListDropManager();
+  virtual ~niftkSingleViewerWidgetListDropManager();
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
   void OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Set the visibility manager for this class to use.
-  void SetVisibilityManager(QmitkMIDASSingleViewWidgetListVisibilityManager*);
+  void SetVisibilityManager(niftkSingleViewerWidgetListVisibilityManager*);
 
   /// \brief Set the data storage.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
@@ -82,7 +82,7 @@ private:
   MIDASDropType m_DropType;
   bool m_AccumulateWhenDropped;
   mitk::DataStorage::Pointer m_DataStorage;
-  QmitkMIDASSingleViewWidgetListVisibilityManager* m_VisibilityManager;
+  niftkSingleViewerWidgetListVisibilityManager* m_VisibilityManager;
 };
 
 #endif

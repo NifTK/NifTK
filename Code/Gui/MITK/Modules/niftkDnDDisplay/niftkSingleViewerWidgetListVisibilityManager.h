@@ -12,28 +12,28 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASSingleViewWidgetListVisibilityManager_h
-#define QmitkMIDASSingleViewWidgetListVisibilityManager_h
+#ifndef niftkSingleViewerWidgetListVisibilityManager_h
+#define niftkSingleViewerWidgetListVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
-#include "QmitkMIDASSingleViewWidgetListManager.h"
+#include "niftkSingleViewerWidgetListManager.h"
 #include <vector>
 #include <mitkDataStorage.h>
 
 /**
- * \class QmitkMIDASSingleViewWidgetListVisibilityManager
- * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility properties.
+ * \class niftkSingleViewerWidgetListVisibilityManager
+ * \brief Maintains a list of niftkSingleViewerWidget and coordinates visibility properties.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidgetListVisibilityManager : public QmitkMIDASSingleViewWidgetListManager
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidgetListVisibilityManager : public niftkSingleViewerWidgetListManager
 {
 
 public:
 
   /// \brief Constructor.
-  QmitkMIDASSingleViewWidgetListVisibilityManager();
+  niftkSingleViewerWidgetListVisibilityManager();
 
   /// \brief Destructor.
-  virtual ~QmitkMIDASSingleViewWidgetListVisibilityManager();
+  virtual ~niftkSingleViewerWidgetListVisibilityManager();
 
   /// \brief Set the data storage.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);

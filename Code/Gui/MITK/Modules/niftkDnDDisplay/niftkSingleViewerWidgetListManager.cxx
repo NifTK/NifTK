@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASSingleViewWidgetListManager.h"
+#include "niftkSingleViewerWidgetListManager.h"
 
 #include <mitkDataNode.h>
 #include <QmitkRenderWindow.h>
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidget.h"
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListManager::QmitkMIDASSingleViewWidgetListManager()
+niftkSingleViewerWidgetListManager::niftkSingleViewerWidgetListManager()
 {
   m_DataNodes.clear();
   m_Widgets.clear();
@@ -27,13 +27,13 @@ QmitkMIDASSingleViewWidgetListManager::QmitkMIDASSingleViewWidgetListManager()
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListManager::~QmitkMIDASSingleViewWidgetListManager()
+niftkSingleViewerWidgetListManager::~niftkSingleViewerWidgetListManager()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListManager::RegisterWidget(QmitkMIDASSingleViewWidget *widget)
+void niftkSingleViewerWidgetListManager::RegisterWidget(niftkSingleViewerWidget *widget)
 {
   std::set<mitk::DataNode*> newNodes;
   m_DataNodes.push_back(newNodes);
@@ -42,14 +42,14 @@ void QmitkMIDASSingleViewWidgetListManager::RegisterWidget(QmitkMIDASSingleViewW
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListManager::DeRegisterAllWidgets()
+void niftkSingleViewerWidgetListManager::DeRegisterAllWidgets()
 {
   this->DeRegisterWidgets(0, m_Widgets.size()-1);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
+void niftkSingleViewerWidgetListManager::DeRegisterWidgets(unsigned int startWindowIndex, unsigned int endWindowIndex)
 {
   m_DataNodes.erase(m_DataNodes.begin() + startWindowIndex, m_DataNodes.begin() + endWindowIndex+1);
   m_Widgets.erase(m_Widgets.begin() + startWindowIndex, m_Widgets.begin() + endWindowIndex+1);
@@ -57,7 +57,7 @@ void QmitkMIDASSingleViewWidgetListManager::DeRegisterWidgets(unsigned int start
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSingleViewWidgetListManager::GetIndexFromWindow(QmitkRenderWindow* renderWindow)
+int niftkSingleViewerWidgetListManager::GetIndexFromWindow(QmitkRenderWindow* renderWindow)
 {
   int result = -1;
 
@@ -75,7 +75,7 @@ int QmitkMIDASSingleViewWidgetListManager::GetIndexFromWindow(QmitkRenderWindow*
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSingleViewWidgetListManager::GetNumberOfNodesRegisteredWithWidget(int windowIndex)
+int niftkSingleViewerWidgetListManager::GetNumberOfNodesRegisteredWithWidget(int windowIndex)
 {
   int result = m_DataNodes[windowIndex].size();
   return result;
@@ -83,7 +83,7 @@ int QmitkMIDASSingleViewWidgetListManager::GetNumberOfNodesRegisteredWithWidget(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListManager::RemoveNode( const mitk::DataNode* node)
+void niftkSingleViewerWidgetListManager::RemoveNode( const mitk::DataNode* node)
 {
   for (unsigned int i = 0; i < m_DataNodes.size(); i++)
   {

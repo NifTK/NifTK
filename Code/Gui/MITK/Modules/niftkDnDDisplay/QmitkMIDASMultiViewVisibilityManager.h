@@ -17,7 +17,7 @@
 
 #include <niftkDnDDisplayExports.h>
 #include <mitkMIDASEnums.h>
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidget.h"
 #include <QWidget>
 #include <mitkDataStorage.h>
 #include <mitkBaseProperty.h>
@@ -26,11 +26,11 @@
 #include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkRenderWindow;
-class QmitkMIDASSingleViewWidget;
+class niftkSingleViewerWidget;
 
 /**
  * \class QmitkMultiViewVisibilityManager
- * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility
+ * \brief Maintains a list of niftkSingleViewerWidget and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visibility" property in DataStorage.
  */
@@ -46,8 +46,8 @@ public:
   /// \brief Destructor, which unregisters all the listeners.
   virtual ~QmitkMIDASMultiViewVisibilityManager();
 
-  /// \brief Each new QmitkMIDASSingleViewWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
-  void RegisterWidget(QmitkMIDASSingleViewWidget *widget);
+  /// \brief Each new niftkSingleViewerWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
+  void RegisterWidget(niftkSingleViewerWidget *widget);
 
   /// \brief Used to de-register all the widgets, which means actually removing them from m_DataNodes and m_Widgets.
   void DeRegisterAllWidgets();
@@ -180,7 +180,7 @@ private:
   std::vector< std::set<mitk::DataNode*> > m_DataNodes;
 
   // Additionally, we manage a list of widgets, where m_DataNodes.size() == m_Widgets.size() should always be true.
-  std::vector< QmitkMIDASSingleViewWidget* > m_Widgets;
+  std::vector< niftkSingleViewerWidget* > m_Widgets;
 
   // We also observe all the global visibility properties for each registered node.
   typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;

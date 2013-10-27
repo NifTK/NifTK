@@ -12,31 +12,31 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASSingleViewWidgetListVisibilityManager.h"
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidgetListVisibilityManager.h"
+#include "niftkSingleViewerWidget.h"
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListVisibilityManager::QmitkMIDASSingleViewWidgetListVisibilityManager()
+niftkSingleViewerWidgetListVisibilityManager::niftkSingleViewerWidgetListVisibilityManager()
 : m_DataStorage(NULL)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListVisibilityManager::~QmitkMIDASSingleViewWidgetListVisibilityManager()
+niftkSingleViewerWidgetListVisibilityManager::~niftkSingleViewerWidgetListVisibilityManager()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
+void niftkSingleViewerWidgetListVisibilityManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::SetNodeVisibilityForWindow(mitk::DataNode* node, const unsigned int& widgetIndex, const bool& visibility)
+void niftkSingleViewerWidgetListVisibilityManager::SetNodeVisibilityForWindow(mitk::DataNode* node, const unsigned int& widgetIndex, const bool& visibility)
 {
   if (widgetIndex < 0 || widgetIndex >= m_Widgets.size())
   {
@@ -51,7 +51,7 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::SetNodeVisibilityForWindow
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::SetAllNodeVisibilityForWindow(const unsigned int& widgetIndex, const bool& visibility)
+void niftkSingleViewerWidgetListVisibilityManager::SetAllNodeVisibilityForWindow(const unsigned int& widgetIndex, const bool& visibility)
 {
   if (m_DataStorage.IsNull())
   {
@@ -71,7 +71,7 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::SetAllNodeVisibilityForWin
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::SetNodeVisibilityForAllWindows(mitk::DataNode* node, const bool& visibility)
+void niftkSingleViewerWidgetListVisibilityManager::SetNodeVisibilityForAllWindows(mitk::DataNode* node, const bool& visibility)
 {
   for (unsigned int i = 0; i < m_Widgets.size(); i++)
   {
@@ -81,7 +81,7 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::SetNodeVisibilityForAllWin
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::SetAllNodeVisibilityForAllWindows(const bool& visibility)
+void niftkSingleViewerWidgetListVisibilityManager::SetAllNodeVisibilityForAllWindows(const bool& visibility)
 {
   if (m_DataStorage.IsNotNull())
   {
@@ -101,14 +101,14 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::SetAllNodeVisibilityForAll
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::ClearWindow(const unsigned int& windowIndex)
+void niftkSingleViewerWidgetListVisibilityManager::ClearWindow(const unsigned int& windowIndex)
 {
   this->SetAllNodeVisibilityForWindow(windowIndex, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::ClearWindows(const unsigned int& startWindowIndex, const unsigned int& endWindowIndex)
+void niftkSingleViewerWidgetListVisibilityManager::ClearWindows(const unsigned int& startWindowIndex, const unsigned int& endWindowIndex)
 {
   for (unsigned int i = startWindowIndex; i <= endWindowIndex; i++)
   {
@@ -118,7 +118,7 @@ void QmitkMIDASSingleViewWidgetListVisibilityManager::ClearWindows(const unsigne
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListVisibilityManager::ClearAllWindows()
+void niftkSingleViewerWidgetListVisibilityManager::ClearAllWindows()
 {
   this->ClearWindows(0, m_Widgets.size()-1);
 }

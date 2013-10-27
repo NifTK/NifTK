@@ -293,7 +293,7 @@ QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
   QmitkRenderWindow* activeRenderWindow = d->m_MIDASMultiViewWidget->GetSelectedRenderWindow();
   if (!activeRenderWindow)
   {
-    QmitkMIDASSingleViewWidget* selectedView = d->m_MIDASMultiViewWidget->GetSelectedView();
+    niftkSingleViewerWidget* selectedView = d->m_MIDASMultiViewWidget->GetSelectedView();
     activeRenderWindow = selectedView->GetAxialWindow();
   }
   return activeRenderWindow;

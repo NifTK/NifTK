@@ -30,13 +30,13 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkMIDASSingleViewWidgetListVisibilityManager;
+class niftkSingleViewerWidgetListVisibilityManager;
 class QmitkMIDASBaseSegmentationFunctionality;
 class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASSegmentationViewWidget
- * \brief Qt Widget to provide a single QmitkMIDASSingleViewWidget, and some associated
+ * \brief Qt Widget to provide a single niftkSingleViewerWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
  * The widget will display whatever data nodes are visible in the currently focused
@@ -61,7 +61,7 @@ public:
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
-   * \brief Injects the data storage, which is passed onto the contained QmitkMIDASSingleViewWidget.
+   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
    * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
    */
   void SetDataStorage(mitk::DataStorage* storage);
@@ -81,7 +81,7 @@ public:
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
 
   /**
-   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
+   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the niftkSingleViewerWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
   void SetEnabled(bool enabled);
@@ -126,7 +126,7 @@ protected slots:
   void OnMagnificationChanged(double magnification);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+  void OnScaleFactorChanged(niftkSingleViewerWidget* view, double magnification);
 
 protected:
 

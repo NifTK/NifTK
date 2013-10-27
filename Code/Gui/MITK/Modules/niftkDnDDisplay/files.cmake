@@ -19,10 +19,10 @@ set(CPP_FILES
   QmitkMIDASMultiViewVisibilityManager.cxx
   QmitkMIDASMultiViewWidget.cxx
   QmitkMIDASMultiViewWidgetControlPanel.cxx
-  QmitkMIDASSingleViewWidget.cxx
-  QmitkMIDASSingleViewWidgetListManager.cxx
-  QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
-  QmitkMIDASSingleViewWidgetListDropManager.cxx
+  niftkSingleViewerWidget.cxx
+  niftkSingleViewerWidgetListManager.cxx
+  niftkSingleViewerWidgetListVisibilityManager.cxx
+  niftkSingleViewerWidgetListDropManager.cxx
   vtkSideAnnotation.cxx
   Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASDisplayInteractor.cxx
@@ -34,7 +34,7 @@ set(MOC_H_FILES
   QmitkMIDASMultiViewWidget.h
   QmitkMIDASMultiViewWidgetControlPanel.h
   niftkMultiWindowWidget.h
-  QmitkMIDASSingleViewWidget.h
+  niftkSingleViewerWidget.h
   QmitkMIDASMultiViewVisibilityManager.h
 )
 

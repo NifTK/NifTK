@@ -23,12 +23,12 @@
 #include <itkConversionUtils.h>
 #include <mitkPointUtils.h>
 #include <mitkMIDASOrientationUtils.h>
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidget.h"
 #include "niftkMultiWindowWidget.h"
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget* parent)
+niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent)
 : QWidget(parent)
 , m_DataStorage(NULL)
 , m_RenderingManager(NULL)
@@ -49,13 +49,13 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(QWidget* parent)
 {
   mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
 
-  QString name("QmitkMIDASSingleViewWidget");
+  QString name("niftkSingleViewerWidget");
   this->Initialize(name, renderingManager, NULL);
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
+niftkSingleViewerWidget::niftkSingleViewerWidget(
     QString windowName,
     double minimumMagnification,
     double maximumMagnification,
@@ -85,7 +85,7 @@ QmitkMIDASSingleViewWidget::QmitkMIDASSingleViewWidget(
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
+void niftkSingleViewerWidget::Initialize(QString windowName,
                 mitk::RenderingManager* renderingManager,
                 mitk::DataStorage* dataStorage
                )
@@ -121,7 +121,7 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
   this->SetNavigationControllerEventListening(false);
 
   m_GridLayout = new QGridLayout(this);
-  m_GridLayout->setObjectName(QString::fromUtf8("QmitkMIDASSingleViewWidget::m_GridLayout"));
+  m_GridLayout->setObjectName(QString::fromUtf8("niftkSingleViewerWidget::m_GridLayout"));
   m_GridLayout->setContentsMargins(1, 1, 1, 1);
   m_GridLayout->setVerticalSpacing(0);
   m_GridLayout->setHorizontalSpacing(0);
@@ -145,14 +145,14 @@ void QmitkMIDASSingleViewWidget::Initialize(QString windowName,
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidget::~QmitkMIDASSingleViewWidget()
+niftkSingleViewerWidget::~niftkSingleViewerWidget()
 {
   mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ViewKeyPressStateMachine);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void niftkSingleViewerWidget::OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   // Try not to emit the niftkMultiWindowWidget pointer.
   emit NodesDropped(window, nodes);
@@ -160,7 +160,7 @@ void QmitkMIDASSingleViewWidget::OnNodesDropped(niftkMultiWindowWidget *widget, 
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *window, int sliceIndex)
+void niftkSingleViewerWidget::OnSelectedPositionChanged(QmitkRenderWindow *window, int sliceIndex)
 {
   mitk::Point3D selectedPosition = this->GetSelectedPosition();
   if (selectedPosition != m_SelectedPosition)
@@ -174,7 +174,7 @@ void QmitkMIDASSingleViewWidget::OnSelectedPositionChanged(QmitkRenderWindow *wi
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& cursorPosition)
+void niftkSingleViewerWidget::OnCursorPositionChanged(const mitk::Vector3D& cursorPosition)
 {
   if (cursorPosition != m_CursorPosition)
   {
@@ -186,252 +186,252 @@ void QmitkMIDASSingleViewWidget::OnCursorPositionChanged(const mitk::Vector3D& c
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::OnScaleFactorChanged(double scaleFactor)
+void niftkSingleViewerWidget::OnScaleFactorChanged(double scaleFactor)
 {
   emit ScaleFactorChanged(this, scaleFactor);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSelected(bool selected)
+void niftkSingleViewerWidget::SetSelected(bool selected)
 {
   m_MultiWidget->SetSelected(selected);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsSelected() const
+bool niftkSingleViewerWidget::IsSelected() const
 {
   return m_MultiWidget->IsSelected();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSelectedRenderWindow() const
+QmitkRenderWindow* niftkSingleViewerWidget::GetSelectedRenderWindow() const
 {
   return m_MultiWidget->GetSelectedRenderWindow();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
+void niftkSingleViewerWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   m_MultiWidget->SetSelectedRenderWindow(renderWindow);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetVisibleRenderWindows() const
+std::vector<QmitkRenderWindow*> niftkSingleViewerWidget::GetVisibleRenderWindows() const
 {
   return m_MultiWidget->GetVisibleRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> QmitkMIDASSingleViewWidget::GetRenderWindows() const
+std::vector<QmitkRenderWindow*> niftkSingleViewerWidget::GetRenderWindows() const
 {
   return m_MultiWidget->GetRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetAxialWindow() const
+QmitkRenderWindow* niftkSingleViewerWidget::GetAxialWindow() const
 {
   return m_MultiWidget->GetRenderWindow1();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetSagittalWindow() const
+QmitkRenderWindow* niftkSingleViewerWidget::GetSagittalWindow() const
 {
   return m_MultiWidget->GetRenderWindow2();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetCoronalWindow() const
+QmitkRenderWindow* niftkSingleViewerWidget::GetCoronalWindow() const
 {
   return m_MultiWidget->GetRenderWindow3();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::Get3DWindow() const
+QmitkRenderWindow* niftkSingleViewerWidget::Get3DWindow() const
 {
   return m_MultiWidget->GetRenderWindow4();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetEnabled(bool enabled)
+void niftkSingleViewerWidget::SetEnabled(bool enabled)
 {
   m_MultiWidget->SetEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsEnabled() const
+bool niftkSingleViewerWidget::IsEnabled() const
 {
   return m_MultiWidget->IsEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDisplay2DCursorsLocally(bool visible)
+void niftkSingleViewerWidget::SetDisplay2DCursorsLocally(bool visible)
 {
   m_MultiWidget->SetDisplay2DCursorsLocally(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsLocally() const
+bool niftkSingleViewerWidget::GetDisplay2DCursorsLocally() const
 {
   return m_MultiWidget->GetDisplay2DCursorsLocally();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDisplay2DCursorsGlobally(bool visible)
+void niftkSingleViewerWidget::SetDisplay2DCursorsGlobally(bool visible)
 {
   m_MultiWidget->SetDisplay2DCursorsGlobally(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::GetDisplay2DCursorsGlobally() const
+bool niftkSingleViewerWidget::GetDisplay2DCursorsGlobally() const
 {
   return m_MultiWidget->GetDisplay2DCursorsGlobally();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreDirectionAnnotationsVisible() const
+bool niftkSingleViewerWidget::AreDirectionAnnotationsVisible() const
 {
   return m_MultiWidget->AreDirectionAnnotationsVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDirectionAnnotationsVisible(bool visible)
+void niftkSingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 {
   m_MultiWidget->SetDirectionAnnotationsVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::GetShow3DWindowInOrthoView() const
+bool niftkSingleViewerWidget::GetShow3DWindowInOrthoView() const
 {
   return m_MultiWidget->GetShow3DWindowInOrthoView();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetShow3DWindowInOrthoView(bool enabled)
+void niftkSingleViewerWidget::SetShow3DWindowInOrthoView(bool enabled)
 {
   m_MultiWidget->SetShow3DWindowInOrthoView(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetBackgroundColor(QColor color)
+void niftkSingleViewerWidget::SetBackgroundColor(QColor color)
 {
   m_MultiWidget->SetBackgroundColor(color);
 }
 
 
 //-----------------------------------------------------------------------------
-QColor QmitkMIDASSingleViewWidget::GetBackgroundColor() const
+QColor niftkSingleViewerWidget::GetBackgroundColor() const
 {
   return m_MultiWidget->GetBackgroundColor();
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
+unsigned int niftkSingleViewerWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetMaxSliceIndex(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetMaxTimeStep() const
+unsigned int niftkSingleViewerWidget::GetMaxTimeStep() const
 {
   return m_MultiWidget->GetMaxTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
+bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
   return m_MultiWidget->ContainsRenderWindow(renderWindow);
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkMIDASSingleViewWidget::GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const
+QmitkRenderWindow* niftkSingleViewerWidget::GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const
 {
   return m_MultiWidget->GetRenderWindow(aVtkRenderWindow);
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation QmitkMIDASSingleViewWidget::GetOrientation()
+MIDASOrientation niftkSingleViewerWidget::GetOrientation()
 {
   return m_MultiWidget->GetOrientation();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::FitToDisplay()
+void niftkSingleViewerWidget::FitToDisplay()
 {
   m_MultiWidget->FitToDisplay();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void niftkSingleViewerWidget::SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
   m_MultiWidget->SetRendererSpecificVisibility(nodes, visible);
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSingleViewWidget::GetMinMagnification() const
+double niftkSingleViewerWidget::GetMinMagnification() const
 {
   return m_MinimumMagnification;
 }
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSingleViewWidget::GetMaxMagnification() const
+double niftkSingleViewerWidget::GetMaxMagnification() const
 {
   return m_MaximumMagnification;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer QmitkMIDASSingleViewWidget::GetDataStorage() const
+mitk::DataStorage::Pointer niftkSingleViewerWidget::GetDataStorage() const
 {
   return m_DataStorage;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetRememberSettingsPerLayout(bool remember)
+void niftkSingleViewerWidget::SetRememberSettingsPerLayout(bool remember)
 {
   m_RememberSettingsPerLayout = remember;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::GetRememberSettingsPerLayout() const
+bool niftkSingleViewerWidget::GetRememberSettingsPerLayout() const
 {
   return m_RememberSettingsPerLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
+void niftkSingleViewerWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
   m_MultiWidget->SetDataStorage(m_DataStorage);
@@ -439,7 +439,7 @@ void QmitkMIDASSingleViewWidget::SetDataStorage(mitk::DataStorage::Pointer dataS
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enabled)
+void niftkSingleViewerWidget::SetNavigationControllerEventListening(bool enabled)
 {
   if (enabled)
   {
@@ -456,63 +456,63 @@ void QmitkMIDASSingleViewWidget::SetNavigationControllerEventListening(bool enab
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::GetNavigationControllerEventListening() const
+bool niftkSingleViewerWidget::GetNavigationControllerEventListening() const
 {
   return m_NavigationControllerEventListening;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDisplayInteractionsEnabled(bool enabled)
+void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
   m_MultiWidget->SetDisplayInteractionsEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreDisplayInteractionsEnabled() const
+bool niftkSingleViewerWidget::AreDisplayInteractionsEnabled() const
 {
   return m_MultiWidget->AreDisplayInteractionsEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreCursorPositionsBound() const
+bool niftkSingleViewerWidget::AreCursorPositionsBound() const
 {
   return m_MultiWidget->AreCursorPositionsBound();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetCursorPositionsBound(bool bound)
+void niftkSingleViewerWidget::SetCursorPositionsBound(bool bound)
 {
   m_MultiWidget->SetCursorPositionsBound(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::AreScaleFactorsBound() const
+bool niftkSingleViewerWidget::AreScaleFactorsBound() const
 {
   return m_MultiWidget->AreScaleFactorsBound();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetScaleFactorsBound(bool bound)
+void niftkSingleViewerWidget::SetScaleFactorsBound(bool bound)
 {
   m_MultiWidget->SetScaleFactorsBound(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::RequestUpdate()
+void niftkSingleViewerWidget::RequestUpdate()
 {
   m_MultiWidget->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
+void niftkSingleViewerWidget::ResetRememberedPositions()
 {
   for (int i = 0; i < MIDAS_ORIENTATION_NUMBER; i++)
   {
@@ -528,7 +528,7 @@ void QmitkMIDASSingleViewWidget::ResetRememberedPositions()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
+void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeometry)
 {
   assert(timeGeometry);
   m_Geometry = timeGeometry;
@@ -551,7 +551,7 @@ void QmitkMIDASSingleViewWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeo
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
+mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
 {
   assert(m_Geometry);
   return m_Geometry;
@@ -559,7 +559,7 @@ mitk::TimeGeometry::Pointer QmitkMIDASSingleViewWidget::GetGeometry()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geometry)
+void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geometry)
 {
   assert(geometry);
   m_BoundGeometry = geometry;
@@ -580,14 +580,14 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer ge
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::IsBoundGeometryActive()
+bool niftkSingleViewerWidget::IsBoundGeometryActive()
 {
   return m_IsBoundGeometryActive;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
+void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
 {
   if (isBoundGeometryActive == m_IsBoundGeometryActive)
   {
@@ -604,14 +604,14 @@ void QmitkMIDASSingleViewWidget::SetBoundGeometryActive(bool isBoundGeometryActi
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetSliceIndex(MIDASOrientation orientation) const
+unsigned int niftkSingleViewerWidget::GetSliceIndex(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetSliceIndex(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
+void niftkSingleViewerWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
 {
   m_SliceIndexes[Index(m_Orientation)] = sliceIndex;
   if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -622,14 +622,14 @@ void QmitkMIDASSingleViewWidget::SetSliceIndex(MIDASOrientation orientation, uns
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkMIDASSingleViewWidget::GetTimeStep() const
+unsigned int niftkSingleViewerWidget::GetTimeStep() const
 {
   return m_MultiWidget->GetTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetTimeStep(unsigned int timeStep)
+void niftkSingleViewerWidget::SetTimeStep(unsigned int timeStep)
 {
   m_TimeSteps[Index(m_Orientation)] = timeStep;
   if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -640,14 +640,14 @@ void QmitkMIDASSingleViewWidget::SetTimeStep(unsigned int timeStep)
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASSingleViewWidget::GetLayout() const
+MIDASLayout niftkSingleViewerWidget::GetLayout() const
 {
   return m_Layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout)
+void niftkSingleViewerWidget::SetLayout(MIDASLayout layout)
 {
   if (layout != MIDAS_LAYOUT_UNKNOWN)
   {
@@ -738,14 +738,14 @@ void QmitkMIDASSingleViewWidget::SetLayout(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D QmitkMIDASSingleViewWidget::GetSelectedPosition() const
+mitk::Point3D niftkSingleViewerWidget::GetSelectedPosition() const
 {
   return m_MultiWidget->GetSelectedPosition();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
@@ -758,14 +758,14 @@ void QmitkMIDASSingleViewWidget::SetSelectedPosition(const mitk::Point3D& select
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector3D& QmitkMIDASSingleViewWidget::GetCursorPosition() const
+const mitk::Vector3D& niftkSingleViewerWidget::GetCursorPosition() const
 {
   return m_MultiWidget->GetCursorPosition();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
+void niftkSingleViewerWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
 {
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
@@ -777,14 +777,14 @@ void QmitkMIDASSingleViewWidget::SetCursorPosition(const mitk::Vector3D& cursorP
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSingleViewWidget::GetMagnification() const
+double niftkSingleViewerWidget::GetMagnification() const
 {
   return m_MultiWidget->GetMagnification();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetMagnification(double magnification)
+void niftkSingleViewerWidget::SetMagnification(double magnification)
 {
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
@@ -795,14 +795,14 @@ void QmitkMIDASSingleViewWidget::SetMagnification(double magnification)
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSingleViewWidget::GetScaleFactor() const
+double niftkSingleViewerWidget::GetScaleFactor() const
 {
   return m_MultiWidget->GetScaleFactor();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetScaleFactor(double scaleFactor)
+void niftkSingleViewerWidget::SetScaleFactor(double scaleFactor)
 {
   if (m_Layout != MIDAS_LAYOUT_UNKNOWN)
   {
@@ -812,7 +812,7 @@ void QmitkMIDASSingleViewWidget::SetScaleFactor(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
+void niftkSingleViewerWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
@@ -824,14 +824,14 @@ void QmitkMIDASSingleViewWidget::paintEvent(QPaintEvent *event)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::InitializeStandardViews(const mitk::Geometry3D * geometry)
+void niftkSingleViewerWidget::InitializeStandardViews(const mitk::Geometry3D * geometry)
 {
   m_MultiWidget->InitializeStandardViews(geometry);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> QmitkMIDASSingleViewWidget::GetWidgetPlanes()
+std::vector<mitk::DataNode*> niftkSingleViewerWidget::GetWidgetPlanes()
 {
   std::vector<mitk::DataNode*> result;
   result.push_back(m_MultiWidget->GetWidgetPlane1());
@@ -842,42 +842,42 @@ std::vector<mitk::DataNode*> QmitkMIDASSingleViewWidget::GetWidgetPlanes()
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSingleViewWidget::GetSliceUpDirection(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetSliceUpDirection(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetSliceUpDirection(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDefaultSingleWindowLayout(MIDASLayout layout)
+void niftkSingleViewerWidget::SetDefaultSingleWindowLayout(MIDASLayout layout)
 {
   m_SingleWindowLayout = layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidget::SetDefaultMultiWindowLayout(MIDASLayout layout)
+void niftkSingleViewerWidget::SetDefaultMultiWindowLayout(MIDASLayout layout)
 {
   m_MultiWindowLayout = layout;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::MoveAnterior()
+bool niftkSingleViewerWidget::MoveAnterior()
 {
   return this->MoveAnteriorPosterior(1);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::MovePosterior()
+bool niftkSingleViewerWidget::MovePosterior()
 {
   return this->MoveAnteriorPosterior(-1);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::MoveAnteriorPosterior(int slices)
+bool niftkSingleViewerWidget::MoveAnteriorPosterior(int slices)
 {
   bool actuallyDidSomething = false;
 
@@ -904,7 +904,7 @@ bool QmitkMIDASSingleViewWidget::MoveAnteriorPosterior(int slices)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::SwitchToAxial()
+bool niftkSingleViewerWidget::SwitchToAxial()
 {
   this->SetLayout(MIDAS_LAYOUT_AXIAL);
   emit LayoutChanged(this, MIDAS_LAYOUT_AXIAL);
@@ -913,7 +913,7 @@ bool QmitkMIDASSingleViewWidget::SwitchToAxial()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::SwitchToSagittal()
+bool niftkSingleViewerWidget::SwitchToSagittal()
 {
   this->SetLayout(MIDAS_LAYOUT_SAGITTAL);
   emit LayoutChanged(this, MIDAS_LAYOUT_SAGITTAL);
@@ -922,7 +922,7 @@ bool QmitkMIDASSingleViewWidget::SwitchToSagittal()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::SwitchToCoronal()
+bool niftkSingleViewerWidget::SwitchToCoronal()
 {
   this->SetLayout(MIDAS_LAYOUT_CORONAL);
   emit LayoutChanged(this, MIDAS_LAYOUT_CORONAL);
@@ -931,7 +931,7 @@ bool QmitkMIDASSingleViewWidget::SwitchToCoronal()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::SwitchTo3D()
+bool niftkSingleViewerWidget::SwitchTo3D()
 {
   this->SetLayout(MIDAS_LAYOUT_3D);
   emit LayoutChanged(this, MIDAS_LAYOUT_3D);
@@ -940,7 +940,7 @@ bool QmitkMIDASSingleViewWidget::SwitchTo3D()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::ToggleMultiWindowLayout()
+bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 {
   MIDASLayout nextLayout;
 
@@ -984,7 +984,7 @@ bool QmitkMIDASSingleViewWidget::ToggleMultiWindowLayout()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidget::ToggleCursor()
+bool niftkSingleViewerWidget::ToggleCursor()
 {
 //  this->SetShow2DCursors(!this->GetShow2DCursors());
 

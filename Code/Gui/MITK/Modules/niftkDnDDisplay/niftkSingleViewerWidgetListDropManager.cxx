@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASSingleViewWidgetListDropManager.h"
+#include "niftkSingleViewerWidgetListDropManager.h"
 #include <mitkDataStorageUtils.h>
 #include <mitkMIDASEnums.h>
 #include <mitkMIDASImageUtils.h>
 #include <mitkDataStorageUtils.h>
-#include "QmitkMIDASSingleViewWidget.h"
-#include "QmitkMIDASSingleViewWidgetListVisibilityManager.h"
+#include "niftkSingleViewerWidget.h"
+#include "niftkSingleViewerWidgetListVisibilityManager.h"
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListDropManager::QmitkMIDASSingleViewWidgetListDropManager()
+niftkSingleViewerWidgetListDropManager::niftkSingleViewerWidgetListDropManager()
 : m_DefaultLayout(MIDAS_LAYOUT_CORONAL)
 , m_DropType(MIDAS_DROP_TYPE_SINGLE)
 , m_DataStorage(NULL)
@@ -31,70 +31,70 @@ QmitkMIDASSingleViewWidgetListDropManager::QmitkMIDASSingleViewWidgetListDropMan
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSingleViewWidgetListDropManager::~QmitkMIDASSingleViewWidgetListDropManager()
+niftkSingleViewerWidgetListDropManager::~niftkSingleViewerWidgetListDropManager()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetVisibilityManager(QmitkMIDASSingleViewWidgetListVisibilityManager* manager)
+void niftkSingleViewerWidgetListDropManager::SetVisibilityManager(niftkSingleViewerWidgetListVisibilityManager* manager)
 {
   m_VisibilityManager = manager;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
+void niftkSingleViewerWidgetListDropManager::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetDefaultLayout(MIDASLayout layout)
+void niftkSingleViewerWidgetListDropManager::SetDefaultLayout(MIDASLayout layout)
 {
   m_DefaultLayout = layout;
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASSingleViewWidgetListDropManager::GetDefaultLayout() const
+MIDASLayout niftkSingleViewerWidgetListDropManager::GetDefaultLayout() const
 {
   return m_DefaultLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetDropType(const MIDASDropType& dropType)
+void niftkSingleViewerWidgetListDropManager::SetDropType(const MIDASDropType& dropType)
 {
   m_DropType = dropType;
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASDropType QmitkMIDASSingleViewWidgetListDropManager::GetDropType() const
+MIDASDropType niftkSingleViewerWidgetListDropManager::GetDropType() const
 {
   return m_DropType;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::SetAccumulateWhenDropped(const bool& accumulateWhenDropped)
+void niftkSingleViewerWidgetListDropManager::SetAccumulateWhenDropped(const bool& accumulateWhenDropped)
 {
   m_AccumulateWhenDropped = accumulateWhenDropped;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSingleViewWidgetListDropManager::GetAccumulateWhenDropped() const
+bool niftkSingleViewerWidgetListDropManager::GetAccumulateWhenDropped() const
 {
   return m_AccumulateWhenDropped;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   if (m_DataStorage.IsNull() || m_VisibilityManager == NULL)
   {
@@ -103,14 +103,14 @@ void QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped(QmitkRenderWindow
 
   if (nodes.size() == 0)
   {
-    MITK_ERROR << "Calling QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped with no nodes. Surely a programming bug?" << std::endl;
+    MITK_ERROR << "Calling niftkSingleViewerWidgetListDropManager::OnNodesDropped with no nodes. Surely a programming bug?" << std::endl;
     return;
   }
 
   int windowIndex = this->GetIndexFromWindow(window);
   if (windowIndex < 0)
   {
-    MITK_ERROR << "Calling QmitkMIDASSingleViewWidgetListDropManager::OnNodesDropped with an invalid window. Surely a bug?" << std::endl;
+    MITK_ERROR << "Calling niftkSingleViewerWidgetListDropManager::OnNodesDropped with an invalid window. Surely a bug?" << std::endl;
   }
 
   MIDASLayout defaultLayout = MIDAS_LAYOUT_CORONAL;

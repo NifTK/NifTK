@@ -14,7 +14,7 @@
 
 #include "QmitkMIDASMultiViewVisibilityManager.h"
 #include <QmitkRenderWindow.h>
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidget.h"
 #include <mitkBaseRenderer.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkDataStorageUtils.h>
@@ -133,7 +133,7 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateObserverToVisibilityMap()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(QmitkMIDASSingleViewWidget *widget)
+void QmitkMIDASMultiViewVisibilityManager::RegisterWidget(niftkSingleViewerWidget *widget)
 {
   widget->SetDataStorage(m_DataStorage);
 
@@ -396,7 +396,7 @@ void QmitkMIDASMultiViewVisibilityManager::UpdateVisibilityProperty(const itk::E
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewVisibilityManager::RemoveNodesFromWindow(int windowIndex)
 {
-  QmitkMIDASSingleViewWidget *widget = m_Widgets[windowIndex];
+  niftkSingleViewerWidget *widget = m_Widgets[windowIndex];
   assert(widget);
 
   std::vector<mitk::DataNode*> nodes;
@@ -423,7 +423,7 @@ int QmitkMIDASMultiViewVisibilityManager::GetNodesInWindow(int windowIndex)
 //-----------------------------------------------------------------------------
 void QmitkMIDASMultiViewVisibilityManager::AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility)
 {
-  QmitkMIDASSingleViewWidget *widget = m_Widgets[windowIndex];
+  niftkSingleViewerWidget *widget = m_Widgets[windowIndex];
   assert(widget);
 
   m_DataNodes[windowIndex].insert(node);

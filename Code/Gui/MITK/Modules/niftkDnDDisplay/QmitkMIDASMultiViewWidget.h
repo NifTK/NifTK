@@ -26,7 +26,7 @@
 #include <mitkRenderingManager.h>
 #include <mitkMIDASEnums.h>
 
-#include <QmitkMIDASSingleViewWidget.h>
+#include <niftkSingleViewerWidget.h>
 #include <QmitkMIDASMultiViewVisibilityManager.h>
 #include <QmitkMIDASLayoutWidget.h>
 #include <QmitkMIDASSlidersWidget.h>
@@ -61,7 +61,7 @@ class QmitkMIDASMultiViewWidgetControlPanel;
  *
  * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
- * m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget each of which itself wraps
+ * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
  * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D views, which current MIDAS does not have.
@@ -94,7 +94,7 @@ public:
   /// \brief Used to de-activate the whole widget.
   void Deactivated();
 
-  /// \brief As each QmitkMIDASSingleViewWidget may have its own rendering manager,
+  /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each widget to re-render.
   void RequestUpdateAll();
 
@@ -201,7 +201,7 @@ public:
   void OnFocusChanged();
 
   /// \brief Will return the selected view or the first view if none is selected.
-  QmitkMIDASSingleViewWidget* GetSelectedView() const;
+  niftkSingleViewerWidget* GetSelectedView() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
@@ -309,19 +309,19 @@ protected slots:
 
   /// \brief Called when the selected position has changed in a render window of a view.
   /// Each of the contained views will signal when its slice navigation controllers have changed.
-  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
+  void OnSelectedPositionChanged(niftkSingleViewerWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
+  void OnCursorPositionChanged(niftkSingleViewerWidget* view, const mitk::Vector3D& cursorPosition);
 
   /// \brief Called when the scale factor of a view has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double scaleFactor);
+  void OnScaleFactorChanged(niftkSingleViewerWidget* view, double scaleFactor);
 
   /// \brief Called when the window layout of a view has changed.
-  void OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout);
+  void OnLayoutChanged(niftkSingleViewerWidget* view, MIDASLayout);
 
   /// \brief Called when the geometry of a view has changed.
-  void OnGeometryChanged(QmitkMIDASSingleViewWidget* view, mitk::TimeGeometry* geometry);
+  void OnGeometryChanged(niftkSingleViewerWidget* view, mitk::TimeGeometry* geometry);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
   void OnPopupOpened(bool opened);
@@ -358,7 +358,7 @@ private:
   void SetSelectedViewIndex(int i);
 
   /// \brief Creates a view widget.
-  QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
+  niftkSingleViewerWidget* CreateSingleViewWidget();
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
@@ -396,7 +396,7 @@ private:
   static const int m_MaxViewColumns = 5;
 
   // All the viewer windows.
-  QList<QmitkMIDASSingleViewWidget*> m_SingleViewWidgets;
+  QList<niftkSingleViewerWidget*> m_SingleViewWidgets;
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
