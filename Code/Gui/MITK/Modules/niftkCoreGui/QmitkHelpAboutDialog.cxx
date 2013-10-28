@@ -118,14 +118,14 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "%1 has been developed using the following core libraries."
       "</p>"
       "<p><table>"
-      "<tr><td><a href=\"http://www.boost.org\">Boost</a></td><td>%2</td><td><a href=\"http://www.boost.org/LICENSE_1_0.txt\">Boost software license version 1.0</a></td><td><a href=\"%3\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://qt.nokia.com/products\">Qt</a></td><td>%4</td><td><a href=\"http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\">LGPL version 2.1</a></td><td><a href=\"http://qt.nokia.com/products\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/\">GDCM</a></td><td>%5</td><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html\">GDCM Berkely-like license</a></td><td><a href=\"%6\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://dicom.offis.de/\">DCMTK</a></td><td>%7</td><td><a href=\"ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk360/COPYRIGHT\">DCMTK license</a></td><td><a href=\"%8\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.itk.org\">ITK</a>(Patched)</td><td>%9</td><td><a href=\"http://itk.org/ITK/project/license.html\">Apache 2.0 license</a></td><td><a href=\"%10\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD license</a></td><td><a href=\"%12\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache 2.0 license</a></td><td><a href=\"%14\">from here</a></td></tr>"
-      "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style license</a></td><td><a href=\"%16\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.boost.org\">Boost</a></td><td>%2</td><td><a href=\"http://www.boost.org/LICENSE_1_0.txt\">Boost v1.0</a></td><td><a href=\"%3\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://qt.nokia.com/products\">Qt</a></td><td>%4</td><td><a href=\"http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\">LGPL v2.1</a></td><td><a href=\"http://qt.nokia.com/products\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/\">GDCM</a></td><td>%5</td><td><a href=\"http://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html\">GDCM</a></td><td><a href=\"%6\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://dicom.offis.de/\">DCMTK</a></td><td>%7</td><td><a href=\"ftp://dicom.offis.de/pub/dicom/offis/software/dcmtk/dcmtk360/COPYRIGHT\">DCMTK</a></td><td><a href=\"%8\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.itk.org\">ITK</a>(Patched)</td><td>%9</td><td><a href=\"http://itk.org/ITK/project/license.html\">Apache v2.0</a></td><td><a href=\"%10\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.vtk.org\">VTK</a></td><td>%11</td><td><a href=\"http://www.vtk.org/VTK/project/license.html\">BSD</a></td><td><a href=\"%12\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.commontk.org\">CTK</a></td><td>%13</td><td><a href=\"http://www.apache.org/licenses/LICENSE-2.0.html\">Apache v2.0</a></td><td><a href=\"%14\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.mitk.org\">MITK</a>(Modified)</td><td>%15</td><td><a href=\"http://www.mitk.org/wiki/License\">BSD-style</a></td><td><a href=\"%16\">from here</a></td></tr>"
       )
       .arg(applicationName)
       .arg(boostVersion)
@@ -149,7 +149,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftyRegVersion(NIFTK_NIFTYREG_VERSION);
     QString niftyRegLocation(NIFTK_NIFTYREG_LOCATION);
     QString niftyRegText = QObject::tr(
-        "<tr><td><a href=\"http://sourceforge.net/projects/niftyreg/?source=directory\">NiftyReg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyreg/code/395/tree/trunk/nifty_reg/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftyreg/?source=directory\">NiftyReg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyreg/code/395/tree/trunk/nifty_reg/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftyRegVersion).arg(niftyRegLocation);
   #endif
 
@@ -157,7 +157,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftySegVersion(NIFTK_NIFTYSEG_VERSION);
     QString niftySegLocation(NIFTK_NIFTYSEG_LOCATION);
     QString niftySegText = QObject::tr(
-        "<tr><td><a href=\"http://sourceforge.net/projects/niftyseg/?source=directory\">NiftySeg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyseg/code/145/tree/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftyseg/?source=directory\">NiftySeg</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftyseg/code/145/tree/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftySegVersion).arg(niftySegLocation);
   #endif
 
@@ -165,7 +165,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftySimVersion(NIFTK_NIFTYSIM_VERSION);
     QString niftySimLocation(NIFTK_NIFTYSIM_LOCATION);
     QString niftySimText = QObject::tr(
-        "<tr><td><a href=\"http://sourceforge.net/projects/niftysim/?source=directory\">NiftySim</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftysim/code/ci/master/tree/nifty_sim/LICENSE.txt\">BSD license</a></td><td><a href=\"%2\">from here</a></td></tr>"
+        "<tr><td><a href=\"http://sourceforge.net/projects/niftysim/?source=directory\">NiftySim</a></td><td>%1</td><td><a href=\"http://sourceforge.net/p/niftysim/code/ci/master/tree/nifty_sim/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
         ).arg(niftySimVersion).arg(niftySimLocation);
   #endif
 
@@ -173,8 +173,39 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
     QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
-      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html\">NiftyLink</a></td><td>%1</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/NiftyLink/html/NiftyLinkLicense.html\">Not finalised yet</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      "<tr><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">NiftyLink</a></td><td>%1</td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=blob;f=LICENSE.txt;h=fb2101472180c339b380ab8efbf213fb762a3ab1;hb=refs/heads/development\">Not finalised yet</a></td><td><a href=\"https://cmicdev.cs.ucl.ac.uk/git/?p=NiftyLink.git;a=summary\">from here</a></td></tr>"
       ).arg(niftyLinkVersion.left(10)).arg(niftyLinkLocation);
+
+    QString arucoVersion(NIFTK_VERSION_ARUCO);
+    QString arucoLocation(NIFTK_LOCATION_ARUCO);
+    QString arucoText = QObject::tr(
+      "<tr><td><a href=\"http://www.uco.es/investiga/grupos/ava/node/26\">ARUCO</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/BSD-2-Clause\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(arucoVersion).arg(arucoLocation);
+
+    QString eigenVersion(NIFTK_VERSION_EIGEN);
+    QString eigenLocation(NIFTK_LOCATION_EIGEN);
+    QString eigenText = QObject::tr(
+      "<tr><td><a href=\"http://eigen.tuxfamily.org/\">EIGEN</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/MPL-2.0\">MPL v2</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(eigenVersion).arg(eigenLocation);
+ 
+    QString aprilTagsVersion(NIFTK_VERSION_APRILTAGS);
+    QString aprilTagsLocation(NIFTK_LOCATION_APRILTAGS);
+    QString aprilTagsText = QObject::tr(
+      "<tr><td><a href=\"http://people.csail.mit.edu/kaess/apriltags/\">April Tags</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/LGPL-2.1\">LGPL v2.1</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(aprilTagsVersion).arg(aprilTagsLocation);
+
+    QString flannVersion(NIFTK_VERSION_FLANN);
+    QString flannLocation(NIFTK_LOCATION_FLANN);
+    QString flannText = QObject::tr(
+      "<tr><td><a href=\"http://www.cs.ubc.ca/research/flann/\">FLANN</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/BSD-3-Clause\">BSD</a></ltd><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(flannVersion).arg(flannLocation);
+
+    QString pclVersion(NIFTK_VERSION_PCL);
+    QString pclLocation(NIFTK_LOCATION_PCL);
+    QString pclText = QObject::tr(
+      "<tr><td><a href=\"http://pointclouds.org/\">PCL</a></td><td>%1</td><td><a href=\"https://github.com/PointCloudLibrary/pcl/blob/master/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(pclVersion).arg(pclLocation);
+
   #endif
 
   QString versionsEnd = QObject::tr(
@@ -194,11 +225,9 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "%1 has been compiled and tested on the following platforms:"
       "<ul>"
       "<li>Mac OSX 10.8 (Mountain Lion)</li>"
-      "<li>Mac OSX 10.7 (Lion)</li>"
       "<li>Ubuntu 11.04 (Natty)</li>"
       "<li>Linux Mint 12</li>"
       "<li>Scientific Linux 6.1</li>"
-      "<li>Centos 5.0</li>"
       "<li>Debian 6.0.5</li>"
       "<li>Windows 7</li>"
       "<li>Windows 8</li>"
@@ -235,6 +264,11 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 #endif
 #ifdef BUILD_IGI
       .append(niftyLinkText)
+      .append(arucoText)
+      .append(eigenText)
+      .append(aprilTagsText)
+      .append(flannText)
+      .append(pclText)
 #endif
       .append(versionsEnd)
       .append(licenses)
