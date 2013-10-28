@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASLayoutWidget.h"
+#include "niftkWindowLayoutWidget.h"
 
-WindowLayout QmitkMIDASLayoutWidget::s_MultiWindowLayouts[] = {
+WindowLayout niftkWindowLayoutWidget::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_ORTHO,
   WINDOW_LAYOUT_3H,
   WINDOW_LAYOUT_3V,
@@ -26,11 +26,11 @@ WindowLayout QmitkMIDASLayoutWidget::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_SAG_AX_V
 };
 
-int const QmitkMIDASLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(WindowLayout);
+int const niftkWindowLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(WindowLayout);
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASLayoutWidget::QmitkMIDASLayoutWidget(QWidget *parent)
+niftkWindowLayoutWidget::niftkWindowLayoutWidget(QWidget *parent)
 : QWidget(parent)
 , m_Layout(WINDOW_LAYOUT_UNKNOWN)
 {
@@ -58,20 +58,20 @@ QmitkMIDASLayoutWidget::QmitkMIDASLayoutWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASLayoutWidget::~QmitkMIDASLayoutWidget()
+niftkWindowLayoutWidget::~niftkWindowLayoutWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-WindowLayout QmitkMIDASLayoutWidget::GetLayout() const
+WindowLayout niftkWindowLayoutWidget::GetLayout() const
 {
   return m_Layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::SetLayout(WindowLayout layout)
+void niftkWindowLayoutWidget::SetLayout(WindowLayout layout)
 {
   if (layout == m_Layout)
   {
@@ -131,7 +131,7 @@ void QmitkMIDASLayoutWidget::SetLayout(WindowLayout layout)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
+void niftkWindowLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -141,7 +141,7 @@ void QmitkMIDASLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
+void niftkWindowLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -151,7 +151,7 @@ void QmitkMIDASLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
+void niftkWindowLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -161,7 +161,7 @@ void QmitkMIDASLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
+void niftkWindowLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -171,7 +171,7 @@ void QmitkMIDASLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
+void niftkWindowLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -181,7 +181,7 @@ void QmitkMIDASLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::OnMultiWindowComboBoxIndexChanged(int index)
+void niftkWindowLayoutWidget::OnMultiWindowComboBoxIndexChanged(int index)
 {
   m_MultiWindowRadioButton->setChecked(true);
   this->SetLayout(s_MultiWindowLayouts[index]);

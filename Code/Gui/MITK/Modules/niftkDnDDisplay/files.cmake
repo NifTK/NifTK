@@ -14,7 +14,7 @@
 
 set(CPP_FILES
   QmitkMIDASSlidersWidget.cxx
-  QmitkMIDASLayoutWidget.cxx
+  niftkWindowLayoutWidget.cxx
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx
   niftkMultiViewerWidget.cxx
@@ -30,7 +30,7 @@ set(CPP_FILES
 
 set(MOC_H_FILES 
   QmitkMIDASSlidersWidget.h
-  QmitkMIDASLayoutWidget.h
+  niftkWindowLayoutWidget.h
   niftkMultiViewerWidget.h
   niftkMultiViewerWidgetControlPanel.h
   niftkMultiWindowWidget.h
@@ -39,7 +39,7 @@ set(MOC_H_FILES
 )
 
 set(UI_FILES
-  Resources/UI/QmitkMIDASLayoutWidget.ui
+  Resources/UI/niftkWindowLayoutWidget.ui
   Resources/UI/QmitkMIDASSlidersWidget.ui
   Resources/UI/niftkMultiViewerWidgetControlPanel.ui
 )

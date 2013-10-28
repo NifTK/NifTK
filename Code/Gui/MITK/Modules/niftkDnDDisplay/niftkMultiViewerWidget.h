@@ -28,7 +28,7 @@
 
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
-#include <QmitkMIDASLayoutWidget.h>
+#include <niftkWindowLayoutWidget.h>
 #include <QmitkMIDASSlidersWidget.h>
 
 class QSpinBox;

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASLayoutWidget_h
-#define QmitkMIDASLayoutWidget_h
+#ifndef niftkWindowLayoutWidget_h
+#define niftkWindowLayoutWidget_h
 
 #include <niftkDnDDisplayExports.h>
-#include "ui_QmitkMIDASLayoutWidget.h"
+#include "ui_niftkWindowLayoutWidget.h"
 
 #include <mitkMIDASEnums.h>
 #include <niftkDnDDisplayEnums.h>
@@ -24,7 +24,7 @@
 class QButtonGroup;
 
 /**
- * \class QmitkMIDASLayoutWidget
+ * \class niftkWindowLayoutWidget
  * \brief Qt Widget class to contain four radio buttons for single window layouts (axial,
  * sagittal, coronal and 3D) and a fifth radio button and a combo box to switch to multiple
  * window layout and select it.
@@ -33,17 +33,17 @@ class QButtonGroup;
  * for any number of layouts, and still keep a reasonably compact screen layout.
  *
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASLayoutWidget : public QWidget, private Ui_QmitkMIDASLayoutWidget
+class niftkWindowLayoutWidget : public QWidget, private Ui_niftkWindowLayoutWidget
 {
   Q_OBJECT
 
 public:
 
-  /// \brief Constructs a QmitkMIDASLayoutWidget object.
-  QmitkMIDASLayoutWidget(QWidget *parent = 0);
+  /// \brief Constructs a niftkWindowLayoutWidget object.
+  niftkWindowLayoutWidget(QWidget *parent = 0);
 
-  /// \brief Destructs a QmitkMIDASLayoutWidget object.
-  virtual ~QmitkMIDASLayoutWidget();
+  /// \brief Destructs a niftkWindowLayoutWidget object.
+  virtual ~niftkWindowLayoutWidget();
 
   /// \brief Gets the current layout.
   WindowLayout GetLayout() const;
