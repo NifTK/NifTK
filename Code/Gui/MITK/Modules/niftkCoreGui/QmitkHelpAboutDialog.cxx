@@ -197,7 +197,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString flannVersion(NIFTK_VERSION_FLANN);
     QString flannLocation(NIFTK_LOCATION_FLANN);
     QString flannText = QObject::tr(
-      "<tr><td><a href=\"http://www.cs.ubc.ca/research/flann/\">FLANN</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/BSD-3-Clause\">BSD</a></ltd><td><a href=\"%2\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://www.cs.ubc.ca/research/flann/\">FLANN</a>(Patched)</td><td>%1</td><td><a href=\"http://opensource.org/licenses/BSD-3-Clause\">BSD</a></ltd><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(flannVersion).arg(flannLocation);
 
     QString pclVersion(NIFTK_VERSION_PCL);
