@@ -22,7 +22,7 @@
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidgetListDropManager::niftkSingleViewerWidgetListDropManager()
-: m_DefaultLayout(MIDAS_LAYOUT_CORONAL)
+: m_DefaultWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_DropType(MIDAS_DROP_TYPE_SINGLE)
 , m_DataStorage(NULL)
 , m_VisibilityManager(NULL)
@@ -52,16 +52,16 @@ void niftkSingleViewerWidgetListDropManager::SetDataStorage(mitk::DataStorage::P
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidgetListDropManager::SetDefaultLayout(MIDASLayout layout)
+void niftkSingleViewerWidgetListDropManager::SetDefaultLayout(WindowLayout windowLayout)
 {
-  m_DefaultLayout = layout;
+  m_DefaultWindowLayout = windowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout niftkSingleViewerWidgetListDropManager::GetDefaultLayout() const
+WindowLayout niftkSingleViewerWidgetListDropManager::GetDefaultLayout() const
 {
-  return m_DefaultLayout;
+  return m_DefaultWindowLayout;
 }
 
 
@@ -115,22 +115,22 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
 
   MIDASOrientation defaultOrientation = MIDAS_ORIENTATION_CORONAL;
   MIDASOrientation orientation = GetAsAcquiredOrientation(defaultOrientation, dynamic_cast<mitk::Image*>(nodes[0]->GetData()));
-  MIDASLayout layout;
+  WindowLayout windowLayout;
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
-    layout = MIDAS_LAYOUT_AXIAL;
+    windowLayout = WINDOW_LAYOUT_AXIAL;
   }
   else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
   {
-    layout = MIDAS_LAYOUT_SAGITTAL;
+    windowLayout = WINDOW_LAYOUT_SAGITTAL;
   }
   else if (orientation == MIDAS_ORIENTATION_CORONAL)
   {
-    layout = MIDAS_LAYOUT_CORONAL;
+    windowLayout = WINDOW_LAYOUT_CORONAL;
   }
   else
   {
-    layout = MIDAS_LAYOUT_CORONAL;
+    windowLayout = WINDOW_LAYOUT_CORONAL;
   }
 
   for (unsigned int i = 0; i < nodes.size(); i++)
@@ -164,7 +164,7 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
     if (this->GetNumberOfNodesRegisteredWithWidget(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
     {
       m_Widgets[windowIndex]->SetGeometry(geometry.GetPointer());
-      m_Widgets[windowIndex]->SetLayout(layout);
+      m_Widgets[windowIndex]->SetLayout(windowLayout);
       m_Widgets[windowIndex]->SetEnabled(true);
     }
 
@@ -214,7 +214,7 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
       if (this->GetNumberOfNodesRegisteredWithWidget(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
       {
         m_Widgets[dropIndex]->SetGeometry(geometry.GetPointer());
-        m_Widgets[dropIndex]->SetLayout(layout);
+        m_Widgets[dropIndex]->SetLayout(windowLayout);
         m_Widgets[dropIndex]->SetEnabled(true);
       }
 
@@ -246,20 +246,20 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
     // So this thumbnail drop, has to switch to a single orientation. If the current default
     // layout is not a single slice mode, we need to switch to one.
     MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-    switch (layout)
+    switch (windowLayout)
     {
-    case MIDAS_LAYOUT_AXIAL:
+    case WINDOW_LAYOUT_AXIAL:
       orientation = MIDAS_ORIENTATION_AXIAL;
       break;
-    case MIDAS_LAYOUT_SAGITTAL:
+    case WINDOW_LAYOUT_SAGITTAL:
       orientation = MIDAS_ORIENTATION_SAGITTAL;
       break;
-    case MIDAS_LAYOUT_CORONAL:
+    case WINDOW_LAYOUT_CORONAL:
       orientation = MIDAS_ORIENTATION_CORONAL;
       break;
     default:
       orientation = MIDAS_ORIENTATION_AXIAL;
-      layout = MIDAS_LAYOUT_AXIAL;
+      windowLayout = WINDOW_LAYOUT_AXIAL;
       break;
     }
 
@@ -270,7 +270,7 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
     if (this->GetNumberOfNodesRegisteredWithWidget(windowIndex) == 0 || !this->GetAccumulateWhenDropped())
     {
       m_Widgets[0]->SetGeometry(geometry.GetPointer());
-      m_Widgets[0]->SetLayout(layout);
+      m_Widgets[0]->SetLayout(windowLayout);
     }
 
     unsigned int maxSliceIndex = m_Widgets[0]->GetMaxSliceIndex(orientation);
@@ -288,7 +288,7 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
         if (this->GetNumberOfNodesRegisteredWithWidget(i) == 0 || !this->GetAccumulateWhenDropped())
         {
           m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          m_Widgets[i]->SetLayout(layout);
+          m_Widgets[i]->SetLayout(windowLayout);
           m_Widgets[i]->SetEnabled(true);
         }
         m_Widgets[i]->SetSliceIndex(orientation, i);
@@ -304,7 +304,7 @@ void niftkSingleViewerWidgetListDropManager::OnNodesDropped(QmitkRenderWindow *w
         if (this->GetNumberOfNodesRegisteredWithWidget(i) == 0 || !this->GetAccumulateWhenDropped())
         {
           m_Widgets[i]->SetGeometry(geometry.GetPointer());
-          m_Widgets[i]->SetLayout(layout);
+          m_Widgets[i]->SetLayout(windowLayout);
           m_Widgets[i]->SetEnabled(true);
         }
         unsigned int maxSliceIndex = m_Widgets[i]->GetMaxSliceIndex(orientation);

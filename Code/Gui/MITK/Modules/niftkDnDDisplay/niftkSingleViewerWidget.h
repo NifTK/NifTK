@@ -226,10 +226,10 @@ public:
   void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the render window layout.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout layout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -291,10 +291,10 @@ public:
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+  void SetDefaultSingleWindowLayout(WindowLayout layout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+  void SetDefaultMultiWindowLayout(WindowLayout layout);
 
   /// \brief Move anterior a slice.
   bool MoveAnterior();
@@ -340,7 +340,7 @@ signals:
   void ScaleFactorChanged(niftkSingleViewerWidget* thisView, double scaleFactor);
 
   /// \brief Emitted when the window layout has changed in this view.
-  void LayoutChanged(niftkSingleViewerWidget* thisView, MIDASLayout layout);
+  void LayoutChanged(niftkSingleViewerWidget* thisView, WindowLayout layout);
 
   /// \brief Emitted when the geometry of this view has changed.
   void GeometryChanged(niftkSingleViewerWidget* thisView, mitk::TimeGeometry* geometry);
@@ -392,20 +392,20 @@ private:
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
   int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
 //  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
-  double m_ScaleFactors[MIDAS_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
-  bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
+  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
+  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerLayout;
 
-  MIDASLayout m_SingleWindowLayout;
-  MIDASLayout m_MultiWindowLayout;
+  WindowLayout m_SingleWindowLayout;
+  WindowLayout m_MultiWindowLayout;
 
   mitk::Vector3D m_CursorPosition;
   mitk::Vector3D m_LastCursorPosition;

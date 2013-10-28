@@ -104,14 +104,14 @@ public:
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
 
-  /// \brief Sets the default layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultLayout(MIDASLayout layout);
+  /// \brief Sets the default window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultLayout(WindowLayout windowLayout);
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+  void SetDefaultSingleWindowLayout(WindowLayout windowLayout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+  void SetDefaultMultiWindowLayout(WindowLayout layout);
 
   /// \brief Sets the default drop type checkbox.
   void SetDropType(MIDASDropType dropType);
@@ -272,7 +272,7 @@ protected slots:
   void OnShow3DWindowChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnLayoutChanged(MIDASLayout layout);
+  void OnLayoutChanged(WindowLayout layout);
 
   /// \brief Called when the binding of cursors in the render windows of a view has been changed through the control panel.
   void OnWindowCursorBindingChanged(bool);
@@ -318,7 +318,7 @@ protected slots:
   void OnScaleFactorChanged(niftkSingleViewerWidget* view, double scaleFactor);
 
   /// \brief Called when the window layout of a view has changed.
-  void OnLayoutChanged(niftkSingleViewerWidget* view, MIDASLayout);
+  void OnLayoutChanged(niftkSingleViewerWidget* view, WindowLayout);
 
   /// \brief Called when the geometry of a view has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* view, mitk::TimeGeometry* geometry);
@@ -345,14 +345,14 @@ private:
   /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
   int GetIndexFromRowAndColumn(int r, int c) const;
 
-  /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  MIDASLayout GetDefaultLayoutForSegmentation() const;
+  /// \brief Will look at the default window layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
+  WindowLayout GetDefaultLayoutForSegmentation() const;
 
   /// \brief Main method to change the number of views.
   void SetViewNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the layout.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout windowLayout);
 
   /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
   void SetSelectedViewIndex(int i);
@@ -421,8 +421,8 @@ private:
   bool m_IsMIDASSegmentationMode;
   bool m_NavigationControllerEventListening;
   double m_Magnification;
-  MIDASLayout m_SingleWindowLayout;
-  MIDASLayout m_MultiWindowLayout;
+  WindowLayout m_SingleWindowLayout;
+  WindowLayout m_MultiWindowLayout;
 
   niftkMultiViewerWidgetControlPanel* m_ControlPanel;
 };

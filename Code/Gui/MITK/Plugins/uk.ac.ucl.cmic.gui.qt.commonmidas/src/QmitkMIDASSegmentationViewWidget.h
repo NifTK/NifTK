@@ -103,7 +103,7 @@ signals:
    * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
    * and emit this signal when the displayed layout of this window changes.
    */
-  void LayoutChanged(MIDASLayout);
+  void LayoutChanged(WindowLayout);
 
 protected slots:
 
@@ -142,15 +142,15 @@ private:
   MIDASOrientation GetCurrentMainWindowOrientation();
 
   /// \brief Works out the MIDASLayout of the currently focused window.
-  MIDASLayout GetCurrentMainWindowLayout();
+  WindowLayout GetCurrentMainWindowLayout();
 
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
 
-  MIDASLayout m_MainWindowLayout;
+  WindowLayout m_MainWindowLayout;
 
   QmitkRenderWindow* m_MainAxialWindow;
   QmitkRenderWindow* m_MainSagittalWindow;
@@ -165,7 +165,7 @@ private:
 
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each layout of the main window.
-  QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+  QMap<WindowLayout, WindowLayout> m_SingleWindowLayouts;
 
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 

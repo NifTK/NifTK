@@ -130,12 +130,12 @@ public:
   void SetGeometry(mitk::TimeGeometry* geometry);
 
   /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout layout);
 
   /// \brief Gets the layout, i.e. the set and the arrangement of the render windows.
   /// The MIDAS functionality is only interested in those orientations given by this enum,
   /// currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetLayout() const;
 
   /// \brief Works out the orientation of the current layout, which is different to the MIDASLayout.
   MIDASOrientation GetOrientation();
@@ -422,7 +422,7 @@ private:
   bool m_Display2DCursorsLocally;
   bool m_Display2DCursorsGlobally;
   bool m_Show3DWindowInOrthoView;
-  MIDASLayout m_Layout;
+  WindowLayout m_Layout;
   mitk::Point3D m_SelectedPosition;
   mitk::Vector3D m_CursorPosition;
   double m_Magnification;

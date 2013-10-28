@@ -75,8 +75,8 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_IsMIDASSegmentationMode(false)
 , m_NavigationControllerEventListening(false)
 , m_Magnification(0.0)
-, m_SingleWindowLayout(MIDAS_LAYOUT_CORONAL)
-, m_MultiWindowLayout(MIDAS_LAYOUT_ORTHO)
+, m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
+, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_ControlPanel(0)
 {
   assert(visibilityManager);
@@ -183,7 +183,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   QObject::connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), this, SLOT(OnShowDirectionAnnotationsChanged(bool)));
   QObject::connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), this, SLOT(OnShow3DWindowChanged(bool)));
 
-  QObject::connect(m_ControlPanel, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
+  QObject::connect(m_ControlPanel, SIGNAL(LayoutChanged(WindowLayout)), this, SLOT(OnLayoutChanged(WindowLayout)));
   QObject::connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), this, SLOT(OnWindowCursorBindingChanged(bool)));
   QObject::connect(m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), this, SLOT(OnWindowMagnificationBindingChanged(bool)));
 
@@ -266,7 +266,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateSingleViewWidget()
   QObject::connect(widget, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)));
   QObject::connect(widget, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)));
   QObject::connect(widget, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), this, SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
-  QObject::connect(widget, SIGNAL(LayoutChanged(niftkSingleViewerWidget*, MIDASLayout)), this, SLOT(OnLayoutChanged(niftkSingleViewerWidget*, MIDASLayout)));
+  QObject::connect(widget, SIGNAL(LayoutChanged(niftkSingleViewerWidget*, WindowLayout)), this, SLOT(OnLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
 
   return widget;
 }
@@ -293,31 +293,31 @@ void niftkMultiViewerWidget::SetDefaultInterpolationType(MIDASDefaultInterpolati
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetDefaultLayout(MIDASLayout layout)
+void niftkMultiViewerWidget::SetDefaultLayout(WindowLayout windowLayout)
 {
-  m_VisibilityManager->SetDefaultLayout(layout);
-  if (::IsSingleWindowLayout(layout))
+  m_VisibilityManager->SetDefaultLayout(windowLayout);
+  if (::IsSingleWindowLayout(windowLayout))
   {
-    this->SetDefaultSingleWindowLayout(layout);
+    this->SetDefaultSingleWindowLayout(windowLayout);
   }
   else
   {
-    this->SetDefaultMultiWindowLayout(layout);
+    this->SetDefaultMultiWindowLayout(windowLayout);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetDefaultSingleWindowLayout(MIDASLayout layout)
+void niftkMultiViewerWidget::SetDefaultSingleWindowLayout(WindowLayout windowLayout)
 {
-  m_SingleWindowLayout = layout;
+  m_SingleWindowLayout = windowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetDefaultMultiWindowLayout(MIDASLayout layout)
+void niftkMultiViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLayout)
 {
-  m_MultiWindowLayout = layout;
+  m_MultiWindowLayout = windowLayout;
 }
 
 
@@ -520,18 +520,18 @@ bool niftkMultiViewerWidget::GetMIDASSegmentationMode() const
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout niftkMultiViewerWidget::GetDefaultLayoutForSegmentation() const
+WindowLayout niftkMultiViewerWidget::GetDefaultLayoutForSegmentation() const
 {
   assert(m_VisibilityManager);
 
-  MIDASLayout layout = m_VisibilityManager->GetDefaultLayout();
+  WindowLayout layout = m_VisibilityManager->GetDefaultLayout();
 
-  if (   layout != MIDAS_LAYOUT_AXIAL
-      && layout != MIDAS_LAYOUT_SAGITTAL
-      && layout != MIDAS_LAYOUT_CORONAL
+  if (   layout != WINDOW_LAYOUT_AXIAL
+      && layout != WINDOW_LAYOUT_SAGITTAL
+      && layout != WINDOW_LAYOUT_CORONAL
      )
   {
-    layout = MIDAS_LAYOUT_CORONAL;
+    layout = WINDOW_LAYOUT_CORONAL;
   }
 
   return layout;
@@ -837,7 +837,7 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
 
   double magnification = selectedView->GetMagnification();
 
-  MIDASLayout layout = selectedView->GetLayout();
+  WindowLayout layout = selectedView->GetLayout();
   if (m_ControlPanel->AreViewLayoutsBound())
   {
     dropOntoView->SetLayout(layout);
@@ -884,11 +884,11 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewIndex, Qmit
     // Need to enable widgets appropriately, so user can't press stuff that they aren't meant to.
     /////////////////////////////////////////////////////////////////////////////////////////////
     MIDASOrientation orientation = selectedView->GetOrientation();
-    MIDASLayout layout = selectedView->GetLayout();
+    WindowLayout windowLayout = selectedView->GetLayout();
 
-    if (layout != MIDAS_LAYOUT_UNKNOWN)
+    if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      m_ControlPanel->SetLayout(layout);
+      m_ControlPanel->SetLayout(windowLayout);
     }
 
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -1069,11 +1069,11 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnLayoutChanged(MIDASLayout layout)
+void niftkMultiViewerWidget::OnLayoutChanged(WindowLayout windowLayout)
 {
-  if (layout != MIDAS_LAYOUT_UNKNOWN)
+  if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    this->SetLayout(layout);
+    this->SetLayout(windowLayout);
 
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).
@@ -1084,9 +1084,9 @@ void niftkMultiViewerWidget::OnLayoutChanged(MIDASLayout layout)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnLayoutChanged(niftkSingleViewerWidget* selectedView, MIDASLayout layout)
+void niftkMultiViewerWidget::OnLayoutChanged(niftkSingleViewerWidget* selectedView, WindowLayout windowLayout)
 {
-  m_ControlPanel->SetLayout(layout);
+  m_ControlPanel->SetLayout(windowLayout);
   this->UpdateFocusManagerToSelectedView();
 
   if (m_ControlPanel->AreViewLayoutsBound())
@@ -1095,7 +1095,7 @@ void niftkMultiViewerWidget::OnLayoutChanged(niftkSingleViewerWidget* selectedVi
     {
       if (otherView != selectedView && otherView->isVisible())
       {
-        otherView->SetLayout(layout);
+        otherView->SetLayout(windowLayout);
       }
     }
   }
@@ -1189,22 +1189,22 @@ bool niftkMultiViewerWidget::ToggleCursor()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetLayout(MIDASLayout layout)
+void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
 {
-  m_ControlPanel->SetLayout(layout);
+  m_ControlPanel->SetLayout(windowLayout);
 
   niftkSingleViewerWidget* selectedView = this->GetSelectedView();
-  selectedView->SetLayout(layout);
+  selectedView->SetLayout(windowLayout);
 
-  if (layout == MIDAS_LAYOUT_AXIAL)
+  if (windowLayout == WINDOW_LAYOUT_AXIAL)
   {
     selectedView->SetSelectedRenderWindow(selectedView->GetAxialWindow());
   }
-  else if (layout == MIDAS_LAYOUT_SAGITTAL)
+  else if (windowLayout == WINDOW_LAYOUT_SAGITTAL)
   {
     selectedView->SetSelectedRenderWindow(selectedView->GetSagittalWindow());
   }
-  else if (layout == MIDAS_LAYOUT_CORONAL)
+  else if (windowLayout == WINDOW_LAYOUT_CORONAL)
   {
     selectedView->SetSelectedRenderWindow(selectedView->GetCoronalWindow());
   }
@@ -1215,7 +1215,7 @@ void niftkMultiViewerWidget::SetLayout(MIDASLayout layout)
     {
       if (otherView != selectedView && otherView->isVisible())
       {
-        otherView->SetLayout(layout);
+        otherView->SetLayout(windowLayout);
       }
     }
   }
@@ -1232,13 +1232,13 @@ void niftkMultiViewerWidget::SetLayout(MIDASLayout layout)
     }
   }
 
-  if (::IsSingleWindowLayout(layout))
+  if (::IsSingleWindowLayout(windowLayout))
   {
-    m_SingleWindowLayout = layout;
+    m_SingleWindowLayout = windowLayout;
   }
   else
   {
-    m_MultiWindowLayout = layout;
+    m_MultiWindowLayout = windowLayout;
   }
 }
 
@@ -1284,13 +1284,13 @@ MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
 
   switch (m_ControlPanel->GetLayout())
   {
-  case MIDAS_LAYOUT_AXIAL:
+  case WINDOW_LAYOUT_AXIAL:
     orientation = MIDAS_ORIENTATION_AXIAL;
     break;
-  case MIDAS_LAYOUT_SAGITTAL:
+  case WINDOW_LAYOUT_SAGITTAL:
     orientation = MIDAS_ORIENTATION_SAGITTAL;
     break;
-  case MIDAS_LAYOUT_CORONAL:
+  case WINDOW_LAYOUT_CORONAL:
     orientation = MIDAS_ORIENTATION_CORONAL;
     break;
   default:
@@ -1588,12 +1588,12 @@ void niftkMultiViewerWidget::OnViewLayoutBindingChanged()
 
   if (m_ControlPanel->AreViewLayoutsBound())
   {
-    MIDASLayout layout = selectedView->GetLayout();
+    WindowLayout windowLayout = selectedView->GetLayout();
     foreach (niftkSingleViewerWidget* otherView, m_SingleViewWidgets)
     {
       if (otherView != selectedView)
       {
-        otherView->SetLayout(layout);
+        otherView->SetLayout(windowLayout);
       }
     }
   }

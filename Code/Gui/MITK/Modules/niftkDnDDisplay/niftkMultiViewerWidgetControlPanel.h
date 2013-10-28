@@ -148,10 +148,10 @@ public:
   void Set3DWindowVisible(bool visible);
 
   /// \brief Gets the selected render window layout.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetLayout() const;
 
   /// \brief Sets the render window layout controls to the given layout.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout windowlayout);
 
   /// \brief Returns true if the cursors are bound across the windows of a viewer, otherwise false.
   bool AreWindowCursorsBound() const;
@@ -240,7 +240,7 @@ signals:
   void Show3DWindowChanged(bool visible);
 
   /// \brief Emitted when the select layout has been changed.
-  void LayoutChanged(MIDASLayout layout);
+  void LayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the window cursor binding option has been changed.
   void WindowCursorBindingChanged(bool bound);
@@ -274,7 +274,7 @@ signals:
 
 private slots:
 
-  void OnLayoutChanged(MIDASLayout layout);
+  void OnLayoutChanged(WindowLayout windowLayout);
 
   void On1x1ViewsButtonClicked();
   void On1x2ViewsButtonClicked();

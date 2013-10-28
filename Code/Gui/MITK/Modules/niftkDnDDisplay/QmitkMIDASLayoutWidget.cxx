@@ -14,25 +14,25 @@
 
 #include "QmitkMIDASLayoutWidget.h"
 
-MIDASLayout QmitkMIDASLayoutWidget::s_MultiWindowLayouts[] = {
-  MIDAS_LAYOUT_ORTHO,
-  MIDAS_LAYOUT_3H,
-  MIDAS_LAYOUT_3V,
-  MIDAS_LAYOUT_COR_SAG_H,
-  MIDAS_LAYOUT_COR_SAG_V,
-  MIDAS_LAYOUT_COR_AX_H,
-  MIDAS_LAYOUT_COR_AX_V,
-  MIDAS_LAYOUT_SAG_AX_H,
-  MIDAS_LAYOUT_SAG_AX_V
+WindowLayout QmitkMIDASLayoutWidget::s_MultiWindowLayouts[] = {
+  WINDOW_LAYOUT_ORTHO,
+  WINDOW_LAYOUT_3H,
+  WINDOW_LAYOUT_3V,
+  WINDOW_LAYOUT_COR_SAG_H,
+  WINDOW_LAYOUT_COR_SAG_V,
+  WINDOW_LAYOUT_COR_AX_H,
+  WINDOW_LAYOUT_COR_AX_V,
+  WINDOW_LAYOUT_SAG_AX_H,
+  WINDOW_LAYOUT_SAG_AX_V
 };
 
-int const QmitkMIDASLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(MIDASLayout);
+int const QmitkMIDASLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(WindowLayout);
 
 
 //-----------------------------------------------------------------------------
 QmitkMIDASLayoutWidget::QmitkMIDASLayoutWidget(QWidget *parent)
 : QWidget(parent)
-, m_Layout(MIDAS_LAYOUT_UNKNOWN)
+, m_Layout(WINDOW_LAYOUT_UNKNOWN)
 {
   this->setupUi(this);
 
@@ -64,14 +64,14 @@ QmitkMIDASLayoutWidget::~QmitkMIDASLayoutWidget()
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout QmitkMIDASLayoutWidget::GetLayout() const
+WindowLayout QmitkMIDASLayoutWidget::GetLayout() const
 {
   return m_Layout;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASLayoutWidget::SetLayout(MIDASLayout layout)
+void QmitkMIDASLayoutWidget::SetLayout(WindowLayout layout)
 {
   if (layout == m_Layout)
   {
@@ -83,22 +83,22 @@ void QmitkMIDASLayoutWidget::SetLayout(MIDASLayout layout)
 
   switch(layout)
   {
-  case MIDAS_LAYOUT_AXIAL:
+  case WINDOW_LAYOUT_AXIAL:
     wasBlocked = m_AxialWindowRadioButton->blockSignals(true);
     m_AxialWindowRadioButton->setChecked(true);
     m_AxialWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_LAYOUT_SAGITTAL:
+  case WINDOW_LAYOUT_SAGITTAL:
     wasBlocked = m_SagittalWindowRadioButton->blockSignals(true);
     m_SagittalWindowRadioButton->setChecked(true);
     m_SagittalWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_LAYOUT_CORONAL:
+  case WINDOW_LAYOUT_CORONAL:
     wasBlocked = m_CoronalWindowRadioButton->blockSignals(true);
     m_CoronalWindowRadioButton->setChecked(true);
     m_CoronalWindowRadioButton->blockSignals(wasBlocked);
     break;
-  case MIDAS_LAYOUT_3D:
+  case WINDOW_LAYOUT_3D:
     wasBlocked = m_3DWindowRadioButton->blockSignals(true);
     m_3DWindowRadioButton->setChecked(true);
     m_3DWindowRadioButton->blockSignals(wasBlocked);
@@ -135,7 +135,7 @@ void QmitkMIDASLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(MIDAS_LAYOUT_AXIAL);
+    this->SetLayout(WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -145,7 +145,7 @@ void QmitkMIDASLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(MIDAS_LAYOUT_SAGITTAL);
+    this->SetLayout(WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -155,7 +155,7 @@ void QmitkMIDASLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(MIDAS_LAYOUT_CORONAL);
+    this->SetLayout(WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -165,7 +165,7 @@ void QmitkMIDASLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(MIDAS_LAYOUT_3D);
+    this->SetLayout(WINDOW_LAYOUT_3D);
   }
 }
 

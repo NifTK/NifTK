@@ -41,7 +41,7 @@ niftkMultiViewerWidgetControlPanel::niftkMultiViewerWidgetControlPanel(QWidget *
   connect(m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ShowDirectionAnnotationsChanged(bool)));
   connect(m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(Show3DWindowChanged(bool)));
 
-  connect(m_LayoutWidget, SIGNAL(LayoutChanged(MIDASLayout)), this, SLOT(OnLayoutChanged(MIDASLayout)));
+  connect(m_LayoutWidget, SIGNAL(LayoutChanged(WindowLayout)), this, SLOT(OnLayoutChanged(WindowLayout)));
   connect(m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(WindowCursorBindingChanged(bool)));
   connect(m_BindWindowMagnificationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(WindowMagnificationBindingChanged(bool)));
 
@@ -307,20 +307,20 @@ void niftkMultiViewerWidgetControlPanel::SetMagnification(double magnification)
 
 
 //-----------------------------------------------------------------------------
-MIDASLayout niftkMultiViewerWidgetControlPanel::GetLayout() const
+WindowLayout niftkMultiViewerWidgetControlPanel::GetLayout() const
 {
   return m_LayoutWidget->GetLayout();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidgetControlPanel::SetLayout(MIDASLayout layout)
+void niftkMultiViewerWidgetControlPanel::SetLayout(WindowLayout windowLayout)
 {
   bool wasBlocked = m_LayoutWidget->blockSignals(true);
-  m_LayoutWidget->SetLayout(layout);
+  m_LayoutWidget->SetLayout(windowLayout);
   m_LayoutWidget->blockSignals(wasBlocked);
 
-  m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(layout));
+  m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
 }
 
 
@@ -632,11 +632,11 @@ void niftkMultiViewerWidgetControlPanel::SetDropType(MIDASDropType dropType)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidgetControlPanel::OnLayoutChanged(MIDASLayout layout)
+void niftkMultiViewerWidgetControlPanel::OnLayoutChanged(WindowLayout windowLayout)
 {
-  m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(layout));
+  m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
 
-  emit LayoutChanged(layout);
+  emit LayoutChanged(windowLayout);
 }
 
 

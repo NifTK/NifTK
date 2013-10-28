@@ -30,50 +30,50 @@
  * Coronal or Sagittal. This is different to the MIDASLayout as a layout
  * can contain multiple orientations.
  */
-enum MIDASLayout
+enum WindowLayout
 {
-  MIDAS_LAYOUT_AXIAL = 0,
-  MIDAS_LAYOUT_SAGITTAL = 1,
-  MIDAS_LAYOUT_CORONAL = 2,
-  MIDAS_LAYOUT_ORTHO = 3,
-  MIDAS_LAYOUT_3D = 4,
-  MIDAS_LAYOUT_3H = 5,
-  MIDAS_LAYOUT_3V = 6,
-  MIDAS_LAYOUT_AS_ACQUIRED = 7,
-  MIDAS_LAYOUT_UNKNOWN = 8,
-  MIDAS_LAYOUT_COR_SAG_H = 9,
-  MIDAS_LAYOUT_COR_SAG_V = 10,
-  MIDAS_LAYOUT_COR_AX_H = 11,
-  MIDAS_LAYOUT_COR_AX_V = 12,
-  MIDAS_LAYOUT_SAG_AX_H = 13,
-  MIDAS_LAYOUT_SAG_AX_V = 14
+  WINDOW_LAYOUT_AXIAL = 0,
+  WINDOW_LAYOUT_SAGITTAL = 1,
+  WINDOW_LAYOUT_CORONAL = 2,
+  WINDOW_LAYOUT_ORTHO = 3,
+  WINDOW_LAYOUT_3D = 4,
+  WINDOW_LAYOUT_3H = 5,
+  WINDOW_LAYOUT_3V = 6,
+  WINDOW_LAYOUT_AS_ACQUIRED = 7,
+  WINDOW_LAYOUT_UNKNOWN = 8,
+  WINDOW_LAYOUT_COR_SAG_H = 9,
+  WINDOW_LAYOUT_COR_SAG_V = 10,
+  WINDOW_LAYOUT_COR_AX_H = 11,
+  WINDOW_LAYOUT_COR_AX_V = 12,
+  WINDOW_LAYOUT_SAG_AX_H = 13,
+  WINDOW_LAYOUT_SAG_AX_V = 14
 };
 
 
 /*!
  * \brief Returns true if the layout contains only one window, otherwise false.
  */
-inline bool IsSingleWindowLayout(MIDASLayout layout)
+inline bool IsSingleWindowLayout(WindowLayout layout)
 {
-  return layout == MIDAS_LAYOUT_AXIAL
-      || layout == MIDAS_LAYOUT_SAGITTAL
-      || layout == MIDAS_LAYOUT_CORONAL
-      || layout == MIDAS_LAYOUT_3D;
+  return layout == WINDOW_LAYOUT_AXIAL
+      || layout == WINDOW_LAYOUT_SAGITTAL
+      || layout == WINDOW_LAYOUT_CORONAL
+      || layout == WINDOW_LAYOUT_3D;
 }
 
 
 /*!
  * \brief Returns true if the layout contains multiple windows, otherwise false.
  */
-inline bool IsMultiWindowLayout(MIDASLayout layout)
+inline bool IsMultiWindowLayout(WindowLayout layout)
 {
   return !IsSingleWindowLayout(layout);
 }
 
 /*!
- * \brief The number of the possible layouts.
+ * \brief The number of the possible window layouts.
  */
-const int MIDAS_LAYOUT_NUMBER = 15;
+const int WINDOW_LAYOUT_NUMBER = 15;
 
 /*!
  * \enum MIDASDropType

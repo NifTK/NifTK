@@ -46,15 +46,15 @@ public:
   virtual ~QmitkMIDASLayoutWidget();
 
   /// \brief Gets the current layout.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetLayout() const;
 
   /// \brief Sets the widget controls to match the supplied layout.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout layout);
 
 signals:
 
   /// \brief Indicates when the layout has changed.
-  void LayoutChanged(MIDASLayout layout);
+  void LayoutChanged(WindowLayout layout);
 
 protected slots:
 
@@ -79,10 +79,10 @@ protected slots:
 private:
 
   /// \brief Stores the currently selected window layout.
-  MIDASLayout m_Layout;
+  WindowLayout m_Layout;
 
   /// \brief Stores the multiple window layouts in the same order as the combo box.
-  static MIDASLayout s_MultiWindowLayouts[];
+  static WindowLayout s_MultiWindowLayouts[];
   static int const s_MultiWindowLayoutNumber;
 };
 
