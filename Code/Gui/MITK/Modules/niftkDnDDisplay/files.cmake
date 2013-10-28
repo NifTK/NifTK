@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
-  QmitkMIDASSlidersWidget.cxx
+  niftkImageNavigatorWidget.cxx
   niftkWindowLayoutWidget.cxx
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx
@@ -29,7 +29,7 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
-  QmitkMIDASSlidersWidget.h
+  niftkImageNavigatorWidget.h
   niftkWindowLayoutWidget.h
   niftkMultiViewerWidget.h
   niftkMultiViewerWidgetControlPanel.h
@@ -40,7 +40,7 @@ set(MOC_H_FILES
 
 set(UI_FILES
   Resources/UI/niftkWindowLayoutWidget.ui
-  Resources/UI/QmitkMIDASSlidersWidget.ui
+  Resources/UI/niftkImageNavigatorWidget.ui
   Resources/UI/niftkMultiViewerWidgetControlPanel.ui
 )
 

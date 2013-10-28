@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item row="0" column="0" rowspan="3">
-    <widget class="QmitkMIDASSlidersWidget" name="m_SlidersWidget" native="true"/>
+    <widget class="niftkImageNavigatorWidget" name="m_SlidersWidget" native="true"/>
    </item>
    <item row="3" column="0">
     <widget class="Line" name="m_ShowOptionsSeparator">
@@ -662,9 +662,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkMIDASSlidersWidget</class>
+   <class>niftkImageNavigatorWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QmitkMIDASSlidersWidget.h</header>
+   <header location="global">niftkImageNavigatorWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

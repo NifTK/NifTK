@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASSlidersWidget.h"
+#include "niftkImageNavigatorWidget.h"
 
 #include <ctkDoubleSpinBox.h>
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
+niftkImageNavigatorWidget::niftkImageNavigatorWidget(QWidget *parent)
 : QWidget(parent)
 {
   this->setupUi(this);
@@ -47,21 +47,21 @@ QmitkMIDASSlidersWidget::QmitkMIDASSlidersWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSlidersWidget::~QmitkMIDASSlidersWidget()
+niftkImageNavigatorWidget::~niftkImageNavigatorWidget()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASSlidersWidget::AreMagnificationControlsVisible() const
+bool niftkImageNavigatorWidget::AreMagnificationControlsVisible() const
 {
   return m_MagnificationLabel->isVisible() && m_MagnificationSliderWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMagnificationControlsVisible(bool visible)
+void niftkImageNavigatorWidget::SetMagnificationControlsVisible(bool visible)
 {
   m_MagnificationLabel->setVisible(visible);
   m_MagnificationSliderWidget->setVisible(visible);
@@ -69,14 +69,14 @@ void QmitkMIDASSlidersWidget::SetMagnificationControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSlidersWidget::GetMaxSliceIndex() const
+int niftkImageNavigatorWidget::GetMaxSliceIndex() const
 {
   return static_cast<int>(m_SliceIndexSliderWidget->maximum());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMaxSliceIndex(int maxSliceIndex)
+void niftkImageNavigatorWidget::SetMaxSliceIndex(int maxSliceIndex)
 {
   bool wasBlocked = m_SliceIndexSliderWidget->blockSignals(true);
   m_SliceIndexSliderWidget->setMaximum(maxSliceIndex);
@@ -85,14 +85,14 @@ void QmitkMIDASSlidersWidget::SetMaxSliceIndex(int maxSliceIndex)
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSlidersWidget::GetSliceIndex() const
+int niftkImageNavigatorWidget::GetSliceIndex() const
 {
   return static_cast<int>(m_SliceIndexSliderWidget->value());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetSliceIndex(int sliceIndex)
+void niftkImageNavigatorWidget::SetSliceIndex(int sliceIndex)
 {
   bool wasBlocked = m_SliceIndexSliderWidget->blockSignals(true);
   m_SliceIndexSliderWidget->setValue(sliceIndex);
@@ -101,14 +101,14 @@ void QmitkMIDASSlidersWidget::SetSliceIndex(int sliceIndex)
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSlidersWidget::GetMaxTimeStep() const
+int niftkImageNavigatorWidget::GetMaxTimeStep() const
 {
   return static_cast<int>(m_TimeStepSliderWidget->maximum());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMaxTimeStep(int maxTimeStep)
+void niftkImageNavigatorWidget::SetMaxTimeStep(int maxTimeStep)
 {
   bool wasBlocked = m_TimeStepSliderWidget->blockSignals(true);
   m_TimeStepSliderWidget->setMaximum(maxTimeStep);
@@ -117,14 +117,14 @@ void QmitkMIDASSlidersWidget::SetMaxTimeStep(int maxTimeStep)
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASSlidersWidget::GetTimeStep() const
+int niftkImageNavigatorWidget::GetTimeStep() const
 {
   return static_cast<int>(m_TimeStepSliderWidget->value());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetTimeStep(int timeStep)
+void niftkImageNavigatorWidget::SetTimeStep(int timeStep)
 {
   bool wasBlocked = m_TimeStepSliderWidget->blockSignals(true);
   m_TimeStepSliderWidget->setValue(timeStep);
@@ -133,14 +133,14 @@ void QmitkMIDASSlidersWidget::SetTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSlidersWidget::GetMinMagnification() const
+double niftkImageNavigatorWidget::GetMinMagnification() const
 {
   return m_MagnificationSliderWidget->minimum();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMinMagnification(double minMagnification)
+void niftkImageNavigatorWidget::SetMinMagnification(double minMagnification)
 {
   bool wasBlocked = m_MagnificationSliderWidget->blockSignals(true);
   m_MagnificationSliderWidget->setMinimum(minMagnification);
@@ -149,14 +149,14 @@ void QmitkMIDASSlidersWidget::SetMinMagnification(double minMagnification)
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSlidersWidget::GetMaxMagnification() const
+double niftkImageNavigatorWidget::GetMaxMagnification() const
 {
   return m_MagnificationSliderWidget->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMaxMagnification(double maxMagnification)
+void niftkImageNavigatorWidget::SetMaxMagnification(double maxMagnification)
 {
   bool wasBlocked = m_MagnificationSliderWidget->blockSignals(true);
   m_MagnificationSliderWidget->setMaximum(maxMagnification);
@@ -165,14 +165,14 @@ void QmitkMIDASSlidersWidget::SetMaxMagnification(double maxMagnification)
 
 
 //-----------------------------------------------------------------------------
-double QmitkMIDASSlidersWidget::GetMagnification() const
+double niftkImageNavigatorWidget::GetMagnification() const
 {
   return m_MagnificationSliderWidget->value();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMagnification(double magnification)
+void niftkImageNavigatorWidget::SetMagnification(double magnification)
 {
   bool wasBlocked = m_MagnificationSliderWidget->blockSignals(true);
   m_MagnificationSliderWidget->setValue(magnification);
@@ -181,35 +181,35 @@ void QmitkMIDASSlidersWidget::SetMagnification(double magnification)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::OnSliceIndexChanged(double sliceIndex)
+void niftkImageNavigatorWidget::OnSliceIndexChanged(double sliceIndex)
 {
   emit SliceIndexChanged(static_cast<int>(sliceIndex));
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::OnTimeStepChanged(double timeStep)
+void niftkImageNavigatorWidget::OnTimeStepChanged(double timeStep)
 {
   emit TimeStepChanged(static_cast<int>(timeStep));
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetSliceIndexTracking(bool isTracking)
+void niftkImageNavigatorWidget::SetSliceIndexTracking(bool isTracking)
 {
   m_SliceIndexSliderWidget->setTracking(isTracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetTimeStepTracking(bool isTracking)
+void niftkImageNavigatorWidget::SetTimeStepTracking(bool isTracking)
 {
   m_TimeStepSliderWidget->setTracking(isTracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSlidersWidget::SetMagnificationTracking(bool isTracking)
+void niftkImageNavigatorWidget::SetMagnificationTracking(bool isTracking)
 {
   m_MagnificationSliderWidget->setTracking(isTracking);
 }

@@ -12,27 +12,27 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASSlidersWidget_h
-#define QmitkMIDASSlidersWidget_h
+#ifndef niftkImageNavigatorWidget_h
+#define niftkImageNavigatorWidget_h
 
 #include <niftkDnDDisplayExports.h>
-#include "ui_QmitkMIDASSlidersWidget.h"
+#include "ui_niftkImageNavigatorWidget.h"
 
 /**
- * \class QmitkMIDASSlidersWidget
+ * \class niftkImageNavigatorWidget
  * \brief Qt Widget class to contain sliders for slice, time and magnification.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSlidersWidget : public QWidget, private Ui_QmitkMIDASSlidersWidget
+class niftkImageNavigatorWidget : public QWidget, private Ui_niftkImageNavigatorWidget
 {
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
 
-  QmitkMIDASSlidersWidget(QWidget *parent = 0);
+  niftkImageNavigatorWidget(QWidget *parent = 0);
 
   /** Destructor. */
-  virtual ~QmitkMIDASSlidersWidget();
+  virtual ~niftkImageNavigatorWidget();
 
   /// \brief Returns true if the magnification controls are shown, otherwise false.
   bool AreMagnificationControlsVisible() const;
