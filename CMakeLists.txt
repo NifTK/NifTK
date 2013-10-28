@@ -805,40 +805,6 @@ if (BUILD_MESHING)
 endif (BUILD_MESHING)
 
 ######################################################################
-# Find NiftyLink
-######################################################################
-if (BUILD_IGI)
-  find_package(NiftyLink REQUIRED)
-  if (NiftyLink_FOUND)
-    message("Found NiftyLink")
-    include(${NiftyLink_USE_FILE})
-    add_definitions(-DBUILD_IGI)
-  endif()
-
-  find_package(aruco REQUIRED)
-  if(aruco_FOUND)
-    message("Found aruco in ${aruco_DIR}")
-    link_directories(${aruco_DIR}/lib)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${aruco_DIR}/include)
-  endif()
-
-  find_package(EIGEN REQUIRED)
-  if(EIGEN_FOUND)
-    message("Found EIGEN in ${EIGEN_DIR}")
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${EIGEN_INCLUDE_DIR})
-  endif()
-
-  find_package(apriltags REQUIRED)
-  if(apriltags_FOUND)
-    message("Found AprilTags include dir=${apriltags_INCLUDE_DIR}")
-    message("Found AprilTags lib dir    =${apriltags_LIBRARY_DIR}")
-    message("Found AprilTags library    =${apriltags_LIBRARIES}") 
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${apriltags_INCLUDE_DIR})
-    link_directories(${apriltags_LIBRARY_DIR})
-  endif()
-endif()
-
-######################################################################
 # Find FFTW.
 ######################################################################
 if(NIFTK_USE_FFTW)

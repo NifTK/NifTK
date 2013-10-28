@@ -55,7 +55,7 @@ if(BUILD_IGI)
        DEPENDS ${proj_DEPENDENCIES}
       )
   
-    set(PCL_DIR ${proj_INSTALL})
+    set(PCL_DIR ${proj_INSTALL}/share/pcl-1.7)
     message("SuperBuild loading PCL from ${PCL_DIR}")
   
   else(NOT DEFINED PCL_DIR)
