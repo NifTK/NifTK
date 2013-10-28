@@ -723,6 +723,10 @@ if (BUILD_MESHING)
     ${CMAKE_BINARY_DIR}/FindCGAL.cmake @ONLY)
 endif (BUILD_MESHING)
 
+if(BUILD_IGI)
+  add_definitions(-DBUILD_IGI)
+endif()
+
 ######################################################################
 # Find Mandatory External packages
 ######################################################################
