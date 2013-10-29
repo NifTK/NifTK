@@ -278,7 +278,6 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         imgData4Node->GetGeometry()->SetSpacing(geom->GetSpacing());
         imgData4Node->GetGeometry()->SetOrigin(geom->GetOrigin());
         imgData4Node->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
-        imgData4Node->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
 
         //outputNode->SetData(imgData4Node);
         return imgData4Node.GetPointer();
