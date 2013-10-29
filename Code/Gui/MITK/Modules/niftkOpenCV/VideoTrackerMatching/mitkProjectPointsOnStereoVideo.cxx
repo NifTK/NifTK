@@ -37,9 +37,9 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_ProjectOK(false)
 , m_DrawAxes(false)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
-, m_LeftDistortionVector (new cv::Mat(5,1,CV_64FC1))
+, m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
 , m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
-, m_RightDistortionVector (new cv::Mat(5,1,CV_64FC1))
+, m_RightDistortionVector (new cv::Mat(1,4,CV_64FC1))
 , m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
@@ -230,7 +230,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     if ( m_Visualise || m_SaveVideo ) 
     {
       cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-      MITK_INFO << framenumber << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
+      MITK_INFO << framenumber << " " << m_WorldPoints[0] << " " << pointsInLeftLensCS[0] << " => " << screenPoints[0].first << screenPoints[0].second;
       if ( drawProjection )
       {
         if ( ! m_DrawLines ) 

@@ -57,9 +57,6 @@ int mitkTrackingTest ( int argc, char * argv[] )
 
   //set up frame to name mathcing
   mitk::VideoTrackerMatching::Pointer Matcher = mitk::VideoTrackerMatching::New();
-  //opencv seems to use a right handed camera as opposed to vtk's left handed camera,
-  //so flipp the tracking matrices
-  Matcher->SetFlipMatrices(true);
   Matcher->Initialise(argv[1]);
 
   argv ++; 
@@ -309,10 +306,10 @@ int mitkTrackingTest ( int argc, char * argv[] )
         leftCameraWorldPoints.at<float>(0,2) = PointInLensCoords.z;
         leftCameraWorldNormals.at<float>(0,0) = 0.0;
         leftCameraWorldNormals.at<float>(0,1) = 0.0;
-        leftCameraWorldNormals.at<float>(0,2) = 1.0;
+        leftCameraWorldNormals.at<float>(0,2) = -1.0;
         leftCameraPositionToFocalPointUnitVector.at<float>(0,0) = 0.0;
         leftCameraPositionToFocalPointUnitVector.at<float>(0,1) = 0.0;
-        leftCameraPositionToFocalPointUnitVector.at<float>(0,2) = -1.0;
+        leftCameraPositionToFocalPointUnitVector.at<float>(0,2) = 1.0;
         CvMat* outputLeftCameraWorldPointsIn3D = NULL;
         CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
         CvMat* output2DPointsLeft = NULL ;
