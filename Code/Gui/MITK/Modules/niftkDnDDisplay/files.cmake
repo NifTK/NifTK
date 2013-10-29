@@ -21,7 +21,7 @@ set(CPP_FILES
   niftkMultiViewerWidgetControlPanel.cxx
   niftkSingleViewerWidget.cxx
   niftkSingleViewerWidgetListManager.cxx
-  niftkSingleViewerWidgetListVisibilityManager.cxx
+#  niftkSingleViewerWidgetListVisibilityManager.cxx
   vtkSideAnnotation.cxx
   Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASDisplayInteractor.cxx

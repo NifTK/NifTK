@@ -30,7 +30,6 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class niftkSingleViewerWidgetListVisibilityManager;
 class QmitkMIDASBaseSegmentationFunctionality;
 class QmitkRenderWindow;
 
