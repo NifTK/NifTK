@@ -22,7 +22,6 @@ set(CPP_FILES
   niftkSingleViewerWidget.cxx
   niftkSingleViewerWidgetListManager.cxx
   niftkSingleViewerWidgetListVisibilityManager.cxx
-  niftkSingleViewerWidgetListDropManager.cxx
   vtkSideAnnotation.cxx
   Interactions/mitkMIDASViewKeyPressStateMachine.cxx
   Interactions/mitkMIDASDisplayInteractor.cxx
