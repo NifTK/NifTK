@@ -266,7 +266,7 @@ void SetTag( DictionaryType &dictionary,
 // -------------------------------------------------------------------------
 
 template <class InputPixelType>
-int DoMain(arguments args)
+int DoMain(arguments args, InputPixelType min, InputPixelType max)
 {
   enum BreastSideType { 
     UNKNOWN_BREAST_SIDE,
@@ -317,7 +317,7 @@ int DoMain(arguments args)
   }
 
 
-  DictionaryType &dictionary = reader->GetOutput()->GetMetaDataDictionary();
+  DictionaryType dictionary = reader->GetOutput()->GetMetaDataDictionary();
   
   if ( args.flgVerbose )
   {
@@ -329,13 +329,6 @@ int DoMain(arguments args)
   if ( args.flgRescaleIntensitiesToMaxRange )
   {
     itksys_ios::ostringstream value;
-    InputPixelType min = itk::NumericTraits<InputPixelType>::ZeroValue();
-    InputPixelType max = itk::NumericTraits<InputPixelType>::max();
-
-    if ( static_cast<double>(max) > 32767. ) 
-    {
-      max = static_cast<InputPixelType>( 32767 );
-    }
 
     typedef typename itk::RescaleIntensityImageFilter<InputImageType, 
 						      InputImageType> RescaleFilterType;
@@ -719,9 +712,6 @@ int DoMain(arguments args)
   }
   else
   {
-    image->DisconnectPipeline();
-    image->SetMetaDataDictionary( dictionary );
-  
     if ( args.flgVerbose )
     {
       PrintDictionary( dictionary );
@@ -730,8 +720,15 @@ int DoMain(arguments args)
     typename WriterType::Pointer writer = WriterType::New();
 
     writer->SetFileName( fileOutputFullPath );
+
+    image->DisconnectPipeline();
     writer->SetInput( image );
+
+    gdcmImageIO->SetMetaDataDictionary( dictionary );
+    gdcmImageIO->KeepOriginalUIDOn( );
     writer->SetImageIO( gdcmImageIO );
+
+    writer->UseInputMetaDataDictionaryOff();
 
     try
     {
@@ -871,43 +868,63 @@ int main( int argc, char *argv[] )
     switch (itk::PeekAtComponentType(args.iterFilename))
     {
     case itk::ImageIOBase::UCHAR:
-      result = DoMain<unsigned char>(args);  
+      result = DoMain<unsigned char>( args,
+                                      itk::NumericTraits<unsigned char>::ZeroValue(),
+                                      itk::NumericTraits<unsigned char>::max() );  
       break;
     
     case itk::ImageIOBase::CHAR:
-      result = DoMain<char>(args);  
+      result = DoMain<char>( args,
+                             itk::NumericTraits<char>::ZeroValue(),
+                             itk::NumericTraits<char>::max() );  
       break;
 
     case itk::ImageIOBase::USHORT:
-      result = DoMain<unsigned short>(args);
+      result = DoMain<unsigned short>( args,
+                                       itk::NumericTraits<unsigned short>::ZeroValue(),
+                                       static_cast<unsigned short>( 32767 ) );
       break;
 
     case itk::ImageIOBase::SHORT:
-      result = DoMain<short>(args);  
+      result = DoMain<short>( args,
+                              itk::NumericTraits<short>::ZeroValue(),
+                              static_cast<short>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::UINT:
-      result = DoMain<unsigned int>(args);  
+      result = DoMain<unsigned int>( args,
+                                     itk::NumericTraits<unsigned int>::ZeroValue(),
+                                     static_cast<unsigned int>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::INT:
-      result = DoMain<int>(args);  
+      result = DoMain<int>( args,
+                            itk::NumericTraits<int>::ZeroValue(),
+                            static_cast<int>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::ULONG:
-      result = DoMain<unsigned long>(args);  
+      result = DoMain<unsigned long>( args,
+                                      itk::NumericTraits<unsigned long>::ZeroValue(),
+                                      static_cast<unsigned long>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::LONG:
-      result = DoMain<long>(args);  
+      result = DoMain<long>( args,
+                             itk::NumericTraits<long>::ZeroValue(),
+                             static_cast<long>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::FLOAT:
-      result = DoMain<float>(args);  
+      result = DoMain<float>( args,
+                              itk::NumericTraits<float>::ZeroValue(),
+                              static_cast<float>( 32767 ) );  
       break;
 
     case itk::ImageIOBase::DOUBLE:
-      result = DoMain<double>(args);  
+      result = DoMain<double>( args,
+                               itk::NumericTraits<double>::ZeroValue(),
+                               static_cast<double>( 32767 ) );  
       break;
 
     default:

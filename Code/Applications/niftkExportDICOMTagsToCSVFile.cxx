@@ -159,7 +159,7 @@ int DoMain(arguments args, std::vector<std::string> &tagList, std::fstream &fout
   unsigned int iTag = 0;
   std::vector< std::string >::iterator iterTags;     
 
-  foutTagsCSV << boost::filesystem::canonical( args.iterFilename ) << ",";
+  foutTagsCSV << boost::filesystem::canonical( args.iterFilename );
 
   // Get each tag
 
