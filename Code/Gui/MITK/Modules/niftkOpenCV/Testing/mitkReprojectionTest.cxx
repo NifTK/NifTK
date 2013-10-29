@@ -31,6 +31,35 @@
 
 int mitkReprojectionTest ( int argc, char * argv[] )
 {
+
+  std::string calibrationDirectory = "";
+  double QuantizingNoise = 0.0;
+  bool Quantize = false;
+  bool FeatureDepth = 50;
+
+  bool ok;
+  while ( argc > 1 ) 
+  {
+    ok = false;
+    if (( ok == false ) && (strcmp(argv[1],"--calibration") == 0 ))
+    {
+      argc--;
+      argv++;
+      calibrationDirectory = argv[1];
+      MITK_INFO << "Loading calibration from " << calibrationDirectory;
+      argc--;
+      argv++;
+      ok=true;
+    }
+    if ( ok == false )
+    {
+      MITK_ERROR << "Failed to parse arguments";
+      return EXIT_FAILURE;
+    }
+  }
+      
+
+
   MITK_TEST_BEGIN("mitkReprojectionTest");
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
@@ -41,7 +70,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
   cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
   
-  mitk::LoadStereoCameraParametersFromDirectory (argv[1],
+  mitk::LoadStereoCameraParametersFromDirectory (calibrationDirectory,
      &leftCameraIntrinsic,&leftCameraDistortion,&rightCameraIntrinsic,
      &rightCameraDistortion,&rightToLeftRotationMatrix,
      &rightToLeftTranslationVector,&leftCameraToTracker);
