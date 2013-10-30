@@ -39,6 +39,7 @@ if(BUILD_IGI)
   set(HELPER_APPS_REQUIRED_MODULES
     ${HELPER_APPS_REQUIRED_MODULES}
     niftkOpenCV
+    niftkIGI
   )  
 endif()
 
@@ -55,6 +56,7 @@ if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
     # Add apps that DO depend on BUILD_IGI here.
+    niftkPointCloudWrite
   )
 endif()
 
