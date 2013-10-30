@@ -2134,7 +2134,7 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
 
-            this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
+            this->DoThresholdApply(sliceNumber, sliceNumber, true, false, true);
 
             // Get seeds just on the current slice
             mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
