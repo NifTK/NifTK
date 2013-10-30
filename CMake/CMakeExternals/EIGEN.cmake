@@ -47,6 +47,7 @@ if(BUILD_IGI)
       )
 
     set(EIGEN_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
+    set(EIGEN_ROOT ${EIGEN_DIR})
 
     message("SuperBuild loading EIGEN from ${EIGEN_DIR}")
 
