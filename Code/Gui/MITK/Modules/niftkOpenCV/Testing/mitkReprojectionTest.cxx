@@ -20,6 +20,9 @@
 #include <mitkLogMacros.h>
 #include <mitkCameraCalibrationFacade.h>
 
+#include <boost/random.hpp>
+#include <boost/random/normal_distribution.hpp>
+
 /**
  * Test for stereo trianglulation and projection. Start with a realistic set
  * of 3D points defined relative to the left lens. Project them to screen space, 
@@ -125,7 +128,21 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   mitk::UndistortPoints(output2DPointsRight, 
       rightCameraIntrinsic,rightCameraDistortion,
       rightScreenPoints);
-  
+  //add some random noise to the on-screen points
+  //use std::rnd but should change to normally distributed noise
+  //
+  boost::mt19937 rng;
+  boost::normal_distribution<> nd(0.0,quantizingNoise);
+  boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
+  MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
+
+  for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
+  {
+    leftScreenPoints.at<double>(i,0) += var_nor(); 
+    leftScreenPoints.at<double>(i,1) += var_nor(); 
+    rightScreenPoints.at<double>(i,0) += var_nor(); 
+    rightScreenPoints.at<double>(i,1) += var_nor(); 
+  }
   //check it with the c Wrapper function
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
