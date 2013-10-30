@@ -51,6 +51,8 @@ if(BUILD_IGI)
       )
   
     set(FLANN_DIR ${proj_INSTALL})
+    set(FLANN_ROOT ${FLANN_DIR})
+    
     message("SuperBuild loading FLANN from ${FLANN_DIR}")
   
   else(NOT DEFINED FLANN_DIR)
