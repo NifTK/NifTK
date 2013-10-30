@@ -24,4 +24,5 @@ set(CPP_FILES
   TrackedPointer/mitkTrackedPointerManager.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
+  PCLTest/mitkPCLTest.cxx
 )
