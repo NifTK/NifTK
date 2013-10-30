@@ -36,7 +36,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
 {
 
   std::string calibrationDirectory = "";
-  double quantizingNoise = 0.0;
+  double pixelNoise = 0.0;
   bool quantize = false;
   double featureDepth = 50;
   bool cropNonVisiblePoints = true; 
@@ -128,20 +128,28 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   mitk::UndistortPoints(output2DPointsRight, 
       rightCameraIntrinsic,rightCameraDistortion,
       rightScreenPoints);
-  //add some random noise to the on-screen points
-  //use std::rnd but should change to normally distributed noise
-  //
+
   boost::mt19937 rng;
-  boost::normal_distribution<> nd(0.0,quantizingNoise);
+  boost::normal_distribution<> nd(0.0,pixelNoise);
   boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
   MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
-
   for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
   {
     leftScreenPoints.at<double>(i,0) += var_nor(); 
     leftScreenPoints.at<double>(i,1) += var_nor(); 
     rightScreenPoints.at<double>(i,0) += var_nor(); 
     rightScreenPoints.at<double>(i,1) += var_nor(); 
+  }
+
+  if ( quantize ) 
+  {
+    for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
+    {
+      leftScreenPoints.at<double>(i,0) += floor( leftScreenPoints.at<double>(i,0) + 0.5); 
+      leftScreenPoints.at<double>(i,1) += floor( leftScreenPoints.at<double>(i,1) + 0.5); 
+      rightScreenPoints.at<double>(i,0) += floor( rightScreenPoints.at<double>(i,0) + 0.5); 
+      rightScreenPoints.at<double>(i,1) += floor( rightScreenPoints.at<double>(i,1) + 0.5); 
+    }
   }
   //check it with the c Wrapper function
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
