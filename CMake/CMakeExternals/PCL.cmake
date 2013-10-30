@@ -54,8 +54,11 @@ if(BUILD_IGI)
           -DVTK_DIR:PATH=${VTK_DIR}
        DEPENDS ${proj_DEPENDENCIES}
       )
-  
-    set(PCL_DIR ${proj_INSTALL}/share/pcl-1.7)
+    if(WIN32)
+      set(PCL_DIR ${proj_INSTALL}/cmake)
+    else()
+      set(PCL_DIR ${proj_INSTALL}/share/pcl-1.7)
+    endif()
     message("SuperBuild loading PCL from ${PCL_DIR}")
   
   else(NOT DEFINED PCL_DIR)
