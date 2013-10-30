@@ -162,10 +162,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   {
     for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
     {
-   /*   output2DPointsLeft->at<double>(i,0) += floor( output2DPointsLeft->at<double>(i,0) + 0.5); 
-      output2DPointsLeft->at<double>(i,1) += floor( output2DPointsLeft->at<double>(i,1) + 0.5); 
-      output2DPointsRight->at<double>(i,0) += floor( output2DPointsRight->at<double>(i,0) + 0.5); 
-      output2DPointsRight->at<double>(i,1) += floor( output2DPointsRight->at<double>(i,1) + 0.5); */
+      CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) =
+        floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) + 0.5 );
+      CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) =
+        floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) + 0.5 );
+      CV_MAT_ELEM (*output2DPointsRight ,double,i,0) =
+        floor ( CV_MAT_ELEM (*output2DPointsRight ,double,i,0) + 0.5 );
+      CV_MAT_ELEM (*output2DPointsRight ,double,i,1) =
+        floor ( CV_MAT_ELEM (*output2DPointsRight ,double,i,1) + 0.5 );
     }
   }
   
