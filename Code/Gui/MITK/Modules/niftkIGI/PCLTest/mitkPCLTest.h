@@ -18,6 +18,7 @@
 #include "niftkIGIExports.h"
 #include <mitkCommon.h>
 #include <itkObject.h>
+#include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
 
 namespace mitk {
