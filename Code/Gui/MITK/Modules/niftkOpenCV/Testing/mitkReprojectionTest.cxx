@@ -57,6 +57,31 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       argv++;
       ok=true;
     }
+    if (( ok == false ) && (strcmp(argv[1],"--pixelNoise") == 0 )) 
+    {
+      argc--;
+      argv++;
+      pixelNoise = atof(argv[1]);
+      argc--;
+      argv++;
+      ok =true;
+    }
+    if (( ok == false ) && (strcmp(argv[1],"--quantize") == 0 )) 
+    {
+      argc--;
+      argv++;
+      quantize=true;
+      ok=true;
+    }
+    if (( ok == false ) && ( strcmp (argv[1],"--featureDepth") == 0 ))
+    {
+      argc--;
+      argv++;
+      featureDepth = atof(argv[1]);
+      argc--;
+      argv++;
+      ok=true;
+    }
     if ( ok == false )
     {
       MITK_ERROR << "Failed to parse arguments";
@@ -120,7 +145,30 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       outputLeftCameraWorldNormalsIn3D,
       output2DPointsLeft,
       output2DPointsRight);
+ 
+  boost::mt19937 rng;
+  boost::normal_distribution<> nd(0.0,pixelNoise);
+  boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
+  MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
+  for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
+  {
+    CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) += var_nor(); 
+    CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) += var_nor(); 
+    CV_MAT_ELEM (*output2DPointsRight ,double,i,0) += var_nor(); 
+    CV_MAT_ELEM (*output2DPointsRight ,double,i,1) += var_nor(); 
+  }
 
+  if ( quantize ) 
+  {
+    for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
+    {
+   /*   output2DPointsLeft->at<double>(i,0) += floor( output2DPointsLeft->at<double>(i,0) + 0.5); 
+      output2DPointsLeft->at<double>(i,1) += floor( output2DPointsLeft->at<double>(i,1) + 0.5); 
+      output2DPointsRight->at<double>(i,0) += floor( output2DPointsRight->at<double>(i,0) + 0.5); 
+      output2DPointsRight->at<double>(i,1) += floor( output2DPointsRight->at<double>(i,1) + 0.5); */
+    }
+  }
+  
   mitk::UndistortPoints(output2DPointsLeft, 
       leftCameraIntrinsic,leftCameraDistortion,
       leftScreenPoints);
@@ -129,29 +177,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       rightCameraIntrinsic,rightCameraDistortion,
       rightScreenPoints);
 
-  boost::mt19937 rng;
-  boost::normal_distribution<> nd(0.0,pixelNoise);
-  boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
-  MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
-  for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
-  {
-    leftScreenPoints.at<double>(i,0) += var_nor(); 
-    leftScreenPoints.at<double>(i,1) += var_nor(); 
-    rightScreenPoints.at<double>(i,0) += var_nor(); 
-    rightScreenPoints.at<double>(i,1) += var_nor(); 
-  }
-
-  if ( quantize ) 
-  {
-    for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
-    {
-      leftScreenPoints.at<double>(i,0) += floor( leftScreenPoints.at<double>(i,0) + 0.5); 
-      leftScreenPoints.at<double>(i,1) += floor( leftScreenPoints.at<double>(i,1) + 0.5); 
-      rightScreenPoints.at<double>(i,0) += floor( rightScreenPoints.at<double>(i,0) + 0.5); 
-      rightScreenPoints.at<double>(i,1) += floor( rightScreenPoints.at<double>(i,1) + 0.5); 
-    }
-  }
-  //check it with the c Wrapper function
+ //check it with the c Wrapper function
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
