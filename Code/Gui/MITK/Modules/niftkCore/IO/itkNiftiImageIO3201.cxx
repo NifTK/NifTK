@@ -1712,7 +1712,7 @@ SetImageIOOrientationFromNIfTI(unsigned short int dims)
     // normalisation behaviour
     for (unsigned int i=0; i < dims; ++i)
       {
-      float newSpacing = std::sqrtf(theMat.m[0][i] * theMat.m[0][i] + theMat.m[1][i] * theMat.m[1][i] + theMat.m[2][i] * theMat.m[2][i]);
+      float newSpacing = std::sqrt(theMat.m[0][i] * theMat.m[0][i] + theMat.m[1][i] * theMat.m[1][i] + theMat.m[2][i] * theMat.m[2][i]);
       if (newSpacing != this->GetSpacing(i))
         {
         this->SetSpacing(i, newSpacing);
