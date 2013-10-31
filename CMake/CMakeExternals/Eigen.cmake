@@ -14,21 +14,21 @@
 
 
 #-----------------------------------------------------------------------------
-# EIGEN
+# Eigen
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED EIGEN_DIR AND NOT EXISTS ${EIGEN_DIR})
-  message(FATAL_ERROR "EIGEN_DIR variable is defined but corresponds to non-existing directory \"${EIGEN_ROOT}\".")
+if(DEFINED Eigen_DIR AND NOT EXISTS ${Eigen_DIR})
+  message(FATAL_ERROR "Eigen_DIR variable is defined but corresponds to non-existing directory \"${Eigen_ROOT}\".")
 endif()
 
 if(BUILD_IGI)
 
-  set(proj EIGEN)
+  set(proj Eigen)
   set(proj_DEPENDENCIES )
-  set(EIGEN_DEPENDS ${proj})
+  set(Eigen_DEPENDS ${proj})
 
-  if(NOT DEFINED EIGEN_DIR)
+  if(NOT DEFINED Eigen_DIR)
 
     niftkMacroGetChecksum(NIFTK_CHECKSUM_EIGEN ${NIFTK_LOCATION_EIGEN})
 
@@ -46,15 +46,15 @@ if(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
       )
 
-    set(EIGEN_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
-    set(EIGEN_ROOT ${EIGEN_DIR})
+    set(Eigen_DIR ${CMAKE_BINARY_DIR}/${proj}-src)
+    set(Eigen_ROOT ${Eigen_DIR})
 
-    message("SuperBuild loading EIGEN from ${EIGEN_DIR}")
+    message("SuperBuild loading Eigen from ${Eigen_DIR}")
 
-  else(NOT DEFINED EIGEN_DIR)
+  else(NOT DEFINED Eigen_DIR)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED EIGEN_DIR)
+  endif(NOT DEFINED Eigen_DIR)
 
 endif(BUILD_IGI)

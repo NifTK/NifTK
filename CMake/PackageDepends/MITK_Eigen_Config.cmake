@@ -11,8 +11,8 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(EIGEN REQUIRED)
-if(EIGEN_FOUND)
-  message("Found EIGEN in ${EIGEN_DIR}")
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${EIGEN_INCLUDE_DIR})
+find_package(Eigen REQUIRED)
+if(Eigen_FOUND)
+  message("Found Eigen in ${Eigen_DIR}")
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${Eigen_INCLUDE_DIR})
 endif()

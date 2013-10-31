@@ -28,7 +28,7 @@ if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES aruco OpenCV EIGEN apriltags FLANN PCL)
+  list(APPEND proj_DEPENDENCIES aruco OpenCV Eigen apriltags FLANN PCL)
 endif(BUILD_IGI)
 
 set(MITK_DEPENDS ${proj})

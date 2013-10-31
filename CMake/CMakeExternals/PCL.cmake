@@ -25,7 +25,7 @@ endif()
 if(BUILD_IGI)
 
   set(proj PCL)
-  set(proj_DEPENDENCIES Boost EIGEN FLANN VTK)
+  set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
   set(PCL_DEPENDS ${proj})
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
   
@@ -49,7 +49,7 @@ if(BUILD_IGI)
           -DBOOST_INCLUDEDIR:PATH=${BOOST_ROOT}/include
           -DBOOST_LIBRARYDIR:PATH=${BOOST_ROOT}/lib
           -DBoost_NO_SYSTEM_PATHS:BOOL=ON
-          -DEIGEN_ROOT:PATH=${EIGEN_DIR}
+          -DEIGEN_ROOT:PATH=${Eigen_DIR}
           -DFLANN_ROOT:PATH=${FLANN_DIR}
           -DVTK_DIR:PATH=${VTK_DIR}
        DEPENDS ${proj_DEPENDENCIES}
