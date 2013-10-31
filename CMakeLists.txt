@@ -713,8 +713,8 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake
   ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEIGEN.cmake
-  ${CMAKE_BINARY_DIR}/FindEIGEN.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake
+  ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake
   ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
 
