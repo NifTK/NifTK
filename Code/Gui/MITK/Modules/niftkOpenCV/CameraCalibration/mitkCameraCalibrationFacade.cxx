@@ -33,6 +33,7 @@ void LoadChessBoardsFromDirectory(const std::string& fullDirectoryName,
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
   if (files.size() > 0)
   {
+    std::sort(files.begin(), files.end());
     for(unsigned int i = 0; i < files.size();i++)
     {
       IplImage* image = cvLoadImage(files[i].c_str());
