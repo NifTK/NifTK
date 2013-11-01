@@ -1203,15 +1203,12 @@ cv::Point3d  TriangulatePointPairUsingGeometry(
     const cv::Mat& rightToLeftTranslationVector
     )
 {
-  cv::Mat rightToLeftRotationVector = cv::Mat(1,3,CV_64FC1);
-  cv::Rodrigues(rightToLeftRotationMatrix,rightToLeftRotationVector);
-
   std::vector < std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
   inputUndistortedPoints.push_back(inputUndistortedPoint);
 
   std::vector <cv::Point3d> returnVector = TriangulatePointPairsUsingGeometry(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
-      rightToLeftRotationVector, rightToLeftTranslationVector);
+      rightToLeftRotationMatrix, rightToLeftTranslationVector, std::numeric_limits<double>::max());
 
   return returnVector[0];
 }
@@ -1222,39 +1219,45 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
-    const cv::Mat& rightToLeftRotationVector,
-    const cv::Mat& rightToLeftTranslationVector
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const double& tolerance
     )
 {
   std::vector< cv::Point3d > outputPoints;
   int numberOfPoints = inputUndistortedPoints.size();
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
   cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2Inv    = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LRotV  = cv::Mat(1, 3, CV_64FC1);
+  cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
 
   // Copy data into cv::Mat data types.
   // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
   // These triangulation routines need 64 bit data.
 
-  if ( rightToLeftRotationVector.type() == CV_32FC1 )
+  if ( rightToLeftRotationMatrix.type() == CV_32FC1 )
   {
-    for ( int i = 0 ; i < 3 ; i ++ ) 
+    for (int i = 0; i < 3; i++)
     {
-      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<float>(0,i);
+      for (int j = 0; j < 3; j++)
+      {
+        R2LRot64.at<double>(i,j) = rightToLeftRotationMatrix.at<float>(i,j);
+      }
     }
   }
   else
   {
-    for ( int i = 0 ; i < 3 ; i ++ ) 
+    for (int i = 0; i < 3; i++)
     {
-      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<double>(0,i);
+      for (int j = 0; j < 3; j++)
+      {
+        R2LRot64.at<double>(i,j) = rightToLeftRotationMatrix.at<double>(i,j);
+      }
     }
   }
-  cv::Rodrigues(R2LRotV, R2LRot64);
+
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
@@ -1307,6 +1310,7 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   cv::Point3d v;
 
   double UNorm, VNorm;
+  double twiceTolerance = tolerance * 2.0;
 
   // For each point...
   for (int i = 0; i < numberOfPoints; i++)
@@ -1391,11 +1395,18 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     Qtc.y = Q0.y + tc*v.y;
     Qtc.z = Q0.z + tc*v.z;
 
-    midPoint.x = (Psc.x + Qtc.x)/2.0;
-    midPoint.y = (Psc.y + Qtc.y)/2.0;
-    midPoint.z = (Psc.z + Qtc.z)/2.0;
+    double distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
+                          +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
+                          +(Psc.z - Qtc.z)*(Psc.z - Qtc.z)
+                          );
+    if (distance < twiceTolerance)
+    {
+      midPoint.x = (Psc.x + Qtc.x)/2.0;
+      midPoint.y = (Psc.y + Qtc.y)/2.0;
+      midPoint.z = (Psc.z + Qtc.z)/2.0;
 
-    outputPoints.push_back(midPoint);
+      outputPoints.push_back(midPoint);
+    }
   }
   
   return outputPoints;

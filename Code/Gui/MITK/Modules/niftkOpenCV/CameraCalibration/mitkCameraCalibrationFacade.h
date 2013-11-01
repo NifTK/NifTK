@@ -473,15 +473,18 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObse
  *
  * Taken from: http://geomalgorithms.com/a07-_distance.html
  *
- * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
+ * \param rightToLeftRotationMatrix [3x3] matrix representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
+ * greater than the tolerance, the point is rejected.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
-  const cv::Mat& rightToLeftRotationVector,
-  const cv::Mat& rightToLeftTranslationVector
+  const cv::Mat& rightToLeftRotationMatrix,
+  const cv::Mat& rightToLeftTranslationVector,
+  const double& tolerance
   );
 
 
