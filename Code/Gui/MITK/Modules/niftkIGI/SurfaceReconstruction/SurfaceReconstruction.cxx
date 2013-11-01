@@ -126,6 +126,19 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
     mitk::ImageReadAccessor  leftReadAccess(image1);
     mitk::ImageReadAccessor  rightReadAccess(image2);
 
+    // after locking the images, grab the position of the camera.
+    // this should keep them in sync better, if we are reconstructing a point cloud while the camera is moving.
+    mitk::Geometry3D::Pointer   camgeom;
+    if (camnode.IsNotNull())
+    {
+      mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
+      if (camnodebasedata.IsNotNull())
+      {
+        camgeom = static_cast<mitk::Geometry3D*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
+      }
+    }
+    mitk::Geometry3D::Pointer   imggeom = static_cast<mitk::Geometry3D*>(image1->GetGeometry()->Clone().GetPointer());
+
     const void* leftPtr = leftReadAccess.GetData();
     const void* rightPtr = rightReadAccess.GetData();
 
@@ -249,29 +262,11 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
           }
         }
 
-        //outputNode->SetData(points);
-
-        // if our camnode has mitk::CoordinateAxesData::Pointer then we use that.
-        // otherwise we copy its geometry.
-        if (camnode.IsNotNull())
+        if (camgeom.IsNotNull())
         {
-          mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
-          if (camnodebasedata.IsNotNull())
-          {
-            // it's actually irrelevant what type the data is
-            const mitk::Geometry3D::Pointer geom = static_cast<mitk::Geometry3D*>(
-                camnodebasedata->GetGeometry()->Clone().GetPointer());
-            points->GetGeometry()->SetSpacing(geom->GetSpacing());
-            points->GetGeometry()->SetOrigin(geom->GetOrigin());
-            points->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
-            // TODO Adapt this to the changes in the MITK geometry framework.
-            // Before the changes mitk::Geometry3D was derived from itk::AffineGeometryFrame3D
-            // that had this SetObjectNodeToTransform function, but with the changes this
-            // superclass has been removed.
-            // Check if this is needed at all and remove if not.
-            MITK_WARN << "SurfaceReconstruction::Run(...): adapt this code to the MITK geometry changes." << std::endl;
-            //points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
-          }
+          points->GetGeometry()->SetSpacing(camgeom->GetSpacing());
+          points->GetGeometry()->SetOrigin(camgeom->GetOrigin());
+          points->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
         }
 
         return points.GetPointer();
@@ -297,11 +292,9 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         }
         // copy input geometry too. so that a field-dropped input image
         // doesnt cause the ouput to look squashed.
-        const mitk::Geometry3D::Pointer geom = static_cast<mitk::Geometry3D*>(
-            image1->GetGeometry()->Clone().GetPointer());
-        imgData4Node->GetGeometry()->SetSpacing(geom->GetSpacing());
-        imgData4Node->GetGeometry()->SetOrigin(geom->GetOrigin());
-        imgData4Node->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
+        imgData4Node->GetGeometry()->SetSpacing(imggeom->GetSpacing());
+        imgData4Node->GetGeometry()->SetOrigin(imggeom->GetOrigin());
+        imgData4Node->GetGeometry()->SetIndexToWorldTransform(imggeom->GetIndexToWorldTransform());
 
         //outputNode->SetData(imgData4Node);
         return imgData4Node.GetPointer();
