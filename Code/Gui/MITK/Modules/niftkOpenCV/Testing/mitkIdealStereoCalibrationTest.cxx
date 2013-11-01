@@ -50,6 +50,9 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   double screenWidth = 1980;
   double screenHeight = 540;
 
+  cv::Size imageSize;
+  imageSize.height = screenHeight;
+  imageSize.width = screenWidth;
   //the calibration grid pattern;
   int xcorners = 14;
   int ycorners = 10;
@@ -67,6 +70,16 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
       argv++;
       calibrationDirectory = argv[1];
       MITK_INFO << "Loading calibration from " << calibrationDirectory;
+      argc--;
+      argv++;
+      ok=true;
+    }
+    if (( ok == false ) && (strcmp(argv[1],"--tracking") == 0 ))
+    {
+      argc--;
+      argv++;
+      trackingMatrixDirectory = argv[1];
+      MITK_INFO << "Loading tracking from " << trackingMatrixDirectory;
       argc--;
       argv++;
       ok=true;
@@ -170,30 +183,59 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
       leftCameraNormals.at<double>(row*xcorners + col,2) = -1.0;
     }
   }
+  const int corner00 = 0;
+  const int corner01 = 0 * xcorners + ycorners-1;
+  const int corner10 = (ycorners-1)*xcorners;
+  const int corner11 = (ycorners-1)*xcorners + (xcorners-1);
 
-  for ( unsigned int i = 0 ; i < MarkerToWorld.size() ; i ++ ) 
+  MITK_INFO << "World Corners 1: (" << worldPoints.at<double>(corner00,0) << "," <<
+    worldPoints.at<double>(corner00,1) << "," <<  worldPoints.at<double>(corner00,2) << ")(" <<
+    worldPoints.at<double>(corner01,0) << "," << 
+    worldPoints.at<double>(corner01,1) << "," <<
+    worldPoints.at<double>(corner01,2) << ")";
+  MITK_INFO << "World Corners 2: (" << 
+    worldPoints.at<double>(corner10,0) << "," << 
+    worldPoints.at<double>(corner10,1) << "," <<
+    worldPoints.at<double>(corner10,2) << ")(" <<
+    worldPoints.at<double>(corner11,0) << "," << 
+    worldPoints.at<double>(corner11,1) << "," << 
+    worldPoints.at<double>(corner11,2) << ")";
+  for ( unsigned int frame = 0 ; frame < MarkerToWorld.size() ; frame ++ ) 
   {
 
     //get world points into camera lens coordinates
     cv::Mat leftCameraPoints = cv::Mat (xcorners*ycorners,3,CV_64FC1);
-    cv::Mat worldToCamera = MarkerToWorld[i] * leftCameraToTracker;
+    cv::Mat worldToCamera = (MarkerToWorld[frame] * leftCameraToTracker).inv();
 
-    for ( int i = 0 ; i < xcorners*ycorners ; i ++ ) 
+    for ( int j = 0 ; j < xcorners*ycorners ; j ++ ) 
     {
       cv::Point3d worldCorner ; 
       cv::Point3d leftCameraCorner;
-      worldCorner.x = worldPoints.at<double>(i,0);
-      worldCorner.y = worldPoints.at<double>(i,1);
-      worldCorner.z = worldPoints.at<double>(i,2);
+      worldCorner.x = worldPoints.at<double>(j,0);
+      worldCorner.y = worldPoints.at<double>(j,1);
+      worldCorner.z = worldPoints.at<double>(j,2);
 
       {
         using namespace mitk;
         leftCameraCorner = worldToCamera * worldCorner;
       }
-      leftCameraPoints.at<double>(i,0) = leftCameraCorner.x;
-      leftCameraPoints.at<double>(i,1) = leftCameraCorner.y;
-      leftCameraPoints.at<double>(i,2) = leftCameraCorner.z;
+      leftCameraPoints.at<double>(j,0) = leftCameraCorner.x;
+      leftCameraPoints.at<double>(j,1) = leftCameraCorner.y;
+      leftCameraPoints.at<double>(j,2) = leftCameraCorner.z;
     }
+    MITK_INFO << frame << " Left Cam Corners 1: (" << leftCameraPoints.at<double>(corner00,0) << "," <<
+      leftCameraPoints.at<double>(corner00,1) << "," <<  leftCameraPoints.at<double>(corner00,2) << ")(" <<
+      leftCameraPoints.at<double>(corner01,0) << "," << 
+      leftCameraPoints.at<double>(corner01,1) << "," <<
+      leftCameraPoints.at<double>(corner01,2) << ")";
+    MITK_INFO << frame << " Left Cam Corners 2: (" << 
+      leftCameraPoints.at<double>(corner10,0) << "," << 
+      leftCameraPoints.at<double>(corner10,1) << "," <<
+      leftCameraPoints.at<double>(corner10,2) << ")(" <<
+      leftCameraPoints.at<double>(corner11,0) << "," << 
+      leftCameraPoints.at<double>(corner11,1) << "," << 
+      leftCameraPoints.at<double>(corner11,2) << ")";
+ 
     //project onto screen
     CvMat* outputLeftCameraWorldPointsIn3D = NULL;
     CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
@@ -216,46 +258,46 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
     boost::mt19937 rng;
     boost::normal_distribution<> nd(0.0,pixelNoise);
     boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
-    for ( int i = 0 ; i < xcorners*ycorners ; i ++ ) 
+    for ( int j = 0 ; j < xcorners*ycorners ; j ++ ) 
     {
-      CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) += var_nor(); 
-      CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) += var_nor(); 
-      CV_MAT_ELEM (*output2DPointsRight ,double,i,0) += var_nor(); 
-      CV_MAT_ELEM (*output2DPointsRight ,double,i,1) += var_nor(); 
+      CV_MAT_ELEM (*output2DPointsLeft ,double,j,0) += var_nor(); 
+      CV_MAT_ELEM (*output2DPointsLeft ,double,j,1) += var_nor(); 
+      CV_MAT_ELEM (*output2DPointsRight ,double,j,0) += var_nor(); 
+      CV_MAT_ELEM (*output2DPointsRight ,double,j,1) += var_nor(); 
     }
 
     if ( quantize ) 
     {
-      for ( int i = 0 ; i < xcorners*ycorners ; i ++ ) 
+      for ( int j = 0 ; j < xcorners*ycorners ; j ++ ) 
       {
-        CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) =
-            floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) + 0.5 );
-        CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) =
-            floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) + 0.5 );
-        CV_MAT_ELEM (*output2DPointsRight ,double,i,0) =
-            floor ( CV_MAT_ELEM (*output2DPointsRight ,double,i,0) + 0.5 );
-        CV_MAT_ELEM (*output2DPointsRight ,double,i,1) =
-            floor ( CV_MAT_ELEM (*output2DPointsRight ,double,i,1) + 0.5 );
+        CV_MAT_ELEM (*output2DPointsLeft ,double,j,0) =
+            floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,j,0) + 0.5 );
+        CV_MAT_ELEM (*output2DPointsLeft ,double,j,1) =
+            floor ( CV_MAT_ELEM (*output2DPointsLeft ,double,j,1) + 0.5 );
+        CV_MAT_ELEM (*output2DPointsRight ,double,j,0) =
+            floor ( CV_MAT_ELEM (*output2DPointsRight ,double,j,0) + 0.5 );
+        CV_MAT_ELEM (*output2DPointsRight ,double,j,1) =
+            floor ( CV_MAT_ELEM (*output2DPointsRight ,double,j,1) + 0.5 );
       }
     }
 
     //check if all points are on screen
     bool allOnScreen = true;
-    for ( int i = 0 ; i < xcorners*ycorners ; i++ )
+    for ( int j = 0 ; j < xcorners*ycorners ; j++ )
     {
       if (
-          CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) < 0 ||
-          CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) > screenWidth 
-          || CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) < 0 || 
-          CV_MAT_ELEM (*output2DPointsLeft ,double,i,1) > screenHeight ||
-          CV_MAT_ELEM (*output2DPointsRight ,double,i,0) < 0 ||
-          CV_MAT_ELEM (*output2DPointsRight ,double,i,0) > screenWidth 
-          || CV_MAT_ELEM (*output2DPointsRight ,double,i,1) < 0 || 
-          CV_MAT_ELEM (*output2DPointsRight ,double,i,1) > screenHeight
+          CV_MAT_ELEM (*output2DPointsLeft ,double,j,0) < 0 ||
+          CV_MAT_ELEM (*output2DPointsLeft ,double,j,0) > screenWidth 
+          || CV_MAT_ELEM (*output2DPointsLeft ,double,j,1) < 0 || 
+          CV_MAT_ELEM (*output2DPointsLeft ,double,j,1) > screenHeight ||
+          CV_MAT_ELEM (*output2DPointsRight ,double,j,0) < 0 ||
+          CV_MAT_ELEM (*output2DPointsRight ,double,j,0) > screenWidth 
+          || CV_MAT_ELEM (*output2DPointsRight ,double,j,1) < 0 || 
+          CV_MAT_ELEM (*output2DPointsRight ,double,j,1) > screenHeight
           )
       {
         allOnScreen = false;
-        i=xcorners*ycorners;
+        j=xcorners*ycorners;
       }
     }
     
@@ -271,7 +313,135 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   }
 
   MITK_INFO << "There are " << allLeftImagePoints.size() << " good frames";
- 
+  cv::Mat leftImagePoints (xcorners * ycorners * allLeftImagePoints.size(),2,CV_64FC1);
+  cv::Mat leftObjectPoints (xcorners * ycorners * allLeftImagePoints.size(),3,CV_64FC1);
+  cv::Mat rightImagePoints (xcorners * ycorners * allLeftImagePoints.size(),2,CV_64FC1);
+  cv::Mat rightObjectPoints (xcorners * ycorners * allLeftImagePoints.size(),3,CV_64FC1);
+
+  cv::Mat leftPointCounts (allLeftImagePoints.size(),1,CV_32SC1);
+  cv::Mat rightPointCounts (allLeftImagePoints.size(),1,CV_32SC1);
+
+
+
+  for ( unsigned int i = 0 ; i < allLeftImagePoints.size() ; i++ )
+  {
+    MITK_INFO << "Filling "  << i;
+    for ( unsigned int j = 0 ; j < xcorners*ycorners ; j ++ )
+    {
+      leftImagePoints.at<double>(i* xcorners * ycorners + j,0) =
+        allLeftImagePoints[i].at<double>(j,0);
+      leftImagePoints.at<double>(i* xcorners * ycorners + j,1) =
+        allLeftImagePoints[i].at<double>(j,1);
+      leftObjectPoints.at<double>(i* xcorners * ycorners + j,0) =
+        allLeftObjectPoints[i].at<double>(j,0);
+      leftObjectPoints.at<double>(i* xcorners * ycorners + j,1) =
+        allLeftObjectPoints[i].at<double>(j,1);
+      leftObjectPoints.at<double>(i* xcorners * ycorners + j,2) =
+        allLeftObjectPoints[i].at<double>(j,2);
+      rightImagePoints.at<double>(i* xcorners * ycorners + j,0) =
+        allRightImagePoints[i].at<double>(j,0);
+      rightImagePoints.at<double>(i* xcorners * ycorners + j,1) =
+        allRightImagePoints[i].at<double>(j,1);
+      rightObjectPoints.at<double>(i* xcorners * ycorners + j,0) =
+        allRightObjectPoints[i].at<double>(j,0);
+      rightObjectPoints.at<double>(i* xcorners * ycorners + j,1) =
+        allRightObjectPoints[i].at<double>(j,1);
+      rightObjectPoints.at<double>(i* xcorners * ycorners + j,2) =
+        allRightObjectPoints[i].at<double>(j,2);
+    }
+    leftPointCounts.at<int>(i,0) = xcorners * ycorners;
+    rightPointCounts.at<int>(i,0) = xcorners * ycorners;
+  }
+
+  MITK_INFO << "Starting intrinisic calibration";
+  CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputRotationVectorsLeft = cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsLeft= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
+  CvMat* outputIntrinsicMatrixRight= cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputDistortionCoefficientsRight= cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputRotationVectorsRight= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsRight= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
+  CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputRightToLeftTranslation = cvCreateMat(3,1,CV_64FC1);
+  CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_64FC1);
+  CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
+
+  mitk::CalibrateStereoCameraParameters(
+    leftObjectPoints,
+    leftImagePoints,
+    leftPointCounts,
+    imageSize,
+    rightObjectPoints,
+    rightImagePoints,
+    rightPointCounts,
+    *outputIntrinsicMatrixLeft,
+    *outputDistortionCoefficientsLeft,
+    *outputRotationVectorsLeft,
+    *outputTranslationVectorsLeft,
+    *outputIntrinsicMatrixRight,
+    *outputDistortionCoefficientsRight,
+    *outputRotationVectorsRight,
+    *outputTranslationVectorsRight,
+    *outputRightToLeftRotation,
+    *outputRightToLeftTranslation,
+    *outputEssentialMatrix,
+    *outputFundamentalMatrix);
+
+  //write it out
+  std::string leftIntrinsic = "test.calib.left.intrinsic.txt";
+  std::string rightIntrinsic = "test.calib.right.intrinsic.txt";
+  std::string rightToLeft = "test.calib.r2l.txt";
+  std::string extrinsic = "test.leftextrinsics.txt";
+
+  std::ofstream fs_leftIntrinsic;
+  std::ofstream fs_rightIntrinsic;
+  std::ofstream fs_r2l;
+  std::ofstream fs_ext;
+
+  fs_leftIntrinsic.open(leftIntrinsic.c_str(), std::ios::out);
+  fs_rightIntrinsic.open(rightIntrinsic.c_str(), std::ios::out);
+  fs_r2l.open(rightToLeft.c_str(), std::ios::out);
+  fs_ext.open(extrinsic.c_str(), std::ios::out);
+
+  for ( int row = 0 ; row < 3 ; row ++ ) 
+  {
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      fs_leftIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixLeft, double, row,col) << " ";
+      fs_rightIntrinsic << CV_MAT_ELEM (*outputIntrinsicMatrixRight, double, row,col) << " ";
+      fs_r2l << CV_MAT_ELEM (*outputRightToLeftRotation, double , row,col) << " ";
+    }
+    fs_leftIntrinsic << std::endl;
+    fs_rightIntrinsic << std::endl;
+    fs_r2l << std::endl;
+  }
+  for ( int i = 0 ; i < 4 ; i ++ )  
+  {
+    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , i, 0 ) << " ";
+    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , i, 0 ) << " ";
+  }
+  for ( int i = 0 ; i < 3 ; i ++ )  
+  {
+    fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, double , i, 0 ) << " ";
+  }
+
+  fs_leftIntrinsic.close();
+  fs_rightIntrinsic.close();
+  fs_r2l.close();
+  for ( unsigned int view = 0 ; view < allLeftImagePoints.size() ; view ++ )
+  {
+    for ( int i = 0 ; i < 3 ; i ++ )
+    {
+      fs_ext << CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, i) << " ";
+    }
+    for ( int i = 0 ; i < 3 ; i ++ )
+    {
+      fs_ext << CV_MAT_ELEM ( *outputTranslationVectorsLeft , double  , view, i) << " ";
+    }
+    fs_ext << std::endl;
+  }
+  fs_ext.close();
  /*   mitk::UndistortPoints(output2DPointsLeft, 
       leftCameraIntrinsic,leftCameraDistortion,
       leftScreenPoints);
