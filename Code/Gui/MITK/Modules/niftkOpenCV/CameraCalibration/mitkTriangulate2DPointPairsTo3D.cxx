@@ -111,7 +111,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     std::vector< cv::Point3d > pointsIn3D;
     for (unsigned int i = 0; i < pointPairs.size(); i++)
     {
-      cv::Point3d pointIn3D = mitk::TriangulatePointPair(
+      cv::Point3d pointIn3D = mitk::TriangulatePointPairUsingGeometry(
           pointPairs[i],
           leftIntrinsic,
           rightIntrinsic,

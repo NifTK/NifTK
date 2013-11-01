@@ -1195,7 +1195,7 @@ void UndistortPoint(const cv::Point2d& inputPoint,
 
 
 //-----------------------------------------------------------------------------
-cv::Point3d  TriangulatePointPair(
+cv::Point3d  TriangulatePointPairUsingGeometry(
     const std::pair<cv::Point2d, cv::Point2d>& inputUndistortedPoint,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
@@ -1209,7 +1209,7 @@ cv::Point3d  TriangulatePointPair(
   std::vector < std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
   inputUndistortedPoints.push_back(inputUndistortedPoint);
 
-  std::vector <cv::Point3d> returnVector = TriangulatePointPairs(
+  std::vector <cv::Point3d> returnVector = TriangulatePointPairsUsingGeometry(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
       rightToLeftRotationVector, rightToLeftTranslationVector);
 
@@ -1218,7 +1218,7 @@ cv::Point3d  TriangulatePointPair(
 
 
 //-----------------------------------------------------------------------------
-std::vector< cv::Point3d > TriangulatePointPairs(
+std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
@@ -1403,7 +1403,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-void TriangulatePointPairs(
+void CStyleTriangulatePointPairsUsingSVD(
     const CvMat& leftCameraUndistortedImagePoints,
     const CvMat& rightCameraUndistortedImagePoints,
     const CvMat& leftCameraIntrinsicParams,
@@ -1442,7 +1442,7 @@ void TriangulatePointPairs(
 
 
   // Call the other, more C++ like method.
-  outputPoints = TriangulatePointPairs(
+  outputPoints = TriangulatePointPairsUsingSVD(
       inputPairs,
       K1, R1, T1,
       K2, R2, T2
@@ -1460,7 +1460,7 @@ void TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-std::vector< cv::Point3d > TriangulatePointPairs(
+std::vector< cv::Point3d > TriangulatePointPairsUsingSVD(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& leftCameraRotationVector,
@@ -1571,7 +1571,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
     u2p.y = u2t.at<double>(1,0);
     u2p.z = u2t.at<double>(2,0);
 
-    reconstructedPoint = IterativeTriangulatePoint(P1d, P2d, u1p, u2p);
+    reconstructedPoint = InternalIterativeTriangulatePointUsingSVD(P1d, P2d, u1p, u2p);
     outputPoints.push_back(reconstructedPoint);
 /*
     std::cout << "TriangulatePointPairs:l=(" << inputUndistortedPoints[i].first.x << ", " << inputUndistortedPoints[i].first.y << "), r=(" << inputUndistortedPoints[i].second.x << ", " << inputUndistortedPoints[i].second.y << "), 3D=" << reconstructedPoint.x << ", " << reconstructedPoint.y << ", " << reconstructedPoint.z << ")" << std::endl;
@@ -1583,7 +1583,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-cv::Mat_<double> TriangulatePoint(
+cv::Mat_<double> InternalTriangulatePointUsingSVD(
     const cv::Matx34d& P1,
     const cv::Matx34d& P2,
     const cv::Point3d& u1,
@@ -1616,7 +1616,7 @@ cv::Mat_<double> TriangulatePoint(
 
 
 //-----------------------------------------------------------------------------
-cv::Point3d IterativeTriangulatePoint(
+cv::Point3d InternalIterativeTriangulatePointUsingSVD(
     const cv::Matx34d& P1,
     const cv::Matx34d& P2,
     const cv::Point3d& u1,
@@ -1629,7 +1629,7 @@ cv::Point3d IterativeTriangulatePoint(
 
   for (int i=0; i<10; i++) // Hartley suggests 10 iterations at most
   {
-    cv::Mat_<double> X_ = TriangulatePoint(P1,P2,u1,u2,w1,w2);
+    cv::Mat_<double> X_ = InternalTriangulatePointUsingSVD(P1,P2,u1,u2,w1,w2);
     X(0) = X_(0);
     X(1) = X_(1);
     X(2) = X_(2);
