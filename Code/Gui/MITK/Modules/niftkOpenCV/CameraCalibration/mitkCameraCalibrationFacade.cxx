@@ -1232,10 +1232,10 @@ std::vector< cv::Point3d > TriangulatePointPairs(
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
   cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
-  cv::Mat R2LInv   = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2Inv    = cv::Mat(3, 3, CV_64FC1);
   cv::Mat R2LRotV  = cv::Mat(1, 3, CV_64FC1);
+
   // Copy data into cv::Mat data types.
   // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
   // These triangulation routines need 64 bit data.
@@ -1285,8 +1285,6 @@ std::vector< cv::Point3d > TriangulatePointPairs(
       R2LTrn64.at<double>(0,i) = rightToLeftTranslationVector.at<double>(0,i);
     }
   }
-
-  R2LInv = R2LRot64.inv();
 
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
