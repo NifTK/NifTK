@@ -529,25 +529,25 @@ void ProjectAllPoints(
     CvMat& outputImagePoints
     )
 {
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *objectPointsFor1View = cvCreateMat(pointCount, 3, CV_32FC1);
-  CvMat *imagePointsFor1View = cvCreateMat(pointCount, 2, CV_32FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *objectPointsFor1View = cvCreateMat(pointCount, 3, CV_64FC1);
+  CvMat *imagePointsFor1View = cvCreateMat(pointCount, 2, CV_64FC1);
 
   for (int i = 0; i < numberSuccessfulViews; i++)
   {
     for (int j = 0; j < pointCount; j++)
     {
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 0) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 0);
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 1) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 1);
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 2) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 2);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 0) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 0);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 1) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 1);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 2) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 2);
     }
-    CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
-    CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
-    CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
-    CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
-    CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
-    CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+    CV_MAT_ELEM(*rotationVector, double, 0, 0) = CV_MAT_ELEM(rotationVectors, double, i, 0);
+    CV_MAT_ELEM(*rotationVector, double, 0, 1) = CV_MAT_ELEM(rotationVectors, double, i, 1);
+    CV_MAT_ELEM(*rotationVector, double, 0, 2) = CV_MAT_ELEM(rotationVectors, double, i, 2);
+    CV_MAT_ELEM(*translationVector, double, 0, 0) = CV_MAT_ELEM(translationVectors, double, i, 0);
+    CV_MAT_ELEM(*translationVector, double, 0, 1) = CV_MAT_ELEM(translationVectors, double, i, 1);
+    CV_MAT_ELEM(*translationVector, double, 0, 2) = CV_MAT_ELEM(translationVectors, double, i, 2);
 
     cvProjectPoints2(
         objectPointsFor1View,
@@ -560,8 +560,8 @@ void ProjectAllPoints(
 
     for (int j = 0; j < pointCount; j++)
     {
-      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 0) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 0);
-      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 1) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 1);
+      CV_MAT_ELEM(outputImagePoints, double, i*pointCount + j, 0) = CV_MAT_ELEM(*imagePointsFor1View, double, j, 0);
+      CV_MAT_ELEM(outputImagePoints, double, i*pointCount + j, 1) = CV_MAT_ELEM(*imagePointsFor1View, double, j, 1);
     }
   }
 
