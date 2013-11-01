@@ -19,26 +19,34 @@
       <label>Input Point Pairs</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions="*.txt">
       <name>intrinsicLeft</name>
       <longflag>intrinsicLeft</longflag>
       <description>Left camera intrinsic parameters file as plain text file.</description>
       <label>Left camera intrinsic parameters</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions="*.txt">
       <name>intrinsicRight</name>
       <longflag>intrinsicRight</longflag>
       <description>Right camera intrinsic parameters file as plain text file.</description>
       <label>Right camera intrinsics</label>
       <channel>input</channel>
     </file>
-    <file fileExtensions="*.txt,*.mat,*.4x4">
+    <file fileExtensions="*.txt">
       <name>rightToLeftExtrinsics</name>
       <longflag>rightToLeftExtrinsics</longflag>
       <description>Right to left camera transformation as plain text file.</description>
       <label>Right to left camera transformation</label>
       <channel>input</channel>
     </file>
+    <file fileExtensions="*.mps">
+      <name>outputPoints</name>
+      <longflag>outputPoints</longflag>
+      <description>Output point set.</description>
+      <label>Output points</label>
+      <default>output.mps</default>
+      <channel>output</channel>
+    </file>    
   </parameters>
 </executable>

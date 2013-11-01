@@ -33,6 +33,7 @@ void LoadChessBoardsFromDirectory(const std::string& fullDirectoryName,
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
   if (files.size() > 0)
   {
+    std::sort(files.begin(), files.end());
     for(unsigned int i = 0; i < files.size();i++)
     {
       IplImage* image = cvLoadImage(files[i].c_str());
@@ -414,36 +415,36 @@ void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
     CvMat& outputExtrinsicMatrix
     )
 {
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_64FC1);
 
-  CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 0);
-  CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 1);
-  CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 2);
+  CV_MAT_ELEM(*rotationVector, double, 0, 0) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 0);
+  CV_MAT_ELEM(*rotationVector, double, 0, 1) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 1);
+  CV_MAT_ELEM(*rotationVector, double, 0, 2) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 2);
 
-  CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, viewNumber, 0);
-  CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, viewNumber, 1);
-  CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, viewNumber, 2);
+  CV_MAT_ELEM(*translationVector, double, 0, 0) = CV_MAT_ELEM(translationVectors, double, viewNumber, 0);
+  CV_MAT_ELEM(*translationVector, double, 0, 1) = CV_MAT_ELEM(translationVectors, double, viewNumber, 1);
+  CV_MAT_ELEM(*translationVector, double, 0, 2) = CV_MAT_ELEM(translationVectors, double, viewNumber, 2);
 
   cvRodrigues2(rotationVector, rotationMatrix);
 
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 0) = CV_MAT_ELEM(*rotationMatrix, float, 0, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 1) = CV_MAT_ELEM(*rotationMatrix, float, 0, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 2) = CV_MAT_ELEM(*rotationMatrix, float, 0, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 0) = CV_MAT_ELEM(*rotationMatrix, float, 1, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 1) = CV_MAT_ELEM(*rotationMatrix, float, 1, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 2) = CV_MAT_ELEM(*rotationMatrix, float, 1, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 0) = CV_MAT_ELEM(*rotationMatrix, float, 2, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 1) = CV_MAT_ELEM(*rotationMatrix, float, 2, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 2) = CV_MAT_ELEM(*rotationMatrix, float, 2, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 3) = CV_MAT_ELEM(*translationVector, float, 0, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 3) = CV_MAT_ELEM(*translationVector, float, 0, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 3) = CV_MAT_ELEM(*translationVector, float, 0, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 0) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 1) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 2) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 3) = 1.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 0) = CV_MAT_ELEM(*rotationMatrix, double, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 1) = CV_MAT_ELEM(*rotationMatrix, double, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 2) = CV_MAT_ELEM(*rotationMatrix, double, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 0) = CV_MAT_ELEM(*rotationMatrix, double, 1, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 1) = CV_MAT_ELEM(*rotationMatrix, double, 1, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 2) = CV_MAT_ELEM(*rotationMatrix, double, 1, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 0) = CV_MAT_ELEM(*rotationMatrix, double, 2, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 1) = CV_MAT_ELEM(*rotationMatrix, double, 2, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 2) = CV_MAT_ELEM(*rotationMatrix, double, 2, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 3) = CV_MAT_ELEM(*translationVector, double, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 3) = CV_MAT_ELEM(*translationVector, double, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 3) = CV_MAT_ELEM(*translationVector, double, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 0) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 1) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 2) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 3) = 1.0f;
 
   cvReleaseMat(&rotationVector);
   cvReleaseMat(&translationVector);
@@ -473,12 +474,12 @@ void ComputeRightToLeftTransformations(
     throw std::logic_error("Inconsistent number of rows in supplied matrices!");
   }
 
-  CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightCameraTransformInverted = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightToLeftCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_32FC1);
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightCameraTransformInverted = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightToLeftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_64FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
 
   cvSetZero(rotationVector);
   cvSetZero(rotationMatrix);
@@ -494,7 +495,7 @@ void ComputeRightToLeftTransformations(
     {
       for (int k = 0; k < 3; k++)
       {
-        CV_MAT_ELEM(*rotationMatrix, float, j, k) = CV_MAT_ELEM(*rightToLeftCameraTransform, float, j, k);
+        CV_MAT_ELEM(*rotationMatrix, double, j, k) = CV_MAT_ELEM(*rightToLeftCameraTransform, double, j, k);
       }
     }
     cvRodrigues2(rotationMatrix, rotationVector);
@@ -502,8 +503,8 @@ void ComputeRightToLeftTransformations(
     // Write output
     for (int j = 0; j < 3; j++)
     {
-      CV_MAT_ELEM(rotationVectorsRightToLeft, float, i, j) = CV_MAT_ELEM(*rotationVector, float, 0, j);
-      CV_MAT_ELEM(translationVectorsRightToLeft, float, i, j) = CV_MAT_ELEM(*rightToLeftCameraTransform, float, j, 3);
+      CV_MAT_ELEM(rotationVectorsRightToLeft, double, i, j) = CV_MAT_ELEM(*rotationVector, double, 0, j);
+      CV_MAT_ELEM(translationVectorsRightToLeft, double, i, j) = CV_MAT_ELEM(*rightToLeftCameraTransform, double, j, 3);
     }
   }
 
@@ -528,25 +529,25 @@ void ProjectAllPoints(
     CvMat& outputImagePoints
     )
 {
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *objectPointsFor1View = cvCreateMat(pointCount, 3, CV_32FC1);
-  CvMat *imagePointsFor1View = cvCreateMat(pointCount, 2, CV_32FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *objectPointsFor1View = cvCreateMat(pointCount, 3, CV_64FC1);
+  CvMat *imagePointsFor1View = cvCreateMat(pointCount, 2, CV_64FC1);
 
   for (int i = 0; i < numberSuccessfulViews; i++)
   {
     for (int j = 0; j < pointCount; j++)
     {
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 0) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 0);
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 1) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 1);
-      CV_MAT_ELEM(*objectPointsFor1View, float, j, 2) = CV_MAT_ELEM(objectPoints, float, i*pointCount + j, 2);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 0) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 0);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 1) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 1);
+      CV_MAT_ELEM(*objectPointsFor1View, double, j, 2) = CV_MAT_ELEM(objectPoints, double, i*pointCount + j, 2);
     }
-    CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, i, 0);
-    CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, i, 1);
-    CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, i, 2);
-    CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, i, 0);
-    CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, i, 1);
-    CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, i, 2);
+    CV_MAT_ELEM(*rotationVector, double, 0, 0) = CV_MAT_ELEM(rotationVectors, double, i, 0);
+    CV_MAT_ELEM(*rotationVector, double, 0, 1) = CV_MAT_ELEM(rotationVectors, double, i, 1);
+    CV_MAT_ELEM(*rotationVector, double, 0, 2) = CV_MAT_ELEM(rotationVectors, double, i, 2);
+    CV_MAT_ELEM(*translationVector, double, 0, 0) = CV_MAT_ELEM(translationVectors, double, i, 0);
+    CV_MAT_ELEM(*translationVector, double, 0, 1) = CV_MAT_ELEM(translationVectors, double, i, 1);
+    CV_MAT_ELEM(*translationVector, double, 0, 2) = CV_MAT_ELEM(translationVectors, double, i, 2);
 
     cvProjectPoints2(
         objectPointsFor1View,
@@ -559,8 +560,8 @@ void ProjectAllPoints(
 
     for (int j = 0; j < pointCount; j++)
     {
-      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 0) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 0);
-      CV_MAT_ELEM(outputImagePoints, float, i*pointCount + j, 1) = CV_MAT_ELEM(*imagePointsFor1View, float, j, 1);
+      CV_MAT_ELEM(outputImagePoints, double, i*pointCount + j, 0) = CV_MAT_ELEM(*imagePointsFor1View, double, j, 0);
+      CV_MAT_ELEM(outputImagePoints, double, i*pointCount + j, 1) = CV_MAT_ELEM(*imagePointsFor1View, double, j, 1);
     }
   }
 
@@ -1194,7 +1195,7 @@ void UndistortPoint(const cv::Point2d& inputPoint,
 
 
 //-----------------------------------------------------------------------------
-cv::Point3d  TriangulatePointPair(
+cv::Point3d  TriangulatePointPairUsingGeometry(
     const std::pair<cv::Point2d, cv::Point2d>& inputUndistortedPoint,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
@@ -1202,58 +1203,61 @@ cv::Point3d  TriangulatePointPair(
     const cv::Mat& rightToLeftTranslationVector
     )
 {
-  cv::Mat rightToLeftRotationVector = cv::Mat(1,3,CV_64FC1);
-  cv::Rodrigues(rightToLeftRotationMatrix,rightToLeftRotationVector);
-
   std::vector < std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
   inputUndistortedPoints.push_back(inputUndistortedPoint);
 
-  std::vector <cv::Point3d> returnVector = TriangulatePointPairs(
+  std::vector <cv::Point3d> returnVector = TriangulatePointPairsUsingGeometry(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
-      rightToLeftRotationVector, rightToLeftTranslationVector);
+      rightToLeftRotationMatrix, rightToLeftTranslationVector, std::numeric_limits<double>::max());
 
   return returnVector[0];
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector< cv::Point3d > TriangulatePointPairs(
+std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
-    const cv::Mat& rightToLeftRotationVector,
-    const cv::Mat& rightToLeftTranslationVector
+    const cv::Mat& rightToLeftRotationMatrix,
+    const cv::Mat& rightToLeftTranslationVector,
+    const double& tolerance
     )
 {
   std::vector< cv::Point3d > outputPoints;
   int numberOfPoints = inputUndistortedPoints.size();
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
-  cv::Mat R2LInv   = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2Inv    = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat R2LRotV  = cv::Mat(1, 3, CV_64FC1);
+  cv::Mat R2LRot64 = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat R2LTrn64 = cv::Mat(1, 3, CV_64FC1);
+
   // Copy data into cv::Mat data types.
   // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
   // These triangulation routines need 64 bit data.
 
-  if ( rightToLeftRotationVector.type() == CV_32FC1 )
+  if ( rightToLeftRotationMatrix.type() == CV_32FC1 )
   {
-    for ( int i = 0 ; i < 3 ; i ++ ) 
+    for (int i = 0; i < 3; i++)
     {
-      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<float>(0,i);
+      for (int j = 0; j < 3; j++)
+      {
+        R2LRot64.at<double>(i,j) = rightToLeftRotationMatrix.at<float>(i,j);
+      }
     }
   }
   else
   {
-    for ( int i = 0 ; i < 3 ; i ++ ) 
+    for (int i = 0; i < 3; i++)
     {
-      R2LRotV.at<double>(0,i) = rightToLeftRotationVector.at<double>(0,i);
+      for (int j = 0; j < 3; j++)
+      {
+        R2LRot64.at<double>(i,j) = rightToLeftRotationMatrix.at<double>(i,j);
+      }
     }
   }
-  cv::Rodrigues(R2LRotV, R2LRot64);
+
   for (int i = 0; i < 3; i++)
   {
     for (int j = 0; j < 3; j++)
@@ -1285,8 +1289,6 @@ std::vector< cv::Point3d > TriangulatePointPairs(
     }
   }
 
-  R2LInv = R2LRot64.inv();
-
   // We invert the intrinsic params, so we can convert from pixels to normalised image coordinates.
   K1Inv = K1.inv();
   K2Inv = K2.inv();
@@ -1308,6 +1310,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
   cv::Point3d v;
 
   double UNorm, VNorm;
+  double twiceTolerance = tolerance * 2.0;
 
   // For each point...
   for (int i = 0; i < numberOfPoints; i++)
@@ -1392,11 +1395,18 @@ std::vector< cv::Point3d > TriangulatePointPairs(
     Qtc.y = Q0.y + tc*v.y;
     Qtc.z = Q0.z + tc*v.z;
 
-    midPoint.x = (Psc.x + Qtc.x)/2.0;
-    midPoint.y = (Psc.y + Qtc.y)/2.0;
-    midPoint.z = (Psc.z + Qtc.z)/2.0;
+    double distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
+                          +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
+                          +(Psc.z - Qtc.z)*(Psc.z - Qtc.z)
+                          );
+    if (distance < twiceTolerance)
+    {
+      midPoint.x = (Psc.x + Qtc.x)/2.0;
+      midPoint.y = (Psc.y + Qtc.y)/2.0;
+      midPoint.z = (Psc.z + Qtc.z)/2.0;
 
-    outputPoints.push_back(midPoint);
+      outputPoints.push_back(midPoint);
+    }
   }
   
   return outputPoints;
@@ -1404,7 +1414,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-void TriangulatePointPairs(
+void CStyleTriangulatePointPairsUsingSVD(
     const CvMat& leftCameraUndistortedImagePoints,
     const CvMat& rightCameraUndistortedImagePoints,
     const CvMat& leftCameraIntrinsicParams,
@@ -1443,7 +1453,7 @@ void TriangulatePointPairs(
 
 
   // Call the other, more C++ like method.
-  outputPoints = TriangulatePointPairs(
+  outputPoints = TriangulatePointPairsUsingSVD(
       inputPairs,
       K1, R1, T1,
       K2, R2, T2
@@ -1461,7 +1471,7 @@ void TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-std::vector< cv::Point3d > TriangulatePointPairs(
+std::vector< cv::Point3d > TriangulatePointPairsUsingSVD(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& leftCameraRotationVector,
@@ -1572,7 +1582,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
     u2p.y = u2t.at<double>(1,0);
     u2p.z = u2t.at<double>(2,0);
 
-    reconstructedPoint = IterativeTriangulatePoint(P1d, P2d, u1p, u2p);
+    reconstructedPoint = InternalIterativeTriangulatePointUsingSVD(P1d, P2d, u1p, u2p);
     outputPoints.push_back(reconstructedPoint);
 /*
     std::cout << "TriangulatePointPairs:l=(" << inputUndistortedPoints[i].first.x << ", " << inputUndistortedPoints[i].first.y << "), r=(" << inputUndistortedPoints[i].second.x << ", " << inputUndistortedPoints[i].second.y << "), 3D=" << reconstructedPoint.x << ", " << reconstructedPoint.y << ", " << reconstructedPoint.z << ")" << std::endl;
@@ -1584,7 +1594,7 @@ std::vector< cv::Point3d > TriangulatePointPairs(
 
 
 //-----------------------------------------------------------------------------
-cv::Mat_<double> TriangulatePoint(
+cv::Mat_<double> InternalTriangulatePointUsingSVD(
     const cv::Matx34d& P1,
     const cv::Matx34d& P2,
     const cv::Point3d& u1,
@@ -1617,7 +1627,7 @@ cv::Mat_<double> TriangulatePoint(
 
 
 //-----------------------------------------------------------------------------
-cv::Point3d IterativeTriangulatePoint(
+cv::Point3d InternalIterativeTriangulatePointUsingSVD(
     const cv::Matx34d& P1,
     const cv::Matx34d& P2,
     const cv::Point3d& u1,
@@ -1630,7 +1640,7 @@ cv::Point3d IterativeTriangulatePoint(
 
   for (int i=0; i<10; i++) // Hartley suggests 10 iterations at most
   {
-    cv::Mat_<double> X_ = TriangulatePoint(P1,P2,u1,u2,w1,w2);
+    cv::Mat_<double> X_ = InternalTriangulatePointUsingSVD(P1,P2,u1,u2,w1,w2);
     X(0) = X_(0);
     X(1) = X_(1);
     X(2) = X_(2);

@@ -209,7 +209,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
   CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
 
-  mitk::TriangulatePointPairs(
+  mitk::CStyleTriangulatePointPairsUsingSVD(
     leftScreenPointsMat,
     rightScreenPointsMat,
     leftCameraIntrinsicMat,
@@ -233,12 +233,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   cv::Mat rightToLeftRotationVector(3,1,CV_64FC1);
   cv::Rodrigues( rightToLeftRotationMatrix, rightToLeftRotationVector);
   std::vector <cv::Point3d> leftCameraTriangulatedWorldPoints_m2 = 
-    mitk::TriangulatePointPairs(
+    mitk::TriangulatePointPairsUsingGeometry(
         inputUndistortedPoints, 
         leftCameraIntrinsic,
         rightCameraIntrinsic,
         rightToLeftRotationVector,
-        rightToLeftTranslationVector);
+        rightToLeftTranslationVector,
+        std::numeric_limits<double>::max() // don't know tolerance allowable yet.
+        );
 
   MITK_INFO << leftCameraTriangulatedWorldPoints_m2.size();
 
