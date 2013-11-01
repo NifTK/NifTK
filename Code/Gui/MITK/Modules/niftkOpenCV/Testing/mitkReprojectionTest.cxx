@@ -149,7 +149,6 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   boost::mt19937 rng;
   boost::normal_distribution<> nd(0.0,pixelNoise);
   boost::variate_generator<boost::mt19937& , boost::normal_distribution<> > var_nor (rng,nd);
-  MITK_INFO << "GREP ME " << var_nor() << " " << var_nor() << " " << var_nor();
   for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
   {
     CV_MAT_ELEM (*output2DPointsLeft ,double,i,0) += var_nor(); 
