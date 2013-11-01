@@ -207,6 +207,11 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTransl
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
  * right cameras, and compute transformations from right to left.
+ *
+ * This means that a given a point P_r in the coordinate frame of the right
+ * hand camera, then when this point is multiplied by the rotationVectorsRightToLeft
+ * and translationVectorsRightToLeft, the point will be converted to a point P_l
+ * that is in the coordinate frame of the left hand camera.
  */
 extern "C++" NIFTKOPENCV_EXPORT void ComputeRightToLeftTransformations(
   const CvMat& rotationVectorsLeft,
