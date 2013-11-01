@@ -415,36 +415,36 @@ void ExtractExtrinsicMatrixFromRotationAndTranslationVectors(
     CvMat& outputExtrinsicMatrix
     )
 {
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *translationVector = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_32FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *translationVector = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_64FC1);
 
-  CV_MAT_ELEM(*rotationVector, float, 0, 0) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 0);
-  CV_MAT_ELEM(*rotationVector, float, 0, 1) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 1);
-  CV_MAT_ELEM(*rotationVector, float, 0, 2) = CV_MAT_ELEM(rotationVectors, float, viewNumber, 2);
+  CV_MAT_ELEM(*rotationVector, double, 0, 0) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 0);
+  CV_MAT_ELEM(*rotationVector, double, 0, 1) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 1);
+  CV_MAT_ELEM(*rotationVector, double, 0, 2) = CV_MAT_ELEM(rotationVectors, double, viewNumber, 2);
 
-  CV_MAT_ELEM(*translationVector, float, 0, 0) = CV_MAT_ELEM(translationVectors, float, viewNumber, 0);
-  CV_MAT_ELEM(*translationVector, float, 0, 1) = CV_MAT_ELEM(translationVectors, float, viewNumber, 1);
-  CV_MAT_ELEM(*translationVector, float, 0, 2) = CV_MAT_ELEM(translationVectors, float, viewNumber, 2);
+  CV_MAT_ELEM(*translationVector, double, 0, 0) = CV_MAT_ELEM(translationVectors, double, viewNumber, 0);
+  CV_MAT_ELEM(*translationVector, double, 0, 1) = CV_MAT_ELEM(translationVectors, double, viewNumber, 1);
+  CV_MAT_ELEM(*translationVector, double, 0, 2) = CV_MAT_ELEM(translationVectors, double, viewNumber, 2);
 
   cvRodrigues2(rotationVector, rotationMatrix);
 
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 0) = CV_MAT_ELEM(*rotationMatrix, float, 0, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 1) = CV_MAT_ELEM(*rotationMatrix, float, 0, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 2) = CV_MAT_ELEM(*rotationMatrix, float, 0, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 0) = CV_MAT_ELEM(*rotationMatrix, float, 1, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 1) = CV_MAT_ELEM(*rotationMatrix, float, 1, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 2) = CV_MAT_ELEM(*rotationMatrix, float, 1, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 0) = CV_MAT_ELEM(*rotationMatrix, float, 2, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 1) = CV_MAT_ELEM(*rotationMatrix, float, 2, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 2) = CV_MAT_ELEM(*rotationMatrix, float, 2, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 0, 3) = CV_MAT_ELEM(*translationVector, float, 0, 0);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 1, 3) = CV_MAT_ELEM(*translationVector, float, 0, 1);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 2, 3) = CV_MAT_ELEM(*translationVector, float, 0, 2);
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 0) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 1) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 2) = 0.0f;
-  CV_MAT_ELEM(outputExtrinsicMatrix, float, 3, 3) = 1.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 0) = CV_MAT_ELEM(*rotationMatrix, double, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 1) = CV_MAT_ELEM(*rotationMatrix, double, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 2) = CV_MAT_ELEM(*rotationMatrix, double, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 0) = CV_MAT_ELEM(*rotationMatrix, double, 1, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 1) = CV_MAT_ELEM(*rotationMatrix, double, 1, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 2) = CV_MAT_ELEM(*rotationMatrix, double, 1, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 0) = CV_MAT_ELEM(*rotationMatrix, double, 2, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 1) = CV_MAT_ELEM(*rotationMatrix, double, 2, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 2) = CV_MAT_ELEM(*rotationMatrix, double, 2, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 0, 3) = CV_MAT_ELEM(*translationVector, double, 0, 0);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 1, 3) = CV_MAT_ELEM(*translationVector, double, 0, 1);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 2, 3) = CV_MAT_ELEM(*translationVector, double, 0, 2);
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 0) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 1) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 2) = 0.0f;
+  CV_MAT_ELEM(outputExtrinsicMatrix, double, 3, 3) = 1.0f;
 
   cvReleaseMat(&rotationVector);
   cvReleaseMat(&translationVector);
@@ -474,12 +474,12 @@ void ComputeRightToLeftTransformations(
     throw std::logic_error("Inconsistent number of rows in supplied matrices!");
   }
 
-  CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightCameraTransformInverted = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rightToLeftCameraTransform = cvCreateMat(4, 4, CV_32FC1);
-  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_32FC1);
-  CvMat *rotationVector = cvCreateMat(1, 3, CV_32FC1);
+  CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightCameraTransformInverted = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rightToLeftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
+  CvMat *rotationMatrix = cvCreateMat(3, 3, CV_64FC1);
+  CvMat *rotationVector = cvCreateMat(1, 3, CV_64FC1);
 
   cvSetZero(rotationVector);
   cvSetZero(rotationMatrix);
@@ -495,7 +495,7 @@ void ComputeRightToLeftTransformations(
     {
       for (int k = 0; k < 3; k++)
       {
-        CV_MAT_ELEM(*rotationMatrix, float, j, k) = CV_MAT_ELEM(*rightToLeftCameraTransform, float, j, k);
+        CV_MAT_ELEM(*rotationMatrix, double, j, k) = CV_MAT_ELEM(*rightToLeftCameraTransform, double, j, k);
       }
     }
     cvRodrigues2(rotationMatrix, rotationVector);
@@ -503,8 +503,8 @@ void ComputeRightToLeftTransformations(
     // Write output
     for (int j = 0; j < 3; j++)
     {
-      CV_MAT_ELEM(rotationVectorsRightToLeft, float, i, j) = CV_MAT_ELEM(*rotationVector, float, 0, j);
-      CV_MAT_ELEM(translationVectorsRightToLeft, float, i, j) = CV_MAT_ELEM(*rightToLeftCameraTransform, float, j, 3);
+      CV_MAT_ELEM(rotationVectorsRightToLeft, double, i, j) = CV_MAT_ELEM(*rotationVector, double, 0, j);
+      CV_MAT_ELEM(translationVectorsRightToLeft, double, i, j) = CV_MAT_ELEM(*rightToLeftCameraTransform, double, j, 3);
     }
   }
 
