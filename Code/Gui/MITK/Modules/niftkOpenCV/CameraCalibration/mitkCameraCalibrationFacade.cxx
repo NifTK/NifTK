@@ -1208,7 +1208,7 @@ cv::Point3d  TriangulatePointPairUsingGeometry(
 
   std::vector <cv::Point3d> returnVector = TriangulatePointPairsUsingGeometry(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
-      rightToLeftRotationMatrix, rightToLeftTranslationVector, std::numeric_limits<double>::max());
+      rightToLeftRotationMatrix, rightToLeftTranslationVector, 100.0);
 
   return returnVector[0];
 }

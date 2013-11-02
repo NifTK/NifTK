@@ -239,7 +239,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         rightCameraIntrinsic,
         rightToLeftRotationVector,
         rightToLeftTranslationVector,
-        std::numeric_limits<double>::max() // don't know tolerance allowable yet.
+        100.0 // don't know tolerance allowable yet.
         );
 
   MITK_INFO << leftCameraTriangulatedWorldPoints_m2.size();
