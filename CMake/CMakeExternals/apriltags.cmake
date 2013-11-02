@@ -30,6 +30,11 @@ if(BUILD_IGI)
   set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install)
  
   if(NOT DEFINED apriltags_DIR)
+
+    if(UNIX)
+      set(APRILTAGS_CXX_FLAGS "-fPIC")
+      set(APRILTAGS_C_FLAGS "-fPIC")
+    endif()
   
     niftkMacroGetChecksum(NIFTK_CHECKSUM_APRILTAGS ${NIFTK_LOCATION_APRILTAGS})
   
@@ -48,6 +53,8 @@ if(BUILD_IGI)
           -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
           -DOpenCV_DIR:PATH=${CMAKE_BINARY_DIR}/OpenCV-build
           -DEIGEN_DIR:PATH=${CMAKE_BINARY_DIR}/EIGEN-src
+          "-DCMAKE_CXX_FLAGS:STRING=${EP_COMMON_CXX_FLAGS} ${APRILTAGS_CXX_FLAGS}"
+          "-DCMAKE_C_FLAGS:STRING=${EP_COMMON_C_FLAGS} ${APRILTAGS_C_FLAGS}"
        DEPENDS ${proj_DEPENDENCIES}
       )
 
