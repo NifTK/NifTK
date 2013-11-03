@@ -89,6 +89,7 @@ if(SlicerExecutionModel_FOUND)
     niftkOtsuThresholdImage
     niftkSubsampleImage
     niftkSubtract
+    niftkUnaryImageOperatorsOnDirectoryTree
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
