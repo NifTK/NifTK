@@ -30,7 +30,7 @@ namespace mitk {
  * \sa MIDASToolKeyPressResponder
  * \sa StateMachine
  */
-class NIFTKDNDDISPLAY_EXPORT MIDASViewKeyPressResponder
+class MIDASViewKeyPressResponder
 {
 public:
 
