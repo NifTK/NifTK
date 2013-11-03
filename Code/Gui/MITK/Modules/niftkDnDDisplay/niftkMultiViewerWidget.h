@@ -102,7 +102,7 @@ public:
   void SetBackgroundColour(QColor backgroundColour);
 
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
-  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
+  void SetInterpolationType(DnDDisplayInterpolationType interpolationType);
 
   /// \brief Sets the default window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
   void SetDefaultLayout(WindowLayout windowLayout);

@@ -25,7 +25,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION("midas default image interpolation");
+const std::string QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_INTERPOLATION_TYPE("default image interpolation");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR("midas background colour");
 const std::string QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR_STYLESHEET("midas background colour stylesheet");
 
@@ -214,7 +214,7 @@ bool QmitkMIDASMultiViewEditorPreferencePage::PerformOk()
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_VIEW_ROW_NUMBER, m_DefaultNumberOfViewRowsSpinBox->value());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_VIEW_COLUMN_NUMBER, m_DefaultNumberOfViewColumnsSpinBox->value());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_WINDOW_LAYOUT, m_DefaultWindowLayoutComboBox->currentIndex());
-  m_MIDASMultiViewEditorPreferencesNode->PutInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, m_ImageInterpolationComboBox->currentIndex());
+  m_MIDASMultiViewEditorPreferencesNode->PutInt(DEFAULT_INTERPOLATION_TYPE, m_ImageInterpolationComboBox->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutInt(DEFAULT_DROP_TYPE, m_DefaultDropType->currentIndex());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_DROP_TYPE_CONTROLS, m_ShowDropTypeControlsCheckBox->isChecked());
   m_MIDASMultiViewEditorPreferencesNode->PutBool(MIDAS_SHOW_SHOWING_OPTIONS, m_ShowShowingOptionsCheckBox->isChecked());
@@ -256,7 +256,7 @@ void QmitkMIDASMultiViewEditorPreferencePage::Update()
   m_DefaultNumberOfViewRowsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW_ROW_NUMBER, 1));
   m_DefaultNumberOfViewColumnsSpinBox->setValue(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_VIEW_COLUMN_NUMBER, 1));
   m_DefaultWindowLayoutComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_WINDOW_LAYOUT, 2)); // default coronal
-  m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
+  m_ImageInterpolationComboBox->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(DEFAULT_INTERPOLATION_TYPE, 2));
   m_DefaultDropType->setCurrentIndex(m_MIDASMultiViewEditorPreferencesNode->GetInt(DEFAULT_DROP_TYPE, 0));
   m_ShowDropTypeControlsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_DROP_TYPE_CONTROLS, false));
   m_ShowShowingOptionsCheckBox->setChecked(m_MIDASMultiViewEditorPreferencesNode->GetBool(MIDAS_SHOW_SHOWING_OPTIONS, true));

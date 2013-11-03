@@ -55,10 +55,10 @@ public:
   /// \see IPreferencePage::Update()
   virtual void Update();
 
-  /// \brief Stores the preference name for the default image interpolation in the CMIC MIDAS Display.
-  static const std::string MIDAS_DEFAULT_IMAGE_INTERPOLATION;
+  /// \brief Stores the preference name for the default image interpolation in the DnD Display.
+  static const std::string DEFAULT_INTERPOLATION_TYPE;
 
-  /// \brief Stores the preference name for the default background colour in the CMIC MIDAS Display.
+  /// \brief Stores the preference name for the default background colour in the DnD Display.
   static const std::string MIDAS_BACKGROUND_COLOUR;
 
   /// \brief Stores the preference name for the default background colour stylesheet in the CMIC MIDAS Display.

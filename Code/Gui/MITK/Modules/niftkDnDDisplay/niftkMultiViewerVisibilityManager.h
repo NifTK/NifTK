@@ -86,10 +86,10 @@ public:
   DnDDisplayDropType GetDropType() const { return m_DropType; }
 
   /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
-  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolation) { m_DefaultInterpolation = interpolation; }
+  void SetInterpolationType(DnDDisplayInterpolationType interpolationType) { m_InterpolationType = interpolationType; }
 
   /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
-  MIDASDefaultInterpolationType GetDefaultInterpolationType() const { return m_DefaultInterpolation; }
+  DnDDisplayInterpolationType GetInterpolationType() const { return m_InterpolationType; }
 
   /// \brief Sets the default render window layout for when images are dropped into a render window.
   void SetDefaultLayout(WindowLayout windowLayout) { m_DefaultWindowLayout = windowLayout; }
@@ -149,7 +149,8 @@ private:
   /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
   void UpdateVisibilityProperty(const itk::EventObject&);
 
-  /// \brief Called when a node is added, and we set rendering window specific visibility to false for all registered windows, plus other default properties such as interpolation type.
+  /// \brief Called when a node is added, and we set rendering window specific visibility
+  /// to false for all registered windows, plus other default properties such as interpolation type.
   void SetInitialNodeProperties(mitk::DataNode* node);
 
   /// \brief Works out the correct window layout from the data, and from the preferences.
@@ -195,8 +196,9 @@ private:
   // Keeps track of the default layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
   WindowLayout m_DefaultWindowLayout;
 
-  // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
-  MIDASDefaultInterpolationType m_DefaultInterpolation;
+  // Keeps track of the default interpolation, as it affects the response when images are dropped,
+  // as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
+  DnDDisplayInterpolationType m_InterpolationType;
 
   // Boolean to indicate whether to automatically add children, default to true.
   bool m_AutomaticallyAddChildren;

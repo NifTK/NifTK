@@ -286,9 +286,9 @@ void niftkMultiViewerWidget::RequestUpdateAll()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType)
+void niftkMultiViewerWidget::SetInterpolationType(DnDDisplayInterpolationType interpolationType)
 {
-  m_VisibilityManager->SetDefaultInterpolationType(interpolationType);
+  m_VisibilityManager->SetInterpolationType(interpolationType);
 }
 
 

@@ -88,14 +88,14 @@ enum DnDDisplayDropType
 };
 
 /*!
- * \enum MIDASDefaultInterpolationType
+ * \enum DnDDisplayInterpolationType
  * \brief Describes what the interpolation type should be set to when an image is dropped.
  */
-enum MIDASDefaultInterpolationType
+enum DnDDisplayInterpolationType
 {
-  MIDAS_INTERPOLATION_NONE,
-  MIDAS_INTERPOLATION_LINEAR,
-  MIDAS_INTERPOLATION_CUBIC
+  DNDDISPLAY_NO_INTERPOLATION,
+  DNDDISPLAY_LINEAR_INTERPOLATION,
+  DNDDISPLAY_CUBIC_INTERPOLATION
 };
 
 /*!

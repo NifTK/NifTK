@@ -172,8 +172,8 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
-    MIDASDefaultInterpolationType defaultInterpolation =
-        (MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
+    DnDDisplayInterpolationType defaultInterpolationType =
+        (DnDDisplayInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_INTERPOLATION_TYPE, 2));
     WindowLayout defaultLayout =
         (WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
     DnDDisplayDropType defaultDropType =
@@ -195,7 +195,7 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     bool timeStepTracking = prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING, true);
 
     d->m_MidasMultiViewVisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
-    d->m_MidasMultiViewVisibilityManager->SetDefaultInterpolationType(defaultInterpolation);
+    d->m_MidasMultiViewVisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_MidasMultiViewVisibilityManager->SetDefaultLayout(defaultLayout);
     d->m_MidasMultiViewVisibilityManager->SetDropType(defaultDropType);
 
@@ -264,7 +264,7 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_BACKGROUND_COLOUR, "black"));
     QColor backgroundColour(backgroundColourName);
     d->m_MultiViewerWidget->SetBackgroundColour(backgroundColour);
-    d->m_MultiViewerWidget->SetDefaultInterpolationType((MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2)));
+    d->m_MultiViewerWidget->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_INTERPOLATION_TYPE, 2)));
     d->m_MultiViewerWidget->SetDefaultLayout((WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
     d->m_MultiViewerWidget->SetDropType((DnDDisplayDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_DROP_TYPE, 0)));
     d->m_MultiViewerWidget->SetShowDropTypeControls(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_CONTROLS, false));
