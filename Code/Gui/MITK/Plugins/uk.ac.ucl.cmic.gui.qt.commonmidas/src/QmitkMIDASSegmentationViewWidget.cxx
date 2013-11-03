@@ -82,6 +82,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_NodeAddedSetter->SetVisibility(false);
 
   m_VisibilityTracker = mitk::DataStorageVisibilityTracker::New();
+  m_VisibilityTracker->SetNodesToIgnore(m_ViewerWidget->GetWidgetPlanes());
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
   m_ViewerWidget->SetDisplay2DCursorsLocally(true);
@@ -412,7 +413,6 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       m_ViewerWidget->SetGeometry(timeGeometry);
       m_ViewerWidget->SetBoundGeometryActive(false);
       m_ViewerWidget->SetNavigationControllerEventListening(true);
-      m_ViewerWidget->SetDisplay2DCursorsLocally(true);
       m_ViewerWidget->SetShow3DWindowInOrthoView(true);
       if (!m_ViewerWidget->IsEnabled())
       {
