@@ -152,10 +152,10 @@ private:
 
   MIDASLayout m_MainWindowLayout;
 
-  QmitkRenderWindow* m_MainWindowAxial;
-  QmitkRenderWindow* m_MainWindowSagittal;
-  QmitkRenderWindow* m_MainWindowCoronal;
-  QmitkRenderWindow* m_MainWindow3d;
+  QmitkRenderWindow* m_MainAxialWindow;
+  QmitkRenderWindow* m_MainSagittalWindow;
+  QmitkRenderWindow* m_MainCoronalWindow;
+  QmitkRenderWindow* m_Main3DWindow;
   mitk::BaseRenderer* m_CurrentRenderer;
 
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;

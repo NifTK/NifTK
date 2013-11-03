@@ -58,7 +58,7 @@ public:
   void SetDataStorage(const mitk::DataStorage::Pointer dataStorage);
 
   /// \brief We provide facility to ignore nodes, and not adjust their visibility, which is useful for cross hairs.
-  void SetNodesToIgnore(std::vector<mitk::DataNode*>& nodes);
+  void SetNodesToIgnore(const std::vector<mitk::DataNode*>& nodes);
 
 protected:
 
