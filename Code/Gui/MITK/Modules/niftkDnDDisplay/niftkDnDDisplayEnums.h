@@ -98,17 +98,4 @@ enum DnDDisplayInterpolationType
   DNDDISPLAY_CUBIC_INTERPOLATION
 };
 
-/*!
- * \enum MIDASBindType
- * \brief Describes valid bind modes.
- */
-enum MIDASBindType
-{
-  MIDAS_BIND_NONE = 0,
-  MIDAS_BIND_LAYOUT = 1,
-  MIDAS_BIND_CURSORS = 2,
-  MIDAS_BIND_MAGNIFICATION = 4,
-  MIDAS_BIND_GEOMETRY = 8
-};
-
 #endif
