@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  mitkMIDASDataStorageEditorInput.cxx
   QmitkMIDASMultiViewEditor.cxx
   QmitkMIDASMultiViewEditorPreferencePage.cxx
 )
