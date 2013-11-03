@@ -15,7 +15,6 @@
 #ifndef niftkWindowLayoutWidget_h
 #define niftkWindowLayoutWidget_h
 
-#include <niftkDnDDisplayExports.h>
 #include "ui_niftkWindowLayoutWidget.h"
 
 #include <mitkMIDASEnums.h>

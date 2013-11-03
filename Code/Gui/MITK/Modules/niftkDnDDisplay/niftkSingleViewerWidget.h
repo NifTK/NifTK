@@ -29,8 +29,8 @@
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
-#include "Interactions/mitkMIDASViewKeyPressResponder.h"
-#include "Interactions/mitkMIDASViewKeyPressStateMachine.h"
+#include "Interactions/mitkDnDDisplayStateMachineResponder.h"
+#include "Interactions/mitkDnDDisplayStateMachine.h"
 #include "niftkMultiWindowWidget.h"
 
 class QGridLayout;
@@ -70,7 +70,7 @@ class QGridLayout;
  * \sa QmitkRenderWindow
  * \sa niftkMultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::DnDDisplayStateMachineResponder
 {
 
   /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
@@ -415,7 +415,7 @@ private:
   mitk::Point3D m_SecondLastSelectedPosition;
 //  std::deque<mitk::Point3D> m_LastSelectedPositions;
 
-  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
+  mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
 };
 
 #endif

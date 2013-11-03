@@ -17,7 +17,7 @@
 #include <QmitkMIDASMultiViewEditorPreferencePage.h>
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
-#include <Interactions/mitkMIDASViewKeyPressStateMachine.h>
+#include <Interactions/mitkDnDDisplayStateMachine.h>
 
 namespace mitk {
 
@@ -31,7 +31,7 @@ void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
   s_PluginContext = context;
 
   mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::MIDASViewKeyPressStateMachine::STATE_MACHINE_XML);
+  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::DnDDisplayStateMachine::STATE_MACHINE_XML);
 }
 
 

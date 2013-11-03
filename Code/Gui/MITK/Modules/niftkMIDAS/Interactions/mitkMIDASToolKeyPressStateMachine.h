@@ -25,7 +25,6 @@ namespace mitk {
  * \class MIDASToolPressStateMachine
  * \brief StateMachine to check for key press events that MIDAS is interested in,
  * and pass them onto any registered MIDASToolKeyPressResponder.
- * \sa MIDASViewKeyPressResponder
  */
 class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public StateMachine
 {

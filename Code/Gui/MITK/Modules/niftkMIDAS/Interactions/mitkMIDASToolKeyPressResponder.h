@@ -28,7 +28,6 @@ namespace mitk {
  * StateMachine, and hence registered with the interaction loop.
  *
  * \sa MIDASToolKeyPressStateMachine
- * \sa MIDASViewKeyPressResponder
  * \sa StateMachine
  */
 class NIFTKMIDAS_EXPORT MIDASToolKeyPressResponder

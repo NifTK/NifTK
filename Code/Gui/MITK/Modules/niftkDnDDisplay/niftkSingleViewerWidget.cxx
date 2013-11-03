@@ -45,7 +45,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent)
 , m_RememberSettingsPerLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
-, m_ViewKeyPressStateMachine(0)
+, m_DnDDisplayStateMachine(0)
 {
   mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
 
@@ -78,7 +78,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(
 , m_RememberSettingsPerLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
-, m_ViewKeyPressStateMachine(0)
+, m_DnDDisplayStateMachine(0)
 {
   this->Initialize(windowName, renderingManager, dataStorage);
 }
@@ -134,20 +134,20 @@ void niftkSingleViewerWidget::Initialize(QString windowName,
   QObject::connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
 
   // Create/Connect the state machine
-  m_ViewKeyPressStateMachine = mitk::MIDASViewKeyPressStateMachine::New("MIDASViewKeyPressStateMachine", this);
+  m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned j = 0; j < renderWindows.size(); ++j)
   {
-    m_ViewKeyPressStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
+    m_DnDDisplayStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
   }
-  mitk::GlobalInteraction::GetInstance()->AddListener(m_ViewKeyPressStateMachine);
+  mitk::GlobalInteraction::GetInstance()->AddListener(m_DnDDisplayStateMachine);
 }
 
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::~niftkSingleViewerWidget()
 {
-  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ViewKeyPressStateMachine);
+  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_DnDDisplayStateMachine);
 }
 
 

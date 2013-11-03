@@ -15,7 +15,6 @@
 #ifndef niftkImageNavigatorWidget_h
 #define niftkImageNavigatorWidget_h
 
-#include <niftkDnDDisplayExports.h>
 #include "ui_niftkImageNavigatorWidget.h"
 
 /**

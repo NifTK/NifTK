@@ -43,7 +43,7 @@ namespace mitk
   {
   public:
     mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
-    // MIDAS customisation: renderers and slice navigation controllers passed as arguments
+    // DnD Display customisation: renderers and slice navigation controllers passed as arguments
     mitkNewMacro1Param(Self, const std::vector<mitk::BaseRenderer*>&);
 
     /**

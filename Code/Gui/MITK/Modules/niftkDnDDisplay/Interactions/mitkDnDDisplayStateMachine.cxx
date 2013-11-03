@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkMIDASViewKeyPressStateMachine.h"
+#include "mitkDnDDisplayStateMachine.h"
 #include <mitkWheelEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkBaseRenderer.h>
@@ -20,8 +20,8 @@
 namespace mitk
 {
 
-const std::string mitk::MIDASViewKeyPressStateMachine::STATE_MACHINE_XML =
-    "<stateMachine NAME=\"MIDASViewKeyPressStateMachine\">"
+const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
+    "<stateMachine NAME=\"DnDDisplayStateMachine\">"
     "  <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
     "    <transition NAME=\"keyPressA\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4001\">"
     "      <action ID=\"350001\" />"
@@ -45,7 +45,7 @@ const std::string mitk::MIDASViewKeyPressStateMachine::STATE_MACHINE_XML =
     "</stateMachine>";
 
 //-----------------------------------------------------------------------------
-MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char* stateMachinePattern, MIDASViewKeyPressResponder* responder)
+DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, DnDDisplayStateMachineResponder* responder)
 : StateMachine(stateMachinePattern)
 {
   assert(responder);
@@ -61,7 +61,7 @@ MIDASViewKeyPressStateMachine::MIDASViewKeyPressStateMachine(const char* stateMa
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::HandleEvent(StateEvent const* stateEvent)
+bool DnDDisplayStateMachine::HandleEvent(StateEvent const* stateEvent)
 {
   mitk::BaseRenderer* sender = stateEvent->GetEvent()->GetSender();
   if (!this->HasRenderer(sender))
@@ -73,7 +73,7 @@ bool MIDASViewKeyPressStateMachine::HandleEvent(StateEvent const* stateEvent)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::HasRenderer(const mitk::BaseRenderer* renderer) const
+bool DnDDisplayStateMachine::HasRenderer(const mitk::BaseRenderer* renderer) const
 {
   std::vector<const mitk::BaseRenderer*>::const_iterator begin = m_Renderers.begin();
   std::vector<const mitk::BaseRenderer*>::const_iterator end = m_Renderers.end();
@@ -83,7 +83,7 @@ bool MIDASViewKeyPressStateMachine::HasRenderer(const mitk::BaseRenderer* render
 
 
 //-----------------------------------------------------------------------------
-void MIDASViewKeyPressStateMachine::AddRenderer(const mitk::BaseRenderer* renderer)
+void DnDDisplayStateMachine::AddRenderer(const mitk::BaseRenderer* renderer)
 {
   if (!this->HasRenderer(renderer))
   {
@@ -93,7 +93,7 @@ void MIDASViewKeyPressStateMachine::AddRenderer(const mitk::BaseRenderer* render
 
 
 //-----------------------------------------------------------------------------
-void MIDASViewKeyPressStateMachine::RemoveRenderer(const mitk::BaseRenderer* renderer)
+void DnDDisplayStateMachine::RemoveRenderer(const mitk::BaseRenderer* renderer)
 {
   std::vector<const mitk::BaseRenderer*>::iterator begin = m_Renderers.begin();
   std::vector<const mitk::BaseRenderer*>::iterator end = m_Renderers.end();
@@ -107,7 +107,7 @@ void MIDASViewKeyPressStateMachine::RemoveRenderer(const mitk::BaseRenderer* ren
 
 
 //-----------------------------------------------------------------------------
-float MIDASViewKeyPressStateMachine::CanHandleEvent(const StateEvent *event) const
+float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
 {
   // See StateMachine.xml for event Ids.
   if (event != NULL
@@ -129,41 +129,41 @@ float MIDASViewKeyPressStateMachine::CanHandleEvent(const StateEvent *event) con
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::MoveAnterior(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::MoveAnterior(Action*, const StateEvent*)
 {
   return m_Responder->MoveAnterior();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::MovePosterior(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::MovePosterior(Action*, const StateEvent*)
 {
   return m_Responder->MovePosterior();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::SwitchToAxial(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::SwitchToAxial(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToAxial();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::SwitchToSagittal(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::SwitchToSagittal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToSagittal();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::SwitchToCoronal(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::SwitchToCoronal(Action*, const StateEvent*)
 {
   return m_Responder->SwitchToCoronal();
 }
 
 //-----------------------------------------------------------------------------
-bool MIDASViewKeyPressStateMachine::ToggleMultiWindowLayout(Action*, const StateEvent*)
+bool DnDDisplayStateMachine::ToggleMultiWindowLayout(Action*, const StateEvent*)
 {
   return m_Responder->ToggleMultiWindowLayout();
 }

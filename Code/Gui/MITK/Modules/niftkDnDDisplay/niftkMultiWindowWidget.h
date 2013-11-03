@@ -15,8 +15,6 @@
 #ifndef niftkMultiWindowWidget_h
 #define niftkMultiWindowWidget_h
 
-#include <niftkDnDDisplayExports.h>
-
 //#include <itkConversionUtils.h>
 
 #include <QColor>

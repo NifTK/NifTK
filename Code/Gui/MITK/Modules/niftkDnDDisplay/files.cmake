@@ -21,7 +21,7 @@ set(CPP_FILES
   niftkMultiViewerWidgetControlPanel.cxx
   niftkSingleViewerWidget.cxx
   vtkSideAnnotation.cxx
-  Interactions/mitkMIDASViewKeyPressStateMachine.cxx
+  Interactions/mitkDnDDisplayStateMachine.cxx
   Interactions/mitkDnDDisplayInteractor.cxx
 )
 
@@ -42,7 +42,7 @@ set(UI_FILES
 )
 
 set(RESOURCE_FILES
-  Interactions/DisplayInteraction.xml
+  Interactions/DnDDisplayInteraction.xml
 )
 
 set(QRC_FILES

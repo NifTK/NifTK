@@ -796,6 +796,16 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* view,
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
+  mitk::DataStorage::SetOfObjects::Pointer nodeSet = mitk::DataStorage::SetOfObjects::New();
+  for (unsigned i = 0; i < nodes.size(); ++i)
+  {
+    nodeSet->InsertElement(i, nodes[i]);
+  }
+  // calculate bounding geometry of these nodes
+  mitk::TimeGeometry::Pointer bounds = m_DataStorage->ComputeBoundingGeometry3D(nodeSet);
+  // initialize the views to the bounding geometry
+  m_RenderingManager->InitializeViews(bounds);
+
   // See also niftkMultiViewerVisibilityManager::OnNodesDropped which should trigger first.
   if (m_ControlPanel->GetDropType() != MIDAS_DROP_TYPE_ALL)
   {

@@ -12,30 +12,27 @@
 
 =============================================================================*/
 
-#ifndef mitkMIDASViewKeyPressResponder_h
-#define mitkMIDASViewKeyPressResponder_h
-
-#include "niftkDnDDisplayExports.h"
+#ifndef mitkDnDDisplayStateMachineResponder_h
+#define mitkDnDDisplayStateMachineResponder_h
 
 namespace mitk {
 
 /**
- * \class MIDASViewKeyPressResponder
+ * \class DnDDisplayStateMachineResponder
  * \brief Pure Virtual Interface to be implemented by classes that want to
- * respond to MIDAS key events relevant to how the image is viewed where events
- * are passed through from the MIDASViewKeyPressStateMachine which is a subclass of
+ * respond to DnD Display key events relevant to how the image is viewed where events
+ * are passed through from the DnDDisplayStateMachine which is a subclass of
  * StateMachine, and hence registered with the interaction loop.
  *
- * \sa MIDASViewKeyPressStateMachine
- * \sa MIDASToolKeyPressResponder
+ * \sa DnDDisplayStateMachine
  * \sa StateMachine
  */
-class MIDASViewKeyPressResponder
+class DnDDisplayStateMachineResponder
 {
 public:
 
-  MIDASViewKeyPressResponder() {}
-  virtual ~MIDASViewKeyPressResponder() {}
+  DnDDisplayStateMachineResponder() {}
+  virtual ~DnDDisplayStateMachineResponder() {}
 
   /// \brief Move anterior a slice.
   virtual bool MoveAnterior() = 0;
