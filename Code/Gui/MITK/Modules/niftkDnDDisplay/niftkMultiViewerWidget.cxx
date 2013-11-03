@@ -72,7 +72,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_Show3DWindowInOrthoView(false)
 , m_RememberSettingsPerLayout(false)
 , m_IsThumbnailMode(false)
-, m_IsMIDASSegmentationMode(false)
+, m_SegmentationModeEnabled(false)
 , m_NavigationControllerEventListening(false)
 , m_Magnification(0.0)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
@@ -491,9 +491,9 @@ bool niftkMultiViewerWidget::GetThumbnailMode() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetMIDASSegmentationMode(bool enabled)
+void niftkMultiViewerWidget::SetSegmentationModeEnabled(bool enabled)
 {
-  m_IsMIDASSegmentationMode = enabled;
+  m_SegmentationModeEnabled = enabled;
 
   if (enabled)
   {
@@ -513,9 +513,9 @@ void niftkMultiViewerWidget::SetMIDASSegmentationMode(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::GetMIDASSegmentationMode() const
+bool niftkMultiViewerWidget::IsSegmentationModeEnabled() const
 {
-  return m_IsMIDASSegmentationMode;
+  return m_SegmentationModeEnabled;
 }
 
 
@@ -822,7 +822,6 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
     {
       dropOntoView = view;
       MIDASOrientation orientation = dropOntoView->GetOrientation();
-      //  MIDASView midasView = selectedView->GetMIDASView();
       switch (orientation)
       {
       case MIDAS_ORIENTATION_AXIAL:

@@ -16,18 +16,11 @@
 #define niftkDnDDisplayEnums_h
 
 /*!
- * \file niftkDnDDisplayEnums.h
- * \brief Contains MIDAS enums, which we move out of the classes, so
- * they are independent, which makes manually analysing classes for
- * their include dependencies a bit easier.
- */
-
-/*!
- * \enum MIDASLayout
+ * \enum WindowLayout
  * \brief Describes the different window layouts that can be achieved in
- * the MIDAS style Display window. So one MIDASLayout could have
+ * the MIDAS style Display window. So one WindowLayout could have
  * multiple MIDASOrientations, but most often will contain either Axial,
- * Coronal or Sagittal. This is different to the MIDASLayout as a layout
+ * Coronal or Sagittal. This is different to the WindowLayout as a layout
  * can contain multiple orientations.
  */
 enum WindowLayout

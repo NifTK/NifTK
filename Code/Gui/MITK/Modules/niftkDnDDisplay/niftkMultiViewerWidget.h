@@ -51,20 +51,19 @@ class niftkMultiViewerWidgetControlPanel;
 
 /**
  * \class niftkMultiViewerWidget
- * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image
- * viewing panes, arranged as rows and columns.
+ * \brief Provides up to 5 x 5 image viewing panes, arranged as rows and columns.
  *
  * This is a large, composite widget, containing a central area that can be
  * used to view images, several controls located at the top of the widget and
  * all the necessary plumbing to make it work. This widget is used as the
  * main editor widget of the niftkMultiViewerEditor.
  *
- * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
+ * The standard layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
  * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
  * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
- * including the option for 3D views, which current MIDAS does not have.
+ * including the option for 3D views.
  */
 class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 {
@@ -183,10 +182,10 @@ public:
   bool ToggleCursor();
 
   /// \brief Sets whether the interaction is enabled, and a single viewer.
-  void SetMIDASSegmentationMode(bool enabled);
+  void SetSegmentationModeEnabled(bool enabled);
 
-  /// \brief Gets the flag indicating whether this widget is currently in MIDAS Segmentation Mode, which means a single viewer.
-  bool GetMIDASSegmentationMode() const;
+  /// \brief Gets the flag indicating whether this widget is currently in segmentation mode, which means a single viewer.
+  bool IsSegmentationModeEnabled() const;
 
   /// \brief Sets this widget to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
   void SetThumbnailMode(bool enabled);
@@ -418,7 +417,7 @@ private:
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerLayout;
   bool m_IsThumbnailMode;
-  bool m_IsMIDASSegmentationMode;
+  bool m_SegmentationModeEnabled;
   bool m_NavigationControllerEventListening;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
