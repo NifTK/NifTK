@@ -2081,7 +2081,7 @@ void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
     }
 
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::MIDASDisplayInteractor::New(renderers);
+    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(renderers);
 
     us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DisplayInteraction.xml", niftkDnDDisplayModule);

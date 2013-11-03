@@ -27,7 +27,7 @@
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
-#include "Interactions/mitkMIDASDisplayInteractor.h"
+#include "Interactions/mitkDnDDisplayInteractor.h"
 
 #include <mitkMIDASEnums.h>
 #include <niftkDnDDisplayEnums.h>
@@ -445,7 +445,7 @@ private:
 
   friend class DisplayGeometryModificationCommand;
 
-  mitk::MIDASDisplayInteractor::Pointer m_DisplayInteractor;
+  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
 
   /**
    * Reference to the service registration of the display interactor.
