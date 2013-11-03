@@ -214,10 +214,10 @@ public:
   void SetViewGeometriesBound(bool bound);
 
   /// \brief Gets the selected drop type.
-  MIDASDropType GetDropType() const;
+  DnDDisplayDropType GetDropType() const;
 
   /// \brief Sets the drop type controls to the given drop type.
-  void SetDropType(MIDASDropType dropType);
+  void SetDropType(DnDDisplayDropType dropType);
 
 signals:
 
@@ -267,7 +267,7 @@ signals:
   void ViewGeometryBindingChanged(bool bound);
 
   /// \brief Emitted when the selected drop type has been changed.
-  void DropTypeChanged(MIDASDropType dropType);
+  void DropTypeChanged(DnDDisplayDropType dropType);
 
   /// \brief Emitted when the drop accumulate option has been changed.
   void DropAccumulateChanged(bool accumulate);

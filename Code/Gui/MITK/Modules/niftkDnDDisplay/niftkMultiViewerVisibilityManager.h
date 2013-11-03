@@ -80,10 +80,10 @@ public:
   void NodeRemovedProxy(const mitk::DataNode* node);
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single widget.
-  void SetDropType(MIDASDropType dropType) { m_DropType = dropType; }
+  void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
 
   /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single widget.
-  MIDASDropType GetDropType() const { return m_DropType; }
+  DnDDisplayDropType GetDropType() const { return m_DropType; }
 
   /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
   void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolation) { m_DefaultInterpolation = interpolation; }
@@ -190,7 +190,7 @@ private:
   bool m_InDataStorageChanged;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
-  MIDASDropType m_DropType;
+  DnDDisplayDropType m_DropType;
 
   // Keeps track of the default layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
   WindowLayout m_DefaultWindowLayout;

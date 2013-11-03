@@ -176,8 +176,8 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
         (MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2));
     WindowLayout defaultLayout =
         (WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
-    MIDASDropType defaultDropType =
-        (MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0));
+    DnDDisplayDropType defaultDropType =
+        (DnDDisplayDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_DROP_TYPE, 0));
 
     int defaultNumberOfRows = prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW_ROW_NUMBER, 1);
     int defaultNumberOfColumns = prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_VIEW_COLUMN_NUMBER, 1);
@@ -266,7 +266,7 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     d->m_MultiViewerWidget->SetBackgroundColour(backgroundColour);
     d->m_MultiViewerWidget->SetDefaultInterpolationType((MIDASDefaultInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_IMAGE_INTERPOLATION, 2)));
     d->m_MultiViewerWidget->SetDefaultLayout((WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
-    d->m_MultiViewerWidget->SetDropType((MIDASDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_DROP_TYPE, 0)));
+    d->m_MultiViewerWidget->SetDropType((DnDDisplayDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_DROP_TYPE, 0)));
     d->m_MultiViewerWidget->SetShowDropTypeControls(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_CONTROLS, false));
     d->m_MultiViewerWidget->SetShowOptionsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_SHOWING_OPTIONS, true));
     d->m_MultiViewerWidget->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_WINDOW_LAYOUT_CONTROLS, true));

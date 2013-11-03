@@ -76,15 +76,15 @@ inline bool IsMultiWindowLayout(WindowLayout layout)
 const int WINDOW_LAYOUT_NUMBER = 15;
 
 /*!
- * \enum MIDASDropType
+ * \enum DnDDisplayDropType
  * \brief Describes the different modes that can be used when drag and dropping
- * into the MIDAS style Display window.
+ * into the DnD Display window.
  */
-enum MIDASDropType
+enum DnDDisplayDropType
 {
-  MIDAS_DROP_TYPE_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
-  MIDAS_DROP_TYPE_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
-  MIDAS_DROP_TYPE_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
+  DNDDISPLAY_DROP_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
+  DNDDISPLAY_DROP_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
+  DNDDISPLAY_DROP_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
 };
 
 /*!

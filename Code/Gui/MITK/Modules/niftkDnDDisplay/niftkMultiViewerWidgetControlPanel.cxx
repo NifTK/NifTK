@@ -593,17 +593,17 @@ void niftkMultiViewerWidgetControlPanel::SetViewGeometriesBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-MIDASDropType niftkMultiViewerWidgetControlPanel::GetDropType() const
+DnDDisplayDropType niftkMultiViewerWidgetControlPanel::GetDropType() const
 {
-  MIDASDropType dropType = MIDAS_DROP_TYPE_SINGLE;
+  DnDDisplayDropType dropType = DNDDISPLAY_DROP_SINGLE;
 
   if (m_DropMultipleRadioButton->isChecked())
   {
-    dropType = MIDAS_DROP_TYPE_MULTIPLE;
+    dropType = DNDDISPLAY_DROP_MULTIPLE;
   }
   else if (m_DropThumbnailRadioButton->isChecked())
   {
-    dropType = MIDAS_DROP_TYPE_ALL;
+    dropType = DNDDISPLAY_DROP_ALL;
   }
 
   return dropType;
@@ -611,21 +611,21 @@ MIDASDropType niftkMultiViewerWidgetControlPanel::GetDropType() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidgetControlPanel::SetDropType(MIDASDropType dropType)
+void niftkMultiViewerWidgetControlPanel::SetDropType(DnDDisplayDropType dropType)
 {
   switch (dropType)
   {
-  case MIDAS_DROP_TYPE_SINGLE:
+  case DNDDISPLAY_DROP_SINGLE:
     m_DropSingleRadioButton->setChecked(true);
     break;
-  case MIDAS_DROP_TYPE_MULTIPLE:
+  case DNDDISPLAY_DROP_MULTIPLE:
     m_DropMultipleRadioButton->setChecked(true);
     break;
-  case MIDAS_DROP_TYPE_ALL:
+  case DNDDISPLAY_DROP_ALL:
     m_DropThumbnailRadioButton->setChecked(true);
     break;
   default:
-    MITK_ERROR << "niftkMultiViewerControlPanel::SetDropType: Invalid MIDASDropType=" << dropType << std::endl;
+    MITK_ERROR << "niftkMultiViewerControlPanel::SetDropType: Invalid DnDDisplayDropType=" << dropType << std::endl;
     break;
   }
 }
@@ -735,7 +735,7 @@ void niftkMultiViewerWidgetControlPanel::OnDropSingleRadioButtonToggled(bool tog
 {
   if (toggled)
   {
-    emit DropTypeChanged(MIDAS_DROP_TYPE_SINGLE);
+    emit DropTypeChanged(DNDDISPLAY_DROP_SINGLE);
   }
 }
 
@@ -745,7 +745,7 @@ void niftkMultiViewerWidgetControlPanel::OnDropMultipleRadioButtonToggled(bool t
 {
   if (toggled)
   {
-    emit DropTypeChanged(MIDAS_DROP_TYPE_MULTIPLE);
+    emit DropTypeChanged(DNDDISPLAY_DROP_MULTIPLE);
   }
 }
 
@@ -755,6 +755,6 @@ void niftkMultiViewerWidgetControlPanel::OnDropThumbnailRadioButtonToggled(bool 
 {
   if (toggled)
   {
-    emit DropTypeChanged(MIDAS_DROP_TYPE_ALL);
+    emit DropTypeChanged(DNDDISPLAY_DROP_ALL);
   }
 }

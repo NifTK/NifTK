@@ -95,7 +95,7 @@ public:
   static const std::string MIDAS_DEFAULT_VIEW_COLUMN_NUMBER;
 
   /// \brief Stores the preference name for the default drop type (single, multiple, all).
-  static const std::string MIDAS_DEFAULT_DROP_TYPE;
+  static const std::string DEFAULT_DROP_TYPE;
 
   /// \brief Stores the preference name for whether we show the magnification slider, as most people wont need it.
   static const std::string MIDAS_SHOW_MAGNIFICATION_SLIDER;

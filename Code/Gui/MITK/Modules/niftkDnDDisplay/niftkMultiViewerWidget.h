@@ -73,7 +73,7 @@ class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 public:
 
   /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero,
-  /// the default drop type to MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those
+  /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
   niftkMultiViewerWidget(
       niftkMultiViewerVisibilityManager* visibilityManager,
@@ -114,7 +114,7 @@ public:
   void SetDefaultMultiWindowLayout(WindowLayout layout);
 
   /// \brief Sets the default drop type checkbox.
-  void SetDropType(MIDASDropType dropType);
+  void SetDropType(DnDDisplayDropType dropType);
 
   /// \brief Sets the visibility flag on the drop type checkboxes.
   void SetShowDropTypeControls(bool visible);
@@ -299,7 +299,7 @@ protected slots:
   void OnViewGeometryBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
-  void OnDropTypeChanged(MIDASDropType dropType);
+  void OnDropTypeChanged(DnDDisplayDropType dropType);
 
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateChanged(bool checked);

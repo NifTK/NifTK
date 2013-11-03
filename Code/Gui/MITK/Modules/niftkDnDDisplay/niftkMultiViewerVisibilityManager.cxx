@@ -659,7 +659,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(QmitkRenderWindow *window
       }
     }
 
-    if (m_DropType == MIDAS_DROP_TYPE_SINGLE)
+    if (m_DropType == DNDDISPLAY_DROP_SINGLE)
     {
 
       MITK_DEBUG << "Dropped single" << std::endl;
@@ -691,7 +691,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(QmitkRenderWindow *window
         this->AddNodeToWindow(windowIndex, nodes[i]);
       }
     }
-    else if (m_DropType == MIDAS_DROP_TYPE_MULTIPLE)
+    else if (m_DropType == DNDDISPLAY_DROP_MULTIPLE)
     {
       MITK_DEBUG << "Dropped multiple" << std::endl;
 
@@ -742,7 +742,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(QmitkRenderWindow *window
         dropIndex++;
       }
     }
-    else if (m_DropType == MIDAS_DROP_TYPE_ALL)
+    else if (m_DropType == DNDDISPLAY_DROP_ALL)
     {
       MITK_DEBUG << "Dropped thumbnail" << std::endl;
 

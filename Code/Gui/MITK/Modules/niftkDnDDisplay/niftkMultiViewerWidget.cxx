@@ -167,8 +167,8 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   m_ControlPanel->SetDirectionAnnotationsVisible(true);
 
   // Default to dropping into single window.
-  m_ControlPanel->SetDropType(MIDAS_DROP_TYPE_SINGLE);
-  m_VisibilityManager->SetDropType(MIDAS_DROP_TYPE_SINGLE);
+  m_ControlPanel->SetDropType(DNDDISPLAY_DROP_SINGLE);
+  m_VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
 
   // We have the default rows and columns passed in via constructor args, in initialise list.
   m_ControlPanel->SetViewNumber(m_DefaultViewRows, m_DefaultViewColumns);
@@ -195,7 +195,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   QObject::connect(m_ControlPanel, SIGNAL(ViewLayoutBindingChanged(bool)), this, SLOT(OnViewLayoutBindingChanged()));
   QObject::connect(m_ControlPanel, SIGNAL(ViewGeometryBindingChanged(bool)), this, SLOT(OnViewGeometryBindingChanged()));
 
-  QObject::connect(m_ControlPanel, SIGNAL(DropTypeChanged(MIDASDropType)), this, SLOT(OnDropTypeChanged(MIDASDropType)));
+  QObject::connect(m_ControlPanel, SIGNAL(DropTypeChanged(DnDDisplayDropType)), this, SLOT(OnDropTypeChanged(DnDDisplayDropType)));
   QObject::connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), this, SLOT(OnDropAccumulateChanged(bool)));
 
   QObject::connect(m_PopupWidget, SIGNAL(popupOpened(bool)), this, SLOT(OnPopupOpened(bool)));
@@ -378,7 +378,7 @@ void niftkMultiViewerWidget::SetShowDropTypeControls(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetDropType(MIDASDropType dropType)
+void niftkMultiViewerWidget::SetDropType(DnDDisplayDropType dropType)
 {
   if (dropType != m_ControlPanel->GetDropType())
   {
@@ -386,7 +386,7 @@ void niftkMultiViewerWidget::SetDropType(MIDASDropType dropType)
 
     m_VisibilityManager->ClearAllWindows();
     m_VisibilityManager->SetDropType(dropType);
-    this->SetThumbnailMode(dropType == MIDAS_DROP_TYPE_ALL);
+    this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
   }
 }
 
@@ -807,7 +807,7 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   m_RenderingManager->InitializeViews(bounds);
 
   // See also niftkMultiViewerVisibilityManager::OnNodesDropped which should trigger first.
-  if (m_ControlPanel->GetDropType() != MIDAS_DROP_TYPE_ALL)
+  if (m_ControlPanel->GetDropType() != DNDDISPLAY_DROP_ALL)
   {
     m_ControlPanel->SetSingleViewControlsEnabled(true);
   }
@@ -964,11 +964,11 @@ void niftkMultiViewerWidget::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnDropTypeChanged(MIDASDropType dropType)
+void niftkMultiViewerWidget::OnDropTypeChanged(DnDDisplayDropType dropType)
 {
   m_VisibilityManager->ClearAllWindows();
   m_VisibilityManager->SetDropType(dropType);
-  this->SetThumbnailMode(dropType == MIDAS_DROP_TYPE_ALL);
+  this->SetThumbnailMode(dropType == DNDDISPLAY_DROP_ALL);
 }
 
 
@@ -1060,12 +1060,12 @@ void niftkMultiViewerWidget::OnTimeStepChanged(int timeStep)
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
 {
-  MIDASDropType dropType = m_ControlPanel->GetDropType();
+  DnDDisplayDropType dropType = m_ControlPanel->GetDropType();
 
   niftkSingleViewerWidget* selectedView = this->GetSelectedView();
   selectedView->SetTimeStep(timeStep);
 
-  if (dropType == MIDAS_DROP_TYPE_ALL)
+  if (dropType == DNDDISPLAY_DROP_ALL)
   {
     foreach (niftkSingleViewerWidget* otherView, m_SingleViewWidgets)
     {
