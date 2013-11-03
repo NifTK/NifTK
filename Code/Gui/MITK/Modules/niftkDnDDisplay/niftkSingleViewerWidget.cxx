@@ -824,13 +824,6 @@ void niftkSingleViewerWidget::paintEvent(QPaintEvent *event)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::InitializeStandardViews(const mitk::Geometry3D * geometry)
-{
-  m_MultiWidget->InitializeStandardViews(geometry);
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> niftkSingleViewerWidget::GetWidgetPlanes()
 {
   std::vector<mitk::DataNode*> result;

@@ -73,12 +73,9 @@ class QGridLayout;
 class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::DnDDisplayStateMachineResponder
 {
 
-  /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
   Q_OBJECT;
 
 public:
-
-  friend class QmitkMIDASSegmentationViewWidget;
 
   niftkSingleViewerWidget(QWidget* parent);
 
@@ -360,9 +357,6 @@ protected slots:
   virtual void OnScaleFactorChanged(double scaleFactor);
 
 private:
-
-  /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
-  void InitializeStandardViews(const mitk::Geometry3D * geometry );
 
   /// \brief This method is called from both constructors to do the construction.
   void Initialize(QString windowName,
