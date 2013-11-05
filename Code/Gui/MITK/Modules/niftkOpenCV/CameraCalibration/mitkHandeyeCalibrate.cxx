@@ -27,9 +27,9 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrate::HandeyeCalibrate()
-: m_FlipTracking(true)
+: m_FlipTracking(false)
 , m_FlipExtrinsic(false)
-, m_SortByDistance(false)
+, m_SortByDistance(true)
 , m_SortByAngle(false)
 , m_DoGridToWorld(true)
 {
@@ -303,7 +303,8 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   if ( m_DoGridToWorld ) 
   {
     std::vector<cv::Mat> gridToWorlds;
-    for ( int i = 0; i < NumberOfViews - 1; i ++ )
+    gridToWorlds.clear();
+    for ( int i = 0; i < NumberOfViews ; i ++ )
     {
       cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
       cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
