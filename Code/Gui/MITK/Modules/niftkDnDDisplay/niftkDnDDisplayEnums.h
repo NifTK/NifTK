@@ -17,10 +17,9 @@
 
 /*!
  * \enum WindowLayout
- * \brief Describes the different window layouts that can be achieved in
- * the MIDAS style Display window. So one WindowLayout could have
- * multiple MIDASOrientations, but most often will contain either Axial,
- * Coronal or Sagittal. This is different to the WindowLayout as a layout
+ * \brief Describes the different render window layouts. So one WindowLayout could have
+ * multiple windows of different orientations, but most often will contain either axial,
+ * coronal or sagittal. This is different to the WindowLayout as a layout
  * can contain multiple orientations.
  */
 enum WindowLayout
@@ -77,7 +76,7 @@ enum DnDDisplayDropType
 {
   DNDDISPLAY_DROP_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
   DNDDISPLAY_DROP_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
-  DNDDISPLAY_DROP_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumnail effect. */
+  DNDDISPLAY_DROP_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumbnail effect. */
 };
 
 /*!

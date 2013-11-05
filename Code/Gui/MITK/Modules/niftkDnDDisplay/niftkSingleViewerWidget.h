@@ -49,9 +49,9 @@ class QGridLayout;
  * niftkMultiWindowWidget, which is itself a sub-class of QmitkStdMultiWidget.
  * This means the niftkMultiWindowWidget will update and render independently of the
  * rest of the application, and care must be taken to manage this. The reason is that
- * each of these windows in a MIDAS layout could have it's own geometry, and sometimes
+ * each of these viewers in a multi-viewer could have it's own geometry, and sometimes
  * a very different geometry from other windows, and then when the "Bind Slices" button
- * is clicked, they must all align to a specific (the currently selected Window) geometry.
+ * is clicked, they must all align to a specific (the currently selected window) geometry.
  * So it became necessary to manage this independent from the rest of the MITK application.
  *
  * <pre>

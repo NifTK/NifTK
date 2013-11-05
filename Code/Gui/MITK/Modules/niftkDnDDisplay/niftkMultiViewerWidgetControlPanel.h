@@ -18,8 +18,6 @@
 #include <QWidget>
 #include "ui_niftkMultiViewerWidgetControlPanel.h"
 
-#include <mitkMIDASEnums.h>
-
 /**
  * \class niftkMultiViewerWidgetControlPanel
  * \brief Control panel for the DnD display.

@@ -17,7 +17,6 @@
 
 #include "ui_niftkWindowLayoutWidget.h"
 
-#include <mitkMIDASEnums.h>
 #include <niftkDnDDisplayEnums.h>
 
 class QButtonGroup;
@@ -27,10 +26,6 @@ class QButtonGroup;
  * \brief Qt Widget class to contain four radio buttons for single window layouts (axial,
  * sagittal, coronal and 3D) and a fifth radio button and a combo box to switch to multiple
  * window layout and select it.
- *
- * By default MIDAS only provides axial, coronal and sagittal, whereas here we can use the combo box
- * for any number of layouts, and still keep a reasonably compact screen layout.
- *
  */
 class niftkWindowLayoutWidget : public QWidget, private Ui_niftkWindowLayoutWidget
 {

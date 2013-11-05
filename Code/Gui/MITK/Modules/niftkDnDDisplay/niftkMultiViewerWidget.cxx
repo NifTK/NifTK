@@ -42,7 +42,6 @@
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 
-#include <mitkMIDASOrientationUtils.h>
 #include <niftkSingleViewerWidget.h>
 
 #include "niftkMultiViewerWidgetControlPanel.h"

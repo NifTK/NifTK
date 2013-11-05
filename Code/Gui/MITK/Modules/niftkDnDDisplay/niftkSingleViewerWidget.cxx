@@ -22,7 +22,6 @@
 
 #include <itkConversionUtils.h>
 #include <mitkPointUtils.h>
-#include <mitkMIDASOrientationUtils.h>
 #include "niftkSingleViewerWidget.h"
 #include "niftkMultiWindowWidget.h"
 
@@ -599,7 +598,7 @@ void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
   m_MultiWidget->SetGeometry(geometry);
 
   m_IsBoundGeometryActive = isBoundGeometryActive;
-  //  m_WindowLayout = MIDAS_LAYOUT_UNKNOWN;
+  //  m_WindowLayout = WINDOW_LAYOUT_UNKNOWN;
 }
 
 
