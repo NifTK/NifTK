@@ -2248,21 +2248,35 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
 {
   cv::Mat temp = cvCreateMat(3,3,CV_64FC1);
   cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
- 
+  for ( int row = 0 ; row < 3 ; row++ )
+  {
+    for ( int col = 0 ; col < 3 ; col++ ) 
+    {
+      temp.at<double>(row,col) = 0.0;
+    }
+    temp_T.at<double>(row,0) = 0.0;
+  }
   for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
   {
     for ( int row = 0 ; row < 3 ; row++ )
     {
       for ( int col = 0 ; col < 3 ; col++ ) 
       {
-        temp.at<double>(row,col) += Matrices[i].at<double>(row,col);
+        double whatItWas = temp.at<double>(row,col);
+        double whatToAdd = Matrices[i].at<double>(row,col);
+        temp.at<double>(row,col) = whatItWas +  whatToAdd;
       }
       temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
     }
+    
+    //we write temp out, not because it's interesting but because it 
+    //seems to fix a bug in the averaging code, trac 2895
+    MITK_INFO << "temp " << temp;
   }
   
   temp_T = temp_T /Matrices.size();
   temp = temp / Matrices.size();
+
 
   cv::Mat rtr = temp.t() * temp;
 
@@ -2286,6 +2300,9 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
     }
     returnMat.at<double>(row,3) = temp_T.at<double>(row,0);
   }
+  returnMat.at<double>(3,0) = 0.0;
+  returnMat.at<double>(3,1) = 0.0;
+  returnMat.at<double>(3,2) = 0.0;
   returnMat.at<double>(3,3)  = 1.0;
   return returnMat;
     
