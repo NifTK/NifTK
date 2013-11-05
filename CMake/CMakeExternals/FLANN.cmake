@@ -22,7 +22,7 @@ if(DEFINED FLANN_DIR AND NOT EXISTS ${FLANN_DIR})
   message(FATAL_ERROR "FLANN_DIR variable is defined but corresponds to non-existing directory \"${FLANN_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_IGI AND BUILD_PCL)
 
   set(proj FLANN)
   set(proj_DEPENDENCIES)

@@ -22,7 +22,7 @@ if(DEFINED PCL_DIR AND NOT EXISTS ${PCL_DIR})
   message(FATAL_ERROR "PCL_DIR variable is defined but corresponds to non-existing directory \"${PCL_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_IGI AND BUILD_PCL)
 
   set(proj PCL)
   set(proj_DEPENDENCIES Boost Eigen FLANN VTK)

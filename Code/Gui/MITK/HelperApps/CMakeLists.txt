@@ -53,9 +53,13 @@ set(HELPER_APPS
 if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
-    # Add apps that DO depend on BUILD_IGI here.
-    niftkPointCloudWrite
-  )
+  )  
+  if(BUILD_PCL)
+    set(HELPER_APPS
+      ${HELPER_APPS}
+      niftkPointCloudWrite
+    )    
+  endif()
 endif()
 
 list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
