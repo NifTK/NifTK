@@ -472,7 +472,29 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   //Next need to do a bunch of tests, could start with just checking that the 
   //inputs approximately equal the outputs, but then could also do some proper 
   //reprojection tests.
+  //intrinsic in
+  cv::Scalar Sum = cv::sum(outputIntrinsicMatrixLeft - leftCameraIntrinsic);
+  MITK_INFO << "Left Instrinsic residual error = " << Sum[0];
+  Sum = cv::sum(outputDistortionCoefficientsLeft - leftCameraDistortion);
+  MITK_INFO << "Left Distortion residual error = " << Sum[0];
+  Sum = cv::sum(outputIntrinsicMatrixRight - rightCameraIntrinsic);
+  MITK_INFO << "Right Instrinsic residual error = " << Sum[0];
+  Sum = cv::sum(outputDistortionCoefficientsRight - rightCameraDistortion);
+  MITK_INFO << "Right Distortion residual error = " << Sum[0];
+  cv::Scalar absDiff;
+ // cv::absdiff(outputIntrinsicMatrixLeft , leftCameraIntrinsic,absDiff);
+  cvAbsDiffS(outputIntrinsicMatrixLeft , *leftCameraIntrinsic,absDiff);
 
+/*  outputIntrinsicMatrixLeft,
+      *outputDistortionCoefficientsLeft,
+          *outputRotationVectorsLeft,
+              *outputTranslationVectorsLeft,
+                  *outputIntrinsicMatrixRight,
+                      *outputDistortionCoefficientsRight,
+                          *outputRotationVectorsRight,
+                              *outputTranslationVectorsRight,
+                                  *outputRightToLeftRotation,
+                                      *outputRightToLeftTranslation*/
  /* MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
   MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
   MITK_TEST_CONDITION (errorRMS_m1 < 1e-3 , "Testing RMS error value for c method");
