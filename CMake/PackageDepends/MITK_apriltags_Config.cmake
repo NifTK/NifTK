@@ -11,12 +11,12 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(NiftyLink REQUIRED)
-if(NiftyLink_FOUND)
-  include(${NiftyLink_USE_FILE})
-  add_definitions(-DBUILD_IGI)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyLink_INCLUDE_DIRS})
-  list(APPEND ALL_LIBRARIES ${NiftyLink_LIBRARIES})
-  link_directories(${NiftyLink_LIBRARY_DIRS})
+find_package(apriltags REQUIRED)
+if(apriltags_FOUND)
+  message("Found AprilTags include dir=${apriltags_INCLUDE_DIR}")
+  message("Found AprilTags lib dir    =${apriltags_LIBRARY_DIR}")
+  message("Found AprilTags library    =${apriltags_LIBRARIES}")
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${apriltags_INCLUDE_DIR})
+  list(APPEND ALL_LIBRARIES ${APRILTAGS_LIB})
+  link_directories(${apriltags_LIBRARY_DIR})
 endif()
-

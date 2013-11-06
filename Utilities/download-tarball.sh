@@ -31,6 +31,8 @@ Supported projects:
     MITK
     commontk/CTK
     NifTK/CTK
+    apriltags
+    pcl
     OpenIGTLink
     SlicerExecutionModel
     qRestAPI
@@ -206,7 +208,7 @@ function download_from_sourceforge_git() {
   fi
 }
 
-if [[ $project = MITK || $project = OpenIGTLink ]]
+if [[ $project = MITK || $project = OpenIGTLink || $project = apriltags ]]
 then
   download_from_github NifTK $project $version
 elif [ $project = commontk/CTK ]
@@ -218,6 +220,9 @@ then
 elif [ $project = SlicerExecutionModel ]
 then
   download_from_github Slicer $project $version
+elif [ $project = pcl ]
+then
+  download_from_github PointCloudLibrary $project $version
 elif [ $project = qRestAPI ]
 then
   download_from_github commontk $project $version

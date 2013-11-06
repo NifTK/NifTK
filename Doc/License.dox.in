@@ -17,6 +17,8 @@
 \li \ref LicenseAruco
 \li \ref LicenseEIGEN
 \li \ref LicenseAprilTags
+\li \ref LicenseFLANN
+\li \ref LicensePCL
 
 \section LicenseNifTK The @NIFTK_PLATFORM@ License
 
@@ -54,10 +56,6 @@
 
 \include LICENSE_VTK.txt
 
-\section LicenseAruco The ARUCO License
-
-\include LICENSE_Aruco.txt
-
 \section LicenseGDCM The GDCM License
 
 \include LICENSE_GDCM.txt
@@ -72,10 +70,6 @@
 
 \section LicenseQt The Qt License
 
-@NIFTK_PLATFORM@ uses Qt under the LGPL v2.1 license, reproduced here for convenience.
-Qt was downloaded from the main Qt website, and this version of @NIFTK_PLATFORM@ was
-built using Qt version @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@.
-
 \include LICENSE_Qt.txt
 
 \section LicenseAruco The Aruco License
@@ -89,5 +83,13 @@ built using Qt version @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@.
 \section LicenseAprilTags The April Tags License
 
 \include LICENSE_AprilTags.txt
+
+\section LicenseFLANN The FLANN License
+
+\include LICENSE_FLANN.txt
+
+\section LicensePCL The PCL License
+
+\include LICENSE_PCL.txt
 
 */

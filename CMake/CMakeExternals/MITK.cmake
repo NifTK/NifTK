@@ -28,7 +28,10 @@ if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES aruco OpenCV EIGEN apriltags)
+  list(APPEND proj_DEPENDENCIES aruco OpenCV Eigen apriltags)
+  if(BUILD_PCL)
+    list(APPEND proj_DEPENDENCIES FLANN PCL)
+  endif()
 endif(BUILD_IGI)
 
 set(MITK_DEPENDS ${proj})
@@ -74,7 +77,7 @@ if(NOT DEFINED MITK_DIR)
 
     set(mitk_additional_library_search_paths)
     if(BUILD_IGI)
-      list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib ${apriltags_LIBRARY_DIRS})
+      list(APPEND mitk_additional_library_search_paths ${aruco_DIR}/lib ${apriltags_LIBRARY_DIRS} ${FLANN_DIR}/lib ${PCL_DIR}/lib)
     endif()
     
     ExternalProject_Add(${proj}

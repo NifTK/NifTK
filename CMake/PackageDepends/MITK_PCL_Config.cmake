@@ -11,12 +11,12 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(NiftyLink REQUIRED)
-if(NiftyLink_FOUND)
-  include(${NiftyLink_USE_FILE})
-  add_definitions(-DBUILD_IGI)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyLink_INCLUDE_DIRS})
-  list(APPEND ALL_LIBRARIES ${NiftyLink_LIBRARIES})
-  link_directories(${NiftyLink_LIBRARY_DIRS})
+
+find_package(PCL 1.7 REQUIRED)
+if(PCL_FOUND)
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${PCL_INCLUDE_DIRS})
+  list(APPEND ALL_LIBRARIES ${PCL_LIBRARIES})
+  link_directories(${PCL_LIBRARY_DIRS})
+#  add_definitions(${PCL_DEFINITIONS})
 endif()
 

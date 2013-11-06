@@ -11,12 +11,10 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(NiftyLink REQUIRED)
-if(NiftyLink_FOUND)
-  include(${NiftyLink_USE_FILE})
-  add_definitions(-DBUILD_IGI)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyLink_INCLUDE_DIRS})
-  list(APPEND ALL_LIBRARIES ${NiftyLink_LIBRARIES})
-  link_directories(${NiftyLink_LIBRARY_DIRS})
+find_package(aruco REQUIRED)
+if(aruco_FOUND)
+  message("Found aruco in ${aruco_DIR}")
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${aruco_DIR}/include)
+  list(APPEND ALL_LIBRARIES ${aruco_LIBS}
+  link_directories(${aruco_DIR}/lib)
 endif()
-

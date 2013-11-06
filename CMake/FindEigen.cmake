@@ -11,12 +11,11 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(NiftyLink REQUIRED)
-if(NiftyLink_FOUND)
-  include(${NiftyLink_USE_FILE})
-  add_definitions(-DBUILD_IGI)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyLink_INCLUDE_DIRS})
-  list(APPEND ALL_LIBRARIES ${NiftyLink_LIBRARIES})
-  link_directories(${NiftyLink_LIBRARY_DIRS})
-endif()
 
+
+set(Eigen_FOUND 0)
+set(Eigen_DIR @Eigen_DIR@)
+if(Eigen_DIR)
+  set(Eigen_INCLUDE_DIR ${Eigen_DIR})
+  set(Eigen_FOUND 1)
+endif()
