@@ -85,7 +85,7 @@ void DataStorageVisibilityTracker::SetDataStorage(const mitk::DataStorage::Point
 
 
 //-----------------------------------------------------------------------------
-void DataStorageVisibilityTracker::SetNodesToIgnore(std::vector<mitk::DataNode*>& nodes)
+void DataStorageVisibilityTracker::SetNodesToIgnore(const std::vector<mitk::DataNode*>& nodes)
 {
   m_ExcludedNodeList = nodes;
 }

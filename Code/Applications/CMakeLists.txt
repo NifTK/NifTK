@@ -77,8 +77,9 @@ if(SlicerExecutionModel_FOUND)
     niftkDilate
     niftkErode
     niftkExportDICOMTagsToCSVFile
-    niftkExtrudeMaskToVolume
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    niftkExtract2DSliceFrom3DImage
+    niftkExtrudeMaskToVolume
     niftkHistogramEqualization
     niftkInvertImage
     niftkLogInvertImage
@@ -88,6 +89,7 @@ if(SlicerExecutionModel_FOUND)
     niftkOtsuThresholdImage
     niftkSubsampleImage
     niftkSubtract
+    niftkUnaryImageOperatorsOnDirectoryTree
     niftkVotingBinaryIterativeHoleFillingImageFilter
   )
   list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES})
@@ -244,7 +246,6 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkDilateMaskAndCrop
   niftkDistanceTransform
   niftkDoubleWindowBSI
-  niftkExtract2DSliceFrom3DImage
   niftkExtractCurvatures
   niftkExtractRegion
   niftkExtractScalp

@@ -503,7 +503,7 @@ void mitk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Cont
 {
   if (initialise)
   {
-    b.Initialize();
+    b.Clear();
   }
 
   mitk::ContourModelSet::ContourModelSetIterator contourIt = a.Begin();

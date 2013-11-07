@@ -88,9 +88,9 @@ int mitkTrackingTest ( int argc, char * argv[] )
   bool ScreenPointSet = false;
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_32FC1);
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_32FC1);
-  cv::Mat leftCameraDistortion = cv::Mat(5,1,CV_32FC1);
+  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_32FC1);
   cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_32FC1);
-  cv::Mat rightCameraDistortion = cv::Mat(5,1,CV_32FC1);
+  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_32FC1);
   cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_32FC1);
   cv::Mat rightToLeftTranslationVector = cv::Mat(1,3,CV_32FC1);
   cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_32FC1); //handeye

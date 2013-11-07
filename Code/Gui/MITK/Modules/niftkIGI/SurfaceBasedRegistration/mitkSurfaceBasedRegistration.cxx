@@ -228,7 +228,7 @@ void SurfaceBasedRegistration::ApplyTransform (mitk::DataNode::Pointer node , vt
 //-----------------------------------------------------------------------------
 void SurfaceBasedRegistration::GetCurrentTransform (const mitk::DataNode* node, vtkMatrix4x4* Matrix)
 {
-  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->GetIndexToWorldTransform();
+  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
   itk::Matrix<float, 3, 3>  matrix;
   itk::Vector<float, 3> offset;
   matrix = affineTransform->GetMatrix();

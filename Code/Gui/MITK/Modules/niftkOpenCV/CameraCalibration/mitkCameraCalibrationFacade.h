@@ -19,6 +19,7 @@
 #include <cv.h>
 #include <cstdlib>
 #include <iostream>
+#include <mitkVector.h>
 
 /**
  * \file mitkCameraCalibrationFacade
@@ -59,6 +60,7 @@ extern "C++" NIFTKOPENCV_EXPORT void CheckConstImageSize(
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param drawCorners if true will dump images in the same directory as the input images, to indicate which points were found (usefull for debugging).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
  * \param outputImages list of successfully processed images, which are just pointers back to the same images as in the first parameter vector, i.e. they are not copied, so don't de-allocate the images twice.
  * \param outputFileNames corresponding list of successfully processed image filenames,
  * \param outputImagePoints output image points, array size = (number of successes (M) * numberOfCorners (N)) x 2, and caller must de-allocate.
@@ -74,6 +76,7 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
+  const mitk::Point2D& pixelScaleFactor,
   std::vector<IplImage*>& outputImages,
   std::vector<std::string>& outputFileNames,
   CvMat*& outputImagePoints,
@@ -88,6 +91,7 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
  * \param numberCornersWidth the number of internal corners along the width axis (X).
  * \param numberCornersHeight the number of internal corners along the height axis (Y).
  * \param squareSizeInMillimetres The size of the chessboard squares in millimetres, needed to make sure that the units of the output camera model are millimetres rather than multiples of the chessboard square size.
+ * \param pixelScaleFactor The caller can specify a multiplier for the number of pixels in each direction to scale up/down the image.
  * \param outputImagePoints output image points, array size = (1 * numberOfCorners (N)) x 2, and caller must de-allocate.
  * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
  */
@@ -97,8 +101,9 @@ extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
-  std::vector<cv::Point2f>*& outputImagePoints,
-  std::vector<cv::Point3f>*& outputObjectPoints
+  const mitk::Point2D& pixelScaleFactor,
+  std::vector<cv::Point2d>*& outputImagePoints,
+  std::vector<cv::Point3d>*& outputObjectPoints
   );
 
 
@@ -202,6 +207,11 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTransl
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
  * right cameras, and compute transformations from right to left.
+ *
+ * This means that a given a point P_r in the coordinate frame of the right
+ * hand camera, then when this point is multiplied by the rotationVectorsRightToLeft
+ * and translationVectorsRightToLeft, the point will be converted to a point P_l
+ * that is in the coordinate frame of the left hand camera.
  */
 extern "C++" NIFTKOPENCV_EXPORT void ComputeRightToLeftTransformations(
   const CvMat& rotationVectorsLeft,
@@ -276,7 +286,7 @@ extern "C++" NIFTKOPENCV_EXPORT void OutputCalibrationData(
   const CvMat& distortionCoefficients,
   const CvMat& rotationVectors,
   const CvMat& translationVectors,
-  const float& projectionError,
+  const double& projectionError,
   const int& sizeX,
   const int& sizeY,
   const int& cornersX,
@@ -463,15 +473,18 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObse
  *
  * Taken from: http://geomalgorithms.com/a07-_distance.html
  *
- * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
+ * \param rightToLeftRotationMatrix [3x3] matrix representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
+ * greater than the tolerance, the point is rejected.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
-  const cv::Mat& rightToLeftRotationVector,
-  const cv::Mat& rightToLeftTranslationVector
+  const cv::Mat& rightToLeftRotationMatrix,
+  const cv::Mat& rightToLeftTranslationVector,
+  const double& tolerance
   );
 
 
@@ -481,7 +494,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPair(
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPairUsingGeometry(
   const std::pair<cv::Point2d, cv::Point2d> & inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
@@ -493,7 +506,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPair(
 /**
  * \brief C Wrapper for the other TriangulatePointPairs.
  */
-extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& leftCameraUndistortedImagePoints,
   const CvMat& rightCameraUndistortedImagePoints,
   const CvMat& leftCameraIntrinsicParams,
@@ -525,7 +538,7 @@ extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
  * \param rightCameraTranslationVector [1x3] matrix for the extrinsic parameters translation vector.
  * \param outputPoints reconstructed 3D points, but only reconstructed up to a an indeterminant scale factor.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingSVD(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& leftCameraRotationVector,
@@ -537,25 +550,14 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
 
 
 /**
- * \brief Triangulates a 3D point.
- *
- * NOTE: This is only valid up to an indeterminant scale factor.
- *
- * From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997.
- * and
- * <a href="http://www.morethantechnical.com/2012/01/04/simple-triangulation-with-opencv-from-harley-zisserman-w-code/">here</a>.
- * and
- * <a href="http://www.amazon.co.uk/Computer-Vision-Models-Learning-Inference/dp/1107011795/ref=sr_1_1?ie=UTF8&qid=1362560709&sr=8-1">Price 2012<a>.
- *
- * This method is called repeatedly from IterativeTriangulatePoint, with different weights (w1 and w2).
- * Users should call IterativeTriangulatePoint.
+ * \brief Don't call this: Triangulates a 3D point using SVD.
  *
  * \param P1 left camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param P2 right camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat_<double> TriangulatePoint(
+cv::Mat_<double> InternalTriangulatePointUsingSVD(
   const cv::Matx34d& P1,
   const cv::Matx34d& P2,
   const cv::Point3d& u1,
@@ -566,20 +568,14 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat_<double> TriangulatePoint(
 
 
 /**
- * \brief Triangulates a 3D point.
- *
- * From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997.
- * and
- * <a href="http://www.morethantechnical.com/2012/01/04/simple-triangulation-with-opencv-from-harley-zisserman-w-code/">here</a>.
- * and
- * <a href="http://www.amazon.co.uk/Computer-Vision-Models-Learning-Inference/dp/1107011795/ref=sr_1_1?ie=UTF8&qid=1362560709&sr=8-1">Price 2012<a>.
+ * \brief Don't call this: Triangulates a 3D point using SVD by calling TriangulatePointUsingSVD with different weighting factors.
  *
  * \param P1 left camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param P2 right camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d IterativeTriangulatePoint(
+cv::Point3d InternalIterativeTriangulatePointUsingSVD(
   const cv::Matx34d& P1,
   const cv::Matx34d& P2,
   const cv::Point3d& u1,

@@ -20,7 +20,7 @@
 #include "../Conversion/ImageConversion.h"
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
-
+#include <mitkCameraCalibrationFacade.h>
 
 namespace niftk 
 {
@@ -126,6 +126,19 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
     mitk::ImageReadAccessor  leftReadAccess(image1);
     mitk::ImageReadAccessor  rightReadAccess(image2);
 
+    // after locking the images, grab the position of the camera.
+    // this should keep them in sync better, if we are reconstructing a point cloud while the camera is moving.
+    mitk::Geometry3D::Pointer   camgeom;
+    if (camnode.IsNotNull())
+    {
+      mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
+      if (camnodebasedata.IsNotNull())
+      {
+        camgeom = static_cast<mitk::Geometry3D*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
+      }
+    }
+    mitk::Geometry3D::Pointer   imggeom = static_cast<mitk::Geometry3D*>(image1->GetGeometry()->Clone().GetPointer());
+
     const void* leftPtr = leftReadAccess.GetData();
     const void* rightPtr = rightReadAccess.GetData();
 
@@ -187,15 +200,19 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
     {
       case POINT_CLOUD:
       {
-        mitk::PointSet::Pointer   points = mitk::PointSet::New();
-
-        mitk::Point4D leftDist = camIntr1->GetValue()->GetDistorsionCoeffsAsPoint4D();
-        mitk::Point4D rightDist = camIntr2->GetValue()->GetDistorsionCoeffsAsPoint4D();
-        cv::Vec<float, 4> leftDistCV(leftDist[0], leftDist[1], leftDist[2], leftDist[3]);
-        cv::Vec<float, 4> rightDistCV(rightDist[0], rightDist[1], rightDist[2], rightDist[3]);
+        cv::Point2d leftPixel;
+        cv::Point2d rightPixel;
         cv::Mat left2right_rotation = cv::Mat(3, 3, CV_32F, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 0), sizeof(float) * 4);
-        cv::Mat left2right_translation = cv::Mat(3, 1, CV_32F, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 3), sizeof(float) * 4);
+        cv::Mat left2right_translation = cv::Mat(1, 3, CV_32F);
+        left2right_translation.at<float>(0,0) = stereoRig->GetValue()[0][3];
+        left2right_translation.at<float>(0,1) = stereoRig->GetValue()[1][3];
+        left2right_translation.at<float>(0,2) = stereoRig->GetValue()[2][3];
 
+        //, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 3), sizeof(float) * 4);
+        std::vector< cv::Point3d > outputOpenCVPoints;
+        std::vector< std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
+
+        // Get valid point pairs.
         for (unsigned int y = 0; y < height; ++y)
         {
           for (unsigned int x = 0; x < width; ++x)
@@ -204,52 +221,52 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
             if (r.x != 0)
             {
               BOOST_STATIC_ASSERT((sizeof(CvPoint3D32f) == 3 * sizeof(float)));
-              float  error = 0;
-              CvPoint3D32f p = niftk::triangulate(
-                                  x,   y, camIntr1->GetValue()->GetCameraMatrix(),  leftDistCV,
-                                  r.x, r.y, camIntr2->GetValue()->GetCameraMatrix(), rightDistCV,
-                                  left2right_rotation,
-                                  left2right_translation,
-                                  &error);
-              p.y = -p.y;
-              p.z = -p.z;
-              if (error < maxTriangulationError)
-              {
-                float   depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
-                if (depth >= minDepth)
-                {
-                  if (depth <= maxDepth)
-                  {
-                    points->InsertPoint(y * width + x, mitk::PointSet::PointType(&p.x));
-                  }
-                }
-              }
+
+              leftPixel.x = x;
+              leftPixel.y = y;
+              rightPixel.x = r.x;
+              rightPixel.y = r.y;
+              inputUndistortedPoints.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPixel, rightPixel));
             }
           }
         }
-        //outputNode->SetData(points);
 
-        // if our camnode has mitk::CoordinateAxesData::Pointer then we use that.
-        // otherwise we copy its geometry.
-        if (camnode.IsNotNull())
+        // Triangulate them all in one go.
+        outputOpenCVPoints = mitk::TriangulatePointPairsUsingGeometry(
+            inputUndistortedPoints,
+            camIntr1->GetValue()->GetCameraMatrix(),
+            camIntr2->GetValue()->GetCameraMatrix(),
+            left2right_rotation,
+            left2right_translation,
+            maxTriangulationError
+            );
+
+        // Filter by depth.
+        cv::Point3d p;
+        mitk::Point3D outputPoint;
+        mitk::PointSet::Pointer points = mitk::PointSet::New();
+
+        for (unsigned int i = 0; i < outputOpenCVPoints.size(); i++)
         {
-          mitk::BaseData::Pointer   camnodebasedata = camnode->GetData();
-          if (camnodebasedata.IsNotNull())
+          p = outputOpenCVPoints[i];
+          double depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
+          if (depth >= minDepth && p.z > minDepth)
           {
-            // it's actually irrelevant what type the data is
-            const mitk::Geometry3D::Pointer geom = camnodebasedata->GetGeometry();
-            // is there no usable clone???
-            points->GetGeometry()->SetSpacing(geom->GetSpacing());
-            points->GetGeometry()->SetOrigin(geom->GetOrigin());
-            points->GetGeometry()->SetIndexToWorldTransform(geom->GetIndexToWorldTransform());
-            // TODO Adapt this to the changes in the MITK geometry framework.
-            // Before the changes mitk::Geometry3D was derived from itk::AffineGeometryFrame3D
-            // that had this SetObjectNodeToTransform function, but with the changes this
-            // superclass has been removed.
-            // Check if this is needed at all and remove if not.
-            MITK_WARN << "SurfaceReconstruction::Run(...): adapt this code to the MITK geometry changes." << std::endl;
-            //points->GetGeometry()->SetObjectToNodeTransform(geom->GetObjectToNodeTransform());
+            if (depth <= maxDepth)
+            {
+              outputPoint[0] = p.x;
+              outputPoint[1] = p.y;
+              outputPoint[2] = p.z;
+              points->InsertPoint(i,outputPoint);
+            }
           }
+        }
+
+        if (camgeom.IsNotNull())
+        {
+          points->GetGeometry()->SetSpacing(camgeom->GetSpacing());
+          points->GetGeometry()->SetOrigin(camgeom->GetOrigin());
+          points->GetGeometry()->SetIndexToWorldTransform(camgeom->GetIndexToWorldTransform());
         }
 
         return points.GetPointer();
@@ -273,6 +290,11 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         {
           imgData4Node->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, undist1bp);
         }
+        // copy input geometry too. so that a field-dropped input image
+        // doesnt cause the ouput to look squashed.
+        imgData4Node->GetGeometry()->SetSpacing(imggeom->GetSpacing());
+        imgData4Node->GetGeometry()->SetOrigin(imggeom->GetOrigin());
+        imgData4Node->GetGeometry()->SetIndexToWorldTransform(imggeom->GetIndexToWorldTransform());
 
         //outputNode->SetData(imgData4Node);
         return imgData4Node.GetPointer();

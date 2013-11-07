@@ -107,7 +107,7 @@ void mitk::MIDASDrawTool::ClearWorkingData()
   mitk::ContourModelSet* contours = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
 
   // Delete all contours.
-  contours->Initialize();
+  contours->Clear();
 }
 
 
@@ -205,6 +205,11 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+
+  if (feedbackContour->IsEmpty())
+  {
+    return true;
+  }
 
   this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
@@ -463,7 +468,7 @@ void mitk::MIDASDrawTool::ITKCleanContours(
 
   itk::ContinuousIndex<double, VImageDimension> voxelContinousIndex;
 
-  outputContours.Initialize();
+  outputContours.Clear();
 
 //  mitk::ContourModelSet::ContourVectorType contourVec = inputContours.GetContours();
   mitk::ContourModelSet::ContourModelSetIterator contourIt = inputContours.Begin();

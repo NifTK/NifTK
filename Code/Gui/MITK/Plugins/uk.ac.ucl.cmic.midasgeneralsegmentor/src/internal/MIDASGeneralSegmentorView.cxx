@@ -192,6 +192,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeNextCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnSeeImageCheckBoxToggled(bool)));
     connect(m_GeneralControls->m_LowerThresholdSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdValueChanged()));
+    connect(m_GeneralControls->m_UpperThresholdSliderWidget, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdValueChanged()));
     connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), this, SLOT(OnCreateNewSegmentationButtonPressed()) );
   }
 }
@@ -384,6 +385,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNo
 
   contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
   contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetFloatProperty("opacity", 1.0f);
   contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
   contourSetNode->SetBoolProperty("helper object", true);
   contourSetNode->SetBoolProperty("visible", visible);
@@ -464,6 +466,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
 
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
+    newSegmentation->SetFloatProperty("opacity", 1.0f);
     newSegmentation->SetBoolProperty(mitk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
     // Make sure these are up to date, even though we don't use them right now.
@@ -475,7 +478,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     mitk::DataNode::Pointer pointSetNode = mitk::DataNode::New();
     pointSetNode->SetData(pointSet);
     pointSetNode->SetProperty("name", mitk::StringProperty::New(mitk::MIDASTool::SEED_POINT_SET_NAME));
-    pointSetNode->SetProperty("opacity", mitk::FloatProperty::New(1.0f));
+    pointSetNode->SetFloatProperty("opacity", 1.0f);
     pointSetNode->SetProperty("point line width", mitk::IntProperty::New(1));
     pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
     pointSetNode->SetBoolProperty("helper object", true);
@@ -500,6 +503,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
     initialSegmentationNode->SetBoolProperty("helper object", true);
     initialSegmentationNode->SetBoolProperty("visible", false);
     initialSegmentationNode->SetProperty("layer", mitk::IntProperty::New(99));
+    initialSegmentationNode->SetFloatProperty("opacity", 1.0f);
     initialSegmentationNode->SetColor(tmpColor);
     initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
@@ -778,7 +782,7 @@ void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Poin
   catch(const mitk::AccessByItkException& e)
   {
     MITK_ERROR << "Failed in ITKGenerateOutlineFromBinaryImage due to:" << e.what();
-    outputContourSet->Initialize();
+    outputContourSet->Clear();
   }
 }
 
@@ -2129,6 +2133,8 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
           if (thresholdCheckBox)
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
+
+            this->DoThresholdApply(sliceNumber, sliceNumber, true, false, true);
 
             // Get seeds just on the current slice
             mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
@@ -3828,8 +3834,7 @@ MIDASGeneralSegmentorView
   // NOTE: This function is only meant to be called on binary images,
   // so we are assuming that TPixel is only ever unsigned char.
 
-  // Initialise contour set i.e. clear it.
-  outputContourSet->Initialize();
+  outputContourSet->Clear();
 
   // Get the largest possible region of the input 3D image.
   Region3DType region = itkImage->GetLargestPossibleRegion();
@@ -4580,7 +4585,7 @@ void MIDASGeneralSegmentorView
   mitk::ContourModelSet::ContourModelSetIterator contourIt = outputCopyOfInputContours.Begin();
   mitk::ContourModel::Pointer firstContour = *contourIt;
 
-  outputContours.Initialize();
+  outputContours.Clear();
   mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
   mitk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 

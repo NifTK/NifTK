@@ -43,7 +43,8 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     const std::string& rightDirectoryName,
     const int& numberCornersX,
     const int& numberCornersY,
-    const float& sizeSquareMillimeters,
+    const double& sizeSquareMillimeters,
+    const mitk::Point2D& pixelScaleFactor,
     const std::string& outputFileName,
     const bool& writeImages
     )
@@ -112,8 +113,8 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
 
   CvSize imageSize = cvGetSize(allImages[0]);
 
-  ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
-  ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
+  ExtractChessBoardPoints(imagesLeft, fileNamesLeft, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, pixelScaleFactor, successfullImagesLeft, successfullFileNamesLeft, imagePointsLeft, objectPointsLeft, pointCountsLeft);
+  ExtractChessBoardPoints(imagesRight, fileNamesRight, numberCornersX, numberCornersY, writeImages, sizeSquareMillimeters, pixelScaleFactor, successfullImagesRight, successfullFileNamesRight, imagePointsRight, objectPointsRight, pointCountsRight);
 
   std::vector<std::string> allSuccessfulFileNames;
   allSuccessfulFileNames.insert(allSuccessfulFileNames.begin(), successfullFileNamesLeft.begin(), successfullFileNamesLeft.end());
@@ -127,24 +128,24 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
 
   int numberOfSuccessfulViews = successfullImagesLeft.size();
 
-  CvMat *intrinsicMatrixLeft = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffsLeft = cvCreateMat(4, 1, CV_32FC1);
-  CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
-  CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
+  CvMat *intrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
+  CvMat *distortionCoeffsLeft = cvCreateMat(4, 1, CV_64FC1);
+  CvMat *rotationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
+  CvMat *translationVectorsLeft = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
-  CvMat *intrinsicMatrixRight = cvCreateMat(3,3,CV_32FC1);
-  CvMat *distortionCoeffsRight = cvCreateMat(4, 1, CV_32FC1);
-  CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
-  CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
+  CvMat *intrinsicMatrixRight = cvCreateMat(3,3,CV_64FC1);
+  CvMat *distortionCoeffsRight = cvCreateMat(4, 1, CV_64FC1);
+  CvMat *rotationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
+  CvMat *translationVectorsRight = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
 
-  CvMat *rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_32FC1);
-  CvMat *rightToLeftTranslationVector = cvCreateMat(3, 1, CV_32FC1);
-  CvMat *rightToLeftRotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_32FC1);
-  CvMat *rightToLeftTranslationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_32FC1);
-  CvMat *r2LRot = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *r2LTrans = cvCreateMat(1, 3, CV_32FC1);
-  CvMat *essentialMatrix = cvCreateMat(3, 3,CV_32FC1);
-  CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_32FC1);
+  CvMat *rightToLeftRotationMatrix = cvCreateMat(3, 3,CV_64FC1);
+  CvMat *rightToLeftTranslationVector = cvCreateMat(3, 1, CV_64FC1);
+  CvMat *rightToLeftRotationVectors = cvCreateMat(numberOfSuccessfulViews, 3,CV_64FC1);
+  CvMat *rightToLeftTranslationVectors = cvCreateMat(numberOfSuccessfulViews, 3, CV_64FC1);
+  CvMat *r2LRot = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *r2LTrans = cvCreateMat(1, 3, CV_64FC1);
+  CvMat *essentialMatrix = cvCreateMat(3, 3,CV_64FC1);
+  CvMat *fundamentalMatrix = cvCreateMat(3, 3,CV_64FC1);
 
   reprojectionError = CalibrateStereoCameraParameters(
       *objectPointsLeft,
@@ -224,9 +225,9 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   // Output right to left MEDIAN transformation as a rotation [3x3] then a translation [1x3]
   for (int i = 0; i < 3; i++)
   {
-    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, i, 2) << std::endl;
+    fsr2l << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, i, 2) << std::endl;
   }
-  fsr2l << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, float, 2, 0) << std::endl;
+  fsr2l << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftTranslationVector, double, 2, 0) << std::endl;
 
   // Also calculate specific right to left transformations for each view.
   ComputeRightToLeftTransformations(
@@ -242,8 +243,8 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   {
     for (int j = 0; j < 3; j++)
     {
-      CV_MAT_ELEM(*r2LRot, float, 0, j) = CV_MAT_ELEM(*rightToLeftRotationVectors, float, i, j);
-      CV_MAT_ELEM(*r2LTrans, float, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, float, i, j);
+      CV_MAT_ELEM(*r2LRot, double, 0, j) = CV_MAT_ELEM(*rightToLeftRotationVectors, double, i, j);
+      CV_MAT_ELEM(*r2LTrans, double, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, double, i, j);
     }
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.rotation.xml").c_str(), r2LRot);
     cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.translation.xml").c_str(), r2LTrans);
@@ -255,10 +256,10 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     if (!tmpR2L.fail())
     {
       cvRodrigues2(r2LRot, rightToLeftRotationMatrix);
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 0, 2) << std::endl;
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 1, 2) << std::endl;
-      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, float, 2, 2) << std::endl;
-      tmpR2L << CV_MAT_ELEM(*r2LTrans, float, 0, 0) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 1) << " " << CV_MAT_ELEM(*r2LTrans, float, 0, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 0, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 1, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 0) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 1) << " " << CV_MAT_ELEM(*rightToLeftRotationMatrix, double, 2, 2) << std::endl;
+      tmpR2L << CV_MAT_ELEM(*r2LTrans, double, 0, 0) << " " << CV_MAT_ELEM(*r2LTrans, double, 0, 1) << " " << CV_MAT_ELEM(*r2LTrans, double, 0, 2) << std::endl;
     }
     else
     {

@@ -99,13 +99,12 @@ void PrintDictionary( DictionaryType &dictionary )
 // DoMain()
 // -------------------------------------------------------------------------
 
-template <unsigned int InputDimension, class OutputPixelType>
-int DoMain(arguments args, std::vector<std::string> &tagList, std::fstream &foutTagsCSV)
+template < unsigned int InputDimension,
+           class OutputPixelType >
+int DoMain(arguments args, 
+           std::vector<std::string> &tagList,
+           std::fstream &foutTagsCSV)
 {
-  float progress = 0.;
-  float iFile = 0.;
-  float nFiles;
- 
   itksys_ios::ostringstream value;
 
 
@@ -126,11 +125,6 @@ int DoMain(arguments args, std::vector<std::string> &tagList, std::fstream &fout
 
   typedef itk::GDCMImageIO           ImageIOType;
   ImageIOType::Pointer gdcmImageIO = ImageIOType::New();
-
-  progress = iFile/nFiles;
-  std::cout << "<filter-progress>" << std::endl
-            << progress << std::endl
-            << "</filter-progress>" << std::endl;
 
   // Read the image
 
@@ -159,7 +153,7 @@ int DoMain(arguments args, std::vector<std::string> &tagList, std::fstream &fout
   unsigned int iTag = 0;
   std::vector< std::string >::iterator iterTags;     
 
-  foutTagsCSV << boost::filesystem::canonical( args.iterFilename ) << ",";
+  foutTagsCSV << boost::filesystem::canonical( args.iterFilename );
 
   // Get each tag
 
