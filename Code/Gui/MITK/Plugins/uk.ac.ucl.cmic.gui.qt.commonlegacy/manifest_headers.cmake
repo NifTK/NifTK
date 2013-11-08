@@ -1,5 +1,0 @@
-set(Plugin-Name "CMIC Qt Legacy Common Base Classes")
-set(Plugin-Version "0.1")
-set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
-set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")
-set(Require-Plugin org.mitk.gui.qt.common org.mitk.gui.qt.stdmultiwidgeteditor)
