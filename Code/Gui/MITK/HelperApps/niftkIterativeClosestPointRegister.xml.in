@@ -35,10 +35,10 @@
     
     <integer>
       <name>maxIterations</name>
-      <longflag>maxIteratations</longflag>
+      <longflag>maxIterations</longflag>
       <description>The Maximum number of iterations</description>
       <label>The maximum number of iterations</label>
-      <default>-1</default>
+      <default>1000</default>
     </integer>
 
     <integer>
