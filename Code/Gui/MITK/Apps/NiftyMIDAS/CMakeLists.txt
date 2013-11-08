@@ -21,7 +21,6 @@ set(_exclude_plugins
   org.mitk.gui.qt.stdmultiwidgeteditor
   it.unito.cim.intensityprofile
   uk.ac.ucl.cmic.breastsegmentation
-  uk.ac.ucl.cmic.gui.qt.commonlegacy
   uk.ac.ucl.cmic.gui.qt.niftyview
   uk.ac.ucl.cmic.gui.qt.niftyigi
   uk.ac.ucl.cmic.niftyseg
