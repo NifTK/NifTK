@@ -19,8 +19,6 @@
 //#include <mitkDataStorage.h>
 #include <mitkPointSetReader.h>
 #include <mitkVtkSurfaceReader.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkAffineTransformDataNodeProperty.h>
 
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
