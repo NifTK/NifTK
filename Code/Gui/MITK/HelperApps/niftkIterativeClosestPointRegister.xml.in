@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Iterative Closest Point</title>
+  <description><![CDATA[Runs ICP on a target and source object]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file >
+      <name>source</name>
+      <longflag>source</longflag>
+      <description>Source data</description>
+      <label>Source data</label>
+      <channel>input</channel>
+    </file>
+  <file >
+      <name>target</name>
+      <longflag>target</longflag>
+      <description>Target data</description>
+      <label>Target data</label>
+      <channel>input</channel>
+    </file>
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <integer>
+      <name>maxIterations</name>
+      <longflag>maxIteratations</longflag>
+      <description>The Maximum number of iterations</description>
+      <label>The maximum number of iterations</label>
+      <default>-1</default>
+    </integer>
+
+    <integer>
+      <name>maxLandmarks</name>
+      <longflag>maxLandmarks</longflag>
+      <description>The maximum number of landmark points in the target image to use</description>
+      <label>The maximum number of landmark points in the target image to use</label>
+      <default>10000</default>
+    </integer>
+
+    <boolean>
+      <name>visualise</name>
+      <longflag>visualise</longflag>
+      <description>visualise</description>
+      <label>visualise</label>
+      <default>0</default>
+    </boolean>
+
+  </parameters>
+  
+</executable>

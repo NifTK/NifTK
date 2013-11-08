@@ -103,6 +103,7 @@ if(SlicerExecutionModel_FOUND)
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
       niftkMakeGridOf2DImages
+      niftkIterativeClosestPointRegister
     )
   endif()  
 
