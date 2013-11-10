@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkMultiWindowWidget.h"
+#include "niftkMultiWindowWidget_p.h"
 
 #include <cmath>
 #include <itkMatrix.h>
@@ -26,7 +26,7 @@
 #include <usModuleRegistry.h>
 #include <mitkVtkLayerController.h>
 
-#include "vtkSideAnnotation.h"
+#include "vtkSideAnnotation_p.h"
 
 /**
  * This class is to notify the SingleViewWidget about the display geometry changes of a render window.

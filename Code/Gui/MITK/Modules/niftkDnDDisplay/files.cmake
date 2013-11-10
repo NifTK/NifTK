@@ -26,11 +26,11 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
-  niftkImageNavigatorWidget.h
-  niftkWindowLayoutWidget.h
+  niftkImageNavigatorWidget_p.h
+  niftkWindowLayoutWidget_p.h
   niftkMultiViewerWidget.h
-  niftkMultiViewerWidgetControlPanel.h
-  niftkMultiWindowWidget.h
+  niftkMultiViewerWidgetControlPanel_p.h
+  niftkMultiWindowWidget_p.h
   niftkSingleViewerWidget.h
   niftkMultiViewerVisibilityManager.h
 )

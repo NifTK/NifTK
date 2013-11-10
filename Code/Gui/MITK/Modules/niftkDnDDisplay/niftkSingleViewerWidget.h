@@ -29,11 +29,12 @@
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
 #include "Interactions/mitkDnDDisplayStateMachineResponder.h"
 #include "Interactions/mitkDnDDisplayStateMachine.h"
-#include "niftkMultiWindowWidget.h"
 
 class QGridLayout;
+class niftkMultiWindowWidget;
 
 /**
  * \class niftkSingleViewerWidget

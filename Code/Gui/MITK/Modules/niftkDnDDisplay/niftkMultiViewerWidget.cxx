@@ -44,7 +44,7 @@
 
 #include <niftkSingleViewerWidget.h>
 
-#include "niftkMultiViewerWidgetControlPanel.h"
+#include "niftkMultiViewerWidgetControlPanel_p.h"
 #include "ui_niftkMultiViewerWidgetControlPanel.h"
 
 //-----------------------------------------------------------------------------

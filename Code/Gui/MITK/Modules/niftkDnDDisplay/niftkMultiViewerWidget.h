@@ -28,8 +28,8 @@
 
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
-#include <niftkWindowLayoutWidget.h>
-#include <niftkImageNavigatorWidget.h>
+#include <niftkWindowLayoutWidget_p.h>
+#include <niftkImageNavigatorWidget_p.h>
 
 class QSpinBox;
 class QGridLayout;

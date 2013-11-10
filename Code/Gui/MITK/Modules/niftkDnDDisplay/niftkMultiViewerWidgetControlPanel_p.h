@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkMultiViewerWidgetControlPanel_h
-#define niftkMultiViewerWidgetControlPanel_h
+#ifndef niftkMultiViewerWidgetControlPanel_p_h
+#define niftkMultiViewerWidgetControlPanel_p_h
 
 #include <QWidget>
 #include "ui_niftkMultiViewerWidgetControlPanel.h"

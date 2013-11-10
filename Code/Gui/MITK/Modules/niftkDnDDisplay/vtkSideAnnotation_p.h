@@ -12,6 +12,9 @@
 
 =============================================================================*/
 
+#ifndef __vtkSideAnnotation_p_h
+#define __vtkSideAnnotation_p_h
+
 #include "vtkCornerAnnotation.h"
 
 /**
@@ -62,3 +65,5 @@ private:
   vtkSideAnnotation(const vtkSideAnnotation&);  // Purposefully not implemented.
   void operator=(const vtkSideAnnotation&);  // Purposefully not implemented.
 };
+
+#endif

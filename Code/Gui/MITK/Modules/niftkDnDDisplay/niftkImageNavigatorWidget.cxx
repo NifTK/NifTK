@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkImageNavigatorWidget.h"
+#include "niftkImageNavigatorWidget_p.h"
 
 #include <ctkDoubleSpinBox.h>
 

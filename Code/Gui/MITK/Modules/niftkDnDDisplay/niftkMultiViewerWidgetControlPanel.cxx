@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkMultiViewerWidgetControlPanel.h"
+#include "niftkMultiViewerWidgetControlPanel_p.h"
 
 #include <mitkLogMacros.h>
 

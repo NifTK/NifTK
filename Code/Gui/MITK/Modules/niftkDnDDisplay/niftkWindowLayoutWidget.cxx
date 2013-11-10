@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkWindowLayoutWidget.h"
+#include "niftkWindowLayoutWidget_p.h"
 
 WindowLayout niftkWindowLayoutWidget::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_ORTHO,

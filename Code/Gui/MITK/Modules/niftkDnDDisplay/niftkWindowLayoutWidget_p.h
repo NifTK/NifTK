@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkWindowLayoutWidget_h
-#define niftkWindowLayoutWidget_h
+#ifndef niftkWindowLayoutWidget_p_h
+#define niftkWindowLayoutWidget_p_h
 
 #include "ui_niftkWindowLayoutWidget.h"
 

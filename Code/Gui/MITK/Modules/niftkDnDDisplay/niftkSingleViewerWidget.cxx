@@ -23,7 +23,7 @@
 #include <itkConversionUtils.h>
 #include <mitkPointUtils.h>
 #include "niftkSingleViewerWidget.h"
-#include "niftkMultiWindowWidget.h"
+#include "niftkMultiWindowWidget_p.h"
 
 
 //-----------------------------------------------------------------------------
