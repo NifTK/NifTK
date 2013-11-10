@@ -15,7 +15,6 @@
 #include "mitkMIDASOrientationUtils.h"
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
-#include <itkMIDASHelper.h>
 
 namespace mitk
 {

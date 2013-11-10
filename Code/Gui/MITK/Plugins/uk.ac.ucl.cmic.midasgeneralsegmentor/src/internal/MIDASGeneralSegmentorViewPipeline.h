@@ -21,7 +21,6 @@
 #include <itkExtractImageFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkPasteImageFilter.h>
-#include <itkMIDASHelper.h>
 #include <itkMIDASRegionGrowingImageFilter.h>
 #include "MIDASGeneralSegmentorViewHelper.h"
 

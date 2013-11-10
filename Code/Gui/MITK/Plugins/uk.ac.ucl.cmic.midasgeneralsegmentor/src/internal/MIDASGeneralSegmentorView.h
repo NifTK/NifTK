@@ -35,7 +35,6 @@
 #include <mitkSliceNavigationController.h>
 
 #include <QmitkMIDASBaseSegmentationFunctionality.h>
-#include <itkMIDASHelper.h>
 #include <itkMIDASRegionGrowingImageFilter.h>
 #include <mitkMIDASContourTool.h>
 #include <mitkMIDASDrawTool.h>

@@ -20,7 +20,6 @@
 #include <mitkTool.h>
 #include <mitkPointSet.h>
 #include <mitkContourModelSet.h>
-#include <itkMIDASHelper.h>
 #include <itkMIDASImageUpdateClearRegionProcessor.h>
 #include <itkMIDASImageUpdatePasteRegionProcessor.h>
 #include <itkMIDASRetainMarksNoThresholdingProcessor.h>
