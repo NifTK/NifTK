@@ -40,21 +40,84 @@ struct arguments
   std::string outputImage;  
 };
 
-template <int Dimension, class PixelType> 
-int DoMain(arguments args)
-{  
-  typedef typename itk::Image< PixelType, Dimension >     InputImageType;   
-  typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
-  typedef typename itk::ImageFileWriter< InputImageType > OutputImageWriterType;
-  typedef typename itk::MammogramMaskSegmentationImageFilter<InputImageType> MammogramMaskSegmentationImageFilterType;
 
-  typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
+/**
+ * \brief Takes the input and segments it using itk::MammogramMaskSegmentationImageFilter
+ */
+int main(int argc, char** argv)
+{
+  const unsigned int Dimension = 2;
+
+  typedef float InputPixelType;
+  typedef float OutputPixelType;
+
+  typedef itk::Image< InputPixelType, Dimension > InputImageType;   
+  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;   
+
+  typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
+  typedef itk::ImageFileWriter< OutputImageType > OutputImageWriterType;
+  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, OutputImageType> MammogramMaskSegmentationImageFilterType;
+
+
+  // Parse the command line arguments
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  PARSE_ARGS;
+
+  // To pass around command line args
+  struct arguments args;
+
+  args.inputImage=inputImage.c_str();
+  args.outputImage=outputImage.c_str();
+
+  std::cout << "Input image:  " << args.inputImage << std::endl
+            << "Output image: " << args.outputImage << std::endl;
+
+  // Validate command line args
+
+  if (args.inputImage.length() == 0 ||
+      args.outputImage.length() == 0)
+  {
+    return EXIT_FAILURE;
+  }
+
+
+  // Check that the input is 2D
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
+  if (dims != 2)
+  {
+    std::cout << "ERROR: Unsupported image dimension" << std::endl;
+    return EXIT_FAILURE;
+  }
+  else if (dims == 2)
+  {
+    std::cout << "Input is 2D" << std::endl;
+  }
+
+
+  // Read the input image
+  // ~~~~~~~~~~~~~~~~~~~~
+
+  InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName(args.inputImage);
 
-  typename MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+
+  // Create the segmentation filter
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+
   filter->SetInput(imageReader->GetOutput());
-  
-  typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
+  filter->SetDebug(true);
+
+
+  // Create the image writer and execute the pipeline
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
+
   imageWriter->SetFileName(args.outputImage);
   imageWriter->SetInput(filter->GetOutput());
   
@@ -67,100 +130,6 @@ int DoMain(arguments args)
     std::cerr << "Failed: " << err << std::endl; 
     return EXIT_FAILURE;
   }                
+
   return EXIT_SUCCESS;
-}
-
-/**
- * \brief Takes the input image and inverts it using InvertIntensityBetweenMaxAndMinImageFilter
- */
-int main(int argc, char** argv)
-{
-  // To pass around command line args
-  PARSE_ARGS;
-
-  // To pass around command line args
-  struct arguments args;
-  args.inputImage=inputImage.c_str();
-  args.outputImage=outputImage.c_str();
-
-  std::cout << "Input image:  " << args.inputImage << std::endl
-            << "Output image: " << args.outputImage << std::endl;
-
-  // Validate command line args
-  if (args.inputImage.length() == 0 ||
-      args.outputImage.length() == 0)
-  {
-    return EXIT_FAILURE;
-  }
-
-  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
-  if (dims != 2)
-  {
-    std::cout << "ERROR: Unsupported image dimension" << std::endl;
-    return EXIT_FAILURE;
-  }
-  else if (dims == 2)
-  {
-    std::cout << "Input is 2D" << std::endl;
-  }
-   
-  int result;
-
-  switch (itk::PeekAtComponentType(args.inputImage))
-  {
-  case itk::ImageIOBase::UCHAR:
-    std::cout << "Input is UNSIGNED CHAR" << std::endl;
-    result = DoMain<2, unsigned char>(args);  
-    break;
-
-  case itk::ImageIOBase::CHAR:
-    result = DoMain<2, char>(args);  
-    break;
-
-  case itk::ImageIOBase::USHORT:
-    std::cout << "Input is UNSIGNED SHORT" << std::endl;
-    result = DoMain<2, unsigned short>(args);  
-    break;
-
-  case itk::ImageIOBase::SHORT:
-    std::cout << "Input is SHORT" << std::endl;
-    result = DoMain<2, short>(args);  
-    break;
-
-  case itk::ImageIOBase::UINT:
-    std::cout << "Input is UNSIGNED INT" << std::endl;
-    result = DoMain<2, unsigned int>(args);  
-    break;
-
-  case itk::ImageIOBase::INT:
-    std::cout << "Input is SIGNED INT" << std::endl;
-    result = DoMain<2, int>(args);  
-    break;
-
-  case itk::ImageIOBase::ULONG:
-    std::cout << "Input is UNSIGNED LONG" << std::endl;
-    result = DoMain<2, unsigned long>(args);  
-    break;
-
-  case itk::ImageIOBase::LONG:
-    std::cout << "Input is LONG" << std::endl;
-    result = DoMain<2, long>(args);  
-    break;
-
-  case itk::ImageIOBase::FLOAT:
-    std::cout << "Input is FLOAT" << std::endl;
-    result = DoMain<2, float>(args);  
-    result = DoMain<3, float>(args);
-    break;
-
-  case itk::ImageIOBase::DOUBLE:
-    std::cout << "Input is DOUBLE" << std::endl;
-    result = DoMain<2, double>(args);  
-    break;
-
-  default:
-    std::cerr << "ERROR: non standard pixel format" << std::endl;
-    return EXIT_FAILURE;
-  }
-  return result;
 }

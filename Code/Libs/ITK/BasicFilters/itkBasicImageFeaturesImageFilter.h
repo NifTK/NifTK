@@ -268,7 +268,7 @@ protected:
   SetSingleThreadedExecution() ) */
   void GenerateData();
   
-  /** ForwardImageProjector3Dto2D can be implemented as a multithreaded filter.
+  /** BasicImageFeaturesImageFilter can be implemented as a multithreaded filter.
    * Therefore, this implementation provides a ThreadedGenerateData()
    * routine which is called for each processing thread. The output
    * image data is allocated automatically by the superclass prior to

@@ -86,9 +86,6 @@ void
 MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::BeforeThreadedGenerateData(void)
 {
-  typedef itk::ImageFileWriter< RealImageType > WriterType;
-  typename WriterType::Pointer writer = WriterType::New();
-
   typedef itk::BasicImageFeaturesImageFilter< TInputImage, 
                                               TOutputImage > BasicImageFeaturesFilterType;
 
@@ -96,17 +93,34 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   // Create the basic image features filter
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
+  typename BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
 
   BIFsFilter->SetEpsilon( 1e-3 );
 
   BIFsFilter->SetInput( this->GetInput() );     
-  BIFsFilter->SetSigma( 1. );
+  BIFsFilter->SetSigma( 2. );
+  BIFsFilter->SetSingleThreadedExecution();
 
   std::cout << "Computing Basic Image Features" << std::endl;
   BIFsFilter->Update();
         
   this->GraftOutput( BIFsFilter->GetOutput() );
+
+  typedef itk::ImageFileWriter< TOutputImage > WriterType;
+  typename WriterType::Pointer writer = WriterType::New();
+
+  writer->SetFileName( "BIFS.nii" );
+  writer->SetInput( BIFsFilter->GetOutput() );
+  
+  try
+  {
+    writer->Update(); 
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "Failed: " << err << std::endl; 
+  }                
+
   
 }
 

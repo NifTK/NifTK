@@ -85,6 +85,8 @@ public:
 		  (Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),2>));
   itkConceptMacro(InputHasNumericTraitsCheck,
                   (Concept::HasNumericTraits<InputImagePixelType>));
+  itkConceptMacro(InputHasFloatingPointPixelType,
+                  (Concept::IsFloatingPoint<InputImagePixelType>));
   itkConceptMacro(OutputHasPixelTraitsCheck,
                   (Concept::HasPixelTraits<OutputImagePixelType>));
   /** End concept checking */
