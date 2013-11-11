@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>niftkSingleViewerControls</class>
+ <widget class="QWidget" name="niftkSingleViewerControls">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>667</width>
+    <height>122</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="m_ControlPanelGridLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item row="2" column="2" rowspan="3">
+    <widget class="QWidget" name="m_WindowBindingWidget" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,1">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="m_BindWindowsLabel">
+        <property name="text">
+         <string>bind windows</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowCursorsCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor positions relative to the window size, across the windows of the same viewer.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan the image or select a position then the image will be shifted in the other windows, so that the cursor planes are aligned in the adjacent windows.&lt;/p&gt;&lt;p&gt;Note that this option controls only the displayed position of the cursor, not the selected position in space. The selected position in space is &lt;span style=&quot; font-style:italic;&quot;&gt;always&lt;/span&gt; linked across the windows of the same image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>cursor</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_BindWindowMagnificationsCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the magnification across the windows of an image viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>magn.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="niftkWindowLayoutWidget" name="m_WindowLayoutWidget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QWidget" name="m_ShowOptionsWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="m_WindowShowOptionsLabel">
+        <property name="text">
+         <string>show:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_ShowCursorCheckBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Shows the cursor (aka. crosshair)</string>
+        </property>
+        <property name="text">
+         <string>cursor</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_Show3DWindowCheckBox">
+        <property name="toolTip">
+         <string>Shows the 3D window in multiple window layouts</string>
+        </property>
+        <property name="text">
+         <string>3D window</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_ShowDirectionAnnotationsCheckBox">
+        <property name="toolTip">
+         <string>Shows the orientation directions (S, I, A, P, L, R)</string>
+        </property>
+        <property name="text">
+         <string>directions</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="m_ShowOptionsSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="5">
+    <widget class="Line" name="m_WindowLayoutSeparator">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" rowspan="3">
+    <widget class="niftkImageNavigatorWidget" name="m_SlidersWidget" native="true"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="Line" name="m_ShowOptionsSeparator">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="Line" name="m_WindowBindingOptionsSeparator">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>niftkImageNavigatorWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">niftkImageNavigatorWidget_p.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>niftkWindowLayoutWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">niftkWindowLayoutWidget_p.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

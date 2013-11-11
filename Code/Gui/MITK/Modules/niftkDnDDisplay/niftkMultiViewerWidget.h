@@ -47,7 +47,7 @@ class QButtonGroup;
 class QToolButton;
 class ctkPopupWidget;
 
-class niftkMultiViewerWidgetControlPanel;
+class niftkMultiViewerControls;
 
 /**
  * \class niftkMultiViewerWidget
@@ -380,7 +380,7 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  niftkMultiViewerWidgetControlPanel* CreateControlPanel(QWidget* parent);
+  niftkMultiViewerControls* CreateControlPanel(QWidget* parent);
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -423,7 +423,7 @@ private:
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
-  niftkMultiViewerWidgetControlPanel* m_ControlPanel;
+  niftkMultiViewerControls* m_ControlPanel;
 };
 
 #endif

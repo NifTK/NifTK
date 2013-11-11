@@ -18,7 +18,8 @@ set(CPP_FILES
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx
   niftkMultiViewerWidget.cxx
-  niftkMultiViewerWidgetControlPanel.cxx
+  niftkMultiViewerControls.cxx
+  niftkSingleViewerControls.cxx
   niftkSingleViewerWidget.cxx
   vtkSideAnnotation.cxx
   Interactions/mitkDnDDisplayStateMachine.cxx
@@ -29,7 +30,8 @@ set(MOC_H_FILES
   niftkImageNavigatorWidget_p.h
   niftkWindowLayoutWidget_p.h
   niftkMultiViewerWidget.h
-  niftkMultiViewerWidgetControlPanel_p.h
+  niftkMultiViewerControls.h
+  niftkSingleViewerControls.h
   niftkMultiWindowWidget_p.h
   niftkSingleViewerWidget.h
   niftkMultiViewerVisibilityManager.h
@@ -38,7 +40,8 @@ set(MOC_H_FILES
 set(UI_FILES
   Resources/UI/niftkWindowLayoutWidget.ui
   Resources/UI/niftkImageNavigatorWidget.ui
-  Resources/UI/niftkMultiViewerWidgetControlPanel.ui
+  Resources/UI/niftkMultiViewerControls.ui
+  Resources/UI/niftkSingleViewerControls.ui
 )
 
 set(RESOURCE_FILES

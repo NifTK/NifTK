@@ -12,27 +12,35 @@
 
 =============================================================================*/
 
-#ifndef niftkMultiViewerWidgetControlPanel_p_h
-#define niftkMultiViewerWidgetControlPanel_p_h
+#ifndef niftkSingleViewerControls_p_h
+#define niftkSingleViewerControls_p_h
 
 #include <QWidget>
-#include "ui_niftkMultiViewerWidgetControlPanel.h"
+
+#include <niftkDnDDisplayExports.h>
+
+#include "niftkDnDDisplayEnums.h"
+
+namespace Ui
+{
+class niftkSingleViewerControls;
+}
 
 /**
- * \class niftkMultiViewerWidgetControlPanel
+ * \class niftkSingleViewerControls
  * \brief Control panel for the DnD display.
  */
-class niftkMultiViewerWidgetControlPanel : public QWidget, private Ui_niftkMultiViewerWidgetControlPanel
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerControls : public QWidget
 {
   Q_OBJECT
   
 public:
 
-  /// \brief Constructs the niftkMultiViewerWidgetControlPanel object.
-  explicit niftkMultiViewerWidgetControlPanel(QWidget *parent = 0);
+  /// \brief Constructs the niftkSingleViewerControls object.
+  explicit niftkSingleViewerControls(QWidget *parent = 0);
 
-  /// \brief Destructs the niftkMultiViewerWidgetControlPanel object.
-  virtual ~niftkMultiViewerWidgetControlPanel();
+  /// \brief Destructs the niftkSingleViewerControls object.
+  virtual ~niftkSingleViewerControls();
   
   /// \brief Tells if the magnification controls are visible.
   bool AreMagnificationControlsVisible() const;
@@ -51,30 +59,6 @@ public:
 
   /// \brief Shows or hides the window layout controls.
   void SetWindowLayoutControlsVisible(bool visible);
-
-  /// \brief Tells if the multi view controls are visible.
-  bool AreViewNumberControlsVisible() const;
-
-  /// \brief Shows or hides the multi view controls.
-  void SetViewNumberControlsVisible(bool visible);
-
-  /// \brief Tells if the drop type controls are visible.
-  bool AreDropTypeControlsVisible() const;
-
-  /// \brief Shows or hides the drop type controls.
-  void SetDropTypeControlsVisible(bool visible);
-
-  /// \brief Tells if the single view controls are enabled.
-  bool AreSingleViewControlsEnabled() const;
-
-  /// \brief Enables or disables the single view controls.
-  void SetSingleViewControlsEnabled(bool enabled);
-
-  /// \brief Tells if the multi view controls are enabled.
-  bool AreMultiViewControlsEnabled() const;
-
-  /// \brief Enables or disables the multi view controls.
-  void SetMultiViewControlsEnabled(bool enabled);
 
   /// \brief Gets the maximal slice index that is the number of slices - 1.
   int GetMaxSliceIndex() const;
@@ -163,60 +147,6 @@ public:
   /// \brief Sets the bind window magnifications check box to the given value.
   void SetWindowMagnificationsBound(bool bound);
 
-  /// \brief Gets the number of rows of the views.
-  int GetViewRows() const;
-
-  /// \brief Gets the number of rows of the views.
-  int GetViewColumns() const;
-
-  /// \brief Sets the number of the rows and columns of views to the given numbers.
-  void SetViewNumber(int rows, int columns);
-
-  /// \brief Gets the maximal number of rows of the views.
-  int GetMaxViewRows() const;
-
-  /// \brief Gets the maximal number of columns of the views.
-  int GetMaxViewColumns() const;
-
-  /// \brief Sets the maximal number of the rows and columns of views to the given numbers.
-  void SetMaxViewNumber(int rows, int columns);
-
-  /// \brief Returns true if the selected position of the views is bound, otherwise false.
-  bool AreViewPositionsBound() const;
-
-  /// \brief Sets the bind view positions check box to the given value.
-  void SetViewPositionsBound(bool bound);
-
-  /// \brief Returns true if the  cursor of the views is bound, otherwise false.
-  bool AreViewCursorsBound() const;
-
-  /// \brief Sets the bind view cursors check box to the given value.
-  void SetViewCursorsBound(bool bound);
-
-  /// \brief Returns true if the magnification of the views are bound, otherwise false.
-  bool AreViewMagnificationsBound() const;
-
-  /// \brief Sets the bind view magnifications check box to the given value.
-  void SetViewMagnificationsBound(bool bound);
-
-  /// \brief Returns true if the  layout of the views is bound, otherwise false.
-  bool AreViewLayoutsBound() const;
-
-  /// \brief Sets the bind view layouts check box to the given value.
-  void SetViewLayoutsBound(bool bound);
-
-  /// \brief Returns true if the  geometry of the views is bound, otherwise false.
-  bool AreViewGeometriesBound() const;
-
-  /// \brief Sets the bind view geometries check box to the given value.
-  void SetViewGeometriesBound(bool bound);
-
-  /// \brief Gets the selected drop type.
-  DnDDisplayDropType GetDropType() const;
-
-  /// \brief Sets the drop type controls to the given drop type.
-  void SetDropType(DnDDisplayDropType dropType);
-
 signals:
 
   /// \brief Emitted when the selected slice index has been changed.
@@ -246,57 +176,17 @@ signals:
   /// \brief Emitted when the window magnification binding option has been changed.
   void WindowMagnificationBindingChanged(bool bound);
 
-  /// \brief Emitted when the selected number of views has been changed.
-  void ViewNumberChanged(int rows, int columns);
-
-  /// \brief Emitted when the view position binding option has been changed.
-  void ViewPositionBindingChanged(bool bound);
-
-  /// \brief Emitted when the view cursor binding option has been changed.
-  void ViewCursorBindingChanged(bool bound);
-
-  /// \brief Emitted when the view magnification binding option has been changed.
-  void ViewMagnificationBindingChanged(bool bound);
-
-  /// \brief Emitted when the view layout binding option has been changed.
-  void ViewLayoutBindingChanged(bool bound);
-
-  /// \brief Emitted when the view geometry binding option has been changed.
-  void ViewGeometryBindingChanged(bool bound);
-
-  /// \brief Emitted when the selected drop type has been changed.
-  void DropTypeChanged(DnDDisplayDropType dropType);
-
-  /// \brief Emitted when the drop accumulate option has been changed.
-  void DropAccumulateChanged(bool accumulate);
-
 private slots:
 
   void OnLayoutChanged(WindowLayout windowLayout);
 
-  void On1x1ViewsButtonClicked();
-  void On1x2ViewsButtonClicked();
-  void On1x3ViewsButtonClicked();
-  void On2x1ViewsButtonClicked();
-  void On2x2ViewsButtonClicked();
-  void On2x3ViewsButtonClicked();
-  void OnViewRowsSpinBoxValueChanged(int rows);
-  void OnViewColumnsSpinBoxValueChanged(int columns);
-
-  void OnViewPositionBindingChanged(bool bound);
-  void OnViewCursorBindingChanged(bool bound);
-
-  void OnDropSingleRadioButtonToggled(bool bound);
-  void OnDropMultipleRadioButtonToggled(bool bound);
-  void OnDropThumbnailRadioButtonToggled(bool bound);
-
 private:
+
+  Ui::niftkSingleViewerControls* ui;
 
   bool m_ShowMagnificationControls;
   bool m_ShowShowOptions;
   bool m_ShowWindowLayoutControls;
-  bool m_ShowViewNumberControls;
-  bool m_ShowDropTypeControls;
 };
 
 #endif

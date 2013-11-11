@@ -44,8 +44,7 @@
 
 #include <niftkSingleViewerWidget.h>
 
-#include "niftkMultiViewerWidgetControlPanel_p.h"
-#include "ui_niftkMultiViewerWidgetControlPanel.h"
+#include "niftkMultiViewerControls.h"
 
 //-----------------------------------------------------------------------------
 niftkMultiViewerWidget::niftkMultiViewerWidget(
@@ -210,9 +209,9 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 
 
 //-----------------------------------------------------------------------------
-niftkMultiViewerWidgetControlPanel* niftkMultiViewerWidget::CreateControlPanel(QWidget* parent)
+niftkMultiViewerControls* niftkMultiViewerWidget::CreateControlPanel(QWidget* parent)
 {
-  niftkMultiViewerWidgetControlPanel* controlPanel = new niftkMultiViewerWidgetControlPanel(parent);
+  niftkMultiViewerControls* controlPanel = new niftkMultiViewerControls(parent);
 
   controlPanel->SetMaxViewNumber(m_MaxViewRows, m_MaxViewColumns);
 
