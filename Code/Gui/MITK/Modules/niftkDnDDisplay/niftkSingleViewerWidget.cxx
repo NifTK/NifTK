@@ -41,7 +41,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_NavigationControllerEventListening(false)
-, m_RememberSettingsPerLayout(false)
+, m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_DnDDisplayStateMachine(0)
@@ -74,7 +74,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_NavigationControllerEventListening(false)
-, m_RememberSettingsPerLayout(false)
+, m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_DnDDisplayStateMachine(0)
@@ -325,7 +325,7 @@ bool niftkSingleViewerWidget::GetShow3DWindowInOrthoView() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetShow3DWindowInOrthoView(bool enabled)
+void niftkSingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
 {
   m_MultiWidget->SetShow3DWindowInOrthoView(enabled);
 }
@@ -416,16 +416,16 @@ mitk::DataStorage::Pointer niftkSingleViewerWidget::GetDataStorage() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetRememberSettingsPerLayout(bool remember)
+void niftkSingleViewerWidget::SetRememberSettingsPerWindowLayout(bool remember)
 {
-  m_RememberSettingsPerLayout = remember;
+  m_RememberSettingsPerWindowLayout = remember;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetRememberSettingsPerLayout() const
+bool niftkSingleViewerWidget::GetRememberSettingsPerWindowLayout() const
 {
-  return m_RememberSettingsPerLayout;
+  return m_RememberSettingsPerWindowLayout;
 }
 
 
@@ -639,14 +639,14 @@ void niftkSingleViewerWidget::SetTimeStep(unsigned int timeStep)
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkSingleViewerWidget::GetLayout() const
+WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 {
   return m_WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
+void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -658,7 +658,7 @@ void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
       return;
     }
 
-    // If we have a currently valid layout/orientation, then store the current position, so we can switch back to it if necessary.
+    // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
     m_SliceIndexes[Index(m_Orientation)] = this->GetSliceIndex(m_Orientation);
     m_TimeSteps[Index(m_Orientation)] = this->GetTimeStep();
     m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactor();
@@ -670,7 +670,7 @@ void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
 
     m_MultiWidget->SetGeometry(geometry);
-    m_MultiWidget->SetLayout(windowLayout);
+    m_MultiWidget->SetWindowLayout(windowLayout);
     // Call Qt update to try and make sure we are painted at the right size.
     m_MultiWidget->update();
 
@@ -680,7 +680,7 @@ void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
       m_MultiWidget->SetSelectedPosition(selectedPosition);
     }
 
-    // Now store the current layout/orientation.
+    // Now store the current window layout/orientation.
     MIDASOrientation orientation = this->GetOrientation();
     m_Orientation = orientation;
     m_WindowLayout = windowLayout;
@@ -689,10 +689,10 @@ void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
       m_MultiWindowLayout = windowLayout;
     }
 
-    // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
+    // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
     bool hasBeenInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
-    if (m_RememberSettingsPerLayout && hasBeenInitialised)
+    if (m_RememberSettingsPerWindowLayout && hasBeenInitialised)
     {
       if (orientation != MIDAS_ORIENTATION_UNKNOWN)
       {
@@ -902,7 +902,7 @@ bool niftkSingleViewerWidget::MoveAnteriorPosterior(int slices)
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::SwitchToAxial()
 {
-  this->SetLayout(WINDOW_LAYOUT_AXIAL);
+  this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   emit WindowLayoutChanged(this, WINDOW_LAYOUT_AXIAL);
   return true;
 }
@@ -911,7 +911,7 @@ bool niftkSingleViewerWidget::SwitchToAxial()
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::SwitchToSagittal()
 {
-  this->SetLayout(WINDOW_LAYOUT_SAGITTAL);
+  this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
   emit WindowLayoutChanged(this, WINDOW_LAYOUT_SAGITTAL);
   return true;
 }
@@ -920,7 +920,7 @@ bool niftkSingleViewerWidget::SwitchToSagittal()
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::SwitchToCoronal()
 {
-  this->SetLayout(WINDOW_LAYOUT_CORONAL);
+  this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
   emit WindowLayoutChanged(this, WINDOW_LAYOUT_CORONAL);
   return true;
 }
@@ -929,7 +929,7 @@ bool niftkSingleViewerWidget::SwitchToCoronal()
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::SwitchTo3D()
 {
-  this->SetLayout(WINDOW_LAYOUT_3D);
+  this->SetWindowLayout(WINDOW_LAYOUT_3D);
   emit WindowLayoutChanged(this, WINDOW_LAYOUT_3D);
   return true;
 }
@@ -972,7 +972,7 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 //  m_MultiWidget->SetCursorPosition(m_LastCursorPosition);
 //  m_MultiWidget->SetSelectedPosition(m_SecondLastSelectedPosition);
 
-  this->SetLayout(nextWindowLayout);
+  this->SetWindowLayout(nextWindowLayout);
   emit WindowLayoutChanged(this, nextWindowLayout);
 
   return true;

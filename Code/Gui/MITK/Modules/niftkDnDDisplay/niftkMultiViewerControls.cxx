@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 niftkMultiViewerControls::niftkMultiViewerControls(QWidget *parent)
 : niftkSingleViewerControls(new QWidget())
-, m_ShowViewNumberControls(true)
+, m_ShowViewerNumberControls(true)
 , m_ShowDropTypeControls(true)
 {
   QWidget* singleViewerControlsWidget = qobject_cast<QWidget*>(this->parent());
@@ -33,30 +33,30 @@ niftkMultiViewerControls::niftkMultiViewerControls(QWidget *parent)
   m_SingleViewerControls->setLayout(singleViewerControlsLayout);
 
   // Default all widgets off except viewer number widgets, until something dropped.
-  this->SetSingleViewControlsEnabled(false);
+  this->SetSingleViewerControlsEnabled(false);
 
-  // This should disable the view binding and drop type controls.
-  this->SetViewNumber(1, 1);
+  // This should disable the viewer binding and drop type controls.
+  this->SetViewerNumber(1, 1);
 
-  connect(m_1x1ViewerButton, SIGNAL(clicked()), this, SLOT(On1x1ViewsButtonClicked()));
-  connect(m_1x2ViewersButton, SIGNAL(clicked()), this, SLOT(On1x2ViewsButtonClicked()));
-  connect(m_1x3ViewersButton, SIGNAL(clicked()), this, SLOT(On1x3ViewsButtonClicked()));
-  connect(m_2x1ViewersButton, SIGNAL(clicked()), this, SLOT(On2x1ViewsButtonClicked()));
-  connect(m_2x2ViewersButton, SIGNAL(clicked()), this, SLOT(On2x2ViewsButtonClicked()));
-  connect(m_2x3ViewersButton, SIGNAL(clicked()), this, SLOT(On2x3ViewsButtonClicked()));
-  connect(m_ViewerRowsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewRowsSpinBoxValueChanged(int)));
-  connect(m_ViewerColumnsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnViewColumnsSpinBoxValueChanged(int)));
+  this->connect(m_1x1ViewerButton, SIGNAL(clicked()), SLOT(On1x1ViewerButtonClicked()));
+  this->connect(m_1x2ViewersButton, SIGNAL(clicked()), SLOT(On1x2ViewersButtonClicked()));
+  this->connect(m_1x3ViewersButton, SIGNAL(clicked()), SLOT(On1x3ViewersButtonClicked()));
+  this->connect(m_2x1ViewersButton, SIGNAL(clicked()), SLOT(On2x1ViewersButtonClicked()));
+  this->connect(m_2x2ViewersButton, SIGNAL(clicked()), SLOT(On2x2ViewersButtonClicked()));
+  this->connect(m_2x3ViewersButton, SIGNAL(clicked()), SLOT(On2x3ViewersButtonClicked()));
+  this->connect(m_ViewerRowsSpinBox, SIGNAL(valueChanged(int)), SLOT(OnViewerRowsSpinBoxValueChanged(int)));
+  this->connect(m_ViewerColumnsSpinBox, SIGNAL(valueChanged(int)), SLOT(OnViewerColumnsSpinBoxValueChanged(int)));
 
-  connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnViewPositionBindingChanged(bool)));
-  connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnViewCursorBindingChanged(bool)));
-  connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewMagnificationBindingChanged(bool)));
-  connect(m_BindViewerLayoutsCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewLayoutBindingChanged(bool)));
-  connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(ViewGeometryBindingChanged(bool)));
+  this->connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
+  this->connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
+  this->connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerMagnificationBindingChanged(bool)));
+  this->connect(m_BindViewerLayoutsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerWindowLayoutBindingChanged(bool)));
+  this->connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerGeometryBindingChanged(bool)));
 
-  connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropSingleRadioButtonToggled(bool)));
-  connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropMultipleRadioButtonToggled(bool)));
-  connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), this, SLOT(OnDropThumbnailRadioButtonToggled(bool)));
-  connect(m_DropAccumulateCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(DropAccumulateChanged(bool)));
+  this->connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), SLOT(OnDropSingleRadioButtonToggled(bool)));
+  this->connect(m_DropMultipleRadioButton, SIGNAL(toggled(bool)), SLOT(OnDropMultipleRadioButtonToggled(bool)));
+  this->connect(m_DropThumbnailRadioButton, SIGNAL(toggled(bool)), SLOT(OnDropThumbnailRadioButtonToggled(bool)));
+  this->connect(m_DropAccumulateCheckBox, SIGNAL(toggled(bool)), SIGNAL(DropAccumulateChanged(bool)));
 }
 
 
@@ -67,14 +67,14 @@ niftkMultiViewerControls::~niftkMultiViewerControls()
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewNumberControlsVisible() const
+bool niftkMultiViewerControls::AreViewerNumberControlsVisible() const
 {
   return m_ViewerNumberWidget->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewNumberControlsVisible(bool visible)
+void niftkMultiViewerControls::SetViewerNumberControlsVisible(bool visible)
 {
   m_ViewerNumberWidget->setVisible(visible);
   m_ViewerBindingSeparator->setVisible(visible);
@@ -99,7 +99,7 @@ void niftkMultiViewerControls::SetDropTypeControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreSingleViewControlsEnabled() const
+bool niftkMultiViewerControls::AreSingleViewerControlsEnabled() const
 {
 //  return m_SlidersWidget->isEnabled();
   return m_SingleViewerControls->isEnabled();
@@ -107,7 +107,7 @@ bool niftkMultiViewerControls::AreSingleViewControlsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetSingleViewControlsEnabled(bool enabled)
+void niftkMultiViewerControls::SetSingleViewerControlsEnabled(bool enabled)
 {
   m_SingleViewerControls->setEnabled(enabled);
 //  m_SlidersWidget->setEnabled(enabled);
@@ -120,35 +120,35 @@ void niftkMultiViewerControls::SetSingleViewControlsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreMultiViewControlsEnabled() const
+bool niftkMultiViewerControls::AreMultiViewerControlsEnabled() const
 {
   return m_ViewerNumberWidget->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetMultiViewControlsEnabled(bool enabled)
+void niftkMultiViewerControls::SetMultiViewerControlsEnabled(bool enabled)
 {
   m_ViewerNumberWidget->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiViewerControls::GetMaxViewRows() const
+int niftkMultiViewerControls::GetMaxViewerRows() const
 {
   return m_ViewerRowsSpinBox->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiViewerControls::GetMaxViewColumns() const
+int niftkMultiViewerControls::GetMaxViewerColumns() const
 {
   return m_ViewerColumnsSpinBox->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetMaxViewNumber(int maxRows, int maxColumns)
+void niftkMultiViewerControls::SetMaxViewerNumber(int maxRows, int maxColumns)
 {
   bool wasBlocked = m_1x2ViewersButton->blockSignals(true);
   m_1x2ViewersButton->setEnabled(maxColumns >= 2);
@@ -181,31 +181,31 @@ void niftkMultiViewerControls::SetMaxViewNumber(int maxRows, int maxColumns)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiViewerControls::GetViewRows() const
+int niftkMultiViewerControls::GetViewerRows() const
 {
   return m_ViewerRowsSpinBox->value();
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiViewerControls::GetViewColumns() const
+int niftkMultiViewerControls::GetViewerColumns() const
 {
   return m_ViewerColumnsSpinBox->value();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewNumber(int rows, int columns)
+void niftkMultiViewerControls::SetViewerNumber(int rows, int columns)
 {
   if (rows > m_ViewerRowsSpinBox->maximum() || columns > m_ViewerColumnsSpinBox->maximum())
   {
     return;
   }
 
-  bool singleView = rows == 1 && columns == 1;
+  bool singleViewer = rows == 1 && columns == 1;
 
   bool wasBlocked = m_1x1ViewerButton->blockSignals(true);
-  m_1x1ViewerButton->setChecked(singleView);
+  m_1x1ViewerButton->setChecked(singleViewer);
   m_1x1ViewerButton->blockSignals(wasBlocked);
 
   wasBlocked = m_1x2ViewersButton->blockSignals(true);
@@ -236,20 +236,20 @@ void niftkMultiViewerControls::SetViewNumber(int rows, int columns)
   m_ViewerColumnsSpinBox->setValue(columns);
   m_ViewerColumnsSpinBox->blockSignals(wasBlocked);
 
-  m_ViewerBindingWidget->setEnabled(!singleView);
-  m_DropTypeWidget->setEnabled(!singleView);
+  m_ViewerBindingWidget->setEnabled(!singleViewer);
+  m_DropTypeWidget->setEnabled(!singleViewer);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewPositionsBound() const
+bool niftkMultiViewerControls::AreViewerPositionsBound() const
 {
   return m_BindViewerPositionsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewPositionsBound(bool bound)
+void niftkMultiViewerControls::SetViewerPositionsBound(bool bound)
 {
   bool wasBlocked = m_BindViewerPositionsCheckBox->blockSignals(true);
   m_BindViewerPositionsCheckBox->setChecked(bound);
@@ -258,14 +258,14 @@ void niftkMultiViewerControls::SetViewPositionsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewCursorsBound() const
+bool niftkMultiViewerControls::AreViewerCursorsBound() const
 {
   return m_BindViewerCursorsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewCursorsBound(bool bound)
+void niftkMultiViewerControls::SetViewerCursorsBound(bool bound)
 {
   bool wasBlocked = m_BindViewerCursorsCheckBox->blockSignals(true);
   m_BindViewerCursorsCheckBox->setChecked(bound);
@@ -274,14 +274,14 @@ void niftkMultiViewerControls::SetViewCursorsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewMagnificationsBound() const
+bool niftkMultiViewerControls::AreViewerMagnificationsBound() const
 {
   return m_BindViewerMagnificationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewMagnificationsBound(bool bound)
+void niftkMultiViewerControls::SetViewerMagnificationsBound(bool bound)
 {
   bool wasBlocked = m_BindViewerMagnificationsCheckBox->blockSignals(true);
   m_BindViewerMagnificationsCheckBox->setChecked(bound);
@@ -290,14 +290,14 @@ void niftkMultiViewerControls::SetViewMagnificationsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewLayoutsBound() const
+bool niftkMultiViewerControls::AreViewerWindowLayoutsBound() const
 {
   return m_BindViewerLayoutsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewLayoutsBound(bool bound)
+void niftkMultiViewerControls::SetViewerWindowLayoutsBound(bool bound)
 {
   bool wasBlocked = m_BindViewerLayoutsCheckBox->blockSignals(true);
   m_BindViewerLayoutsCheckBox->setChecked(bound);
@@ -306,14 +306,14 @@ void niftkMultiViewerControls::SetViewLayoutsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerControls::AreViewGeometriesBound() const
+bool niftkMultiViewerControls::AreViewerGeometriesBound() const
 {
   return m_BindViewerGeometriesCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::SetViewGeometriesBound(bool bound)
+void niftkMultiViewerControls::SetViewerGeometriesBound(bool bound)
 {
   bool wasBlocked = m_BindViewerGeometriesCheckBox->blockSignals(true);
   m_BindViewerGeometriesCheckBox->setChecked(bound);
@@ -361,92 +361,92 @@ void niftkMultiViewerControls::SetDropType(DnDDisplayDropType dropType)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On1x1ViewsButtonClicked()
+void niftkMultiViewerControls::On1x1ViewerButtonClicked()
 {
-  this->SetViewNumber(1, 1);
-  emit ViewNumberChanged(1, 1);
+  this->SetViewerNumber(1, 1);
+  emit ViewerNumberChanged(1, 1);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On1x2ViewsButtonClicked()
+void niftkMultiViewerControls::On1x2ViewersButtonClicked()
 {
-  this->SetViewNumber(1, 2);
-  emit ViewNumberChanged(1, 2);
+  this->SetViewerNumber(1, 2);
+  emit ViewerNumberChanged(1, 2);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On1x3ViewsButtonClicked()
+void niftkMultiViewerControls::On1x3ViewersButtonClicked()
 {
-  this->SetViewNumber(1, 3);
-  emit ViewNumberChanged(1, 3);
+  this->SetViewerNumber(1, 3);
+  emit ViewerNumberChanged(1, 3);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On2x1ViewsButtonClicked()
+void niftkMultiViewerControls::On2x1ViewersButtonClicked()
 {
-  this->SetViewNumber(2, 1);
-  emit ViewNumberChanged(2, 1);
+  this->SetViewerNumber(2, 1);
+  emit ViewerNumberChanged(2, 1);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On2x2ViewsButtonClicked()
+void niftkMultiViewerControls::On2x2ViewersButtonClicked()
 {
-  this->SetViewNumber(2, 2);
-  emit ViewNumberChanged(2, 2);
+  this->SetViewerNumber(2, 2);
+  emit ViewerNumberChanged(2, 2);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::On2x3ViewsButtonClicked()
+void niftkMultiViewerControls::On2x3ViewersButtonClicked()
 {
-  this->SetViewNumber(2, 3);
-  emit ViewNumberChanged(2, 3);
+  this->SetViewerNumber(2, 3);
+  emit ViewerNumberChanged(2, 3);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::OnViewRowsSpinBoxValueChanged(int rows)
+void niftkMultiViewerControls::OnViewerRowsSpinBoxValueChanged(int rows)
 {
   int columns = m_ViewerColumnsSpinBox->value();
-  this->SetViewNumber(rows, columns);
-  emit ViewNumberChanged(rows, columns);
+  this->SetViewerNumber(rows, columns);
+  emit ViewerNumberChanged(rows, columns);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::OnViewColumnsSpinBoxValueChanged(int columns)
+void niftkMultiViewerControls::OnViewerColumnsSpinBoxValueChanged(int columns)
 {
   int rows = m_ViewerRowsSpinBox->value();
-  this->SetViewNumber(rows, columns);
-  emit ViewNumberChanged(rows, columns);
+  this->SetViewerNumber(rows, columns);
+  emit ViewerNumberChanged(rows, columns);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::OnViewPositionBindingChanged(bool bound)
+void niftkMultiViewerControls::OnViewerPositionBindingChanged(bool bound)
 {
-  if (!bound && this->AreViewCursorsBound())
+  if (!bound && this->AreViewerCursorsBound())
   {
     // Note that this will trigger emitting the ViewCursorBindingChanged(false) signal.
     m_BindViewerCursorsCheckBox->setChecked(false);
   }
-  emit ViewPositionBindingChanged(bound);
+  emit ViewerPositionBindingChanged(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerControls::OnViewCursorBindingChanged(bool bound)
+void niftkMultiViewerControls::OnViewerCursorBindingChanged(bool bound)
 {
-  if (bound && !this->AreViewPositionsBound())
+  if (bound && !this->AreViewerPositionsBound())
   {
     // Note that this will trigger emitting the ViewPositionBindingChanged(true) signal.
     m_BindViewerPositionsCheckBox->setChecked(true);
   }
-  emit ViewCursorBindingChanged(bound);
+  emit ViewerCursorBindingChanged(bound);
 }
 
 

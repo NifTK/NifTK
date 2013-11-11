@@ -24,11 +24,6 @@
 
 #include "ui_niftkMultiViewerControls.h"
 
-//namespace Ui
-//{
-//class niftkMultiViewerControls;
-//}
-
 /**
  * \class niftkMultiViewerControls
  * \brief Control panel for the DnD display.
@@ -45,11 +40,11 @@ public:
   /// \brief Destructs the niftkMultiViewerControls object.
   virtual ~niftkMultiViewerControls();
   
-  /// \brief Tells if the multi view controls are visible.
-  bool AreViewNumberControlsVisible() const;
+  /// \brief Tells if the viewer number controls are visible.
+  bool AreViewerNumberControlsVisible() const;
 
-  /// \brief Shows or hides the multi view controls.
-  void SetViewNumberControlsVisible(bool visible);
+  /// \brief Shows or hides the viewer number controls.
+  void SetViewerNumberControlsVisible(bool visible);
 
   /// \brief Tells if the drop type controls are visible.
   bool AreDropTypeControlsVisible() const;
@@ -57,65 +52,65 @@ public:
   /// \brief Shows or hides the drop type controls.
   void SetDropTypeControlsVisible(bool visible);
 
-  /// \brief Tells if the single view controls are enabled.
-  bool AreSingleViewControlsEnabled() const;
+  /// \brief Tells if the single viewer controls are enabled.
+  bool AreSingleViewerControlsEnabled() const;
 
-  /// \brief Enables or disables the single view controls.
-  void SetSingleViewControlsEnabled(bool enabled);
+  /// \brief Enables or disables the single viewer controls.
+  void SetSingleViewerControlsEnabled(bool enabled);
 
-  /// \brief Tells if the multi view controls are enabled.
-  bool AreMultiViewControlsEnabled() const;
+  /// \brief Tells if the multi viewer controls are enabled.
+  bool AreMultiViewerControlsEnabled() const;
 
-  /// \brief Enables or disables the multi view controls.
-  void SetMultiViewControlsEnabled(bool enabled);
+  /// \brief Enables or disables the multi viewer controls.
+  void SetMultiViewerControlsEnabled(bool enabled);
 
-  /// \brief Gets the number of rows of the views.
-  int GetViewRows() const;
+  /// \brief Gets the number of rows of the viewers.
+  int GetViewerRows() const;
 
-  /// \brief Gets the number of rows of the views.
-  int GetViewColumns() const;
+  /// \brief Gets the number of rows of the viewers.
+  int GetViewerColumns() const;
 
-  /// \brief Sets the number of the rows and columns of views to the given numbers.
-  void SetViewNumber(int rows, int columns);
+  /// \brief Sets the number of the rows and columns of viewers to the given numbers.
+  void SetViewerNumber(int rows, int columns);
 
-  /// \brief Gets the maximal number of rows of the views.
-  int GetMaxViewRows() const;
+  /// \brief Gets the maximal number of rows of the viewers.
+  int GetMaxViewerRows() const;
 
-  /// \brief Gets the maximal number of columns of the views.
-  int GetMaxViewColumns() const;
+  /// \brief Gets the maximal number of columns of the viewers.
+  int GetMaxViewerColumns() const;
 
-  /// \brief Sets the maximal number of the rows and columns of views to the given numbers.
-  void SetMaxViewNumber(int rows, int columns);
+  /// \brief Sets the maximal number of the rows and columns of viewers to the given numbers.
+  void SetMaxViewerNumber(int rows, int columns);
 
-  /// \brief Returns true if the selected position of the views is bound, otherwise false.
-  bool AreViewPositionsBound() const;
+  /// \brief Returns true if the selected position of the viewers is bound, otherwise false.
+  bool AreViewerPositionsBound() const;
 
-  /// \brief Sets the bind view positions check box to the given value.
-  void SetViewPositionsBound(bool bound);
+  /// \brief Sets the bind viewer positions check box to the given value.
+  void SetViewerPositionsBound(bool bound);
 
-  /// \brief Returns true if the  cursor of the views is bound, otherwise false.
-  bool AreViewCursorsBound() const;
+  /// \brief Returns true if the  cursor of the viewers is bound, otherwise false.
+  bool AreViewerCursorsBound() const;
 
-  /// \brief Sets the bind view cursors check box to the given value.
-  void SetViewCursorsBound(bool bound);
+  /// \brief Sets the bind viewer cursors check box to the given value.
+  void SetViewerCursorsBound(bool bound);
 
-  /// \brief Returns true if the magnification of the views are bound, otherwise false.
-  bool AreViewMagnificationsBound() const;
+  /// \brief Returns true if the magnification of the viewers are bound, otherwise false.
+  bool AreViewerMagnificationsBound() const;
 
-  /// \brief Sets the bind view magnifications check box to the given value.
-  void SetViewMagnificationsBound(bool bound);
+  /// \brief Sets the bind viewer magnifications check box to the given value.
+  void SetViewerMagnificationsBound(bool bound);
 
-  /// \brief Returns true if the  layout of the views is bound, otherwise false.
-  bool AreViewLayoutsBound() const;
+  /// \brief Returns true if the window layout of the viewers is bound, otherwise false.
+  bool AreViewerWindowLayoutsBound() const;
 
-  /// \brief Sets the bind view layouts check box to the given value.
-  void SetViewLayoutsBound(bool bound);
+  /// \brief Sets the bind viewer window layouts check box to the given value.
+  void SetViewerWindowLayoutsBound(bool bound);
 
-  /// \brief Returns true if the  geometry of the views is bound, otherwise false.
-  bool AreViewGeometriesBound() const;
+  /// \brief Returns true if the  geometry of the viewers is bound, otherwise false.
+  bool AreViewerGeometriesBound() const;
 
-  /// \brief Sets the bind view geometries check box to the given value.
-  void SetViewGeometriesBound(bool bound);
+  /// \brief Sets the bind viewer geometries check box to the given value.
+  void SetViewerGeometriesBound(bool bound);
 
   /// \brief Gets the selected drop type.
   DnDDisplayDropType GetDropType() const;
@@ -125,23 +120,23 @@ public:
 
 signals:
 
-  /// \brief Emitted when the selected number of views has been changed.
-  void ViewNumberChanged(int rows, int columns);
+  /// \brief Emitted when the selected number of viewers has been changed.
+  void ViewerNumberChanged(int rows, int columns);
 
-  /// \brief Emitted when the view position binding option has been changed.
-  void ViewPositionBindingChanged(bool bound);
+  /// \brief Emitted when the viewer position binding option has been changed.
+  void ViewerPositionBindingChanged(bool bound);
 
-  /// \brief Emitted when the view cursor binding option has been changed.
-  void ViewCursorBindingChanged(bool bound);
+  /// \brief Emitted when the viewer cursor binding option has been changed.
+  void ViewerCursorBindingChanged(bool bound);
 
-  /// \brief Emitted when the view magnification binding option has been changed.
-  void ViewMagnificationBindingChanged(bool bound);
+  /// \brief Emitted when the viewer magnification binding option has been changed.
+  void ViewerMagnificationBindingChanged(bool bound);
 
-  /// \brief Emitted when the view layout binding option has been changed.
-  void ViewLayoutBindingChanged(bool bound);
+  /// \brief Emitted when the viewer window layout binding option has been changed.
+  void ViewerWindowLayoutBindingChanged(bool bound);
 
-  /// \brief Emitted when the view geometry binding option has been changed.
-  void ViewGeometryBindingChanged(bool bound);
+  /// \brief Emitted when the viewer geometry binding option has been changed.
+  void ViewerGeometryBindingChanged(bool bound);
 
   /// \brief Emitted when the selected drop type has been changed.
   void DropTypeChanged(DnDDisplayDropType dropType);
@@ -151,17 +146,17 @@ signals:
 
 private slots:
 
-  void On1x1ViewsButtonClicked();
-  void On1x2ViewsButtonClicked();
-  void On1x3ViewsButtonClicked();
-  void On2x1ViewsButtonClicked();
-  void On2x2ViewsButtonClicked();
-  void On2x3ViewsButtonClicked();
-  void OnViewRowsSpinBoxValueChanged(int rows);
-  void OnViewColumnsSpinBoxValueChanged(int columns);
+  void On1x1ViewerButtonClicked();
+  void On1x2ViewersButtonClicked();
+  void On1x3ViewersButtonClicked();
+  void On2x1ViewersButtonClicked();
+  void On2x2ViewersButtonClicked();
+  void On2x3ViewersButtonClicked();
+  void OnViewerRowsSpinBoxValueChanged(int rows);
+  void OnViewerColumnsSpinBoxValueChanged(int columns);
 
-  void OnViewPositionBindingChanged(bool bound);
-  void OnViewCursorBindingChanged(bool bound);
+  void OnViewerPositionBindingChanged(bool bound);
+  void OnViewerCursorBindingChanged(bool bound);
 
   void OnDropSingleRadioButtonToggled(bool bound);
   void OnDropMultipleRadioButtonToggled(bool bound);
@@ -169,9 +164,7 @@ private slots:
 
 private:
 
-//  Ui_niftkMultiViewerControls* ui;
-
-  bool m_ShowViewNumberControls;
+  bool m_ShowViewerNumberControls;
   bool m_ShowDropTypeControls;
 };
 

@@ -86,7 +86,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
 
   m_ViewerWidget->SetDisplay2DCursorsGlobally(false);
   m_ViewerWidget->SetDisplay2DCursorsLocally(true);
-  m_ViewerWidget->SetRememberSettingsPerLayout(true);
+  m_ViewerWidget->SetRememberSettingsPerWindowLayout(true);
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
   m_ViewerWidget->SetCursorPositionsBound(false);
   m_ViewerWidget->SetScaleFactorsBound(true);
@@ -320,7 +320,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
   if (nextLayout != WINDOW_LAYOUT_UNKNOWN && nextLayout != m_WindowLayout)
   {
     m_WindowLayout = nextLayout;
-    m_ViewerWidget->SetLayout(m_WindowLayout);
+    m_ViewerWidget->SetWindowLayout(m_WindowLayout);
 
     double magnification = m_ViewerWidget->GetMagnification();
 
@@ -449,7 +449,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
       m_ViewerWidget->SetGeometry(timeGeometry);
       m_ViewerWidget->SetBoundGeometryActive(false);
-      m_ViewerWidget->SetShow3DWindowInOrthoView(true);
+      m_ViewerWidget->SetShow3DWindowIn2x2WindowLayout(true);
       if (!m_ViewerWidget->IsEnabled())
       {
         m_ViewerWidget->SetEnabled(true);

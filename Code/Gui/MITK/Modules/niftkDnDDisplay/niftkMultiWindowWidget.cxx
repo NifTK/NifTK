@@ -110,7 +110,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
 , m_Show3DWindowInOrthoView(false)
-, m_Layout(WINDOW_LAYOUT_ORTHO)
+, m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_Magnification(0.0)
 , m_ScaleFactor(0.0)
 , m_Geometry(NULL)
@@ -193,7 +193,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   m_DirectionAnnotations[2]->SetColour(3, sagittalColour);
 
   // Set default layout. This must be ORTHO.
-  this->SetLayout(WINDOW_LAYOUT_ORTHO);
+  this->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
   // Default to unselected, so borders are off.
   this->SetSelected(false);
@@ -499,7 +499,7 @@ void niftkMultiWindowWidget::RequestUpdate()
 
   if (this->isVisible())
   {
-    switch (m_Layout)
+    switch (m_WindowLayout)
     {
     case WINDOW_LAYOUT_AXIAL:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
@@ -542,7 +542,7 @@ void niftkMultiWindowWidget::RequestUpdate()
     break;
     default:
       // die, this should never happen
-      assert((m_Layout >= 0 && m_Layout <= 6) || (m_Layout >= 9 && m_Layout <= 14));
+      assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
       break;
     }
   }
@@ -669,8 +669,8 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((m_Layout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowInOrthoView)
-          || m_Layout == WINDOW_LAYOUT_3D)
+      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowInOrthoView)
+          || m_WindowLayout == WINDOW_LAYOUT_3D)
       {
         visibleIn3DWindow = true;
       }
@@ -774,27 +774,27 @@ std::vector<QmitkRenderWindow*> niftkMultiWindowWidget::GetRenderWindows() const
 MIDASOrientation niftkMultiWindowWidget::GetOrientation()
 {
   MIDASOrientation result = MIDAS_ORIENTATION_UNKNOWN;
-  if (m_Layout == WINDOW_LAYOUT_AXIAL)
+  if (m_WindowLayout == WINDOW_LAYOUT_AXIAL)
   {
     result = MIDAS_ORIENTATION_AXIAL;
   }
-  else if (m_Layout == WINDOW_LAYOUT_SAGITTAL)
+  else if (m_WindowLayout == WINDOW_LAYOUT_SAGITTAL)
   {
     result = MIDAS_ORIENTATION_SAGITTAL;
   }
-  else if (m_Layout == WINDOW_LAYOUT_CORONAL)
+  else if (m_WindowLayout == WINDOW_LAYOUT_CORONAL)
   {
     result = MIDAS_ORIENTATION_CORONAL;
   }
-  else if (m_Layout == WINDOW_LAYOUT_ORTHO
-           || m_Layout == WINDOW_LAYOUT_3H
-           || m_Layout == WINDOW_LAYOUT_3V
-           || m_Layout == WINDOW_LAYOUT_COR_SAG_H
-           || m_Layout == WINDOW_LAYOUT_COR_SAG_V
-           || m_Layout == WINDOW_LAYOUT_COR_AX_H
-           || m_Layout == WINDOW_LAYOUT_COR_AX_V
-           || m_Layout == WINDOW_LAYOUT_SAG_AX_H
-           || m_Layout == WINDOW_LAYOUT_SAG_AX_V
+  else if (m_WindowLayout == WINDOW_LAYOUT_ORTHO
+           || m_WindowLayout == WINDOW_LAYOUT_3H
+           || m_WindowLayout == WINDOW_LAYOUT_3V
+           || m_WindowLayout == WINDOW_LAYOUT_COR_SAG_H
+           || m_WindowLayout == WINDOW_LAYOUT_COR_SAG_V
+           || m_WindowLayout == WINDOW_LAYOUT_COR_AX_H
+           || m_WindowLayout == WINDOW_LAYOUT_COR_AX_V
+           || m_WindowLayout == WINDOW_LAYOUT_SAG_AX_H
+           || m_WindowLayout == WINDOW_LAYOUT_SAG_AX_V
            )
   {
     if (m_RectangleRendering1->IsEnabled())
@@ -1196,7 +1196,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
+void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   m_BlockDisplayGeometryEvents = true;
 
@@ -1218,56 +1218,56 @@ void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
   QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
   QmitkStdMultiWidgetLayout->setSpacing(0);
 
-  if (layout == WINDOW_LAYOUT_3H)
+  if (windowLayout == WINDOW_LAYOUT_3H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 2);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_3V)
+  else if (windowLayout == WINDOW_LAYOUT_3V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 2, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_COR_SAG_H)
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    off
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_COR_SAG_V)
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    off
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_COR_AX_H)
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_COR_AX_V)
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_SAG_AX_H)
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_H)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 0, 1);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else if (layout == WINDOW_LAYOUT_SAG_AX_V)
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
@@ -1284,7 +1284,7 @@ void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  switch (layout)
+  switch (windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
     this->mitkWidget1Container->show();
@@ -1355,11 +1355,11 @@ void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
     break;
   default:
     // die, this should never happen
-    assert((m_Layout >= 0 && m_Layout <= 6) || (m_Layout >= 9 && m_Layout <= 14));
+    assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
     break;
   }
 
-  m_Layout = layout;
+  m_WindowLayout = windowLayout;
 
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
@@ -1369,9 +1369,9 @@ void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkMultiWindowWidget::GetLayout() const
+WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
 {
-  return m_Layout;
+  return m_WindowLayout;
 }
 
 

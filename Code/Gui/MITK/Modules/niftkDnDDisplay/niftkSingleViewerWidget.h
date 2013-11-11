@@ -38,7 +38,7 @@ class niftkMultiWindowWidget;
 
 /**
  * \class niftkSingleViewerWidget
- * \brief A widget to wrap a single niftkMultiWindowWidget view,
+ * \brief A widget to wrap a single niftkMultiWindowWidget,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
  *
@@ -151,13 +151,13 @@ public:
   bool GetShow3DWindowInOrthoView() const;
 
   /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
-  void SetShow3DWindowInOrthoView(bool enabled);
+  void SetShow3DWindowIn2x2WindowLayout(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
-  void SetRememberSettingsPerLayout(bool remember);
+  /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
+  void SetRememberSettingsPerWindowLayout(bool remember);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
-  bool GetRememberSettingsPerLayout() const;
+  /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
+  bool GetRememberSettingsPerWindowLayout() const;
 
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
@@ -224,10 +224,10 @@ public:
   void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the render window layout.
-  WindowLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetLayout(WindowLayout layout);
+  void SetWindowLayout(WindowLayout layout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -328,20 +328,20 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Emitted when the selected slice has changed in a render window of this view.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
+  /// \brief Emitted when the selected slice has changed in a render window of this viewer.
+  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
 
-  /// \brief Emitted when the cursor position has changed in this view.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisView, const mitk::Vector3D& cursorPosition);
+  /// \brief Emitted when the cursor position has changed in this viewer.
+  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Emitted when the scale factor has changed in this view.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisView, double scaleFactor);
+  /// \brief Emitted when the scale factor has changed in this viewer.
+  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
 
-  /// \brief Emitted when the window layout has changed in this view.
-  void WindowLayoutChanged(niftkSingleViewerWidget* thisView, WindowLayout layout);
+  /// \brief Emitted when the window layout has changed in this viewer.
+  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout layout);
 
-  /// \brief Emitted when the geometry of this view has changed.
-  void GeometryChanged(niftkSingleViewerWidget* thisView, mitk::TimeGeometry* geometry);
+  /// \brief Emitted when the geometry of this viewer has changed.
+  void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
 
 protected slots:
 
@@ -397,7 +397,7 @@ private:
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
-  bool m_RememberSettingsPerLayout;
+  bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;

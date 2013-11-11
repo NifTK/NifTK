@@ -196,7 +196,7 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_MidasMultiViewVisibilityManager = new niftkMultiViewerVisibilityManager(dataStorage);
     d->m_MidasMultiViewVisibilityManager->SetInterpolationType(defaultInterpolationType);
-    d->m_MidasMultiViewVisibilityManager->SetDefaultLayout(defaultLayout);
+    d->m_MidasMultiViewVisibilityManager->SetDefaultWindowLayout(defaultLayout);
     d->m_MidasMultiViewVisibilityManager->SetDropType(defaultDropType);
 
     d->m_RenderingManager->SetDataStorage(dataStorage);
@@ -214,17 +214,17 @@ void QmitkMIDASMultiViewEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewerWidget->SetDropType(defaultDropType);
     d->m_MultiViewerWidget->SetShowOptionsVisible(showShowingOptions);
     d->m_MultiViewerWidget->SetWindowLayoutControlsVisible(showWindowLayoutControls);
-    d->m_MultiViewerWidget->SetViewNumberControlsVisible(showViewNumberControls);
+    d->m_MultiViewerWidget->SetViewerNumberControlsVisible(showViewNumberControls);
     d->m_MultiViewerWidget->SetShowDropTypeControls(showDropTypeControls);
     d->m_MultiViewerWidget->SetShow2DCursors(show2DCursors);
     d->m_MultiViewerWidget->SetDirectionAnnotationsVisible(showDirectionAnnotations);
-    d->m_MultiViewerWidget->SetShow3DWindowInOrthoView(show3DWindowInMultiWindowLayout);
+    d->m_MultiViewerWidget->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_MultiViewerWidget->SetShowMagnificationSlider(showMagnificationSlider);
-    d->m_MultiViewerWidget->SetRememberSettingsPerLayout(rememberSettingsPerLayout);
+    d->m_MultiViewerWidget->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
     d->m_MultiViewerWidget->SetSliceIndexTracking(sliceIndexTracking);
     d->m_MultiViewerWidget->SetTimeStepTracking(timeStepTracking);
     d->m_MultiViewerWidget->SetMagnificationTracking(magnificationTracking);
-    d->m_MultiViewerWidget->SetDefaultLayout(defaultLayout);
+    d->m_MultiViewerWidget->SetDefaultWindowLayout(defaultLayout);
 
     this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
 
@@ -265,17 +265,17 @@ void QmitkMIDASMultiViewEditor::OnPreferencesChanged( const berry::IBerryPrefere
     QColor backgroundColour(backgroundColourName);
     d->m_MultiViewerWidget->SetBackgroundColour(backgroundColour);
     d->m_MultiViewerWidget->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_INTERPOLATION_TYPE, 2)));
-    d->m_MultiViewerWidget->SetDefaultLayout((WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
+    d->m_MultiViewerWidget->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
     d->m_MultiViewerWidget->SetDropType((DnDDisplayDropType)(prefs->GetInt(QmitkMIDASMultiViewEditorPreferencePage::DEFAULT_DROP_TYPE, 0)));
     d->m_MultiViewerWidget->SetShowDropTypeControls(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DROP_TYPE_CONTROLS, false));
     d->m_MultiViewerWidget->SetShowOptionsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_SHOWING_OPTIONS, true));
     d->m_MultiViewerWidget->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_WINDOW_LAYOUT_CONTROLS, true));
-    d->m_MultiViewerWidget->SetViewNumberControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_VIEW_NUMBER_CONTROLS, true));
+    d->m_MultiViewerWidget->SetViewerNumberControlsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_VIEW_NUMBER_CONTROLS, true));
     d->m_MultiViewerWidget->SetShowMagnificationSlider(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_MAGNIFICATION_SLIDER, true));
     d->m_MultiViewerWidget->SetShow2DCursors(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_2D_CURSORS, true));
     d->m_MultiViewerWidget->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_DIRECTION_ANNOTATIONS, true));
-    d->m_MultiViewerWidget->SetShow3DWindowInOrthoView(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
-    d->m_MultiViewerWidget->SetRememberSettingsPerLayout(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT, true));
+    d->m_MultiViewerWidget->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
+    d->m_MultiViewerWidget->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_MultiViewerWidget->SetSliceIndexTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_SLICE_SELECT_TRACKING, true));
     d->m_MultiViewerWidget->SetTimeStepTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_TIME_SELECT_TRACKING, true));
     d->m_MultiViewerWidget->SetMagnificationTracking(prefs->GetBool(QmitkMIDASMultiViewEditorPreferencePage::MIDAS_MAGNIFICATION_SELECT_TRACKING, true));
@@ -292,7 +292,7 @@ QmitkRenderWindow *QmitkMIDASMultiViewEditor::GetActiveQmitkRenderWindow() const
   QmitkRenderWindow* activeRenderWindow = d->m_MultiViewerWidget->GetSelectedRenderWindow();
   if (!activeRenderWindow)
   {
-    niftkSingleViewerWidget* selectedView = d->m_MultiViewerWidget->GetSelectedView();
+    niftkSingleViewerWidget* selectedView = d->m_MultiViewerWidget->GetSelectedViewer();
     activeRenderWindow = selectedView->GetAxialWindow();
   }
   return activeRenderWindow;
