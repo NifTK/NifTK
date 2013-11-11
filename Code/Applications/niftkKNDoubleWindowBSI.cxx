@@ -821,7 +821,7 @@ int main(int argc, char* argv[])
     std::cout << "BSI," << forwardBSI << "," << -backwardBSI << "," << (forwardBSI-backwardBSI)/2.0 << std::endl;
     
   if(resultBSIFilename!=NULL) {
-		saveBSIImage(forwardbsi,backwardbsi,resultBSIFilename);
+		saveBSIImage(forwardbsi,backwardbsi,resultBSIFilename); 
 		remove(forwardbsi);
 		remove(backwardbsi);
   }
