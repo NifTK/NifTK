@@ -13,8 +13,8 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkMIDASMultiViewEditor.cxx
-  QmitkMIDASMultiViewEditorPreferencePage.cxx
+  niftkMultiViewerEditor.cxx
+  niftkMultiViewerEditorPreferencePage.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -26,8 +26,8 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/uk_ac_ucl_cmic_dnddisplay_Activator.h
-  src/QmitkMIDASMultiViewEditor.h
-  src/QmitkMIDASMultiViewEditorPreferencePage.h  
+  src/niftkMultiViewerEditor.h
+  src/niftkMultiViewerEditorPreferencePage.h  
 )
 
 # list of resource files which can be used by the plug-in

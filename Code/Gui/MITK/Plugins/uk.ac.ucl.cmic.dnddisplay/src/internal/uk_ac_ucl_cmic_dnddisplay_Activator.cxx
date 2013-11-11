@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "uk_ac_ucl_cmic_dnddisplay_Activator.h"
-#include <QmitkMIDASMultiViewEditor.h>
-#include <QmitkMIDASMultiViewEditorPreferencePage.h>
+#include <niftkMultiViewerEditor.h>
+#include <niftkMultiViewerEditorPreferencePage.h>
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
 #include <Interactions/mitkDnDDisplayStateMachine.h>
@@ -26,8 +26,8 @@ ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::s_PluginContext(NULL);
 //-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditor, context)
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASMultiViewEditorPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(niftkMultiViewerEditor, context)
+  BERRY_REGISTER_EXTENSION_CLASS(niftkMultiViewerEditorPreferencePage, context);
   s_PluginContext = context;
 
   mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();

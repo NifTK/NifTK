@@ -3,27 +3,27 @@
 <plugin>
   <extension point="org.blueberry.ui.editors">
     <editor
-      id="org.mitk.editors.midasmultiview"
+      id="org.mitk.editors.dnddisplay"
       name="Drag And Drop Display"
       extensions="mitk"
       default="true"
-      class="QmitkMIDASMultiViewEditor">
+      class="niftkMultiViewerEditor">
     </editor>
   </extension>
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.mitk.MIDASMultiViewEditorPreferencePage" name="Drag And Drop Display" 
-      class="QmitkMIDASMultiViewEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
-      <keywordreference id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords"/>
+    <page id="org.niftk.MultiViewerEditorPreferencePage" name="Drag and Drop Display" 
+      class="niftkMultiViewerEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.niftk.MultiViewerEditorPreferencePageKeywords"/>
     </page>     
   </extension>
 
   <extension point="org.blueberry.ui.keywords">
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="interpolation"/>
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="rows"/>
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="columns"/>
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="default view"/>
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="drop"/>
-    <keyword id="org.mitk.MIDASMultiViewEditorPreferencePageKeywords" label="ortho"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="interpolation"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="rows"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="columns"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="default view"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="drop"/>
+    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="ortho"/>
   </extension>
   
 </plugin>

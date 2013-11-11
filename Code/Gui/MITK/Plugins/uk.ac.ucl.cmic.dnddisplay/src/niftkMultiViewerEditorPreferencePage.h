@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewEditorPreferencePage_h
-#define QmitkMIDASMultiViewEditorPreferencePage_h
+#ifndef niftkMultiViewerEditorPreferencePage_h
+#define niftkMultiViewerEditorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
@@ -26,19 +26,19 @@ class QSpinBox;
 class QCheckBox;
 
 /**
- * \class QmitkMIDASMultiViewEditorPreferencePage
- * \brief Provides a preferences page for the CMIC MIDAS Display, including default number of rows,
+ * \class niftkMultiViewerEditorPreferencePage
+ * \brief Provides a preferences page for the NifTK DnD Display, including default number of rows,
  * default number of columns, image interpolation, default view and background colour.
- * \ingroup uk_ac_ucl_cmic_midaseditor
+ * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
-struct DNDDISPLAY_EXPORT QmitkMIDASMultiViewEditorPreferencePage : public QObject, public berry::IQtPreferencePage
+struct DNDDISPLAY_EXPORT niftkMultiViewerEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  QmitkMIDASMultiViewEditorPreferencePage();
-  QmitkMIDASMultiViewEditorPreferencePage(const QmitkMIDASMultiViewEditorPreferencePage& other);
+  niftkMultiViewerEditorPreferencePage();
+  niftkMultiViewerEditorPreferencePage(const niftkMultiViewerEditorPreferencePage& other);
 
   void CreateQtControl(QWidget* widget);
   QWidget* GetQtControl() const;
@@ -61,7 +61,7 @@ public:
   /// \brief Stores the preference name for the default background colour in the DnD Display.
   static const std::string MIDAS_BACKGROUND_COLOUR;
 
-  /// \brief Stores the preference name for the default background colour stylesheet in the CMIC MIDAS Display.
+  /// \brief Stores the preference name for the default background colour stylesheet in the NifTK DnD Display.
   static const std::string MIDAS_BACKGROUND_COLOUR_STYLESHEET;
 
   /// \brief Stores the preference name for slice select tracking
@@ -82,16 +82,16 @@ public:
   /// \brief Stores the preference name for whether we show the 3D window in multiple window layout, as screen can get a bit cluttered.
   static const std::string MIDAS_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT;
 
-  /// \brief Stores the preference name for the default view in the CMIC MIDAS Display.
+  /// \brief Stores the preference name for the default view in the NifTK DnD Display.
   static const std::string MIDAS_DEFAULT_WINDOW_LAYOUT;
 
   /// \brief Stores the preference name for whether we adopt MIDAS behaviour when switching orientation to revert to last remembered slice, timestep, magnification.
   static const std::string MIDAS_REMEMBER_VIEW_SETTINGS_PER_WINDOW_LAYOUT;
 
-  /// \brief Stores the preference name for the default number of rows in the CMIC MIDAS Display.
+  /// \brief Stores the preference name for the default number of rows in the NifTK DnD Display.
   static const std::string MIDAS_DEFAULT_VIEW_ROW_NUMBER;
 
-  /// \brief Stores the preference name for the default number of columns in the CMIC MIDAS Display.
+  /// \brief Stores the preference name for the default number of columns in the NifTK DnD Display.
   static const std::string MIDAS_DEFAULT_VIEW_COLUMN_NUMBER;
 
   /// \brief Stores the preference name for the default drop type (single, multiple, all).
@@ -145,7 +145,7 @@ private:
   QCheckBox* m_ShowDropTypeControlsCheckBox;
   QPushButton* m_BackgroundColourButton;
 
-  berry::IPreferences::Pointer m_MIDASMultiViewEditorPreferencesNode;
+  berry::IPreferences::Pointer m_MultiViewerEditorPreferencesNode;
 };
 
 #endif
