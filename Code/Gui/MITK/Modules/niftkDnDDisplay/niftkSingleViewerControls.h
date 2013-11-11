@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkSingleViewerControls_p_h
-#define niftkSingleViewerControls_p_h
+#ifndef niftkSingleViewerControls_h
+#define niftkSingleViewerControls_h
 
 #include <QWidget>
 
@@ -130,10 +130,10 @@ public:
   void Set3DWindowVisible(bool visible);
 
   /// \brief Gets the selected render window layout.
-  WindowLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout controls to the given layout.
-  void SetLayout(WindowLayout windowlayout);
+  void SetWindowLayout(WindowLayout windowlayout);
 
   /// \brief Returns true if the cursors are bound across the windows of a viewer, otherwise false.
   bool AreWindowCursorsBound() const;
@@ -168,7 +168,7 @@ signals:
   void Show3DWindowChanged(bool visible);
 
   /// \brief Emitted when the select layout has been changed.
-  void LayoutChanged(WindowLayout windowLayout);
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the window cursor binding option has been changed.
   void WindowCursorBindingChanged(bool bound);
@@ -176,17 +176,42 @@ signals:
   /// \brief Emitted when the window magnification binding option has been changed.
   void WindowMagnificationBindingChanged(bool bound);
 
-private slots:
+protected slots:
 
-  void OnLayoutChanged(WindowLayout windowLayout);
+  void OnSliceIndexChanged(double sliceIndex);
+  void OnTimeStepChanged(double timeStep);
+
+  /// \brief Called when the axial window radio button is toggled.
+  void OnAxialWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the sagittal window radio button is toggled.
+  void OnSagittalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the coronal window radio button is toggled.
+  void OnCoronalWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the 3D window radio button is toggled.
+  void On3DWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when the multiple window radio button is toggled.
+  void OnMultiWindowRadioButtonToggled(bool checked);
+
+  /// \brief Called when a window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged(int index);
 
 private:
 
   Ui::niftkSingleViewerControls* ui;
 
-  bool m_ShowMagnificationControls;
   bool m_ShowShowOptions;
   bool m_ShowWindowLayoutControls;
+
+  /// \brief Stores the currently selected window layout.
+  WindowLayout m_WindowLayout;
+
+  /// \brief Stores the multiple window layouts in the same order as the combo box.
+  static WindowLayout s_MultiWindowLayouts[];
+  static int const s_MultiWindowLayoutNumber;
 };
 
 #endif

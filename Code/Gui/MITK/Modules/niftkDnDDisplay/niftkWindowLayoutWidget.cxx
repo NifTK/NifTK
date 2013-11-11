@@ -32,7 +32,7 @@ int const niftkWindowLayoutWidget::s_MultiWindowLayoutNumber = sizeof(s_MultiWin
 //-----------------------------------------------------------------------------
 niftkWindowLayoutWidget::niftkWindowLayoutWidget(QWidget *parent)
 : QWidget(parent)
-, m_Layout(WINDOW_LAYOUT_UNKNOWN)
+, m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 {
   this->setupUi(this);
 
@@ -64,16 +64,16 @@ niftkWindowLayoutWidget::~niftkWindowLayoutWidget()
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkWindowLayoutWidget::GetLayout() const
+WindowLayout niftkWindowLayoutWidget::GetWindowLayout() const
 {
-  return m_Layout;
+  return m_WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkWindowLayoutWidget::SetLayout(WindowLayout layout)
+void niftkWindowLayoutWidget::SetWindowLayout(WindowLayout windowLayout)
 {
-  if (layout == m_Layout)
+  if (windowLayout == m_WindowLayout)
   {
     // Nothing to do.
     return;
@@ -81,7 +81,7 @@ void niftkWindowLayoutWidget::SetLayout(WindowLayout layout)
 
   bool wasBlocked;
 
-  switch(layout)
+  switch (windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
     wasBlocked = m_AxialWindowRadioButton->blockSignals(true);
@@ -104,12 +104,12 @@ void niftkWindowLayoutWidget::SetLayout(WindowLayout layout)
     m_3DWindowRadioButton->blockSignals(wasBlocked);
     break;
   default:
-    int layoutIndex = 0;
-    while (layoutIndex < s_MultiWindowLayoutNumber && layout != s_MultiWindowLayouts[layoutIndex])
+    int windowLayoutIndex = 0;
+    while (windowLayoutIndex < s_MultiWindowLayoutNumber && windowLayout != s_MultiWindowLayouts[windowLayoutIndex])
     {
-      ++layoutIndex;
+      ++windowLayoutIndex;
     }
-    if (layoutIndex == s_MultiWindowLayoutNumber)
+    if (windowLayoutIndex == s_MultiWindowLayoutNumber)
     {
       // Should not happen.
       return;
@@ -120,13 +120,13 @@ void niftkWindowLayoutWidget::SetLayout(WindowLayout layout)
     m_MultiWindowRadioButton->blockSignals(wasBlocked);
 
     wasBlocked = m_MultiWindowComboBox->blockSignals(true);
-    m_MultiWindowComboBox->setCurrentIndex(layoutIndex);
+    m_MultiWindowComboBox->setCurrentIndex(windowLayoutIndex);
     m_MultiWindowComboBox->blockSignals(wasBlocked);
     break;
   }
 
-  m_Layout = layout;
-  emit LayoutChanged(layout);
+  m_WindowLayout = windowLayout;
+  emit WindowLayoutChanged(windowLayout);
 }
 
 
@@ -135,7 +135,7 @@ void niftkWindowLayoutWidget::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(WINDOW_LAYOUT_AXIAL);
+    this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -145,7 +145,7 @@ void niftkWindowLayoutWidget::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(WINDOW_LAYOUT_SAGITTAL);
+    this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -155,7 +155,7 @@ void niftkWindowLayoutWidget::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(WINDOW_LAYOUT_CORONAL);
+    this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -165,7 +165,7 @@ void niftkWindowLayoutWidget::On3DWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(WINDOW_LAYOUT_3D);
+    this->SetWindowLayout(WINDOW_LAYOUT_3D);
   }
 }
 
@@ -175,7 +175,7 @@ void niftkWindowLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
-    this->SetLayout(s_MultiWindowLayouts[m_MultiWindowComboBox->currentIndex()]);
+    this->SetWindowLayout(s_MultiWindowLayouts[m_MultiWindowComboBox->currentIndex()]);
   }
 }
 
@@ -184,5 +184,5 @@ void niftkWindowLayoutWidget::OnMultiWindowRadioButtonToggled(bool checked)
 void niftkWindowLayoutWidget::OnMultiWindowComboBoxIndexChanged(int index)
 {
   m_MultiWindowRadioButton->setChecked(true);
-  this->SetLayout(s_MultiWindowLayouts[index]);
+  this->SetWindowLayout(s_MultiWindowLayouts[index]);
 }

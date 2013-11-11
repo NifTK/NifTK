@@ -325,7 +325,7 @@ protected:
 
 signals:
 
-  /// \brief Emitted when nodes are dropped on the SingleView widget.
+  /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this view.
@@ -338,7 +338,7 @@ signals:
   void ScaleFactorChanged(niftkSingleViewerWidget* thisView, double scaleFactor);
 
   /// \brief Emitted when the window layout has changed in this view.
-  void LayoutChanged(niftkSingleViewerWidget* thisView, WindowLayout layout);
+  void WindowLayoutChanged(niftkSingleViewerWidget* thisView, WindowLayout layout);
 
   /// \brief Emitted when the geometry of this view has changed.
   void GeometryChanged(niftkSingleViewerWidget* thisView, mitk::TimeGeometry* geometry);

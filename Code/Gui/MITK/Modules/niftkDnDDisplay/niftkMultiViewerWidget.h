@@ -29,7 +29,6 @@
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
 #include <niftkWindowLayoutWidget_p.h>
-#include <niftkImageNavigatorWidget_p.h>
 
 class QSpinBox;
 class QGridLayout;
@@ -271,7 +270,7 @@ protected slots:
   void OnShow3DWindowChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnLayoutChanged(WindowLayout layout);
+  void OnWindowLayoutChanged(WindowLayout layout);
 
   /// \brief Called when the binding of cursors in the render windows of a view has been changed through the control panel.
   void OnWindowCursorBindingChanged(bool);
@@ -317,7 +316,7 @@ protected slots:
   void OnScaleFactorChanged(niftkSingleViewerWidget* view, double scaleFactor);
 
   /// \brief Called when the window layout of a view has changed.
-  void OnLayoutChanged(niftkSingleViewerWidget* view, WindowLayout);
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* view, WindowLayout);
 
   /// \brief Called when the geometry of a view has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* view, mitk::TimeGeometry* geometry);

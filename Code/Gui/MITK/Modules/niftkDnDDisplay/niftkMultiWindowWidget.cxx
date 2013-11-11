@@ -29,7 +29,7 @@
 #include "vtkSideAnnotation_p.h"
 
 /**
- * This class is to notify the SingleViewWidget about the display geometry changes of a render window.
+ * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
  */
 class DisplayGeometryModificationCommand : public itk::Command
 {
@@ -499,7 +499,7 @@ void niftkMultiWindowWidget::RequestUpdate()
 
   if (this->isVisible())
   {
-    switch(m_Layout)
+    switch (m_Layout)
     {
     case WINDOW_LAYOUT_AXIAL:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
@@ -1284,7 +1284,7 @@ void niftkMultiWindowWidget::SetLayout(WindowLayout layout)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  switch(layout)
+  switch (layout)
   {
   case WINDOW_LAYOUT_AXIAL:
     this->mitkWidget1Container->show();

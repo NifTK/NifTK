@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>667</width>
-    <height>122</height>
+    <width>429</width>
+    <height>113</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,10 +20,13 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="m_ControlPanelGridLayout">
-   <property name="margin">
+   <property name="horizontalSpacing">
+    <number>2</number>
+   </property>
+   <property name="verticalSpacing">
     <number>0</number>
    </property>
-   <property name="spacing">
+   <property name="margin">
     <number>0</number>
    </property>
    <item row="2" column="2" rowspan="3">
@@ -87,23 +90,86 @@
     </widget>
    </item>
    <item row="0" column="2">
-    <widget class="niftkWindowLayoutWidget" name="m_WindowLayoutWidget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="spacing">
+    <widget class="QWidget" name="m_WindowLayoutWidget" native="true">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="horizontalSpacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>3</number>
+      <property name="verticalSpacing">
+       <number>2</number>
       </property>
-      <property name="topMargin">
+      <property name="margin">
        <number>0</number>
       </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
+      <item row="2" column="0">
+       <widget class="QRadioButton" name="m_MultiWindowRadioButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to show multiple windows.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="m_SagittalWindowRadioButton">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one sagittal window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>sag</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QRadioButton" name="m_3DWindowRadioButton">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one 3D window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>3D</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QRadioButton" name="m_CoronalWindowRadioButton">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one coronal window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>cor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QRadioButton" name="m_AxialWindowRadioButton">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Switches the window layout to one axial window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>ax</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QComboBox" name="m_MultiWindowComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Selects a window layout that has multiple windows.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -186,7 +252,58 @@
     </widget>
    </item>
    <item row="0" column="0" rowspan="3">
-    <widget class="niftkImageNavigatorWidget" name="m_SlidersWidget" native="true"/>
+    <widget class="QWidget" name="m_SlidersWidget" native="true">
+     <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="m_SliceIndexLabel">
+        <property name="text">
+         <string>slice:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="ctkSliderWidget" name="m_SliceIndexSlider" native="true">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the index of the selected slice in the currently selected 2D window.&lt;/p&gt;&lt;p&gt;Changing the slice index changes the &lt;span style=&quot; font-style:italic;&quot;&gt;selected position&lt;/span&gt; along the dimension that is orthogonal to the plane of the currently selected orientation. The selected position is always bound across the windows of the same viewer. You can bind the selected position across the viewers by the '&lt;span style=&quot; font-style:italic;&quot;&gt;position&lt;/span&gt;' check box in the '&lt;span style=&quot; font-style:italic;&quot;&gt;bind viewers&lt;/span&gt;' section on this panel.&lt;/p&gt;&lt;p&gt;The selected position can be displayed by the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor&lt;/span&gt; (aka. crosshair). Changing the slice index also changes the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor position&lt;/span&gt; in the other two 2D windows of the same viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="m_TimeStepLabel">
+        <property name="text">
+         <string>time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="ctkSliderWidget" name="m_TimeStepSlider" native="true">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the time step of the currently selected&lt;br/&gt;image viewer and also in other image viewers if&lt;br/&gt;the cursor is bound between them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="m_MagnificationLabel">
+        <property name="text">
+         <string>magn.:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="ctkSliderWidget" name="m_MagnificationSlider" native="true">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changes the magnification in the currently&lt;br/&gt;selected window, and also in other windows&lt;br/&gt;if it is bound between windows or image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item row="3" column="0">
     <widget class="Line" name="m_ShowOptionsSeparator">
@@ -206,15 +323,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>niftkImageNavigatorWidget</class>
+   <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
-   <header location="global">niftkImageNavigatorWidget_p.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>niftkWindowLayoutWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">niftkWindowLayoutWidget_p.h</header>
+   <header>ctkSliderWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

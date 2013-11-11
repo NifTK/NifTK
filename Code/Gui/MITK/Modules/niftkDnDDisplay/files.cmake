@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkImageNavigatorWidget.cxx
   niftkWindowLayoutWidget.cxx
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx
@@ -27,7 +26,6 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
-  niftkImageNavigatorWidget_p.h
   niftkWindowLayoutWidget_p.h
   niftkMultiViewerWidget.h
   niftkMultiViewerControls.h
@@ -39,7 +37,6 @@ set(MOC_H_FILES
 
 set(UI_FILES
   Resources/UI/niftkWindowLayoutWidget.ui
-  Resources/UI/niftkImageNavigatorWidget.ui
   Resources/UI/niftkMultiViewerControls.ui
   Resources/UI/niftkSingleViewerControls.ui
 )

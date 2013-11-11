@@ -40,15 +40,15 @@ public:
   virtual ~niftkWindowLayoutWidget();
 
   /// \brief Gets the current layout.
-  WindowLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
-  /// \brief Sets the widget controls to match the supplied layout.
-  void SetLayout(WindowLayout layout);
+  /// \brief Sets the widget controls to match the supplied window layout.
+  void SetWindowLayout(WindowLayout windowLayout);
 
 signals:
 
-  /// \brief Indicates when the layout has changed.
-  void LayoutChanged(WindowLayout layout);
+  /// \brief Indicates when the window layout has changed.
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
 protected slots:
 
@@ -73,7 +73,7 @@ protected slots:
 private:
 
   /// \brief Stores the currently selected window layout.
-  WindowLayout m_Layout;
+  WindowLayout m_WindowLayout;
 
   /// \brief Stores the multiple window layouts in the same order as the combo box.
   static WindowLayout s_MultiWindowLayouts[];

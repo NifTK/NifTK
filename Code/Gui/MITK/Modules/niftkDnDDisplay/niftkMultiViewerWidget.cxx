@@ -181,7 +181,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   QObject::connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), this, SLOT(OnShowDirectionAnnotationsChanged(bool)));
   QObject::connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), this, SLOT(OnShow3DWindowChanged(bool)));
 
-  QObject::connect(m_ControlPanel, SIGNAL(LayoutChanged(WindowLayout)), this, SLOT(OnLayoutChanged(WindowLayout)));
+  QObject::connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), this, SLOT(OnWindowLayoutChanged(WindowLayout)));
   QObject::connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), this, SLOT(OnWindowCursorBindingChanged(bool)));
   QObject::connect(m_ControlPanel, SIGNAL(WindowMagnificationBindingChanged(bool)), this, SLOT(OnWindowMagnificationBindingChanged(bool)));
 
@@ -217,11 +217,6 @@ niftkMultiViewerControls* niftkMultiViewerWidget::CreateControlPanel(QWidget* pa
 
   controlPanel->SetWindowCursorsBound(true);
   controlPanel->SetWindowMagnificationsBound(true);
-
-  QHBoxLayout* controlPanelLayout = new QHBoxLayout(parent);
-  controlPanelLayout->setContentsMargins(0, 0, 0, 0);
-  controlPanelLayout->setSpacing(0);
-  controlPanelLayout->addWidget(controlPanel);
 
   return controlPanel;
 }
@@ -264,7 +259,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateSingleViewWidget()
   QObject::connect(widget, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)));
   QObject::connect(widget, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)));
   QObject::connect(widget, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), this, SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
-  QObject::connect(widget, SIGNAL(LayoutChanged(niftkSingleViewerWidget*, WindowLayout)), this, SLOT(OnLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+  QObject::connect(widget, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), this, SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
 
   return widget;
 }
@@ -895,7 +890,7 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewIndex, Qmit
 
     if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      m_ControlPanel->SetLayout(windowLayout);
+      m_ControlPanel->SetWindowLayout(windowLayout);
     }
 
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
@@ -1076,7 +1071,7 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnLayoutChanged(WindowLayout windowLayout)
+void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -1091,9 +1086,9 @@ void niftkMultiViewerWidget::OnLayoutChanged(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnLayoutChanged(niftkSingleViewerWidget* selectedView, WindowLayout windowLayout)
+void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* selectedView, WindowLayout windowLayout)
 {
-  m_ControlPanel->SetLayout(windowLayout);
+  m_ControlPanel->SetWindowLayout(windowLayout);
   this->UpdateFocusManagerToSelectedView();
 
   if (m_ControlPanel->AreViewLayoutsBound())
@@ -1198,7 +1193,7 @@ bool niftkMultiViewerWidget::ToggleCursor()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
 {
-  m_ControlPanel->SetLayout(windowLayout);
+  m_ControlPanel->SetWindowLayout(windowLayout);
 
   niftkSingleViewerWidget* selectedView = this->GetSelectedView();
   selectedView->SetLayout(windowLayout);
@@ -1289,7 +1284,7 @@ MIDASOrientation niftkMultiViewerWidget::GetOrientation() const
 {
   MIDASOrientation orientation;
 
-  switch (m_ControlPanel->GetLayout())
+  switch (m_ControlPanel->GetWindowLayout())
   {
   case WINDOW_LAYOUT_AXIAL:
     orientation = MIDAS_ORIENTATION_AXIAL;

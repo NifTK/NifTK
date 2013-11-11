@@ -684,6 +684,10 @@ void niftkSingleViewerWidget::SetLayout(WindowLayout windowLayout)
     MIDASOrientation orientation = this->GetOrientation();
     m_Orientation = orientation;
     m_WindowLayout = windowLayout;
+    if (! ::IsSingleWindowLayout(windowLayout))
+    {
+      m_MultiWindowLayout = windowLayout;
+    }
 
     // Now, in MIDAS, which only shows 2D views, if we revert to a previous view,
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
@@ -899,7 +903,7 @@ bool niftkSingleViewerWidget::MoveAnteriorPosterior(int slices)
 bool niftkSingleViewerWidget::SwitchToAxial()
 {
   this->SetLayout(WINDOW_LAYOUT_AXIAL);
-  emit LayoutChanged(this, WINDOW_LAYOUT_AXIAL);
+  emit WindowLayoutChanged(this, WINDOW_LAYOUT_AXIAL);
   return true;
 }
 
@@ -908,7 +912,7 @@ bool niftkSingleViewerWidget::SwitchToAxial()
 bool niftkSingleViewerWidget::SwitchToSagittal()
 {
   this->SetLayout(WINDOW_LAYOUT_SAGITTAL);
-  emit LayoutChanged(this, WINDOW_LAYOUT_SAGITTAL);
+  emit WindowLayoutChanged(this, WINDOW_LAYOUT_SAGITTAL);
   return true;
 }
 
@@ -917,7 +921,7 @@ bool niftkSingleViewerWidget::SwitchToSagittal()
 bool niftkSingleViewerWidget::SwitchToCoronal()
 {
   this->SetLayout(WINDOW_LAYOUT_CORONAL);
-  emit LayoutChanged(this, WINDOW_LAYOUT_CORONAL);
+  emit WindowLayoutChanged(this, WINDOW_LAYOUT_CORONAL);
   return true;
 }
 
@@ -926,7 +930,7 @@ bool niftkSingleViewerWidget::SwitchToCoronal()
 bool niftkSingleViewerWidget::SwitchTo3D()
 {
   this->SetLayout(WINDOW_LAYOUT_3D);
-  emit LayoutChanged(this, WINDOW_LAYOUT_3D);
+  emit WindowLayoutChanged(this, WINDOW_LAYOUT_3D);
   return true;
 }
 
@@ -969,7 +973,7 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 //  m_MultiWidget->SetSelectedPosition(m_SecondLastSelectedPosition);
 
   this->SetLayout(nextWindowLayout);
-  emit LayoutChanged(this, nextWindowLayout);
+  emit WindowLayoutChanged(this, nextWindowLayout);
 
   return true;
 }

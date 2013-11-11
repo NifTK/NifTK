@@ -29,7 +29,7 @@ class QmitkRenderWindow;
 class niftkSingleViewerWidget;
 
 /**
- * \class QmitkMultiViewVisibilityManager
+ * \class niftkMultiViewerVisibilityManager
  * \brief Maintains a list of niftkSingleViewerWidget and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visibility" property in DataStorage.
