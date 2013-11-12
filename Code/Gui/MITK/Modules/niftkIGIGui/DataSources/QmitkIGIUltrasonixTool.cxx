@@ -155,7 +155,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     if (imageMsg.data() != NULL)
     {
       imageMsg->PreserveMatrix();
-      QImage qImage = imageMsg->GetQImage();  
+      QImage qImage = imageMsg->GetQImage();
 
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
 
