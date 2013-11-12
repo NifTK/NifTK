@@ -129,5 +129,3 @@ void SurfaceRegViewPreferencePage::Update()
   m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of points to use in ICP",mitk::SurfaceBasedRegistration::DEFAULT_MAX_POINTS));
   m_TryDeformableRegistration->setChecked(m_SurfaceRegViewPreferencesNode->GetBool("Use the deformable registration algorithm",mitk::SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE));
 }
-  bool m_UseSpatialFilter;  //flag to control use of spatial filter
-  bool m_UseSpatialFilter;  //flag to control use of spatial filter
