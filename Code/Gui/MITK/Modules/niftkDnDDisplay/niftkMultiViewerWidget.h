@@ -56,7 +56,7 @@ class niftkMultiViewerControls;
  * all the necessary plumbing to make it work. This widget is used as the
  * main editor widget of the niftkMultiViewerEditor.
  *
- * The standard layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
+ * The standard viewer layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
  * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
  * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
@@ -69,7 +69,7 @@ class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 
 public:
 
-  /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero,
+  /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
   /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
   niftkMultiViewerWidget(
@@ -149,13 +149,13 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) window layout.
+  /// \brief Gets the flag controlling whether to see the 3D window in orthogonal (2x2) window layout.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 
-  /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) window layout.
+  /// \brief Sets the flag controlling whether to see the 3D window in orthogonal (2x2) window layout.
   void SetShow3DWindowIn2x2WindowLayout(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the render window layout.
+  /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the window layout.
   void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
 
   /// \brief Sets the slice index slider to be tracking.
@@ -269,7 +269,7 @@ protected slots:
   void OnShow3DWindowChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnWindowLayoutChanged(WindowLayout layout);
+  void OnWindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
   void OnWindowCursorBindingChanged(bool);
@@ -286,8 +286,8 @@ protected slots:
   /// \brief Called when the viewer cursor binding has been changed through the control panel.
   void OnViewerCursorBindingChanged();
 
-  /// \brief Called when the viewer layout binding has been changed through the control panel.
-  void OnViewerLayoutBindingChanged();
+  /// \brief Called when the window layout binding across the viewers has been changed through the control panel.
+  void OnViewerWindowLayoutBindingChanged();
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
   void OnViewerMagnificationBindingChanged();
@@ -315,7 +315,7 @@ protected slots:
   void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
-  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout);
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
@@ -413,7 +413,7 @@ private:
   bool m_Show2DCursors;
   bool m_Show3DWindowIn2x2WindowLayout;
   QColor m_BackgroundColour;
-  bool m_RememberSettingsPerLayout;
+  bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;
   bool m_SegmentationModeEnabled;
   bool m_NavigationControllerEventListening;

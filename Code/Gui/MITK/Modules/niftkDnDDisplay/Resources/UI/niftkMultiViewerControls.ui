@@ -218,7 +218,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QCheckBox" name="m_BindViewerLayoutsCheckBox">
+       <widget class="QCheckBox" name="m_BindViewerWindowLayoutsCheckBox">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the window layout (e.g. single coronal or 2x2) across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>

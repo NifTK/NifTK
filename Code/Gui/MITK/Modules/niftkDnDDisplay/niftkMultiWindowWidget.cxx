@@ -109,7 +109,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedRenderWindow(0)
 , m_Display2DCursorsLocally(true)
 , m_Display2DCursorsGlobally(false)
-, m_Show3DWindowInOrthoView(false)
+, m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_Magnification(0.0)
 , m_ScaleFactor(0.0)
@@ -414,7 +414,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   // When we "Select", the selection is at the level of the niftkMultiWindowWidget
   // so the whole of this widget is selected. However, we may have clicked in
   // a specific view, so it still helps to highlight the most recently clicked on view.
-  // Also, if you are displaying ortho layout (2x2) then you actually have 4 windows present,
+  // Also, if you are displaying ortho window layout (2x2) then you actually have 4 windows present,
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
@@ -637,17 +637,17 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetShow3DWindowInOrthoView(bool visible)
+void niftkMultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
 {
-  m_Show3DWindowInOrthoView = visible;
+  m_Show3DWindowIn2x2WindowLayout = visible;
   this->Update3DWindowVisibility();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetShow3DWindowInOrthoView() const
+bool niftkMultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
-  return m_Show3DWindowInOrthoView;
+  return m_Show3DWindowIn2x2WindowLayout;
 }
 
 
@@ -669,7 +669,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowInOrthoView)
+      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowIn2x2WindowLayout)
           || m_WindowLayout == WINDOW_LAYOUT_3D)
       {
         visibleIn3DWindow = true;

@@ -147,10 +147,10 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
-  bool GetShow3DWindowInOrthoView() const;
+  /// \brief Returns the flag indicating if nodes will be visible in the 3D window in 2x2 window layout. In 3D window layout, always visible.
+  bool GetShow3DWindowIn2x2WindowLayout() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
+  /// \brief If true, then nodes will be visible in the 3D window when in 2x2 window layout. In 3D window layout, always visible.
   void SetShow3DWindowIn2x2WindowLayout(bool enabled);
 
   /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
@@ -226,8 +226,8 @@ public:
   /// \brief Gets the render window layout.
   WindowLayout GetWindowLayout() const;
 
-  /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetWindowLayout(WindowLayout layout);
+  /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
+  void SetWindowLayout(WindowLayout windowLayout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -289,10 +289,10 @@ public:
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(WindowLayout layout);
+  void SetDefaultSingleWindowLayout(WindowLayout windowLayout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(WindowLayout layout);
+  void SetDefaultMultiWindowLayout(WindowLayout windowLayout);
 
   /// \brief Move anterior a slice.
   bool MoveAnterior();
@@ -338,7 +338,7 @@ signals:
   void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
 
   /// \brief Emitted when the window layout has changed in this viewer.
-  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout layout);
+  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
 
   /// \brief Emitted when the geometry of this viewer has changed.
   void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
@@ -390,11 +390,11 @@ private:
   WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
-  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
-  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
-//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
-  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
-  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
+  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];            // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2];               // Two for each orientation. Unbound, then bound, alternatingly.
+//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two for each window layout. Unbound, then bound, alternatingly.
+  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];             // Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two for each window layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
