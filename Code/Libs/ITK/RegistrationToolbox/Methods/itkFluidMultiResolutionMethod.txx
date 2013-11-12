@@ -42,7 +42,7 @@ FluidMultiResolutionMethod<TInputImageType, TScalarType, NDimensions, TPyramidFi
   // e.g number of levels = 3, so currentLevel = 0 -> 1 -> 2
   if (m_Transform.IsNull())
   {
-    itkExceptionMacro(<<"Transform is null, you should connect the BSplineTransform to the FluidMultiResolutionMethod");
+    itkExceptionMacro(<<"Transform is null, you should connect the UCLBSplineTransform to the FluidMultiResolutionMethod");
   }
 
   if (this->m_CurrentLevel == 0)

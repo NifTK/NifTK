@@ -14,7 +14,7 @@
 
 
 #-----------------------------------------------------------------------------
-# NIFTYREG
+# NiftyReg
 #-----------------------------------------------------------------------------
 
 # Sanity checks
@@ -24,9 +24,9 @@ endif()
 
 if(BUILD_NIFTYREG)
 
-  set(proj NIFTYREG)
+  set(proj NiftyReg)
   set(proj_DEPENDENCIES )
-  set(proj_INSTALL ${EP_BASE}/Install/${proj} )
+  set(proj_INSTALL ${CMAKE_BINARY_DIR}/${proj}-install )
   set(NIFTYREG_DEPENDS ${proj})
 
   if(NOT DEFINED NIFTYREG_ROOT)
@@ -34,6 +34,10 @@ if(BUILD_NIFTYREG)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_NIFTYREG ${NIFTK_LOCATION_NIFTYREG})
 
     ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_NIFTYREG}
       URL_MD5 ${NIFTK_CHECKSUM_NIFTYREG}
       CMAKE_GENERATOR ${GEN}
@@ -48,7 +52,7 @@ if(BUILD_NIFTYREG)
 
     set(NIFTYREG_ROOT ${proj_INSTALL})
 
-    message("SuperBuild loading NIFTYREG from ${NIFTYREG_ROOT}")
+    message("SuperBuild loading NiftyReg from ${NIFTYREG_ROOT}")
 
   else(NOT DEFINED NIFTYREG_ROOT)
 

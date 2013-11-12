@@ -19,7 +19,7 @@ set(_exclude_plugins
   uk.ac.ucl.cmic.breastsegmentation
   uk.ac.ucl.cmic.gui.qt.niftyview
   uk.ac.ucl.cmic.gui.qt.niftymidas
-  uk.ac.ucl.cmic.midaseditor
+  uk.ac.ucl.cmic.dnddisplay
   uk.ac.ucl.cmic.midasgeneralsegmentor
   uk.ac.ucl.cmic.midasmorphologicalsegmentor
   uk.ac.ucl.cmic.niftyseg

@@ -21,6 +21,7 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <mitkVector.h>
 #include <cv.h>
 
 #include <mitkVideoTrackerMatching.h>
@@ -55,8 +56,10 @@ public:
   itkSetMacro(NumberCornersWidth, unsigned int);
   itkSetMacro(NumberCornersHeight, unsigned int);
   itkSetMacro(SquareSizeInMillimetres, double);
+  itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
   itkSetMacro(NoVideoSupport,bool);
+  itkSetMacro(SwapVideoChannels, bool);
 
 protected:
 
@@ -80,6 +83,7 @@ private:
   unsigned int                        m_NumberCornersWidth;
   unsigned int                        m_NumberCornersHeight;
   double                              m_SquareSizeInMillimetres;
+  mitk::Point2D                       m_PixelScaleFactor;
   std::string                         m_Directory;
   bool                                m_WriteOutChessboards;
   bool                                m_WriteOutCalibrationImages;
@@ -102,6 +106,7 @@ private:
 
   bool                                m_NoVideoSupport; //for testing, enable running 
 
+  bool                                m_SwapVideoChannels;
 
 
 }; // end class

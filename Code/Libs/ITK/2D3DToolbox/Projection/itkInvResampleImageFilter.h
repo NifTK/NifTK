@@ -263,7 +263,7 @@ protected:
    * \sa ImageToImageFilter::ThreadedGenerateData(),
    *     ImageToImageFilter::GenerateData() */
   void ThreadedGenerateData( const OutputImageRegionType& outputRegionForThread,
-                             int threadId );
+                             ThreadIdType threadId );
 
   /** Default implementation for resampling that works for any
    * transformation type. */

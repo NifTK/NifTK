@@ -108,8 +108,7 @@ public:
   typedef SetOutputVectorToCurrentPositionFilter<TScalarType, 
                                      itkGetStaticConstMacro(Dimension)> InitializePhiFilterType;
   typedef SubtractImageFilter<VectorImageType, VectorImageType>         SubtractImageFilterType;
-  typedef VectorMagnitudeImageFilter<TScalarType, 
-                                     itkGetStaticConstMacro(Dimension)> VectorMagnitudeFilterType;
+  typedef VectorMagnitudeImageFilter<VectorImageType, TInputImage>      VectorMagnitudeFilterType; 
   typedef VectorVPlusLambdaUImageFilter<TScalarType,
                                      itkGetStaticConstMacro(Dimension)> VectorVPlusLambdaUFilterType;
 

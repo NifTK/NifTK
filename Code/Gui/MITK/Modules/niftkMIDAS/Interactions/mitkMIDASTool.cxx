@@ -18,11 +18,11 @@
 #include <itkCommand.h>
 
 // MicroServices
-#include <mitkGetModuleContext.h>
-#include <mitkModule.h>
-#include <mitkModuleRegistry.h>
+#include <usGetModuleContext.h>
+#include <usModule.h>
+#include <usModuleRegistry.h>
 
-#include "mitkMIDASDisplayInteractor.h"
+#include <Interactions/mitkMIDASDisplayInteractor.h>
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
@@ -37,51 +37,33 @@ const std::string mitk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS = std::string(
 const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS = std::string("MIDAS_EDITS_DILATIONS_SUBTRACTIONS");
 const std::string mitk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS = std::string("MIDAS_EDITS_DILATIONS_ADDITIONS");
 
-const std::string mitk::MIDASTool::MIDAS_KEYPRESS_STATE_MACHINE_XML = std::string(
-    "      <stateMachine NAME=\"MIDASKeyPressStateMachine\">"
-    "         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
-    "           <transition NAME=\"keyPressA\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4001\">"
-    "             <action ID=\"350001\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressZ\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4019\">"
-    "             <action ID=\"350002\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressQ\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4013\">"
-    "             <action ID=\"350003\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressW\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4016\">"
-    "             <action ID=\"350004\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressE\" NEXT_STATE_ID=\"1\" EVENT_ID=\"19\">"
-    "             <action ID=\"350005\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressS\" NEXT_STATE_ID=\"1\" EVENT_ID=\"18\">"
-    "             <action ID=\"350006\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressD\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4004\">"
-    "             <action ID=\"350007\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressSpace\" NEXT_STATE_ID=\"1\" EVENT_ID=\"25\">"
-    "             <action ID=\"350008\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressN\" NEXT_STATE_ID=\"1\" EVENT_ID=\"13\">"
-    "             <action ID=\"350009\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressY\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4018\">"
-    "             <action ID=\"350010\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressV\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4015\">"
-    "             <action ID=\"350011\" />"
-    "           </transition>"
-    "           <transition NAME=\"keyPressC\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4003\">"
-    "             <action ID=\"350012\" />"
-    "           </transition>"
-    "           <transition NAME=\"mouseButtonLeftDoubleClick\" NEXT_STATE_ID=\"1\" EVENT_ID=\"8\">"
-    "             <action ID=\"350013\" />"
-    "           </transition>"
-    "         </state>"
-    "      </stateMachine>"
-  );
+const std::string mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML = std::string(
+"      <stateMachine NAME=\"MIDASToolKeyPressStateMachine\">"
+"         <state NAME=\"stateStart\"  START_STATE=\"TRUE\"   ID=\"1\" X_POS=\"50\"   Y_POS=\"100\" WIDTH=\"100\" HEIGHT=\"50\">"
+"           <transition NAME=\"keyPressS\" NEXT_STATE_ID=\"1\" EVENT_ID=\"18\">"
+"             <action ID=\"350006\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressD\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4004\">"
+"             <action ID=\"350007\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressSpace\" NEXT_STATE_ID=\"1\" EVENT_ID=\"25\">"
+"             <action ID=\"350008\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressN\" NEXT_STATE_ID=\"1\" EVENT_ID=\"13\">"
+"             <action ID=\"350009\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressY\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4018\">"
+"             <action ID=\"350010\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressV\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4015\">"
+"             <action ID=\"350011\" />"
+"           </transition>"
+"           <transition NAME=\"keyPressC\" NEXT_STATE_ID=\"1\" EVENT_ID=\"4003\">"
+"             <action ID=\"350012\" />"
+"           </transition>"
+"         </state>"
+"      </stateMachine>"
+);
 
 const std::string mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML = std::string(
 "      <stateMachine NAME=\"MIDASSeedDropper\">"
@@ -297,17 +279,17 @@ void mitk::MIDASTool::Activated()
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
   // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
   m_DisplayInteractorConfigs.clear();
-  std::list<mitk::ServiceReference> listEventObserver = GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
-  for (std::list<mitk::ServiceReference>::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
+  std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
+  for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
     MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
-                                                    GetModuleContext()->GetService<InteractionEventObserver>(*it));
+                                                    us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor != NULL)
     {
       // remember the original configuration
       m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
       // here the alternative configuration is loaded
-      displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", GetModuleContext()->GetModule());
+      displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
     }
   }
 }
@@ -337,13 +319,13 @@ void mitk::MIDASTool::Deactivated()
 
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
-  for (std::map<mitk::ServiceReference, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
+  for (std::map<us::ServiceReferenceU, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
        it != m_DisplayInteractorConfigs.end(); ++it)
   {
     if (it->first)
     {
       MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
-                                               GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
+                                               us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor != NULL)
       {
         // here the regular configuration is loaded again

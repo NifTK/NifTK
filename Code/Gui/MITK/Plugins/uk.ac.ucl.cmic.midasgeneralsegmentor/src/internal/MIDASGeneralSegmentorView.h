@@ -66,16 +66,16 @@ class QGridLayout;
  * <pre>
  *   0. mitk::Image = the image being segmented, i.e. The Output.
  *   1. mitk::PointSet = the seeds for region growing, noting that the seeds are in 3D, spreading throughout the volume.
- *   2. mitk::ContourSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS, but drawn here in orange.
- *   3. mitk::ContourSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS, and also drawn here in orange.
- *   4. mitk::ContourSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
- *   5. mitk::ContourSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
+ *   2. mitk::ContourModelSet = a set of contours for the current slice being edited - representing the current segmentation, i.e. green lines in MIDAS, but drawn here in orange.
+ *   3. mitk::ContourModelSet = a set of contours specifically for the draw tool, i.e. also green lines in MIDAS, and also drawn here in orange.
+ *   4. mitk::ContourModelSet = a set of contours for the prior slice, i.e. whiteish lines in MIDAS.
+ *   5. mitk::ContourModelSet = a set of contours for the next slice, i.e. turquoise blue lines in MIDAS.
  *   6. mitk::Image = binary image, same size as item 0, to represent the current region growing, i.e. blue lines in MIDAS.
  * </pre>
  * Useful notes towards helping the understanding of this class
  * <ul>
  *   <li>Items 1-6 are set up in the mitk::DataManager as hidden children of item 0.</li>
- *   <li>The segmentation is very specific to a given view, as for example the ContourSet in WorkingData items 2,3,4,5 are only generated for a single slice, corresponding to the currently selected render window.</li>
+ *   <li>The segmentation is very specific to a given view, as for example the ContourModelSet in WorkingData items 2,3,4,5 are only generated for a single slice, corresponding to the currently selected render window.</li>
  *   <li>Region growing is 2D on the currently selected slice, except when doing propagate up or propagate down.</li>
  *   <li>Apologies that this is rather a large monolithic class.</li>
  * </ul>
@@ -435,7 +435,7 @@ private:
       int axisNumber,
       int sliceNumber,
       int projectedSliceNumber,
-      mitk::ContourSet::Pointer outputContourSet
+      mitk::ContourModelSet::Pointer outputContourSet
       );
 
   /// \brief Completely removes the current pipeline.
@@ -598,9 +598,9 @@ private:
       bool skipUpdate,
       mitk::Image &workingImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &segmentationContours,
-      mitk::ContourSet &drawContours,
-      mitk::ContourSet &polyContours,
+      mitk::ContourModelSet &segmentationContours,
+      mitk::ContourModelSet &drawContours,
+      mitk::ContourModelSet &polyContours,
       int sliceNumber,
       int axis,
       double lowerThreshold,
@@ -662,7 +662,7 @@ private:
       int axisNumber,
       int sliceNumber,
       int projectedSliceNumber,
-      mitk::ContourSet::Pointer contourSet
+      mitk::ContourModelSet::Pointer contourSet
       );
 
   /// \brief Works out the largest minimum distance to the edge of the image data, filtered on a given foregroundPixelValue.
@@ -760,9 +760,9 @@ private:
   void ITKSliceDoesHaveUnEnclosedSeeds(
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &segmentationContours,
-      mitk::ContourSet &polyToolContours,
-      mitk::ContourSet &drawToolContours,
+      mitk::ContourModelSet &segmentationContours,
+      mitk::ContourModelSet &polyToolContours,
+      mitk::ContourModelSet &drawToolContours,
       mitk::Image &workingImage,
       double lowerThreshold,
       double upperThreshold,
@@ -788,16 +788,16 @@ private:
       itk::Image<TPixel, VImageDimension> *itkImage,
       mitk::Image &workingImage,
       mitk::PointSet &seeds,
-      mitk::ContourSet &segmentationContours,
-      mitk::ContourSet &drawContours,
-      mitk::ContourSet &polyContours,
+      mitk::ContourModelSet &segmentationContours,
+      mitk::ContourModelSet &drawContours,
+      mitk::ContourModelSet &polyContours,
       int axis,
       int slice,
       double lowerThreshold,
       double upperThreshold,
       bool isThresholding,
-      mitk::ContourSet &outputCopyOfInputContours,
-      mitk::ContourSet &outputContours
+      mitk::ContourModelSet &outputCopyOfInputContours,
+      mitk::ContourModelSet &outputContours
   );
 
   /// \brief Given an image, and a set of seeds, will append new seeds in the new slice if necessary.

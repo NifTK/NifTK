@@ -46,6 +46,12 @@ namespace itk
 
 
   template <class TInputImage, class TOutputImage>
+  void MIDASUpSamplingFilter<TInputImage, TOutputImage>::VerifyInputInformation()
+  {
+    // Do nothing for now.
+  }
+
+  template <class TInputImage, class TOutputImage>
   void MIDASUpSamplingFilter<TInputImage, TOutputImage>::GenerateData()
   {   
     const unsigned int numberOfInputImages = this->GetNumberOfInputs(); 

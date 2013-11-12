@@ -18,7 +18,6 @@
 #include <NifTKConfigure.h>
 #include "niftkCommonWin32ExportHeader.h"
 
-#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 

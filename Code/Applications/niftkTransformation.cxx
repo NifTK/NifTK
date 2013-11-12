@@ -245,14 +245,10 @@ int DoMain(arguments args)
       }
       if (args.invertNonLinearTransformation)
       {
-        typedef itk::BSplineTransform<InputImageType, double, Dimension, float> BSplineTransformType;
-        typename BSplineTransformType::Pointer inverseTransform = BSplineTransformType::New();
-        inverseTransform->Initialize(fixedImageReader->GetOutput(), 1.0, 1); 
-        bSplineTransform->SetInverseSearchRadius(5); 
-        bSplineTransform->GetInverse(inverseTransform); 
-        deformableTransform = inverseTransform; 
+        std::cerr << "Inverting BSpline transform not implemeted." << std::endl;
+        return EXIT_FAILURE;
       }
-      
+
     }
     else if (strcmp(deformableTransform->GetNameOfClass(),"FluidDeformableTransform") == 0)
     {

@@ -1707,6 +1707,17 @@ SetImageIOOrientationFromNIfTI(unsigned short int dims)
   if(m_NiftiImage->sform_code > 0) //if(m_NiftiImage->qform_code > 0)
     {
     theMat = m_NiftiImage->sto_xyz;
+    // MARC - I here update the voxel spacing based on the sform matrix.
+    // Note that this is far from ideal (wrong) but it counter-balances MITK
+    // normalisation behaviour
+    for (unsigned int i=0; i < dims; ++i)
+      {
+      float newSpacing = std::sqrt(theMat.m[0][i] * theMat.m[0][i] + theMat.m[1][i] * theMat.m[1][i] + theMat.m[2][i] * theMat.m[2][i]);
+      if (newSpacing != this->GetSpacing(i))
+        {
+        this->SetSpacing(i, newSpacing);
+        }
+      }
     }
   //    else if(m_NiftiImage->sform_code > 0)
   else

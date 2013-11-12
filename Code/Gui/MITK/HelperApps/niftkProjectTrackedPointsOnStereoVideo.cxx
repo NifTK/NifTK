@@ -49,15 +49,17 @@ int main(int argc, char** argv)
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
+    mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
+    matcher->Initialise(trackingInputDirectory);
     if ( videoLag != 0 ) 
     {
       if ( videoLag < 0 )
       {
-        projector->SetVideoLagMilliseconds(videoLag,true);
+        matcher->SetVideoLagMilliseconds(videoLag,true);
       }
       else 
       {
-        projector->SetVideoLagMilliseconds(videoLag,false);
+        matcher->SetVideoLagMilliseconds(videoLag,false);
       }
     }
 
@@ -66,48 +68,50 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    projector->SetFlipMatrices(FlipTracking);
+    matcher->SetFlipMatrices(FlipTracking);
     projector->SetTrackerIndex(trackerIndex);
+    projector->SetReferenceIndex(referenceIndex);
+    projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
     
-    std::vector < std::pair < cv::Point2f, cv::Point2f > > screenPoints;
+    std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
     unsigned int setPointsFrameNumber;
-    std::vector < cv::Point3f > worldPoints;
+    std::vector < cv::Point3d > worldPoints;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
       fin >> setPointsFrameNumber;
-      float x1;
-      float y1;
-      float x2;
-      float y2;
+      double x1;
+      double y1;
+      double x2;
+      double y2;
       while ( fin >> x1 >> y1 >> x2 >> y2 )
       {
-        screenPoints.push_back(std::pair<cv::Point2f,cv::Point2f> (cv::Point2f(x1,y1), cv::Point2f(x2,y2)));
+        screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber);
+      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber,matcher);
     }
   if ( input3D.length() != 0 ) 
     {
       std::ifstream fin(input3D.c_str());
-      float x;
-      float y;
-      float z;
+      double x;
+      double y;
+      double z;
       while ( fin >> x >> y >> z  )
       {
-        worldPoints.push_back(cv::Point3f(x,y,z));
+        worldPoints.push_back(cv::Point3d(x,y,z));
       }
       projector->SetWorldPoints(worldPoints);
       fin.close();
     }
 
-    projector->Project();
+    projector->Project(matcher);
    
     if ( output2D.length() != 0 ) 
     {
       std::ofstream fout (output2D.c_str());
-      std::vector < std::vector < std::pair < cv::Point2f , cv::Point2f > > > projectedPoints = 
+      std::vector < std::vector < std::pair < cv::Point2d , cv::Point2d > > > projectedPoints = 
         projector->GetProjectedPoints();
       fout << "#Frame Number " ;
       for ( unsigned int i = 0 ; i < projectedPoints[0].size() ; i ++ ) 
@@ -130,7 +134,7 @@ int main(int argc, char** argv)
     if ( output3D.length() !=0 )
     {
       std::ofstream fout (output3D.c_str());
-      std::vector < std::vector < cv::Point3f > > leftLensPoints = 
+      std::vector < std::vector < cv::Point3d > > leftLensPoints = 
         projector->GetPointsInLeftLensCS();
       fout << "#Frame Number " ;
       for ( unsigned int i = 0 ; i < leftLensPoints[0].size() ; i ++ ) 

@@ -53,13 +53,13 @@ int mitkCoordinateAxesDataRenderingTest(int argc, char * argv[])
   axes->SetVtkMatrix(*matrix);
 
   // Create a rendering helper - contains window and data storage.
-  mitkRenderingTestHelper renderingHelper(640, 480, argc, argv);
+  mitk::RenderingTestHelper renderingHelper(640, 480, argc, argv);
   renderingHelper.SetMapperID(mitk::BaseRenderer::Standard3D);
   renderingHelper.AddNodeToStorage(axesNode);
 
   // Set up the view.
   mitk::DataStorage::Pointer storage = renderingHelper.GetDataStorage();
-  mitk::TimeSlicedGeometry::Pointer geometry =  storage->ComputeBoundingGeometry3D(renderingHelper.GetDataStorage()->GetAll());
+  mitk::TimeGeometry::Pointer geometry =  storage->ComputeBoundingGeometry3D(renderingHelper.GetDataStorage()->GetAll());
   mitk::RenderingManager::GetInstance()->InitializeViews( geometry );
 
   // Get image out

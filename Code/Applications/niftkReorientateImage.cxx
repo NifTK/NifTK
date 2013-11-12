@@ -23,7 +23,6 @@
 #include <itkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-#include <itkOrientedImage.h>
 #include <itkOrientImageFilter.h>
 
 #include <boost/filesystem.hpp>
@@ -97,10 +96,10 @@ struct arguments
 // -------------------------------------------------------------------------
 
 template <int Dimension, class ScalarType>
-void PrintOrientationInfo( typename itk::OrientedImage< ScalarType, Dimension >::Pointer image )
+void PrintOrientationInfo( typename itk::Image< ScalarType, Dimension >::Pointer image )
 {
   typedef typename itk::SpatialOrientationAdapter AdaptorType;
-  typedef typename itk::OrientedImage< ScalarType, Dimension >::DirectionType DirectionType;
+  typedef typename itk::Image< ScalarType, Dimension >::DirectionType DirectionType;
 
   DirectionType direction;
 
@@ -131,7 +130,7 @@ int ReorientateImage( arguments &args )
 {
   int iDim, iDirn;
 
-  typedef itk::OrientedImage< ScalarType, Dimension > ImageType;
+  typedef itk::Image< ScalarType, Dimension > ImageType;
   typedef itk::ImageFileReader< ImageType > ReaderType;
   typedef itk::OrientImageFilter<ImageType,ImageType> OrientImageFilterType;
   typedef itk::ImageFileWriter< ImageType >  WriterType;
@@ -139,7 +138,7 @@ int ReorientateImage( arguments &args )
   typedef typename OrientImageFilterType::FlipAxesArrayType FlipAxesArrayType;
   typedef typename OrientImageFilterType::PermuteOrderArrayType PermuteOrderArrayType;
 
-  typedef typename itk::OrientedImage< ScalarType, Dimension >::DirectionType DirectionType;
+  typedef typename itk::Image< ScalarType, Dimension >::DirectionType DirectionType;
 
   typedef typename itk::SpatialOrientationAdapter AdaptorType;
 

@@ -33,14 +33,11 @@ if(BUILD_SHARED_LIBS)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 
-target_link_libraries(niftkcommon  
-  ITKCommon  
-  ITKIO  
-  ITKBasicFilters 
-  ITKAlgorithms
+target_link_libraries(niftkcommon
+  ${ITK_LIBRARIES}
   vtkCommon
   vtkIO
-  ${Boost_LIBRARIES}   
-) 
+  ${Boost_LIBRARIES}
+)
 
 MITK_INSTALL(TARGETS niftkcommon)

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>MRI Tools</category>
+  <title>N4 Bias Field Correction</title>
+  <description><![CDATA[N4 bias field correction algorithm contributed to ITK by Nicholas J. Tustison and James C. Gee. This program runs the ITK N4BiasFieldCorrectionImageFilter on an image to correct nonuniformity commonly associated with MR images. The algorithm assumes a simple parametric model (Gaussian) for the bias field and does not require tissue class segmentation. References: J.G. Sled, A.P. Zijdenbos and A.C. Evans. "A Nonparametric Method for Automatic Correction of Intensity Nonuniformity in Data" IEEE Transactions on Medical Imaging, Vol 17, No 1. Feb 1998. N.J. Tustison, B.B. Avants, P.A. Cook, Y. Zheng, A. Egan, P.A. Yushkevich, and J.C. Gee. "N4ITK: Improved N3 Bias Correction" IEEE Transactions on Medical Imaging, 29(6):1310-1320, June 2010.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <default></default>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputBiasField</name>
+      <longflag>outBiasField</longflag>
+      <description>Output bias field image</description>      
+      <label>Output bias field image</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>BiasFieldCorrectedImage.nii</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+
+  <parameters advanced="true">
+
+    <label>Intermediate Images</label>
+    <description><![CDATA[Intermediate images for debugging purposes]]></description>
+
+    <image>
+      <name>fileOutputMask</name>
+      <longflag>outMask</longflag>
+      <description>Output mask image</description>      
+      <label>Output mask</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputSubsampledImage</name>
+      <longflag>outSubsampledImage</longflag>
+      <description>Output subsampled image</description>      
+      <label>Output subsampled field image</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+    <image>
+      <name>fileOutputSubsampledMask</name>
+      <longflag>outSubsampledMask</longflag>
+      <description>Output subsampled mask</description>      
+      <label>Output subsampled field mask</label>
+      <default></default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Bias Field Correction Parameters</label>
+    <description><![CDATA[Parameters that control the bias field correction]]></description>
+
+    <float>
+      <name>subsampling</name>
+      <longflag>sub</longflag>
+      <description>
+	The subsampling factor (greater than 1)
+      </description>
+      <label>subsampling</label>
+      <default>4</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>splineOrder</name>
+      <longflag>spline</longflag>
+      <description>
+	A smooth field estimate is produced after each iterative correction using B-splines. Although any feasible order of spline is available, the default is cubic.
+      </description>
+      <label>B-Spline order</label>
+      <default>3</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>10</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>nHistogramBins</name>
+      <longflag>nbins</longflag>
+      <description>
+	The image intensity profile is constructed from the intensities of the uncorrected input image and a triangular parzen windowing scheme. This parameter specifies the number of bins in the histogram used.
+      </description>
+      <label>Number of histogram bins</label>
+      <default>200</default>
+      <constraints>
+        <minimum>10</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>WeinerFilterNoise</name>
+      <longflag>noise</longflag>
+      <description>
+	Field estimation is performed by deconvolution using a Wiener filter which has an additive noise term to prevent division by zero.
+      </description>
+      <label>Wiener filter noise term</label>
+      <default>0.01</default>
+      <constraints>
+        <minimum>0.0000001</minimum>
+        <maximum>1000</maximum>
+        <step>0.0001</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>BiasFieldFullWidthAtHalfMaximum</name>
+      <longflag>FWHM</longflag>
+      <description>
+	The full width at half maximum of the Gaussian used to model the bias field.
+      </description>
+      <label>Bias field full width at half maximum</label>
+      <default>0.15</default>
+      <constraints>
+        <minimum>0.01</minimum>
+        <maximum>10</maximum>
+        <step>0.01</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>MaximumNumberOfIterations</name>
+      <longflag>niters</longflag>
+      <description>
+	Optimization occurs iteratively until the number of iterations exceeds the maximum specified by this variable.
+      </description>
+      <label>Number of iterations</label>
+      <default>50</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>ConvergenceThreshold</name>
+      <longflag>convergence</longflag>
+      <description>
+	The threshold used to determine convergence (the standard deviation of the ratio between subsequent field estimates is used).
+      </description>
+      <label>Convergence threshold</label>
+      <default>0.001</default>
+      <constraints>
+        <minimum>0.00000001</minimum>
+        <maximum>1000</maximum>
+        <step>0.0001</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>NumberOfFittingLevels</name>
+      <longflag>nlevels</longflag>
+      <description>
+	The number of hierarchical levels to fit where each successive level doubles the B-spline mesh resolution.
+      </description>
+      <label>Number of fitting levels</label>
+      <default>4</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+    <float>
+      <name>NumberOfControlPoints</name>
+      <longflag>npts</longflag>
+      <description>
+	The number of B-Spline control points.
+      </description>
+      <label>Number of B-Spline control points</label>
+      <default>0</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
+
+  </parameters>
+
+</executable>

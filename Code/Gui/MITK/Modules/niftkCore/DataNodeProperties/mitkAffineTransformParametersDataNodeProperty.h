@@ -40,8 +40,6 @@ public:
   itkNewMacro(AffineTransformParametersDataNodeProperty);
   mitkNewMacro1Param(AffineTransformParametersDataNodeProperty, const std::vector<double>&);
 
-  Pointer Clone() const;
-
   /**
    * \brief The ParametersType is defined to be an array of double, it should be exactly 13 doubles long.
    */

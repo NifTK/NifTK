@@ -39,8 +39,8 @@ template< class TFixedImage, class TMovingImage, class TScalarType>
 class ITK_EXPORT RegistrationForceFilter :
   public ImageToImageFilter<TFixedImage, 
                             Image<  
-                              Vector< TScalarType, ::itk::GetImageDimension<TFixedImage>::ImageDimension>, 
-                              ::itk::GetImageDimension<TFixedImage>::ImageDimension> >
+                              Vector< TScalarType, TFixedImage::ImageDimension>, 
+                              TFixedImage::ImageDimension> >
 {
 public:
 
@@ -48,8 +48,8 @@ public:
   typedef RegistrationForceFilter                                                       Self;
   typedef ImageToImageFilter<TFixedImage, 
                              Image<  
-                               Vector< TScalarType, ::itk::GetImageDimension<TFixedImage>::ImageDimension>, 
-                               ::itk::GetImageDimension<TFixedImage>::ImageDimension> > Superclass;
+                               Vector< TScalarType, TFixedImage::ImageDimension>, 
+                               TFixedImage::ImageDimension> > Superclass;
   typedef SmartPointer<Self>                                                            Pointer;
   typedef SmartPointer<const Self>                                                      ConstPointer;
   

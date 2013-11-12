@@ -33,9 +33,7 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   ".*/ui_.*"
 
   # Exclude files from the External directories
-  ".*/CMakeExternals/.*"
-  ".*/CTK-src/.*" 
-  ".*/DCMTK-src/.*"
+  ".*/.*-src/.*" 
 
   # Trac 2223: Remove these from coverage
   ".*/Testing/Code/.*"             # As we want to measure the coverage of real code, not tests.
@@ -113,9 +111,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac #1455: Sometimes we set values, and output them only in debug code. 
   # Seems a shame to delete the debug code just to get rid of the warning.
   ".*variable.*set but not used.*"
-  ".*CMakeExternals.*" 
-  ".*CTK-src.*" 
-  ".*DCMTK-src."
+  ".*-src.*" 
   ".*itkMIDASMorphologicalSegmentorLargestConnectedComponentImageFilter.txx:144.*imgSize.*"
   
   # PythonQt suppressions
@@ -137,11 +133,11 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac 1720 - fix warnings from doxygen
   ".*ignoring unsupported tag.*doygen.*"
 
-  # Trac 1860 - turn of external NIFTYREG, NIFTYSEG package warnings etc.
-  ".*NIFTYREG.*"
-  ".*NIFTYSEG.*"
-  ".*NIFTYREC.*"
-  ".*NIFTYSIM.*"
+  # Trac 1860 - turn of external NiftyReg, NiftySeg package warnings etc.
+  ".*NiftyReg.*"
+  ".*NiftySeg.*"
+  ".*NiftyRec.*"
+  ".*NiftySim.*"
   ".*NIFTYLINK.*"
   ".*OPENIGTLINK.*"
   ".*niftyreg.*"

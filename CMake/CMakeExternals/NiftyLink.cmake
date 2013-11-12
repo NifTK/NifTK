@@ -69,8 +69,11 @@ if(BUILD_IGI)
     endif()
 
     ExternalProject_Add(${proj}
-      ${NiftyLink_location_options}
+      SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
+      ${NiftyLink_location_options}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_NIFTYLINK}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}
@@ -83,9 +86,9 @@ if(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NiftyLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/NiftyLink-build)
-    set(NiftyLink_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeExternals/Source/NiftyLink)
-    set(OpenIGTLink_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
+    set(NiftyLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/NiftyLink-build)
+    set(NiftyLink_SOURCE_DIR ${CMAKE_BINARY_DIR}/NiftyLink-src)
+    set(OpenIGTLink_DIR ${CMAKE_BINARY_DIR}/${proj}-build/OPENIGTLINK-build)
 
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")

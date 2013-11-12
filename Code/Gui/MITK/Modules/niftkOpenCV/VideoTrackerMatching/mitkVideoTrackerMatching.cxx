@@ -67,18 +67,18 @@ void VideoTrackerMatching::Initialise(std::string directory)
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
-        cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_32F);
+        cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
         for ( int i = 0 ; i < 4 ; i ++ ) 
         {
           for ( int j = 0 ; j < 4 ; j ++ )
           {
             if ( i == j ) 
             {
-              tempCameraToTracker.at<float>(i,j) = 1.0;
+              tempCameraToTracker.at<double>(i,j) = 1.0;
             }
             else
             {
-              tempCameraToTracker.at<float>(i,j) = 0.0;
+              tempCameraToTracker.at<double>(i,j) = 0.0;
             }
           }
         }
@@ -292,12 +292,12 @@ unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long 
     if ( abs(deltaLower) < abs(deltaUpper) ) 
     {
       returnValue = *lower;
-      delta = timestamp - *lower;
+      delta = (long long) timestamp - *lower;
     }
     else
     {
       returnValue = *upper;
-      delta = timestamp - *upper;
+      delta = (long long) timestamp - *upper;
     }
   }
 
@@ -345,7 +345,7 @@ void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
 {
-  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_32FC1);
+  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
@@ -356,7 +356,7 @@ cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
   {
     for ( int col = 0 ; col < 4 ; col ++ ) 
     {
-      fin >> TrackerMatrix.at<float>(row,col);
+      fin >> TrackerMatrix.at<double>(row,col);
     }
   }
   return TrackerMatrix;
@@ -442,7 +442,7 @@ void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
-  cv::Mat returnMat = cv::Mat(4,4,CV_32FC1);
+  cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
   
   if ( !m_Ready ) 
   {
@@ -482,290 +482,56 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 }
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
+cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation, int ReferenceIndex )
 {
-   cv::Mat TrackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
-   return TrackerMatrix * m_CameraToTracker[TrackerIndex];
+   cv::Mat trackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
+   if ( Perturbation == NULL ) 
+   {
+     if ( ReferenceIndex == -1 ) 
+     {
+       return trackerMatrix * m_CameraToTracker[TrackerIndex];
+     }
+     else
+     {
+       long long  refTimingError;
+       cv::Mat referenceMatrix = GetTrackerMatrix ( FrameNumber, &refTimingError, ReferenceIndex );
+       cv::Mat toReference = referenceMatrix * m_CameraToTracker[ReferenceIndex];
+       if ( TimingError != NULL && refTimingError > *TimingError )
+       {  
+         *TimingError = refTimingError;
+       }
+       return (toReference.inv() * (trackerMatrix * m_CameraToTracker[TrackerIndex]));
+     }
+
+   }
+   else
+   {
+     assert ( Perturbation->size() == 6 );
+     if ( ReferenceIndex == -1 )
+     {
+        return trackerMatrix * 
+          mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
+            Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
+            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5));
+     }
+     else
+     {
+       long long  refTimingError;
+       cv::Mat referenceMatrix = GetTrackerMatrix ( FrameNumber, &refTimingError, ReferenceIndex );
+       cv::Mat toReference = referenceMatrix * m_CameraToTracker[ReferenceIndex];
+       if ( TimingError != NULL && refTimingError > *TimingError )
+       {  
+         *TimingError = refTimingError;
+       }
+       return toReference.inv() * 
+          (trackerMatrix *  
+          mitk::PerturbTransform ( m_CameraToTracker[TrackerIndex],
+            Perturbation->at(0), Perturbation->at(1), Perturbation->at(2), 
+            Perturbation->at(3), Perturbation->at(4), Perturbation->at(5)) );
+     }
+   }
 }
-//---------------------------------------------------------------------------
-void VideoTrackerMatching::TemporalCalibration(std::string calibrationfilename ,
-    int windowLow, int windowHigh, bool visualise, std::string fileout)
-{
 
-  if ( !m_Ready )
-  {
-    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
-    return;
-  }
-
-  std::ofstream fout;
-  if ( fileout.length() != 0 ) 
-  {
-    fout.open(fileout.c_str());
-    if ( !fout )
-    {
-      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
-    }
-  }
-
-  std::vector <cv::Point3d> pointsInLensCS;
-  pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
-
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
-  {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
-    return;
-  }
-
-  std::vector < std::vector <cv::Point3d> > standardDeviations;
-  if ( fout ) 
-  {
-    fout << "#lag " ;
-  }
-  for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i++ )
-  {
-    std::vector <cv::Point3d> pointvector;
-    standardDeviations.push_back(pointvector);
-    if ( fout ) 
-    {
-      fout << "SDx SDy SDz";
-    }
-  }
-  if ( fout ) 
-  {
-    fout << std::endl;
-  }
-  
-  std::vector <cv::Point3d> optimalVideoLag;
-  std::vector <cv::Point3d> minimumSD;
-  std::vector <float> minimumSDMag;
-  std::vector <int> optimalVideoLagMag;
-  float maximumSD = 0;
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size(); trackerIndex ++ ) 
-  { 
-    optimalVideoLag.push_back(cv::Point3d(0,0,0));
-    minimumSD.push_back(cv::Point3d(0,0,0));
-    minimumSDMag.push_back(0.0);
-    optimalVideoLagMag.push_back(0);
-  }
-
-
-  for ( int videoLag = windowLow; videoLag <= windowHigh ; videoLag ++ )
-  {
-    if ( videoLag < 0 ) 
-    {
-      SetVideoLagMilliseconds ( (unsigned long long) (videoLag * -1) , true, -1 );
-    }
-    else 
-    {
-      SetVideoLagMilliseconds ( (unsigned long long) (videoLag ) , false, -1  );
-    }
-   
-    if ( fout ) 
-    {
-      fout << videoLag << " " ;
-    }
-    for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
-    {
-      std::vector <cv::Point3d> worldPoints;
-      worldPoints.clear();
-      for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
-      {
-        int framenumber = frame * 2;
-        worldPoints.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ) *
-            pointsInLensCS[frame]);
-      }
-      cv::Point3d* worldStdDev = new cv::Point3d;
-      mitk::GetCentroid (worldPoints, true, worldStdDev);
-      standardDeviations[trackerIndex].push_back(*worldStdDev);
-      float sdMag = sqrt(worldStdDev->x*worldStdDev->x + worldStdDev->y*worldStdDev->y +
-          worldStdDev->z * worldStdDev->z);
-
-      if ( videoLag == windowLow )
-      {
-        optimalVideoLag[trackerIndex] = cv::Point3d(videoLag, videoLag,videoLag);
-        minimumSD[trackerIndex] = *worldStdDev;
-        optimalVideoLagMag[trackerIndex] = videoLag;
-        minimumSDMag[trackerIndex] = sdMag;
-      }
-      else
-      {
-        if ( sdMag < minimumSDMag[trackerIndex] ) 
-        {
-          minimumSDMag[trackerIndex] = sdMag;
-          optimalVideoLagMag[trackerIndex] = videoLag;
-        }
-        if ( worldStdDev->x < minimumSD[trackerIndex].x )
-        {
-          minimumSD[trackerIndex].x = worldStdDev->x;
-          optimalVideoLag[trackerIndex].x = videoLag;
-        }
-        if ( worldStdDev->y < minimumSD[trackerIndex].y )
-        {
-          minimumSD[trackerIndex].y = worldStdDev->y;
-          optimalVideoLag[trackerIndex].y = videoLag;
-        }
-        if ( worldStdDev->z < minimumSD[trackerIndex].z )
-        {
-          minimumSD[trackerIndex].z = worldStdDev->z;
-          optimalVideoLag[trackerIndex].z = videoLag;
-        }
-        if ( worldStdDev->x > maximumSD ) 
-        {
-          maximumSD = worldStdDev->x;
-        }
-        if ( worldStdDev->y > maximumSD ) 
-        {
-          maximumSD = worldStdDev->y;
-        }
-        if ( worldStdDev->z > maximumSD ) 
-        {
-          maximumSD = worldStdDev->z;
-        }
-      }
-
-      if ( fout ) 
-      {
-        fout << *worldStdDev << " " << sdMag << " ";
-      }
-    }
-    if ( fout ) 
-    {
-      fout << std::endl;
-    }
-  }
-
-  MITK_INFO << "min sd at " ;
-  for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
-  {
-    MITK_INFO << optimalVideoLag[i] << " " << optimalVideoLagMag[i];
-  }
-  if ( fout ) 
-  {
-    fout << "min sd at " ;
-    for ( unsigned int i = 0 ; i < optimalVideoLag.size() ; i ++ )
-    { 
-      fout << optimalVideoLag[i] << " " << optimalVideoLagMag[i] << " ";
-    } 
-  }
-
-}
-//---------------------------------------------------------------------------
-void VideoTrackerMatching::OptimiseHandeyeCalibration(std::string calibrationfilename ,
-    bool visualise, std::string fileout)
-{
-  if ( !m_Ready )
-  {
-    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
-    return;
-  }
-
-  std::ofstream fout;
-  if ( fileout.length() != 0 ) 
-  {
-    fout.open(fileout.c_str());
-    if ( !fout )
-    {
-      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
-    }
-  }
-
-  std::vector <cv::Point3d> pointsInLensCS;
-  pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
-
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
-  {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
-    return;
-  }
-
-  for ( unsigned int trackerIndex = 0 ; trackerIndex < m_TrackingMatrixTimeStamps.size() ; trackerIndex++ )
-  {
-    std::vector<cv::Mat> cameraMatrices;
-    cameraMatrices.clear();
-    for ( unsigned int frame = 0 ; frame < pointsInLensCS.size() ; frame++ )
-    {
-      int framenumber = frame * 2;
-      if ( ! ( boost::math::isnan(pointsInLensCS[frame].x) || boost::math::isnan(pointsInLensCS[frame].y) || boost::math::isnan(pointsInLensCS[frame].z) ) )
-      {
-        cameraMatrices.push_back (GetCameraTrackingMatrix(framenumber, NULL , trackerIndex ));
-      }
-      else
-      {
-       pointsInLensCS.erase(pointsInLensCS.begin() + frame);
-       frame -- ;
-      }
-    }
-    bool optimiseScaling = false;
-    bool optimiseInvariantPoint = true;
-    std::vector<double> rigidBodyTransformation;
-    cv::Point3d invariantPoint;
-    //initial values for point and transform. Could use known handeye and reconstructed point, 
-    //but for the minute let's use ID and 0 0 0 
-    rigidBodyTransformation.clear();
-    for ( int i = 0 ; i < 6 ; i ++ ) 
-    {
-      rigidBodyTransformation.push_back(0.0);
-    }
-    invariantPoint.x=0.0;
-    invariantPoint.y=0.0;
-    invariantPoint.z=0.0;
-    cv::Point2d millimetresPerPixel;
-    //mm per pixel has no meaning in this application as the point is already defined in mm
-    millimetresPerPixel.x = 1.0;
-    millimetresPerPixel.y = 1.0;
-
-    cv::Matx44d outputMatrix;
-    double residualError;
-    
-    mitk::UltrasoundPinCalibration::Pointer invPointCal = mitk::UltrasoundPinCalibration::New();
-    invPointCal->Calibrate(cameraMatrices, pointsInLensCS,
-        optimiseScaling, optimiseInvariantPoint, rigidBodyTransformation,
-        invariantPoint, millimetresPerPixel,
-        outputMatrix, residualError);
-    MITK_INFO << "Tracker Index " << trackerIndex << ": After optimisation, handeye = " ;
-    for ( int i = 0 ; i < 4 ; i ++ )
-    {
-      MITK_INFO << outputMatrix(i,0) << "," << outputMatrix(i,1) <<  " , " << outputMatrix(i,2) << " , " <<  outputMatrix (i,3);
-    }
-    MITK_INFO << "Invariant point = " << invariantPoint << " [ " << residualError << " SD ].";
-    MITK_INFO << "Millimetres per pixel = " << millimetresPerPixel;
-  }
-
-}
-//---------------------------------------------------------------------------
-void VideoTrackerMatching::HandeyeSensitivityTest(std::string calibrationfilename ,
-    bool visualise, std::string fileout)
-{
- if ( !m_Ready )
-  {
-    MITK_ERROR << "Initialise video tracker matcher before attempting temporal calibration";
-    return;
-  }
-
-  std::ofstream fout;
-  if ( fileout.length() != 0 ) 
-  {
-    fout.open(fileout.c_str());
-    if ( !fout )
-    {
-      MITK_WARN << "Failed to open output file for temporal calibration " << fileout;
-    }
-  }
-
-  std::vector <cv::Point3d> pointsInLensCS;
-  pointsInLensCS.clear();
-  pointsInLensCS = ReadPointsInLensCSFile(calibrationfilename);
-
-  if ( pointsInLensCS.size() * 2 != m_FrameNumbers.size() )
-  {
-    MITK_ERROR << "Temporal calibration file has wrong number of frames, " << pointsInLensCS.size() * 2 << " != " << m_FrameNumbers.size() ;
-    return;
-  }
-
-}
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
 {
@@ -790,10 +556,10 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<float>(row,0) >>
-        m_CameraToTracker[indexnumber].at<float>(row,1) >>
-        m_CameraToTracker[indexnumber].at<float>(row,2) >>
-        m_CameraToTracker[indexnumber].at<float>(row,3);
+      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<double>(row,0) >>
+        m_CameraToTracker[indexnumber].at<double>(row,1) >>
+        m_CameraToTracker[indexnumber].at<double>(row,2) >>
+        m_CameraToTracker[indexnumber].at<double>(row,3);
 
       if ( parseSuccess )
       {
@@ -818,9 +584,11 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   }
 } 
 //---------------------------------------------------------------------------
-std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename)
+std::vector < std::vector <cv::Point3d> > VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
+    int PointsPerFrame, 
+    std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d > > > * onScreenPoints )
 {
-  std::vector <cv::Point3d> pointsInLensCS;
+  std::vector < std::vector <cv::Point3d> >  pointsInLensCS;
   pointsInLensCS.clear();
   std::ifstream fin(calibrationfilename.c_str());
   if ( !fin )
@@ -832,30 +600,59 @@ std::vector <cv::Point3d> VideoTrackerMatching::ReadPointsInLensCSFile(std::stri
   unsigned int frameNumber; 
   unsigned int linenumber = 0;
   
-
-  while ( getline(fin,line) )
+  bool ok = getline (fin,line); 
+  while ( ok )
   {
-    if ( line[0] != '#' )
+    std::vector <cv::Point3d>  framePointsInLensCS;
+    std::vector <std::pair < cv::Point2d , cv::Point2d > > frameOnScreenPoints;
+    framePointsInLensCS.clear();
+    frameOnScreenPoints.clear();
+    for ( int pointID = 0 ; pointID < PointsPerFrame ; pointID ++ ) 
     {
-      std::stringstream linestream(line);
-      std::string xstring;
-      std::string ystring;
-      std::string zstring;
-
-      bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring;
-      if ( parseSuccess )
+      if ( line[0] != '#' )
       {
-        pointsInLensCS.push_back(cv::Point3d(
-              atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
-        if ( frameNumber != linenumber++ )
+        std::stringstream linestream(line);
+        std::string xstring;
+        std::string ystring;
+        std::string zstring;
+        std::string lxstring;
+        std::string lystring;
+        std::string rxstring;
+        std::string rystring;
+
+        bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring
+         >> lxstring >> lystring >> rxstring >> rystring;
+        if ( parseSuccess )
         {
-          MITK_WARN << "Skipped frame detected at line " << linenumber ;
+          framePointsInLensCS.push_back(cv::Point3d(
+              atof (xstring.c_str()), atof(ystring.c_str()),atof(zstring.c_str())));  
+          if ( onScreenPoints != NULL ) 
+          {
+            frameOnScreenPoints.push_back(std::pair<cv::Point2d, cv::Point2d> (cv::Point2d(
+                atof (lxstring.c_str()), atof ( lystring.c_str()) ) ,
+                cv::Point2d(
+                atof (rxstring.c_str()), atof ( rystring.c_str()) )));
+          }
+          if ( frameNumber != linenumber++ )
+          {
+            MITK_WARN << "Skipped frame detected at line " << linenumber ;
+          }
+        } 
+        else
+        {
+          MITK_WARN << "Parse failure at line " << linenumber;
         }
-      } 
+      }
       else
       {
-        MITK_WARN << "Parse failure at line " << linenumber;
+        pointID --;
       }
+      ok = getline (fin, line);
+    }
+    pointsInLensCS.push_back(framePointsInLensCS);
+    if ( onScreenPoints != NULL )
+    {
+      onScreenPoints->push_back(frameOnScreenPoints);
     }
   }
   fin.close();

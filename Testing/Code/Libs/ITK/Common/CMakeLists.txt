@@ -12,15 +12,14 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_COMMON_LINK_LIBRARIES 
-  niftkcommon 
-  niftkITK 
-  ITKCommon 
-  ITKIO  
+set(NIFTK_TEST_EXT_ITK_COMMON_LINK_LIBRARIES
+  niftkcommon
+  niftkITK
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
 
-# This is the name of the actual executable that gets run.  
+# This is the name of the actual executable that gets run.
 set(ITK_COMMON_UNIT_TESTS ${CXX_TEST_PATH}/ITKCommonUnitTests)
 set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
@@ -39,9 +38,9 @@ add_test(Common-ReceptorMember ${ITK_COMMON_UNIT_TESTS} ReceptorMemberCommandTes
 #################################################################################
 # Build instructions.
 #################################################################################
-set( ITKCommonUnitTests_SRCS
-CheckImageDimensionalityTest.cxx
-ReceptorMemberCommandTest.cxx
+set(ITKCommonUnitTests_SRCS
+  CheckImageDimensionalityTest.cxx
+  ReceptorMemberCommandTest.cxx
 )
 
 add_executable(ITKCommonUnitTests ITKCommonUnitTests.cxx ${ITKCommonUnitTests_SRCS})

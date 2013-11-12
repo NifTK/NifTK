@@ -18,18 +18,6 @@ set(CPP_FILES
   QmitkMIDASImageAndSegmentationSelectorWidget.cxx
   QmitkMIDASDrawToolGUI.cxx
   QmitkMIDASPaintbrushToolGUI.cxx
-  QmitkMIDASSlidersWidget.cxx
-  QmitkMIDASLayoutWidget.cxx
-  QmitkMIDASStdMultiWidget.cxx
-  QmitkMIDASMultiViewVisibilityManager.cxx
-  QmitkMIDASMultiViewWidget.cxx
-  QmitkMIDASMultiViewWidgetControlPanel.cxx
-  QmitkMIDASSingleViewWidget.cxx
-  QmitkMIDASSingleViewWidgetListManager.cxx
-  QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
-  QmitkMIDASSingleViewWidgetListDropManager.cxx
-  QmitkThumbnailRenderWindow.cxx
-  vtkSideAnnotation.cxx
 )
 
 set(MOC_H_FILES 
@@ -38,24 +26,9 @@ set(MOC_H_FILES
   QmitkMIDASImageAndSegmentationSelectorWidget.h
   QmitkMIDASDrawToolGUI.h
   QmitkMIDASPaintbrushToolGUI.h
-  QmitkMIDASSlidersWidget.h
-  QmitkMIDASLayoutWidget.h
-  QmitkMIDASMultiViewWidget.h
-  QmitkMIDASMultiViewWidgetControlPanel.h
-  QmitkMIDASStdMultiWidget.h
-  QmitkMIDASSingleViewWidget.h
-  QmitkMIDASMultiViewVisibilityManager.h
-  QmitkThumbnailRenderWindow.h
 )
 
 set(UI_FILES
   Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
   Resources/UI/QmitkMIDASToolSelector.ui
-  Resources/UI/QmitkMIDASLayoutWidget.ui
-  Resources/UI/QmitkMIDASSlidersWidget.ui
-  Resources/UI/QmitkMIDASMultiViewWidgetControlPanel.ui
-)
-
-set(QRC_FILES
-  Resources/niftkMIDASGui.qrc
 )

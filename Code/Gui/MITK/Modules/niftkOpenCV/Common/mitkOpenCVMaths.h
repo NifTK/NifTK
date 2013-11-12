@@ -157,26 +157,26 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx13d ConvertEulerToRodrigues(
 /**
  * \brief multiplies a set of points by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3f> operator*(cv::Mat M, const std::vector<cv::Point3f>& p);
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p);
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3f operator*(cv::Mat M, const cv::Point3f& p);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d operator*(cv::Mat M, const cv::Point3d& p);
 
 /**
  * \ brief Finds the intersection point of two 2D lines defined as cv::Vec41
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2f FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindIntersect(cv::Vec4i , cv::Vec4i ,bool RejectIfNotOnALine = false, bool RejectIfNotPerpendicular = false);
 
 /**
  * \ brief Finds all the intersection points of a vector of  2D lines defined as cv::Vec41
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2f> FindIntersects (std::vector <cv::Vec4i>, 
+extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i>, 
     bool RejectIfNotOnALine = false , bool RejectIfNotPerpendicular = false);
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2f GetCentroid(const std::vector<cv::Point2f>& points, bool RefineForOutliers = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false);
 /**
  * \brief Calculates the centroid of a vector of points.
  */
@@ -236,6 +236,39 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructSimilarityTransformationMat
     const double& sy,
     const double& sz
     );
+
+/**
+ * \brief Takes a point vector and finds the minimum value in each dimension. Returns the 
+ * minimum values. Optionally returns the indexes of the minium values.
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes = NULL ); 
+
+/**
+ * \brief Takes a vector of pairs and finds the minimum value in each dimension. Returns the 
+ * minimum values. Optionally returns the indexes of the minium values.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair < double, double > FindMinimumValues
+  ( std::vector < std::pair < double, double>  > inputValues, 
+    std::pair <unsigned int , unsigned int > * indexes = NULL ); 
+
+extern "C++" NIFTKOPENCV_EXPORT std::pair <cv::Point2d, cv::Point2d> MeanError ( std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, 
+    std::pair < cv::Point2d, cv::Point2d > * StandardDeviations = NULL , int index = -1 );
+/** 
+ * \brief Returns the RMS error between two point vectors
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > measured , 
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
+    double outlierSD = 2.0 );
+
+/**
+ * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
+ * defined by three translations and 3 rotations, in Degrees
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Mat PerturbTransform (
+    const cv::Mat transformIn,
+    const double tx, const double ty, const double tz, 
+    const double rx, const double ry, const double rz );
 } // end namespace
 
 #endif

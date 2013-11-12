@@ -12,15 +12,14 @@
 #
 #============================================================================*/
 
-set(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES 
-  niftkcommon 
-  niftkITK 
-  ITKCommon 
-  ITKIO      
+set(NIFTK_TEST_EXT_ITK_BASIC_FILTERS_LINK_LIBRARIES
+  niftkcommon
+  niftkITK
+  ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
   )
 
-# This is the name of the actual executable that gets run.  
+# This is the name of the actual executable that gets run.
 set(BASIC_FILTERS_INTEGRATION_TESTS ${CXX_TEST_PATH}/BasicFiltersUnitTests)
 set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 
@@ -46,17 +45,17 @@ add_test(BF-LargestConnected ${BASIC_FILTERS_INTEGRATION_TESTS} itkLargestConnec
 #################################################################################
 # Build instructions.
 #################################################################################
-set( BasicFiltersUnitTests_SRCS
-BoundaryValueRescaleIntensityImageFilterTest.cxx
-SetOutputVectorToCurrentPositionFilterTest.cxx
-VectorMagnitudeImageFilterTest.cxx
-VectorVPlusLambdaUImageFilterTest.cxx
-ShapeBasedAveragingImageFilterTest.cxx
-ExtractEdgeImageTest.cxx
-MeanCurvatureImageFilterTest.cxx
-GaussianCurvatureImageFilterTest.cxx
-itkExcludeImageFilterTest.cxx
-itkLargestConnectedComponentFilterTest.cxx
+set(BasicFiltersUnitTests_SRCS
+  BoundaryValueRescaleIntensityImageFilterTest.cxx
+  SetOutputVectorToCurrentPositionFilterTest.cxx
+  VectorMagnitudeImageFilterTest.cxx
+  VectorVPlusLambdaUImageFilterTest.cxx
+  ShapeBasedAveragingImageFilterTest.cxx
+  ExtractEdgeImageTest.cxx
+  MeanCurvatureImageFilterTest.cxx
+  GaussianCurvatureImageFilterTest.cxx
+  itkExcludeImageFilterTest.cxx
+  itkLargestConnectedComponentFilterTest.cxx
 )
 
 add_executable(BasicFiltersUnitTests BasicFiltersUnitTests.cxx ${BasicFiltersUnitTests_SRCS})

@@ -12,5 +12,7 @@
 #
 #============================================================================*/
 
+include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
+
 add_executable(niftkFixIncludeGuards niftkFixIncludeGuards.cxx)
 target_link_libraries(niftkFixIncludeGuards itksys)

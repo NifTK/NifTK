@@ -23,26 +23,31 @@
 #include <itkVectorMagnitudeImageFilter.h>
 
 /**
- * Basic tests for VectorMagnitudeImageFilterTest
+ * \file VectorMagnitudeImageFilterTest
+ * \brief Basic tests for VectorMagnitudeImageFilterTest
+ * As of the migration from ITK 3.20 to 4.3, ITK itself
+ * now has a VectorMagnitudeImageFilter, so we are keeping
+ * this test and removing the filter within NifTK.
  */
 int VectorMagnitudeImageFilterTest(int argc, char * argv[])
 {
   const unsigned int Dimension = 2;
   typedef float PixelType;
   typedef itk::Vector<PixelType, Dimension> VectorType;
-  typedef itk::Image<VectorType, Dimension> ImageType;
-  typedef ImageType::IndexType         IndexType;
-  typedef ImageType::SizeType          SizeType;
-  typedef ImageType::RegionType        RegionType;
-  typedef ImageType::SpacingType       SpacingType;
-  typedef ImageType::PointType         OriginType;
-  typedef ImageType::DirectionType     DirectionType;
+  typedef itk::Image<VectorType, Dimension> VectorImageType;
+  typedef itk::Image<PixelType, Dimension>  ScalarImageType;
+  typedef ScalarImageType::IndexType         IndexType;
+  typedef ScalarImageType::SizeType          SizeType;
+  typedef ScalarImageType::RegionType        RegionType;
+  typedef ScalarImageType::SpacingType       SpacingType;
+  typedef ScalarImageType::PointType         OriginType;
+  typedef ScalarImageType::DirectionType     DirectionType;
   
-  typedef itk::VectorMagnitudeImageFilter<PixelType, Dimension> FilterType;
+  typedef itk::VectorMagnitudeImageFilter<VectorImageType, ScalarImageType> FilterType;
   FilterType::Pointer filter = FilterType::New();
   
   // Create a test image
-  ImageType::Pointer image = ImageType::New();
+  VectorImageType::Pointer image = VectorImageType::New();
 
   SizeType size;
   size.Fill(1);
@@ -61,12 +66,13 @@ int VectorMagnitudeImageFilterTest(int argc, char * argv[])
   origin.Fill(0);
   
   VectorType pixel;
-  
+  pixel[0] = 0;
+  pixel[1] = 0; 
   image->SetRegions(region);
   image->SetSpacing(spacing);
   image->SetOrigin(origin);
   image->Allocate();
-  image->FillBuffer((float)0.0);
+  image->FillBuffer(pixel);
   
   index[0] = 0;
   index[1] = 0;
@@ -83,7 +89,7 @@ int VectorMagnitudeImageFilterTest(int argc, char * argv[])
   index[1] = 0;
   if (fabs(filter->GetOutput()->GetPixel(index) - 3.60555) > 0.00001)
     {
-      std::cerr << "Expected 3.60555, but got:" << image->GetPixel(index) << std::endl;
+      std::cerr << "Expected 3.60555, but got:" << filter->GetOutput()->GetPixel(index) << std::endl;
       return EXIT_FAILURE;
     }
   return EXIT_SUCCESS;

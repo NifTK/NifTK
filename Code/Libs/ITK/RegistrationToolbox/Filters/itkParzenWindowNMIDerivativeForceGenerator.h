@@ -96,7 +96,7 @@ protected:
   virtual void BeforeThreadedGenerateData();
   
   /** The "In The Money" method. */
-  virtual void ThreadedGenerateData( const RegionType &outputRegionForThread, int);
+  virtual void ThreadedGenerateData( const RegionType &outputRegionForThread, ThreadIdType threadId);
   
 private:
 

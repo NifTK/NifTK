@@ -19,31 +19,12 @@
       <description>The directory containing the corresponding tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
     </directory>    
-    <file>
-      <name>TemporalCalibration</name>
-      <longflag>TemporalCalibration</longflag>
-      <description>A file used for temporal calibration.</description>
-      <label>A file used for temporal calibration</label>
-    </file>    
-    <file>
-      <name>OptimiseHandeye</name>
-      <longflag>OptimiseHandeye</longflag>
-      <description>A file used for handeye optimisation.</description>
-      <label>A file used for handeye optimisation</label>
-    </file>    
-
 
     <file>
       <name>handeyes</name>
       <longflag>handeyes</longflag>
       <description>A file defining the handeye tranforms.</description>
       <label>A file defining the handeye transforms</label>
-    </file>    
-    <file>
-      <name>TCfileout</name>
-      <longflag>TCfileout</longflag>
-      <description>A file to writeout the temporal calibration results.</description>
-      <label>A file to writeout the temporal calibration results</label>
     </file>    
 
 

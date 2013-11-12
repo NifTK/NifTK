@@ -156,9 +156,11 @@ int ApplicationMain(int argc, char** argv,
   // initialization methods and/or missing de-initialization code.
   sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "liborg_mitk_gui_qt_ext,libCTKDICOMCore:0.1");
 #else
-  // On Windows, preload the PlanarFigure.dll, otherwise there's some weird unload cycle
-  // that crashes our process.
-  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "PlanarFigure");
+  // On Windows, there are libraries that are missing an Unregister() in their cleanup code.
+  // When the plugin mechanism unloads these they trash the ITK class factory, leaving dead pointers.
+  // The next factory trying to register itself then causes a crash. This is very hard to debug.
+  // The few libs here are found by trial-and-error.
+//  sbConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, "libuk_ac_ucl_cmic_midasmorphologicalsegmentor,libuk_ac_ucl_cmic_midasgeneralsegmentor,libuk_ac_ucl_cmic_gui_qt_commonmidas,libuk_ac_ucl_cmic_niftyreg,libit_unito_cim_intensityprofile");
 #endif
 
   // VTK errors cause problem on windows, as it brings up an annoying error window.

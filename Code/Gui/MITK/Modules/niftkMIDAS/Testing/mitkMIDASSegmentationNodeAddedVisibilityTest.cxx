@@ -33,7 +33,7 @@
 #include <mitkNifTKCoreObjectFactory.h>
 #include <mitkMIDASImageUtils.h>
 #include <mitkMIDASDataNodeNameStringFilter.h>
-#include <mitkMIDASNodeAddedVisibilitySetter.h>
+#include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPolyTool.h>
 
@@ -122,7 +122,9 @@ public:
     renderers.push_back(renderWindow->GetRenderer());
 
     // Create the setter we are testing.
-    mitk::MIDASNodeAddedVisibilitySetter::Pointer setter = mitk::MIDASNodeAddedVisibilitySetter::New();
+    mitk::DataNodeAddedVisibilitySetter::Pointer setter = mitk::DataNodeAddedVisibilitySetter::New();
+    mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+    setter->AddFilter(filter.GetPointer());
     setter->SetVisibility(false);
     setter->SetDataStorage(dataStorage);
     if (doRendererSpecific)
@@ -188,7 +190,6 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   testClass->TestFilterFailWithGivenString(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");
-
   testClass->TestVisibilitySetter(argv, false); // global
   testClass->TestVisibilitySetter(argv, true); // renderer specific
 

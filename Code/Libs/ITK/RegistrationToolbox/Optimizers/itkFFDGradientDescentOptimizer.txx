@@ -111,10 +111,10 @@ FFDGradientDescentOptimizer< TFixedImage, TMovingImage, TScalarType, TDeformatio
       niftkitkExceptionMacro(<< "Interpolator filter is not set");
     } 
 
-  BSplineTransformPointer transform = dynamic_cast<BSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
+  UCLBSplineTransformPointer transform = dynamic_cast<UCLBSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
   if (transform == 0)
     {
-      niftkitkExceptionMacro(<< "Can't dynamic cast to BSplineTransform");
+      niftkitkExceptionMacro(<< "Can't dynamic cast to UCLBSplineTransform");
     }
 
   GridImagePointer gridPointer = transform->GetGrid();
@@ -395,10 +395,10 @@ FFDGradientDescentOptimizer< TFixedImage, TMovingImage, TScalarType, TDeformatio
   niftkitkDebugMacro(<< "CalculateNextStep():Started");
   
   unsigned long int numberOfGridVoxels = 1;
-  BSplineTransformPointer transform = dynamic_cast<BSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
+  UCLBSplineTransformPointer transform = dynamic_cast<UCLBSplineTransformPointer>(this->m_DeformableTransform.GetPointer());
   if (transform == 0)
     {
-      niftkitkExceptionMacro(<< "Can't dynamic cast to BSplineTransform");
+      niftkitkExceptionMacro(<< "Can't dynamic cast to UCLBSplineTransform");
     }
   GridImagePointer gridPointer = transform->GetGrid();
   OutputImageSizeType size = gridPointer->GetLargestPossibleRegion().GetSize();

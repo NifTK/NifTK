@@ -55,14 +55,6 @@ std::string NamedLookupTableProperty::GetValueAsString() const
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::Pointer NamedLookupTableProperty::Clone() const
-{
-  NamedLookupTableProperty::Pointer result = static_cast<Self*>(this->InternalClone().GetPointer());
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 itk::LightObject::Pointer NamedLookupTableProperty::InternalClone() const
 {
   itk::LightObject::Pointer result(new Self(*this));

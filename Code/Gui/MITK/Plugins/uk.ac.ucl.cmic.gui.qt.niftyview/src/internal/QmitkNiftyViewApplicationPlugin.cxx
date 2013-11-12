@@ -49,7 +49,6 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
-  this->RegisterMIDASGlobalInteractionPatterns();
   this->RegisterDataStorageListener();
 }
 

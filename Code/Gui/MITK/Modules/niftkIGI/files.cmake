@@ -25,3 +25,9 @@ set(CPP_FILES
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
 )
+
+if(BUILD_PCL)
+  list(APPEND CPP_FILES
+    PCLTest/mitkPCLTest.cxx
+  )
+endif()

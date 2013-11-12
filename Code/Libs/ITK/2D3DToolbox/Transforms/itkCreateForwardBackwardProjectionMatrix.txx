@@ -548,7 +548,7 @@ template< class IntensityType>
 void
 CreateForwardBackwardProjectionMatrix<IntensityType>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-		       int threadId)
+           ThreadIdType threadId)
 {
 
   // Call a method that can be overridden by a subclass to perform

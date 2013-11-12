@@ -19,7 +19,7 @@ and has dependencies on several widely used third party libraries.
 The following third party libraries are used:
 
 <ul>
-<li>Boost: @BOOST_VERSION@ </li>
+<li>Boost: @Boost_VERSION@ </li>
 <li>GDCM: @GDCM_VERSION@ </li>
 <li>Qt: @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@ </li>
 <li>VTK: @VTK_VERSION@ </li>

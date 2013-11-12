@@ -19,7 +19,7 @@ namespace mitk {
 MIDASPolyToolOpAddToFeedbackContour::MIDASPolyToolOpAddToFeedbackContour(
   mitk::OperationType type,
   mitk::Point3D &point,
-  mitk::Contour* contour,
+  mitk::ContourModel* contour,
   const mitk::PlaneGeometry* planeGeometry
   )
 : mitk::Operation(type)

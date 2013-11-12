@@ -42,7 +42,7 @@
 #include <itkTransform.h>
 #include <itkPerspectiveProjectionTransform.h>
 #include <itkEulerAffineTransform.h>
-#include <itkBSplineTransform.h>
+#include <itkUCLBSplineTransform.h>
 #include <itkFluidDeformableTransform.h>
 #include <itkAffineTransform.h>
 #include <itkPCADeformationModelTransform.h>
@@ -213,7 +213,7 @@ public:
   typedef itk::Transform< TScalarType, Dimension, Dimension >                           TransformType;
   typedef itk::PerspectiveProjectionTransform<TScalarType>                              PerspectiveProjectionTransformType;
   typedef itk::EulerAffineTransform<TScalarType, Dimension, Dimension>                  EulerAffineTransformType;
-  typedef itk::BSplineTransform<TInputImageType, TScalarType, Dimension, float>         BSplineDeformableTransformType; 
+  typedef itk::UCLBSplineTransform<TInputImageType, TScalarType, Dimension, float>      BSplineDeformableTransformType; 
   typedef itk::FluidDeformableTransform<TInputImageType, TScalarType, Dimension, float> FluidDeformableTransformType;
   typedef itk::AffineTransform<TScalarType, Dimension>                                  ITKAffineTransformType;
   typedef itk::PCADeformationModelTransform<TScalarType, Dimension>                     PCADeformationModelTransformType;

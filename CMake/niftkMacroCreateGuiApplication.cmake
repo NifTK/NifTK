@@ -57,6 +57,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${NiftyLink_LIBRARY_DIRS}
     ${Boost_LIBRARY_DIRS}
     ${aruco_DIR}/lib
+    ${apriltags_LIBRARY_DIRS}
   )
 
   # FIXME

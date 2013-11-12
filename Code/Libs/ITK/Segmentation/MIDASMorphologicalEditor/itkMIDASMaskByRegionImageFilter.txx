@@ -86,7 +86,7 @@ namespace itk
   template <class TInputImage, class TOutputImage>
   void
   MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>
-  ::ThreadedGenerateData(const RegionType& outputRegionForThread, int threadNumber) 
+  ::ThreadedGenerateData(const RegionType& outputRegionForThread, ThreadIdType threadNumber)
   {
     // Get the input and output pointers
     typename TInputImage::Pointer inputPtr = static_cast<TInputImage*>(this->ProcessObject::GetInput(0));

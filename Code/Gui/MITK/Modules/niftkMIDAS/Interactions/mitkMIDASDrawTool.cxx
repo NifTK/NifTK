@@ -20,7 +20,7 @@
 #include <mitkToolManager.h>
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 #include <mitkPointUtils.h>
 #include <mitkOperationEvent.h>
 #include <mitkUndoController.h>
@@ -104,10 +104,10 @@ void mitk::MIDASDrawTool::ClearWorkingData()
 
   // Retrieve the correct contour set.
   mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(3);
-  mitk::ContourSet* contours = static_cast<mitk::ContourSet*>(contourNode->GetData());
+  mitk::ContourModelSet* contours = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
 
   // Delete all contours.
-  contours->Initialize();
+  contours->Clear();
 }
 
 
@@ -164,8 +164,8 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   this->UpdateWorkingDataNodeBooleanProperty(0, mitk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
 
   // Retrieve the contour that we will add points to.
-  Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
-  Contour* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
   unsigned int numberAdded = this->DrawLineAroundVoxelEdges
@@ -204,7 +204,13 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
   if (!positionEvent) return false;
 
   /** When the mouse is released, we need to add the contour to the cumulative one. */
-  mitk::Contour* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+  mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
+
+  if (feedbackContour->IsEmpty())
+  {
+    return true;
+  }
+
   this->AccumulateContourInWorkingData(*feedbackContour, 3);
 
   // Re-initialize contours to zero length.
@@ -269,7 +275,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
     return false;
   }
 
-  mitk::ContourSet::Pointer contourSet = static_cast<mitk::ContourSet*>(contourNode->GetData());
+  mitk::ContourModelSet::Pointer contourSet = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
   if (contourSet.IsNull())
   {
     MITK_ERROR << "MIDASDrawTool::DeleteFromContour, cannot find contours, this is a programming bug, please report it" << std::endl;
@@ -277,42 +283,40 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
   }
 
   // Not necessarily an error. Data set could be empty.
-  if (contourSet->GetNumberOfContours() == 0)
+  if (contourSet->GetSize() == 0)
   {
     return false;
   }
 
   // Copy the input contour.
-  mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
+  mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
   mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // Now generate the revised (edited) output contour.
-  mitk::ContourSet::ContourVectorType contourVec = contourSet->GetContours();
-  mitk::ContourSet::ContourIterator contourIt = contourVec.begin();
-  mitk::Contour::Pointer firstContour = (*contourIt).second;
+  mitk::ContourModelSet::ContourModelListType* contourVec = contourSet->GetContourModelList();
+  mitk::ContourModelSet::ContourModelSetIterator contourIt = contourSet->Begin();
+  mitk::ContourModel::Pointer firstContour = *contourIt;
 
   // Essentially, given a middle mouse click position, delete anything within a specific radius, given by m_CursorSize.
   unsigned int size = 0;
   float squaredDistanceInMillimetres = 0;
   bool isTooClose = false;
-  int contourNumber = 0;
   mitk::Point3D pointInExistingContour;
 
-  mitk::ContourSet::Pointer outputContourSet = mitk::ContourSet::New();
-  mitk::Contour::Pointer outputContour = mitk::Contour::New();
+  mitk::ContourModelSet::Pointer outputContourSet = mitk::ContourModelSet::New();
+  mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
   mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
-  while ( contourIt != contourVec.end() )
+  while ( contourIt != contourSet->End() )
   {
-    mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
-    mitk::Contour::PointsContainerPointer nextPoints = nextContour->GetPoints();
+    mitk::ContourModel::Pointer nextContour = *contourIt;
 
-    size = nextContour->GetNumberOfPoints();
+    size = nextContour->GetNumberOfVertices();
     squaredDistanceInMillimetres = m_CursorSize*m_CursorSize;
 
     for (unsigned int i = 0; i < size; i++)
     {
-      pointInExistingContour = nextPoints->GetElement(i);
+      pointInExistingContour = nextContour->GetVertexAt(i)->Coordinates;
 
       isTooClose = false;
       if (mitk::GetSquaredDistanceBetweenPoints(worldPoint, pointInExistingContour) <  squaredDistanceInMillimetres)
@@ -324,20 +328,18 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
       {
         outputContour->AddVertex(pointInExistingContour);
       }
-      else if (isTooClose && outputContour->GetNumberOfPoints() > 0)
+      else if (isTooClose && outputContour->GetNumberOfVertices() > 0)
       {
-        outputContourSet->AddContour(contourNumber, outputContour);
-        outputContour = mitk::Contour::New();
+        outputContourSet->AddContourModel(outputContour);
+        outputContour = mitk::ContourModel::New();
         mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-        contourNumber++;
       }
     }
-    if (outputContour->GetNumberOfPoints() > 0)
+    if (outputContour->GetNumberOfVertices() > 0)
     {
-      outputContourSet->AddContour(contourNumber, outputContour);
-      outputContour = mitk::Contour::New();
+      outputContourSet->AddContourModel(outputContour);
+      outputContour = mitk::ContourModel::New();
       mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-      contourNumber++;
     }
     contourIt++;
   }
@@ -369,23 +371,23 @@ void mitk::MIDASDrawTool::Clean(const int& sliceNumber, const int& axisNumber)
   int regionGrowingNodeNumber = 6;
 
   mitk::DataNode::Pointer contourNode = m_ToolManager->GetWorkingData(workingNodeToClean);
-  mitk::ContourSet::Pointer contourSet = dynamic_cast<mitk::ContourSet*>(contourNode->GetData());
+  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(contourNode->GetData());
 
   mitk::DataNode::Pointer regionGrowingNode = m_ToolManager->GetWorkingData(regionGrowingNodeNumber);
   mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
 
   // If empty, nothing to do.
-  if (contourSet->GetNumberOfContours() == 0)
+  if (contourSet->GetSize() == 0)
   {
     return;
   }
 
   // First take a copy of input contours, for Undo/Redo purposes.
-  mitk::ContourSet::Pointer copyOfInputContourSet = mitk::ContourSet::New();
+  mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
   mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // For each contour point ... if it is not near the region growing image, we delete it.
-  mitk::ContourSet::Pointer filteredContourSet = mitk::ContourSet::New();
+  mitk::ContourModelSet::Pointer filteredContourSet = mitk::ContourModelSet::New();
   mitk::MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(filteredContourSet.GetPointer()));
 
   try
@@ -432,16 +434,16 @@ void mitk::MIDASDrawTool::Clean(const int& sliceNumber, const int& axisNumber)
 template<typename TPixel, unsigned int VImageDimension>
 void mitk::MIDASDrawTool::ITKCleanContours(
     itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::ContourSet& inputContours,
-    mitk::ContourSet& outputContours,
+    mitk::ContourModelSet& inputContours,
+    mitk::ContourModelSet& outputContours,
     const int& axis,
     const int& sliceNumber
     )
 {
   // This itkImage should be the region growing image (i.e. unsigned char and binary).
 
-  int contourNumber = 0;
-  itk::Point<double, VImageDimension> point;
+//  itk::Point<double, VImageDimension> point;
+  mitk::Point3D point;
 
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
@@ -466,26 +468,26 @@ void mitk::MIDASDrawTool::ITKCleanContours(
 
   itk::ContinuousIndex<double, VImageDimension> voxelContinousIndex;
 
-  outputContours.Initialize();
+  outputContours.Clear();
 
-  mitk::ContourSet::ContourVectorType contourVec = inputContours.GetContours();
-  mitk::ContourSet::ContourIterator contourIt = contourVec.begin();
-  mitk::Contour::Pointer inputContour = (*contourIt).second;
+//  mitk::ContourModelSet::ContourVectorType contourVec = inputContours.GetContours();
+  mitk::ContourModelSet::ContourModelSetIterator contourIt = inputContours.Begin();
+  mitk::ContourModel::Pointer inputContour = *contourIt;
 
-  mitk::Contour::Pointer outputContour = mitk::Contour::New();
+  mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
   mitk::MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
 
   // Basically iterate round each contour, and each point.
-  while ( contourIt != contourVec.end() )
+  while ( contourIt != inputContours.End() )
   {
-    mitk::Contour::Pointer nextContour = (mitk::Contour::Pointer) (*contourIt).second;
-    mitk::Contour::PointsContainerPointer nextPoints = nextContour->GetPoints();
+    mitk::ContourModel::Pointer nextContour = *contourIt;
 
-    for (unsigned int i = 0; i < nextContour->GetNumberOfPoints(); i++)
+    for (unsigned int i = 0; i < nextContour->GetNumberOfVertices(); i++)
     {
-      point = nextPoints->GetElement(i);
-
-      itkImage->TransformPhysicalPointToContinuousIndex(point, voxelContinousIndex);
+      point = nextContour->GetVertexAt(i)->Coordinates;
+      // Note: mitk::Point3D uses mitk::ScalarType that is float.
+      itk::Point<double, VImageDimension> doublePoint = point;
+      itkImage->TransformPhysicalPointToContinuousIndex(doublePoint, voxelContinousIndex);
 
       for (unsigned int j = 0; j < VImageDimension; j++)
       {
@@ -522,19 +524,17 @@ void mitk::MIDASDrawTool::ITKCleanContours(
       {
         outputContour->AddVertex(point);
       }
-      else if (outputContour->GetNumberOfPoints() > 0)
+      else if (outputContour->GetNumberOfVertices() > 0)
       {
-        outputContours.AddContour(contourNumber, outputContour);
-        outputContour = mitk::Contour::New();
+        outputContours.AddContourModel(outputContour);
+        outputContour = mitk::ContourModel::New();
         mitk::MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
-        contourNumber++;
       }
     }
 
-    outputContours.AddContour(contourNumber, outputContour);
-    outputContour = mitk::Contour::New();
+    outputContours.AddContourModel(outputContour);
+    outputContour = mitk::ContourModel::New();
     mitk::MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
-    contourNumber++;
     contourIt++;
   }
 }
@@ -562,10 +562,10 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
         mitk::DataNode* contourNode = m_ToolManager->GetWorkingData(workingNode);
         assert(contourNode);
 
-        mitk::ContourSet* contoursToReplace = static_cast<mitk::ContourSet*>(contourNode->GetData());
+        mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
         assert(contoursToReplace);
 
-        mitk::ContourSet* newContours = op->GetContourSet();
+        mitk::ContourModelSet* newContours = op->GetContourModelSet();
         assert(newContours);
 
         mitk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);

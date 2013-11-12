@@ -35,14 +35,15 @@ if(QT_FOUND)
     niftkMacroGetChecksum(NIFTK_CHECKSUM_CTK ${NIFTK_LOCATION_CTK})
 
     ExternalProject_Add(${proj}
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
+      SOURCE_DIR ${proj}-src
       BINARY_DIR ${proj}-build
       PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
       URL ${NIFTK_LOCATION_CTK}
       URL_MD5 ${NIFTK_CHECKSUM_CTK}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${NIFTK_VERSION_CTK}
 #      GIT_REPOSITORY http://github.com/NifTK/CTK
-#      GIT_TAG 9c87c55ddf
+#      GIT_TAG 05f6ff0eb3
 #      UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${GEN}

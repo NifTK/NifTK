@@ -46,7 +46,6 @@ MITKSegmentationView::MITKSegmentationView()
 , m_OutlineBinary(true)
 , m_VolumeRendering(false)
 {
-  RegisterSegmentationObjectFactory();
   m_DefaultSegmentationColor.setRedF(1);
   m_DefaultSegmentationColor.setGreenF(0);
   m_DefaultSegmentationColor.setBlueF(0);

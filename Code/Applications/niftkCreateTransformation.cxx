@@ -252,7 +252,7 @@ int main(int argc, char** argv)
 	return -1;
       }
 
-      typedef itk::BSplineTransform<InputImageType, double, ImageDimension, float > BSplineTransformType;
+      typedef itk::UCLBSplineTransform<InputImageType, double, ImageDimension, float > BSplineTransformType;
       transform = BSplineTransformType::New();
 
       BSplineTransformType *bsplineTransform = static_cast<BSplineTransformType*>(transform.GetPointer());

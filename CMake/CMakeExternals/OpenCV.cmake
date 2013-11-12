@@ -22,46 +22,55 @@ if(DEFINED OpenCV_DIR AND NOT EXISTS ${OpenCV_DIR})
   message(FATAL_ERROR "OpenCV_DIR variable is defined but corresponds to non-existing directory")
 endif()
 
-set(proj OpenCV)
-set(proj_DEPENDENCIES)
-set(OpenCV_DEPENDS ${proj})
+if(BUILD_IGI)
 
-if(NOT DEFINED OpenCV_DIR)
-
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
+  set(proj OpenCV)
+  set(proj_DEPENDENCIES)
+  set(OpenCV_DEPENDS ${proj})
   
-  ExternalProject_Add(${proj}
-    URL ${NIFTK_LOCATION_OPENCV}
-    URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
-    BINARY_DIR ${proj}-build
-    UPDATE_COMMAND  ""
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
-    CMAKE_CACHE_ARGS
-    ${EP_COMMON_ARGS}
-    -DBUILD_opencv_core:BOOL=ON
-    -DBUILD_opencv_calib3d:BOOL=ON
-    -DBUILD_opencv_features2d:BOOL=ON
-    -DBUILD_opencv_imgproc:BOOL=ON
-    -DBUILD_opencv_video:BOOL=ON
-    -DBUILD_opencv_python:BOOL=OFF
-    -DBUILD_DOCS:BOOL=OFF
-    -DBUILD_TESTS:BOOL=OFF
-    -DBUILD_EXAMPLES:BOOL=OFF
-    -DBUILD_DOXYGEN_DOCS:BOOL=OFF
-    -DBUILD_PERF_TESTS:BOOL=OFF
-    -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
-    -DWITH_QT:BOOL=OFF
-    -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
-    -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
-    -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
-    DEPENDS ${proj_DEPENDENCIES}
-  )
-  set(OpenCV_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-  message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
-
-else()
-
-  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  if(NOT DEFINED OpenCV_DIR)
+  
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
+    
+    ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
+      URL ${NIFTK_LOCATION_OPENCV}
+      URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
+      UPDATE_COMMAND  ""
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${GEN}
+      CMAKE_CACHE_ARGS
+      ${EP_COMMON_ARGS}
+      -DBUILD_opencv_core:BOOL=ON
+      -DBUILD_opencv_calib3d:BOOL=ON
+      -DBUILD_opencv_features2d:BOOL=ON
+      -DBUILD_opencv_imgproc:BOOL=ON
+      -DBUILD_opencv_video:BOOL=ON
+      -DBUILD_opencv_python:BOOL=OFF
+      -DBUILD_opencv_ts:BOOL=OFF
+      -DBUILD_DOCS:BOOL=OFF
+      -DBUILD_TESTS:BOOL=OFF
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_DOXYGEN_DOCS:BOOL=OFF
+      -DBUILD_PERF_TESTS:BOOL=OFF
+      -DWITH_CUDA:BOOL=${OPENCV_WITH_CUDA}
+      -DWITH_QT:BOOL=OFF
+      -DWITH_EIGEN:BOOL=OFF      
+      -DWITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG}
+      -DADDITIONAL_C_FLAGS:STRING=${OPENCV_ADDITIONAL_C_FLAGS}
+      -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
+      DEPENDS ${proj_DEPENDENCIES}
+    )
+    set(OpenCV_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+    message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
+  
+  else()
+  
+    mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  
+  endif()
 
 endif()

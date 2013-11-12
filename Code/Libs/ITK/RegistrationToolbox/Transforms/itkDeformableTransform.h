@@ -29,7 +29,7 @@ namespace itk
  * \class DeformableTransform
  * \brief Base class for deformable transforms
  * 
- * For both BSplineTransform and FluidDeformableTransform, the transformation
+ * For both UCLBSplineTransform and FluidDeformableTransform, the transformation
  * is represented as an image of vectors, one vector per voxel. Its parameterisation
  * depends on derived classes. So, for Fluid, you are actually working at
  * the voxel level, and for BSpline/FFD based transformation, the transformation
@@ -59,7 +59,7 @@ namespace itk
  * out your affine transform, resampling, and then just doing deformable stuff on 
  * pre-registered images.       
  * 
- * \sa BSplineTransform, FluidDeformableTransform.  
+ * \sa UCLBSplineTransform, FluidDeformableTransform.  
  */
 template <
     class TFixedImage,                   // Templated over the image type.
@@ -86,8 +86,10 @@ public:
   typedef typename Superclass::ScalarType                     ScalarType;
   
   /** Standard parameters container. */
-  typedef Array<double>                                       ParametersType;
-  typedef Array<double>                                       DerivativeType;
+  typedef typename Superclass::NumberOfParametersType         NumberOfParametersType;
+  typedef typename Superclass::ParametersType                 ParametersType;
+  typedef typename Superclass::ParametersValueType            ParametersValueType;
+  typedef Array<ParametersValueType>                          DerivativeType;
   
   /** Standard coordinate point type for this class. */
   typedef typename Superclass::OutputPointType                OutputPointType;
@@ -168,7 +170,7 @@ public:
   /** 
    * Return the number of parameters that completely define the Transfom
    */
-  virtual unsigned int GetNumberOfParameters(void) const { return this->m_Parameters.Size(); }
+  virtual NumberOfParametersType GetNumberOfParameters(void) const { return this->m_Parameters.Size(); }
 
   /**
    * Sets the transformation parameters from an image.

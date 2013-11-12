@@ -177,7 +177,9 @@ public:
   const ParametersType& GetFixedParameters(void) const;
 
   /** Get the Jacobian matrix. */
-  virtual const JacobianType & GetJacobian( const InputPointType & point ) const;
+  virtual const JacobianType GetJacobian( const InputPointType & point ) const;
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType & point,
+                                                      JacobianType & jacobian ) const;
 
   /** Transform by the PCA deformation model, returning the transformed point or
    * vector. */

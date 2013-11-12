@@ -401,7 +401,6 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
           tmpMatrix->SetElement(i, j, txf[i][j]);
         }
       }
-      tmpMatrix->Invert();
       tmpMatrix->MultiplyPoint(origin, origin);
       tmpMatrix->MultiplyPoint(focalPoint, focalPoint);
       tmpMatrix->MultiplyPoint(viewUp, viewUp);

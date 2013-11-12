@@ -76,7 +76,7 @@ namespace itk {
 	  virtual void BeforeThreadedGenerateData();
 
 	  /** Multi-threaded section, that actually just does some basic initialisation. */
-	  virtual void ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, int ThreadID);
+		virtual void ThreadedGenerateData(const InputImageRegionType &outputRegionForThread, ThreadIdType ThreadID);
 
 	  /** In contrast to conventional ITK style, most of the algorithm is here. */
 	  virtual void AfterThreadedGenerateData();

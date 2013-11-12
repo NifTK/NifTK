@@ -364,7 +364,7 @@ template< class IntensityType>
 void
 ImageProjector2D3D<IntensityType>
 ::ThreadedGenerateData(const InputImageRegionType& inputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
     double dx, dy, dz;
     double ox, oy, oz;

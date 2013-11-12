@@ -276,7 +276,7 @@ bool CMICLogo::VerifyRequestedRegion()
     return true;
 }
 
-void CMICLogo::SetRequestedRegion(itk::DataObject*)
+void CMICLogo::SetRequestedRegion(const itk::DataObject*)
 {
     //nothing to do
 }

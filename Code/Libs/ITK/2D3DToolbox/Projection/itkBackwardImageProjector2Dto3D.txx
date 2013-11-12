@@ -359,7 +359,7 @@ template< class IntensityType>
 void
 BackwardImageProjector2Dto3D<IntensityType>
 ::ThreadedGenerateData(const InputImageRegionType& inputRegionForThread,
-                       int threadId)
+                       ThreadIdType threadId)
 {
   InputImageIndexType inIndex;
   InputImagePointType inPoint;

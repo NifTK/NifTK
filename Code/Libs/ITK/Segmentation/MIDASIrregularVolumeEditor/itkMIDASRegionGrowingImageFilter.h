@@ -210,7 +210,7 @@ protected:
 
 	virtual void GenerateData(void);
 
-	virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, int threadId) {
+	virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, ThreadIdType threadId) {
 		std::cerr << "Not supported.\n";
 		abort();
 	}

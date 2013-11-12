@@ -98,6 +98,9 @@ namespace itk
     /** The main method to upsample the input image in this single-threaded class */
     virtual void GenerateData();
     
+    /** Base class checks that all inputs have the same size. We don't want this. */
+    virtual void VerifyInputInformation();
+
   private:
     MIDASUpSamplingFilter(const Self&); //purposely not implemented
     void operator=(const Self&); //purposely not implemented

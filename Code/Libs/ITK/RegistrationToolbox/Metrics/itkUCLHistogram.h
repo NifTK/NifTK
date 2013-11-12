@@ -28,20 +28,20 @@ namespace Statistics{
  */
 
 template < class TMeasurement, unsigned int VMeasurementVectorSize = 1,
-           class TFrequencyContainer = DenseFrequencyContainer > 
+           class TFrequencyContainer = DenseFrequencyContainer2 > 
 class ITK_EXPORT UCLHistogram 
-  : public Histogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer>
+  : public Histogram<TMeasurement, TFrequencyContainer>
 {
 public:
 
   /** Standard typedefs */
   typedef UCLHistogram                                                         Self;
-  typedef Histogram<TMeasurement, VMeasurementVectorSize, TFrequencyContainer> Superclass;
+  typedef Histogram<TMeasurement, TFrequencyContainer> Superclass;
   typedef SmartPointer<Self>                                                   Pointer;
   typedef SmartPointer<const Self>                                             ConstPointer;
   typedef double                                                               MeasureType;
   typedef typename Superclass::FrequencyContainerType                          FrequencyContainerType;
-  typedef typename Superclass::FrequencyType                                   FrequencyType;
+  typedef typename Superclass::AbsoluteFrequencyType                           FrequencyType;
   typedef typename Superclass::IndexType                                       IndexType;
   typedef typename Superclass::SizeType                                        SizeType;
   typedef typename Superclass::ConstIterator                                   IteratorType;

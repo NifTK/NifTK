@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Binary Mask Image Operators</category>
+  <title>Automated Otsu Threshold Image</title>
+  <description><![CDATA[Threshold an image using the Otsu method which maximises the variance between the two intensity classes. This programs creates a binary thresholded image that separates an image into foreground and background components using the ITK OtsuThresholdImageFilter. The filter computes the threshold using the OtsuThresholdCalculator and applies that theshold to the input image using the BinaryThresholdImageFilter.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputMask</name>
+      <flag>o</flag>
+      <longflag>outMask</longflag>
+      <description>Output mask image</description>      
+      <label>Output mask</label>
+      <default>MaskImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+</executable>

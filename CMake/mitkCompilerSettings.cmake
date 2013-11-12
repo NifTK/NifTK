@@ -27,11 +27,11 @@ if(BUILD_IGI)
 endif(BUILD_IGI)
 
 # Print out other versions.
-message("BOOST version=${NIFTK_VERSION_BOOST}")                 
-message("GDCM version=${NIFTK_VERSION_GDCM}")                   
+message("Boost version=${NIFTK_VERSION_Boost}")
+message("GDCM version=${NIFTK_VERSION_GDCM}")
 message("DCMTK version=${NIFTK_VERSION_DCMTK}")
-message("ITK version=${NIFTK_VERSION_ITK}") 
-message("VTK version=${NIFTK_VERSION_VTK}")                     
+message("ITK version=${NIFTK_VERSION_ITK}")
+message("VTK version=${NIFTK_VERSION_VTK}")
 message("MITK version=${NIFTK_VERSION_MITK}")
 
 # MinGW does not export all symbols automatically, so no need to set flags
@@ -90,4 +90,4 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NIFTK_MITK_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NIFTK_MITK_CXX_FLAGS}")
 
 set(${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR "${PROJECT_SOURCE_DIR}/CMake/PackageDepends")
-list(APPEND MODULES_PACKAGE_DEPENDS_DIRS ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})
+list(INSERT MODULES_PACKAGE_DEPENDS_DIRS 0 ${${PROJECT_NAME}_MODULES_PACKAGE_DEPENDS_DIR})

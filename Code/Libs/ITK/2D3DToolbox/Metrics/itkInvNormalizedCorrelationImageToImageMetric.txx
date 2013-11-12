@@ -174,13 +174,13 @@ InvNormalizedCorrelationImageToImageMetric<TFixedImage,TMovingImage>
 
   const unsigned int ParametersDimension = this->GetNumberOfParameters();
   derivative = DerivativeType( ParametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   DerivativeType derivativeF = DerivativeType( ParametersDimension );
-  derivativeF.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivativeF.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   DerivativeType derivativeM = DerivativeType( ParametersDimension );
-  derivativeM.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivativeM.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   ti.GoToBegin();
   // First compute the sums
@@ -366,16 +366,16 @@ InvNormalizedCorrelationImageToImageMetric<TFixedImage,TMovingImage>
 
   const unsigned int ParametersDimension = this->GetNumberOfParameters();
   derivative = DerivativeType( ParametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   DerivativeType derivativeF = DerivativeType( ParametersDimension );
-  derivativeF.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivativeF.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   DerivativeType derivativeM = DerivativeType( ParametersDimension );
-  derivativeM.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivativeM.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   DerivativeType derivativeM1 = DerivativeType( ParametersDimension );
-  derivativeM1.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivativeM1.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   ti.GoToBegin();
   // First compute the sums

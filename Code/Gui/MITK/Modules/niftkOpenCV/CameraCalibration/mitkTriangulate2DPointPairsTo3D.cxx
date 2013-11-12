@@ -21,6 +21,8 @@
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
 
 namespace mitk {
 
@@ -43,7 +45,8 @@ Triangulate2DPointPairsTo3D::~Triangulate2DPointPairsTo3D()
 bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPairsFileName,
                                               const std::string& intrinsicLeftFileName,
                                               const std::string& intrinsicRightFileName,
-                                              const std::string& rightToLeftExtrinsics
+                                              const std::string& rightToLeftExtrinsics,
+                                              const std::string& outputFileName
                                              )
 {
   bool isSuccessful = false;
@@ -62,7 +65,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       std::cout << "Opened " << input2DPointPairsFileName << std::endl;
     }
 
-    std::vector< std::pair<cv::Point2f, cv::Point2f> > pointPairs;
+    std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
     double numbersOnLine[4];
 
     while(!reader.eof())
@@ -76,15 +79,15 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
       {
         break;
       }
-      cv::Point2f leftPoint;
-      cv::Point2f rightPoint;
+      cv::Point2d leftPoint;
+      cv::Point2d rightPoint;
 
       leftPoint.x = numbersOnLine[0];
       leftPoint.y = numbersOnLine[1];
       rightPoint.x = numbersOnLine[2];
       rightPoint.y = numbersOnLine[3];
 
-      pointPairs.push_back(std::pair<cv::Point2f, cv::Point2f>(leftPoint, rightPoint));
+      pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint, rightPoint));
     }
     reader.close();
 
@@ -108,10 +111,12 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     LoadStereoTransformsFromPlainText(rightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
     // Triangulate each point.
-    std::vector< cv::Point3f > pointsIn3D;
+    std::vector< cv::Point3d > pointsIn3D;
+    mitk::PointSet::Pointer ps = mitk::PointSet::New();
+
     for (unsigned int i = 0; i < pointPairs.size(); i++)
     {
-      cv::Point3f pointIn3D = mitk::TriangulatePointPair(
+      cv::Point3d pointIn3D = mitk::TriangulatePointPairUsingGeometry(
           pointPairs[i],
           leftIntrinsic,
           rightIntrinsic,
@@ -119,16 +124,16 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
           rightToLeftTranslationVector
           );
       pointsIn3D.push_back(pointIn3D);
-    }
 
-    // Print to output for now.
-    for (unsigned int i = 0; i < pointsIn3D.size(); i++)
-    {
-      std::cout << "[" << i << "], 2Dl=(" << pointPairs[i].first.x << ", " << pointPairs[i].first.y << "), 2Dr=(" << pointPairs[i].second.x << ", " << pointPairs[i].second.y << "), 3D=" << pointsIn3D[i].x << ", " << pointsIn3D[i].y << ", " << pointsIn3D[i].z <<  std::endl;
-    }
+      mitk::Point3D p;
+      p[0] = pointsIn3D[i].x;
+      p[1] = pointsIn3D[i].y;
+      p[2] = pointsIn3D[i].z;
+      ps->InsertPoint(i, p);
 
+    }
+    mitk::IOUtil::SavePointSet(ps, outputFileName);
     isSuccessful = true;
-
   }
   catch(std::logic_error& e)
   {

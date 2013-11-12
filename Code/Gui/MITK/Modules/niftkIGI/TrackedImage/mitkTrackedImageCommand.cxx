@@ -16,7 +16,6 @@
 #include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <mitkTimeSlicedGeometry.h>
 #include <mitkSurface.h>
 
 namespace mitk

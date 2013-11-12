@@ -410,7 +410,7 @@ namespace itk
     void
     CreateEulerAffineTransformMatrix<IntensityType>
     ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-        int threadId)
+        ThreadIdType threadId)
     {
       OutputImageIndexType outIndex;
       OutputImagePointType outPoint;

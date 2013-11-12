@@ -64,9 +64,6 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes within the start method to set up the help system.
   void RegisterHelpSystem();
 
-  /// \brief Deliberately not virtual method that registers the Global Interaction Patterns developed as part of the MIDAS project.
-  void RegisterMIDASGlobalInteractionPatterns();
-
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
   void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
 
