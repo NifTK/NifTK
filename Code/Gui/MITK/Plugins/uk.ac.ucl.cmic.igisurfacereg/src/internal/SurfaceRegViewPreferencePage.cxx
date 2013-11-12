@@ -82,7 +82,7 @@ void SurfaceRegViewPreferencePage::CreateQtControl(QWidget* parent)
 
   m_MaximumPoints = new QSpinBox();
   m_MaximumPoints->setMinimum (3);
-  m_MaximumPoints->setMaximum (2000);
+  m_MaximumPoints->setMaximum (10000);
   m_TryDeformableRegistration = new QCheckBox();
 
   m_TryDeformableRegistration->setEnabled(false);
@@ -129,3 +129,5 @@ void SurfaceRegViewPreferencePage::Update()
   m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of points to use in ICP",mitk::SurfaceBasedRegistration::DEFAULT_MAX_POINTS));
   m_TryDeformableRegistration->setChecked(m_SurfaceRegViewPreferencesNode->GetBool("Use the deformable registration algorithm",mitk::SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE));
 }
+  bool m_UseSpatialFilter;  //flag to control use of spatial filter
+  bool m_UseSpatialFilter;  //flag to control use of spatial filter
