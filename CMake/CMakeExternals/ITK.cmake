@@ -41,6 +41,12 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
+  
+  if(APPLE)
+    list(APPEND additional_cmake_args
+         -DCMAKE_OSX_SYSROOT:PATH=${CMAKE_OSX_SYSROOT}
+        )
+  endif()
 
   if(MITK_USE_Python)
 
