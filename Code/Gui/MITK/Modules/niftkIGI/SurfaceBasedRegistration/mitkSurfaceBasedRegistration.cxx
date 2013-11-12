@@ -26,8 +26,8 @@
 namespace mitk
 {
  
-const int SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS = 100;
-const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 100;
+const int SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS = 2000;
+const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 8000;
 const bool SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE = false;
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
