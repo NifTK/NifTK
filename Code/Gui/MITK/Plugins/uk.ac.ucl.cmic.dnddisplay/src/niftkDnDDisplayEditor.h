@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkMultiViewerEditor_h
-#define niftkMultiViewerEditor_h
+#ifndef niftkDnDDisplayEditor_h
+#define niftkDnDDisplayEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -34,7 +34,6 @@
 
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
 
-#include <mitkMIDASEnums.h>
 #include <niftkMultiViewerVisibilityManager.h>
 
 namespace mitk {
@@ -42,8 +41,9 @@ namespace mitk {
 }
 
 /**
- * \class niftkMultiViewerEditor
- * \brief Provides a MIDAS style layout, with up to 5 x 5 panes of equal size in a grid layout.
+ * \class niftkDnDDisplayEditor
+ * \brief Provides a display with with multiple image viewers on up to 5 x 5 panes of equal
+ * size in a grid layout.
  *
  * As of 18th April 2012, this editor inherits from the QmitkAbstractRenderEditor, and hence
  * conforms to the mitk::IRenderWindowPart which is the new Render Window Abstraction provided by
@@ -53,21 +53,21 @@ namespace mitk {
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
-class niftkMultiViewerEditorPrivate;
+class niftkDnDDisplayEditorPrivate;
 class niftkMultiViewerWidget;
 class QmitkRenderWindow;
 
-class DNDDISPLAY_EXPORT niftkMultiViewerEditor :
+class DNDDISPLAY_EXPORT niftkDnDDisplayEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(niftkMultiViewerEditor)
+  berryObjectMacro(niftkDnDDisplayEditor)
 
-  niftkMultiViewerEditor();
-  ~niftkMultiViewerEditor();
+  niftkDnDDisplayEditor();
+  ~niftkDnDDisplayEditor();
 
   static const std::string EDITOR_ID;
 
@@ -169,7 +169,7 @@ protected:
 
 private:
 
-  const QScopedPointer<niftkMultiViewerEditorPrivate> d;
+  const QScopedPointer<niftkDnDDisplayEditorPrivate> d;
 };
 
 #endif

@@ -11,19 +11,19 @@
     </editor>
   </extension>
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.niftk.MultiViewerEditorPreferencePage" name="Drag and Drop Display" 
-      class="niftkMultiViewerEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
-      <keywordreference id="org.niftk.MultiViewerEditorPreferencePageKeywords"/>
+    <page id="org.niftk.DnDDisplayPreferencePage" name="Drag and Drop Display" 
+      class="niftkDnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.niftk.DnDDisplayPreferencePageKeywords"/>
     </page>     
   </extension>
 
   <extension point="org.blueberry.ui.keywords">
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="interpolation"/>
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="rows"/>
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="columns"/>
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="default view"/>
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="drop"/>
-    <keyword id="org.niftk.MultiViewerEditorPreferencePageKeywords" label="ortho"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="interpolation"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="rows"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="columns"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="default view"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="drop"/>
+    <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="ortho"/>
   </extension>
   
 </plugin>
