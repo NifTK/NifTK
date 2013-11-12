@@ -68,20 +68,6 @@ int main(int argc, char** argv)
   registerer->SetMaximumIterations(maxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
   
-  /*vtkMatrix4x4 * idMatrix = vtkMatrix4x4::New();
-  idMatrix->Identity();
-  mitk::Geometry3D::Pointer fixedgeometry = fixednode->GetData()->GetGeometry();
-  if (fixedgeometry.IsNotNull())
-  {
-     fixedgeometry->SetIndexToWorldTransformByVtkMatrix(idMatrix);
-     fixedgeometry->Modified();
-  }
-  mitk::Geometry3D::Pointer movinggeometry = movingnode->GetData()->GetGeometry();
-  if (movinggeometry.IsNotNull())
-  {
-     movinggeometry->SetIndexToWorldTransformByVtkMatrix(idMatrix);
-     movinggeometry->Modified();
-  }*/
   MITK_INFO << "Starting registration";
   registerer->Update(fixednode, movingnode, resultMatrix);
   MITK_INFO << *resultMatrix;
