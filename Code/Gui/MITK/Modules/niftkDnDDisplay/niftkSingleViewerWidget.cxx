@@ -318,16 +318,16 @@ void niftkSingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetShow3DWindowInOrthoView() const
+bool niftkSingleViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
-  return m_MultiWidget->GetShow3DWindowInOrthoView();
+  return m_MultiWidget->GetShow3DWindowIn2x2WindowLayout();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
 {
-  m_MultiWidget->SetShow3DWindowInOrthoView(enabled);
+  m_MultiWidget->SetShow3DWindowIn2x2WindowLayout(enabled);
 }
 
 

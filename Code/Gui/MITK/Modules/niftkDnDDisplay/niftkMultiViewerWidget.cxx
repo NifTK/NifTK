@@ -68,7 +68,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_DefaultViewerColumns(defaultViewerColumns)
 , m_Show2DCursors(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
-, m_RememberSettingsPerLayout(false)
+, m_RememberSettingsPerWindowLayout(false)
 , m_IsThumbnailMode(false)
 , m_SegmentationModeEnabled(false)
 , m_NavigationControllerEventListening(false)
@@ -189,7 +189,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(ViewerPositionBindingChanged(bool)), SLOT(OnViewerPositionBindingChanged()));
   this->connect(m_ControlPanel, SIGNAL(ViewerCursorBindingChanged(bool)), SLOT(OnViewerCursorBindingChanged()));
   this->connect(m_ControlPanel, SIGNAL(ViewerMagnificationBindingChanged(bool)), SLOT(OnViewerMagnificationBindingChanged()));
-  this->connect(m_ControlPanel, SIGNAL(ViewerLayoutBindingChanged(bool)), SLOT(OnViewerLayoutBindingChanged()));
+  this->connect(m_ControlPanel, SIGNAL(ViewerWindowLayoutBindingChanged(bool)), SLOT(OnViewerWindowLayoutBindingChanged()));
   this->connect(m_ControlPanel, SIGNAL(ViewerGeometryBindingChanged(bool)), SLOT(OnViewerGeometryBindingChanged()));
 
   this->connect(m_ControlPanel, SIGNAL(DropTypeChanged(DnDDisplayDropType)), SLOT(OnDropTypeChanged(DnDDisplayDropType)));
@@ -246,7 +246,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 
   viewer->SetBackgroundColor(m_BackgroundColour);
   viewer->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
-  viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerLayout);
+  viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
   viewer->SetCursorPositionsBound(true);
   viewer->SetScaleFactorsBound(true);
@@ -441,12 +441,12 @@ void niftkMultiViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetRememberSettingsPerWindowLayout(bool rememberSettingsPerLayout)
+void niftkMultiViewerWidget::SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout)
 {
-  m_RememberSettingsPerLayout = rememberSettingsPerLayout;
+  m_RememberSettingsPerWindowLayout = rememberSettingsPerWindowLayout;
   foreach (niftkSingleViewerWidget* viewer, m_Viewers)
   {
-    viewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
+    viewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerWindowLayout);
   }
 }
 
@@ -516,17 +516,17 @@ WindowLayout niftkMultiViewerWidget::GetDefaultWindowLayoutForSegmentation() con
 {
   assert(m_VisibilityManager);
 
-  WindowLayout layout = m_VisibilityManager->GetDefaultWindowLayout();
+  WindowLayout windowLayout = m_VisibilityManager->GetDefaultWindowLayout();
 
-  if (   layout != WINDOW_LAYOUT_AXIAL
-      && layout != WINDOW_LAYOUT_SAGITTAL
-      && layout != WINDOW_LAYOUT_CORONAL
+  if (   windowLayout != WINDOW_LAYOUT_AXIAL
+      && windowLayout != WINDOW_LAYOUT_SAGITTAL
+      && windowLayout != WINDOW_LAYOUT_CORONAL
      )
   {
-    layout = WINDOW_LAYOUT_CORONAL;
+    windowLayout = WINDOW_LAYOUT_CORONAL;
   }
 
-  return layout;
+  return windowLayout;
 }
 
 
@@ -836,10 +836,10 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
 
   double magnification = selectedViewer->GetMagnification();
 
-  WindowLayout layout = selectedViewer->GetWindowLayout();
+  WindowLayout windowLayout = selectedViewer->GetWindowLayout();
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
-    dropOntoViewer->SetWindowLayout(layout);
+    dropOntoViewer->SetWindowLayout(windowLayout);
   }
 
   //  double scaleFactor = selectedViewer->GetScaleFactor();
@@ -1581,7 +1581,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnViewerLayoutBindingChanged()
+void niftkMultiViewerWidget::OnViewerWindowLayoutBindingChanged()
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 

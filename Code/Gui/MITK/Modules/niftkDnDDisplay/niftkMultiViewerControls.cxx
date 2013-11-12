@@ -50,7 +50,7 @@ niftkMultiViewerControls::niftkMultiViewerControls(QWidget *parent)
   this->connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
   this->connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
   this->connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerMagnificationBindingChanged(bool)));
-  this->connect(m_BindViewerLayoutsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerWindowLayoutBindingChanged(bool)));
+  this->connect(m_BindViewerWindowLayoutsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerWindowLayoutBindingChanged(bool)));
   this->connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerGeometryBindingChanged(bool)));
 
   this->connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), SLOT(OnDropSingleRadioButtonToggled(bool)));
@@ -292,16 +292,16 @@ void niftkMultiViewerControls::SetViewerMagnificationsBound(bool bound)
 //-----------------------------------------------------------------------------
 bool niftkMultiViewerControls::AreViewerWindowLayoutsBound() const
 {
-  return m_BindViewerLayoutsCheckBox->isChecked();
+  return m_BindViewerWindowLayoutsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiViewerControls::SetViewerWindowLayoutsBound(bool bound)
 {
-  bool wasBlocked = m_BindViewerLayoutsCheckBox->blockSignals(true);
-  m_BindViewerLayoutsCheckBox->setChecked(bound);
-  m_BindViewerLayoutsCheckBox->blockSignals(wasBlocked);
+  bool wasBlocked = m_BindViewerWindowLayoutsCheckBox->blockSignals(true);
+  m_BindViewerWindowLayoutsCheckBox->setChecked(bound);
+  m_BindViewerWindowLayoutsCheckBox->blockSignals(wasBlocked);
 }
 
 

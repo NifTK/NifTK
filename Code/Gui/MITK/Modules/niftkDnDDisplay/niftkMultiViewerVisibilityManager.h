@@ -193,7 +193,7 @@ private:
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;
 
-  // Keeps track of the default layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
+  // Keeps track of the default window layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
   WindowLayout m_DefaultWindowLayout;
 
   // Keeps track of the default interpolation, as it affects the response when images are dropped,

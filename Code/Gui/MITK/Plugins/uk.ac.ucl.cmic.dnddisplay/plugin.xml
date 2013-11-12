@@ -4,10 +4,10 @@
   <extension point="org.blueberry.ui.editors">
     <editor
       id="org.mitk.editors.dnddisplay"
-      name="Drag And Drop Display"
+      name="Drag and Drop Display"
       extensions="mitk"
       default="true"
-      class="niftkMultiViewerEditor">
+      class="niftkDnDDisplayEditor">
     </editor>
   </extension>
   <extension point="org.blueberry.ui.preferencePages">

@@ -117,11 +117,11 @@ public:
   /// \brief Get the flag controlling 2D cursors global visibility.
   bool GetDisplay2DCursorsGlobally() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
-  void SetShow3DWindowInOrthoView(bool visible);
+  /// \brief If true, then nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
+  void SetShow3DWindowIn2x2WindowLayout(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in ortho view. In 3D view, always visible.
-  bool GetShow3DWindowInOrthoView() const;
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
+  bool GetShow3DWindowIn2x2WindowLayout() const;
 
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
@@ -130,12 +130,12 @@ public:
   /// \brief Switches the window layout, i.e. the set and the arrangement of the render windows.
   void SetWindowLayout(WindowLayout windowLayout);
 
-  /// \brief Gets the layout, i.e. the set and the arrangement of the render windows.
+  /// \brief Gets the window layout, i.e. the set and the arrangement of the render windows.
   /// The MIDAS functionality is only interested in those orientations given by this enum,
   /// currently ax, sag, cor, ortho, 3D, 3H, 3V.
   WindowLayout GetWindowLayout() const;
 
-  /// \brief Works out the orientation of the current layout, which is different to the MIDASLayout.
+  /// \brief Works out the orientation of the current window layout.
   MIDASOrientation GetOrientation();
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
@@ -160,7 +160,7 @@ public:
 
   /// \brief Returns the specifically selected render window, which may be 1 if the viewer is
   /// showing a single axial, coronal or sagittal plane, or may be up to 4 if the viewer
-  /// is displaying the ortho view.
+  /// is displaying the 2x2 window layout.
   std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
@@ -419,7 +419,7 @@ private:
   QmitkRenderWindow* m_SelectedRenderWindow;
   bool m_Display2DCursorsLocally;
   bool m_Display2DCursorsGlobally;
-  bool m_Show3DWindowInOrthoView;
+  bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   mitk::Vector3D m_CursorPosition;

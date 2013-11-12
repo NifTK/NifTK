@@ -28,8 +28,8 @@ class BaseRenderer;
 /**
  * \class DnDDisplayStateMachine
  * \brief StateMachine to check for key press events to switch window layout,
- * and pass them onto any registered DnDDisplaySMResponder.
- * \sa DnDDisplaySMResponder
+ * and pass them onto any registered DnDDisplayStateMachineResponder.
+ * \sa DnDDisplayStateMachineResponder
  */
 class NIFTKDNDDISPLAY_EXPORT DnDDisplayStateMachine : public StateMachine
 {
