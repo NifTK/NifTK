@@ -212,7 +212,7 @@ void SurfaceRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-
+    //FIX ME
   }
 }
 
