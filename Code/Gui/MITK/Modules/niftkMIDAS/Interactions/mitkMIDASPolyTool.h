@@ -36,7 +36,7 @@ namespace mitk {
    * </pre>
    * and includes Undo/Redo functionality. The poly lines keep going until the tool is deselected.
    * When the tool is deselected, the poly line is copied to the mitk::ToolManagers WorkingData, specifically dataset 2,
-   * which should be the mitk::ContourSet representing the current set of contours in the gui, which in MIDAS terms
+   * which should be the mitk::ContourModelSet representing the current set of contours in the gui, which in MIDAS terms
    * is the green lines representing the current segmentation.
    */
   class NIFTKMIDAS_EXPORT MIDASPolyTool : public MIDASContourTool {
@@ -104,26 +104,26 @@ namespace mitk {
     void Disable3dRenderingOfPreviousContour();
 
     /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling mitk::MIDASContourTool::DrawLineAroundVoxelEdges.
-    void DrawWholeContour(const mitk::Contour& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour);
+    void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const PlaneGeometry& planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
 
     /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.
     void UpdateContours(Action* action, const StateEvent* stateEvent, bool provideUndo, bool registerNewPoint);
 
     /// \brief Called from UpdateContours, takes the given point and geometry, and the existing contour (poly line), and calculates the closest point in the current contourReferencePointsInput, sets it to the closestCornerPoint and redraws the feedbackContour and backgroundContour by calling DrawWholeContour.
-    void UpdateFeedbackContour(bool registerNewPoint, const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::Contour& contourReferencePointsInput, mitk::Contour& feedbackContour, mitk::Contour& backgroundContour, bool provideUndo);
+    void UpdateFeedbackContour(bool registerNewPoint, const mitk::Point3D& closestCornerPoint, const PlaneGeometry& planeGeometry, mitk::ContourModel& contourReferencePointsInput, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour, bool provideUndo);
 
     /// \brief We use this to store the last point between mouse clicks.
     mitk::Point3D m_MostRecentPointInMillimetres;
 
     /// \brief Reference points are points containing just the nodes that were clicked.
-    mitk::Contour::Pointer m_ReferencePoints;
+    mitk::ContourModel::Pointer m_ReferencePoints;
 
     /// \brief When we middle-click-and-drag, we need to remember where the previous line was, so we can draw it in green.
-    mitk::Contour::Pointer m_PreviousContourReferencePoints;
+    mitk::ContourModel::Pointer m_PreviousContourReferencePoints;
 
     /// \brief When user moves the contour, we give interactive feedback of
     /// the "Current" contour in yellow, and the "Previous" contour in green.
-    mitk::Contour::Pointer  m_PreviousContour;
+    mitk::ContourModel::Pointer  m_PreviousContour;
     mitk::DataNode::Pointer m_PreviousContourNode;
     bool                    m_PreviousContourVisible;
 

@@ -34,13 +34,13 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_TrackerMatcher(NULL)
 , m_InitOK(false)
 , m_TriangulateOK(false)
-, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_LeftDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_RightDistortionVector (new cv::Mat(5,1,CV_32FC1))
-, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_32FC1))
-, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_32FC1))
-, m_LeftCameraToTracker (new cv::Mat(4,4,CV_32FC1))
+, m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
+, m_RightIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_RightDistortionVector (new cv::Mat(1,4,CV_64FC1))
+, m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
+, m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
+, m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
 , m_BlurKernel (cv::Size (3,3))
@@ -258,18 +258,18 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
     MITK_WARN << "Need to call triangulate before triangulate points";
     return;
   }
-  cv::Mat * twoDPointsLeft = new cv::Mat(m_ScreenPoints.size(),2,CV_32FC1);
-  cv::Mat * twoDPointsRight = new cv::Mat(m_ScreenPoints.size(),2,CV_32FC1);
+  cv::Mat * twoDPointsLeft = new cv::Mat(m_ScreenPoints.size(),2,CV_64FC1);
+  cv::Mat * twoDPointsRight = new cv::Mat(m_ScreenPoints.size(),2,CV_64FC1);
 
   for ( unsigned int i = 0 ; i < m_ScreenPoints.size() ; i ++ ) 
   {
-    twoDPointsLeft->at<float>( i, 0) = m_ScreenPoints[i].first.x;
-    twoDPointsLeft->at<float> ( i , 1 ) = m_ScreenPoints[i].first.y;
-    twoDPointsRight->at<float>( i , 0 ) = m_ScreenPoints[i].second.x;
-    twoDPointsRight->at<float>( i , 1 ) = m_ScreenPoints[i].second.y;
+    twoDPointsLeft->at<double>( i, 0) = m_ScreenPoints[i].first.x;
+    twoDPointsLeft->at<double> ( i , 1 ) = m_ScreenPoints[i].first.y;
+    twoDPointsRight->at<double>( i , 0 ) = m_ScreenPoints[i].second.x;
+    twoDPointsRight->at<double>( i , 1 ) = m_ScreenPoints[i].second.y;
   }
-  cv::Mat leftScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_32FC1);
-  cv::Mat rightScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_32FC1);
+  cv::Mat leftScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_64FC1);
+  cv::Mat rightScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_64FC1);
 
   mitk::UndistortPoints(*twoDPointsLeft,
              *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints);
@@ -277,15 +277,15 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
   mitk::UndistortPoints(*twoDPointsRight,
              *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints);
   
-  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_32FC1);
-  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_32FC1);
+  cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+  cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
 
   for ( int i = 0 ; i < 3 ; i ++ )
   {
-    leftCameraTranslationVector.at<float>(i,0) = 0.0;
-    leftCameraRotationVector.at<float>(i,0) = 0.0;
+    leftCameraTranslationVector.at<double>(i,0) = 0.0;
+    leftCameraRotationVector.at<double>(i,0) = 0.0;
   }
   rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
   cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
@@ -298,9 +298,9 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
   CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
   CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
   CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
-  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (m_ScreenPoints.size(),3,CV_32FC1);
+  CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (m_ScreenPoints.size(),3,CV_64FC1);
 
-  mitk::TriangulatePointPairs(
+  mitk::CStyleTriangulatePointPairsUsingSVD(
     leftScreenPointsMat,
     rightScreenPointsMat,
     leftCameraIntrinsicMat,
@@ -314,9 +314,9 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
   for ( unsigned int i = 0 ; i < m_ScreenPoints.size() ; i ++ ) 
   {
     m_PointsInLeftLensCS.push_back(cv::Point3d (
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,0),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,1),
-        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,float,i,2) ) ) ;
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
+        CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ) ) ;
   }
 
 }

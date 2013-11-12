@@ -21,6 +21,8 @@
 #include <mitkIOUtil.h>
 #include <QCoreApplication>
 
+#include <mitkImageWriter.h>
+
 const std::string QmitkIGIUltrasonixTool::ULTRASONIX_IMAGE_NAME = std::string("Ultrasonix image");
 const float QmitkIGIUltrasonixTool::RAD_TO_DEGREES = 180 / 3.14159265358979323846;
 
@@ -95,6 +97,7 @@ void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");
   }
+
 }
 
 
@@ -154,25 +157,24 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
       imageMsg->PreserveMatrix();
       QImage qImage = imageMsg->GetQImage();
 
-      QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-      filter->SetQImage(&qImage);
-      filter->Update();
-
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-      if (imageInNode.IsNull())
+
+      if (qImage.format() == QImage::Format_Indexed8)
       {
-        // We remove and add to trigger the NodeAdded event,
-        // which is not emmitted if the node was added with no data.
-        m_DataStorage->Remove(node);
-        node->SetData(filter->GetOutput());
-        m_DataStorage->Add(node);
-      }
-      else
-      {
-        try
+        if (imageInNode.IsNull())
+        {          
+          QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
+          filter->SetQImage(&qImage);
+          filter->Update();
+
+          m_DataStorage->Remove(node);
+          node->SetData(filter->GetOutput());
+
+          m_DataStorage->Add(node);
+        }
+        else
         {
-          mitk::ImageReadAccessor readAccess(filter->GetOutput(), filter->GetOutput()->GetVolumeData(0));
-          const void* cPointer = readAccess.GetData();
+          const void* cPointer = qImage.bits();
 
           mitk::ImageWriteAccessor writeAccess(imageInNode);
           void* vPointer = writeAccess.GetData();
@@ -180,10 +182,44 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
           memcpy(vPointer, cPointer, qImage.width() * qImage.height());
           imageInNode->Modified();
         }
-        catch(mitk::Exception& e)
-        {
-          MITK_ERROR << "Failed to copy Ultrasonix image to DataStorage due to " << e.what() << std::endl;
-        }
+      }
+      else
+      {
+        // NOT FINISHED or tested or anything.
+        assert(false);
+
+        //QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
+        //filter->SetQImage(&qImage);
+        //filter->Update();
+
+        //mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+        //if (imageInNode.IsNull())
+        //{
+        //  // We remove and add to trigger the NodeAdded event,
+        //  // which is not emmitted if the node was added with no data.
+        //  m_DataStorage->Remove(node);
+        //  node->SetData(filter->GetOutput());
+
+        //  m_DataStorage->Add(node);
+        //}
+        //else
+        //{
+        //  try
+        //  {
+        //    mitk::ImageReadAccessor readAccess(filter->GetOutput(), filter->GetOutput()->GetVolumeData(0));
+        //    const void* cPointer = readAccess.GetData();
+
+        //    mitk::ImageWriteAccessor writeAccess(imageInNode);
+        //    void* vPointer = writeAccess.GetData();
+
+        //    memcpy(vPointer, cPointer, qImage.width() * qImage.height());
+        //    imageInNode->Modified();
+        //  }
+        //  catch(mitk::Exception& e)
+        //  {
+        //    MITK_ERROR << "Failed to copy Ultrasonix image to DataStorage due to " << e.what() << std::endl;
+        //  }
+        //}
       }
 
       imageMsg->GetMatrix(m_CurrentMatrix);

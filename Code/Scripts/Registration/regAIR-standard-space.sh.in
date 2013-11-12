@@ -45,6 +45,7 @@ Mandatory Arguments:
   
 Option:  
   -rreg_init               : Use rreg for initialisation. 
+  -dof9                    : Use 9dof all the way.
 
 EOF
 exit 127
@@ -56,11 +57,7 @@ if [ $# -lt 4 ]; then
 fi
 
 
-rreg_init="no"
-if [ "$5" == "-rreg_init" ]
-then 
-  rreg_init="yes"
-fi 
+
 
 # Function   : Function will iterate through file fileContainingImageNames, 
 #              and if $2="REGISTER" it will execute the registration.
@@ -91,7 +88,7 @@ function iterate_through_input_file()
     if [ "$DO_THE_REG" = "REGISTER" ]; then
 
       # Generate a file of all commands
-      echo "_regAIR-standard-space.sh $REG_TMP_DIR $REG_RESULTS_DIR $IMAGE_DIR $BRAINREGION_DIR $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $REPEAT_MASK ${rreg_init}" >> regAIR_$$_commands.txt
+      echo "_regAIR-standard-space.sh $REG_TMP_DIR $REG_RESULTS_DIR $IMAGE_DIR $BRAINREGION_DIR $BASELINE_IMG $BASELINE_MASK $REPEAT_IMG $REPEAT_MASK ${rreg_init} ${dof9}" >> regAIR_$$_commands.txt
 
     else
     
@@ -124,6 +121,23 @@ FILEDETAILS=$1
 shift
 OUTPUT_DIR=$1
 shift
+
+rreg_init="no"
+dof9="no"
+
+while [ "_$1" != "_"  ] ; do
+    if [ "$1" = "-rreg_init" ] ; then
+        rreg_init="yes"
+        shift 1
+    elif [ "$1" = "-dof9" ] ; then
+        dof9="yes"
+        shift 1
+    else
+        Usage
+    fi
+done
+
+
 
 # Setup the output directories
 

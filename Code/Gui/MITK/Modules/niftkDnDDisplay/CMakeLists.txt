@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkDnDDisplay
   EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
   INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS Mitk Qmitk niftkCore niftkCoreGui
+  DEPENDS Mitk Qmitk niftkCore
   PACKAGE_DEPENDS QT QVTK CTK
   QT_MODULE 
 )

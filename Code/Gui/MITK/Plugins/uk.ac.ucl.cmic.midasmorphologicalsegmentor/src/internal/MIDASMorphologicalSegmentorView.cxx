@@ -25,6 +25,7 @@
 #include <mitkColorProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkUndoController.h>
+#include <mitkMIDASImageUtils.h>
 #include <mitkMIDASOrientationUtils.h>
 
 #include <itkConversionUtils.h>
@@ -427,6 +428,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_Layout->addWidget(m_ContainerForControlsWidget, 3, 0);
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
+    m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithReferenceData);
 
     m_PipelineManager = mitk::MIDASMorphologicalSegmentorPipelineManager::New();
     m_PipelineManager->SetDataStorage(this->GetDataStorage());

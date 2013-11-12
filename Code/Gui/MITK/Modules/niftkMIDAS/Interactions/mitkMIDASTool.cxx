@@ -22,7 +22,7 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include <Interactions/mitkMIDASDisplayInteractor.h>
+#include <Interactions/mitkDnDDisplayInteractor.h>
 
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
@@ -282,7 +282,7 @@ void mitk::MIDASTool::Activated()
   std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
   for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
-    MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
+    DnDDisplayInteractor* displayInteractor = dynamic_cast<DnDDisplayInteractor*>(
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor != NULL)
     {
@@ -324,7 +324,7 @@ void mitk::MIDASTool::Deactivated()
   {
     if (it->first)
     {
-      MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
+      DnDDisplayInteractor* displayInteractor = static_cast<DnDDisplayInteractor*>(
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor != NULL)
       {

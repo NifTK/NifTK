@@ -15,13 +15,12 @@
 #include "mitkMIDASOrientationUtils.h"
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
-#include <itkMIDASHelper.h>
 
 namespace mitk
 {
 
 //-----------------------------------------------------------------------------
-itk::ORIENTATION_ENUM GetItkOrientation(const MIDASOrientation& orientation)
+itk::Orientation GetItkOrientation(const MIDASOrientation& orientation)
 {
   if (orientation == MIDAS_ORIENTATION_AXIAL)
   {
@@ -43,7 +42,7 @@ itk::ORIENTATION_ENUM GetItkOrientation(const MIDASOrientation& orientation)
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation GetMitkOrientation(const itk::ORIENTATION_ENUM& orientation)
+MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation)
 {
   if (orientation == itk::ORIENTATION_AXIAL)
   {
@@ -95,7 +94,7 @@ int GetUpDirection(const mitk::Geometry3D* geometry, const MIDASOrientation& ori
 
     if (orientationString != "UNKNOWN")
     {
-      itk::ORIENTATION_ENUM itkOrientation = GetItkOrientation(orientation);
+      itk::Orientation itkOrientation = GetItkOrientation(orientation);
       int axisOfInterest = itk::GetAxisFromOrientationString(orientationString, itkOrientation);
 
       if (axisOfInterest >= 0)
@@ -113,7 +112,7 @@ int GetUpDirection(const mitk::Image* image, const MIDASOrientation& orientation
 {
   int result = 0;
 
-  itk::ORIENTATION_ENUM itkOrientation = GetItkOrientation(orientation);
+  itk::Orientation itkOrientation = GetItkOrientation(orientation);
   if (image != NULL && itkOrientation != itk::ORIENTATION_UNKNOWN)
   {
     try
@@ -142,7 +141,7 @@ int GetThroughPlaneAxis(const mitk::Image* image, const MIDASOrientation& orient
 {
   int result = -1;
 
-  itk::ORIENTATION_ENUM itkOrientation = GetItkOrientation(orientation);
+  itk::Orientation itkOrientation = GetItkOrientation(orientation);
   if (image != NULL && itkOrientation != itk::ORIENTATION_UNKNOWN)
   {
     try

@@ -13,39 +13,33 @@
 #============================================================================*/
 
 set(CPP_FILES
-  QmitkMIDASSlidersWidget.cxx
-  QmitkMIDASLayoutWidget.cxx
-  QmitkMIDASStdMultiWidget.cxx
-  QmitkMIDASMultiViewVisibilityManager.cxx
-  QmitkMIDASMultiViewWidget.cxx
-  QmitkMIDASMultiViewWidgetControlPanel.cxx
-  QmitkMIDASSingleViewWidget.cxx
-  QmitkMIDASSingleViewWidgetListManager.cxx
-  QmitkMIDASSingleViewWidgetListVisibilityManager.cxx
-  QmitkMIDASSingleViewWidgetListDropManager.cxx
+  niftkMultiWindowWidget.cxx
+  niftkMultiViewerVisibilityManager.cxx
+  niftkMultiViewerWidget.cxx
+  niftkMultiViewerControls.cxx
+  niftkSingleViewerControls.cxx
+  niftkSingleViewerWidget.cxx
   vtkSideAnnotation.cxx
-  Interactions/mitkMIDASViewKeyPressStateMachine.cxx
-  Interactions/mitkMIDASDisplayInteractor.cxx
+  Interactions/mitkDnDDisplayStateMachine.cxx
+  Interactions/mitkDnDDisplayInteractor.cxx
 )
 
 set(MOC_H_FILES 
-  QmitkMIDASSlidersWidget.h
-  QmitkMIDASLayoutWidget.h
-  QmitkMIDASMultiViewWidget.h
-  QmitkMIDASMultiViewWidgetControlPanel.h
-  QmitkMIDASStdMultiWidget.h
-  QmitkMIDASSingleViewWidget.h
-  QmitkMIDASMultiViewVisibilityManager.h
+  niftkMultiViewerWidget.h
+  niftkMultiViewerControls.h
+  niftkSingleViewerControls.h
+  niftkMultiWindowWidget_p.h
+  niftkSingleViewerWidget.h
+  niftkMultiViewerVisibilityManager.h
 )
 
 set(UI_FILES
-  Resources/UI/QmitkMIDASLayoutWidget.ui
-  Resources/UI/QmitkMIDASSlidersWidget.ui
-  Resources/UI/QmitkMIDASMultiViewWidgetControlPanel.ui
+  Resources/UI/niftkMultiViewerControls.ui
+  Resources/UI/niftkSingleViewerControls.ui
 )
 
 set(RESOURCE_FILES
-  Interactions/DisplayInteraction.xml
+  Interactions/DnDDisplayInteraction.xml
 )
 
 set(QRC_FILES

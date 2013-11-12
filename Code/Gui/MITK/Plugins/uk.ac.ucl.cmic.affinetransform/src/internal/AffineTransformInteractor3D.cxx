@@ -301,7 +301,7 @@ bool AffineTransformInteractor3D::OnAcCheckObject(mitk::Action* action, const mi
   //qDebug() <<"WorldPoint: " <<m_CurrentlyPickedWorldPoint.operator [](0) <<m_CurrentlyPickedWorldPoint.operator [](1) <<m_CurrentlyPickedWorldPoint.operator [](2);
   //qDebug() <<"DisplayPos: " <<m_CurrentlyPickedDisplayPoint.operator [](0) <<m_CurrentlyPickedDisplayPoint.operator [](1) <<m_CurrentlyPickedDisplayPoint.operator [](2);
   
-  mitk::Geometry3D * geometry = m_DataNode->GetData()->GetUpdatedTimeSlicedGeometry()->GetGeometry3D(timeStep);
+  mitk::Geometry3D * geometry = m_DataNode->GetData()->GetUpdatedTimeGeometry()->GetGeometryForTimeStep(timeStep);
 
   if (geometry->IsInside(m_CurrentlyPickedWorldPoint))
   {
@@ -374,7 +374,7 @@ bool AffineTransformInteractor3D::OnAcInitMove(mitk::Action * action, const mitk
 
   // Make deep copy of current Geometry3D of the plane
   m_DataNode->GetData()->UpdateOutputInformation(); // make sure that the Geometry is up-to-date
-  m_OriginalGeometry = static_cast<mitk::Geometry3D * >(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+  m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
 
   return true;
 }
@@ -476,7 +476,7 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
       //qDebug() <<"RotAngle: " <<rotationAngle;
 
       // Use center of data bounding box as center of rotation
-      //m_OriginalGeometry = static_cast<mitk::Geometry3D * >(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+      //m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
       mitk::Point3D rotationCenter;
       rotationCenter = m_OriginalGeometry->GetCenter();
 
@@ -486,24 +486,19 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
       // apply rotation
       
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle );
-      mitk::Geometry3D::Pointer newGeometry = static_cast<mitk::Geometry3D * >(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+      mitk::Geometry3D::Pointer newGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
 
       if (newGeometry.IsNotNull())
       {
         newGeometry->mitk::Geometry3D::ExecuteOperation( &op );
-        mitk::TimeSlicedGeometry::Pointer timeSlicedGeometry = m_DataNode->GetData()->GetTimeSlicedGeometry();
+        mitk::TimeGeometry::Pointer timeGeometry = m_DataNode->GetData()->GetTimeGeometry();
         bool succ = false;
-        if (timeSlicedGeometry.IsNotNull())
+        if (timeGeometry.IsNotNull() && timeGeometry->IsValidTimeStep(timeStep))
         {
-          succ = timeSlicedGeometry->SetGeometry3D( newGeometry, timeStep );
-          
-          if (succ)
-          {
-            m_DataNode->GetData()->Modified();
-            m_DataNode->Modified();
-            m_DataNode->Update();
-          }
-
+          timeGeometry->SetTimeStepGeometry( newGeometry, timeStep );
+          m_DataNode->GetData()->Modified();
+          m_DataNode->Modified();
+          m_DataNode->Update();
         }
       }
     }
@@ -511,7 +506,7 @@ bool AffineTransformInteractor3D::OnAcMove(mitk::Action * action, const mitk::St
   
   if (m_boundingObjectNode != NULL)
   {
-   static_cast<mitk::BoundingObject * >(m_boundingObjectNode->GetData())->FitGeometry(m_DataNode->GetData()->GetTimeSlicedGeometry());
+   static_cast<mitk::BoundingObject * >(m_boundingObjectNode->GetData())->FitGeometry(m_DataNode->GetData()->GetGeometry());
   }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
  
@@ -528,7 +523,7 @@ bool AffineTransformInteractor3D::OnAcAccept(mitk::Action * action, const mitk::
   if (m_currentRenderer != NULL)
     timeStep = m_currentRenderer->GetTimeStep(m_DataNode->GetData());
 
-  m_OriginalGeometry = static_cast<mitk::Geometry3D * >(m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+  m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
     
   emit transformReady();
   newStateEvent = new mitk::StateEvent(mitk::EIDYES );

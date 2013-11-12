@@ -274,9 +274,9 @@ mitk::DataNode::Pointer FindParentGreyScaleImage(const mitk::DataStorage* storag
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex)
+mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex)
 {
-  mitk::TimeSlicedGeometry::Pointer geometry = NULL;
+  mitk::TimeGeometry::Pointer geometry = NULL;
 
   int indexThatWeActuallyUsed = -1;
 
@@ -291,7 +291,7 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
       if (image.IsNotNull())
       {
-        geometry = image->GetTimeSlicedGeometry();
+        geometry = image->GetTimeGeometry();
         indexThatWeActuallyUsed = i;
         break;
       }
@@ -305,7 +305,7 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
         mitk::BaseData::Pointer data = nodes[i]->GetData();
         if (data.IsNotNull())
         {
-          geometry = data->GetTimeSlicedGeometry();
+          geometry = data->GetTimeGeometry();
           indexThatWeActuallyUsed = i;
           break;
         }
@@ -318,7 +318,7 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
     mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
     if (data.IsNotNull())
     {
-      geometry = data->GetTimeSlicedGeometry();
+      geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = nodeIndex;
     }
   }
@@ -328,14 +328,15 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
     mitk::BaseData::Pointer data = nodes[0]->GetData();
     if (data.IsNotNull())
     {
-      geometry = data->GetTimeSlicedGeometry();
+      geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = 0;
     }
   }
 
-  // In addition, (as MIDAS is an image based viewer), if the node is NOT a greyscale image,
-  // we try and search the parents of the node to find a greyscale image and use that one in preference.
-  // This assumes that derived datasets, such as point sets, surfaces, segmented volumes are correctly assigned to parents.
+  // In addition, if the node is NOT a greyscale image, we try and search the parents
+  // of the node to find a greyscale image and use that one in preference.
+  // This assumes that derived datasets, such as point sets, surfaces, segmented
+  // volumes are correctly assigned to parents.
   if (indexThatWeActuallyUsed != -1)
   {
     if (!mitk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
@@ -346,7 +347,7 @@ mitk::TimeSlicedGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* 
         mitk::BaseData::Pointer data = nodes[0]->GetData();
         if (data.IsNotNull())
         {
-          geometry = data->GetTimeSlicedGeometry();
+          geometry = data->GetTimeGeometry();
         }
       }
     }

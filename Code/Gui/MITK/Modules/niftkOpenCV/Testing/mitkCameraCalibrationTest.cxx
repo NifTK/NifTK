@@ -43,8 +43,12 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestStereoReprojectionError...");
 
+    mitk::Point2D scaleFactors;
+    scaleFactors[0] = 1;
+    scaleFactors[1] = 1;
+
     mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calib = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-    float actualError = calib->Calibrate(inputLeft, inputRight, cornersX, cornersY, squareSize, outputFile + ".stereo.txt", false);
+    float actualError = calib->Calibrate(inputLeft, inputRight, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;
@@ -64,8 +68,12 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestMonoReprojectionError...");
 
+    mitk::Point2D scaleFactors;
+    scaleFactors[0] = 1;
+    scaleFactors[1] = 1;
+
     mitk::CameraCalibrationFromDirectory::Pointer calib = mitk::CameraCalibrationFromDirectory::New();
-    float actualError = calib->Calibrate(inputLeft, cornersX, cornersY, squareSize, outputFile + ".mono.txt", false);
+    float actualError = calib->Calibrate(inputLeft, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".mono.txt", false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;

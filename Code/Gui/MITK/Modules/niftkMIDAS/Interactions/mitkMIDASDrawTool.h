@@ -107,8 +107,8 @@ namespace mitk {
     template<typename TPixel, unsigned int VImageDimension>
     void ITKCleanContours(
         itk::Image<TPixel, VImageDimension> *itkImage,
-        mitk::ContourSet& inputContours,
-        mitk::ContourSet& outputContours,
+        mitk::ContourModelSet& inputContours,
+        mitk::ContourModelSet& outputContours,
         const int& axis,
         const int& sliceNumber
         );
@@ -119,7 +119,7 @@ namespace mitk {
     /// \brief Operation constant, used in Undo/Redo framework.
     static const mitk::OperationType MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR;
 
-    /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourSet representing the "currentContours" ie Green lines in MIDAS.
+    /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourModelSet representing the "currentContours" ie Green lines in MIDAS.
     bool DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent);
 
     /// \brief Cursor size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.

@@ -17,7 +17,7 @@
 #include <mitkImage.h>
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
-#include <mitkTimeSlicedGeometry.h>
+#include <mitkTimeGeometry.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
@@ -118,7 +118,7 @@ void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 {
-  mitk::TimeSlicedGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
+  mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
   m_3DViewer->GetRenderer()->SetDataStorage(storage);

@@ -20,7 +20,7 @@ MIDASPolyToolOpUpdateFeedbackContour::MIDASPolyToolOpUpdateFeedbackContour(
   mitk::OperationType type,
   unsigned int pointId,
   const mitk::Point3D &point,
-  mitk::Contour* contour,
+  mitk::ContourModel* contour,
   const mitk::PlaneGeometry* planeGeometry
   )
 : mitk::Operation(type)

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "vtkSideAnnotation.h"
+#include "vtkSideAnnotation_p.h"
 
 #include <vtkObjectFactory.h>
 #include <vtkTextProperty.h>

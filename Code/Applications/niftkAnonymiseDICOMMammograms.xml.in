@@ -67,6 +67,13 @@
     </boolean>
 
     <boolean>
+      <name>flgInvert</name>
+      <longflag>invert</longflag>
+      <description>Manually override automatically working out if the image should be inverted on not and invert all images.</description>
+      <label>Invert all images</label>
+    </boolean>
+
+    <boolean>
       <name>flgVerbose</name>
       <longflag>verbose</longflag>
       <description>Generate verbose output (i.e. print the DICOM header).</description>

@@ -42,7 +42,8 @@ public:
   bool Triangulate(const std::string& input2DPointPairsFileName,
       const std::string& intrinsicLeftFileName,
       const std::string& intrinsicRightFileName,
-      const std::string& rightToLeftExtrinsics
+      const std::string& rightToLeftExtrinsics,
+      const std::string& outputFileName
       );
 
 protected:

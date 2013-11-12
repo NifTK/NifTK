@@ -18,9 +18,8 @@
 #include <itkPointSet.h>
 #include <itkPolyLineParametricPath.h>
 #include <mitkPointSet.h>
-#include <mitkContourSet.h>
+#include <mitkContourModelSet.h>
 
-#include <itkMIDASHelper.h>
 
 /** Typedefs that we use for this plugin. */
 typedef itk::PointSet<float, 3>      PointSetType;
@@ -45,9 +44,9 @@ struct GeneralSegmentorPipelineParams
   double m_LowerThreshold;
   double m_UpperThreshold;
   mitk::PointSet *m_Seeds;
-  mitk::ContourSet *m_SegmentationContours;
-  mitk::ContourSet *m_DrawContours;
-  mitk::ContourSet *m_PolyContours;
+  mitk::ContourModelSet *m_SegmentationContours;
+  mitk::ContourModelSet *m_DrawContours;
+  mitk::ContourModelSet *m_PolyContours;
 
 };
 
@@ -55,7 +54,7 @@ struct GeneralSegmentorPipelineParams
 void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points);
 
 /** Convert contours contained in a mitk::ContourSet into ITK points. */
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourSet *contourSet, ParametricPathVectorType& contours);
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *contourSet, ParametricPathVectorType& contours);
 
 /** Convert all contours for a pipeline into ITK points. */
 void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours);

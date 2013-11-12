@@ -61,9 +61,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
-
-# Plugins listed after 'commonlegacy' depend on it, and the list below this plugin must be as short as possible.
-  Plugins/uk.ac.ucl.cmic.gui.qt.commonlegacy:ON
 )
 
 
