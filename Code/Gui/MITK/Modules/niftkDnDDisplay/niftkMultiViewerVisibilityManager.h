@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewVisibilityManager_h
-#define QmitkMIDASMultiViewVisibilityManager_h
+#ifndef niftkMultiViewerVisibilityManager_h
+#define niftkMultiViewerVisibilityManager_h
 
 #include <niftkDnDDisplayExports.h>
 #include <mitkMIDASEnums.h>
-#include "QmitkMIDASSingleViewWidget.h"
+#include "niftkSingleViewerWidget.h"
 #include <QWidget>
 #include <mitkDataStorage.h>
 #include <mitkBaseProperty.h>
@@ -26,52 +26,52 @@
 #include <mitkDataNodeStringPropertyFilter.h>
 
 class QmitkRenderWindow;
-class QmitkMIDASSingleViewWidget;
+class niftkSingleViewerWidget;
 
 /**
- * \class QmitkMultiViewVisibilityManager
- * \brief Maintains a list of QmitkMIDASSingleViewWidget and coordinates visibility
+ * \class niftkMultiViewerVisibilityManager
+ * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visibility" property in DataStorage.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASMultiViewVisibilityManager : public QObject
+class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject
 {
   Q_OBJECT
 
 public:
 
   /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
-  QmitkMIDASMultiViewVisibilityManager(mitk::DataStorage::Pointer dataStorage);
+  niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Destructor, which unregisters all the listeners.
-  virtual ~QmitkMIDASMultiViewVisibilityManager();
+  virtual ~niftkMultiViewerVisibilityManager();
 
-  /// \brief Each new QmitkMIDASSingleViewWidget should first be registered with this class, so this class can manage renderer specific visibility properties.
-  void RegisterWidget(QmitkMIDASSingleViewWidget *widget);
+  /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
+  void RegisterViewer(niftkSingleViewerWidget *viewer);
 
-  /// \brief Used to de-register all the widgets, which means actually removing them from m_DataNodes and m_Widgets.
-  void DeRegisterAllWidgets();
+  /// \brief Used to de-register all the viewers, which means actually removing them from m_DataNodes and m_Viewers.
+  void DeRegisterAllViewers();
 
-  /// \brief De-registers a range of widgets, which means actually removing them from m_DataNodes and m_Widgets.
-  void DeRegisterWidgets(unsigned int startWidgetIndex, unsigned int endWidgetIndex);
+  /// \brief De-registers a range of viewers, which means actually removing them from m_DataNodes and m_Viewers.
+  void DeRegisterViewers(unsigned int startViewerIndex, unsigned int endViewerIndex);
 
   /// \brief Clears all windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
-  void ClearAllWindows();
+  void ClearAllViewers();
 
   /// \brief Used to clear a range of windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
-  void ClearWindows(unsigned int startWindowIndex, unsigned int endWindowIndex);
+  void ClearViewers(unsigned int startWindowIndex, unsigned int endWindowIndex);
 
   /// \brief Will query the DataStorage for all valid nodes, and for all currently registered windows, will set a renderer specific property equal to visibility.
-  void SetAllNodeVisibilityForAllWindows(bool visibility);
+  void SetAllNodeVisibilityForAllViewers(bool visibility);
 
   /// \brief For all currently registered windows, will make sure the node has a renderer specific visibility property equal to visibility.
-  void SetNodeVisibilityForAllWindows(mitk::DataNode* node, bool visibility);
+  void SetNodeVisibilityForAllViewers(mitk::DataNode* node, bool visibility);
 
   /// \brief Will query the DataStorage for all valid nodes, and for the given window, will set a renderer specific property equal to visibility.
-  void SetAllNodeVisibilityForWindow(unsigned int widgetIndex, bool visibility);
+  void SetAllNodeVisibilityForViewer(unsigned int viewerIndex, bool visibility);
 
   /// \brief Sets the node to have a renderer specific visibility.
-  void SetNodeVisibilityForWindow(mitk::DataNode* node, unsigned int widgetIndex, bool visibility);
+  void SetNodeVisibilityForViewer(mitk::DataNode* node, unsigned int viewerIndex, bool visibility);
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
   void NodeAddedProxy(const mitk::DataNode* node);
@@ -79,23 +79,23 @@ public:
   /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and calls NodeRemoved afterwards.
   void NodeRemovedProxy(const mitk::DataNode* node);
 
-  /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single widget.
-  void SetDropType(MIDASDropType dropType) { m_DropType = dropType; }
+  /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
+  void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
 
-  /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single widget.
-  MIDASDropType GetDropType() const { return m_DropType; }
+  /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
+  DnDDisplayDropType GetDropType() const { return m_DropType; }
 
   /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
-  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolation) { m_DefaultInterpolation = interpolation; }
+  void SetInterpolationType(DnDDisplayInterpolationType interpolationType) { m_InterpolationType = interpolationType; }
 
   /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
-  MIDASDefaultInterpolationType GetDefaultInterpolationType() const { return m_DefaultInterpolation; }
+  DnDDisplayInterpolationType GetInterpolationType() const { return m_InterpolationType; }
 
   /// \brief Sets the default render window layout for when images are dropped into a render window.
-  void SetDefaultLayout(MIDASLayout layout) { m_DefaultLayout = layout; }
+  void SetDefaultWindowLayout(WindowLayout windowLayout) { m_DefaultWindowLayout = windowLayout; }
 
   /// \brief Returns the default render window layout for when images are dropped into a render window.
-  MIDASLayout GetDefaultLayout() const { return m_DefaultLayout; }
+  WindowLayout GetDefaultWindowLayout() const { return m_DefaultWindowLayout; }
 
   /// \brief When we drop nodes onto a window, if true, we add all the children.
   void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
@@ -110,7 +110,7 @@ public:
   bool GetAccumulateWhenDropped() const { return m_Accumulate; }
 
   /// \brief Gets the number of nodes currently visible in a window.
-  virtual int GetNodesInWindow(int windowIndex);
+  virtual int GetNodesInViewer(int windowIndex);
 
 public slots:
 
@@ -127,18 +127,18 @@ protected:
   /// \brief Called when a DataStorage RemoveNodeEvent was emmitted and may be reimplemented by deriving classes.
   virtual void NodeRemoved(const mitk::DataNode* node);
 
-  /// \brief For a given window (denoted by its windowIndex, or index number in m_Widgets), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
-  virtual void RemoveNodesFromWindow(int windowIndex);
+  /// \brief For a given window (denoted by its windowIndex, or index number in m_Viewers), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
+  virtual void RemoveNodesFromViewer(int windowIndex);
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
-  virtual void AddNodeToWindow(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);
+  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool initialVisibility=true);
 
 protected slots:
 
 private:
 
   /// \brief Given a window, will return the corresponding list index, or -1 if not found.
-  int GetIndexFromWindow(QmitkRenderWindow* window);
+  int GetViewerIndexFromWindow(QmitkRenderWindow* window);
 
   /// \brief Will remove all observers from the ObserverToVisibilityMap, called from UpdateObserverToVisibilityMap and the destructor.
   void RemoveAllFromObserverToVisibilityMap();
@@ -149,11 +149,12 @@ private:
   /// \brief Called when the visibility property changes in DataStorage, and we update renderer specific visibility properties accordingly.
   void UpdateVisibilityProperty(const itk::EventObject&);
 
-  /// \brief Called when a node is added, and we set rendering window specific visibility to false for all registered windows, plus other default properties such as interpolation type.
+  /// \brief Called when a node is added, and we set rendering window specific visibility
+  /// to false for all registered windows, plus other default properties such as interpolation type.
   void SetInitialNodeProperties(mitk::DataNode* node);
 
-  /// \brief Works out the correct layout from the data, and from the preferences.
-  MIDASLayout GetLayout(std::vector<mitk::DataNode*> nodes);
+  /// \brief Works out the correct window layout from the data, and from the preferences.
+  WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);
 
   /// \brief ITK templated method (accessed via MITK access macros) to work out the orientation in the XY plane.
   template<typename TPixel, unsigned int VImageDimension>
@@ -179,8 +180,8 @@ private:
   // So, it's a vector, as we have one set for each of the registered windows.
   std::vector< std::set<mitk::DataNode*> > m_DataNodes;
 
-  // Additionally, we manage a list of widgets, where m_DataNodes.size() == m_Widgets.size() should always be true.
-  std::vector< QmitkMIDASSingleViewWidget* > m_Widgets;
+  // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
+  std::vector< niftkSingleViewerWidget* > m_Viewers;
 
   // We also observe all the global visibility properties for each registered node.
   typedef std::map<unsigned long, mitk::BaseProperty::Pointer> ObserverToPropertyMap;
@@ -190,13 +191,14 @@ private:
   bool m_InDataStorageChanged;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
-  MIDASDropType m_DropType;
+  DnDDisplayDropType m_DropType;
 
   // Keeps track of the default layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
-  MIDASLayout m_DefaultLayout;
+  WindowLayout m_DefaultWindowLayout;
 
-  // Keeps track of the default interpolation, as it affects the response when images are dropped, as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
-  MIDASDefaultInterpolationType m_DefaultInterpolation;
+  // Keeps track of the default interpolation, as it affects the response when images are dropped,
+  // as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
+  DnDDisplayInterpolationType m_InterpolationType;
 
   // Boolean to indicate whether to automatically add children, default to true.
   bool m_AutomaticallyAddChildren;

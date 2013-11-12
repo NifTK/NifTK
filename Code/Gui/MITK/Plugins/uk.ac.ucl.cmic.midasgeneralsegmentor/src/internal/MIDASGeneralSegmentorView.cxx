@@ -1803,7 +1803,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
     {
       int axisNumber = this->GetViewAxis();
       MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(tmpOrientation);
+      itk::Orientation orientation = mitk::GetItkOrientation(tmpOrientation);
 
       mitk::ToolManager *toolManager = this->GetToolManager();
       assert(toolManager);
@@ -2555,7 +2555,7 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
   }
 
   MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-  itk::ORIENTATION_ENUM orientation = mitk::GetItkOrientation(midasOrientation);
+  itk::Orientation orientation = mitk::GetItkOrientation(midasOrientation);
 
   QString message;
 
@@ -2937,7 +2937,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         bool redo = op->IsRedo();
         int fromSlice = op->GetFromSlice();
         int toSlice = op->GetToSlice();
-        itk::ORIENTATION_ENUM orientation = op->GetOrientation();
+        itk::Orientation orientation = op->GetOrientation();
 
         typedef mitk::ImageToItk< BinaryImage3DType > SegmentationImageToItkType;
         SegmentationImageToItkType::Pointer targetImageToItk = SegmentationImageToItkType::New();

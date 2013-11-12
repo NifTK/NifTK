@@ -30,13 +30,13 @@ namespace mitk
 /**
  * \brief Converts an MITK orientation enum to an ITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT itk::ORIENTATION_ENUM GetItkOrientation(const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT itk::Orientation GetItkOrientation(const MIDASOrientation& orientation);
 
 
 /*
  * \brief Converts an ITK orientation enum to an MITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT MIDASOrientation GetMitkOrientation(const itk::ORIENTATION_ENUM& orientation);
+NIFTKCORE_EXPORT MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation);
 
 
 /**

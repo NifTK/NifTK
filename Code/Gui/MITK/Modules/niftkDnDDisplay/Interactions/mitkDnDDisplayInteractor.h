@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkMIDASDisplayInteractor_h
-#define mitkMIDASDisplayInteractor_h
+#ifndef mitkDnDDisplayInteractor_h
+#define mitkDnDDisplayInteractor_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -27,7 +27,7 @@ namespace mitk
   class SliceNavigationController;
 
   /**
-   *\class MIDASDisplayInteractor
+   *\class DnDDisplayInteractor
    *@brief Observer that manages the interaction with the display.
    *
    * mitk::ToolManager reloads the configuration of the registered mitk::DisplayInteractor
@@ -39,11 +39,11 @@ namespace mitk
    * Inherits from mitk::InteractionEventObserver since it doesn't alter any data (only their representation),
    * and its actions cannot be associated with a DataNode. Also inherits from EventStateMachine
    */
-  class NIFTKDNDDISPLAY_EXPORT MIDASDisplayInteractor: public DisplayInteractor
+  class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public DisplayInteractor
   {
   public:
-    mitkClassMacro(MIDASDisplayInteractor, DisplayInteractor)
-    // MIDAS customisation: renderers and slice navigation controllers passed as arguments
+    mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
+    // DnD Display customisation: renderers and slice navigation controllers passed as arguments
     mitkNewMacro1Param(Self, const std::vector<mitk::BaseRenderer*>&);
 
     /**
@@ -55,8 +55,8 @@ namespace mitk
     virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
 
   protected:
-    MIDASDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers);
-    virtual ~MIDASDisplayInteractor();
+    DnDDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers);
+    virtual ~DnDDisplayInteractor();
 
     virtual void ConnectActionsAndFunctions();
 
@@ -64,12 +64,12 @@ namespace mitk
 
   private:
     /**
-     * Renderers of the MIDASStdMultiWidget that this display interactor belongs to.
+     * Renderers of the niftkMultiWindowWidget that this display interactor belongs to.
      */
     std::vector<mitk::BaseRenderer*> m_Renderers;
 
     /**
-     * Slice navigation controllers of the MIDASStdMultiWidget that this display interactor belongs to.
+     * Slice navigation controllers of the niftkMultiWindowWidget that this display interactor belongs to.
      */
     mitk::SliceNavigationController* m_SliceNavigationControllers[3];
   };

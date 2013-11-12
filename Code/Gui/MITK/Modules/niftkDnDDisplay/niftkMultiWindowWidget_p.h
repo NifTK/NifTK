@@ -12,10 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASStdMultiWidget_h
-#define QmitkMIDASStdMultiWidget_h
-
-#include <niftkDnDDisplayExports.h>
+#ifndef niftkMultiWindowWidget_h
+#define niftkMultiWindowWidget_h
 
 //#include <itkConversionUtils.h>
 
@@ -27,9 +25,10 @@
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
-#include "Interactions/mitkMIDASDisplayInteractor.h"
+#include "Interactions/mitkDnDDisplayInteractor.h"
 
 #include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayEnums.h>
 
 class QGridLayout;
 class QStackedLayout;
@@ -44,7 +43,7 @@ class SliceNavigationController;
 }
 
 /**
- * \class QmitkMIDASStdMultiWidget
+ * \class niftkMultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
  * by having convenient methods to control geometry, background, cursors on/off etc.
  * via calling methods in the base class QmitkStdMultiWidget.
@@ -53,9 +52,9 @@ class SliceNavigationController;
  * subclass QmitkStdMultiWidget so that we can optionally have 3D views, ortho-views etc.
  *
  * Please do NOT expose this class to the rest of the NiftyView code-base, or else
- * dependency management becomes a bit of an issue.  The class QmitkMIDASSingleViewWidget
+ * dependency management becomes a bit of an issue.  The class niftkSingleViewerWidget
  * wraps this one, and the rest of our application should only deal with
- * QmitkMIDASSingleViewWidget.
+ * niftkSingleViewerWidget.
  *
  * Note: The requirements specification for MIDAS style zoom basically says:
  * <pre>
@@ -74,10 +73,10 @@ class SliceNavigationController;
  * the size of the longest side of the voxels is used for the calculation.
  *
  * \sa QmitkStdMultiWidget
- * \sa QmitkMIDASSingleViewWidget
- * \sa QmitkMIDASMultiViewWidget
+ * \sa niftkSingleViewerWidget
+ * \sa niftkMultiViewerWidget
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidget
+class niftkMultiWindowWidget : public QmitkStdMultiWidget
 {
 
   Q_OBJECT
@@ -85,13 +84,13 @@ class NIFTKDNDDISPLAY_EXPORT QmitkMIDASStdMultiWidget : public QmitkStdMultiWidg
 public:
 
   /// \brief Constructor.
-  QmitkMIDASStdMultiWidget(QWidget* parent = 0,
+  niftkMultiWindowWidget(QWidget* parent = 0,
                            Qt::WindowFlags f = 0,
                            mitk::RenderingManager* renderingManager = 0,
                            mitk::DataStorage* dataStorage = 0);
 
   /// \brief Destructor.
-  virtual ~QmitkMIDASStdMultiWidget();
+  virtual ~niftkMultiWindowWidget();
 
   /// \brief There are several things we turn off/on depending on whether the widget is
   /// visible or considered active, so we group them all under this Enabled(true/false) flag.
@@ -128,13 +127,13 @@ public:
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetGeometry(mitk::TimeGeometry* geometry);
 
-  /// \brief Switches the layout, i.e. the set and the arrangement of the render windows.
-  void SetLayout(MIDASLayout layout);
+  /// \brief Switches the window layout, i.e. the set and the arrangement of the render windows.
+  void SetWindowLayout(WindowLayout windowLayout);
 
   /// \brief Gets the layout, i.e. the set and the arrangement of the render windows.
   /// The MIDAS functionality is only interested in those orientations given by this enum,
   /// currently ax, sag, cor, ortho, 3D, 3H, 3V.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
   /// \brief Works out the orientation of the current layout, which is different to the MIDASLayout.
   MIDASOrientation GetOrientation();
@@ -307,7 +306,7 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(QmitkMIDASStdMultiWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(niftkMultiWindowWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
@@ -421,7 +420,7 @@ private:
   bool m_Display2DCursorsLocally;
   bool m_Display2DCursorsGlobally;
   bool m_Show3DWindowInOrthoView;
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   mitk::Vector3D m_CursorPosition;
   double m_Magnification;
@@ -444,7 +443,7 @@ private:
 
   friend class DisplayGeometryModificationCommand;
 
-  mitk::MIDASDisplayInteractor::Pointer m_DisplayInteractor;
+  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
 
   /**
    * Reference to the service registration of the display interactor.

@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef QmitkMIDASSingleViewWidget_h
-#define QmitkMIDASSingleViewWidget_h
+#ifndef niftkSingleViewerWidget_h
+#define niftkSingleViewerWidget_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -29,29 +29,30 @@
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
-#include "Interactions/mitkMIDASViewKeyPressResponder.h"
-#include "Interactions/mitkMIDASViewKeyPressStateMachine.h"
-#include "QmitkMIDASStdMultiWidget.h"
+#include <niftkDnDDisplayEnums.h>
+#include "Interactions/mitkDnDDisplayStateMachineResponder.h"
+#include "Interactions/mitkDnDDisplayStateMachine.h"
 
 class QGridLayout;
+class niftkMultiWindowWidget;
 
 /**
- * \class QmitkMIDASSingleViewWidget
- * \brief A widget to wrap a single QmitkMIDASStdMultiWidget view,
+ * \class niftkSingleViewerWidget
+ * \brief A widget to wrap a single niftkMultiWindowWidget,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
  *
- * IMPORTANT: This class acts as a wrapper for QmitkMIDASStdMultiWidget.
- * Do not expose QmitkMIDASStdMultiWidget, or any member variables, or any
- * dependency from QmitkMIDASStdMultiWidget to the rest of the application.
+ * IMPORTANT: This class acts as a wrapper for niftkMultiWindowWidget.
+ * Do not expose niftkMultiWindowWidget, or any member variables, or any
+ * dependency from niftkMultiWindowWidget to the rest of the application.
  *
  * Additionally, this widget contains its own mitk::RenderingManager which is passed to the
- * QmitkMIDASStdMultiWidget, which is itself a sub-class of QmitkStdMultiWidget.
- * This means the QmitkMIDASStdMultiWidget will update and render independently of the
+ * niftkMultiWindowWidget, which is itself a sub-class of QmitkStdMultiWidget.
+ * This means the niftkMultiWindowWidget will update and render independently of the
  * rest of the application, and care must be taken to manage this. The reason is that
- * each of these windows in a MIDAS layout could have it's own geometry, and sometimes
+ * each of these viewers in a multi-viewer could have it's own geometry, and sometimes
  * a very different geometry from other windows, and then when the "Bind Slices" button
- * is clicked, they must all align to a specific (the currently selected Window) geometry.
+ * is clicked, they must all align to a specific (the currently selected window) geometry.
  * So it became necessary to manage this independent from the rest of the MITK application.
  *
  * <pre>
@@ -68,28 +69,25 @@ class QGridLayout;
  * </pre>
  *
  * \sa QmitkRenderWindow
- * \sa QmitkMIDASStdMultiWidget
+ * \sa niftkMultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASSingleViewWidget : public QWidget, public mitk::MIDASViewKeyPressResponder
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mitk::DnDDisplayStateMachineResponder
 {
 
-  /// \brief Defining Q_OBJECT macro, so we can register signals and slots if needed.
   Q_OBJECT;
 
 public:
 
-  friend class QmitkMIDASSegmentationViewWidget;
+  niftkSingleViewerWidget(QWidget* parent);
 
-  QmitkMIDASSingleViewWidget(QWidget* parent);
-
-  QmitkMIDASSingleViewWidget(QString windowName,
+  niftkSingleViewerWidget(QString windowName,
                              double minimumMagnification,
                              double maximumMagnification,
                              QWidget* parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0
                              );
-  ~QmitkMIDASSingleViewWidget();
+  ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -153,13 +151,13 @@ public:
   bool GetShow3DWindowInOrthoView() const;
 
   /// \brief If true, then nodes will be visible in 3D window when in ortho (2x2) layout. In 3D layout, always visible.
-  void SetShow3DWindowInOrthoView(bool enabled);
+  void SetShow3DWindowIn2x2WindowLayout(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
-  void SetRememberSettingsPerLayout(bool remember);
+  /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
+  void SetRememberSettingsPerWindowLayout(bool remember);
 
-  /// \brief Sets a flag to determine if we remember the view settings (slice, time step, scale factor) when we switch the render window layout
-  bool GetRememberSettingsPerLayout() const;
+  /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
+  bool GetRememberSettingsPerWindowLayout() const;
 
   /// \brief Sets the background colour.
   void SetBackgroundColor(QColor color);
@@ -226,10 +224,10 @@ public:
   void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the render window layout.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho etc, effectively causing a view reset.
-  void SetLayout(MIDASLayout layout);
+  void SetWindowLayout(WindowLayout layout);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -291,10 +289,10 @@ public:
   int GetSliceUpDirection(MIDASOrientation orientation) const;
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+  void SetDefaultSingleWindowLayout(WindowLayout layout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+  void SetDefaultMultiWindowLayout(WindowLayout layout);
 
   /// \brief Move anterior a slice.
   bool MoveAnterior();
@@ -327,28 +325,28 @@ protected:
 
 signals:
 
-  /// \brief Emitted when nodes are dropped on the SingleView widget.
+  /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Emitted when the selected slice has changed in a render window of this view.
-  void SelectedPositionChanged(QmitkMIDASSingleViewWidget* thisView, QmitkRenderWindow* renderWindow, int sliceIndex);
+  /// \brief Emitted when the selected slice has changed in a render window of this viewer.
+  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
 
-  /// \brief Emitted when the cursor position has changed in this view.
-  void CursorPositionChanged(QmitkMIDASSingleViewWidget* thisView, const mitk::Vector3D& cursorPosition);
+  /// \brief Emitted when the cursor position has changed in this viewer.
+  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Emitted when the scale factor has changed in this view.
-  void ScaleFactorChanged(QmitkMIDASSingleViewWidget* thisView, double scaleFactor);
+  /// \brief Emitted when the scale factor has changed in this viewer.
+  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
 
-  /// \brief Emitted when the window layout has changed in this view.
-  void LayoutChanged(QmitkMIDASSingleViewWidget* thisView, MIDASLayout layout);
+  /// \brief Emitted when the window layout has changed in this viewer.
+  void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout layout);
 
-  /// \brief Emitted when the geometry of this view has changed.
-  void GeometryChanged(QmitkMIDASSingleViewWidget* thisView, mitk::TimeGeometry* geometry);
+  /// \brief Emitted when the geometry of this viewer has changed.
+  void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
 
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkMIDASStdMultiWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  virtual void OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected slice has changed in a render window.
   virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
@@ -360,9 +358,6 @@ protected slots:
   virtual void OnScaleFactorChanged(double scaleFactor);
 
 private:
-
-  /// \brief Provided here to provide access to the QmitkStdMultiWidget::InitializeStandardViews for friend classes only.
-  void InitializeStandardViews(const mitk::Geometry3D * geometry );
 
   /// \brief This method is called from both constructors to do the construction.
   void Initialize(QString windowName,
@@ -383,7 +378,7 @@ private:
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   QGridLayout* m_GridLayout;
-  QmitkMIDASStdMultiWidget* m_MultiWidget;
+  niftkMultiWindowWidget* m_MultiWidget;
 
   bool m_IsBoundGeometryActive;
   mitk::TimeGeometry::Pointer m_Geometry;       // This comes from which ever image is dropped, so not visible outside this class.
@@ -392,20 +387,20 @@ private:
   double m_MinimumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
   int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];     // Two for each orientation. Unbound, then bound, alternatingly.
   int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2]; // Two for each orientation. Unbound, then bound, alternatingly.
 //  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two each for layout. Unbound, then bound, alternatingly.
-  double m_ScaleFactors[MIDAS_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
-  bool m_LayoutInitialised[MIDAS_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
+  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];       // Two each for layout. Unbound, then bound, alternatingly.
+  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two each for layout. Unbound, then bound, alternatingly.
 
   bool m_NavigationControllerEventListening;
-  bool m_RememberSettingsPerLayout;
+  bool m_RememberSettingsPerWindowLayout;
 
-  MIDASLayout m_SingleWindowLayout;
-  MIDASLayout m_MultiWindowLayout;
+  WindowLayout m_SingleWindowLayout;
+  WindowLayout m_MultiWindowLayout;
 
   mitk::Vector3D m_CursorPosition;
   mitk::Vector3D m_LastCursorPosition;
@@ -415,7 +410,7 @@ private:
   mitk::Point3D m_SecondLastSelectedPosition;
 //  std::deque<mitk::Point3D> m_LastSelectedPositions;
 
-  mitk::MIDASViewKeyPressStateMachine::Pointer m_ViewKeyPressStateMachine;
+  mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
 };
 
 #endif

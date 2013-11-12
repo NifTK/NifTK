@@ -19,8 +19,6 @@
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkTimeGeometry.h>
-#include <mitkMIDASEnums.h>
-#include <mitkMIDASImageUtils.h>
 
 /**
  * \file mitkDataStorageUtils.h

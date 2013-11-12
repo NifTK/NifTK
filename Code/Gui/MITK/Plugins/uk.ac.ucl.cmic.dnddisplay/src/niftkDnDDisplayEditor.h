@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewEditor_h
-#define QmitkMIDASMultiViewEditor_h
+#ifndef niftkDnDDisplayEditor_h
+#define niftkDnDDisplayEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -34,46 +34,45 @@
 
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
 
-#include <mitkMIDASEnums.h>
-#include <QmitkMIDASMultiViewWidget.h>
-#include <QmitkMIDASMultiViewVisibilityManager.h>
+#include <niftkMultiViewerVisibilityManager.h>
 
 namespace mitk {
   class DataNode;
 }
 
 /**
- * \class QmitkMIDASMultiViewEditor
- * \brief Provides a MIDAS style layout, with up to 5 x 5 panes of equal size in a grid layout.
+ * \class niftkDnDDisplayEditor
+ * \brief Provides a display with with multiple image viewers on up to 5 x 5 panes of equal
+ * size in a grid layout.
  *
  * As of 18th April 2012, this editor inherits from the QmitkAbstractRenderEditor, and hence
  * conforms to the mitk::IRenderWindowPart which is the new Render Window Abstraction provided by
  * MITK on 24.02.2012, apart from the decorations. This editor purposefully implements the methods
  * EnableDecorations, IsDecorationEnabled, GetDecorations to do nothing (see method documentation).
  *
- * \ingroup uk_ac_ucl_cmic_midaseditor
+ * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
-class QmitkMIDASMultiViewEditorPrivate;
-class QmitkMIDASMultiViewWidget;
+class niftkDnDDisplayEditorPrivate;
+class niftkMultiViewerWidget;
 class QmitkRenderWindow;
 
-class DNDDISPLAY_EXPORT QmitkMIDASMultiViewEditor :
+class DNDDISPLAY_EXPORT niftkDnDDisplayEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(QmitkMIDASMultiViewEditor)
+  berryObjectMacro(niftkDnDDisplayEditor)
 
-  QmitkMIDASMultiViewEditor();
-  ~QmitkMIDASMultiViewEditor();
+  niftkDnDDisplayEditor();
+  ~niftkDnDDisplayEditor();
 
   static const std::string EDITOR_ID;
 
-  /// \brief Get hold of the internal QmitkMIDASMultiViewWidget.
-  QmitkMIDASMultiViewWidget* GetMIDASMultiViewWidget();
+  /// \brief Get hold of the internal niftkMultiViewerWidget.
+  niftkMultiViewerWidget* GetMultiViewer();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -159,7 +158,7 @@ public:
 
 protected:
 
-  /// \brief Tells the contained QmitkMIDASMultiViewWidget to setFocus().
+  /// \brief Tells the contained niftkMultiViewerWidget to setFocus().
   virtual void SetFocus();
 
   /// \brief Called when the preferences object of this editor changed.
@@ -170,7 +169,7 @@ protected:
 
 private:
 
-  const QScopedPointer<QmitkMIDASMultiViewEditorPrivate> d;
+  const QScopedPointer<niftkDnDDisplayEditorPrivate> d;
 };
 
 #endif

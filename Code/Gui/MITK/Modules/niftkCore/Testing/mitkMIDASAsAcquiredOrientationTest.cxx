@@ -42,12 +42,12 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestAsAcquired...");
 
-    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASLayout
+    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASOrientation
     MITK_TEST_OUTPUT(<< "TestAsAcquired...argv[1]=" << argv[1] << ", argv[2]=" << argv[2] << ", argv[3]=" << argv[3]);
 
     std::string fileName = argv[1];
-    int defaultView = atoi(argv[2]);
-    int expectedView = atoi(argv[3]);
+    int defaultOrientation = atoi(argv[2]);
+    int expectedOrientation = atoi(argv[3]);
 
     // Need to load images, specifically using MIDAS/DRC object factory.
     RegisterNifTKCoreObjectFactory();
@@ -60,16 +60,16 @@ public:
     mitk::DataStorage::SetOfObjects::ConstPointer allImages = localStorage->GetAll();
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1),".. Testing 1 image loaded.");
 
-    // Get the "As Acquired" view.
+    // Get the "As Acquired" orientation.
     const mitk::DataNode::Pointer node = (*allImages)[0];
     bool isImage = mitk::IsImage(node);
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(isImage, true),".. Testing IsImage=true");
 
-    MIDASLayout view = mitk::GetAsAcquiredView(MIDASLayout(defaultView), dynamic_cast<mitk::Image*>(node->GetData()));
-    MITK_TEST_OUTPUT(<< "MIDASLayout default=" << defaultView);
-    MITK_TEST_OUTPUT(<< "MIDASLayout output=" << view);
-    MITK_TEST_OUTPUT(<< "MIDASLayout expected=" << expectedView);
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(view, (MIDASLayout)expectedView),".. Testing expected view");
+    MIDASOrientation orientation = mitk::GetAsAcquiredOrientation(MIDASOrientation(defaultOrientation), dynamic_cast<mitk::Image*>(node->GetData()));
+    MITK_TEST_OUTPUT(<< "MIDASOrientation default=" << defaultOrientation);
+    MITK_TEST_OUTPUT(<< "MIDASOrientation output=" << orientation);
+    MITK_TEST_OUTPUT(<< "MIDASOrientation expected=" << expectedOrientation);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(orientation, (MIDASOrientation)expectedOrientation),".. Testing expected orientation");
 
     MITK_TEST_OUTPUT(<< "Finished TestAsAcquired...");
   }
@@ -88,4 +88,3 @@ int mitkMIDASAsAcquiredOrientationTest(int argc, char * argv[])
 
   MITK_TEST_END();
 }
-

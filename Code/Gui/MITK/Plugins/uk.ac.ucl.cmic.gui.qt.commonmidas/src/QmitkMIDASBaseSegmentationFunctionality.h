@@ -35,7 +35,6 @@
 // Miscellaneous.
 #include <mitkToolManager.h>
 #include <itkImage.h>
-#include <itkMIDASHelper.h>
 
 class QmitkRenderWindow;
 

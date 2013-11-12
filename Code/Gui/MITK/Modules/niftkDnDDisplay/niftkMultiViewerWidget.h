@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewWidget_h
-#define QmitkMIDASMultiViewWidget_h
+#ifndef niftkMultiViewerWidget_h
+#define niftkMultiViewerWidget_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -26,10 +26,8 @@
 #include <mitkRenderingManager.h>
 #include <mitkMIDASEnums.h>
 
-#include <QmitkMIDASSingleViewWidget.h>
-#include <QmitkMIDASMultiViewVisibilityManager.h>
-#include <QmitkMIDASLayoutWidget.h>
-#include <QmitkMIDASSlidersWidget.h>
+#include <niftkSingleViewerWidget.h>
+#include <niftkMultiViewerVisibilityManager.h>
 
 class QSpinBox;
 class QGridLayout;
@@ -47,46 +45,45 @@ class QButtonGroup;
 class QToolButton;
 class ctkPopupWidget;
 
-class QmitkMIDASMultiViewWidgetControlPanel;
+class niftkMultiViewerControls;
 
 /**
- * \class QmitkMIDASMultiViewWidget
- * \brief Provides a "standard MIDAS" style layout, with up to 5 x 5 image
- * viewing panes, arranged as rows and columns.
+ * \class niftkMultiViewerWidget
+ * \brief Provides up to 5 x 5 image viewing panes, arranged as rows and columns.
  *
  * This is a large, composite widget, containing a central area that can be
  * used to view images, several controls located at the top of the widget and
  * all the necessary plumbing to make it work. This widget is used as the
- * main editor widget of the QmitkMIDASMultiViewEditor.
+ * main editor widget of the niftkMultiViewerEditor.
  *
- * The standard MIDAS layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
+ * The standard layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
- * m_MaxRows x m_MaxCols QmitkMIDASSingleViewWidget each of which itself wraps
- * a QmitkMIDASStdMultiViewWidget which derives from QmitkStdMultiWidget,
+ * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
+ * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
- * including the option for 3D views, which current MIDAS does not have.
+ * including the option for 3D render window.
  */
-class NIFTKDNDDISPLAY_EXPORT QmitkMIDASMultiViewWidget : public QWidget
+class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 {
   Q_OBJECT
 
 public:
 
   /// \brief Constructor which builds up the controls and layout, and sets the selected window to zero,
-  /// the default drop type to MIDAS_DROP_TYPE_SINGLE, and sets the number of rows and columns to those
+  /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
-  QmitkMIDASMultiViewWidget(
-      QmitkMIDASMultiViewVisibilityManager* visibilityManager,
+  niftkMultiViewerWidget(
+      niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
       mitk::DataStorage::Pointer dataStorage,
-      int defaultNumberOfRows,
-      int defaultNumberOfColumns,
+      int defaultViewerRows,
+      int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically,
-  /// and we don't create or own the QmitkMIDASMultiViewVisibilityManager, so the remaining thing to
+  /// and we don't create or own the niftkMultiViewerVisibilityManager, so the remaining thing to
   /// do is to disconnect from the mitk::FocusManager.
-  virtual ~QmitkMIDASMultiViewWidget();
+  virtual ~niftkMultiViewerWidget();
 
   /// \brief Used to activate the whole widget.
   void Activated();
@@ -94,27 +91,27 @@ public:
   /// \brief Used to de-activate the whole widget.
   void Deactivated();
 
-  /// \brief As each QmitkMIDASSingleViewWidget may have its own rendering manager,
-  /// we may have to manually ask each widget to re-render.
+  /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
+  /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
 
-  /// \brief Set the background colour on all contained widgets, and we don't currently provide gradient backgrounds.
+  /// \brief Set the background colour on all contained viewers, and we don't currently provide gradient backgrounds.
   void SetBackgroundColour(QColor backgroundColour);
 
   /// \brief Sets the default interpolation type, which only takes effect when a node is next dropped into a given window.
-  void SetDefaultInterpolationType(MIDASDefaultInterpolationType interpolationType);
+  void SetInterpolationType(DnDDisplayInterpolationType interpolationType);
 
-  /// \brief Sets the default layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultLayout(MIDASLayout layout);
+  /// \brief Sets the default window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
+  void SetDefaultWindowLayout(WindowLayout windowLayout);
 
   /// \brief Sets the default single window layout (axial, coronal etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultSingleWindowLayout(MIDASLayout layout);
+  void SetDefaultSingleWindowLayout(WindowLayout windowLayout);
 
   /// \brief Sets the default multiple window layout (2x2, 3H, 3V etc.), which only takes effect when a node is next dropped into a given window.
-  void SetDefaultMultiWindowLayout(MIDASLayout layout);
+  void SetDefaultMultiWindowLayout(WindowLayout layout);
 
   /// \brief Sets the default drop type checkbox.
-  void SetDropType(MIDASDropType dropType);
+  void SetDropType(DnDDisplayDropType dropType);
 
   /// \brief Sets the visibility flag on the drop type checkboxes.
   void SetShowDropTypeControls(bool visible);
@@ -131,11 +128,11 @@ public:
   /// \brief Sets the visibility flag of the window layout controls on the control panel.
   void SetWindowLayoutControlsVisible(bool visible);
 
-  /// \brief Gets the visibility flag of the multi view controls on the control panel.
-  bool AreViewNumberControlsVisible() const;
+  /// \brief Gets the visibility flag of the multi viewer controls on the control panel.
+  bool AreViewerNumberControlsVisible() const;
 
-  /// \brief Sets the visibility flag of the multi view controls on the control panel.
-  void SetViewNumberControlsVisible(bool visible);
+  /// \brief Sets the visibility flag of the multi viewer controls on the control panel.
+  void SetViewerNumberControlsVisible(bool visible);
 
   /// \brief Sets the visibility flag controlling the Magnification Slider.
   void SetShowMagnificationSlider(bool visible);
@@ -152,14 +149,14 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
-  bool GetShow3DWindowInOrthoView() const;
+  /// \brief Gets the flag controlling whether we see the 3D window in orthogonal (2x2) window layout.
+  bool GetShow3DWindowIn2x2WindowLayout() const;
 
-  /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) view.
-  void SetShow3DWindowInOrthoView(bool enabled);
+  /// \brief Sets the flag controlling whether we see the 3D window in orthogonal (2x2) window layout.
+  void SetShow3DWindowIn2x2WindowLayout(bool enabled);
 
-  /// \brief Sets a flag to determine if we remember view settings (slice, timestep, magnification) when we switch the render window layout
-  void SetRememberSettingsPerLayout(bool rememberSettingsPerLayout);
+  /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the render window layout.
+  void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
 
   /// \brief Sets the slice index slider to be tracking.
   void SetSliceIndexTracking(bool tracking);
@@ -170,38 +167,38 @@ public:
   /// \brief Sets the magnification slider to be tracking.
   void SetMagnificationTracking(bool tracking);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes time step.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window changes slice index.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes slice index.
   void SetSelectedWindowSliceIndex(int sliceIndex);
 
-  /// \brief Most likely called from the QmitkMIDASMultiViewEditor to request that the currently selected window switches 3D.
+  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
 
   /// \brief Shows or hides the cursor.
   bool ToggleCursor();
 
   /// \brief Sets whether the interaction is enabled, and a single viewer.
-  void SetMIDASSegmentationMode(bool enabled);
+  void SetSegmentationModeEnabled(bool enabled);
 
-  /// \brief Gets the flag indicating whether this widget is currently in MIDAS Segmentation Mode, which means a single viewer.
-  bool GetMIDASSegmentationMode() const;
+  /// \brief Gets the flag indicating whether this viewer is currently in segmentation mode, which means a single viewer.
+  bool IsSegmentationModeEnabled() const;
 
-  /// \brief Sets this widget to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
+  /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
   void SetThumbnailMode(bool enabled);
 
-  /// \brief Gets the flag indicating whether this widget is currently in thumnail mode.
+  /// \brief Gets the flag indicating whether this viewer is currently in thumnail mode.
   bool GetThumbnailMode() const;
 
-  /// \brief Returns the orientation from the orientation widgets, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. 3D view selected).
+  /// \brief Returns the orientation from the window layout, or MIDAS_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
   MIDASOrientation GetOrientation() const;
 
   // Callback method that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
-  /// \brief Will return the selected view or the first view if none is selected.
-  QmitkMIDASSingleViewWidget* GetSelectedView() const;
+  /// \brief Will return the selected viewer or the first viewer if none is selected.
+  niftkSingleViewerWidget* GetSelectedViewer() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
@@ -209,7 +206,7 @@ public:
   virtual QmitkRenderWindow* GetSelectedRenderWindow() const;
 
   /**
-   * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all widgets.
+   * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all viewers.
    */
   virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
 
@@ -242,7 +239,7 @@ public:
 
   /**
    * \brief To be called from the editor, to set the focus to the currently selected
-   * widget, or the first widget.
+   * viewer, or the first viewer.
    */
   virtual void SetFocus();
 
@@ -272,58 +269,58 @@ protected slots:
   void OnShow3DWindowChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnLayoutChanged(MIDASLayout layout);
+  void OnWindowLayoutChanged(WindowLayout layout);
 
-  /// \brief Called when the binding of cursors in the render windows of a view has been changed through the control panel.
+  /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
   void OnWindowCursorBindingChanged(bool);
 
-  /// \brief Called when the binding of magnifications in the render windows of a view has been changed through the control panel.
+  /// \brief Called when the binding of magnifications in the render windows of a viewer has been changed through the control panel.
   void OnWindowMagnificationBindingChanged(bool);
 
-  /// \brief Called when the number of views has been changed through the control panel.
-  void OnViewNumberChanged(int rows, int columns);
+  /// \brief Called when the number of viewers has been changed through the control panel.
+  void OnViewerNumberChanged(int rows, int columns);
 
-  /// \brief Called when the view position binding has been changed through the control panel.
-  void OnViewPositionBindingChanged();
+  /// \brief Called when the viewer position binding has been changed through the control panel.
+  void OnViewerPositionBindingChanged();
 
-  /// \brief Called when the view cursor binding has been changed through the control panel.
-  void OnViewCursorBindingChanged();
+  /// \brief Called when the viewer cursor binding has been changed through the control panel.
+  void OnViewerCursorBindingChanged();
 
-  /// \brief Called when the view layout binding has been changed through the control panel.
-  void OnViewLayoutBindingChanged();
+  /// \brief Called when the viewer layout binding has been changed through the control panel.
+  void OnViewerLayoutBindingChanged();
 
-  /// \brief Called when the view magnification binding has been changed through the control panel.
-  void OnViewMagnificationBindingChanged();
+  /// \brief Called when the viewer magnification binding has been changed through the control panel.
+  void OnViewerMagnificationBindingChanged();
 
-  /// \brief Called when the view geometry binding has been changed through the control panel.
-  void OnViewGeometryBindingChanged();
+  /// \brief Called when the viewer geometry binding has been changed through the control panel.
+  void OnViewerGeometryBindingChanged();
 
   /// \brief Called when the drop type has been changed through the control panel.
-  void OnDropTypeChanged(MIDASDropType dropType);
+  void OnDropTypeChanged(DnDDisplayDropType dropType);
 
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateChanged(bool checked);
 
-  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the QmitkMIDASMultiViewVisibilityManager sorts out visibility, so here we just set the focus.
+  /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
   void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Called when the selected position has changed in a render window of a view.
-  /// Each of the contained views will signal when its slice navigation controllers have changed.
-  void OnSelectedPositionChanged(QmitkMIDASSingleViewWidget* view, QmitkRenderWindow* renderWindow, int sliceIndex);
+  /// \brief Called when the selected position has changed in a render window of a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, int sliceIndex);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(QmitkMIDASSingleViewWidget* view, const mitk::Vector3D& cursorPosition);
+  void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Vector3D& cursorPosition);
 
-  /// \brief Called when the scale factor of a view has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double scaleFactor);
+  /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
+  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, double scaleFactor);
 
-  /// \brief Called when the window layout of a view has changed.
-  void OnLayoutChanged(QmitkMIDASSingleViewWidget* view, MIDASLayout);
+  /// \brief Called when the window layout of a viewer has changed.
+  void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout);
 
-  /// \brief Called when the geometry of a view has changed.
-  void OnGeometryChanged(QmitkMIDASSingleViewWidget* view, mitk::TimeGeometry* geometry);
+  /// \brief Called when the geometry of a viewer has changed.
+  void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
 
-  /// \brief Called when the popup widget opens/closes, and used to re-render the widgets.
+  /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);
 
   /// \brief Called when the pin button is toggled.
@@ -333,38 +330,38 @@ protected:
 
 private:
 
-  /// \brief Will return the index of the selected view or 0 if none is selected.
-  int GetSelectedViewIndex() const;
+  /// \brief Will return the index of the selected viewer or 0 if none is selected.
+  int GetSelectedViewerIndex() const;
 
-  /// \brief Gets the row number, given a view index [0, m_MaxRows*m_MaxCols-1]
-  int GetRowFromIndex(int i) const;
+  /// \brief Gets the row number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
+  int GetViewerRowFromIndex(int index) const;
 
-  /// \brief Gets the column number, given a viewer index [0, m_MaxRows*m_MaxCols-1]
-  int GetColumnFromIndex(int i) const;
+  /// \brief Gets the column number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
+  int GetViewerColumnFromIndex(int index) const;
 
-  /// \brief Gets the index, given a row [0, m_MaxRows-1] and column [0, m_MaxCols-1] number.
-  int GetIndexFromRowAndColumn(int r, int c) const;
+  /// \brief Gets the index, given a row [0, m_MaxRows - 1] and column [0, m_MaxCols - 1] number.
+  int GetViewerIndexFromRowAndColumn(int row, int column) const;
 
-  /// \brief Will look at the default layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
-  MIDASLayout GetDefaultLayoutForSegmentation() const;
+  /// \brief Will look at the default window layout, and if its axial, coronal, or sagittal, will use that, otherwise, coronal.
+  WindowLayout GetDefaultWindowLayoutForSegmentation() const;
 
-  /// \brief Main method to change the number of views.
-  void SetViewNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
+  /// \brief Main method to change the number of viewers.
+  void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the layout.
-  void SetLayout(MIDASLayout layout);
+  void SetLayout(WindowLayout windowLayout);
 
-  /// \brief If a particular view is selected, we need to iterate through all views, and make the rest unselected.
-  void SetSelectedViewIndex(int i);
+  /// \brief If a particular viewer is selected, we need to iterate through all viewers, and make the rest unselected.
+  void SetSelectedViewerByIndex(int index);
 
-  /// \brief Creates a view widget.
-  QmitkMIDASSingleViewWidget* CreateSingleViewWidget();
+  /// \brief Creates a new viewer.
+  niftkSingleViewerWidget* CreateViewer();
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
 
-  /// \brief Updates focus manager to auto-focus on the 'currently selected' view
-  void UpdateFocusManagerToSelectedView();
+  /// \brief Updates focus manager to auto-focus on the 'currently selected' viewer.
+  void UpdateFocusManagerToSelectedViewer();
 
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry(bool isBoundNow);
@@ -372,8 +369,8 @@ private:
   /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
   void UpdateBoundMagnification();
 
-  /// \brief Selects the render window of the given view.
-  void SetSelectedRenderWindow(int selectedViewIndex, QmitkRenderWindow* selectedRenderWindow);
+  /// \brief Selects the render window of the given viewer.
+  void SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow);
 
   /// \brief Sets the flag controlling whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -381,7 +378,7 @@ private:
   /// \brief Gets the flag controlling whether we are listening to the navigation controller events.
   bool GetNavigationControllerEventListening() const;
 
-  QmitkMIDASMultiViewWidgetControlPanel* CreateControlPanel(QWidget* parent);
+  niftkMultiViewerControls* CreateControlPanel(QWidget* parent);
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -391,40 +388,40 @@ private:
   QToolButton* m_PinButton;
   ctkPopupWidget* m_PopupWidget;
 
-  // This determines the maximum number of views.
-  static const int m_MaxViewRows = 5;
-  static const int m_MaxViewColumns = 5;
+  // This determines the maximum number of viewers.
+  static const int m_MaxViewerRows = 5;
+  static const int m_MaxViewerColumns = 5;
 
   // All the viewer windows.
-  QList<QmitkMIDASSingleViewWidget*> m_SingleViewWidgets;
+  QList<niftkSingleViewerWidget*> m_Viewers;
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
-  QmitkMIDASMultiViewVisibilityManager* m_VisibilityManager;
+  niftkMultiViewerVisibilityManager* m_VisibilityManager;
   mitk::DataStorage* m_DataStorage;
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.
   unsigned long m_FocusManagerObserverTag;
-  int m_SelectedViewIndex;
-  int m_DefaultViewRows;
-  int m_DefaultViewColumns;
-  int m_ViewRowsInNonThumbnailMode;
-  int m_ViewColumnsInNonThumbnailMode;
-  int m_ViewRowsBeforeSegmentationMode;
-  int m_ViewColumnsBeforeSegmentationMode;
+  int m_SelectedViewerIndex;
+  int m_DefaultViewerRows;
+  int m_DefaultViewerColumns;
+  int m_ViewerRowsInNonThumbnailMode;
+  int m_ViewerColumnsInNonThumbnailMode;
+  int m_ViewerRowsBeforeSegmentationMode;
+  int m_ViewerColumnsBeforeSegmentationMode;
   bool m_Show2DCursors;
-  bool m_Show3DWindowInOrthoView;
+  bool m_Show3DWindowIn2x2WindowLayout;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerLayout;
   bool m_IsThumbnailMode;
-  bool m_IsMIDASSegmentationMode;
+  bool m_SegmentationModeEnabled;
   bool m_NavigationControllerEventListening;
   double m_Magnification;
-  MIDASLayout m_SingleWindowLayout;
-  MIDASLayout m_MultiWindowLayout;
+  WindowLayout m_SingleWindowLayout;
+  WindowLayout m_MultiWindowLayout;
 
-  QmitkMIDASMultiViewWidgetControlPanel* m_ControlPanel;
+  niftkMultiViewerControls* m_ControlPanel;
 };
 
 #endif

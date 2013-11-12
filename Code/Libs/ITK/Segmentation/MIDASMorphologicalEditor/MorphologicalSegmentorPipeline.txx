@@ -168,8 +168,8 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
   // 3. Get Axis that represents superior/inferior
   int axialAxis = -1;
-  itk::ORIENTATION_ENUM orientationEnum = itk::ORIENTATION_AXIAL; 
-  itk::GetAxisFromITKImage<TPixel, VImageDimension>(input, orientationEnum, axialAxis);
+  itk::Orientation itkOrientation = itk::ORIENTATION_AXIAL;
+  itk::GetAxisFromITKImage<TPixel, VImageDimension>(input, itkOrientation, axialAxis);
   
   if (axialAxis != -1)
   {

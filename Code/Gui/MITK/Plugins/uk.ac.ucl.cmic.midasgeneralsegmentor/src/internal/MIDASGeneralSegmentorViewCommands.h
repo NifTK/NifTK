@@ -20,7 +20,6 @@
 #include <mitkTool.h>
 #include <mitkPointSet.h>
 #include <mitkContourModelSet.h>
-#include <itkMIDASHelper.h>
 #include <itkMIDASImageUpdateClearRegionProcessor.h>
 #include <itkMIDASImageUpdatePasteRegionProcessor.h>
 #include <itkMIDASRetainMarksNoThresholdingProcessor.h>
@@ -147,7 +146,7 @@ public:
       int fromSlice,
       int toSlice,
       int axisNumber,
-      itk::ORIENTATION_ENUM orientation,
+      itk::Orientation orientation,
       std::vector<int> &region,
       ProcessorPointer processor
       )
@@ -165,7 +164,7 @@ public:
   int GetFromSlice() const { return m_FromSlice; }
   int GetToSlice() const { return m_ToSlice; }
   int GetAxisNumber() const { return m_AxisNumber; }
-  itk::ORIENTATION_ENUM GetOrientation() const { return m_Orientation; }
+  itk::Orientation GetOrientation() const { return m_Orientation; }
   std::vector<int> GetRegion() const { return m_Region; }
   ProcessorPointer GetProcessor() const { return m_Processor; }
 
@@ -173,7 +172,7 @@ private:
   int m_FromSlice;
   int m_ToSlice;
   int m_AxisNumber;
-  itk::ORIENTATION_ENUM m_Orientation;
+  itk::Orientation m_Orientation;
   std::vector<int> m_Region;
   ProcessorPointer m_Processor;
 };

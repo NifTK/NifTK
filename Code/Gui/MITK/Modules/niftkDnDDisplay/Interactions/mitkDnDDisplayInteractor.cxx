@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkMIDASDisplayInteractor.h"
+#include "mitkDnDDisplayInteractor.h"
 
 #include <string.h>
 
@@ -21,7 +21,7 @@
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
 
-mitk::MIDASDisplayInteractor::MIDASDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers)
+mitk::DnDDisplayInteractor::DnDDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers)
 : mitk::DisplayInteractor()
 , m_Renderers(renderers)
 {
@@ -30,11 +30,11 @@ mitk::MIDASDisplayInteractor::MIDASDisplayInteractor(const std::vector<mitk::Bas
   m_SliceNavigationControllers[2] = renderers[2]->GetSliceNavigationController();
 }
 
-mitk::MIDASDisplayInteractor::~MIDASDisplayInteractor()
+mitk::DnDDisplayInteractor::~DnDDisplayInteractor()
 {
 }
 
-void mitk::MIDASDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
+void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (std::find(m_Renderers.begin(), m_Renderers.end(), renderer) != m_Renderers.end())
@@ -43,19 +43,19 @@ void mitk::MIDASDisplayInteractor::Notify(InteractionEvent* interactionEvent, bo
   }
 }
 
-void mitk::MIDASDisplayInteractor::ConnectActionsAndFunctions()
+void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 {
   mitk::DisplayInteractor::ConnectActionsAndFunctions();
   CONNECT_FUNCTION("initZoom", InitZoom);
 }
 
-bool mitk::MIDASDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   BaseRenderer* renderer = interactionEvent->GetSender();
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
   {
-    MITK_WARN << "mitk DisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
+    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
     return false;
   }
 
@@ -67,7 +67,7 @@ bool mitk::MIDASDisplayInteractor::InitZoom(StateMachineAction* action, Interact
   }
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
-  // In the MIDASStdMultiWidget this puts the crosshair to the mouse position, and
+  // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
   m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);

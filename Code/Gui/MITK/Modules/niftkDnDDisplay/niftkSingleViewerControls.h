@@ -12,29 +12,35 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASMultiViewWidgetControlPanel_h
-#define QmitkMIDASMultiViewWidgetControlPanel_h
+#ifndef niftkSingleViewerControls_h
+#define niftkSingleViewerControls_h
 
 #include <QWidget>
-#include "ui_QmitkMIDASMultiViewWidgetControlPanel.h"
 
-#include <mitkMIDASEnums.h>
+#include <niftkDnDDisplayExports.h>
+
+#include "niftkDnDDisplayEnums.h"
+
+namespace Ui
+{
+class niftkSingleViewerControls;
+}
 
 /**
- * \class QmitkMIDASMultiViewWidgetControlPanel
+ * \class niftkSingleViewerControls
  * \brief Control panel for the DnD display.
  */
-class QmitkMIDASMultiViewWidgetControlPanel : public QWidget, private Ui_QmitkMIDASMultiViewWidgetControlPanel
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerControls : public QWidget
 {
   Q_OBJECT
   
 public:
 
-  /// \brief Constructs the QmitkMIDASMultiViewWidgetControlPanel object.
-  explicit QmitkMIDASMultiViewWidgetControlPanel(QWidget *parent = 0);
+  /// \brief Constructs the niftkSingleViewerControls object.
+  explicit niftkSingleViewerControls(QWidget *parent = 0);
 
-  /// \brief Destructs the QmitkMIDASMultiViewWidgetControlPanel object.
-  virtual ~QmitkMIDASMultiViewWidgetControlPanel();
+  /// \brief Destructs the niftkSingleViewerControls object.
+  virtual ~niftkSingleViewerControls();
   
   /// \brief Tells if the magnification controls are visible.
   bool AreMagnificationControlsVisible() const;
@@ -53,30 +59,6 @@ public:
 
   /// \brief Shows or hides the window layout controls.
   void SetWindowLayoutControlsVisible(bool visible);
-
-  /// \brief Tells if the multi view controls are visible.
-  bool AreViewNumberControlsVisible() const;
-
-  /// \brief Shows or hides the multi view controls.
-  void SetViewNumberControlsVisible(bool visible);
-
-  /// \brief Tells if the drop type controls are visible.
-  bool AreDropTypeControlsVisible() const;
-
-  /// \brief Shows or hides the drop type controls.
-  void SetDropTypeControlsVisible(bool visible);
-
-  /// \brief Tells if the single view controls are enabled.
-  bool AreSingleViewControlsEnabled() const;
-
-  /// \brief Enables or disables the single view controls.
-  void SetSingleViewControlsEnabled(bool enabled);
-
-  /// \brief Tells if the multi view controls are enabled.
-  bool AreMultiViewControlsEnabled() const;
-
-  /// \brief Enables or disables the multi view controls.
-  void SetMultiViewControlsEnabled(bool enabled);
 
   /// \brief Gets the maximal slice index that is the number of slices - 1.
   int GetMaxSliceIndex() const;
@@ -148,10 +130,10 @@ public:
   void Set3DWindowVisible(bool visible);
 
   /// \brief Gets the selected render window layout.
-  MIDASLayout GetLayout() const;
+  WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout controls to the given layout.
-  void SetLayout(MIDASLayout layout);
+  void SetWindowLayout(WindowLayout windowlayout);
 
   /// \brief Returns true if the cursors are bound across the windows of a viewer, otherwise false.
   bool AreWindowCursorsBound() const;
@@ -164,60 +146,6 @@ public:
 
   /// \brief Sets the bind window magnifications check box to the given value.
   void SetWindowMagnificationsBound(bool bound);
-
-  /// \brief Gets the number of rows of the views.
-  int GetViewRows() const;
-
-  /// \brief Gets the number of rows of the views.
-  int GetViewColumns() const;
-
-  /// \brief Sets the number of the rows and columns of views to the given numbers.
-  void SetViewNumber(int rows, int columns);
-
-  /// \brief Gets the maximal number of rows of the views.
-  int GetMaxViewRows() const;
-
-  /// \brief Gets the maximal number of columns of the views.
-  int GetMaxViewColumns() const;
-
-  /// \brief Sets the maximal number of the rows and columns of views to the given numbers.
-  void SetMaxViewNumber(int rows, int columns);
-
-  /// \brief Returns true if the selected position of the views is bound, otherwise false.
-  bool AreViewPositionsBound() const;
-
-  /// \brief Sets the bind view positions check box to the given value.
-  void SetViewPositionsBound(bool bound);
-
-  /// \brief Returns true if the  cursor of the views is bound, otherwise false.
-  bool AreViewCursorsBound() const;
-
-  /// \brief Sets the bind view cursors check box to the given value.
-  void SetViewCursorsBound(bool bound);
-
-  /// \brief Returns true if the magnification of the views are bound, otherwise false.
-  bool AreViewMagnificationsBound() const;
-
-  /// \brief Sets the bind view magnifications check box to the given value.
-  void SetViewMagnificationsBound(bool bound);
-
-  /// \brief Returns true if the  layout of the views is bound, otherwise false.
-  bool AreViewLayoutsBound() const;
-
-  /// \brief Sets the bind view layouts check box to the given value.
-  void SetViewLayoutsBound(bool bound);
-
-  /// \brief Returns true if the  geometry of the views is bound, otherwise false.
-  bool AreViewGeometriesBound() const;
-
-  /// \brief Sets the bind view geometries check box to the given value.
-  void SetViewGeometriesBound(bool bound);
-
-  /// \brief Gets the selected drop type.
-  MIDASDropType GetDropType() const;
-
-  /// \brief Sets the drop type controls to the given drop type.
-  void SetDropType(MIDASDropType dropType);
 
 signals:
 
@@ -240,7 +168,7 @@ signals:
   void Show3DWindowChanged(bool visible);
 
   /// \brief Emitted when the select layout has been changed.
-  void LayoutChanged(MIDASLayout layout);
+  void WindowLayoutChanged(WindowLayout windowLayout);
 
   /// \brief Emitted when the window cursor binding option has been changed.
   void WindowCursorBindingChanged(bool bound);
@@ -248,57 +176,42 @@ signals:
   /// \brief Emitted when the window magnification binding option has been changed.
   void WindowMagnificationBindingChanged(bool bound);
 
-  /// \brief Emitted when the selected number of views has been changed.
-  void ViewNumberChanged(int rows, int columns);
+protected slots:
 
-  /// \brief Emitted when the view position binding option has been changed.
-  void ViewPositionBindingChanged(bool bound);
+  void OnSliceIndexChanged(double sliceIndex);
+  void OnTimeStepChanged(double timeStep);
 
-  /// \brief Emitted when the view cursor binding option has been changed.
-  void ViewCursorBindingChanged(bool bound);
+  /// \brief Called when the axial window radio button is toggled.
+  void OnAxialWindowRadioButtonToggled(bool checked);
 
-  /// \brief Emitted when the view magnification binding option has been changed.
-  void ViewMagnificationBindingChanged(bool bound);
+  /// \brief Called when the sagittal window radio button is toggled.
+  void OnSagittalWindowRadioButtonToggled(bool checked);
 
-  /// \brief Emitted when the view layout binding option has been changed.
-  void ViewLayoutBindingChanged(bool bound);
+  /// \brief Called when the coronal window radio button is toggled.
+  void OnCoronalWindowRadioButtonToggled(bool checked);
 
-  /// \brief Emitted when the view geometry binding option has been changed.
-  void ViewGeometryBindingChanged(bool bound);
+  /// \brief Called when the 3D window radio button is toggled.
+  void On3DWindowRadioButtonToggled(bool checked);
 
-  /// \brief Emitted when the selected drop type has been changed.
-  void DropTypeChanged(MIDASDropType dropType);
+  /// \brief Called when the multiple window radio button is toggled.
+  void OnMultiWindowRadioButtonToggled(bool checked);
 
-  /// \brief Emitted when the drop accumulate option has been changed.
-  void DropAccumulateChanged(bool accumulate);
-
-private slots:
-
-  void OnLayoutChanged(MIDASLayout layout);
-
-  void On1x1ViewsButtonClicked();
-  void On1x2ViewsButtonClicked();
-  void On1x3ViewsButtonClicked();
-  void On2x1ViewsButtonClicked();
-  void On2x2ViewsButtonClicked();
-  void On2x3ViewsButtonClicked();
-  void OnViewRowsSpinBoxValueChanged(int rows);
-  void OnViewColumnsSpinBoxValueChanged(int columns);
-
-  void OnViewPositionBindingChanged(bool bound);
-  void OnViewCursorBindingChanged(bool bound);
-
-  void OnDropSingleRadioButtonToggled(bool bound);
-  void OnDropMultipleRadioButtonToggled(bool bound);
-  void OnDropThumbnailRadioButtonToggled(bool bound);
+  /// \brief Called when a window layout is selected in the the combo box.
+  void OnMultiWindowComboBoxIndexChanged(int index);
 
 private:
 
-  bool m_ShowMagnificationControls;
+  Ui::niftkSingleViewerControls* ui;
+
   bool m_ShowShowOptions;
   bool m_ShowWindowLayoutControls;
-  bool m_ShowViewNumberControls;
-  bool m_ShowDropTypeControls;
+
+  /// \brief Stores the currently selected window layout.
+  WindowLayout m_WindowLayout;
+
+  /// \brief Stores the multiple window layouts in the same order as the combo box.
+  static WindowLayout s_MultiWindowLayouts[];
+  static int const s_MultiWindowLayoutNumber;
 };
 
-#endif // QMITKMIDASMULTIVIEWWIDGETCONTROLPANEL_H
+#endif

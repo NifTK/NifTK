@@ -333,9 +333,10 @@ mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataSt
     }
   }
 
-  // In addition, (as MIDAS is an image based viewer), if the node is NOT a greyscale image,
-  // we try and search the parents of the node to find a greyscale image and use that one in preference.
-  // This assumes that derived datasets, such as point sets, surfaces, segmented volumes are correctly assigned to parents.
+  // In addition, if the node is NOT a greyscale image, we try and search the parents
+  // of the node to find a greyscale image and use that one in preference.
+  // This assumes that derived datasets, such as point sets, surfaces, segmented
+  // volumes are correctly assigned to parents.
   if (indexThatWeActuallyUsed != -1)
   {
     if (!mitk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
