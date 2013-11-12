@@ -91,7 +91,6 @@ int mitkSurfaceBasedRegistrationTest(int argc, char* argv[])
   } 
   
   mitk::TestSurfaceBasedRegistration::Pointer registerer = mitk::TestSurfaceBasedRegistration::New();
-  registerer->SetUseSpatialFilter(false);
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
