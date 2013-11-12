@@ -16,9 +16,8 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkTestingMacros.h>
 #include <mitkSurfaceBasedRegistration.h>
-//#include <mitkDataStorage.h>
 #include <mitkPointSetReader.h>
-#include <mitkVtkSurfaceReader.h>
+#include <mitkSTLFileReader.h>
 
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
@@ -46,7 +45,7 @@ int main(int argc, char** argv)
   int numberOfPoints = FixedPoints->GetSize();
   if ( numberOfPoints == 0  )
   {
-    mitk::VtkSurfaceReader::Pointer  FixedSurfaceReader = mitk::VtkSurfaceReader::New();
+    mitk::STLFileReader::Pointer  FixedSurfaceReader = mitk::STLFileReader::New();
     FixedSurfaceReader->SetFileName(target);
     FixedSurfaceReader->Update();
     FixedSurface = FixedSurfaceReader->GetOutput();
@@ -58,7 +57,7 @@ int main(int argc, char** argv)
   }
 
   //Read Moving Surface
-  mitk::VtkSurfaceReader::Pointer  SurfaceReader = mitk::VtkSurfaceReader::New();
+  mitk::STLFileReader::Pointer  SurfaceReader = mitk::STLFileReader::New();
   SurfaceReader->SetFileName(source);
   mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
   SurfaceReader->Update();
