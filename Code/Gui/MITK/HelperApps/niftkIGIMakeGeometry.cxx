@@ -59,6 +59,14 @@ int main(int argc, char** argv)
   {
     surface = MakeLaparoscope (rigidBodyFile, handeye);
   }
+  if ( geometry == "pointer" )
+  {
+    surface = MakePointer (rigidBodyFile, handeye);
+  }
+  if ( geometry == "reference" )
+  {
+    surface = MakeReference (rigidBodyFile, handeye);
+  }
 
   mitk::IOUtil::SaveSurface (surface,output);
   if ( Visualise )
