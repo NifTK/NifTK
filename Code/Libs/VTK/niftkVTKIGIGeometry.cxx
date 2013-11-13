@@ -53,11 +53,22 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
   TranslatePolyData(lensCowl,transform);
  
   vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions);
- 
+
+  std::vector < float > lensOrigin; 
+  lensOrigin.push_back(handeye->GetElement(0,3));
+  lensOrigin.push_back(handeye->GetElement(1,3));
+  lensOrigin.push_back(handeye->GetElement(2,3));
+
+  std::vector< std::vector < float > > axis; 
+  axis.push_back(this->Centroid(positions));
+  axis.push_back(lensOrigin);
+
+
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
   appenderer->AddInput(ireds);
   appenderer->AddInput(lensCowl);
+  appenderer->AddInput(this->ConnectIREDs(axis));
 
   //get the lens position
   return appenderer->GetOutput();
