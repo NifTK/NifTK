@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     renderWindowInteractor->SetRenderWindow(renderWindow);
     renderer->AddActor(sourceActor);
-    renderer->SetBackground(.3, .6, .3); // Background color green
+    renderer->SetBackground(.96, .04, .84); // Background a pleasant shade CMIC pink
     // Render and interact
     renderWindow->Render();
     renderWindowInteractor->Start();
