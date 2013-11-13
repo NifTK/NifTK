@@ -24,6 +24,7 @@ set(CPP_FILES
   TrackedPointer/mitkTrackedPointerManager.cxx
   PointBasedRegistration/mitkPointBasedRegistration.cxx
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
+  Utils/mitkMakeGeometry.cxx
 )
 
 if(BUILD_PCL)

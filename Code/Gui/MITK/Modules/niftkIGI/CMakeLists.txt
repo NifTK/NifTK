@@ -21,7 +21,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkIGI
   EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration PCLTest
+  INCLUDE_DIRS DataSources SurfaceReconstruction TrackedImage TrackedPointer PointBasedRegistration SurfaceBasedRegistration PCLTest Utils
   DEPENDS Mitk MitkExt mitkOpenCVVideoSupport niftkCore mitkCameraCalibration niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )

@@ -14,7 +14,6 @@
 
 set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
-  Common/mitkMakeGeometry.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
