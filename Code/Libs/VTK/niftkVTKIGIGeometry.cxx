@@ -301,7 +301,7 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
     join3->SetPoint2 ( IREDPositions[4][0], IREDPositions[4][1], IREDPositions[4][2]);
     
     join4->SetPoint1 ( IREDPositions[1][0], IREDPositions[1][1], IREDPositions[1][2]);
-    join4->SetPoint1 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
+    join4->SetPoint2 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
       
     appenderer->AddInput(join1->GetOutput());
     appenderer->AddInput(join2->GetOutput());
