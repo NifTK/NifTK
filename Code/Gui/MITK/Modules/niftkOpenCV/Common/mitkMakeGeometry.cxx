@@ -23,13 +23,14 @@
 #include <niftkVTKIGIGeometry.h>
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
   mitk::IOUtil::SaveSurface (surface,"/dev/shm/laparoscope.vtp");
+  mitk::IOUtil::SaveSurface (surface,"/dev/shm/laparoscope.vtk");
   return surface;
 }
 

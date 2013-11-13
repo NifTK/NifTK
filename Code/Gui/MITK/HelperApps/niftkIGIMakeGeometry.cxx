@@ -46,13 +46,9 @@ int main(int argc, char** argv)
   {
     surface = MakeAWall(5);
   }
-  if ( rigidBodyFile.length() != 0 )
+  if ( geometry == "laparoscope" )
   {
-    std::vector < std::vector <float > > IREDS = ReadRigidBodyDefinitionFile ( rigidBodyFile );
-    for ( unsigned int i = 0 ; i < IREDS.size() ; i ++ )
-    {
-      std::cout << i << " " << IREDS[i][0] << " " << IREDS[i][1] << " " << IREDS[i][2] << std::endl;
-    }
+    surface = MakeLaparoscope (rigidBodyFile, handeye);
   }
 
 }
