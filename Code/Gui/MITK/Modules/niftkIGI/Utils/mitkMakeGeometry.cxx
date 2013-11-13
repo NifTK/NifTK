@@ -14,7 +14,6 @@
 
 #include "mitkMakeGeometry.h"
 #include <mitkFileIOUtils.h>
-#include <mitkIOUtil.h>
 
 #include <vtkCubeSource.h>
 #include <vtkSmartPointer.h>
@@ -29,8 +28,6 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::str
   vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscope(rigidBodyFilename, handeyeFilename);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(laparoscope);
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/laparoscope.vtp");
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/laparoscope.vtk");
   return surface;
 }
 
@@ -41,7 +38,6 @@ mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, QString& handey
   vtkSmartPointer<vtkPolyData> pointer = maker.MakePointer(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(pointer);
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/pointer.vtp");
   return surface;
 }
 
@@ -52,7 +48,6 @@ mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, QString& hand
   vtkSmartPointer<vtkPolyData> reference = maker.MakeReference(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(reference);
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/reference.vtp");
   return surface;
 }
 
@@ -67,7 +62,6 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
 
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(wall);
-  mitk::IOUtil::SaveSurface (surface,"/dev/shm/wall.vtp");
   return surface;
 }
 

@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkMakeGeometry.h>
-
+#include <mitkIOUtil.h>
 #include <niftkIGIMakeGeometryCLP.h>
 
 int main(int argc, char** argv)
@@ -50,5 +50,8 @@ int main(int argc, char** argv)
   {
     surface = MakeLaparoscope (rigidBodyFile, handeye);
   }
+
+  mitk::IOUtil::SaveSurface (surface,output);
+
 
 }
