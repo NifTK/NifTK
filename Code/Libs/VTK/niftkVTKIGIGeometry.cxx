@@ -12,12 +12,14 @@
 
 =============================================================================*/
 #include "niftkVTKIGIGeometry.h"
+#include "niftkVTKFunctions.h"
 
 #include <vtkCubeSource.h>
 #include <vtkSphereSource.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCylinderSource.h>
 
 #include <sstream>
 #include <cassert>
@@ -27,7 +29,30 @@ namespace niftk
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
-  return this->MakeIREDs(positions);
+  vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
+  vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+  transform->SetMatrix(handeye);
+
+
+  vtkSmartPointer<vtkPolyData> lensCowl = vtkSmartPointer<vtkPolyData>::New();
+
+  vtkSmartPointer<vtkCylinderSource> lensCyl = vtkSmartPointer<vtkCylinderSource>::New();
+  lensCyl->SetRadius(20.0);
+  lensCyl->SetHeight(80.0);
+  lensCyl->SetCenter(0.0,-40.0,0.0);
+  lensCyl->SetResolution(6);
+  lensCowl=lensCyl->GetOutput();
+  TranslatePolyData(lensCowl,transform);
+ 
+  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions);
+ 
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  appenderer->AddInput(ireds);
+  appenderer->AddInput(lensCowl);
+
+  //get the lens position
+  return appenderer->GetOutput();
 }
 
 //-----------------------------------------------------------------------------
