@@ -17,6 +17,15 @@
 #include <mitkIOUtil.h>
 #include <niftkIGIMakeGeometryCLP.h>
 
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkProperty.h>
+
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
@@ -52,6 +61,29 @@ int main(int argc, char** argv)
   }
 
   mitk::IOUtil::SaveSurface (surface,output);
+  if ( Visualise )
+  {
+    vtkSmartPointer<vtkPolyData> vtkSurface = surface->GetVtkPolyData();
+    vtkSmartPointer<vtkPolyDataMapper> sourceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+   // sourceMapper->SetInputData(vtkSurface);
+    sourceMapper->SetInputConnection(vtkSurface->GetProducerPort());
+    vtkSmartPointer<vtkActor> sourceActor = vtkSmartPointer<vtkActor>::New();
+    sourceActor->SetMapper(sourceMapper);
+    sourceActor->GetProperty()->SetColor(1,1,1);
+    sourceActor->GetProperty()->SetPointSize(4);
+    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow->AddRenderer(renderer);
+    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    renderWindowInteractor->SetRenderWindow(renderWindow);
+    renderer->AddActor(sourceActor);
+    renderer->SetBackground(.3, .6, .3); // Background color green
+    // Render and interact
+    renderWindow->Render();
+    renderWindowInteractor->Start();
+     
+  }
+
 
 
 }

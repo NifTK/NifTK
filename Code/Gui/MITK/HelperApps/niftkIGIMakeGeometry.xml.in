@@ -47,6 +47,13 @@
       <default>"backwall"</default>
     </string>
 
+    <boolean>
+      <name>Visualise</name>
+      <longflag>Visualise</longflag>
+      <description>Show the results</description>
+      <label>Show the results</label>
+      <default>0</default>
+    </boolean>
     
   </parameters>
   
