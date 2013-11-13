@@ -37,11 +37,18 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
   vtkSmartPointer<vtkPolyData> lensCowl = vtkSmartPointer<vtkPolyData>::New();
 
   vtkSmartPointer<vtkCylinderSource> lensCyl = vtkSmartPointer<vtkCylinderSource>::New();
-  lensCyl->SetRadius(20.0);
-  lensCyl->SetHeight(80.0);
-  lensCyl->SetCenter(0.0,-40.0,0.0);
-  lensCyl->SetResolution(6);
+  lensCyl->SetRadius(5.0);
+  lensCyl->SetHeight(20.0);
+  lensCyl->SetCenter(0.0,0.0,0.0);
+  lensCyl->SetResolution(40);
+  
   lensCowl=lensCyl->GetOutput();
+
+  vtkSmartPointer<vtkTransform> tipTransform = vtkSmartPointer<vtkTransform>::New();
+  tipTransform->RotateX(90.0);
+  tipTransform->Translate(0,10,0);
+
+  TranslatePolyData(lensCowl,tipTransform);
   TranslatePolyData(lensCowl,transform);
  
   vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions);
