@@ -31,14 +31,14 @@ NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeLaparoscope(std::string rigidBodyF
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakePointer(QString& rigidBodyFilename, QString& handeyeFilename );
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakePointer(std::string rigidBodyFilename, std::string handeyeFilename );
 
 /**
  * \brief For visualisation purposes, creates a representation of the reference.
  * \param the rigid body filename to define the location of the tracking markers
  * \param the handeye calibration to define the tool origin
  */
-NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeReference(QString& rigidBodyFilename, QString& handeyeFilename );
+NIFTKOPENCV_EXPORT mitk::Surface::Pointer MakeReference(std::string rigidBodyFilename, std::string handeyeFilename );
 
 /**
  * \brief For visualisation purposes, make a wall of a cube

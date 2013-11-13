@@ -32,20 +32,20 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::str
 }
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+mitk::Surface::Pointer MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> pointer = maker.MakePointer(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  vtkSmartPointer<vtkPolyData> pointer = maker.MakePointer(rigidBodyFilename, handeyeFilename);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(pointer);
   return surface;
 }
 
 //-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, QString& handeyeFilename ) 
+mitk::Surface::Pointer MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   niftk::VTKIGIGeometry maker;
-  vtkSmartPointer<vtkPolyData> reference = maker.MakeReference(rigidBodyFilename.toStdString(), handeyeFilename.toStdString());
+  vtkSmartPointer<vtkPolyData> reference = maker.MakeReference(rigidBodyFilename, handeyeFilename);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   surface->SetVtkPolyData(reference);
   return surface;
