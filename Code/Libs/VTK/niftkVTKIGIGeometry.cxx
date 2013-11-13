@@ -76,7 +76,35 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
-{}
+{
+  std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
+  vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
+  vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+  transform->SetMatrix(handeye);
+
+  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions);
+
+  std::vector < float > tip; 
+  tip.push_back(handeye->GetElement(0,3));
+  tip.push_back(handeye->GetElement(1,3));
+  tip.push_back(handeye->GetElement(2,3));
+
+  std::vector< std::vector < float > > axis; 
+  axis.push_back(tip);
+  vtkSmartPointer<vtkPolyData> tipBall = this->MakeIREDs(axis);
+
+  axis.push_back(this->Centroid(positions));
+
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  appenderer->AddInput(ireds);
+  appenderer->AddInput(tipBall);
+  appenderer->AddInput(this->ConnectIREDs(axis));
+
+  //get the lens position
+  return appenderer->GetOutput();
+
+}
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
