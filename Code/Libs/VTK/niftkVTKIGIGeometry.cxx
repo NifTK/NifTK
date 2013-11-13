@@ -20,6 +20,7 @@
 #include <vtkPolyData.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCylinderSource.h>
+#include <vtkLineSource.h>
 
 #include <sstream>
 #include <cassert>
@@ -197,5 +198,74 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeIREDs(std::vector < std::vector
   }
   return appenderer->GetOutput();
 }
+
+//-----------------------------------------------------------------------------
+std::vector <float>  VTKIGIGeometry::Centroid(std::vector < std::vector <float> > positions )
+{
+  assert ( positions.size() != 0 );
+
+  unsigned int dimension = positions[0].size();
+  std::vector <float> centroid;
+  for ( unsigned int i = 0 ; i < dimension ; i ++ ) 
+  {
+    centroid.push_back(0.0);
+  }
+
+  for ( unsigned int d = 0 ; d < dimension ; d ++ ) 
+  {
+    for ( unsigned int i = 0 ; i < positions.size() ; i ++ ) 
+    {
+      centroid[d] += positions[i][d];
+    }
     
+    centroid[d] /= static_cast<float> (positions.size());
+  }
+
+  return centroid;
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::vector <float> > IREDPositions, bool isPointer )
+{
+  vtkSmartPointer<vtkPolyData> polyOut = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  assert ( IREDPositions.size() > 1 );
+  assert ( IREDPositions[0].size() == 3 );
+  if ( ! isPointer ) 
+  {
+    for ( unsigned int i = 0 ; i < IREDPositions.size () - 1 ; i ++ ) 
+    {
+      vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
+      join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
+      join->SetPoint2 ( IREDPositions[i+1][0], IREDPositions[i+1][1], IREDPositions[i+1][2]);
+      appenderer->AddInput(join->GetOutput());
+    }
+  }
+  else
+  {
+    //special case of pointer or reference
+    vtkSmartPointer<vtkLineSource> join1 = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> join2 = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> join3 = vtkSmartPointer<vtkLineSource>::New();
+    vtkSmartPointer<vtkLineSource> join4 = vtkSmartPointer<vtkLineSource>::New();
+
+    join1->SetPoint1 ( IREDPositions[0][0], IREDPositions[0][1], IREDPositions[0][2]);
+    join1->SetPoint2 ( IREDPositions[1][0], IREDPositions[1][1], IREDPositions[1][2]);
+
+    join2->SetPoint1 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
+    join2->SetPoint2 ( IREDPositions[4][0], IREDPositions[4][1], IREDPositions[4][2]);
+    
+    join3->SetPoint1 ( IREDPositions[0][0], IREDPositions[0][1], IREDPositions[0][2]);
+    join3->SetPoint2 ( IREDPositions[4][0], IREDPositions[4][1], IREDPositions[4][2]);
+    
+    join4->SetPoint1 ( IREDPositions[1][0], IREDPositions[1][1], IREDPositions[1][2]);
+    join4->SetPoint1 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
+      
+    appenderer->AddInput(join1->GetOutput());
+    appenderer->AddInput(join2->GetOutput());
+    appenderer->AddInput(join3->GetOutput());
+    appenderer->AddInput(join4->GetOutput());
+  }
+  return appenderer->GetOutput();
+} 
 } //end namespace niftk

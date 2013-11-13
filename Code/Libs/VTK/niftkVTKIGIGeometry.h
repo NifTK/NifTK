@@ -66,10 +66,21 @@ private:
   std::vector<std::vector <float> > ReadRigidBodyDefinitionFile(std::string rigidBodyFilename);
 
   /**
-  * \brief put put down spheres to represent each IRED
+  * \brief put down spheres to represent each IRED
   */
   vtkSmartPointer<vtkPolyData> MakeIREDs ( std::vector <std::vector <float> > IREDPositions,
       float Radius = 3.0, int ThetaResolution = 8 , int PhiResolution = 8 );
+  
+  /** 
+   * \brief Get the centroid of a vector of floats
+   */
+  std::vector <float>  Centroid(std::vector < std::vector <float> > );
+
+  /**
+  * \brief Connect the IREDS with a line
+  */
+  vtkSmartPointer<vtkPolyData> ConnectIREDs ( std::vector < std::vector <float> > IREDPositions , bool isPointer = false );
+
 };
 } // end namespace
 #endif
