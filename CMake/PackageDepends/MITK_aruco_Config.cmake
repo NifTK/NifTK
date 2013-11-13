@@ -13,7 +13,6 @@
 #============================================================================*/
 find_package(aruco REQUIRED)
 if(aruco_FOUND)
-  message("Found aruco in ${aruco_DIR}")
   list(APPEND ALL_INCLUDE_DIRECTORIES ${aruco_DIR}/include)
   list(APPEND ALL_LIBRARIES ${aruco_LIBS})
   link_directories(${aruco_DIR}/lib)
