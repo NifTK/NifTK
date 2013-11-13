@@ -98,6 +98,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
   appenderer->AddInput(ireds);
+  appenderer->AddInput(this->ConnectIREDs(positions, true));
   appenderer->AddInput(tipBall);
   appenderer->AddInput(this->ConnectIREDs(axis));
 
@@ -108,7 +109,9 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
-{}
+{
+  return this->MakePointer(rigidBodyFilename, handeyeFilename);
+}
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, const float& size, 
