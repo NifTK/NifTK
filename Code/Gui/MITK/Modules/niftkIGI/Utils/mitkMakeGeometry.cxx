@@ -66,3 +66,57 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
 }
 
 
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeXAxes( const float& length ,const bool& symmetric )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> axis = maker.MakeXAxes(length,symmetric);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(axis);
+  return surface;
+}
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeYAxes( const float& length ,const bool& symmetric )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> axis = maker.MakeYAxes(length,symmetric);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(axis);
+  return surface;
+}
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeZAxes( const float& length ,const bool& symmetric )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> axis = maker.MakeZAxes(length,symmetric);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(axis);
+  return surface;
+}
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeLapLensAxes()
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> axes = maker.MakeLapLensAxes();
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(axes);
+  return surface;
+}
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeOptotrak( const float & width )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> optotrak = maker.MakeOptotrak(width);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(optotrak);
+  return surface;
+}
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> probe = maker.MakeTransrectalUSProbe(handeyeFilename);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(probe);
+  return surface;
+}
