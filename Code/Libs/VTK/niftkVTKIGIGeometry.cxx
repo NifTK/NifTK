@@ -243,7 +243,37 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeZAxes( const float& length , co
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
-{}
+{
+  vtkSmartPointer<vtkLineSource> ZAxis = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkLineSource> XAxisLHC = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkLineSource> XAxisRHC = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkLineSource> YAxisLHC = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkLineSource> YAxisRHC = vtkSmartPointer<vtkLineSource>::New();
+
+  ZAxis->SetPoint1(0,0,-2000);
+  ZAxis->SetPoint2(0,0,2000);
+
+  XAxisLHC->SetPoint1(0,0,-10);
+  XAxisLHC->SetPoint2(20,0,-10);
+
+  XAxisRHC->SetPoint1(0,0,10);
+  XAxisRHC->SetPoint2(20,0,10);
+
+  YAxisLHC->SetPoint1(0,0,-10);
+  YAxisLHC->SetPoint2(0,20,-10);
+
+  YAxisRHC->SetPoint1(0,0,10);
+  YAxisRHC->SetPoint2(0,20,10);
+
+  vtkSmartPointer<vtkAppendPolyData> appenderer;
+  appenderer->AddInput(ZAxis->GetOutput());
+  appenderer->AddInput(XAxisLHC->GetOutput());
+  appenderer->AddInput(XAxisRHC->GetOutput());
+  appenderer->AddInput(YAxisLHC->GetOutput());
+  appenderer->AddInput(YAxisRHC->GetOutput());
+
+  return appenderer->GetOutput();
+}
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
 {}
