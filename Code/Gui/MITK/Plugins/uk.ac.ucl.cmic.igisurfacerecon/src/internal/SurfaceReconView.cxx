@@ -37,6 +37,7 @@ const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
+  : m_BackgroundOutputNodeIsVisible(true)
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
 
@@ -185,6 +186,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
       m_BackgroundRightNodeName = rightNode->GetName();
     }
 
+    // mark output node invisible to avoid trashing the renderer with millions of points.
+    m_BackgroundOutputNodeIsVisible = OutputNodeIsVisibleCheckBox->isChecked();
+
     if (leftNode.IsNotNull()
       && rightNode.IsNotNull()
       && leftImage.IsNotNull()
@@ -327,6 +331,8 @@ void SurfaceReconView::OnBackgroundProcessFinished()
     {
       outputNode->SetData(data);
     }
+
+    outputNode->SetVisibility(m_BackgroundOutputNodeIsVisible);
 
     DoItButton->setEnabled(true);
   }

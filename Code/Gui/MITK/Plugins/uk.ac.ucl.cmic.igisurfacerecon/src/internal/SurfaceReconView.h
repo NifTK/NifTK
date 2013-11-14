@@ -103,6 +103,7 @@ private:
   std::string                                m_BackgroundOutputNodeName;
   std::string                                m_BackgroundLeftNodeName;
   std::string                                m_BackgroundRightNodeName;
+  bool                                       m_BackgroundOutputNodeIsVisible;
 };
 
 #endif // SurfaceReconView_h

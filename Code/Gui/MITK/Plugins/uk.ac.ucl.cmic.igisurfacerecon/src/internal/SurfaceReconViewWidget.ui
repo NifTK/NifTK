@@ -126,7 +126,7 @@ If you leave it empty a suitable name will be generated.</string>
               <property name="margin">
                <number>0</number>
               </property>
-              <item row="1" column="0">
+              <item row="2" column="0">
                <widget class="QRadioButton" name="GenerateDisparityImageRadioBox">
                 <property name="text">
                  <string>Generate disparity image</string>
@@ -136,7 +136,7 @@ If you leave it empty a suitable name will be generated.</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="3" column="0">
                <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
                 <property name="enabled">
                  <bool>true</bool>
@@ -149,7 +149,7 @@ If you leave it empty a suitable name will be generated.</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0" colspan="2">
+              <item row="4" column="0" colspan="2">
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
                  <widget class="QWidget" name="m_PointCloudOptionsWidget" native="true">
@@ -249,6 +249,19 @@ If you leave it empty a suitable name will be generated.</string>
                  </widget>
                 </item>
                </layout>
+              </item>
+              <item row="1" column="0">
+               <widget class="QCheckBox" name="OutputNodeIsVisibleCheckBox">
+                <property name="toolTip">
+                 <string>If disabled the node will be invisible wrt rendering.</string>
+                </property>
+                <property name="text">
+                 <string>Output node is visible</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
