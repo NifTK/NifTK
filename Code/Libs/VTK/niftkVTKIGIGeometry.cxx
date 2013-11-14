@@ -91,7 +91,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 
   std::vector< std::vector < float > > axis; 
   axis.push_back(tip);
-  vtkSmartPointer<vtkPolyData> tipBall = this->MakeIREDs(axis);
+  vtkSmartPointer<vtkPolyData> tipBall = this->MakeIREDs(axis,1.5);
 
   axis.push_back(this->Centroid(positions));
 
