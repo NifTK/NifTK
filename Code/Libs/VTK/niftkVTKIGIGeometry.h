@@ -60,11 +60,22 @@ public:
 
   /**
   * \brief For visualisation purposes, make a nice big axes
-  * \param the length of each axis
-  * \param whether or not the z axis is symmetric 
+  * \param the length of the axis
+  * \param whether or not the axis is symmetric 
   * */
-  vtkSmartPointer<vtkPolyData>  MakeAxes( const float& length = 4000,
-      const bool& symmetricZ = true);
+  vtkSmartPointer<vtkPolyData> MakeXAxes( const float& length = 4000,const bool& symmetric = false);
+  /**
+  * \brief For visualisation purposes, make a nice big axes
+  * \param the length of the axis
+  * \param whether or not the axis is symmetric 
+  * */
+  vtkSmartPointer<vtkPolyData> MakeYAxes( const float& length = 4000,const bool& symmetric = false);
+  /**
+  * \brief For visualisation purposes, make a nice big axes
+  * \param the length of the axis
+  * \param whether or not the axis is symmetric 
+  * */
+  vtkSmartPointer<vtkPolyData> MakeZAxes( const float& length = 4000,const bool& symmetric = true);
 
   /** 
    * \brief a special type of axis useful for cameras

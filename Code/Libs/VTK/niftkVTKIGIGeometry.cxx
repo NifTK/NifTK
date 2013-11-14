@@ -187,6 +187,70 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, c
 }
 
 //-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeXAxes( const float& length , const bool& symmetric)
+{
+  vtkSmartPointer<vtkLineSource> Axis = vtkSmartPointer<vtkLineSource>::New();
+
+  if ( symmetric )
+  {
+    Axis->SetPoint1(-length,0,0);
+  }
+  else
+  {
+    Axis->SetPoint1(0,0,0);
+  }
+
+  Axis->SetPoint2(length,0,0);
+
+  return Axis->GetOutput();
+}
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeYAxes( const float& length , const bool& symmetric)
+{
+  vtkSmartPointer<vtkLineSource> Axis = vtkSmartPointer<vtkLineSource>::New();
+
+  if ( symmetric )
+  {
+    Axis->SetPoint1(0,-length,0);
+  }
+  else
+  {
+    Axis->SetPoint1(0,0,0);
+  }
+
+  Axis->SetPoint2(0,length,0);
+
+  return Axis->GetOutput();
+}
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeZAxes( const float& length , const bool& symmetric)
+{
+  vtkSmartPointer<vtkLineSource> Axis = vtkSmartPointer<vtkLineSource>::New();
+
+  if ( symmetric )
+  {
+    Axis->SetPoint1(0,0,-length);
+  }
+  else
+  {
+    Axis->SetPoint1(0,0,0);
+  }
+
+  Axis->SetPoint2(0,0,length);
+
+  return Axis->GetOutput();
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
+{}
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
+{}
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string handeyeFilename )
+{}
+//-----------------------------------------------------------------------------
 std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
 {
   std::vector < std::vector <float > > returnVector;
