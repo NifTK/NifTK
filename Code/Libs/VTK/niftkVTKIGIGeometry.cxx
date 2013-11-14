@@ -265,13 +265,13 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
   YAxisRHC->SetPoint1(0,0,10);
   YAxisRHC->SetPoint2(0,20,10);
 
-  vtkSmartPointer<vtkAppendPolyData> appenderer;
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
   appenderer->AddInput(ZAxis->GetOutput());
   appenderer->AddInput(XAxisLHC->GetOutput());
   appenderer->AddInput(XAxisRHC->GetOutput());
   appenderer->AddInput(YAxisLHC->GetOutput());
   appenderer->AddInput(YAxisRHC->GetOutput());
-
+  
   return appenderer->GetOutput();
 }
 //-----------------------------------------------------------------------------
@@ -301,7 +301,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
 
   eye->SetRadius(60);
   eye->SetHeight(100);
-  eye->CappingOn();
+  eye->CappingOff();
   eye->SetResolution(20);
 
   leftEye->SetRadius(60);
@@ -312,7 +312,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
   rightEye->SetRadius(60);
   rightEye->SetThetaResolution(8);
   rightEye->SetPhiResolution(8);
-  rightEye->SetCenter(0, -width,-20);
+  rightEye->SetCenter(0, width,-20);
 
   vtkSmartPointer<vtkTransform> topBar1Transform = vtkSmartPointer<vtkTransform>::New();
   vtkSmartPointer<vtkTransform> topBar2Transform = vtkSmartPointer<vtkTransform>::New();
