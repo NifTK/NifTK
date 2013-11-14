@@ -58,6 +58,32 @@ public:
     const float& xOffset = 0.0 , const float& yOffset = 0.0, const float& zOffset = -0.3, 
     const float& thickness = 10.0);
 
+  /**
+  * \brief For visualisation purposes, make a nice big axes
+  * \param the length of each axis
+  * \param whether or not the z axis is symmetric 
+  * */
+  vtkSmartPointer<vtkPolyData>  MakeAxes( const float& length = 4000,
+      const bool& symmetricZ = true);
+
+  /** 
+   * \brief a special type of axis useful for cameras
+   */
+  vtkSmartPointer<vtkPolyData>  MakeLapLensAxes();
+
+  /**
+   * \brief for visualisation purposes, make a representation of an Optotrak Certus 
+   * camera unit
+   * \param the width of the camera unit
+   */
+  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width);
+
+  /**
+  * \brief For visualisation purposes, creates a representation of a transrectal ultrasound probe
+  * \param the handeye calibration to define the tool origin
+  */
+  vtkSmartPointer<vtkPolyData> MakeTransrectalUSProbe(std::string handeyeFilename );
+
 private:
   /** 
    * \brief get the IRED positions from a rigid body definition file
