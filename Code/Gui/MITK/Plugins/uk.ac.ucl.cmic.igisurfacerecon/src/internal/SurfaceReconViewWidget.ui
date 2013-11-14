@@ -273,6 +273,17 @@ If you leave it empty a suitable name will be generated.</string>
           </layout>
          </widget>
         </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="AutoIncNodeNameCheckBox">
+          <property name="toolTip">
+           <string>Will count up a number in the node name so that each method update will produce a new node.
+White-space will not be trimmed!</string>
+          </property>
+          <property name="text">
+           <string>Automatically count up</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
