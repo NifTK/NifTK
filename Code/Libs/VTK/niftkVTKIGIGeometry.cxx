@@ -21,6 +21,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkCylinderSource.h>
 #include <vtkLineSource.h>
+#include <vtkArcSource.h>
 
 #include <sstream>
 #include <cassert>
@@ -344,7 +345,60 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
 }
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string handeyeFilename )
-{}
+{
+  vtkSmartPointer<vtkCylinderSource> body = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkCylinderSource> cowl = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkSphereSource> transducer = vtkSmartPointer<vtkSphereSource>::New();
+  vtkSmartPointer<vtkLineSource> projection1 = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkLineSource> projection2 = vtkSmartPointer<vtkLineSource>::New();
+  vtkSmartPointer<vtkArcSource> projection3 = vtkSmartPointer<vtkArcSource>::New();
+
+  body->SetRadius(8.0);
+  body->SetHeight(100.0);
+  body->SetCenter(51.696,-60,0);
+  body->SetResolution(40);
+  body->CappingOn();
+  
+  cowl->SetRadius(16.17);
+  cowl->SetHeight(20.0);
+  cowl->SetCenter(45.696,-8.085, 0.0);
+  cowl->SetResolution(40);
+  cowl->CappingOn();
+
+  transducer->SetRadius(16.170);
+  transducer->SetCenter(45.696, 0.0, 0.0);
+  transducer->SetThetaResolution(40);
+  transducer->SetPhiResolution(40);
+
+  projection1->SetPoint1(45.696, 0.0, 0.0);
+  projection1->SetPoint2(0.0, 45.696, 0.0);
+  
+  projection2->SetPoint1(45.696, 0.0, 0.0);
+  projection2->SetPoint2(91.392, 45.696, 0.0);
+
+  projection3->SetPoint1(0.0,45.696, 0.0);
+  projection3->SetPoint2(91.392, 45.696, 0.0);
+  projection3->SetCenter(45.696,0.0,0.0);
+  projection3->SetResolution(40);
+
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  appenderer->AddInput(body->GetOutput());
+  appenderer->AddInput(cowl->GetOutput());
+  appenderer->AddInput(transducer->GetOutput());
+  appenderer->AddInput(projection1->GetOutput());
+  appenderer->AddInput(projection2->GetOutput());
+  appenderer->AddInput(projection3->GetOutput());
+
+  vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
+  vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+  transform->SetMatrix(handeye);
+
+  TranslatePolyData(appenderer->GetOutput(),transform);
+
+  return appenderer->GetOutput();
+
+}
 //-----------------------------------------------------------------------------
 std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(std::string rigidBodyFilename)
 {
