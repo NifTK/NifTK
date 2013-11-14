@@ -33,6 +33,10 @@
 @set "PUTTY_LOCATION=c:\Program Files (x86)\PuTTY\"
 @set "OPENSSL_LOCATION=c:\OpenSSL-Win64\bin\"
 
+@rem if you are cross-compiling between 64 and 32 bit then override your qt here
+@rem @set "QTDIR=C:\Qt\Qt-4.8.4-x86-vc10"
+@rem @set "PATH=%QTDIR%\bin;%PATH%"
+
 @REM *****  Set your build type 64bit/32bit  *****
 @set "BTYPE=x64"
 @REM @set "BTYPE=Win32"
