@@ -87,7 +87,7 @@ public:
    * camera unit
    * \param the width of the camera unit
    */
-  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width);
+  vtkSmartPointer<vtkPolyData>  MakeOptotrak( const float & width = 500);
 
   /**
   * \brief For visualisation purposes, creates a representation of a transrectal ultrasound probe

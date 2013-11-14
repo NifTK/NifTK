@@ -276,7 +276,72 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
 }
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
-{}
+{
+  vtkSmartPointer<vtkCylinderSource> topBar1 = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkCylinderSource> topBar2 = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkCylinderSource> neck = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkCylinderSource> eye = vtkSmartPointer<vtkCylinderSource>::New();
+  vtkSmartPointer<vtkSphereSource> leftEye = vtkSmartPointer<vtkSphereSource>::New();
+  vtkSmartPointer<vtkSphereSource> rightEye = vtkSmartPointer<vtkSphereSource>::New();
+
+  topBar1->SetRadius(50);
+  topBar1->SetHeight(width);
+  topBar1->CappingOn();
+  topBar1->SetResolution(20);
+
+  topBar2->SetRadius(50);
+  topBar2->SetHeight(width);
+  topBar2->CappingOn();
+  topBar2->SetResolution(20);
+
+  neck->SetRadius(50);
+  neck->SetHeight(200);
+  neck->CappingOn();
+  neck->SetResolution(20);
+
+  eye->SetRadius(60);
+  eye->SetHeight(100);
+  eye->CappingOn();
+  eye->SetResolution(20);
+
+  leftEye->SetRadius(60);
+  leftEye->SetThetaResolution(8);
+  leftEye->SetPhiResolution(8);
+  leftEye->SetCenter(0, -width,-20);
+
+  rightEye->SetRadius(60);
+  rightEye->SetThetaResolution(8);
+  rightEye->SetPhiResolution(8);
+  rightEye->SetCenter(0, -width,-20);
+
+  vtkSmartPointer<vtkTransform> topBar1Transform = vtkSmartPointer<vtkTransform>::New();
+  vtkSmartPointer<vtkTransform> topBar2Transform = vtkSmartPointer<vtkTransform>::New();
+  vtkSmartPointer<vtkTransform> neckTransform = vtkSmartPointer<vtkTransform>::New();
+  vtkSmartPointer<vtkTransform> eyeTransform = vtkSmartPointer<vtkTransform>::New();
+
+  topBar1Transform->Translate(0,300,0);
+  topBar2Transform->Translate(0,-300,0);
+  neckTransform->RotateZ(90);
+  neckTransform->Translate(0,150,0);
+  eyeTransform->RotateX(90);
+  
+  TranslatePolyData(topBar1->GetOutput(),topBar1Transform);
+  TranslatePolyData(topBar2->GetOutput(),topBar2Transform);
+  TranslatePolyData(neck->GetOutput(),neckTransform);
+  TranslatePolyData(eye->GetOutput(),eyeTransform);
+
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  appenderer->AddInput(topBar1->GetOutput());
+  appenderer->AddInput(topBar2->GetOutput());
+  appenderer->AddInput(neck->GetOutput());
+  appenderer->AddInput(eye->GetOutput());
+  appenderer->AddInput(leftEye->GetOutput());
+  appenderer->AddInput(rightEye->GetOutput());
+
+  return appenderer->GetOutput();
+
+}
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string handeyeFilename )
 {}
