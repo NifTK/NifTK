@@ -62,6 +62,9 @@ protected:
    */
   virtual void SetFocus();
 
+  // this should probably go into one of our modules, for easier testing and re-use!
+  std::string IncrementNodeName(const std::string& name);
+
 protected slots:
 
   /**
