@@ -67,6 +67,31 @@ int main(int argc, char** argv)
   {
     surface = MakeReference (rigidBodyFile, handeye);
   }
+  if ( geometry == "XAxis" )
+  {
+    surface = MakeXAxes ();
+  }
+  if ( geometry == "YAxis" )
+  {
+    surface = MakeYAxes ();
+  }
+  if ( geometry == "ZAxis" )
+  {
+    surface = MakeZAxes ();
+  }
+  if ( geometry == "laplensAxes" )
+  {
+    surface = MakeLapLensAxes ();
+  }
+  if ( geometry == "optotrak" )
+  {
+    surface = MakeOptotrak ();
+  }
+  if ( geometry == "transRectalUSProbe" )
+  {
+    surface = MakeTransrectalUSProbe (handeye);
+  }
+
 
   mitk::IOUtil::SaveSurface (surface,output);
   if ( Visualise )
