@@ -73,14 +73,14 @@
 @set "BUILD_BIN=%BUILD_ROOT%\%PROJECT_NAME%-%DATESTAMP%"
 @set "BUILD_LOG=%BUILD_BIN%-logs"
 
-echo Visual Studio location: %VS_LOCATION%
-echo Visual Studio version:  %VSVER%
-echo CMake location:         %CMAKE_LOCATION%
-echo Source folder:          %BUILD_SRC%
-echo Build folder:           %BUILD_BIN%
-echo Log folder:             %BUILD_LOG%
-echo CMake generator:        %CMAKE_GENERATOR%
-echo Date Stamp:             %DATESTAMP%
+@echo Visual Studio location: %VS_LOCATION%
+@echo Visual Studio version:  %VSVER%
+@echo CMake location:         %CMAKE_LOCATION%
+@echo Source folder:          %BUILD_SRC%
+@echo Build folder:           %BUILD_BIN%
+@echo Log folder:             %BUILD_LOG%
+@echo CMake generator:        %CMAKE_GENERATOR%
+@echo Date Stamp:             %DATESTAMP%
 @echo.
 
 @rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
