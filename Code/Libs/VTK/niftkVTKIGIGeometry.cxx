@@ -498,6 +498,7 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
   }
   else
   {
+    assert ( IREDPositions.size() > 5 );
     //special case of pointer or reference
     vtkSmartPointer<vtkLineSource> join1 = vtkSmartPointer<vtkLineSource>::New();
     vtkSmartPointer<vtkLineSource> join2 = vtkSmartPointer<vtkLineSource>::New();
