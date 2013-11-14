@@ -1,4 +1,4 @@
-@echo ***** NifTK Automated Build Script - v.18 *****
+@echo ***** NifTK Automated Build Script - v.19 *****
 @echo. 
 
 @REM ************************************************************************************
@@ -56,7 +56,11 @@
 
 @REM *****  Configuring the date-stamp  *****
 @set DATESTAMP=%date%
-set DATESTAMP=%DATESTAMP:~12,2%%DATESTAMP:~4,2%%DATESTAMP:~7,2%
+@rem beware: we are assuming uk locale here!
+@set DATESTAMPDAY=%DATESTAMP:~0,2%
+@set DATESTAMPMONTH=%DATESTAMP:~3,2%
+@set DATESTAMPYEAR=%DATESTAMP:~8,2%
+@set DATESTAMP=%DATESTAMPYEAR%%DATESTAMPMONTH%%DATESTAMPDAY%
 
 @REM *****  Configure project name. The source and build directories will be named after this name. Defaults to NifTK. *****
 @if [%3]==[] (
