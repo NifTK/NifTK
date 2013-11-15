@@ -495,6 +495,7 @@ run_command "git checkout $branch@{$commit_time}" 3-checkout.log
 cd ${build_path}
 run_command "cmake ${cmake_args} ${source_path}" 4-cmake.log
 run_command "make -j ${threads}" 5-build.log
+chmod +x `find . -name "*.so" -or -name "*.dylib"`
 cd NifTK-build
 # Note that the submit task fails with http timeout, but we want to carry on regardless to get to the package bit.
 run_command "${ctest_command}" 6-ctest.log
