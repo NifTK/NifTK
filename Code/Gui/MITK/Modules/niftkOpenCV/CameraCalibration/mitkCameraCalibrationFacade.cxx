@@ -712,6 +712,9 @@ void OutputCalibrationData(
     std::vector<std::string>& fileNames
     )
 {
+  int outputPrecision = 10;
+  int outputWidth = 10;
+
   int pointCount = cornersX * cornersY;
   int numberOfFilesUsed = fileNames.size();
 
@@ -733,12 +736,15 @@ void OutputCalibrationData(
       *projectedImagePoints
       );
 
-  os.precision(10);
-  os.width(10);
+  os.precision(outputPrecision);
+  os.width(outputWidth);
 
   bool writeIntrinsicToFlatFile = false;
 
   std::ofstream intrinsicFileOutput;
+  intrinsicFileOutput.precision(outputPrecision);
+  intrinsicFileOutput.width(outputWidth);
+
   intrinsicFileOutput.open((intrinsicFlatFileName).c_str(), std::ios::out);
   if (!intrinsicFileOutput.fail())
   {
@@ -810,6 +816,9 @@ void OutputCalibrationData(
     bool writeExtrinsicToFlatFile = false;
 
     std::ofstream extrinsicFileOutput;
+    extrinsicFileOutput.precision(outputPrecision);
+    extrinsicFileOutput.width(outputWidth);
+
     extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
     if (!extrinsicFileOutput.fail())
     {
