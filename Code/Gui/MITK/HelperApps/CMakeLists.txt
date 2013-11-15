@@ -114,6 +114,7 @@ if(SlicerExecutionModel_FOUND)
       niftkUltrasoundPinCalibration
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
+      niftkIGIMakeGeometry
       niftkMakeGridOf2DImages
       niftkIterativeClosestPointRegister
     )
