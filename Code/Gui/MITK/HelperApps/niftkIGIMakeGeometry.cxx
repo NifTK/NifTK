@@ -30,7 +30,9 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
-  mitk::Surface::Pointer surface = mitk::Surface::New();
+  bool geomOK = false;
+  //mitk::Surface::Pointer surface = mitk::Surface::New();
+  mitk::Surface::Pointer surface = NULL;
   if ( geometry == "backwall" )
   {
     surface = MakeAWall(0);
@@ -91,7 +93,15 @@ int main(int argc, char** argv)
   {
     surface = MakeTransrectalUSProbe (handeye);
   }
-
+  if ( surface.IsNull() ) 
+  {
+    MITK_ERROR << "Failed to make specified geometry, available options are: ";
+    MITK_INFO << " backwall frontwall leftwall rightwall ceiling floor";
+    MITK_INFO << " laparoscope pointer reference";
+    MITK_INFO << " XAxis YAxis ZAxis laplensAxes";
+    MITK_INFO << " optotrak transRectalUSProbe";
+    exit (EXIT_FAILURE);
+  }
 
   mitk::IOUtil::SaveSurface (surface,output);
   if ( Visualise )
