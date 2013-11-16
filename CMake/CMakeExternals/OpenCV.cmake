@@ -51,6 +51,7 @@ if(BUILD_IGI)
       -DBUILD_opencv_video:BOOL=ON
       -DBUILD_opencv_python:BOOL=OFF
       -DBUILD_opencv_ts:BOOL=OFF
+      -DBUILD_opencv_java:BOOL=OFF
       -DBUILD_DOCS:BOOL=OFF
       -DBUILD_TESTS:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
