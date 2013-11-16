@@ -60,12 +60,13 @@ void QmitkBaseWorkbenchWindowAdvisor::PreWindowOpen()
 
   QmitkExtWorkbenchWindowAdvisor::PreWindowOpen();
 
-  // When the GUI starts, I don't want the Modules plugin to be visible.
+  // When the GUI starts, these views are not shown.
   std::vector<std::string> viewExcludeList = this->GetViewExcludeList();
   viewExcludeList.push_back("org.mitk.views.modules");
   viewExcludeList.push_back("org.blueberry.views.helpcontents");
   viewExcludeList.push_back("org.blueberry.views.helpindex");
   viewExcludeList.push_back("org.blueberry.views.helpsearch");
+  viewExcludeList.push_back("org.mitk.views.imagestatistics");
   this->SetViewExcludeList(viewExcludeList);
 }
 
