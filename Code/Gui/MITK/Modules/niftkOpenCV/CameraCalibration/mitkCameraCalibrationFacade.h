@@ -275,8 +275,11 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
 
 /**
  * \brief Utility method to dump output to a stream.
+ * \return RMS projection error, as projected to one camera, for each image in order.
+ *
+ * i.e. this method is called seperately for both left and right camera.
  */
-extern "C++" NIFTKOPENCV_EXPORT void OutputCalibrationData(
+extern "C++" NIFTKOPENCV_EXPORT std::vector<double> OutputCalibrationData(
   std::ostream& outputStream,
   const std::string intrinsicFlatFileName,
   const CvMat& objectPoints,
