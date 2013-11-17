@@ -694,7 +694,7 @@ double CalibrateStereoCameraParameters(
 
 
 //-----------------------------------------------------------------------------
-void OutputCalibrationData(
+std::vector<double> OutputCalibrationData(
     std::ostream& os,
     const std::string intrinsicFlatFileName,
     const CvMat& objectPoints,
@@ -712,6 +712,11 @@ void OutputCalibrationData(
     std::vector<std::string>& fileNames
     )
 {
+  double rms = 0;
+  std::vector<double> allRMSErrors;
+  int outputPrecision = 10;
+  int outputWidth = 10;
+
   int pointCount = cornersX * cornersY;
   int numberOfFilesUsed = fileNames.size();
 
@@ -733,12 +738,15 @@ void OutputCalibrationData(
       *projectedImagePoints
       );
 
-  os.precision(10);
-  os.width(10);
+  os.precision(outputPrecision);
+  os.width(outputWidth);
 
   bool writeIntrinsicToFlatFile = false;
 
   std::ofstream intrinsicFileOutput;
+  intrinsicFileOutput.precision(outputPrecision);
+  intrinsicFileOutput.width(outputWidth);
+
   intrinsicFileOutput.open((intrinsicFlatFileName).c_str(), std::ios::out);
   if (!intrinsicFileOutput.fail())
   {
@@ -810,6 +818,9 @@ void OutputCalibrationData(
     bool writeExtrinsicToFlatFile = false;
 
     std::ofstream extrinsicFileOutput;
+    extrinsicFileOutput.precision(outputPrecision);
+    extrinsicFileOutput.width(outputWidth);
+
     extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
     if (!extrinsicFileOutput.fail())
     {
@@ -837,6 +848,7 @@ void OutputCalibrationData(
       extrinsicFileOutput.close();
     }
 
+    rms = 0;
     for (unsigned int j = 0; j < numberOfPoints; j++)
     {
       CV_MAT_ELEM(*modelPointInputHomogeneous, double, 0 ,0) = CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0);
@@ -852,7 +864,18 @@ void OutputCalibrationData(
           << " compared with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
           << " detected in image " \
           << std::endl;
+
+      rms += (
+                  (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0)) * (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))
+                + (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1)) * (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) - CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))
+             );
     }
+    if (numberOfPoints > 0)
+    {
+      rms /= ((double)numberOfPoints);
+    }
+    rms = sqrt((double)rms);
+    allRMSErrors.push_back(rms);
   }
 
   cvReleaseMat(&extrinsicMatrix);
@@ -861,6 +884,8 @@ void OutputCalibrationData(
   cvReleaseMat(&extrinsicRotationVector);
   cvReleaseMat(&extrinsicTranslationVector);
   cvReleaseMat(&projectedImagePoints);
+
+  return allRMSErrors;
 }
 
 
