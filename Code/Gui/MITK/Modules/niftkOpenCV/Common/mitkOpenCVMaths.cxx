@@ -14,6 +14,8 @@
 
 #include "mitkOpenCVMaths.h"
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <numeric>
+#include <algorithm>
 
 namespace mitk {
 
@@ -86,7 +88,6 @@ void MakeIdentity(cv::Matx44d& outputMatrix)
   outputMatrix(2,2) = 1;
   outputMatrix(3,3) = 1;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -292,6 +293,7 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
   }
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
 {
@@ -315,6 +317,8 @@ std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p
   }
   return returnPoints;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 {
@@ -333,6 +337,8 @@ cv::Point3d operator*(cv::Mat M, const cv::Point3d& p)
 
   return returnPoint;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnALine,
     bool RejectIfNotPerpendicular)
@@ -397,6 +403,7 @@ cv::Point2d FindIntersect (cv::Vec4i line1, cv::Vec4i line2, bool RejectIfNotOnA
 
 }
 
+
 //-----------------------------------------------------------------------------
 std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool RejectIfNotOnALine, bool RejectIfNotPerpendicular) 
 {
@@ -414,6 +421,8 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
   }
   return returnPoints;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
 {
@@ -470,6 +479,8 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
 
   return centroid;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOutliers , cv::Point3d* StandardDeviation)
 {
@@ -738,6 +749,8 @@ cv::Matx44d ConstructSimilarityTransformationMatrix(
   result = scaling * rigid;
   return result;
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Point3i * indexes )
 {
@@ -1035,6 +1048,37 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
   perturbationMatrix.at<double>(3,3) = 1.0;
 
   return transformIn * perturbationMatrix;
+}
+
+
+//-----------------------------------------------------------------------------
+double Mean(const std::vector<double>& input)
+{
+  if (input.size() == 0)
+  {
+    return 0;
+  }
+  double sum = std::accumulate(input.begin(), input.end(), 0.0);
+  double mean = sum / input.size();
+  return mean;  
+}
+
+
+//-----------------------------------------------------------------------------
+double StdDev(const std::vector<double>& input)
+{
+  if (input.size() == 0)
+  {
+    return 0;
+  }
+  
+  double mean = mitk::Mean(input);
+  
+  std::vector<double> diff(input.size());
+  std::transform(input.begin(), input.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
+  double squared = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+  double stdev = std::sqrt(squared / ((double)(input.size()) - 1.0));
+  return stdev;
 }
 
 } // end namespace

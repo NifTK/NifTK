@@ -19,6 +19,9 @@
 #include <vtkMatrix4x4.h>
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
+#include <stdexcept>
+#include <sstream>
+#include <cstdlib>
 
 namespace mitk {
 
@@ -36,32 +39,31 @@ PivotCalibration::~PivotCalibration()
 
 
 //-----------------------------------------------------------------------------
-bool PivotCalibration::CalibrateUsingFilesInDirectories(
+void PivotCalibration::CalibrateUsingFilesInDirectories(
     const std::string& matrixDirectory,
     double &residualError,
-    vtkMatrix4x4& outputMatrix
+    vtkMatrix4x4& outputMatrix,
+    const int& percentage,
+    const int& reruns
     )
 {
   std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
   if (matrices.size() == 0)
   {
-    MITK_ERROR << "Calibrate: Failed to load matrices." << std::endl;
-    return false;
+    std::ostringstream oss;
+    oss << "Calibrate: Failed to load matrices." << std::endl;
+    throw std::logic_error(oss.str());
   }
 
   cv::Matx44d transformationMatrix;
-
-  bool calibratedSuccessfully = this->Calibrate(
-      matrices,
-      transformationMatrix,
-      residualError
-      );
-
-  if (!calibratedSuccessfully)
-  {
-    MITK_ERROR << "Calibrate: Failed to calibrate successfully" << std::endl;
-    return false;
-  }
+  
+  this->Calibrate(
+    matrices,
+    transformationMatrix,
+    residualError,
+    percentage,
+    reruns
+    );
 
   for (int i = 0; i < 4; i++)
   {
@@ -70,19 +72,76 @@ bool PivotCalibration::CalibrateUsingFilesInDirectories(
       outputMatrix.SetElement(i, j, transformationMatrix(i, j));
     }
   }
-  return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool PivotCalibration::Calibrate(
+void PivotCalibration::Calibrate(
+    const std::vector< cv::Mat >& matrices,
+    cv::Matx44d& outputMatrix,
+    double& residualError,
+    const int& percentage,
+    const int& numberOfReRuns
+    )
+{
+  // So the main output is always ALL the data.
+  this->DoCalibration(matrices, outputMatrix, residualError);
+  
+  if (percentage < 100 && percentage > 0)
+  {
+    unsigned int totalNumberOfMatrices = matrices.size();
+    unsigned int numberOfMatricesToUse = totalNumberOfMatrices * percentage / 100;
+    if (numberOfMatricesToUse < 1)
+    {
+      std::cerr << "PivotCalibration: too few matrices to calculate mean (StdDev) of residual error" << std::endl;
+      return;
+    }
+    
+    std::cout << "PivotCalibration:Total #matrices = " << totalNumberOfMatrices << std::endl;
+    std::cout << "PivotCalibration:Using " << percentage << "%" << std::endl;
+    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times" << std::endl;
+    
+    std::vector<double> vectorOfResiduals;
+    double tmpResidual = 0;
+    cv::Matx44d tmpMatrix;
+    
+    for (unsigned int i = 0; i < numberOfReRuns; i++)
+    {
+      // Build randomly chosen set of indexes of size numberOfMatricesToUse.
+      // TODO: std::rand() is known to be non-uniform in this scenario at least.
+      //       this will preferentially pick lower numbers.
+      std::set<int> matrixIndexes;
+      while(matrixIndexes.size() < numberOfMatricesToUse)
+      {
+        matrixIndexes.insert(std::rand()%totalNumberOfMatrices);
+      }
+      
+      // Construct vector of matrices from set.
+      std::vector< cv::Mat > randomlyChosenMatrices;
+      std::set<int>::const_iterator iter;
+      for (iter = matrixIndexes.begin(); iter != matrixIndexes.end(); ++iter)
+      {
+        randomlyChosenMatrices.push_back(matrices[*iter]);    
+      }
+      
+      // Calibrate using this list of matrices, and store the residual.
+      this->DoCalibration(randomlyChosenMatrices, tmpMatrix, tmpResidual);
+      vectorOfResiduals.push_back(tmpResidual);
+    }
+    double meanResidual = mitk::Mean(vectorOfResiduals);
+    double stdDevResidual = mitk::StdDev(vectorOfResiduals);
+    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times on " << percentage << "% of the data gives residual=" << meanResidual << " ( " << stdDevResidual << ")" << std::endl;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void PivotCalibration::DoCalibration(
     const std::vector< cv::Mat >& matrices,
     cv::Matx44d& outputMatrix,
     double& residualError
     )
 {
-  bool isSuccessful = false;
-
   unsigned long int numberOfMatrices = matrices.size();
 
   // Very basic. Will eventually run out of memory.
@@ -139,8 +198,9 @@ bool PivotCalibration::Calibrate(
 
   if (rank < 6)
   {
-    std::cerr << "PivotCalibration: Failed. Rank < 6" << std::endl;
-    return isSuccessful;
+    std::ostringstream oss;
+    oss << "PivotCalibration: Failed. Rank < 6" << std::endl;
+    throw std::logic_error(oss.str());
   }
 
   svdOfA.backSubst(b, x);
@@ -160,16 +220,8 @@ bool PivotCalibration::Calibrate(
   outputMatrix(0, 3) = x.at<double>(0, 0);
   outputMatrix(1, 3) = x.at<double>(1, 0);
   outputMatrix(2, 3) = x.at<double>(2, 0);
-  isSuccessful = true;
 
-  std::cout << "PivotCalibration:Residual error   = " << residualError << std::endl;
-  std::cout << "PivotCalibration:Pivot            = (" << x.at<double>(3, 0) << ", " << x.at<double>(4, 0) << ", " << x.at<double>(5, 0) << ")" << std::endl;
-  std::cout << "PivotCalibration:Result:" << std::endl;
-  for (int i = 0; i < 4; i++)
-  {
-    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
-  }
-  return isSuccessful;
+  std::cout << "PivotCalibration:Pivot = (" << x.at<double>(3, 0) << ", " << x.at<double>(4, 0) << ", " << x.at<double>(5, 0) << "), residual=" << residualError << std::endl;
 }
 
 //-----------------------------------------------------------------------------
