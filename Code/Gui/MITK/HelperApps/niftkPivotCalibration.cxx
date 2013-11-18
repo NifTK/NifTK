@@ -45,7 +45,8 @@ int main(int argc, char** argv)
       matrixDirectory,
       residualError,
       *transformationMatrix,
-      percentage
+      percentage,
+      numberOfReruns
       );
 
     if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))

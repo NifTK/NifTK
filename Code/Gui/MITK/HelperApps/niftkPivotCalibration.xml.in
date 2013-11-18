@@ -38,5 +38,17 @@
         <step>1</step>
       </constraints>
     </integer>
+    <integer>
+      <name>numberOfReruns</name>
+      <longflag>numberOfReruns</longflag>
+      <description>The number of re-runs to do if percentage != 100.</description>
+      <label>Re-runs</label>
+      <default>1000</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100000</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>    
   </parameters>
 </executable>

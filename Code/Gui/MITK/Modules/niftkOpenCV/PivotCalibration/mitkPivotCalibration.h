@@ -57,12 +57,14 @@ public:
    * \param[Out] outputMatrix the output transformation.
    * \param[In] percentage if < 100 and > 0 will take a randomly chosen number of matrices and run calibration,
    * and measure the mean and standard deviation of the RMS reconstrution error.
+   * \param[In] reruns the number of re-runs to do when you are randomly selecting data.
    */
   void CalibrateUsingFilesInDirectories(
       const std::string& matrixDirectory,
       double &residualError,
       vtkMatrix4x4& outputMatrix,
-      const int& percentage = 100
+      const int& percentage = 100,
+      const int& reruns = 100
       );
 
   /**
@@ -72,12 +74,14 @@ public:
    * \param[Out] residualError the root mean square distance of each re-constructed point from the invariant point.
    * \param[In] percentage if < 100 and > 0 will take a randomly chosen number of matrices and run calibration,
    * and measure the mean and standard deviation of the RMS reconstrution error.
+   * \param[In] reruns the number of re-runs to do when you are randomly selecting data.
    */
   void Calibrate(
       const std::vector< cv::Mat >& matrices,
       cv::Matx44d& outputMatrix,
       double& residualError,
-      const int& percentage = 100
+      const int& percentage = 100,
+      const int& reruns = 100
       );
 
 protected:

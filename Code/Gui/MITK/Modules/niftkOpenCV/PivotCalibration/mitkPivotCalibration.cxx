@@ -43,7 +43,8 @@ void PivotCalibration::CalibrateUsingFilesInDirectories(
     const std::string& matrixDirectory,
     double &residualError,
     vtkMatrix4x4& outputMatrix,
-    const int& percentage
+    const int& percentage,
+    const int& reruns
     )
 {
   std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
@@ -60,7 +61,8 @@ void PivotCalibration::CalibrateUsingFilesInDirectories(
     matrices,
     transformationMatrix,
     residualError,
-    percentage
+    percentage,
+    reruns
     );
 
   for (int i = 0; i < 4; i++)
@@ -78,7 +80,8 @@ void PivotCalibration::Calibrate(
     const std::vector< cv::Mat >& matrices,
     cv::Matx44d& outputMatrix,
     double& residualError,
-    const int& percentage
+    const int& percentage,
+    const int& numberOfReRuns
     )
 {
   // So the main output is always ALL the data.
@@ -93,8 +96,6 @@ void PivotCalibration::Calibrate(
       std::cerr << "PivotCalibration: too few matrices to calculate mean (StdDev) of residual error" << std::endl;
       return;
     }
-   
-    int numberOfReRuns = 100;
     
     std::cout << "PivotCalibration:Total #matrices = " << totalNumberOfMatrices << std::endl;
     std::cout << "PivotCalibration:Using " << percentage << "%" << std::endl;
@@ -106,7 +107,9 @@ void PivotCalibration::Calibrate(
     
     for (unsigned int i = 0; i < numberOfReRuns; i++)
     {
-      // Build randomly chosen set of indexes of size numberOfMatricesToUse;
+      // Build randomly chosen set of indexes of size numberOfMatricesToUse.
+      // TODO: std::rand() is known to be non-uniform in this scenario at least.
+      //       this will preferentially pick lower numbers.
       std::set<int> matrixIndexes;
       while(matrixIndexes.size() < numberOfMatricesToUse)
       {
@@ -127,7 +130,7 @@ void PivotCalibration::Calibrate(
     }
     double meanResidual = mitk::Mean(vectorOfResiduals);
     double stdDevResidual = mitk::StdDev(vectorOfResiduals);
-    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << ", on " << percentage << "% of the data gives residual=" << meanResidual << " ( " << stdDevResidual << ")" << std::endl;
+    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times on " << percentage << "% of the data gives residual=" << meanResidual << " ( " << stdDevResidual << ")" << std::endl;
   }
 }
 
