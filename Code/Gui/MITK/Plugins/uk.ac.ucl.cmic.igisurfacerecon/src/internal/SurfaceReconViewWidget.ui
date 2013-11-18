@@ -311,21 +311,6 @@ White-space will not be trimmed!</string>
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <item>
-           <property name="text">
-            <string>Sequential Quasi Dense Matching</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Parallel Quasi Dense Matching</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Real-time Quasi Dense Matching</string>
-           </property>
-          </item>
          </widget>
         </item>
         <item row="1" column="0" colspan="2">

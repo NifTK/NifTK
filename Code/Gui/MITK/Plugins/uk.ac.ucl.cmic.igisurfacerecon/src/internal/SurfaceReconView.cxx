@@ -94,6 +94,22 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 
   m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
+
+  // populate the method combobox with existing methods.
+  MethodComboBox->clear();
+  for (int i = 0; ; ++i)
+  {
+    niftk::SurfaceReconstruction::Method  methodid;
+    std::string                           name;
+
+    bool  methodexists = niftk::SurfaceReconstruction::GetMethodDetails(i, &methodid, &name);
+    if (!methodexists)
+      break;
+
+    MethodComboBox->addItem(QString::fromStdString(name));
+  }
+  // enable box only if there is any method.
+  MethodComboBox->setEnabled(MethodComboBox->count() > 0);
 }
 
 
@@ -281,7 +297,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
       // is ok if node doesnt exist, SurfaceReconstruction will deal with that.
       mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
 
-      niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
+      QString   methodname = MethodComboBox->currentText();
+      niftk::SurfaceReconstruction::Method  method = niftk::SurfaceReconstruction::ParseMethodName(methodname.toStdString());
+
       float maxTriError = (float) m_MaxTriangulationErrorThresholdSpinBox->value();
       float minDepth    = (float) m_MinDepthRangeSpinBox->value();
       float maxDepth    = (float) m_MaxDepthRangeSpinBox->value();

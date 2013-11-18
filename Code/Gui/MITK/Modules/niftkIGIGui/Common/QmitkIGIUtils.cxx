@@ -159,26 +159,6 @@ void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageChecka
   } // end foreach node
 }
 
-//-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeLaparoscope ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{
-  mitk::Surface::Pointer result;
-  return result;
-}
-
-//-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakePointer ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{
-  mitk::Surface::Pointer result; 
-  return result;
-}
-
-//-----------------------------------------------------------------------------
-mitk::Surface::Pointer MakeReference ( QString& rigidBodyFilename, const vtkMatrix4x4& handeye ) 
-{
-  mitk::Surface::Pointer result; 
-  return result;
-}
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size, 
