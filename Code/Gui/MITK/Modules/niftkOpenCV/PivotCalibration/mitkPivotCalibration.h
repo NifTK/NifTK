@@ -55,11 +55,14 @@ public:
    * \param[In] matrixDirectory directory containing tracking matrices
    * \param[Out] residualError the root mean square distance of each re-constructed point from the invariant point.
    * \param[Out] outputMatrix the output transformation.
+   * \param[In] percentage if < 100 and > 0 will take a randomly chosen number of matrices and run calibration,
+   * and measure the mean and standard deviation of the RMS reconstrution error.
    */
-  bool CalibrateUsingFilesInDirectories(
+  void CalibrateUsingFilesInDirectories(
       const std::string& matrixDirectory,
       double &residualError,
-      vtkMatrix4x4& outputMatrix
+      vtkMatrix4x4& outputMatrix,
+      const int& percentage = 100
       );
 
   /**
@@ -67,11 +70,14 @@ public:
    * \param[In] matrices a vector of 4x4 matrices representing rigid body tracking transformation.
    * \param[Out] outputMatrix the calibration matrix
    * \param[Out] residualError the root mean square distance of each re-constructed point from the invariant point.
+   * \param[In] percentage if < 100 and > 0 will take a randomly chosen number of matrices and run calibration,
+   * and measure the mean and standard deviation of the RMS reconstrution error.
    */
-  bool Calibrate(
+  void Calibrate(
       const std::vector< cv::Mat >& matrices,
       cv::Matx44d& outputMatrix,
-      double& residualError
+      double& residualError,
+      const int& percentage = 100
       );
 
 protected:
@@ -83,6 +89,12 @@ protected:
   PivotCalibration& operator=(const PivotCalibration&); // Purposefully not implemented.
 
 private:
+
+  void DoCalibration(
+    const std::vector< cv::Mat >& matrices,
+    cv::Matx44d& outputMatrix,
+    double& residualError
+    );
 
   double m_SingularValueThreshold;
 
