@@ -214,7 +214,7 @@ set(NIFTK_VERSION_ITK "4.3.2.2" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
-set(NIFTK_VERSION_CTK "84f24b8d90" CACHE STRING "Version of CTK" FORCE)
+set(NIFTK_VERSION_CTK "2f63dd4e44" CACHE STRING "Version of CTK" FORCE)
 set(NIFTK_VERSION_OPENCV "2.4.6.1.2" CACHE STRING "Version of OpenCV" FORCE)
 set(NIFTK_VERSION_MITK "ea3a4449b9" CACHE STRING "Version of MITK" FORCE)
 set(NIFTK_VERSION_NIFTYLINK "71ad71ceb7" CACHE STRING "Version of NiftyLink" FORCE)
