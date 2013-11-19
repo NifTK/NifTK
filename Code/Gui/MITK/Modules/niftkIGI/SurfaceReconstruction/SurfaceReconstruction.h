@@ -49,14 +49,26 @@ typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> >    MatrixProperty;
 class NIFTKIGI_EXPORT SurfaceReconstruction : public itk::Object
 {
 public:
-  // The order of these should match the entries in SurfaceReconViewWidget::MethodComboBox,
-  // or better the other way around: combobox needs to match this order.
   enum Method
   {
     SEQUENTIAL_CPU          = 0,
     PYRAMID_PARALLEL_CPU    = 1,
     PYRAMID_PARALLEL_CUDA
   };
+
+  /**
+   * Returns some details of a available reconstruction methods.
+   * You should loop from zero in parameter index until it returns false.
+   * Stuff the returned friendlyname into a GUI combobox, and when the user
+   * chooses a method, read it back from the combobox and pass it into ParseMethodName()
+   * to retrieve the ID that can be passed into Run().
+   */
+  static bool GetMethodDetails(int index, Method* id, std::string* friendlyname);
+
+  /**
+   * Will throw an exception of the name is not recognised.
+   */
+  static Method ParseMethodName(const std::string& friendlyname);
 
 
   enum OutputType

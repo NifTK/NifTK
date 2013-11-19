@@ -14,32 +14,32 @@
 
 macro(NIFTK_ADD_MODULE module_name)
   include(${${PROJECT_NAME}_MODULES_CONF_DIR}/${module_name}Config.cmake)
-  include_directories(${${module_name}_INCLUDE_DIRS})
-  link_directories(${${module_name}_LIBRARY_DIRS})
-  set(HELPER_APP_LIBRARIES
-    ${HELPER_APP_LIBRARIES}
-    ${${module_name}_PROVIDES}
-    ${${module_name}_DEPENDS}    
-  )
+  list(APPEND HELPER_APP_INCLUDE_DIRECTORIES ${${module_name}_INCLUDE_DIRS})
+  list(APPEND HELPER_APP_LINK_DIRECTORIES ${${module_name}_LIBRARY_DIRS})
+  list(APPEND HELPER_APP_LIBRARIES ${${module_name}_PROVIDES})
 endmacro()
 
-link_directories(${MITK_LIBRARY_DIRS})
-include_directories(${MITK_INCLUDE_DIRS})
-include_directories(${${PROJECT_NAME}_MODULES_CONF_DIR})
-
-set(HELPER_APP_LIBRARIES
-  ${ALL_LIBRARIES}
-)
+set(HELPER_APP_INCLUDE_DIRECTORIES)
+set(HELPER_APP_LINK_DIRECTORIES)
+set(HELPER_APP_LIBRARIES "")
 
 set(HELPER_APPS_REQUIRED_MODULES
   # Add modules that DO NOT depend on BUILD_IGI here.
 )
-
 if(BUILD_IGI)
-  set(HELPER_APPS_REQUIRED_MODULES
-    ${HELPER_APPS_REQUIRED_MODULES}
-    niftkOpenCV
-  )  
+
+  ##########################################################
+  # mjc: Temporary? I can't find a way round including this.
+  #      I suppose we could add it at the top level, but 
+  #      the point of having it as a PackageDepends is so 
+  #      that it is not at the top level.... hmmm.
+  ##########################################################
+  include(${PROJECT_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
+
+  list(APPEND HELPER_APPS_REQUIRED_MODULES 
+    niftkOpenCV 
+    niftkIGI
+  ) 
 endif()
 
 # This sets up all the include and library folders using the above macro.
@@ -50,13 +50,39 @@ endforeach()
 set(HELPER_APPS
   # Add apps that DO NOT depend on BUILD_IGI here.
 )
-
 if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
-    # Add apps that DO depend on BUILD_IGI here.
-  )
+  )  
+  if(BUILD_PCL)
+    set(HELPER_APPS
+      ${HELPER_APPS}
+      niftkPointCloudWrite
+    )    
+  endif()
 endif()
+
+  ########################################################
+  # st: Not very nice, the following are dependencies of
+  # niftkIGI but don't get pulled into the include path 
+  # properly, so I've done them one by one 
+  ##########################################################
+ 
+include (${MITK_DIR}/modulesConf/MitkExtConfig.cmake)
+include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
+include (${MITK_DIR}/MITKConfig.cmake)
+include (${tinyxml_DIR}/tinyxmlConfig.cmake)
+
+list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  ${MITK_INCLUDE_DIRS} ${MitkExt_INCLUDE_DIRS} ${CppMicroServices_INCLUDE_DIRS} ${tinyxml_INCLUDE_DIRS} ${${PROJECT_NAME}_MODULES_CONF_DIR})
+
+list(APPEND HELPER_APP_LINK_DIRECTORIES     ${MITK_LIBRARY_DIRS} )
+
+list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
+list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
+list(REMOVE_DUPLICATES HELPER_APP_LIBRARIES)
+
+include_directories(${HELPER_APP_INCLUDE_DIRECTORIES})
+link_directories(${HELPER_APP_LINK_DIRECTORIES})
 
 # Then foreach app, we just build against libraries (modules).
 foreach(APP ${HELPER_APPS})
@@ -88,7 +114,9 @@ if(SlicerExecutionModel_FOUND)
       niftkUltrasoundPinCalibration
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
+      niftkIGIMakeGeometry
       niftkMakeGridOf2DImages
+      niftkIterativeClosestPointRegister
     )
   endif()  
 

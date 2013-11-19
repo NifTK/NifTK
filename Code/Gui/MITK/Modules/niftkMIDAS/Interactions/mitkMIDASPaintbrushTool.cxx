@@ -34,7 +34,7 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include <Interactions/mitkMIDASDisplayInteractor.h>
+#include <Interactions/mitkDnDDisplayInteractor.h>
 
 const std::string mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType mitk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
@@ -89,7 +89,7 @@ void mitk::MIDASPaintbrushTool::Activated()
   std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
   for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
-    MIDASDisplayInteractor* displayInteractor = dynamic_cast<MIDASDisplayInteractor*>(
+    DnDDisplayInteractor* displayInteractor = dynamic_cast<DnDDisplayInteractor*>(
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor != NULL)
     {
@@ -112,7 +112,7 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   {
     if (it->first)
     {
-      MIDASDisplayInteractor* displayInteractor = static_cast<MIDASDisplayInteractor*>(
+      DnDDisplayInteractor* displayInteractor = static_cast<DnDDisplayInteractor*>(
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor != NULL)
       {

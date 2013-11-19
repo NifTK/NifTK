@@ -423,10 +423,24 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   std::string rightToLeft = m_Directory + "/calib.r2l.txt";
   std::string extrinsic = m_Directory + "/leftextrinsics.txt";
 
+  int outputPrecision = 10;
+  int outputWidth = 10;
+
   std::ofstream fs_leftIntrinsic;
+  fs_leftIntrinsic.precision(outputPrecision);
+  fs_leftIntrinsic.width(outputWidth);
+
   std::ofstream fs_rightIntrinsic;
+  fs_rightIntrinsic.precision(outputPrecision);
+  fs_rightIntrinsic.width(outputWidth);
+
   std::ofstream fs_r2l;
+  fs_r2l.precision(outputPrecision);
+  fs_r2l.width(outputWidth);
+
   std::ofstream fs_ext;
+  fs_ext.precision(outputPrecision);
+  fs_ext.width(outputWidth);
 
   fs_leftIntrinsic.open(leftIntrinsic.c_str(), std::ios::out);
   fs_rightIntrinsic.open(rightIntrinsic.c_str(), std::ios::out);
@@ -450,10 +464,14 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , i, 0 ) << " ";
     fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , i, 0 ) << " ";
   }
+  fs_leftIntrinsic << std::endl;
+  fs_rightIntrinsic << std::endl;
+
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
     fs_r2l << CV_MAT_ELEM (*outputRightToLeftTranslation, double , i, 0 ) << " ";
   }
+  fs_r2l << std::endl;
 
   fs_leftIntrinsic.close();
   fs_rightIntrinsic.close();

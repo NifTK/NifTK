@@ -82,6 +82,8 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   }
 
   double reprojectionError = std::numeric_limits<double>::max();
+  std::vector<double> leftMonoReprojectionErrors;
+  std::vector<double> rightMonoReprojectionErrors;
   int width = 0;
   int height = 0;
 
@@ -172,7 +174,7 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   fs << "Stereo calibration" << std::endl;
 
   fs << "Left camera" << std::endl;
-  OutputCalibrationData(
+  leftMonoReprojectionErrors = OutputCalibrationData(
       fs,
       outputFileName + ".left.intrinsic.txt",
       *objectPointsLeft,
@@ -195,7 +197,7 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   cvSave(std::string(outputFileName + ".left.distortion.xml").c_str(), distortionCoeffsLeft);
 
   fs << "Right camera" << std::endl;
-  OutputCalibrationData(
+  rightMonoReprojectionErrors = OutputCalibrationData(
       fs,
       outputFileName + ".right.intrinsic.txt",
       *objectPointsRight,
@@ -269,7 +271,9 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     {
       tmpR2L.close();
     }
-  }
+    fs << "Projecting error to individual camera[" << successfullFileNamesLeft[i] << "]: left=" << leftMonoReprojectionErrors[i] << ", right=" << rightMonoReprojectionErrors[i] << ", mean=" << (leftMonoReprojectionErrors[i]+rightMonoReprojectionErrors[i])/2.0 << std::endl;
+  }  // end for each file
+
 
   // Might as well
   cvSave(std::string(outputFileName + ".essential.xml").c_str(), essentialMatrix);

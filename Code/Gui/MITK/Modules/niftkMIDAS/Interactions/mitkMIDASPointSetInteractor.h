@@ -51,8 +51,16 @@ namespace mitk
      **/
     virtual ~MIDASPointSetInteractor();
 
+    /**
+    * @brief Convert the given Actions to Operations and send to data and UndoController
+    *
+    * Overrides mitk::PointSetInteractor::ExecuteAction() so that for any operation the
+    * display position is modified to be in the middle of a pixel.
+    */
+    virtual bool ExecuteAction( Action* action, mitk::StateEvent const* stateEvent );
+
   private:
 
   };
 }
-#endif /* MITKMIDASPOINTSETINTERACTOR_H */
+#endif

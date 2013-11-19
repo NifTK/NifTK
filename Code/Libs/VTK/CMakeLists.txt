@@ -16,6 +16,7 @@ set(niftkVTK_SRCS
   niftkVTKFunctions.cxx
   niftkVTKIterativeClosestPoint.cxx
   niftkVTK4PointsReader.cxx
+  niftkVTKIGIGeometry.cxx
 )
 
 add_library(niftkVTK ${niftkVTK_SRCS})

@@ -30,6 +30,7 @@
 #include <berryIBerryPreferences.h>
 #include <QtConcurrentRun>
 #include <boost/bind.hpp>
+#include <cctype>
 
 
 const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
@@ -37,6 +38,7 @@ const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
+  : m_BackgroundOutputNodeIsVisible(true)
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
 
@@ -92,6 +94,22 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 
   m_StereoImageAndCameraSelectionWidget->SetDataStorage(this->GetDataStorage());
   m_StereoImageAndCameraSelectionWidget->UpdateNodeNameComboBox();
+
+  // populate the method combobox with existing methods.
+  MethodComboBox->clear();
+  for (int i = 0; ; ++i)
+  {
+    niftk::SurfaceReconstruction::Method  methodid;
+    std::string                           name;
+
+    bool  methodexists = niftk::SurfaceReconstruction::GetMethodDetails(i, &methodid, &name);
+    if (!methodexists)
+      break;
+
+    MethodComboBox->addItem(QString::fromStdString(name));
+  }
+  // enable box only if there is any method.
+  MethodComboBox->setEnabled(MethodComboBox->count() > 0);
 }
 
 
@@ -161,6 +179,48 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
 
 
 //-----------------------------------------------------------------------------
+std::string SurfaceReconView::IncrementNodeName(const std::string& name)
+{
+  // note: we do not trim white-space!
+  // this is intentional: it allows the user to add a second dimension of numbers to it.
+  // for example: 
+  //   name="hello world"    --> "hello world 1"
+  //   name="hello world 1"  --> "hello world 2"
+  //   name "hello world 1 " --> "hello world 1 1"
+
+
+  // scan from the back of the name until we find a character that is not a number.
+  int    numberstartindex = name.length();
+  for (; numberstartindex > 0; --numberstartindex)
+  {
+    if (!std::isdigit(name[numberstartindex - 1]))
+      break;
+  }
+  assert(numberstartindex >= 0);
+
+  // no number in the name
+  if (numberstartindex >= name.length())
+  {
+    return name + "1";
+  }
+
+  std::string   numbersubstring = name.substr(numberstartindex);
+  // if we get here we expect there to be a number!
+  assert(!numbersubstring.empty());
+  int           number = atoi(numbersubstring.c_str());
+
+  // might be empty if there is nothing but number.
+  std::string   basename = name.substr(0, numberstartindex);
+
+  std::ostringstream  newname;
+  // we preserved white-space so we dont need to add more.
+  newname << basename << (number + 1);
+
+  return newname.str();
+}
+
+
+//-----------------------------------------------------------------------------
 void SurfaceReconView::DoSurfaceReconstruction()
 {
   mitk::DataStorage::Pointer storage = GetDataStorage();
@@ -171,7 +231,7 @@ void SurfaceReconView::DoSurfaceReconstruction()
     mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
     mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
 
-    // we store these background processing.
+    // we store these for background processing.
     // we keep names instead of pointers because data storage screws up if we add the output node
     // with parents that might have been deleted already.
     m_BackgroundLeftNodeName = "";
@@ -185,6 +245,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
       m_BackgroundRightNodeName = rightNode->GetName();
     }
 
+    // mark output node invisible to avoid trashing the renderer with millions of points.
+    m_BackgroundOutputNodeIsVisible = OutputNodeIsVisibleCheckBox->isChecked();
+
     if (leftNode.IsNotNull()
       && rightNode.IsNotNull()
       && leftImage.IsNotNull()
@@ -193,7 +256,12 @@ void SurfaceReconView::DoSurfaceReconstruction()
     {
       // store the name for use once processing has finished in OnBackgroundProcessFinished().
       m_BackgroundOutputNodeName = OutputNodeNameLineEdit->text().toStdString();
-
+      if (AutoIncNodeNameCheckBox->isChecked())
+      {
+        m_BackgroundOutputNodeName = IncrementNodeName(m_BackgroundOutputNodeName);
+        // update the gui so the user notices what is happening.
+        OutputNodeNameLineEdit->setText(QString::fromStdString(m_BackgroundOutputNodeName));
+      }
 
       bool    needToLoadLeftCalib  = niftk::Undistortion::NeedsToLoadIntrinsicCalib(m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName().toStdString(),  leftImage);
       bool    needToLoadRightCalib = niftk::Undistortion::NeedsToLoadIntrinsicCalib(m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName().toStdString(), rightImage);
@@ -229,7 +297,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
       // is ok if node doesnt exist, SurfaceReconstruction will deal with that.
       mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
 
-      niftk::SurfaceReconstruction::Method  method = (niftk::SurfaceReconstruction::Method) MethodComboBox->currentIndex();
+      QString   methodname = MethodComboBox->currentText();
+      niftk::SurfaceReconstruction::Method  method = niftk::SurfaceReconstruction::ParseMethodName(methodname.toStdString());
+
       float maxTriError = (float) m_MaxTriangulationErrorThresholdSpinBox->value();
       float minDepth    = (float) m_MinDepthRangeSpinBox->value();
       float maxDepth    = (float) m_MaxDepthRangeSpinBox->value();
@@ -327,6 +397,8 @@ void SurfaceReconView::OnBackgroundProcessFinished()
     {
       outputNode->SetData(data);
     }
+
+    outputNode->SetVisibility(m_BackgroundOutputNodeIsVisible);
 
     DoItButton->setEnabled(true);
   }

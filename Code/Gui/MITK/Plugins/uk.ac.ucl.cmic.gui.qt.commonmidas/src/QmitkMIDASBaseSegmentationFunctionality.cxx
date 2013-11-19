@@ -44,7 +44,6 @@
 #include <mitkMIDASPolyTool.h>
 #include <mitkMIDASSeedTool.h>
 #include <mitkMIDASOrientationUtils.h>
-#include <itkMIDASHelper.h>
 
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");

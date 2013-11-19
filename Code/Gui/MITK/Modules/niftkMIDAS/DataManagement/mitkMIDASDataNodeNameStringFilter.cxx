@@ -37,6 +37,9 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   this->AddToList(mitk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   this->AddToList("Paintbrush_Node");
+  this->AddToList("widget1Plane");
+  this->AddToList("widget2Plane");
+  this->AddToList("widget3Plane");
   this->SetPropertyName("name");
 }
 

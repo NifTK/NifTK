@@ -30,13 +30,12 @@ class DataStorage;
 class BaseRenderer;
 }
 
-class QmitkMIDASSingleViewWidgetListVisibilityManager;
 class QmitkMIDASBaseSegmentationFunctionality;
 class QmitkRenderWindow;
 
 /**
  * \class QmitkMIDASSegmentationViewWidget
- * \brief Qt Widget to provide a single QmitkMIDASSingleViewWidget, and some associated
+ * \brief Qt Widget to provide a single niftkSingleViewerWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
  * The widget will display whatever data nodes are visible in the currently focused
@@ -61,7 +60,7 @@ public:
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
-   * \brief Injects the data storage, which is passed onto the contained QmitkMIDASSingleViewWidget.
+   * \brief Injects the data storage, which is passed onto the contained niftkSingleViewerWidget.
    * \param storage The data storage for this widget to used, normally taken from the default data storage for the app.
    */
   void SetDataStorage(mitk::DataStorage* storage);
@@ -70,7 +69,7 @@ public:
    * \brief Sets the containing functionality for callback purposes.
    *
    * The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
-   * rather than have any hard coded reference to any widget such as QmitkMIDASStdMultiWidget.
+   * rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
    *
    * \param functionality In old terminology, the "functionality" that contains this widget,
    * is the child of QmitkAbstractView that contains this widget.
@@ -81,7 +80,7 @@ public:
   void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
 
   /**
-   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the QmitkMIDASSingleViewWidget.
+   * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the niftkSingleViewerWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
   void SetEnabled(bool enabled);
@@ -103,7 +102,7 @@ signals:
    * two render windows, in vertical or horizontal mode and ortho view (see MIDASLayout enum for a complete list),
    * and emit this signal when the displayed layout of this window changes.
    */
-  void LayoutChanged(MIDASLayout);
+  void LayoutChanged(WindowLayout);
 
 protected slots:
 
@@ -126,7 +125,7 @@ protected slots:
   void OnMagnificationChanged(double magnification);
 
   /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(QmitkMIDASSingleViewWidget* view, double magnification);
+  void OnScaleFactorChanged(niftkSingleViewerWidget* view, double magnification);
 
 protected:
 
@@ -142,20 +141,20 @@ private:
   MIDASOrientation GetCurrentMainWindowOrientation();
 
   /// \brief Works out the MIDASLayout of the currently focused window.
-  MIDASLayout GetCurrentMainWindowLayout();
+  WindowLayout GetCurrentMainWindowLayout();
 
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
-  MIDASLayout m_Layout;
+  WindowLayout m_WindowLayout;
 
-  MIDASLayout m_MainWindowLayout;
+  WindowLayout m_MainWindowLayout;
 
-  QmitkRenderWindow* m_MainWindowAxial;
-  QmitkRenderWindow* m_MainWindowSagittal;
-  QmitkRenderWindow* m_MainWindowCoronal;
-  QmitkRenderWindow* m_MainWindow3d;
+  QmitkRenderWindow* m_MainAxialWindow;
+  QmitkRenderWindow* m_MainSagittalWindow;
+  QmitkRenderWindow* m_MainCoronalWindow;
+  QmitkRenderWindow* m_Main3DWindow;
   mitk::BaseRenderer* m_CurrentRenderer;
 
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
@@ -165,7 +164,7 @@ private:
 
   /// \brief Stores the last single window layout of the internal viewer,
   /// one for each layout of the main window.
-  QMap<MIDASLayout, MIDASLayout> m_SingleWindowLayouts;
+  QMap<WindowLayout, WindowLayout> m_SingleWindowLayouts;
 
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 

@@ -41,29 +41,21 @@ int main(int argc, char** argv)
 
     // Do calibration
     mitk::PivotCalibration::Pointer calibration = mitk::PivotCalibration::New();
-    bool isSuccessful = calibration->CalibrateUsingFilesInDirectories(
-        matrixDirectory,
-        residualError,
-        *transformationMatrix
-        );
+    calibration->CalibrateUsingFilesInDirectories(
+      matrixDirectory,
+      residualError,
+      *transformationMatrix,
+      percentage,
+      numberOfReruns
+      );
 
-    std::cout << "niftkPivotCalibration: residual         = " << residualError << std::endl;
-
-    if (isSuccessful)
+    if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
     {
-      if (niftk::SaveMatrix4x4ToFile(outputMatrixFile, *transformationMatrix))
-      {
-        returnStatus = EXIT_SUCCESS;
-      }
-      else
-      {
-        MITK_ERROR << "Failed to save transformation to file:" << outputMatrixFile << std::endl;
-        returnStatus = EXIT_FAILURE;
-      }
+      returnStatus = EXIT_SUCCESS;
     }
     else
     {
-      MITK_ERROR << "Calibration failed" << std::endl;
+      MITK_ERROR << "Failed to save transformation to file:" << outputMatrixFile << std::endl;
       returnStatus = EXIT_FAILURE;
     }
   }

@@ -44,12 +44,12 @@ namespace mitk
 
 
   /**
-   * \brief Returns the MIDASView corresponding to the XY plane, or else returns the supplied default.
-   * \param defaultView A default MIDASView that will be returned if we can't work out the As Acquired view.
+   * \brief Returns the MIDASOrientation corresponding to the XY plane, or else returns the supplied default.
+   * \param defaultOrientation A default MIDASOrientation that will be returned if we can't work out the As Acquired orientation.
    * \param image An image to check.
-   * \return MIDASView the As Acquired view, or the defaultView.
+   * \return MIDASOrientation the As Acquired orientation, or the defaultOrientation.
    */
-  NIFTKCORE_EXPORT MIDASLayout GetAsAcquiredView(const MIDASLayout& defaultView, const mitk::Image* image);
+  NIFTKCORE_EXPORT MIDASOrientation GetAsAcquiredOrientation(const MIDASOrientation& defaultOrientation, const mitk::Image* image);
 
 
   /**

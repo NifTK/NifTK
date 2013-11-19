@@ -62,6 +62,9 @@ protected:
    */
   virtual void SetFocus();
 
+  // this should probably go into one of our modules, for easier testing and re-use!
+  std::string IncrementNodeName(const std::string& name);
+
 protected slots:
 
   /**
@@ -103,6 +106,7 @@ private:
   std::string                                m_BackgroundOutputNodeName;
   std::string                                m_BackgroundLeftNodeName;
   std::string                                m_BackgroundRightNodeName;
+  bool                                       m_BackgroundOutputNodeIsVisible;
 };
 
 #endif // SurfaceReconView_h

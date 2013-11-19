@@ -20,7 +20,6 @@
 #include <mitkPointSet.h>
 #include <mitkContourModelSet.h>
 
-#include <itkMIDASHelper.h>
 
 /** Typedefs that we use for this plugin. */
 typedef itk::PointSet<float, 3>      PointSetType;

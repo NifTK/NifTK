@@ -37,7 +37,7 @@ dir_output='bsi/'
 # Output result webpage pattern 
 html="""<html>
 <head>
-<title>BSI - Pacient id: PACIENT</title>
+<title>BSI - Id: PATIENT</title>
 <style>
 body { 
 	font-family:"Tahoma",Helvetica,Sans-serif; 
@@ -52,7 +52,7 @@ td { font-family:"Tahoma",Helvetica,Sans-serif; }
 <table border=0 width="100%">
 <tr>
 	<td align=center width="90%">
-		<h1>BSI Report:</h1> PACIENT
+		<h1>BSI Report:</h1> PATIENT
 	</td>
 	<td align=right width="10%">
 		<a href="http://cmic.cs.ucl.ac.uk" target="a"><img border src="http://cmic.cs.ucl.ac.uk/fileadmin/CMIC/images/CMIC-Logo_Web240.gif"></a>
@@ -156,7 +156,6 @@ def cleanup():
 
 	if os.path.isdir(dir_output):
 		if (not debug_mode) and (len(dir_output)>0) :
-			#shutil.rmtree(dir_output) 
 			for f in glob (os.path.join(dir_output,"*.nii*")):
 				os.unlink (f)
 			for f in glob (os.path.join(dir_output,"*.txt")):
@@ -706,7 +705,7 @@ def write_results(data):
 	report_file=os.path.abspath('report.kn-bsi')
 
 	# Open a file
-	fo = open(report_file, "wb")
+	fo = open(report_file,"ab")
 	fo.write(data+'\n')
 
 	# Close opend file
@@ -886,7 +885,7 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 		'+f_bsi_mask+' \
 		'+str(dilation)+' \
 		'+str(erosion)+' \
-		3 dummy \
+		3 \
 		'+b_kmeans+' \
 		'+f_kmeans+' \
 		dummy \
@@ -912,8 +911,8 @@ def calculate_dw_BSI(method,tkn,tissue_to_remove_file):
 	output=pat.sub(' ',output)	
 	
 	# We get BSI value
-	bsi=output.split('BSI,')[1]
-	bsi=bsi.split(',')[2]
+	bsi=output.split('DW BSI,')[1]
+	bsi=bsi.split(',')[0]
 	bsi=float(bsi)
 	
 	# We calculate the baseline volume
@@ -1055,7 +1054,7 @@ def download_from_web(url,localfile):
 	"""
 	import urllib
 	webFile = urllib.urlopen(url)
-	localFile = open(localfile, 'w')
+	localFile = open(localfile,'w')
 	localFile.write(webFile.read())
 	webFile.close()
 	localFile.close()
@@ -1065,12 +1064,12 @@ def download_from_web(url,localfile):
 
 
 # Begin of generate_report function
-def generate_report(pacient,results,command):
+def generate_report(patient,results,command):
 	"""
 	###########################################################################
-	# def generate_report(pacient,results,command)
+	# def generate_report(patient,results,command)
 	# Function  : Generate the final report with all the data
-	# Param     : pacient, descriptor pacient
+	# Param     : patient, descriptor patient
 	# Param	    : results, numerical bsi and pbvc results
 	# Param	    : command, executed command line
 	# Return    : 
@@ -1085,8 +1084,8 @@ def generate_report(pacient,results,command):
 	bsi_file=os.path.abspath('bsi.nii.gz')
 	negatives_file=os.path.abspath('negatives.nii.gz')
 	positives_file=os.path.abspath('positives.nii.gz')
-	segmentation_file=os.path.relpath(pacient+'_segmentation.gif')
-	registration_file=os.path.relpath(pacient+'_registration.gif')
+	segmentation_file=os.path.relpath(patient+'_segmentation.gif')
+	registration_file=os.path.relpath(patient+'_registration.gif')
 	seg1_file=os.path.relpath('a_s1_segmentation.nii.gz')
 	seg2_file=os.path.relpath('b_s2_segmentation.nii.gz')
 
@@ -1103,8 +1102,8 @@ def generate_report(pacient,results,command):
 		-V','ON'))
 
 	# Generating segmentation overlayed images
-	seg_1=generate_seg_png(pacient+'_seg1',B_INPUT_IMAGE,B_MASK)
-	seg_2=generate_seg_png(pacient+'_seg2',F_INPUT_IMAGE,F_MASK)
+	seg_1=generate_seg_png(patient+'_seg1',B_INPUT_IMAGE,B_MASK)
+	seg_2=generate_seg_png(patient+'_seg2',F_INPUT_IMAGE,F_MASK)
 
 	# Generating segmentation comparation result image
 	execute_command_or_else_stop('seg_maths \
@@ -1121,8 +1120,8 @@ def generate_report(pacient,results,command):
 		-odt float \
 		'+seg2_file)
 
-	segmentation_1=generate_gif(pacient+'_s1_segmentation',seg1_file)
-	segmentation_2=generate_gif(pacient+'_s2_segmentation',seg2_file)
+	segmentation_1=generate_gif(patient+'_s1_segmentation',seg1_file)
+	segmentation_2=generate_gif(patient+'_s2_segmentation',seg2_file)
 	execute_command_or_else_stop('whirlgif \
 		-o '+segmentation_file+' \
 		-time 100 \
@@ -1133,8 +1132,8 @@ def generate_report(pacient,results,command):
 	remove_files("*_s2_segmentation*")
 
 	# Generating registration comparation result image
-	register_1=generate_gif(pacient+'_r1_register',B_INPUT_IMAGE)
-	register_2=generate_gif(pacient+'_r2_register',F_INPUT_IMAGE)
+	register_1=generate_gif(patient+'_r1_register',B_INPUT_IMAGE)
+	register_2=generate_gif(patient+'_r2_register',F_INPUT_IMAGE)
 	execute_command_or_else_stop('whirlgif \
 		-o '+registration_file+' \
 		-time 100 \
@@ -1145,7 +1144,7 @@ def generate_report(pacient,results,command):
 	remove_files("*_r2_register*")
 
 	# Generating XOR overlayed image
-	xor_file=generate_seg_png(pacient+'_xor',B_INPUT_IMAGE,xor_file)
+	xor_file=generate_seg_png(patient+'_xor',B_INPUT_IMAGE,xor_file)
 
 	# We separate atrophy and growth in two files
 	execute_command_or_else_stop('seg_maths \
@@ -1172,18 +1171,18 @@ def generate_report(pacient,results,command):
 		-V','ON'))	
 	atrophy=-100 * atrophy / v1
 	
-	write_results('BSI='+str(results[0])+' ml\n')
-	write_results('PBVC='+str(results[1])+' %\n')
-	write_results('ATROPHY='+str(atrophy)+' %\n')
-	write_results('GROWTH='+str(growth)+' %\n')
-	write_results('VOLUME='+str(v1)+' mm^3\n')
+	write_results('BSI='+str(results[0])+' ml')
+	write_results('PBVC='+str(results[1])+' %')
+	write_results('ATROPHY='+str(atrophy)+' %')
+	write_results('GROWTH='+str(growth)+' %')
+	write_results('VOLUME='+str(v1)+' mm^3')
 	
 	# Generating the atrophy result image
-	bsi_file=generate_gif(pacient+'_bsi',B_INPUT_IMAGE,negatives_file,positives_file,'.png')
+	bsi_file=generate_gif(patient+'_bsi',B_INPUT_IMAGE,negatives_file,positives_file,'.png')
 	remove_files("*negatives*")
 	remove_files("*positives*")
 
-	html=html.replace('PACIENT',pacient)
+	html=html.replace('PATIENT',patient)
 	html=html.replace('COMMAND_LINE',command)
 	html=html.replace('VOLUME_1',str(v1))
 	html=html.replace('VOLUME_2',str(v2))
@@ -1657,11 +1656,9 @@ while i < arg:
 
     elif argv[i].upper() in ['--SW','-SW']:
 	single_window=True
-	i=i+1
 	
     elif argv[i].upper() in ['--DW','-DW']:
 	single_window=False
-	i=i+1
 	
     elif argv[i].upper() in ['--WINDOW','-window']:
 	if argv[i+1].upper() in ['SW','SINGLE']:
@@ -1842,10 +1839,7 @@ fname = get_file_name(F_INPUT_IMAGE)
 # Create the work temp dir
 current_dir=os.getcwd()
 if output_dir_name!='':
-	if os.path.isdir(output_dir_name):
-		dir_output=os.path.join(output_dir_name)
-	else:
-		dir_output=os.path.join(current_dir,output_dir_name)
+	dir_output=os.path.join(current_dir,output_dir_name)
 else:
 	dir_output=os.path.join(current_dir,bname+"_to_"+fname+"-"+dir_output)
 	
@@ -1904,11 +1898,9 @@ if norm:
 	F_INPUT_IMAGE=normalization(F_INPUT_IMAGE,orientation)
 	progress_xml(0.25,"Normalization finished.")
 	
-# Brain extraction code here		
-# Brain extraction code here
-# Brain extraction code here
-# Brain extraction code here
-# Brain extraction code here
+# Brain extraction code here if we desire		
+# Brain extraction code here if we desire
+# Brain extraction code here if we desire
 
 # Register both images to half-way
 progress_xml(0.50,"Image registration.")

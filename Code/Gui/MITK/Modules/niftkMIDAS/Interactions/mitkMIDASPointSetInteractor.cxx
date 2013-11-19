@@ -85,3 +85,33 @@ float mitk::MIDASPointSetInteractor::CanHandleEvent(StateEvent const* stateEvent
   }
   return returnValue;
 }
+
+bool mitk::MIDASPointSetInteractor::ExecuteAction( Action* action, mitk::StateEvent const* stateEvent )
+{
+  mitk::DisplayPositionEvent const *displayPositionEvent =
+      dynamic_cast<const mitk::DisplayPositionEvent*>(stateEvent->GetEvent());
+
+  if (displayPositionEvent)
+  {
+    mitk::BaseRenderer* renderer = displayPositionEvent->GetSender();
+
+    mitk::Point3D point3DInMm = displayPositionEvent->GetWorldPosition();
+    const mitk::Geometry3D* worldGeometry = renderer->GetWorldGeometry();
+    mitk::Point3D point3DIndex;
+    worldGeometry->WorldToIndex(point3DInMm, point3DIndex);
+    point3DIndex[0] = std::floor(point3DIndex[0]) + 0.5;
+    point3DIndex[1] = std::floor(point3DIndex[1]) + 0.5;
+    worldGeometry->IndexToWorld(point3DIndex, point3DInMm);
+
+    mitk::Point2D point2DInMm;
+    mitk::Point2D point2DInPx;
+
+    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+    displayGeometry->Map(point3DInMm, point2DInMm);
+    displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
+
+    const_cast<mitk::DisplayPositionEvent*>(displayPositionEvent)->SetDisplayPosition(point2DInPx);
+  }
+
+  return Superclass::ExecuteAction(action, stateEvent);
+}

@@ -207,6 +207,11 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractExtrinsicMatrixFromRotationAndTransl
 /**
  * \brief Method to take a set of rotation and translation vectors for left and
  * right cameras, and compute transformations from right to left.
+ *
+ * This means that a given a point P_r in the coordinate frame of the right
+ * hand camera, then when this point is multiplied by the rotationVectorsRightToLeft
+ * and translationVectorsRightToLeft, the point will be converted to a point P_l
+ * that is in the coordinate frame of the left hand camera.
  */
 extern "C++" NIFTKOPENCV_EXPORT void ComputeRightToLeftTransformations(
   const CvMat& rotationVectorsLeft,
@@ -270,8 +275,11 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
 
 /**
  * \brief Utility method to dump output to a stream.
+ * \return RMS projection error, as projected to one camera, for each image in order.
+ *
+ * i.e. this method is called seperately for both left and right camera.
  */
-extern "C++" NIFTKOPENCV_EXPORT void OutputCalibrationData(
+extern "C++" NIFTKOPENCV_EXPORT std::vector<double> OutputCalibrationData(
   std::ostream& outputStream,
   const std::string intrinsicFlatFileName,
   const CvMat& objectPoints,
@@ -468,15 +476,18 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObse
  *
  * Taken from: http://geomalgorithms.com/a07-_distance.html
  *
- * \param rightToLeftRotationVector [1x3] vector representing the rotation between camera axes
+ * \param rightToLeftRotationMatrix [3x3] matrix representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
+ * \param tolerance if the distance between the midpoint of the two intersected rays, and a ray is
+ * greater than the tolerance, the point is rejected.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
-  const cv::Mat& rightToLeftRotationVector,
-  const cv::Mat& rightToLeftTranslationVector
+  const cv::Mat& rightToLeftRotationMatrix,
+  const cv::Mat& rightToLeftTranslationVector,
+  const double& tolerance
   );
 
 
@@ -486,7 +497,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
  * \param rightToLeftRotation<Matrix [3x3] vector representing the rotation between camera axes
  * \param rightToLeftTranslationVector [1x3] translation between camera origins
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPair(
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPairUsingGeometry(
   const std::pair<cv::Point2d, cv::Point2d> & inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,
@@ -498,7 +509,7 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3d TriangulatePointPair(
 /**
  * \brief C Wrapper for the other TriangulatePointPairs.
  */
-extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   const CvMat& leftCameraUndistortedImagePoints,
   const CvMat& rightCameraUndistortedImagePoints,
   const CvMat& leftCameraIntrinsicParams,
@@ -530,7 +541,7 @@ extern "C++" NIFTKOPENCV_EXPORT void TriangulatePointPairs(
  * \param rightCameraTranslationVector [1x3] matrix for the extrinsic parameters translation vector.
  * \param outputPoints reconstructed 3D points, but only reconstructed up to a an indeterminant scale factor.
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs(
+extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingSVD(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& leftCameraRotationVector,
@@ -542,25 +553,14 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairs
 
 
 /**
- * \brief Triangulates a 3D point.
- *
- * NOTE: This is only valid up to an indeterminant scale factor.
- *
- * From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997.
- * and
- * <a href="http://www.morethantechnical.com/2012/01/04/simple-triangulation-with-opencv-from-harley-zisserman-w-code/">here</a>.
- * and
- * <a href="http://www.amazon.co.uk/Computer-Vision-Models-Learning-Inference/dp/1107011795/ref=sr_1_1?ie=UTF8&qid=1362560709&sr=8-1">Price 2012<a>.
- *
- * This method is called repeatedly from IterativeTriangulatePoint, with different weights (w1 and w2).
- * Users should call IterativeTriangulatePoint.
+ * \brief Don't call this: Triangulates a 3D point using SVD.
  *
  * \param P1 left camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param P2 right camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Mat_<double> TriangulatePoint(
+cv::Mat_<double> InternalTriangulatePointUsingSVD(
   const cv::Matx34d& P1,
   const cv::Matx34d& P2,
   const cv::Point3d& u1,
@@ -571,20 +571,14 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Mat_<double> TriangulatePoint(
 
 
 /**
- * \brief Triangulates a 3D point.
- *
- * From "Triangulation", Hartley, R.I. and Sturm, P., Computer vision and image understanding, 1997.
- * and
- * <a href="http://www.morethantechnical.com/2012/01/04/simple-triangulation-with-opencv-from-harley-zisserman-w-code/">here</a>.
- * and
- * <a href="http://www.amazon.co.uk/Computer-Vision-Models-Learning-Inference/dp/1107011795/ref=sr_1_1?ie=UTF8&qid=1362560709&sr=8-1">Price 2012<a>.
+ * \brief Don't call this: Triangulates a 3D point using SVD by calling TriangulatePointUsingSVD with different weighting factors.
  *
  * \param P1 left camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param P2 right camera matrix, meaning a full perspective projection, including extrinsic and intrinsic.
  * \param u1 normalised left camera image coordinate in pixels.
  * \param u2 normalised right camera image coordinate in pixels.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point3d IterativeTriangulatePoint(
+cv::Point3d InternalIterativeTriangulatePointUsingSVD(
   const cv::Matx34d& P1,
   const cv::Matx34d& P2,
   const cv::Point3d& u1,

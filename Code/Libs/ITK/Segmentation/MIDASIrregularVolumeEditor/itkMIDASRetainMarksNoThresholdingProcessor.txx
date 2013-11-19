@@ -54,7 +54,7 @@ MIDASRetainMarksNoThresholdingProcessor<TPixel, VImageDimension>
 template<class TPixel, unsigned int VImageDimension>
 void 
 MIDASRetainMarksNoThresholdingProcessor<TPixel, VImageDimension>
-::SetSlices(itk::ORIENTATION_ENUM orientation, 
+::SetSlices(itk::Orientation orientation, 
   int sourceSliceNumber, int targetSliceNumber)
 {
   RegionType sourceRegion = this->m_Calculator->GetSliceRegion(this->GetSourceImage(), orientation, sourceSliceNumber);

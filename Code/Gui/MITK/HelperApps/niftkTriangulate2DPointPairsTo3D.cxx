@@ -26,6 +26,7 @@ int main(int argc, char** argv)
   || intrinsicLeft.length() == 0
   || intrinsicRight.length() == 0
   || rightToLeftExtrinsics.length() == 0
+  || outputPoints.length() == 0
   )
   {
     commandLine.getOutput()->usage(commandLine);
@@ -39,7 +40,8 @@ int main(int argc, char** argv)
                   inputPointPairs,
                   intrinsicLeft,
                   intrinsicRight,
-                  rightToLeftExtrinsics
+                  rightToLeftExtrinsics,
+                  outputPoints
                   );
 
     returnStatus = EXIT_SUCCESS;

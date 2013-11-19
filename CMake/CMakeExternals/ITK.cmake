@@ -41,7 +41,7 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_WIN32_THREADS:BOOL=ON
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
-
+  
   if(MITK_USE_Python)
 
     list(APPEND additional_cmake_args

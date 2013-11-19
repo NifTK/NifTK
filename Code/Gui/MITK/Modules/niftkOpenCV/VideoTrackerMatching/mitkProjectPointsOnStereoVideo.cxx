@@ -371,7 +371,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
   CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
   CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (onScreenPointPairs.size(),3,CV_64FC1);
 
-  mitk::TriangulatePointPairs(
+  mitk::CStyleTriangulatePointPairsUsingSVD(
     leftScreenPointsMat,
     rightScreenPointsMat,
     leftCameraIntrinsicMat,

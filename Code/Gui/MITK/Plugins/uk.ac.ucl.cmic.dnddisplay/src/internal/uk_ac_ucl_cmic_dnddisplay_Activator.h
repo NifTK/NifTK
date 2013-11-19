@@ -21,7 +21,7 @@ namespace mitk {
 
 /**
  * \class uk_ac_ucl_cmic_dnddisplay_Activator
- * \brief CTK Plugin Activator class for the MIDAS Editor (Drag And Drop Display) Plugin.
+ * \brief CTK Plugin Activator class for the DnD Display Plugin.
  * \ingroup uk_ac_ucl_cmic_dnddisplay_internal
  */
 class uk_ac_ucl_cmic_dnddisplay_Activator :
