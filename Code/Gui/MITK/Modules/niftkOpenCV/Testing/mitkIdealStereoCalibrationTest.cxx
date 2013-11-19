@@ -416,11 +416,11 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
 
   MITK_INFO << "Starting intrinisic calibration";
   CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(1,4,CV_64FC1);
   CvMat* outputRotationVectorsLeft = cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsLeft= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
   CvMat* outputIntrinsicMatrixRight= cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputDistortionCoefficientsRight= cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputDistortionCoefficientsRight= cvCreateMat(1,4,CV_64FC1);
   CvMat* outputRotationVectorsRight= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsRight= cvCreateMat(allLeftImagePoints.size(),3,CV_64FC1);
   CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
@@ -479,8 +479,8 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   }
   for ( int i = 0 ; i < 4 ; i ++ )  
   {
-    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , i, 0 ) << " ";
-    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , i, 0 ) << " ";
+    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , 0, i ) << " ";
+    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , 0, i ) << " ";
   }
   for ( int i = 0 ; i < 3 ; i ++ )  
   {
@@ -512,25 +512,17 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   //Next need to do a bunch of tests, could start with just checking that the 
   //inputs approximately equal the outputs, but then could also do some proper 
   //reprojection tests.
-  //intrinsic in
-  cv::Scalar Sum = cv::sum(outputIntrinsicMatrixLeft - leftCameraIntrinsic);
-  MITK_INFO << "Left Instrinsic residual error = " << Sum[0];
-  Sum = cv::sum(outputDistortionCoefficientsLeft - leftCameraDistortion);
-  MITK_INFO << "Left Distortion residual error = " << Sum[0];
-  Sum = cv::sum(outputIntrinsicMatrixRight - rightCameraIntrinsic);
-  MITK_INFO << "Right Instrinsic residual error = " << Sum[0];
-  Sum = cv::sum(outputDistortionCoefficientsRight - rightCameraDistortion);
-  MITK_INFO << "Right Distortion residual error = " << Sum[0];
-  cv::Mat absDiff = cv::Mat(3,3,CV_64FC1);
-  cv::absdiff(cv::Mat(outputIntrinsicMatrixLeft) , leftCameraIntrinsic,absDiff);
-  Sum = cv::sum (absDiff);
-  MITK_INFO << "Left Instrinsic residual error = " << Sum[0];
   
-  double tolerance = 0.2;
+  double tolerance = 0.5;
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputIntrinsicMatrixLeft, leftCameraIntrinsic, tolerance), "Testing left intrinsic Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputDistortionCoefficientsLeft, leftCameraDistortion, tolerance), "Testing left distortion Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputIntrinsicMatrixRight, rightCameraIntrinsic, tolerance), "Testing right intrinsic Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputDistortionCoefficientsRight, rightCameraDistortion, tolerance), "Testing right distortion Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputDistortionCoefficientsRight, rightCameraDistortion, tolerance), "Testing right distortion Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputRightToLeftRotation, rightToLeftRotationMatrix, tolerance), "Testing right to left rotation Matrix"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputRightToLeftTranslation, rightToLeftTranslationVector, tolerance), "Testing right to left translation vector"); 
 
 
-//  cvAbsDiffS(outputIntrinsicMatrixLeft , outIntrinsicMatrixLeft,absDiff);
 
 /*  outputIntrinsicMatrixLeft,
       *outputDistortionCoefficientsLeft,
