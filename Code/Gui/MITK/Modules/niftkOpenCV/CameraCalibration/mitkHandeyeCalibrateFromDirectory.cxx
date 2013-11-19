@@ -220,7 +220,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           LeftFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
-          leftImageCorners, leftObjectCorners);
+          *leftImageCorners, *leftObjectCorners);
 
         std::vector <cv::Point2d>* rightImageCorners = new std::vector<cv::Point2d>;
         std::vector <cv::Point3d>* rightObjectCorners = new std::vector<cv::Point3d>;
@@ -228,7 +228,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           RightFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
-          rightImageCorners, rightObjectCorners);
+          *rightImageCorners, *rightObjectCorners);
 
         if ( LeftOK && RightOK )
         {

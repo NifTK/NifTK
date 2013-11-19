@@ -28,13 +28,24 @@
 namespace mitk {
 
 /**
- * \brief Uses OpenCV to load chessboard images from a directory.
- * \throw Throws logic_error if fullDirectoryName is not a valid directory,
- * the directory contains no files, or there are no files that are images that OpenCV recognises.
- * \param images output parameter containing pointers to the images, which the caller must take responsibility for and de-allocate appropriately.
- * \param fileNames output vector containing the corresponding filenames.
+ * \brief Uses OpenCV to load images.
+ * \throw Throws logic_error if files is empty, or no images found.
+ * \param[In] files list of files
+ * \param[Out] images which the caller must take responsibility for and de-allocate appropriately.
+ * \param[Out] fileNames list of filenames
  */
-extern "C++" NIFTKOPENCV_EXPORT void LoadChessBoardsFromDirectory(
+extern "C++" NIFTKOPENCV_EXPORT void LoadImages(const std::vector<std::string>& files,
+  std::vector<IplImage*>& images,
+  std::vector<std::string>& fileNames
+  );
+
+/**
+ * \brief Scans a directory for all filenames, and uses OpenCV to load images.
+ * \param fullDirectoryName full directory name
+ * \param images which the caller must take responsibility for and de-allocate appropriately.
+ * \param fileNames list of filenames
+ */
+extern "C++" NIFTKOPENCV_EXPORT void LoadImagesFromDirectory(
   const std::string& fullDirectoryName,
   std::vector<IplImage*>& images,
   std::vector<std::string>& fileNames
@@ -96,14 +107,14 @@ extern "C++" NIFTKOPENCV_EXPORT void ExtractChessBoardPoints(
  * \param outputObjectPoints output object points, array size = (1 * numberOfCorners (N)) x 3, and caller must de-allocate.
  */
 extern "C++" NIFTKOPENCV_EXPORT bool ExtractChessBoardPoints(
-  const cv::Mat  image,
+  const cv::Mat& image,
   const int& numberCornersWidth,
   const int& numberCornersHeight,
   const bool& drawCorners,
   const double& squareSizeInMillimetres,
   const mitk::Point2D& pixelScaleFactor,
-  std::vector<cv::Point2d>*& outputImagePoints,
-  std::vector<cv::Point3d>*& outputObjectPoints
+  std::vector<cv::Point2d>& outputImagePoints,
+  std::vector<cv::Point3d>& outputObjectPoints
   );
 
 

@@ -26,7 +26,7 @@ set(CPP_FILES
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
-  CameraCalibration/mitkStereoCameraCalibrationFromTwoDirectories.cxx
+  CameraCalibration/mitkStereoCameraCalibration.cxx
   CameraCalibration/mitkCorrectImageDistortion.cxx
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx

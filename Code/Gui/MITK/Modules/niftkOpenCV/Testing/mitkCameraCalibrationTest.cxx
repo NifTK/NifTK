@@ -18,7 +18,7 @@
 
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
-#include <mitkStereoCameraCalibrationFromTwoDirectories.h>
+#include <mitkStereoCameraCalibration.h>
 #include <mitkCameraCalibrationFromDirectory.h>
 #include <cmath>
 
@@ -47,8 +47,8 @@ public:
     scaleFactors[0] = 1;
     scaleFactors[1] = 1;
 
-    mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calib = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-    float actualError = calib->Calibrate(inputLeft, inputRight, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
+    mitk::StereoCameraCalibration::Pointer calib = mitk::StereoCameraCalibration::New();
+    float actualError = calib->Calibrate(inputLeft, inputRight, cornersX, cornersY, 0, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;

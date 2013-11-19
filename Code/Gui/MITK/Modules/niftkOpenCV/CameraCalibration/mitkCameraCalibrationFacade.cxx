@@ -26,35 +26,42 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-void LoadChessBoardsFromDirectory(const std::string& fullDirectoryName,
-                                                    std::vector<IplImage*>& images,
-                                                    std::vector<std::string>& fileNames)
+void LoadImages(const std::vector<std::string>& files,
+                std::vector<IplImage*>& images,
+                std::vector<std::string>& fileNames)
 {
-  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
-  if (files.size() > 0)
+  if (files.size() == 0)
   {
-    std::sort(files.begin(), files.end());
-    for(unsigned int i = 0; i < files.size();i++)
-    {
-      IplImage* image = cvLoadImage(files[i].c_str());
-      if (image != NULL)
-      {
-        images.push_back(image);
-        fileNames.push_back(files[i]);
-      }
-    }
+    throw std::logic_error("LoadImages: Empty list supplied!");
   }
-  else
+
+  for(unsigned int i = 0; i < files.size();i++)
   {
-    throw std::logic_error("No files found in directory!");
+    IplImage* image = cvLoadImage(files[i].c_str());
+    if (image != NULL)
+    {
+      images.push_back(image);
+      fileNames.push_back(files[i]);
+    }
   }
 
   if (images.size() == 0)
   {
-    throw std::logic_error("No images found in directory!");
+    throw std::logic_error("LoadImages: Failed to load images!");
   }
 
-  std::cout << "Loaded " << fileNames.size() << " chess boards from " << fullDirectoryName << std::endl;
+  std::cout << "Loaded " << fileNames.size() << " chess boards" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadImagesFromDirectory(const std::string& fullDirectoryName,
+                                                    std::vector<IplImage*>& images,
+                                                    std::vector<std::string>& fileNames)
+{
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(), files.end());
+  LoadImages(files, images, fileNames);
 }
 
 
@@ -85,14 +92,14 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
 
 
 //-----------------------------------------------------------------------------
-bool ExtractChessBoardPoints(const cv::Mat image,
+bool ExtractChessBoardPoints(const cv::Mat& image,
                              const int& numberCornersWidth,
                              const int& numberCornersHeight,
                              const bool& drawCorners,
                              const double& squareSizeInMillimetres,
                              const mitk::Point2D& pixelScaleFactor,
-                             std::vector <cv::Point2d>*& corners,
-                             std::vector <cv::Point3d>*& objectPoints
+                             std::vector <cv::Point2d>& corners,
+                             std::vector <cv::Point3d>& objectPoints
                              )
 {
 
@@ -137,14 +144,14 @@ bool ExtractChessBoardPoints(const cv::Mat image,
       objectCorner.x = (k/numberCornersWidth)*squareSizeInMillimetres; 
       objectCorner.y = (k%numberCornersWidth)*squareSizeInMillimetres;
       objectCorner.z = 0; 
-      objectPoints->push_back(objectCorner);
+      objectPoints.push_back(objectCorner);
     }
   }
   for ( unsigned int i = 0 ; i < floatcorners.size() ; i ++ ) 
   {
-    corners->push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
+    corners.push_back(cv::Point2d(static_cast<double>(floatcorners[i].x), static_cast<double>(floatcorners[i].y)));
   }
-  assert ( floatcorners.size() == corners->size());
+  assert ( floatcorners.size() == corners.size());
 
   return found;
 }
