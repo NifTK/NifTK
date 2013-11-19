@@ -12,35 +12,39 @@
 
 =============================================================================*/
 
-#include "mitkStereoCameraCalibrationFromTwoDirectories.h"
+#include "mitkStereoCameraCalibration.h"
 #include "mitkCameraCalibrationFacade.h"
 #include <ios>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
+#include <cstdlib>
+#include <set>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-StereoCameraCalibrationFromTwoDirectories::StereoCameraCalibrationFromTwoDirectories()
+StereoCameraCalibration::StereoCameraCalibration()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-StereoCameraCalibrationFromTwoDirectories::~StereoCameraCalibrationFromTwoDirectories()
+StereoCameraCalibration::~StereoCameraCalibration()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& leftDirectoryName,
+double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     const std::string& rightDirectoryName,
+    const int& numberOfFrames,
     const int& numberCornersX,
     const int& numberCornersY,
     const double& sizeSquareMillimeters,
@@ -49,9 +53,6 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     const bool& writeImages
     )
 {
-  // Note: top level validation checks that outputFileName has length > 0.
-  assert(outputFileName.size() > 0);
-
   std::ofstream fs;
   fs.open(outputFileName.c_str(), std::ios::out);
   if (!fs.fail())
@@ -81,19 +82,111 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
     return -2;
   }
 
+  std::vector<IplImage*> imagesLeft;
+  std::vector<std::string> fileNamesLeft;
+  std::vector<IplImage*> imagesRight;
+  std::vector<std::string> fileNamesRight;
+
+  // Load Data.
+  // 2 options
+  if (numberOfFrames == 0)
+  {
+    // Option a. Scan the whole directory. Directory assumed to contain ONLY chessboard images.
+    LoadImagesFromDirectory(leftDirectoryName, imagesLeft, fileNamesLeft);
+    LoadImagesFromDirectory(rightDirectoryName, imagesRight, fileNamesRight);
+  }
+  else if (numberOfFrames != 0)
+  {
+    // Option b.
+
+    std::cout << "StereoCameraCalibration:Scanning for " << numberOfFrames << std::endl;
+
+    std::vector<std::string> files = niftk::GetFilesInDirectory(leftDirectoryName);
+    if (files.size() == 0)
+    {
+      files = niftk::GetFilesInDirectory(rightDirectoryName);
+    }
+    if (files.size() == 0)
+    {
+      std::cerr << "StereoCameraCalibration: Failed to find files in either:\n" << leftDirectoryName << "\nor\n" << rightDirectoryName << std::endl;
+      return 0;
+    }
+
+    std::sort(files.begin(), files.end());
+    std::vector<std::string> successfulLeftFiles;
+    std::vector<std::string> successfulRightFiles;
+
+    for(unsigned int i = 0; i < files.size();i++)
+    {
+      std::string leftFileName = files[i];
+      std::string rightFileName;
+
+      if (i < (files.size() -1))
+      {
+        i++; // NOTE: Intentionally incrementing array index.
+        rightFileName = files[i];
+
+        if (leftFileName.length() > 0 && rightFileName.length() > 0)
+        {
+          IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
+          IplImage* imageRight = cvLoadImage(rightFileName.c_str());
+
+          if (imageLeft != NULL && imageRight != NULL)
+          {
+            cv::Mat leftImage(imageLeft);
+            cv::Mat rightImage(imageRight);
+
+            std::vector <cv::Point2d> corners;
+            std::vector <cv::Point3d> objectPoints;
+            bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+            bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+            if (foundLeft && foundRight)
+            {
+              successfulLeftFiles.push_back(leftFileName);
+              successfulRightFiles.push_back(rightFileName);
+            }
+          }
+        }
+      }
+    } // end for
+
+    // We now have all successful filenames.
+    // Pick a random selection.
+    unsigned int numberOfSuccessfulFiles = successfulLeftFiles.size();
+    std::set<unsigned int> setOfIndexes;
+    while(setOfIndexes.size() < numberOfFrames)
+    {
+      unsigned int indexOfFile = std::rand() % numberOfSuccessfulFiles;
+      setOfIndexes.insert(indexOfFile);
+    }
+
+    // And copy them into a vector of filenames.
+    std::vector<std::string> chosenFilesLeft;
+    std::vector<std::string> chosenFilesRight;
+    std::set<unsigned int>::const_iterator iter;
+    for(iter = setOfIndexes.begin(); iter != setOfIndexes.end(); iter)
+    {
+      std::string tmp = successfulLeftFiles[*iter];
+      chosenFilesLeft.push_back(tmp);
+
+      tmp = successfulRightFiles[*iter];
+      chosenFilesRight.push_back(tmp);
+    }
+
+    LoadImages(chosenFilesLeft, imagesLeft, fileNamesLeft);
+    LoadImages(chosenFilesRight, imagesRight, fileNamesRight);
+  }
+
   double reprojectionError = std::numeric_limits<double>::max();
   std::vector<double> leftMonoReprojectionErrors;
   std::vector<double> rightMonoReprojectionErrors;
   int width = 0;
   int height = 0;
 
-  std::vector<IplImage*> imagesLeft;
-  std::vector<std::string> fileNamesLeft;
   std::vector<IplImage*> successfullImagesLeft;
   std::vector<std::string> successfullFileNamesLeft;
 
-  std::vector<IplImage*> imagesRight;
-  std::vector<std::string> fileNamesRight;
   std::vector<IplImage*> successfullImagesRight;
   std::vector<std::string> successfullFileNamesRight;
 
@@ -105,8 +198,6 @@ double StereoCameraCalibrationFromTwoDirectories::Calibrate(const std::string& l
   CvMat *objectPointsRight = NULL;
   CvMat *pointCountsRight = NULL;
 
-  LoadChessBoardsFromDirectory(leftDirectoryName, imagesLeft, fileNamesLeft);
-  LoadChessBoardsFromDirectory(rightDirectoryName, imagesRight, fileNamesRight);
 
   std::vector<IplImage*> allImages;
   allImages.insert(allImages.begin(), imagesLeft.begin(), imagesLeft.end());
