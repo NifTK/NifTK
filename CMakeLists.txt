@@ -11,6 +11,12 @@
 #
 #============================================================================*/
 
+option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
+if(NIFTK_USE_COTIRE)
+  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
+  include(cotire)
+endif()
+
 ###########################################################################
 # Our version number. Edit this to generate a new version.
 # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
