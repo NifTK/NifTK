@@ -97,7 +97,7 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   }
   else if (numberOfFrames != 0)
   {
-    // Option b.
+    // Option b. Get the whole list of files, randomly select pairs, test if successful, and aim for a certain number of successful items.
 
     std::cout << "StereoCameraCalibration:Scanning for " << numberOfFrames << std::endl;
 
@@ -113,18 +113,37 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     }
 
     std::sort(files.begin(), files.end());
+
+    std::set<unsigned int> setOfIndexes;
     std::vector<std::string> successfulLeftFiles;
     std::vector<std::string> successfulRightFiles;
 
-    for(unsigned int i = 0; i < files.size();i++)
+    while(setOfIndexes.size() < numberOfFrames)
     {
-      std::string leftFileName = files[i];
-      std::string rightFileName;
-
-      if (i < (files.size() -1))
+      // Pick a random file.
+      unsigned int indexOfFile = std::rand() % files.size();
+      unsigned int indexOfLeft, indexOfRight;
+      if (indexOfFile == 0)
       {
-        i++; // NOTE: Intentionally incrementing array index.
-        rightFileName = files[i];
+        indexOfLeft = 0;
+        indexOfRight = 1;
+      }
+      else if (indexOfFile%2 == 1)
+      {
+        indexOfLeft = indexOfFile - 1;
+        indexOfRight = indexOfFile;
+      }
+      else if (indexOfFile%2 == 0)
+      {
+        indexOfLeft = indexOfFile;
+        indexOfRight = indexOfFile + 1;
+      }
+
+      if (setOfIndexes.find(indexOfLeft) == setOfIndexes.end())
+      {
+
+        std::string leftFileName = files[indexOfLeft];
+        std::string rightFileName = files[indexOfRight];
 
         if (leftFileName.length() > 0 && rightFileName.length() > 0)
         {
@@ -139,43 +158,26 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
             std::vector <cv::Point2d> corners;
             std::vector <cv::Point3d> objectPoints;
             bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+            corners.clear();
+            objectPoints.clear();
             bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
 
             if (foundLeft && foundRight)
             {
               successfulLeftFiles.push_back(leftFileName);
               successfulRightFiles.push_back(rightFileName);
+              setOfIndexes.insert(indexOfLeft);
             }
           }
         }
       }
-    } // end for
+    } // end while
 
-    // We now have all successful filenames.
-    // Pick a random selection.
-    unsigned int numberOfSuccessfulFiles = successfulLeftFiles.size();
-    std::set<unsigned int> setOfIndexes;
-    while(setOfIndexes.size() < numberOfFrames)
-    {
-      unsigned int indexOfFile = std::rand() % numberOfSuccessfulFiles;
-      setOfIndexes.insert(indexOfFile);
-    }
+    std::cout << "StereoCameraCalibration: Loading left" << std::endl;
+    LoadImages(successfulLeftFiles, imagesLeft, fileNamesLeft);
 
-    // And copy them into a vector of filenames.
-    std::vector<std::string> chosenFilesLeft;
-    std::vector<std::string> chosenFilesRight;
-    std::set<unsigned int>::const_iterator iter;
-    for(iter = setOfIndexes.begin(); iter != setOfIndexes.end(); iter)
-    {
-      std::string tmp = successfulLeftFiles[*iter];
-      chosenFilesLeft.push_back(tmp);
-
-      tmp = successfulRightFiles[*iter];
-      chosenFilesRight.push_back(tmp);
-    }
-
-    LoadImages(chosenFilesLeft, imagesLeft, fileNamesLeft);
-    LoadImages(chosenFilesRight, imagesRight, fileNamesRight);
+    std::cout << "StereoCameraCalibration: Loading right" << std::endl;
+    LoadImages(successfulRightFiles, imagesRight, fileNamesRight);
   }
 
   double reprojectionError = std::numeric_limits<double>::max();
