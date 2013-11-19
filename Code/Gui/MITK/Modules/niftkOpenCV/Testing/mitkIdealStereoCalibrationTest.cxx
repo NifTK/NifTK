@@ -76,6 +76,7 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   int xcorners = 14;
   int ycorners = 10;
   double squareSize = 3; // in mm
+  int maxTrackingMatrices = -1;
 
   cv::Mat gridToWorld = cvCreateMat (4,4,CV_64FC1);
 
@@ -120,8 +121,16 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
       argv++;
       ok=true;
     }
-
-                   
+    
+    if (( ok == false ) && (strcmp(argv[1],"--maxTrackingMatricesToUse") == 0 )) 
+    {
+      argc--;
+      argv++;
+      maxTrackingMatrices = atof(argv[1]);
+      argc--;
+      argv++;
+      ok =true;
+    }
     if (( ok == false ) && (strcmp(argv[1],"--pixelNoise") == 0 )) 
     {
       argc--;
@@ -145,8 +154,6 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
     }
   }
       
-
-
   MITK_TEST_BEGIN("mitkIdealStereoCalibrationTest");
 
   //get the tracking matrices
@@ -222,8 +229,24 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   std::string trackerDirectory = "testTrackerMatrices";
   niftk::CreateDirectoryAndParents(trackerDirectory);
 
+  int views; 
+  if ( maxTrackingMatrices == -1 )
+  {
+    views = MarkerToWorld.size();
+  }
+  else
+  {
+    if ( maxTrackingMatrices < MarkerToWorld.size() )
+    {
+      views = maxTrackingMatrices;
+    }
+    else
+    {
+      views = MarkerToWorld.size();
+    }
+  }
 
-  for ( unsigned int frame = 0 ; frame < MarkerToWorld.size() ; frame ++ ) 
+  for ( unsigned int frame = 0 ; frame < views ; frame ++ ) 
   {
 
     //get world points into camera lens coordinates
