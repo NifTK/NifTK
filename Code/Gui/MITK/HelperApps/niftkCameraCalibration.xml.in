@@ -78,6 +78,11 @@
       </constraints>
     </float>
     
+  </parameters>
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+
     <boolean>
       <name>writeImages</name>
       <longflag>writeImages</longflag>
@@ -85,7 +90,7 @@
       <label>Write images</label>
       <default>0</default>
     </boolean>
-    
+
     <integer-vector>
       <name>pixelScaleFactors</name>
       <longflag>pixelScaleFactors</longflag>
@@ -94,6 +99,13 @@
       <default>1,1</default>
     </integer-vector>
 
+    <integer>
+      <name>numberOfFrames</name>
+      <longflag>numberOfFrames</longflag>
+      <description>If specified, will scan through extracting chessboards, and try to extract a target number of image pairs.</description>
+      <label>Number of Frames</label>
+      <default>0</default>
+    </integer>
+
   </parameters>
-  
 </executable>

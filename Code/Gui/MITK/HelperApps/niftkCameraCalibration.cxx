@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <limits>
 #include <mitkCameraCalibrationFromDirectory.h>
-#include <mitkStereoCameraCalibrationFromTwoDirectories.h>
+#include <mitkStereoCameraCalibration.h>
 #include <niftkCameraCalibrationCLP.h>
 #include <mitkVector.h>
 
@@ -31,13 +31,20 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
+  if (numberOfFrames != 0 && leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  != 0)
+  {
+    std::cerr << "If you specify --numberFrames, you must only specify --left OR --right, and not both" << std::endl;
+    return returnStatus;
+  }
+
   try
   {
     mitk::Point2D pixelScales;
     pixelScales[0] = pixelScaleFactors[0];
     pixelScales[1] = pixelScaleFactors[1];
 
-    if (   (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
+    if (numberOfFrames == 0
+        && (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
         || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
         )
     {
@@ -53,8 +60,8 @@ int main(int argc, char** argv)
     }
     else
     {
-      mitk::StereoCameraCalibrationFromTwoDirectories::Pointer calibrationObject = mitk::StereoCameraCalibrationFromTwoDirectories::New();
-      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
+      mitk::StereoCameraCalibration::Pointer calibrationObject = mitk::StereoCameraCalibration::New();
+      reprojectionError = calibrationObject->Calibrate(leftCameraInputDirectory, rightCameraInputDirectory, numberOfFrames, xCorners, yCorners, size, pixelScales, outputCalibrationData, writeImages);
     }
     returnStatus = EXIT_SUCCESS;
   }
