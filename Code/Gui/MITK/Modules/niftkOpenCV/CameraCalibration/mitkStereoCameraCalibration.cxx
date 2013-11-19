@@ -173,6 +173,12 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       }
     } // end while
 
+    // This is functional duplication. We have already loaded, and checked
+    // for chessboards above, but it keeps the rest of the function simple,
+    // and allows to easily distinguish between using 'numberOfFrames' and not.
+    //
+    // ToDo: refactor this containing if block to avoid re-doing work.
+
     std::cout << "StereoCameraCalibration: Loading left" << std::endl;
     LoadImages(successfulLeftFiles, imagesLeft, fileNamesLeft);
 
