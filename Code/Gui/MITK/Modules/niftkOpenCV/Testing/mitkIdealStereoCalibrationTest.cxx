@@ -36,8 +36,26 @@
  * Optionally then perform and handeye calibration.
  * Optionally add some tracking and or projection errors
  */
-
-
+bool CompareOpenCVMatrices2(cv::Mat mat1, cv::Mat mat2 , double tolerance) 
+{
+  assert ( mat1.size() == mat2.size() );
+  assert ( mat1.type() == mat2.type() );
+  cv::Mat absDiff = cv::Mat(mat1.size(),mat1.type());
+  cv::absdiff(mat1,mat2,absDiff);
+  cv::Scalar Sum = cv::sum (absDiff);
+  if ( Sum[0] < tolerance ) 
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+bool CompareOpenCVMatrices(CvMat* mat1, cv::Mat mat2, double tolerance)
+{ 
+  return CompareOpenCVMatrices2(cv::Mat(mat1), mat2,tolerance);
+}
 int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
 {
 
@@ -481,9 +499,16 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   MITK_INFO << "Right Instrinsic residual error = " << Sum[0];
   Sum = cv::sum(outputDistortionCoefficientsRight - rightCameraDistortion);
   MITK_INFO << "Right Distortion residual error = " << Sum[0];
-  cv::Scalar absDiff;
- // cv::absdiff(outputIntrinsicMatrixLeft , leftCameraIntrinsic,absDiff);
-  cvAbsDiffS(outputIntrinsicMatrixLeft , *leftCameraIntrinsic,absDiff);
+  cv::Mat absDiff = cv::Mat(3,3,CV_64FC1);
+  cv::absdiff(cv::Mat(outputIntrinsicMatrixLeft) , leftCameraIntrinsic,absDiff);
+  Sum = cv::sum (absDiff);
+  MITK_INFO << "Left Instrinsic residual error = " << Sum[0];
+  
+  double tolerance = 0.2;
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputIntrinsicMatrixLeft, leftCameraIntrinsic, tolerance), "Testing left intrinsic Matrix"); 
+
+
+//  cvAbsDiffS(outputIntrinsicMatrixLeft , outIntrinsicMatrixLeft,absDiff);
 
 /*  outputIntrinsicMatrixLeft,
       *outputDistortionCoefficientsLeft,
