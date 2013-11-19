@@ -229,24 +229,23 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   std::string trackerDirectory = "testTrackerMatrices";
   niftk::CreateDirectoryAndParents(trackerDirectory);
 
-  int views; 
-  if ( maxTrackingMatrices == -1 )
-  {
-    views = MarkerToWorld.size();
-  }
-  else
+  int views = MarkerToWorld.size(); 
+  int stepSize = 1;
+
+  if ( maxTrackingMatrices != -1 ) 
   {
     if ( maxTrackingMatrices < MarkerToWorld.size() )
     {
-      views = maxTrackingMatrices;
+      stepSize = MarkerToWorld.size() / maxTrackingMatrices;
     }
     else
     {
-      views = MarkerToWorld.size();
+      stepSize = 1;
     }
   }
 
-  for ( unsigned int frame = 0 ; frame < views ; frame ++ ) 
+
+  for ( unsigned int frame = 0 ; frame < views ; frame += stepSize ) 
   {
 
     //get world points into camera lens coordinates
