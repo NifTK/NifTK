@@ -154,7 +154,20 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
-
+    if ( outputMatrices.length() !=0 )
+    {
+      std::ofstream fout (outputMatrices.c_str());
+      std::vector < cv::Mat > leftCameraMatrices = 
+        projector->GetWorldToLeftCameraMatrices();
+      
+      for ( unsigned int i  = 0 ; i < leftCameraMatrices.size() ; i ++ )
+      {
+        fout << "#Frame " << i << std::endl;
+        fout << leftCameraMatrices[i] ;
+        fout << std::endl;
+      }
+      fout.close();
+    }
 
     returnStatus = EXIT_SUCCESS;
   }

@@ -58,6 +58,14 @@
       <label>output 2D points</label>
       <channel>output</channel>
     </file>
+    <file>
+      <name>outputMatrices</name>
+      <longflag>outputMatrices</longflag>
+      <description>Output the world to camera matrices</description>
+      <label>output the world to camera matrices</label>
+      <channel>output</channel>
+    </file>
+ 
     <integer>
       <name>videoLag</name>
       <longflag>videoLag</longflag>
