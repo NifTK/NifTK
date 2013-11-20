@@ -31,6 +31,12 @@ FitPlaneToPointCloudWrapper::~FitPlaneToPointCloudWrapper()
 }
 
 
+//-----------------------------------------------------------------------------
+void FitPlaneToPointCloudWrapper::FitPlane(const std::string& filename, const std::string& outputfilename)
+{
+}
+
+
 } // namespace
 
 

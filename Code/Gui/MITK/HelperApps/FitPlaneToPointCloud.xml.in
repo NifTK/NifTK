@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Fit Plane to Point Cloud</title>
+  <description><![CDATA[Fits a plane equation to a point cloud.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Johannes Totz</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  asdfasfd
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file fileExtensions="*.mps">
+      <name>pointCloudFileName</name>
+      <longflag>pointcloud</longflag>
+      <description>The file name of the MITK PointSet file to process.</description>
+      <label>Point set file</label>
+    </file>
+ 
+    <file fileExtensions="*.txt">
+      <name>outputPlaneEquation</name>
+      <longflag>output</longflag>
+      <description>Output file for plane equation (optional).</description>
+      <label>Output file for plane equation</label>
+      <default>plane.txt</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+</executable>

@@ -58,7 +58,6 @@ if(BUILD_IGI)
     set(HELPER_APPS
       ${HELPER_APPS}
       niftkPointCloudWrite
-      FitPlaneToPointCloud
     )    
   endif()
 endif()
@@ -119,6 +118,13 @@ if(SlicerExecutionModel_FOUND)
       niftkMakeGridOf2DImages
       niftkIterativeClosestPointRegister
     )
+    
+    if(BUILD_PCL)
+      set(SLICER_HELPER_APPS
+        ${SLICER_HELPER_APPS}
+        FitPlaneToPointCloud
+      )
+    endif()
   endif()  
 
   foreach(APP ${SLICER_HELPER_APPS})

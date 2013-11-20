@@ -44,6 +44,10 @@ protected:
   FitPlaneToPointCloudWrapper(const FitPlaneToPointCloudWrapper&);
   /** Not implemented */
   FitPlaneToPointCloudWrapper& operator=(const FitPlaneToPointCloudWrapper&);
+
+
+public:
+  void FitPlane(const std::string& filename, const std::string& outputfilename);
 };
 
 
