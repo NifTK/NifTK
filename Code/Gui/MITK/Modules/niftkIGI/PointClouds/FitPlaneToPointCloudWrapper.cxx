@@ -37,11 +37,28 @@ FitPlaneToPointCloudWrapper::FitPlaneToPointCloudWrapper()
 //-----------------------------------------------------------------------------
 FitPlaneToPointCloudWrapper::~FitPlaneToPointCloudWrapper()
 {
+  // non-smarty-pants pointer
+  delete m_PlaneCoefficients;
 }
 
 
 //-----------------------------------------------------------------------------
-void FitPlaneToPointCloudWrapper::PrintOutput(std::ostream& log)
+void FitPlaneToPointCloudWrapper::GetParameters(float& a, float& b, float& c, float& d) const
+{
+  if (m_PlaneCoefficients->values.size() != 4)
+  {
+    throw std::logic_error("Need to call FitPlane() first!");
+  }
+
+  a = m_PlaneCoefficients->values[0];
+  b = m_PlaneCoefficients->values[1];
+  c = m_PlaneCoefficients->values[2];
+  d = m_PlaneCoefficients->values[3];
+}
+
+
+//-----------------------------------------------------------------------------
+void FitPlaneToPointCloudWrapper::PrintOutput(std::ostream& log) const
 {
   if (m_PlaneCoefficients->values.size() != 4)
   {
@@ -69,9 +86,21 @@ void FitPlaneToPointCloudWrapper::FitPlane(const std::string& filename)
   mitk::PointSetReader::Pointer   psreader = mitk::PointSetReader::New();
   psreader->SetFileName(filename);
   psreader->Update();
-  mitk::PointSet::Pointer pointset = psreader->GetOutput();
-  if (pointset.IsNull())
+  if (!psreader->GetSuccess())
     throw std::runtime_error("Could not read point set file " + filename);
+
+  mitk::PointSet::Pointer pointset = psreader->GetOutput();
+  assert(pointset.IsNotNull());
+
+  FitPlane(pointset);
+}
+
+
+//-----------------------------------------------------------------------------
+void FitPlaneToPointCloudWrapper::FitPlane(const mitk::PointSet::Pointer& pointset)
+{
+  if (pointset.IsNull())
+    throw std::runtime_error("Null pointset passed in");
 
   // now convert it to a pcl representation.
   // this is infact a simple std::vector with all the points.

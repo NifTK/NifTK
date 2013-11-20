@@ -20,6 +20,7 @@
 #include <string>
 #include <ostream>
 #include <mitkCommon.h>
+#include <mitkPointSet.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
@@ -57,7 +58,9 @@ protected:
 
 public:
   void FitPlane(const std::string& filename);
-  void PrintOutput(std::ostream& log);
+  void FitPlane(const mitk::PointSet::Pointer& pointset);
+  void PrintOutput(std::ostream& log) const;
+  void GetParameters(float& a, float& b, float& c, float& d) const;
 
 
 private:
