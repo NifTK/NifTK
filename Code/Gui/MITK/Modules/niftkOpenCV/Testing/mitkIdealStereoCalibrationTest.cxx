@@ -46,7 +46,7 @@ bool CompareOpenCVMatrices2(cv::Mat mat1, cv::Mat mat2 , double tolerance)
   abs = cv::abs(mat1);
   cv::Scalar Sum1 = cv::sum (abs);
   cv::Scalar Sum = cv::sum (absDiff);
-  MITK_INFO << "Absolute difference Sum = " << Sum[0] << "Normalised sum = " << Sum[0]/Sum1[0];
+  MITK_INFO << std::endl << "Absolute difference Sum = " << Sum[0] << " : Normalised sum = " << Sum[0]/Sum1[0];
   if ( Sum[0]/Sum1[0] < tolerance ) 
   {
     return true;
@@ -72,6 +72,7 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   bool discardFramesWithNonVisiblePoints = true; 
   double screenWidth = 1980;
   double screenHeight = 540;
+  double tolerance = 0.05;
 
   cv::Size imageSize;
   imageSize.height = screenHeight;
@@ -94,6 +95,16 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
       argv++;
       calibrationDirectory = argv[1];
       MITK_INFO << "Loading calibration from " << calibrationDirectory;
+      argc--;
+      argv++;
+      ok=true;
+    }
+    if (( ok == false ) && (strcmp(argv[1],"--tolerance") == 0 ))
+    {
+      argc--;
+      argv++;
+      tolerance = atof(argv[1]);
+      MITK_INFO << "Setting tolerance to  " << tolerance;
       argc--;
       argv++;
       ok=true;
@@ -517,7 +528,6 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   //inputs approximately equal the outputs, but then could also do some proper 
   //reprojection tests.
   
-  double tolerance = 0.5;
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputIntrinsicMatrixLeft, leftCameraIntrinsic, tolerance), "Testing left intrinsic Matrix"); 
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputDistortionCoefficientsLeft, leftCameraDistortion, tolerance), "Testing left distortion Matrix"); 
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputIntrinsicMatrixRight, rightCameraIntrinsic, tolerance), "Testing right intrinsic Matrix"); 
