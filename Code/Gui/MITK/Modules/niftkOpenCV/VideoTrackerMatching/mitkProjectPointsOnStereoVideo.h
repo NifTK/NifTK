@@ -100,6 +100,7 @@ public:
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
+  itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
 
 protected:
 
@@ -141,6 +142,8 @@ private:
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points
+
+  std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
