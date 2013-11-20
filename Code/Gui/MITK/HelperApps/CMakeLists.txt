@@ -58,6 +58,7 @@ if(BUILD_IGI)
     set(HELPER_APPS
       ${HELPER_APPS}
       niftkPointCloudWrite
+      FitPlaneToPointCloud
     )    
   endif()
 endif()
