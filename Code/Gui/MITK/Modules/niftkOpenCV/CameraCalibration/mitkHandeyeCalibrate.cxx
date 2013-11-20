@@ -32,9 +32,9 @@ HandeyeCalibrate::HandeyeCalibrate()
 , m_SortByDistance(true)
 , m_SortByAngle(false)
 , m_DoGridToWorld(true)
+, m_CameraToMarker(cvCreateMat(4,4,CV_64FC1))
+, m_GridToWorld(cvCreateMat(4,4,CV_64FC1))
 {
-  m_CameraToMarker = cvCreateMat(4,4,CV_64FC1);
-  m_GridToWorld = cvCreateMat(4,4,CV_64FC1);
 }
 
 
