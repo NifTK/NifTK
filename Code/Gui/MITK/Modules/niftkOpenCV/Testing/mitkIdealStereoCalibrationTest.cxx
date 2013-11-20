@@ -43,6 +43,10 @@ bool CompareOpenCVMatrices2(cv::Mat mat1, cv::Mat mat2 , double tolerance)
   cv::Mat absDiff = cv::Mat(mat1.size(),mat1.type());
   cv::absdiff(mat1,mat2,absDiff);
   cv::Scalar Sum = cv::sum (absDiff);
+  MITK_INFO << "m1 = " << mat1;
+  MITK_INFO << "m2 = " << mat2;
+  MITK_INFO << "Absolute differences = " << absDiff;
+  MITK_INFO << "Absolute difference Sum = " << Sum[0];
   if ( Sum[0] < tolerance ) 
   {
     return true;
@@ -521,26 +525,8 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputDistortionCoefficientsRight, rightCameraDistortion, tolerance), "Testing right distortion Matrix"); 
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputRightToLeftRotation, rightToLeftRotationMatrix, tolerance), "Testing right to left rotation Matrix"); 
   MITK_TEST_CONDITION ( CompareOpenCVMatrices(outputRightToLeftTranslation, rightToLeftTranslationVector, tolerance), "Testing right to left translation vector"); 
-
-
-
-/*  outputIntrinsicMatrixLeft,
-      *outputDistortionCoefficientsLeft,
-          *outputRotationVectorsLeft,
-              *outputTranslationVectorsLeft,
-                  *outputIntrinsicMatrixRight,
-                      *outputDistortionCoefficientsRight,
-                          *outputRotationVectorsRight,
-                              *outputTranslationVectorsRight,
-                                  *outputRightToLeftRotation,
-                                      *outputRightToLeftTranslation*/
- /* MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_m1 < 1e-3 , "Testing RMS error value for c method");
-  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 0.5 , "Testing x error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 0.5 , "Testing y error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 0.5 , "Testing z error mean value for c++ method");
-  MITK_TEST_CONDITION (errorRMS_m2 < 2.0 , "Testing RMS error value for c++ method");*/
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices2(handeyecalibrator->GetCameraToMarker(), leftCameraToTracker, tolerance), "Testing handeye"); 
+  MITK_TEST_CONDITION ( CompareOpenCVMatrices2(handeyecalibrator->GetGridToWorld(), gridToWorld, tolerance), "Testing grid to world"); 
 
   MITK_TEST_END();
 }
