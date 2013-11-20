@@ -36,6 +36,7 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   mitk::HandeyeCalibrate::Pointer Calibrator = mitk::HandeyeCalibrate::New();
 
   std::vector<double> Residuals;
+  Calibrator->SetFlipTracking(true);
   if ( sort == "Distances" )
   {
     Calibrator->SetSortByDistance(true);
@@ -45,11 +46,14 @@ int mitkHandeyeCalibrationTest ( int argc, char * argv[] )
   {
     if ( sort == "Angles" ) 
     {
+      Calibrator->SetSortByDistance(false);
       Calibrator->SetSortByAngle(true);
       Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,result);
     }
     else 
     {
+      Calibrator->SetSortByDistance(false);
+      Calibrator->SetSortByAngle(false);
       Residuals = Calibrator->Calibrate( inputTracking, inputExtrinsic,result);
     }
   }

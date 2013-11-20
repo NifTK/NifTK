@@ -20,6 +20,7 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include <cv.h>
 
 namespace mitk {
 
@@ -50,6 +51,8 @@ public:
   itkSetMacro(SortByDistance, bool);
   itkSetMacro(SortByAngle, bool);
   itkSetMacro(DoGridToWorld, bool);
+  itkGetMacro(CameraToMarker, cv::Mat);
+  itkGetMacro(GridToWorld, cv::Mat);
 
 protected:
 
@@ -64,6 +67,9 @@ protected:
   bool  m_SortByDistance;
   bool  m_SortByAngle;
   bool  m_DoGridToWorld;
+  
+  cv::Mat m_CameraToMarker; //the handeye matrix
+  cv::Mat m_GridToWorld;    //the position of the calibration grid in world coordinates
 
 private: 
 

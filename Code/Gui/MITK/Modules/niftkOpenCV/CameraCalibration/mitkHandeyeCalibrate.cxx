@@ -27,13 +27,14 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrate::HandeyeCalibrate()
-: m_FlipTracking(true)
+: m_FlipTracking(false)
 , m_FlipExtrinsic(false)
-, m_SortByDistance(false)
+, m_SortByDistance(true)
 , m_SortByAngle(false)
 , m_DoGridToWorld(true)
+, m_CameraToMarker(cvCreateMat(4,4,CV_64FC1))
+, m_GridToWorld(cvCreateMat(4,4,CV_64FC1))
 {
-
 }
 
 
@@ -265,24 +266,23 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   double TransResidual = sqrt(ErrorTransMult.at<double>(0,0)/(NumberOfViews-1));
   residuals[1] = TransResidual;
 
-  cv::Mat CameraToMarker = cvCreateMat(4,4,CV_64FC1);
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
     {
-      CameraToMarker.at<double>(row,col) = rcg.at<double>(row,col);
+      m_CameraToMarker.at<double>(row,col) = rcg.at<double>(row,col);
     }
   }
   for ( int row = 0; row < 3; row ++ )
   {
-    CameraToMarker.at<double>(row,3) = tcg.at<double>(row,0);
+    m_CameraToMarker.at<double>(row,3) = tcg.at<double>(row,0);
   }
   for ( int col = 0; col < 3; col ++ )
   {
-    CameraToMarker.at<double>(3,col) = 0.0;
+    m_CameraToMarker.at<double>(3,col) = 0.0;
   }
-  CameraToMarker.at<double>(3,3)=1.0;
-  std::cout << "Camera To Marker Matrix = " << std::endl << CameraToMarker << std::endl;
+  m_CameraToMarker.at<double>(3,3)=1.0;
+  std::cout << "Camera To Marker Matrix = " << std::endl << m_CameraToMarker << std::endl;
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
   
@@ -294,7 +294,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     {
       for ( int j = 0 ; j < 4 ; j ++ )
       {
-        handeyeStream << CameraToMarker.at<double>(i,j) << " ";
+        handeyeStream << m_CameraToMarker.at<double>(i,j) << " ";
       }
       handeyeStream << std::endl;
     }
@@ -303,12 +303,13 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   if ( m_DoGridToWorld ) 
   {
     std::vector<cv::Mat> gridToWorlds;
-    for ( int i = 0; i < NumberOfViews - 1; i ++ )
+    gridToWorlds.clear();
+    for ( int i = 0; i < NumberOfViews ; i ++ )
     {
       cv::Mat gridToWorld = cvCreateMat(4,4,CV_64FC1);
       cv::Mat cameraToWorld = cvCreateMat(4,4,CV_64FC1);
 
-      cameraToWorld =  MarkerToWorld[i]*(CameraToMarker); 
+      cameraToWorld =  MarkerToWorld[i]*(m_CameraToMarker); 
       gridToWorld = cameraToWorld *(GridToCamera[i]);
       gridToWorlds.push_back(gridToWorld);
       std::ofstream gridCornersStream;
@@ -329,8 +330,8 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
       }
 
     }
-    cv::Mat AverageMatrix = mitk::AverageMatrices (gridToWorlds);
-    MITK_INFO << "Average Grid to World Transform" << std::endl << AverageMatrix;
+    m_GridToWorld = mitk::AverageMatrices (gridToWorlds);
+    MITK_INFO << "Average Grid to World Transform" << std::endl << m_GridToWorld;
     std::ofstream gridCornersStream;
     gridCornersStream.open("calib.gridcorners.txt");
     if ( gridCornersStream )
@@ -340,7 +341,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
         for ( int j = 0 ; j < 2 ; j ++ ) 
         {  
           cv::Point3d x = cv::Point3d (i*(27.0) , j * (39.0), 0.0 );
-          cv::Point3d y = AverageMatrix * x;
+          cv::Point3d y = m_GridToWorld * x;
           gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
         }
       }
@@ -354,7 +355,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     mitk::LoadResult(GroundTruthSolution, ResultMatrix, ResultResiduals);
     residuals[0] -= ResultResiduals[0];
     residuals[1] -= ResultResiduals[1];
-    cv::Scalar Sum = cv::sum(CameraToMarker - ResultMatrix);
+    cv::Scalar Sum = cv::sum(m_CameraToMarker - ResultMatrix);
     residuals.push_back(Sum[0]);
   }
 

@@ -383,11 +383,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   MITK_INFO << "Starting intrinisic calibration";
   CvMat* outputIntrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputDistortionCoefficientsLeft = cvCreateMat(1,4,CV_64FC1);
   CvMat* outputRotationVectorsLeft = cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputIntrinsicMatrixRight= cvCreateMat(3,3,CV_64FC1);
-  CvMat* outputDistortionCoefficientsRight= cvCreateMat(4,1,CV_64FC1);
+  CvMat* outputDistortionCoefficientsRight= cvCreateMat(1,4,CV_64FC1);
   CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputRightToLeftRotation = cvCreateMat(3,3,CV_64FC1);
@@ -461,8 +461,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
   for ( int i = 0 ; i < 4 ; i ++ )  
   {
-    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , i, 0 ) << " ";
-    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , i, 0 ) << " ";
+    fs_leftIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsLeft, double , 0, i ) << " ";
+    fs_rightIntrinsic << CV_MAT_ELEM (*outputDistortionCoefficientsRight, double , 0, i ) << " ";
   }
   fs_leftIntrinsic << std::endl;
   fs_rightIntrinsic << std::endl;
