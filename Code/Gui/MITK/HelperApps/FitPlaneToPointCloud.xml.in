@@ -25,7 +25,6 @@
       <longflag>output</longflag>
       <description>Output file for plane equation (optional).</description>
       <label>Output file for plane equation</label>
-      <default>plane.txt</default>
       <channel>output</channel>
     </file>
   </parameters>

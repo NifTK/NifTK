@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
       std::ofstream   logfile(outputPlaneEquation.c_str());
       if (logfile.is_open())
       {
-        fitter->OutputParameters(logfile);
+        fitter->PrintOutput(logfile);
       }
       else
       {
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
       logfile.close();
     }
     // ...and console
-    fitter->OutputParameters(std::cerr);
+    fitter->PrintOutput(std::cerr);
 
     returnStatus = EXIT_SUCCESS;
   }

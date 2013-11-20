@@ -57,7 +57,7 @@ protected:
 
 public:
   void FitPlane(const std::string& filename);
-  void OutputParameters(std::ostream& log);
+  void PrintOutput(std::ostream& log);
 
 
 private:

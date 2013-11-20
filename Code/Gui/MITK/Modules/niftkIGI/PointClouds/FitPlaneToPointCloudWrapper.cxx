@@ -41,16 +41,16 @@ FitPlaneToPointCloudWrapper::~FitPlaneToPointCloudWrapper()
 
 
 //-----------------------------------------------------------------------------
-void FitPlaneToPointCloudWrapper::OutputParameters(std::ostream& log)
+void FitPlaneToPointCloudWrapper::PrintOutput(std::ostream& log)
 {
   if (m_PlaneCoefficients->values.size() != 4)
   {
     throw std::logic_error("Need to call FitPlane() first!");
   }
 
-  log << "# plane coefficients:" << std::endl;
   log << m_PlaneCoefficients->values[0] << ' ' << m_PlaneCoefficients->values[1] << ' ' << m_PlaneCoefficients->values[2] << ' ' << m_PlaneCoefficients->values[3] << std::endl;
-
+  log << "# plane coefficients above." << std::endl;
+  log << "# plane fitting errors:" << std::endl;
   log << "# minimum distance to estimated plane: " << m_MinPlaneDistance << std::endl
       << "# maximum distance to estimated plane: " << m_MaxPlaneDistance << std::endl
       << "# average distance to estimated plane: " << m_AvgPlaneDistance << std::endl
