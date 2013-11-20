@@ -105,10 +105,6 @@ void FitPlaneToPointCloudWrapper::FitPlane(const std::string& filename)
   }
 
   // compute distance of each point to the fitted plane.
-  float   m_MinPlaneDistance =  std::numeric_limits<float>::max();
-  float   m_MaxPlaneDistance = -std::numeric_limits<float>::max();
-  float   m_AvgPlaneDistance = 0;
-  float   m_RmsPlaneDistance = 0;
   float   planecoeffthingy = std::sqrt(m_PlaneCoefficients->values[0] * m_PlaneCoefficients->values[0] +  m_PlaneCoefficients->values[1] * m_PlaneCoefficients->values[1] + m_PlaneCoefficients->values[2] * m_PlaneCoefficients->values[2]);
   for (pcl::PointCloud<pcl::PointXYZ>::const_iterator i = cloud->begin(); i != cloud->end(); ++i)
   {
