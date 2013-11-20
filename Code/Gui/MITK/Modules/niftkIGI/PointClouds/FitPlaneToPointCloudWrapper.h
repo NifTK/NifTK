@@ -17,10 +17,19 @@
 
 
 #include "niftkIGIExports.h"
+#include <string>
+#include <ostream>
 #include <mitkCommon.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
+
+
+// forward declaration to avoid pulling in truckloads of pcl headers.
+namespace pcl
+{
+struct ModelCoefficients;
+}
 
 
 namespace niftk
@@ -47,7 +56,17 @@ protected:
 
 
 public:
-  void FitPlane(const std::string& filename, const std::string& outputfilename);
+  void FitPlane(const std::string& filename);
+  void OutputParameters(std::ostream& log);
+
+
+private:
+  pcl::ModelCoefficients*     m_PlaneCoefficients;
+
+  float   m_MinPlaneDistance;
+  float   m_MaxPlaneDistance;
+  float   m_AvgPlaneDistance;
+  float   m_RmsPlaneDistance;
 };
 
 
