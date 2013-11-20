@@ -41,13 +41,13 @@ bool CompareOpenCVMatrices2(cv::Mat mat1, cv::Mat mat2 , double tolerance)
   assert ( mat1.size() == mat2.size() );
   assert ( mat1.type() == mat2.type() );
   cv::Mat absDiff = cv::Mat(mat1.size(),mat1.type());
+  cv::Mat abs = cv::Mat(mat1.size(),mat1.type());
   cv::absdiff(mat1,mat2,absDiff);
+  abs = cv::abs(mat1);
+  cv::Scalar Sum1 = cv::sum (abs);
   cv::Scalar Sum = cv::sum (absDiff);
-  MITK_INFO << "m1 = " << mat1;
-  MITK_INFO << "m2 = " << mat2;
-  MITK_INFO << "Absolute differences = " << absDiff;
-  MITK_INFO << "Absolute difference Sum = " << Sum[0];
-  if ( Sum[0] < tolerance ) 
+  MITK_INFO << "Absolute difference Sum = " << Sum[0] << "Normalised sum = " << Sum[0]/Sum1[0];
+  if ( Sum[0]/Sum1[0] < tolerance ) 
   {
     return true;
   }
