@@ -22,7 +22,7 @@ void TestErrorConditions()
 
   try
   {
-    // we except an exception if file name is empty.
+    // we expect an exception if file name is empty.
     niftk::FitPlaneToPointCloudWrapper::Pointer   fitter = niftk::FitPlaneToPointCloudWrapper::New();
     fitter->FitPlane("");
 
@@ -40,7 +40,7 @@ void TestErrorConditions()
 
   try
   {
-    // we except an exception if file does not exist.
+    // we expect an exception if file does not exist.
     niftk::FitPlaneToPointCloudWrapper::Pointer   fitter = niftk::FitPlaneToPointCloudWrapper::New();
     // lets hope this file does not exist!
     fitter->FitPlane("/tmp/FitPlaneToPointCloudTest.ju7y6tgvbnji87654ertyuhjbv");
@@ -59,7 +59,7 @@ void TestErrorConditions()
 
   try
   {
-    // we except an exception if we try to get parameters but we never put any data in.
+    // we expect an exception if we try to get parameters but we never put any data in.
     niftk::FitPlaneToPointCloudWrapper::Pointer   fitter = niftk::FitPlaneToPointCloudWrapper::New();
     float   a, b, c, d;
     fitter->GetParameters(a, b, c, d);
@@ -78,7 +78,7 @@ void TestErrorConditions()
 
   try
   {
-    // we except an exception if we pass in an empty point cloud.
+    // we expect an exception if we pass in an empty point cloud.
     mitk::PointSet::Pointer   empty = mitk::PointSet::New();
     niftk::FitPlaneToPointCloudWrapper::Pointer   fitter = niftk::FitPlaneToPointCloudWrapper::New();
     fitter->FitPlane(empty);
@@ -97,7 +97,7 @@ void TestErrorConditions()
 
   try
   {
-    // we except NO exception if we pass in a point cloud with some (well-formed) data.
+    // we expect NO exception if we pass in a point cloud with some (well-formed) data.
     mitk::PointSet::Pointer   stuff = mitk::PointSet::New();
     float   points[] =
     {
