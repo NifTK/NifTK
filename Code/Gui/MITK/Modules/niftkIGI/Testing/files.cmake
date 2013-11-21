@@ -26,3 +26,10 @@ set(MODULE_CUSTOM_TESTS
   mitkSurfaceBasedRegistrationTestRealData.cxx
   mitkIGIMakeGeometryTest.cxx
 )
+
+if(BUILD_PCL)
+  set(MODULE_CUSTOM_TESTS
+    ${MODULE_CUSTOM_TESTS}
+    FitPlaneToPointCloudTest.cxx
+  )
+endif()
