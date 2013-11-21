@@ -28,6 +28,12 @@
 #include <QmitkWheelEventEater.h>
 #include <mitkDataStorageUtils.h>
 
+#include <usGetModuleContext.h>
+#include <usModuleContext.h>
+#include <usModuleRegistry.h>
+#include <usModule.h>
+
+
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
@@ -119,6 +125,9 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
 {
+  // Release the display interactor.
+  this->SetDisplayInteractionsEnabled(false);
+
   if (m_MouseEventEater != NULL)
   {
     delete m_MouseEventEater;
@@ -128,6 +137,49 @@ QmitkThumbnailRenderWindow::~QmitkThumbnailRenderWindow()
   {
     delete m_WheelEventEater;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
+{
+  if (enabled == this->AreDisplayInteractionsEnabled())
+  {
+    // Already enabled/disabled.
+    return;
+  }
+
+  if (enabled)
+  {
+    // Here we create our own display interactor...
+    m_DisplayInteractor = mitk::ThumbnailInteractor::New(this->GetRenderer());
+
+    // TODO
+    us::Module* thisModule = us::ModuleRegistry::GetModule("niftkThumbnail");
+    m_DisplayInteractor->LoadStateMachine("ThumbnailInteraction.xml", thisModule);
+    m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
+
+    // ... and register it as listener via the micro services.
+    us::ServiceProperties props;
+    props["name"] = std::string("ThumbnailInteractor");
+
+    us::ModuleContext* moduleContext = us::GetModuleContext();
+    m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
+  }
+  else
+  {
+    // Unregister the display interactor service.
+    m_DisplayInteractorService.Unregister();
+    // Release the display interactor to let it be desctructed.
+    m_DisplayInteractor = 0;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
+{
+  return m_DisplayInteractor.IsNotNull();
 }
 
 

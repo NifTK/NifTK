@@ -15,6 +15,8 @@
 #ifndef QmitkThumbnailRenderWindow_h
 #define QmitkThumbnailRenderWindow_h
 
+#include <niftkThumbnailExports.h>
+
 #include <QColor>
 #include <QmitkRenderWindow.h>
 #include <mitkDataStorage.h>
@@ -23,6 +25,8 @@
 #include <mitkDataStorageVisibilityTracker.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataNodeStringPropertyFilter.h>
+
+#include "mitkThumbnailInteractor.h"
 
 class QmitkMouseEventEater;
 class QmitkWheelEventEater;
@@ -59,7 +63,7 @@ class QmitkWheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class niftkThumbnail_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 
@@ -70,6 +74,12 @@ public:
 
   /// \brief Destructor.
   ~QmitkThumbnailRenderWindow();
+
+  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
+  void SetDisplayInteractionsEnabled(bool enabled);
+
+  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
+  bool AreDisplayInteractionsEnabled() const;
 
   /// \brief A valid dataStorage must be passed in so this method does assert(dataStorage).
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
@@ -236,6 +246,15 @@ private:
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+
+  mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
+
+  /**
+   * Reference to the service registration of the display interactor.
+   * It is needed to unregister the observer on unload.
+   */
+  us::ServiceRegistrationU m_DisplayInteractorService;
+
 };
 
 

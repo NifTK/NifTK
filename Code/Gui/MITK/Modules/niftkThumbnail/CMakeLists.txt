@@ -12,10 +12,8 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_thumbnail)
-
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE THUMBNAIL_EXPORT
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES niftkThumbnail
+MITK_CREATE_MODULE(niftkThumbnail
+  EXPORT_DEFINE niftkThumbnail_EXPORT
+  DEPENDS MitkExt Qmitk niftkCoreGui
+  QT_MODULE 
 )

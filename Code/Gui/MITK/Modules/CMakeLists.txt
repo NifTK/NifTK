@@ -16,6 +16,7 @@ set(MODULE_DIRS
   niftkCore
   niftkCoreGui
   niftkDnDDisplay
+  niftkThumbnail
 )
 
 if(BUILD_MIDAS)

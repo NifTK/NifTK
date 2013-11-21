@@ -16,7 +16,6 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkThumbnailRenderWindow.cxx
   QmitkThumbnailViewPreferencePage.cxx
   ThumbnailViewActivator.cxx
   ThumbnailView.cxx
@@ -27,7 +26,6 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/QmitkThumbnailRenderWindow.h
   src/internal/QmitkThumbnailViewPreferencePage.h
   src/internal/ThumbnailViewActivator.h
   src/internal/ThumbnailView.h
@@ -45,10 +43,10 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-
 )
 
-set(CPP_FILES )
+set(CPP_FILES
+)
 
 foreach(file ${SRC_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/${file})
