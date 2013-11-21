@@ -37,6 +37,7 @@ namespace niftk
 {
 
 
+// i dont think this should be called ...Wrapper. suggestions for a better name?
 class NIFTKIGI_EXPORT FitPlaneToPointCloudWrapper : public itk::Object
 {
 public:
@@ -57,9 +58,24 @@ protected:
 
 
 public:
+  /**
+   * @throws std::runtime_error if filename is emty
+   * @throws std::runtime_error if file cannot be read (or parsed) for whatever reason
+   * @throws std::runtime_error if the point cloud in the file has less than 4 points
+   * @throws std::runtime_error if a plane could not be estimated
+   */
   void FitPlane(const std::string& filename);
+
+  /**
+   * @throws std::runtime_error if pointset has less than 4 points
+   * @throws std::runtime_error if a plane could not be estimated
+   */
   void FitPlane(const mitk::PointSet::Pointer& pointset);
   void PrintOutput(std::ostream& log) const;
+
+  /**
+   * @throws std::logic_error if FitPlane() has not been called
+   */
   void GetParameters(float& a, float& b, float& c, float& d) const;
 
 

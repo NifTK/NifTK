@@ -102,6 +102,9 @@ void FitPlaneToPointCloudWrapper::FitPlane(const mitk::PointSet::Pointer& points
   if (pointset.IsNull())
     throw std::runtime_error("Null pointset passed in");
 
+  if (pointset->GetSize() < 4)
+    throw std::runtime_error("Point set too small, need at least 4 points");
+
   // now convert it to a pcl representation.
   // this is infact a simple std::vector with all the points.
   pcl::PointCloud<pcl::PointXYZ>::Ptr  cloud(new pcl::PointCloud<pcl::PointXYZ>);

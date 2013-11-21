@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include <random>
 #include <mitkTestingMacros.h>
 #include <PointClouds/FitPlaneToPointCloudWrapper.h>
 
@@ -128,6 +129,37 @@ void TestErrorConditions()
 //-----------------------------------------------------------------------------
 void TestSimpleCases()
 {
+  float   a, b, c, d;
+
+  mitk::PointSet::Pointer   xyplane = mitk::PointSet::New();
+  for (int i = 0; i < 100; ++i)
+  {
+    float   p[3] = {std::rand(), std::rand(), -2};
+    xyplane->InsertPoint(i, mitk::PointSet::PointType(&p[0]));
+  }
+
+  niftk::FitPlaneToPointCloudWrapper::Pointer   fitter = niftk::FitPlaneToPointCloudWrapper::New();
+  fitter->FitPlane(xyplane);
+  fitter->GetParameters(a, b, c, d);
+  MITK_TEST_CONDITION(std::abs(0 - a) < 0.01f, "FitPlaneToPointCloud unit test xy-plane: Parameter A in range");
+  MITK_TEST_CONDITION(std::abs(0 - b) < 0.01f, "FitPlaneToPointCloud unit test xy-plane: Parameter B in range");
+  MITK_TEST_CONDITION(std::abs(1 - c) < 0.01f, "FitPlaneToPointCloud unit test xy-plane: Parameter C in range");
+  MITK_TEST_CONDITION(std::abs(2 - d) < 0.01f, "FitPlaneToPointCloud unit test xy-plane: Parameter D in range");
+
+
+  mitk::PointSet::Pointer   yzplane = mitk::PointSet::New();
+  for (int i = 0; i < 100; ++i)
+  {
+    float   p[3] = {0, std::rand(), std::rand()};
+    yzplane->InsertPoint(i, mitk::PointSet::PointType(&p[0]));
+  }
+
+  fitter->FitPlane(yzplane);
+  fitter->GetParameters(a, b, c, d);
+  MITK_TEST_CONDITION(std::abs(1 - a) < 0.01f, "FitPlaneToPointCloud unit test yz-plane: Parameter A in range");
+  MITK_TEST_CONDITION(std::abs(0 - b) < 0.01f, "FitPlaneToPointCloud unit test yz-plane: Parameter B in range");
+  MITK_TEST_CONDITION(std::abs(0 - c) < 0.01f, "FitPlaneToPointCloud unit test yz-plane: Parameter C in range");
+  MITK_TEST_CONDITION(std::abs(0 - d) < 0.01f, "FitPlaneToPointCloud unit test yz-plane: Parameter D in range");
 
 }
 
@@ -146,23 +178,25 @@ void RunRegressionTest(const char* filename)
   // not sure how accurate we expect this to be...
   // plane fit involves random sampling so might return different output each time.
   // the numbers are from actual output but i rounded them to 2 digits.
-  MITK_TEST_CONDITION(std::abs( -0.03f - a) < 0.01f, "Parameter A in range");
-  MITK_TEST_CONDITION(std::abs( -0.50f - b) < 0.01f, "Parameter B in range");
-  MITK_TEST_CONDITION(std::abs(  0.86f - c) < 0.01f, "Parameter C in range");
-  MITK_TEST_CONDITION(std::abs(-35.86f - d) < 0.01f, "Parameter D in range");
+  MITK_TEST_CONDITION(std::abs( -0.03f - a) < 0.01f, "FitPlaneToPointCloud regression test: Parameter A in range");
+  MITK_TEST_CONDITION(std::abs( -0.50f - b) < 0.01f, "FitPlaneToPointCloud regression test: Parameter B in range");
+  MITK_TEST_CONDITION(std::abs(  0.86f - c) < 0.01f, "FitPlaneToPointCloud regression test: Parameter C in range");
+  MITK_TEST_CONDITION(std::abs(-35.86f - d) < 0.01f, "FitPlaneToPointCloud regression test: Parameter D in range");
 }
 
 
 //-----------------------------------------------------------------------------
 int FitPlaneToPointCloudTest(int argc, char* argv[])
 {
-  MITK_TEST_CONDITION(argc == 2, "Expecting file name as a parameter");
-
+  if (argc != 2)
+  {
+    std::cerr << "Expecting file name as a parameter" << std::endl;
+    return EXIT_FAILURE;
+  }
 
   TestErrorConditions();
   TestSimpleCases();
   RunRegressionTest(argv[1]);
-
 
   return EXIT_SUCCESS;
 }
