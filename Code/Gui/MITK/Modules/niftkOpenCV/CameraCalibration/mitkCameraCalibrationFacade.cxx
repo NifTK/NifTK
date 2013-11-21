@@ -2316,8 +2316,8 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
     MITK_INFO << "temp " << temp;
   }
   
-  temp_T = temp_T /Matrices.size();
-  temp = temp / Matrices.size();
+  temp_T = temp_T / static_cast<double>(Matrices.size());
+  temp = temp / static_cast<double>(Matrices.size());
 
 
   cv::Mat rtr = temp.t() * temp;
