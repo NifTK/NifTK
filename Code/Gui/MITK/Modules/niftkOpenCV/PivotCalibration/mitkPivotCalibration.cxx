@@ -102,7 +102,11 @@ void PivotCalibration::Calibrate(
     std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times" << std::endl;
     
     std::vector<double> vectorOfResiduals;
+    std::vector<double> xOffset;
+    std::vector<double> yOffset;
+    std::vector<double> zOffset;
     double tmpResidual = 0;
+
     cv::Matx44d tmpMatrix;
     
     for (unsigned int i = 0; i < numberOfReRuns; i++)
@@ -127,10 +131,24 @@ void PivotCalibration::Calibrate(
       // Calibrate using this list of matrices, and store the residual.
       this->DoCalibration(randomlyChosenMatrices, tmpMatrix, tmpResidual);
       vectorOfResiduals.push_back(tmpResidual);
+      xOffset.push_back(tmpMatrix(0,3));
+      yOffset.push_back(tmpMatrix(1,3));
+      zOffset.push_back(tmpMatrix(2,3));
     }
     double meanResidual = mitk::Mean(vectorOfResiduals);
     double stdDevResidual = mitk::StdDev(vectorOfResiduals);
-    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times on " << percentage << "% of the data gives residual=" << meanResidual << " ( " << stdDevResidual << ")" << std::endl;
+    double meanX = mitk::Mean(xOffset);
+    double meanY = mitk::Mean(yOffset);
+    double meanZ = mitk::Mean(zOffset);
+    double stdDevX = mitk::StdDev(xOffset);
+    double stdDevY = mitk::StdDev(yOffset);
+    double stdDevZ = mitk::StdDev(zOffset);
+
+    std::cout << "PivotCalibration:Rerunning " << numberOfReRuns << " times on " << percentage << "% of the data gives offset=[" \
+              << meanX << " (" << stdDevX << "), " \
+              << meanY << " (" << stdDevY << "), " \
+              << meanZ << " (" << stdDevZ << ")] " \
+              << "residual=" << meanResidual << " ( " << stdDevResidual << ")" << std::endl;
   }
 }
 
