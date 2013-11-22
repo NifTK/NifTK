@@ -100,7 +100,7 @@ public:
   bool IsEnabled() const;
 
   /// \brief Turn the 2D cursors visible/invisible for this viewer (renderer specific properties).
-  void SetDisplay2DCursorsLocally(bool visible);
+  void SetCursorVisible(bool visible);
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;
@@ -109,13 +109,13 @@ public:
   void SetDirectionAnnotationsVisible(bool visible);
 
   /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
-  bool GetDisplay2DCursorsLocally() const;
+  bool IsCursorVisible() const;
 
   /// \brief Turn the 2D cursors visible/invisible globally, controlled by a user preference.
-  void SetDisplay2DCursorsGlobally(bool visible);
+  void SetCursorGloballyVisible(bool visible);
 
   /// \brief Get the flag controlling 2D cursors global visibility.
-  bool GetDisplay2DCursorsGlobally() const;
+  bool IsCursorGloballyVisible() const;
 
   /// \brief If true, then nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   void SetShow3DWindowIn2x2WindowLayout(bool visible);
@@ -420,8 +420,8 @@ private:
   bool m_IsSelected;
   bool m_IsEnabled;
   QmitkRenderWindow* m_SelectedRenderWindow;
-  bool m_Display2DCursorsLocally;
-  bool m_Display2DCursorsGlobally;
+  bool m_CursorVisibility;
+  bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;

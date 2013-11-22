@@ -81,6 +81,9 @@ protected:
   /// \brief Switch the from single window to multiple windows or back
   bool ToggleMultiWindowLayout(Action*, const StateEvent*);
 
+  /// \brief Toggles the visibility of the cursor (aka. crosshair).
+  bool ToggleCursorVisibility(Action*, const StateEvent*);
+
 private:
 
   /// \brief the object that gets called, specified in constructor.

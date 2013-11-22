@@ -84,8 +84,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QWidget* pare
   m_VisibilityTracker->SetNodesToIgnore(m_ViewerWidget->GetWidgetPlanes());
   m_VisibilityTracker->SetRenderersToUpdate(renderers);
 
-  m_ViewerWidget->SetDisplay2DCursorsGlobally(false);
-  m_ViewerWidget->SetDisplay2DCursorsLocally(true);
+  m_ViewerWidget->SetCursorGloballyVisible(false);
+  m_ViewerWidget->SetCursorVisible(true);
   m_ViewerWidget->SetRememberSettingsPerWindowLayout(true);
   m_ViewerWidget->SetDisplayInteractionsEnabled(true);
   m_ViewerWidget->SetCursorPositionsBound(false);
