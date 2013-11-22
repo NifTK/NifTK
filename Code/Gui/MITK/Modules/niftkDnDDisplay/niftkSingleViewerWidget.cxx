@@ -127,10 +127,10 @@ void niftkSingleViewerWidget::Initialize(QString windowName,
   m_GridLayout->addWidget(m_MultiWidget);
 
   // Connect to niftkMultiWindowWidget, so we can listen for signals.
-  QObject::connect(m_MultiWidget, SIGNAL(NodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  QObject::connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), this, SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
-  QObject::connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), this, SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
-  QObject::connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), this, SLOT(OnScaleFactorChanged(double)));
+  this->connect(m_MultiWidget, SIGNAL(NodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkMultiWindowWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(QmitkRenderWindow*, int)), SLOT(OnSelectedPositionChanged(QmitkRenderWindow*, int)));
+  this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(const mitk::Vector3D&)), SLOT(OnCursorPositionChanged(const mitk::Vector3D&)));
+  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), SLOT(OnScaleFactorChanged(double)));
 
   // Create/Connect the state machine
   m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
@@ -276,30 +276,30 @@ bool niftkSingleViewerWidget::IsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDisplay2DCursorsLocally(bool visible)
+void niftkSingleViewerWidget::SetCursorVisible(bool visible)
 {
-  m_MultiWidget->SetDisplay2DCursorsLocally(visible);
+  m_MultiWidget->SetCursorVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetDisplay2DCursorsLocally() const
+bool niftkSingleViewerWidget::IsCursorVisible() const
 {
-  return m_MultiWidget->GetDisplay2DCursorsLocally();
+  return m_MultiWidget->IsCursorVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDisplay2DCursorsGlobally(bool visible)
+void niftkSingleViewerWidget::SetCursorGloballyVisible(bool visible)
 {
-  m_MultiWidget->SetDisplay2DCursorsGlobally(visible);
+  m_MultiWidget->SetCursorGloballyVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetDisplay2DCursorsGlobally() const
+bool niftkSingleViewerWidget::IsCursorGloballyVisible() const
 {
-  return m_MultiWidget->GetDisplay2DCursorsGlobally();
+  return m_MultiWidget->IsCursorGloballyVisible();
 }
 
 
@@ -980,9 +980,15 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::ToggleCursor()
+bool niftkSingleViewerWidget::ToggleCursorVisibility()
 {
-//  this->SetShow2DCursors(!this->GetShow2DCursors());
+  bool visible = !this->IsCursorVisible();
+
+  this->SetCursorVisible(visible);
+
+  this->RequestUpdate();
+
+  emit CursorVisibilityChanged(this, visible);
 
   return true;
 }

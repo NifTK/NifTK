@@ -130,16 +130,16 @@ public:
   MIDASOrientation GetOrientation();
 
   /// \brief Turn the 2D cursors on/off locally.
-  void SetDisplay2DCursorsLocally(bool visible);
+  void SetCursorVisible(bool visible);
 
   /// \brief Get the flag controlling 2D cursors on/off.
-  bool GetDisplay2DCursorsLocally() const;
+  bool IsCursorVisible() const;
 
   /// \brief Turn the 2D cursors on/off globally.
-  void SetDisplay2DCursorsGlobally(bool visible);
+  void SetCursorGloballyVisible(bool visible);
 
   /// \brief Get the flag controlling 2D cursors on/off.
-  bool GetDisplay2DCursorsGlobally() const;
+  bool IsCursorGloballyVisible() const;
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;
@@ -316,7 +316,7 @@ public:
   bool ToggleMultiWindowLayout();
 
   /// \brief Shows or hides the cursor.
-  bool ToggleCursor();
+  bool ToggleCursorVisibility();
 
 protected:
 
@@ -342,6 +342,9 @@ signals:
 
   /// \brief Emitted when the geometry of this viewer has changed.
   void GeometryChanged(niftkSingleViewerWidget* thisViewer, mitk::TimeGeometry* geometry);
+
+  /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
+  void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
 
 protected slots:
 

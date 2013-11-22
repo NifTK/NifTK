@@ -117,8 +117,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_IsSelected(false)
 , m_IsEnabled(false)
 , m_SelectedRenderWindow(0)
-, m_Display2DCursorsLocally(true)
-, m_Display2DCursorsGlobally(false)
+, m_CursorVisibility(true)
+, m_CursorGlobalVisibility(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_Magnification(0.0)
@@ -158,8 +158,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
   // 3D planes should only be visible in this specific widget, not globally, so we create them, then make them globally invisible.
   this->AddDisplayPlaneSubTree();
-  this->SetDisplay2DCursorsGlobally(false);
-  this->SetDisplay2DCursorsLocally(false);
+  this->SetCursorGloballyVisible(false);
+  this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(false);
   this->SetWidgetPlanesRotationLocked(true);
 
@@ -379,6 +379,7 @@ void niftkMultiWindowWidget::SetBackgroundColor(QColor colour)
   m_GradientBackground3->Enable();
   m_GradientBackground4->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
   m_GradientBackground4->Enable();
+  this->RequestUpdate();
 }
 
 
@@ -584,10 +585,10 @@ bool niftkMultiWindowWidget::IsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetDisplay2DCursorsLocally(bool visible)
+void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 {
   // Here, "locally" means, for this widget, so we are setting Renderer Specific properties.
-  m_Display2DCursorsLocally = visible;
+  m_CursorVisibility = visible;
   this->SetVisibility(mitkWidget1, m_PlaneNode1, visible);
   this->SetVisibility(mitkWidget1, m_PlaneNode2, visible);
   this->SetVisibility(mitkWidget1, m_PlaneNode3, visible);
@@ -597,21 +598,22 @@ void niftkMultiWindowWidget::SetDisplay2DCursorsLocally(bool visible)
   this->SetVisibility(mitkWidget3, m_PlaneNode1, visible);
   this->SetVisibility(mitkWidget3, m_PlaneNode2, visible);
   this->SetVisibility(mitkWidget3, m_PlaneNode3, visible);
+  this->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetDisplay2DCursorsLocally() const
+bool niftkMultiWindowWidget::IsCursorVisible() const
 {
-  return m_Display2DCursorsLocally;
+  return m_CursorVisibility;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetDisplay2DCursorsGlobally(bool visible)
+void niftkMultiWindowWidget::SetCursorGloballyVisible(bool visible)
 {
   // Here, "globally" means the plane nodes created within this widget will be available in ALL other render windows.
-  m_Display2DCursorsGlobally = visible;
+  m_CursorGlobalVisibility = visible;
   m_PlaneNode1->SetVisibility(visible);
   m_PlaneNode1->Modified();
   m_PlaneNode2->SetVisibility(visible);
@@ -622,9 +624,9 @@ void niftkMultiWindowWidget::SetDisplay2DCursorsGlobally(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetDisplay2DCursorsGlobally() const
+bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
 {
-  return m_Display2DCursorsGlobally;
+  return m_CursorGlobalVisibility;
 }
 
 
@@ -644,6 +646,7 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
   {
     m_DirectionAnnotations[i]->SetVisibility(visible);
   }
+  this->RequestUpdate();
 }
 
 

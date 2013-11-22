@@ -41,6 +41,9 @@ const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "    <transition NAME=\"mouseButtonLeftDoubleClick\" NEXT_STATE_ID=\"1\" EVENT_ID=\"8\">"
     "      <action ID=\"350013\" />"
     "    </transition>"
+    "    <transition NAME=\"keyPressSpace\" NEXT_STATE_ID=\"1\" EVENT_ID=\"25\">"
+    "      <action ID=\"350014\" />"
+    "    </transition>"
     "  </state>"
     "</stateMachine>";
 
@@ -57,6 +60,7 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
   CONNECT_ACTION(350004, SwitchToSagittal);
   CONNECT_ACTION(350005, SwitchToCoronal);
   CONNECT_ACTION(350013, ToggleMultiWindowLayout);
+  CONNECT_ACTION(350014, ToggleCursorVisibility);
 }
 
 
@@ -118,6 +122,7 @@ float DnDDisplayStateMachine::CanHandleEvent(const StateEvent *event) const
           || event->GetId() == 4016 // W
           || event->GetId() == 19   // E
           || event->GetId() == 8    // left mouse button double click
+          || event->GetId() == 25   // space
           )
       )
   {
@@ -168,4 +173,11 @@ bool DnDDisplayStateMachine::ToggleMultiWindowLayout(Action*, const StateEvent*)
   return m_Responder->ToggleMultiWindowLayout();
 }
 
-} // end namespace
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayStateMachine::ToggleCursorVisibility(Action*, const StateEvent*)
+{
+  return m_Responder->ToggleCursorVisibility();
+}
+
+}

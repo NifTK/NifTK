@@ -138,10 +138,18 @@ public:
   void SetShowMagnificationSlider(bool visible);
 
   /// \brief Returns the flag indicating whether we show 2D cursors.
-  bool GetShow2DCursors() const;
+  bool IsCursorVisible() const;
 
   /// \brief Sets the flag controlling the visibility of 2D cursors.
-  void SetShow2DCursors(bool visibile);
+  void SetCursorVisible(bool visibile);
+
+  /// \brief Gets the default visibility of the 2D cursors that is applied
+  /// for new viewers if the cursor is not bound across the viewers.
+  bool GetCursorDefaultVisibility() const;
+
+  /// \brief Sets the default visibility of the 2D cursors that is applied
+  /// for new viewers if the cursor is not bound across the viewers.
+  void SetCursorDefaultVisibility(bool visibile);
 
   /// \brief Tells if the direction annotations are visible.
   bool AreDirectionAnnotationsVisible() const;
@@ -177,7 +185,7 @@ public:
   void SetSelectedWindowTo3D();
 
   /// \brief Shows or hides the cursor.
-  bool ToggleCursor();
+  virtual bool ToggleCursorVisibility();
 
   /// \brief Sets whether the interaction is enabled, and a single viewer.
   void SetSegmentationModeEnabled(bool enabled);
@@ -260,7 +268,7 @@ protected slots:
   void OnMagnificationChanged(double magnification);
 
   /// \brief Called when the show cursor option has been changed through the control panel.
-  void OnShowCursorChanged(bool visible);
+  void OnCursorVisibilityChanged(bool visible);
 
   /// \brief Called when the show direction annotations option has been changed through the control panel.
   void OnShowDirectionAnnotationsChanged(bool visible);
@@ -319,6 +327,9 @@ protected slots:
 
   /// \brief Called when the geometry of a viewer has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
+
+  /// \brief Called when the show cursor option has been changed in a viewer.
+  void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);
@@ -410,8 +421,8 @@ private:
   int m_ViewerColumnsInNonThumbnailMode;
   int m_ViewerRowsBeforeSegmentationMode;
   int m_ViewerColumnsBeforeSegmentationMode;
-  bool m_Show2DCursors;
   bool m_Show3DWindowIn2x2WindowLayout;
+  bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
   bool m_IsThumbnailMode;

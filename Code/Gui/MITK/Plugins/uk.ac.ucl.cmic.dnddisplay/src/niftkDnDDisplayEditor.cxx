@@ -216,7 +216,7 @@ void niftkDnDDisplayEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetWindowLayoutControlsVisible(showWindowLayoutControls);
     d->m_MultiViewer->SetViewerNumberControlsVisible(showViewerNumberControls);
     d->m_MultiViewer->SetShowDropTypeControls(showDropTypeControls);
-    d->m_MultiViewer->SetShow2DCursors(show2DCursors);
+    d->m_MultiViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_MultiViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
@@ -272,7 +272,7 @@ void niftkDnDDisplayEditor::OnPreferencesChanged( const berry::IBerryPreferences
     d->m_MultiViewer->SetWindowLayoutControlsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
     d->m_MultiViewer->SetViewerNumberControlsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
     d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
-    d->m_MultiViewer->SetShow2DCursors(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
+    d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));

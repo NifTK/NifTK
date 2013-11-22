@@ -51,6 +51,10 @@ public:
 
   /// \brief Switch window layout.
   virtual bool ToggleMultiWindowLayout() = 0;
+
+  /// \brief Toggles the visibility of the cursor, aka. crosshair.
+  virtual bool ToggleCursorVisibility() = 0;
+
 };
 
 } // end namespace

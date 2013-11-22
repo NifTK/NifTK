@@ -66,8 +66,8 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 , m_SelectedViewerIndex(0)
 , m_DefaultViewerRows(defaultViewerRows)
 , m_DefaultViewerColumns(defaultViewerColumns)
-, m_Show2DCursors(false)
 , m_Show3DWindowIn2x2WindowLayout(false)
+, m_CursorDefaultVisibility(true)
 , m_RememberSettingsPerWindowLayout(false)
 , m_IsThumbnailMode(false)
 , m_SegmentationModeEnabled(false)
@@ -176,7 +176,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
   this->connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
 
-  this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnShowCursorChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowChanged(bool)));
 
@@ -259,6 +259,7 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+  this->connect(viewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
 
   return viewer;
 }
@@ -384,20 +385,44 @@ void niftkMultiViewerWidget::SetDropType(DnDDisplayDropType dropType)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::GetShow2DCursors() const
+bool niftkMultiViewerWidget::IsCursorVisible() const
 {
-  return m_Show2DCursors;
+  return m_ControlPanel->IsCursorVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetShow2DCursors(bool visible)
+void niftkMultiViewerWidget::SetCursorVisible(bool visible)
 {
-  m_Show2DCursors = visible;
-
   m_ControlPanel->SetCursorVisible(visible);
 
-  this->Update2DCursorVisibility();
+  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  selectedViewer->SetCursorVisible(visible);
+
+  if (m_ControlPanel->AreViewerCursorsBound())
+  {
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      {
+        otherViewer->SetCursorVisible(visible);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMultiViewerWidget::GetCursorDefaultVisibility() const
+{
+  return m_CursorDefaultVisibility;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::SetCursorDefaultVisibility(bool visible)
+{
+  m_CursorDefaultVisibility = visible;
 }
 
 
@@ -416,7 +441,6 @@ void niftkMultiViewerWidget::SetDirectionAnnotationsVisible(bool visible)
   {
     viewer->SetDirectionAnnotationsVisible(visible);
   }
-  this->RequestUpdateAll();
 }
 
 
@@ -436,7 +460,6 @@ void niftkMultiViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
   {
     viewer->SetShow3DWindowIn2x2WindowLayout(visible);
   }
-  this->RequestUpdateAll();
 }
 
 
@@ -539,8 +562,6 @@ void niftkMultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
   {
     viewer->SetBackgroundColor(m_BackgroundColour);
   }
-
-  this->RequestUpdateAll();
 }
 
 
@@ -647,16 +668,22 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   // Test the current m_Selected window, and reset to 0 if it now points to an invisible window.
   int selectedViewerIndex = this->GetSelectedViewerIndex();
+  niftkSingleViewerWidget* selectedViewer;
   QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
   if (this->GetViewerRowFromIndex(selectedViewerIndex) >= viewerRows || this->GetViewerColumnFromIndex(selectedViewerIndex) >= viewerColumns)
   {
     selectedViewerIndex = 0;
-    selectedRenderWindow = m_Viewers[selectedViewerIndex]->GetSelectedRenderWindow();
+    selectedViewer = m_Viewers[selectedViewerIndex];
+    selectedRenderWindow = selectedViewer->GetSelectedRenderWindow();
+  }
+  else
+  {
+    selectedViewer = m_Viewers[selectedViewerIndex];
   }
   this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
-  this->Update2DCursorVisibility();
+  this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
   this->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
 
   if (m_ControlPanel->AreViewerGeometriesBound())
@@ -854,7 +881,18 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
 //  this->OnMagnificationChanged(scaleFactor);
 //  this->SetMagnification(magnification);
 
-  this->Update2DCursorVisibility();
+  bool cursorVisibility;
+  if (m_ControlPanel->AreViewerCursorsBound())
+  {
+    cursorVisibility = m_ControlPanel->IsCursorVisible();
+  }
+  else
+  {
+    cursorVisibility = m_CursorDefaultVisibility;
+    m_ControlPanel->SetCursorVisible(cursorVisibility);
+  }
+  dropOntoViewer->SetCursorVisible(cursorVisibility);
+
   this->RequestUpdateAll();
 }
 
@@ -910,7 +948,7 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
     m_ControlPanel->SetMaxMagnification(maxMagnification);
     m_ControlPanel->SetMagnification(magnification);
 
-    this->Update2DCursorVisibility();
+    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
   }
   this->RequestUpdateAll();
 }
@@ -1102,6 +1140,24 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible)
+{
+  m_ControlPanel->SetCursorVisible(visible);
+
+  if (m_ControlPanel->AreViewerCursorsBound())
+  {
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != viewer)
+      {
+        otherViewer->SetCursorVisible(visible);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*selectedViewer*/, mitk::TimeGeometry* geometry)
 {
   if (m_ControlPanel->AreViewerGeometriesBound())
@@ -1141,9 +1197,9 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnShowCursorChanged(bool visible)
+void niftkMultiViewerWidget::OnCursorVisibilityChanged(bool visible)
 {
-  this->SetShow2DCursors(visible);
+  this->SetCursorVisible(visible);
 }
 
 
@@ -1179,9 +1235,9 @@ void niftkMultiViewerWidget::UpdateFocusManagerToSelectedViewer()
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiViewerWidget::ToggleCursor()
+bool niftkMultiViewerWidget::ToggleCursorVisibility()
 {
-  this->SetShow2DCursors(!this->GetShow2DCursors());
+  this->SetCursorVisible(!this->IsCursorVisible());
 
   return true;
 }
@@ -1239,25 +1295,6 @@ void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
   {
     m_MultiWindowLayout = windowLayout;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::Update2DCursorVisibility()
-{
-  bool globalVisibility = false;
-  bool localVisibility = m_Show2DCursors;
-
-  foreach (niftkSingleViewerWidget* viewer, m_Viewers)
-  {
-    if (viewer->isVisible())
-    {
-      viewer->SetDisplay2DCursorsGlobally(globalVisibility);
-      viewer->SetDisplay2DCursorsLocally(localVisibility);
-    }
-  }
-
-  this->RequestUpdateAll();
 }
 
 
@@ -1509,30 +1546,27 @@ void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
   if (selectedViewerIndex >= 0 && selectedViewerIndex < m_Viewers.size())
   {
     m_SelectedViewerIndex = selectedViewerIndex;
+    niftkSingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
 
     for (int i = 0; i < m_Viewers.size(); i++)
     {
+      niftkSingleViewerWidget* viewer = m_Viewers[i];
+
       int nodesInWindow = m_VisibilityManager->GetNodesInViewer(i);
 
-      if (i == selectedViewerIndex && nodesInWindow > 0)
+      if (viewer == selectedViewer)
       {
-        m_Viewers[i]->SetSelected(true);
+        viewer->SetSelected(nodesInWindow > 0);
+        viewer->SetNavigationControllerEventListening(true);
       }
       else
       {
-        m_Viewers[i]->SetSelected(false);
-      }
-
-      if (i == selectedViewerIndex)
-      {
-        m_Viewers[i]->SetNavigationControllerEventListening(true);
-      }
-      else
-      {
-        m_Viewers[i]->SetNavigationControllerEventListening(false);
+        viewer->SetSelected(false);
+        viewer->SetNavigationControllerEventListening(false);
       }
     }
-    this->Update2DCursorVisibility();
+
+    this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
     this->RequestUpdateAll();
   }
   else
@@ -1621,9 +1655,10 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnViewerGeometryBindingChanged()
 {
+  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
-    niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
     mitk::TimeGeometry* geometry = selectedViewer->GetGeometry();
 
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
@@ -1639,7 +1674,8 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged()
       viewer->SetBoundGeometryActive(false);
     }
   }
-//  this->Update2DCursorVisibility();
+
+  this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
 }
 
 
