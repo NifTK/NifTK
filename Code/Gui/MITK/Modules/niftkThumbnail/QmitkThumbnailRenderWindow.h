@@ -166,6 +166,15 @@ private:
   // Callback for when the slice selector changes time step.
   void OnTimeStepChanged(const itk::EventObject & geometrySliceEvent);
 
+  // Callback for when the bounding box is panned through the interactor.
+  void OnBoundingBoxPanned(const mitk::Vector2D& displacement);
+
+  // Callback for when the selected position is changed through the interactor.
+  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
+
+  // Callback for when the bounding box is zoomed through the interactor.
+  void OnBoundingBoxZoomed(double scaleFactor, const mitk::Point2D& focusPointInMM);
+
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
 
@@ -215,11 +224,11 @@ private:
   // The actual bounding box, which this class owns and manages.
   mitk::Cuboid::Pointer m_BoundingBox;
 
-  // We do a lot with renderer specific properties, so Im storing the one from this widget, as it is fixed.
-  mitk::BaseRenderer::Pointer m_BaseRenderer;
+  // We do a lot with renderer specific properties, so I am storing the one from this widget, as it is fixed.
+  mitk::BaseRenderer::Pointer m_Renderer;
 
-  // This is set to the currently tracked window. We don't construct or own it, so don't delete it.
-  vtkRenderWindow *m_TrackedRenderWindow;
+  // This is set to the currently tracked renderer. We don't construct or own it, so don't delete it.
+  mitk::BaseRenderer::ConstPointer m_TrackedRenderer;
 
   // This is set to the current world geometry.
   mitk::Geometry3D::Pointer m_TrackedWorldGeometry;
@@ -254,6 +263,8 @@ private:
    * It is needed to unregister the observer on unload.
    */
   us::ServiceRegistrationU m_DisplayInteractorService;
+
+  friend class mitk::ThumbnailInteractor;
 
 };
 

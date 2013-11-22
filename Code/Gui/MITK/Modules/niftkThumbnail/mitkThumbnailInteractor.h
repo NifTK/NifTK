@@ -19,8 +19,11 @@
 
 #include <mitkDisplayInteractor.h>
 
+class QmitkThumbnailRenderWindow;
+
 namespace mitk
 {
+
 class BaseRenderer;
 class SliceNavigationController;
 
@@ -35,8 +38,8 @@ class niftkThumbnail_EXPORT ThumbnailInteractor: public DisplayInteractor
 public:
   mitkClassMacro(ThumbnailInteractor, DisplayInteractor)
 
-  // Thumbnail window customisation: renderer passed as argument
-  mitkNewMacro1Param(Self, mitk::BaseRenderer*);
+  // Thumbnail window customisation: thumbnail window passed as argument
+  mitkNewMacro1Param(Self, QmitkThumbnailRenderWindow*);
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -47,7 +50,8 @@ public:
   virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
 
 protected:
-  ThumbnailInteractor(mitk::BaseRenderer* renderer);
+
+  ThumbnailInteractor(QmitkThumbnailRenderWindow* thumbnailWindow);
   virtual ~ThumbnailInteractor();
 
   virtual void ConnectActionsAndFunctions();
@@ -58,15 +62,46 @@ protected:
   virtual bool Zoom(StateMachineAction* action, InteractionEvent* event);
 
 private:
+
   /**
-   * Renderer of the thumbnail render window that this display interactor belongs to.
+   * The thumbnail window that this display interactor belongs to.
+   */
+  QmitkThumbnailRenderWindow* m_ThumbnailWindow;
+
+  /**
+   * Renderer of the thumbnail window that this display interactor belongs to.
    */
   mitk::BaseRenderer* m_Renderer;
 
   /**
-   * Slice navigation controller of the thumbnail render window that this display interactor belongs to.
+   * Slice navigation controller of the thumbnail window that this display interactor belongs to.
    */
   mitk::SliceNavigationController* m_SliceNavigationController;
+
+  /**
+   * \brief Coordinate of the pointer at begin of an interaction
+   */
+  mitk::Point2D m_StartDisplayCoordinate;
+  /**
+   * \brief Coordinate of the pointer at begin of an interaction translated to mm unit
+   */
+  mitk::Point2D m_StartCoordinateInMM;
+  /**
+   * \brief Coordinate of the pointer in the last step within an interaction.
+   */
+  mitk::Point2D m_LastDisplayCoordinate;
+  /**
+   * \brief Current coordinates of the pointer.
+   */
+  mitk::Point2D m_CurrentDisplayCoordinate;
+
+  /**
+   * Factor to adjust zooming speed.
+   */
+  float m_ZoomFactor;
+
 };
+
 }
+
 #endif
