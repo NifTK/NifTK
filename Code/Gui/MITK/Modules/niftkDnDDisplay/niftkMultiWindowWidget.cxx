@@ -57,7 +57,7 @@ public:
 
 
   //-----------------------------------------------------------------------------
-  void Execute(const itk::Object* object, const itk::EventObject& /*event*/)
+  void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/)
   {
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
@@ -68,7 +68,16 @@ public:
     if (scaleFactor != m_ScaleFactor)
     {
       beingPanned = false;
+
+      mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
+      mitk::Vector2D focusPoint = (m_Origin * m_ScaleFactor - origin * scaleFactor) / (scaleFactor - m_ScaleFactor);
+
+      if (focusPoint != m_FocusPoint)
+      {
+        m_MultiWindowWidget->OnFocusChanged(m_RenderWindow, focusPoint);
+      }
       m_MultiWindowWidget->OnScaleFactorChanged(m_RenderWindow, scaleFactor);
+      m_FocusPoint = focusPoint;
       m_ScaleFactor = scaleFactor;
     }
 
@@ -88,6 +97,7 @@ private:
   QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
   mitk::Vector2D m_Origin;
+  mitk::Vector2D m_FocusPoint;
   double m_ScaleFactor;
 };
 
@@ -112,7 +122,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_Magnification(0.0)
-, m_ScaleFactor(0.0)
+, m_ScaleFactor(1.0)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
@@ -199,10 +209,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->SetSelected(false);
 
   // Need each widget to signal when something is dropped, so connect signals to OnNodesDropped.
-  QObject::connect(this->mitkWidget1, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  QObject::connect(this->mitkWidget2, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  QObject::connect(this->mitkWidget3, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  QObject::connect(this->mitkWidget4, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  this->connect(this->mitkWidget1, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  this->connect(this->mitkWidget2, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  this->connect(this->mitkWidget3, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
+  this->connect(this->mitkWidget4, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
 
   // Register to listen to SliceNavigators, slice changed events.
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onAxialSliceChangedCommand =
@@ -330,6 +340,7 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // QApplication::processEvents() but that would process other pending signals as well
   // what we might not want.
   m_BlockDisplayGeometryEvents = true;
+  this->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(this, renderWindow, nodes);
   m_BlockDisplayGeometryEvents = false;
 }
@@ -1495,6 +1506,24 @@ void niftkMultiWindowWidget::SetOrigin(QmitkRenderWindow* renderWindow, const mi
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint)
+{
+  if (m_Geometry && !m_BlockDisplayGeometryEvents)
+  {
+    mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+    mitk::Point2D focusPointInPx;
+    focusPointInPx[0] = focusPoint[0];
+    focusPointInPx[1] = focusPoint[1];
+    mitk::Point2D focusPointInMm;
+    displayGeometry->DisplayToWorld(focusPointInPx, focusPointInMm);
+    mitk::Point3D focusPoint3DInMm;
+    displayGeometry->Map(focusPointInMm, focusPoint3DInMm);
+    this->SetSelectedPosition(focusPoint3DInMm);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
@@ -1964,7 +1993,7 @@ double niftkMultiWindowWidget::GetScaleFactor(QmitkRenderWindow* renderWindow) c
 {
   if (renderWindow == 0)
   {
-    return 0.0;
+    return 1.0;
   }
 
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();

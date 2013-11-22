@@ -375,6 +375,9 @@ private:
   void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
+  void OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint);
+
+  /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
 
   /// \brief Computes the origin for a render window from the cursor position.

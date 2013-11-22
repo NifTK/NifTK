@@ -12,10 +12,21 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_thumbnail)
+set(CPP_FILES
+  QmitkThumbnailRenderWindow.cxx
+  mitkThumbnailInteractor.cxx
+)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
-  EXPORT_DIRECTIVE THUMBNAIL_EXPORT
-  EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES niftkThumbnail
+set(MOC_H_FILES 
+  QmitkThumbnailRenderWindow.h
+)
+
+set(UI_FILES
+)
+
+set(RESOURCE_FILES
+  Interactions/ThumbnailInteraction.xml
+)
+
+set(QRC_FILES
 )
