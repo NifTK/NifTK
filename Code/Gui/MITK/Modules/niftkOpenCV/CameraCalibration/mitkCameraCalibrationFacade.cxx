@@ -2329,10 +2329,22 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
   //write out the vectors and values, because it might be interesting, trac 2972
   MITK_INFO << "eigenvalues " << eigenvalues;
   MITK_INFO << "eigenvectors " << eigenvectors;
-  for ( int i = 0 ; i < 3 ; i ++ ) 
+  for ( int row = 0 ; row < 3 ; row ++ ) 
   {
-    rootedEigenValues.at<double>(i,i) = sqrt(1.0/eigenvalues.at<double>(i,0));
+    for ( int col = 0 ; col < 3 ; col ++ ) 
+    {
+      if ( row == col )
+      {
+        rootedEigenValues.at<double>(row,col) = sqrt(1.0/eigenvalues.at<double>(row,0));
+      }
+      else
+      {
+        rootedEigenValues.at<double>(row,col) = 0.0;
+      }
+    }
   }
+  //write out the rooted eigenValues trac 2972
+  MITK_INFO << " rooted eigenvalues " << rootedEigenValues;
 
   cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
   cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
