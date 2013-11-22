@@ -8,7 +8,6 @@
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
   <contributor>Johannes Totz</contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
-  asdfasfd
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
