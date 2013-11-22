@@ -1292,6 +1292,13 @@ if(WIN32)
 
     include(mitkFunctionCreateWindowsBatchScript)
 
+    # if we didnt build pcl then substitute some benign empty path instead of potential garbage.
+    if(BUILD_PCL)
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "${PCL_DIR}/../bin")
+    else()
+      set(PCL_BIN_PATH_FOR_BATCH_FILE "")
+    endif()
+
     set(VS_SOLUTION_FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}.sln")
     foreach(VS_BUILD_TYPE debug release)
       mitkFunctionCreateWindowsBatchScript("${CMAKE_SOURCE_DIR}/CMake/StartVS.bat.in"
