@@ -80,7 +80,29 @@ bool mitk::ThumbnailInteractor::InitZoom(StateMachineAction* action, Interaction
 
   m_ThumbnailWindow->OnSelectedPositionChanged(positionEvent->GetPositionInWorld());
 
-  return this->Init(action, interactionEvent);
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  mitk::Point3D focusPoint3DInMm = positionEvent->GetPositionInWorld();
+  const mitk::Geometry3D* worldGeometry = renderer->GetWorldGeometry();
+  mitk::Point3D focusPoint3DIndex;
+  worldGeometry->WorldToIndex(focusPoint3DInMm, focusPoint3DIndex);
+  focusPoint3DIndex[0] = std::floor(focusPoint3DIndex[0]) + 0.5;
+  focusPoint3DIndex[1] = std::floor(focusPoint3DIndex[1]) + 0.5;
+  worldGeometry->IndexToWorld(focusPoint3DIndex, focusPoint3DInMm);
+
+  mitk::Point2D focusPoint2DInMm;
+  mitk::Point2D focusPoint2DInPx;
+  mitk::Point2D focusPoint2DInPxUL;
+
+  mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
+  displayGeometry->Map(focusPoint3DInMm, focusPoint2DInMm);
+  displayGeometry->WorldToDisplay(focusPoint2DInMm, focusPoint2DInPx);
+  displayGeometry->DisplayToULDisplay(focusPoint2DInPx, focusPoint2DInPxUL);
+
+  // Create a new position event with the "corrected" position.
+  mitk::InteractionPositionEvent::Pointer positionEvent2 = InteractionPositionEvent::New(renderer, focusPoint2DInPxUL);
+
+  return this->Init(action, positionEvent2);
 }
 
 bool mitk::ThumbnailInteractor::Move(StateMachineAction* action, InteractionEvent* interactionEvent)
