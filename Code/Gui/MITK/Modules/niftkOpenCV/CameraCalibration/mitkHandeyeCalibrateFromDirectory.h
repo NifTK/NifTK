@@ -61,6 +61,8 @@ public:
   itkSetMacro(NoVideoSupport,bool);
   itkSetMacro(SwapVideoChannels, bool);
 
+  bool LoadExistingIntrinsicCalibrations (std::string directory);
+
 protected:
 
   HandeyeCalibrateFromDirectory();
@@ -107,6 +109,12 @@ private:
   bool                                m_NoVideoSupport; //for testing, enable running 
 
   bool                                m_SwapVideoChannels;
+
+  CvMat*                              m_IntrinsicMatrixLeft;
+  CvMat*                              m_IntrinsicMatrixRight;
+  CvMat*                              m_DistortionCoefficientsLeft;
+  CvMat*                              m_DistortionCoefficientsRight;
+  bool                                m_OptimiseIntrinsics;
 
 
 }; // end class
