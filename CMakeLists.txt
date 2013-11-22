@@ -340,6 +340,12 @@ mark_as_advanced(BUILD_PCL)
 mark_as_advanced(NIFTK_VERSION_PCL)
 mark_as_advanced(NIFTK_LOCATION_PCL)
 
+
+# PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
+if(BUILD_PCL)
+  set(PCL_FIND_QUIETLY ON)
+endif()
+
 ######################################################################
 # Make sure Git is available.
 ######################################################################
