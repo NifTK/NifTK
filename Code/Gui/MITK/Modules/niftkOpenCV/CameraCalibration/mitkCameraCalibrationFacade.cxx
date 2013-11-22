@@ -599,27 +599,36 @@ double CalibrateStereoCameraParameters(
     CvMat& outputRightToLeftRotation,
     CvMat& outputRightToLeftTranslation,
     CvMat& outputEssentialMatrix,
-    CvMat& outputFundamentalMatrix
+    CvMat& outputFundamentalMatrix,
+    const bool& fixedIntrinsics
     )
 {
-  double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
-      objectPointsLeft,
-      imagePointsLeft,
-      pointCountsLeft,
-      imageSize,
-      outputIntrinsicMatrixLeft,
-      outputDistortionCoefficientsLeft
-      );
+  if ( ! fixedIntrinsics )
+  {
+    double leftProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+        objectPointsLeft,
+        imagePointsLeft,
+        pointCountsLeft,
+        imageSize,
+        outputIntrinsicMatrixLeft,
+        outputDistortionCoefficientsLeft
+        );
 
-  double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
-      objectPointsRight,
-      imagePointsRight,
-      pointCountsRight,
-      imageSize,
-      outputIntrinsicMatrixRight,
-      outputDistortionCoefficientsRight);
+    double rightProjectionError = CalibrateSingleCameraIntrinsicUsing3Passes(
+        objectPointsRight,
+        imagePointsRight,
+        pointCountsRight,
+        imageSize,
+        outputIntrinsicMatrixRight,
+        outputDistortionCoefficientsRight);
 
-  std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+    std::cout << "Initial intrinsic calibration gave re-projection errors of left=" << leftProjectionError << ", right=" << rightProjectionError << std::endl;
+  }
+  int flags = CV_CALIB_USE_INTRINSIC_GUESS; // Use the initial guess, but feel free to optimise it.
+  if ( fixedIntrinsics ) 
+  {
+    flags = CV_CALIB_FIX_INTRINSIC; // the intrinsics are known so we only find the extrinsics
+  }
 
   double stereoCalibrationProjectionError = cvStereoCalibrate
       (
@@ -637,7 +646,7 @@ double CalibrateStereoCameraParameters(
       &outputEssentialMatrix,
       &outputFundamentalMatrix,
       cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-6), // where cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 1e-6) is the default.
-      CV_CALIB_USE_INTRINSIC_GUESS // Use the initial guess, but feel free to optimise it.
+      flags 
       );
 
   std::cout << "Stereo re-projection error=" << stereoCalibrationProjectionError << std::endl;

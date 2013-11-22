@@ -260,6 +260,7 @@ extern "C++" NIFTKOPENCV_EXPORT void ProjectAllPoints(
 /**
  * \brief Performs a stereo calibration, including all intrinsic, extrinsic, distortion co-efficients,
  * and also outputs the rotation and translation vector between the two cameras.
+ * plus option to fix the intrinsics, so only the extrinsics and r2l transform are calculated
  */
 extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   const CvMat& objectPointsLeft,
@@ -280,7 +281,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
   CvMat& outputRightToLeftRotation,
   CvMat& outputRightToLeftTranslation,
   CvMat& outputEssentialMatrix,
-  CvMat& outputFundamentalMatrix
+  CvMat& outputFundamentalMatrix,
+  const bool& fixedIntrinsics = false
   );
 
 
