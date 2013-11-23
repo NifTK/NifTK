@@ -957,7 +957,7 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetFocus()
 {
-  this->GetSelectedViewer()->setFocus();
+  this->GetSelectedViewer()->SetFocus();
 }
 
 
