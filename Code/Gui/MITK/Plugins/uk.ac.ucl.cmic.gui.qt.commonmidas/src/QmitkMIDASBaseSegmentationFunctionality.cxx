@@ -77,8 +77,6 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
     delete m_ToolSelector;
   }
 
-  m_SegmentationView->Deactivated();
-
   if (m_SegmentationView != NULL)
   {
     delete m_SegmentationView;
@@ -94,6 +92,15 @@ void QmitkMIDASBaseSegmentationFunctionality::Activated()
 
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
+{
+  m_SegmentationView->Deactivated();
+
+  QmitkBaseView::Deactivated();
 }
 
 
