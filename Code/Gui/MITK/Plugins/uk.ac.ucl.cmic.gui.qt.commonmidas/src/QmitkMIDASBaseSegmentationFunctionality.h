@@ -101,6 +101,11 @@ protected:
   virtual void Activated();
 
   /**
+   * \see mitk::ILifecycleAwarePart::PartDectivated
+   */
+  virtual void Deactivated();
+
+  /**
    * \see mitk::ILifecycleAwarePart::PartVisible
    */
   virtual void Visible();

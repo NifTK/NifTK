@@ -127,6 +127,11 @@ protected slots:
   /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnScaleFactorChanged(niftkSingleViewerWidget* view, double magnification);
 
+  /**
+   * \brief Called when one of the main 2D windows has been destroyed.
+   */
+  virtual void OnAMainWindowDestroyed(QObject* mainWindow);
+
 protected:
 
 private:
@@ -155,7 +160,12 @@ private:
   QmitkRenderWindow* m_MainSagittalWindow;
   QmitkRenderWindow* m_MainCoronalWindow;
   QmitkRenderWindow* m_Main3DWindow;
-  mitk::BaseRenderer* m_CurrentRenderer;
+
+  mitk::SliceNavigationController* m_MainAxialSnc;
+  mitk::SliceNavigationController* m_MainSagittalSnc;
+  mitk::SliceNavigationController* m_MainCoronalSnc;
+
+  mitk::BaseRenderer* m_Renderer;
 
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
