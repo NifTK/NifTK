@@ -1305,28 +1305,24 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
-    this->mitkWidget1->setFocus();
     break;
   case WINDOW_LAYOUT_SAGITTAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
-    this->mitkWidget2->setFocus();
     break;
   case WINDOW_LAYOUT_CORONAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
-    this->mitkWidget3->setFocus();
     break;
   case WINDOW_LAYOUT_ORTHO:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->show();
-    this->mitkWidget1->setFocus();
     break;
   case WINDOW_LAYOUT_3H:
   case WINDOW_LAYOUT_3V:
@@ -1334,14 +1330,12 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
-    this->mitkWidget1->setFocus();
     break;
   case WINDOW_LAYOUT_3D:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->show();
-    this->mitkWidget4->setFocus();
     break;
   case WINDOW_LAYOUT_COR_SAG_H:
   case WINDOW_LAYOUT_COR_SAG_V:
@@ -1349,7 +1343,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
-    this->mitkWidget2->setFocus();
     break;
   case WINDOW_LAYOUT_COR_AX_H:
   case WINDOW_LAYOUT_COR_AX_V:
@@ -1357,7 +1350,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
-    this->mitkWidget1->setFocus();
     break;
   case WINDOW_LAYOUT_SAG_AX_H:
   case WINDOW_LAYOUT_SAG_AX_V:
@@ -1365,7 +1357,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
-    this->mitkWidget1->setFocus();
     break;
   default:
     // die, this should never happen
