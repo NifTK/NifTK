@@ -992,3 +992,18 @@ bool niftkSingleViewerWidget::ToggleCursorVisibility()
 
   return true;
 }
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetFocus()
+{
+  QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
+  if (renderWindow)
+  {
+    renderWindow->setFocus();
+  }
+  else
+  {
+    this->setFocus();
+  }
+}

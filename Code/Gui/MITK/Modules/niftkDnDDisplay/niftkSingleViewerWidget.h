@@ -318,6 +318,12 @@ public:
   /// \brief Shows or hides the cursor.
   bool ToggleCursorVisibility();
 
+  /**
+   * \brief Sets the focus to the currently selected window, or to this viewer
+   * itself if no window is selected.
+   */
+  virtual void SetFocus();
+
 protected:
 
   /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
