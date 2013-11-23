@@ -1723,19 +1723,24 @@ const mitk::Point3D niftkMultiWindowWidget::GetSelectedPosition() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  // Check if the slice navigation controller has a valid geometry.
   m_BlockDisplayGeometryEvents = true;
+
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
   if (snc->GetCreatedWorldGeometry())
   {
     snc->SelectSliceByPoint(selectedPosition);
-
-    snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
-    snc->SelectSliceByPoint(selectedPosition);
-
-    snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+  }
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  if (snc->GetCreatedWorldGeometry())
+  {
     snc->SelectSliceByPoint(selectedPosition);
   }
+  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+  if (snc->GetCreatedWorldGeometry())
+  {
+    snc->SelectSliceByPoint(selectedPosition);
+  }
+
   m_BlockDisplayGeometryEvents = false;
 }
 
