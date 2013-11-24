@@ -1212,6 +1212,11 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
+  bool hasFocus = mitkWidget1->hasFocus()
+      || mitkWidget2->hasFocus()
+      || mitkWidget3->hasFocus()
+      || mitkWidget4->hasFocus();
+
   m_BlockDisplayGeometryEvents = true;
 
   if (m_GridLayout != NULL)
@@ -1298,6 +1303,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
+  QmitkRenderWindow* windowToFocus = 0;
+
   switch (windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
@@ -1305,24 +1312,38 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
+    if (hasFocus && !mitkWidget1->hasFocus())
+    {
+      windowToFocus = mitkWidget1;
+    }
     break;
   case WINDOW_LAYOUT_SAGITTAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
+    if (hasFocus && !mitkWidget2->hasFocus())
+    {
+      windowToFocus = mitkWidget2;
+    }
     break;
   case WINDOW_LAYOUT_CORONAL:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
+    if (hasFocus && !mitkWidget3->hasFocus())
+    {
+      windowToFocus = mitkWidget3;
+    }
     break;
   case WINDOW_LAYOUT_ORTHO:
     this->mitkWidget1Container->show();
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->show();
+    // If we have the focus, it will stay there, otherwise we do not steel it
+    // from another window.
     break;
   case WINDOW_LAYOUT_3H:
   case WINDOW_LAYOUT_3V:
@@ -1330,12 +1351,20 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
+    if (hasFocus && mitkWidget4->hasFocus())
+    {
+      windowToFocus = mitkWidget1;
+    }
     break;
   case WINDOW_LAYOUT_3D:
     this->mitkWidget1Container->hide();
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->show();
+    if (hasFocus && !mitkWidget4->hasFocus())
+    {
+      windowToFocus = mitkWidget4;
+    }
     break;
   case WINDOW_LAYOUT_COR_SAG_H:
   case WINDOW_LAYOUT_COR_SAG_V:
@@ -1343,6 +1372,10 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
+    if (hasFocus && (mitkWidget1->hasFocus() || mitkWidget4->hasFocus()))
+    {
+      windowToFocus = mitkWidget2;
+    }
     break;
   case WINDOW_LAYOUT_COR_AX_H:
   case WINDOW_LAYOUT_COR_AX_V:
@@ -1350,6 +1383,10 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->hide();
     this->mitkWidget3Container->show();
     this->mitkWidget4Container->hide();
+    if (hasFocus && (mitkWidget2->hasFocus() || mitkWidget4->hasFocus()))
+    {
+      windowToFocus = mitkWidget1;
+    }
     break;
   case WINDOW_LAYOUT_SAG_AX_H:
   case WINDOW_LAYOUT_SAG_AX_V:
@@ -1357,11 +1394,20 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     this->mitkWidget2Container->show();
     this->mitkWidget3Container->hide();
     this->mitkWidget4Container->hide();
+    if (hasFocus && (mitkWidget3->hasFocus() || mitkWidget4->hasFocus()))
+    {
+      windowToFocus = mitkWidget1;
+    }
     break;
   default:
     // die, this should never happen
     assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
     break;
+  }
+
+  if (windowToFocus)
+  {
+    windowToFocus->setFocus();
   }
 
   m_WindowLayout = windowLayout;

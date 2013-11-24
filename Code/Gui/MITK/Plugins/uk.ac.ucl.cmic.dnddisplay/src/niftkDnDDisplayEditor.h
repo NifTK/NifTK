@@ -158,7 +158,7 @@ public:
 
 protected:
 
-  /// \brief Tells the contained niftkMultiViewerWidget to setFocus().
+  /// \brief Tells the contained niftkMultiViewerWidget to SetFocus().
   virtual void SetFocus();
 
   /// \brief Called when the preferences object of this editor changed.
