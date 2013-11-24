@@ -399,7 +399,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 
   QmitkRenderWindow* renderWindow = m_Viewer->GetRenderWindow(focusedRenderer->GetRenderWindow());
 
-  // If the newly focused window is this widget, nothing to update. Stop early.
+  // If the newly focused window is in this widget, nothing to update. Stop early.
   if (renderWindow)
   {
     m_Viewer->SetSelectedRenderWindow(renderWindow);
