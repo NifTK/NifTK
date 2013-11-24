@@ -64,16 +64,16 @@ public:
   /// \see mitk::StateMachine::CanHandleEvent
   float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
 
-  /// \brief Installs an event filter that can reject a state machine event or they let it pass through.
+  /// \brief Installs an event filter that can reject a state machine event or let it pass through.
   virtual void InstallEventFilter(const MIDASEventFilter::Pointer eventFilter);
 
-  /// \brief Removes an event filter that can reject a state machine event or they let it pass through.
+  /// \brief Removes an event filter that can reject a state machine event or let it pass through.
   virtual void RemoveEventFilter(const MIDASEventFilter::Pointer eventFilter);
 
   /// \brief Gets the list of the installed event filters.
   std::vector<MIDASEventFilter::Pointer> GetEventFilters() const;
 
-  /// \brief Tells if the event is rejected by the installed event filters or they let pass through.
+  /// \brief Tells if the event is rejected by the installed event filters or they let it pass through.
   bool IsFiltered(const mitk::StateEvent* stateEvent) const;
 
 protected:
