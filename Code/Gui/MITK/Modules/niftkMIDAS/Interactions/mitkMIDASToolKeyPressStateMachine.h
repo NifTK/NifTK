@@ -19,6 +19,8 @@
 #include "mitkMIDASToolKeyPressResponder.h"
 #include <mitkStateMachine.h>
 
+#include "mitkMIDASStateMachine.h"
+
 namespace mitk {
 
 /**
@@ -26,7 +28,7 @@ namespace mitk {
  * \brief StateMachine to check for key press events that MIDAS is interested in,
  * and pass them onto any registered MIDASToolKeyPressResponder.
  */
-class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public StateMachine
+class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public StateMachine, public MIDASStateMachine
 {
 
 public:
@@ -41,8 +43,8 @@ protected:
   /// \brief Purposely hidden, destructor.
   ~MIDASToolKeyPressStateMachine(){}
 
-  /// \see mitk::StateMachine::CanHandleEvent
-  float CanHandleEvent(const StateEvent *) const;
+  /// \see mitk::MIDASStateMachine::CanHandleEvent
+  float CanHandle(const mitk::StateEvent* stateEvent) const;
 
   /// \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(Action*, const StateEvent*);

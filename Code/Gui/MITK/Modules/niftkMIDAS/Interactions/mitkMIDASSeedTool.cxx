@@ -54,24 +54,22 @@ const char** mitk::MIDASSeedTool::GetXPM() const
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASSeedTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASSeedTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-          || event->GetId() == 505 // left mouse up
-          || event->GetId() == 530 // left mouse down and move
-          || event->GetId() == 4   // middle mouse down
-          || event->GetId() == 533 // middle mouse down and move
-          )
+  int eventId = stateEvent->GetId();
+  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+      || eventId == 505 // left mouse up
+      || eventId == 530 // left mouse down and move
+      || eventId == 4   // middle mouse down
+      || eventId == 533 // middle mouse down and move
       )
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::MIDASTool::CanHandleEvent(event);
+    return Superclass::CanHandle(stateEvent);
   }
 }
 
@@ -104,6 +102,9 @@ void mitk::MIDASSeedTool::Activated()
     if (m_PointSetInteractor.IsNull())
     {
       m_PointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedTool", pointSetNode);
+
+      // TODO Add our event filters to the pointset interactor.
+
       m_PointSetInteractor->SetPrecision(1);
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_PointSetInteractor );

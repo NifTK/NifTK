@@ -223,13 +223,6 @@ const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASTool::~MIDASTool()
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::MIDASTool::MIDASTool(const char* type) :
     FeedbackContourTool(type)
 , m_AddToPointSetInteractor(NULL)
@@ -237,6 +230,12 @@ mitk::MIDASTool::MIDASTool(const char* type) :
 , m_SeedsChangedTag(0)
 , m_IsActivated(false)
 , m_BlockNumberOfSeedsSignal(false)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::MIDASTool::~MIDASTool()
 {
 }
 
@@ -419,20 +418,17 @@ void mitk::MIDASTool::OnSeedsModified()
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (event->GetId() == 2   // right mouse down
-          )
-      )
+  if (stateEvent->GetId() == 2)   // right mouse down
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::FeedbackContourTool::CanHandleEvent(event);
+    // Note that the superclass is not a MIDAS state machine and it does not
+    // have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }

@@ -94,23 +94,23 @@ const char** mitk::MIDASPolyTool::GetXPM() const
   return mitkMIDASPolyTool_xpm;
 }
 
-float mitk::MIDASPolyTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASPolyTool::CanHandle(const StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-          || event->GetId() == 4   // middle mouse down
-          || event->GetId() == 506 // middle mouse up
-          || event->GetId() == 533 // middle mouse down and move
-          )
+  int eventId = stateEvent->GetId();
+  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+      || eventId == 4   // middle mouse down
+      || eventId == 506 // middle mouse up
+      || eventId == 533 // middle mouse down and move
       )
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::StateMachine::CanHandleEvent(event);
+    /// Note that the superclass is not a MIDASStateMachine and it does not
+    /// have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }
 
