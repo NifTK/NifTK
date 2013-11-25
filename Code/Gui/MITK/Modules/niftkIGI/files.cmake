@@ -26,7 +26,7 @@ set(CPP_FILES
   SurfaceBasedRegistration/mitkSurfaceBasedRegistration.cxx
   Utils/mitkMakeGeometry.cxx
   # this one does not depend on pcl!
-  PointClouds/MergePointCloudsWrapper.cxx
+  PointClouds/mitkMergePointClouds.cxx
 )
 
 if(BUILD_PCL)

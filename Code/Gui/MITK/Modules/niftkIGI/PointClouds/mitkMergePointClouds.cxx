@@ -12,29 +12,29 @@
 
 =============================================================================*/
 
-#include "MergePointCloudsWrapper.h"
+#include "mitkMergePointClouds.h"
 #include <mitkPointSetReader.h>
 
 
-namespace niftk
+namespace mitk
 {
 
 
 //-----------------------------------------------------------------------------
-MergePointCloudsWrapper::MergePointCloudsWrapper()
+MergePointClouds::MergePointClouds()
   : m_MergedPointSet(mitk::PointSet::New())
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MergePointCloudsWrapper::~MergePointCloudsWrapper()
+MergePointClouds::~MergePointClouds()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MergePointCloudsWrapper::AddPointSet(const std::string& filename)
+void MergePointClouds::AddPointSet(const std::string& filename)
 {
   if (filename.empty())
     throw std::runtime_error("Point cloud file name cannot be empty");
@@ -54,14 +54,14 @@ void MergePointCloudsWrapper::AddPointSet(const std::string& filename)
 
 
 //-----------------------------------------------------------------------------
-void MergePointCloudsWrapper::AddPointSet(const mitk::PointSet::Pointer& pointset)
+void MergePointClouds::AddPointSet(const mitk::PointSet::Pointer& pointset)
 {
   AddPointSet(mitk::PointSet::ConstPointer(pointset.GetPointer()));
 }
 
 
 //-----------------------------------------------------------------------------
-void MergePointCloudsWrapper::AddPointSet(const mitk::PointSet::ConstPointer& pointset)
+void MergePointClouds::AddPointSet(const mitk::PointSet::ConstPointer& pointset)
 {
   // we are allocating ids sequentially, so this should be fine.
   unsigned int  id = m_MergedPointSet->GetSize();
@@ -77,7 +77,7 @@ void MergePointCloudsWrapper::AddPointSet(const mitk::PointSet::ConstPointer& po
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer MergePointCloudsWrapper::GetOutput() const
+mitk::PointSet::Pointer MergePointClouds::GetOutput() const
 {
   return m_MergedPointSet->Clone();
 }

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MergePointCloudsWrapper_h
-#define MergePointCloudsWrapper_h
+#ifndef mitkMergePointClouds_h
+#define mitkMergePointClouds_h
 
 
 #include "niftkIGIExports.h"
@@ -26,28 +26,27 @@
 #include <itkObjectFactoryBase.h>
 
 
-namespace niftk
+namespace mitk
 {
 
 
-// i dont think this should be called ...Wrapper. suggestions for a better name?
-class NIFTKIGI_EXPORT MergePointCloudsWrapper : public itk::Object
+class NIFTKIGI_EXPORT MergePointClouds : public itk::Object
 {
 public:
-  mitkClassMacro(MergePointCloudsWrapper, itk::Object);
-  itkNewMacro(MergePointCloudsWrapper);
+  mitkClassMacro(MergePointClouds, itk::Object);
+  itkNewMacro(MergePointClouds);
 
 
 protected:
   /** Not implemented */
-  MergePointCloudsWrapper();
+  MergePointClouds();
   /** Not implemented */
-  virtual ~MergePointCloudsWrapper();
+  virtual ~MergePointClouds();
 
   /** Not implemented */
-  MergePointCloudsWrapper(const MergePointCloudsWrapper&);
+  MergePointClouds(const MergePointClouds&);
   /** Not implemented */
-  MergePointCloudsWrapper& operator=(const MergePointCloudsWrapper&);
+  MergePointClouds& operator=(const MergePointClouds&);
 
 
 public:
@@ -65,4 +64,4 @@ private:
 } // namespace
 
 
-#endif // MergePointCloudsWrapper
+#endif // mitkMergePointClouds_h

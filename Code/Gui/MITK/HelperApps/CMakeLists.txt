@@ -118,7 +118,7 @@ if(SlicerExecutionModel_FOUND)
       niftkMakeGridOf2DImages
       niftkIterativeClosestPointRegister
       # this one does not depend on pcl!
-      MergePointClouds
+      niftkMergePointClouds
     )
     
     if(BUILD_PCL)
