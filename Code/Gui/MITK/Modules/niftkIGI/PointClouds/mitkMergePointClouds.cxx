@@ -63,6 +63,11 @@ void MergePointClouds::AddPointSet(const mitk::PointSet::Pointer& pointset)
 //-----------------------------------------------------------------------------
 void MergePointClouds::AddPointSet(const mitk::PointSet::ConstPointer& pointset)
 {
+  if (pointset.IsNull())
+  {
+    throw std::runtime_error("Input pointset has to be non-null");
+  }
+
   // we are allocating ids sequentially, so this should be fine.
   unsigned int  id = m_MergedPointSet->GetSize();
   for (mitk::PointSet::PointsConstIterator i = pointset->Begin(); i != pointset->End(); ++i, ++id)
@@ -72,7 +77,6 @@ void MergePointClouds::AddPointSet(const mitk::PointSet::ConstPointer& pointset)
     const mitk::PointSet::PointType& p = i->Value();
     m_MergedPointSet->InsertPoint(id, mitk::PointSet::PointType(&p[0]));
   }
-
 }
 
 

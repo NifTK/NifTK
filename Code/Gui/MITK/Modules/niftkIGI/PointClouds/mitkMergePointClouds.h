@@ -30,6 +30,10 @@ namespace mitk
 {
 
 
+/**
+ * Will not preserve point IDs in the merged output!
+ * Order of points is not necessarily preserved.
+ */
 class NIFTKIGI_EXPORT MergePointClouds : public itk::Object
 {
 public:
@@ -38,9 +42,7 @@ public:
 
 
 protected:
-  /** Not implemented */
   MergePointClouds();
-  /** Not implemented */
   virtual ~MergePointClouds();
 
   /** Not implemented */
@@ -50,11 +52,27 @@ protected:
 
 
 public:
+  /**
+   * @throws std::runtime_error if filename is empty
+   * @throws std::runtime_error if the file cannot be read/parsed
+   */
   void AddPointSet(const std::string& filename);
+
+  /**
+   * @throws std::runtime_error if pointset is null.
+   */
   void AddPointSet(const mitk::PointSet::Pointer& pointset);
+
+  /**
+   * @throws std::runtime_error if pointset is null.
+   */
   void AddPointSet(const mitk::PointSet::ConstPointer& pointset);
 
+  /**
+   * @throws nothing should not throw anything
+   */
   mitk::PointSet::Pointer GetOutput() const;
+
 
 private:
   mitk::PointSet::Pointer       m_MergedPointSet;
