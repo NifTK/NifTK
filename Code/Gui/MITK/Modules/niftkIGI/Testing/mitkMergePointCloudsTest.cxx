@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <random>
+#include <cstdlib>
 #include <mitkTestingMacros.h>
 #include <PointClouds/mitkMergePointClouds.h>
 
