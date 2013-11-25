@@ -56,7 +56,15 @@ class CMIC_QT_COMMONMIDAS QmitkMIDASSegmentationViewWidget :
 
 public:
 
-  QmitkMIDASSegmentationViewWidget(QWidget* parent = 0);
+  /**
+   * Constructs a QmitkMIDASSegmentationViewWidget object.
+   *
+   * \param functionality Sets the containing functionality for callback purposes.
+   *
+   *        The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
+   *        rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
+   */
+  QmitkMIDASSegmentationViewWidget(QmitkMIDASBaseSegmentationFunctionality* functionality, QWidget* parent = 0);
   virtual ~QmitkMIDASSegmentationViewWidget();
 
   /**
@@ -66,34 +74,10 @@ public:
   void SetDataStorage(mitk::DataStorage* storage);
 
   /**
-   * \brief Sets the containing functionality for callback purposes.
-   *
-   * The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
-   * rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
-   *
-   * \param functionality In old terminology, the "functionality" that contains this widget,
-   * is the child of QmitkAbstractView that contains this widget.
-   *
-   * \see QmitkMIDASBaseSegmentationFunctionality
-   * \see QmitkAbstractView
-   */
-  void SetContainingFunctionality(QmitkMIDASBaseSegmentationFunctionality* functionality);
-
-  /**
    * \brief Calls setEnabled(enabled) on all contained GUI widgets, except the niftkSingleViewerWidget.
    * \param enabled if true will enable all widgets, and if false will disable them.
    */
   void SetEnabled(bool enabled);
-
-  /**
-   * \brief Connects the widget to the FocusManager.
-   */
-  void Activated();
-
-  /**
-   * \brief Disconnects the widget from the FocusManager.
-   */
-  void Deactivated();
 
 signals:
 
@@ -145,16 +129,11 @@ private:
   /// \brief Works out the MIDASOrientation of the currently focused window.
   MIDASOrientation GetCurrentMainWindowOrientation();
 
-  /// \brief Works out the MIDASLayout of the currently focused window.
-  WindowLayout GetCurrentMainWindowLayout();
-
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;
-
-  WindowLayout m_MainWindowLayout;
 
   QmitkRenderWindow* m_MainAxialWindow;
   QmitkRenderWindow* m_MainSagittalWindow;
@@ -172,9 +151,11 @@ private:
 
   double m_Magnification;
 
+  MIDASOrientation m_MainWindowOrientation;
+
   /// \brief Stores the last single window layout of the internal viewer,
-  /// one for each layout of the main window.
-  QMap<WindowLayout, WindowLayout> m_SingleWindowLayouts;
+  /// one for each orientation of the main window.
+  QMap<MIDASOrientation, WindowLayout> m_SingleWindowLayouts;
 
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
