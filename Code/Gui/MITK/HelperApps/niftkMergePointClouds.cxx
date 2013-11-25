@@ -15,6 +15,7 @@
 #include <PointClouds/mitkMergePointClouds.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include <fstream>
 #include <niftkMergePointCloudsCLP.h>
 
 
