@@ -95,6 +95,8 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   this->connect(m_NextButton, SIGNAL(clicked()), SLOT(OnNextButtonClicked()));
   this->connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), SLOT(OnErosionsUpperThresholdChanged()));
   this->connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(double)), SLOT(OnErosionsSliderChanged()));
+  this->connect(m_DilationsThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnDilationsSliderChanged()));
+  this->connect(m_DilationsThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnDilationsSliderChanged()));
   this->connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(double)), SLOT(OnDilationsSliderChanged()));
   this->connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), SLOT(OnRethresholdingSliderChanged()));
   this->connect(m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
