@@ -55,8 +55,7 @@ public:
   void AddPointSet(const mitk::PointSet::Pointer& pointset);
   void AddPointSet(const mitk::PointSet::ConstPointer& pointset);
 
-  // FIXME: should this return a clone?
-  mitk::PointSet::ConstPointer GetOutput() const;
+  mitk::PointSet::Pointer GetOutput() const;
 
 private:
   mitk::PointSet::Pointer       m_MergedPointSet;

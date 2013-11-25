@@ -12,12 +12,12 @@
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
     
-    <file fileExtensions="*.mps">
-      <name>pointCloudFileName</name>
-      <longflag>pointcloud</longflag>
-      <description>The file name of the MITK PointSet file to process.</description>
-      <label>Point set file</label>
-    </file>
+    <directory>
+      <name>pointCloudDirectory</name>
+      <longflag>pointcloudsdir</longflag>
+      <description>Directory containing the .mps files to merge.</description>
+      <label>Directory</label>
+    </directory>
  
     <file fileExtensions="*.mps">
       <name>output</name>
@@ -25,6 +25,7 @@
       <description>Output file for the merged point cloud.</description>
       <label>Output file for the merged point cloud</label>
       <channel>output</channel>
+      <default>merged.mps</default>
     </file>
   </parameters>
 </executable>
