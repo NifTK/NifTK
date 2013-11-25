@@ -19,6 +19,8 @@ set(MODULE_TESTS
   mitkTrackedPointerManagerTest.cxx
   mitkPointBasedRegistrationTest.cxx
   QDSCommonTest.cxx
+  # does not depend on pcl
+  mitkMergePointCloudsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

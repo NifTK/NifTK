@@ -18,7 +18,7 @@
 
 
 //-----------------------------------------------------------------------------
-void TestErrorConditions()
+static void TestErrorConditions()
 {
 
   try
@@ -127,7 +127,7 @@ void TestErrorConditions()
 
 
 //-----------------------------------------------------------------------------
-void TestSimpleCases()
+static void TestSimpleCases()
 {
   float   a, b, c, d;
 
@@ -165,7 +165,7 @@ void TestSimpleCases()
 
 
 //-----------------------------------------------------------------------------
-void RunRegressionTest(const char* filename)
+static void RunRegressionTest(const char* filename)
 {
   // no additional try/catch here. we expect this to succeed!
 

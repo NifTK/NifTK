@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Fit Plane to Point Cloud</title>
-  <description><![CDATA[Fits a plane equation to a point cloud.]]></description>
+  <title>Merge separate point clouds into one</title>
+  <description><![CDATA[Merges separate point clouds into one.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -12,19 +12,20 @@
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
     
-    <file fileExtensions="*.mps">
-      <name>pointCloudFileName</name>
-      <longflag>pointcloud</longflag>
-      <description>The file name of the MITK PointSet file to process.</description>
-      <label>Point set file</label>
-    </file>
+    <directory>
+      <name>pointCloudDirectory</name>
+      <longflag>pointcloudsdir</longflag>
+      <description>Directory containing the .mps files to merge.</description>
+      <label>Directory</label>
+    </directory>
  
-    <file fileExtensions="*.txt">
-      <name>outputPlaneEquation</name>
+    <file fileExtensions="*.mps">
+      <name>output</name>
       <longflag>output</longflag>
-      <description>Output file for plane equation (optional).</description>
-      <label>Output file for plane equation</label>
+      <description>Output file for the merged point cloud.</description>
+      <label>Output file for the merged point cloud</label>
       <channel>output</channel>
+      <default>merged.mps</default>
     </file>
   </parameters>
 </executable>
