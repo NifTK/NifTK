@@ -98,8 +98,6 @@ void QmitkMIDASBaseSegmentationFunctionality::Activated()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
 {
-  m_SegmentationView->Deactivated();
-
   QmitkBaseView::Deactivated();
 }
 
@@ -161,11 +159,9 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Set up the Segmentation View
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForSegmentationViewWidget = new QWidget(parent);
-    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(m_ContainerForSegmentationViewWidget);
+    m_SegmentationView = new QmitkMIDASSegmentationViewWidget(this, m_ContainerForSegmentationViewWidget);
     m_SegmentationView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_SegmentationView->SetDataStorage(this->GetDataStorage());
-    m_SegmentationView->SetContainingFunctionality(this);
-    m_SegmentationView->Activated();
 
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
     this->RetrievePreferenceValues();
@@ -466,6 +462,20 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(Q
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetCurrentlyFocusedRenderer()
+{
+  return QmitkBaseView::GetCurrentlyFocusedRenderer();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetPreviouslyFocusedRenderer()
+{
+  return QmitkBaseView::GetPreviouslyFocusedRenderer();
 }
 
 

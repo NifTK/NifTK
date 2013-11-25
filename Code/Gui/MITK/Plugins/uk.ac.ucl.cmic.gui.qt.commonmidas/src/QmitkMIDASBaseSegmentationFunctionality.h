@@ -79,6 +79,24 @@ public:
    */
   virtual mitk::DataNode* CreateNewSegmentation(QColor &defaultColor);
 
+  /**
+   * \brief Returns the currently focused renderer.
+   *
+   * Same as QmitkBaseView::GetCurrentlyFocusedRenderer(), but with public visiblity.
+   *
+   * \return mitk::BaseRenderer* The currently focused renderer, or NULL if it has not been set.
+   */
+  mitk::BaseRenderer* GetCurrentlyFocusedRenderer();
+
+  /**
+   * \brief Returns the previously focused renderer (the one before the currently focused renderer).
+   *
+   * Same as QmitkBaseView::GetPreviouslyFocusedRenderer(), but with public visiblity.
+   *
+   * \return mitk::BaseRenderer* The previously focused renderer, or NULL if it has not been set.
+   */
+  mitk::BaseRenderer* GetPreviouslyFocusedRenderer();
+
 signals:
 
   /**
