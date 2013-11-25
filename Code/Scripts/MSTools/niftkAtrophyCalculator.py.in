@@ -156,6 +156,7 @@ def cleanup():
 
 	if os.path.isdir(dir_output):
 		if (not debug_mode) and (len(dir_output)>0) :
+			#shutil.rmtree(dir_output) 
 			for f in glob (os.path.join(dir_output,"*.nii*")):
 				os.unlink (f)
 			for f in glob (os.path.join(dir_output,"*.txt")):
@@ -245,7 +246,6 @@ def pass_to_ISO(img):
 		
 	return output_file
 # End of pass_to_ISO function
-
 
 # Begin of copy_geometry function
 def copy_geometry(src,dst):
@@ -360,7 +360,7 @@ def dilate_mask(img,times):
 
 
 # Begin of resample_data function
-def resample_data(ref,flo,trans,interpolation): 
+def resample_data(ref,flo,trans,interpolation,text='_register'): 
 	"""
 	###########################################################################
 	# def resample_data(ref,flo,trans,interpolation)
@@ -372,14 +372,18 @@ def resample_data(ref,flo,trans,interpolation):
 	# Return    : new file name 
 	###########################################################################
 	"""
-	output_file=make_name_output_file(flo,'_register')
+	output_file=make_name_output_file(flo,text)
 	
 	if not os.path.isfile(output_file):
+		transformation=''
+		if len(trans)>0:
+			transformation='-aff '+trans
+		
 		execute_command_or_else_stop('reg_resample \
 			-ref '+ref+' \
 			-flo '+flo+' \
 			-res '+output_file+' \
-			-aff '+trans+' \
+			'+transformation+' \
 			'+interpolation)
 
 		execute_command_or_else_stop('fslmaths \
@@ -407,6 +411,8 @@ def register_images(probabilistic):
 	global F_INPUT_IMAGE
 	global B_MASK
 	global F_MASK
+	global B_ROI_MASK
+	global F_ROI_MASK
 	transformation=os.path.abspath('source_to_target_affine.txt')
 	half_trans=os.path.abspath('half-way_affine.txt')
 	half_trans_inv=os.path.abspath('half-way_affine-inv.txt')
@@ -431,13 +437,17 @@ def register_images(probabilistic):
 	# We compute the half-way transformation matrix and the inverse
 	execute_command_or_else_stop('reg_transform \
 		-ref '+B_INPUT_IMAGE+' \
-		-halfAff '+transformation+' \
+		-half '+transformation+' \
 		'+half_trans)
 
 	execute_command_or_else_stop('reg_transform \
 		-ref '+B_INPUT_IMAGE+' \
-		-invAffine '+half_trans+' \
+		-invAff '+half_trans+' \
 		'+half_trans_inv)
+
+	# Register rois to half-way	
+	if B_ROI_MASK!='' or F_ROI_MASK!='':		
+		transform_rois_to_half_way(probabilistic)
 
 	# Set up the interpolation method
 	interpolation=''
@@ -455,7 +465,7 @@ def register_images(probabilistic):
 	F_INPUT_IMAGE=resample_data(b_input,F_INPUT_IMAGE,half_trans,'')
 	
 	B_MASK=resample_data(b_input,B_MASK,half_trans_inv,interpolation)
-	F_MASK=resample_data(b_input,F_MASK,half_trans,interpolation)
+	F_MASK=resample_data(b_input,F_MASK,half_trans,interpolation)	
 
 	return 
 # End of register_images function
@@ -479,10 +489,22 @@ def transform_rois_to_half_way(probabilistic):
 	transformation_rois=os.path.abspath('source_to_target_affine_rois.txt')
 	half_trans=os.path.abspath('half-way_affine_rois.txt')
 	half_trans_inv=os.path.abspath('half-way_affine-inv_rois.txt')
+	identity=os.path.abspath('empty.dat')
+	
+	# Set up the interpolation method
+	interpolation=''
+	if probabilistic:
+		print('We are using linear interpolation - pBSI or GBSI')
+		interpolation='-LIN'
+	else:
+		print('We are using nearest neighbour interpolation - Not probabilistic')
+		interpolation='-NN'
 
 	# First we dilate the both mask 
 	b_mask_dilated=dilate_mask(B_ROI_MASK,8)
 	f_mask_dilated=dilate_mask(F_ROI_MASK,8)
+	b_mask_dilated=resample_data(B_INPUT_IMAGE,b_mask_dilated,'',interpolation,'_resampled')
+	f_mask_dilated=resample_data(F_INPUT_IMAGE,f_mask_dilated,'',interpolation,'_resampled')
 
 	# We calculate the registration from follow-up to baseline
 	if not os.path.isfile(transformation_rois):
@@ -491,9 +513,9 @@ def transform_rois_to_half_way(probabilistic):
 			-rmask '+b_mask_dilated+' \
 			-flo '+F_INPUT_IMAGE+' \
 			-fmask '+f_mask_dilated+' \
-			-inaff '+transformation+' \
 			-aff '+transformation_rois+' \
 			-%v 100 \
+			-inaff '+transformation+' \
 			-ln 1 \
 			-rigOnly \
 			-res second_register.nii.gz')
@@ -504,22 +526,13 @@ def transform_rois_to_half_way(probabilistic):
 	# We compute the half-way transformation matrix and the inverse
 	execute_command_or_else_stop('reg_transform \
 		-ref '+B_INPUT_IMAGE+' \
-		-halfAff '+transformation_rois+' \
+		-half '+transformation_rois+' \
 		'+half_trans)
 
 	execute_command_or_else_stop('reg_transform \
 		-ref '+B_INPUT_IMAGE+' \
-		-invAffine '+half_trans+' \
+		-invAff '+half_trans+' \
 		'+half_trans_inv)
-
-	# Set up the interpolation method
-	interpolation=''
-	if probabilistic:
-		print('We are using linear interpolation - pBSI or GBSI')
-		interpolation='-LIN'
-	else:
-		print('We are using nearest neighbour interpolation - Not probabilistic')
-		interpolation='-NN'
 
 	# We compute all the new ROIS after knowing the transformation matrices
 	B_ROI_MASK=resample_data(B_INPUT_IMAGE,B_ROI_MASK,half_trans_inv,interpolation)
@@ -1171,11 +1184,11 @@ def generate_report(patient,results,command):
 		-V','ON'))	
 	atrophy=-100 * atrophy / v1
 	
-	write_results('BSI='+str(results[0])+' ml')
-	write_results('PBVC='+str(results[1])+' %')
-	write_results('ATROPHY='+str(atrophy)+' %')
-	write_results('GROWTH='+str(growth)+' %')
-	write_results('VOLUME='+str(v1)+' mm^3')
+	write_results('BSI='+str(results[0])+' ml\n')
+	write_results('PBVC='+str(results[1])+' %\n')
+	write_results('ATROPHY='+str(atrophy)+' %\n')
+	write_results('GROWTH='+str(growth)+' %\n')
+	write_results('VOLUME='+str(v1)+' mm^3\n')
 	
 	# Generating the atrophy result image
 	bsi_file=generate_gif(patient+'_bsi',B_INPUT_IMAGE,negatives_file,positives_file,'.png')
@@ -1907,10 +1920,6 @@ progress_xml(0.50,"Image registration.")
 probabilistic=(bsi_method==1 or bsi_method==3)
 register_images(probabilistic)	
 
-# Register rois to half-way	
-if B_ROI_MASK!='' or F_ROI_MASK!='':		
-	transform_rois_to_half_way(probabilistic)
-		
 # Register lesions to half-way			
 if sublesion:
 	transform_lesions_to_half_way()
