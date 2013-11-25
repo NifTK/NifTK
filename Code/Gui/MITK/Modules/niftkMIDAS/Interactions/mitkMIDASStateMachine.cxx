@@ -43,7 +43,7 @@ float mitk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent
 {
   if (this->IsFiltered(stateEvent))
   {
-    return 0.0;
+    return 0.0f;
   }
 
   return this->CanHandle(stateEvent);

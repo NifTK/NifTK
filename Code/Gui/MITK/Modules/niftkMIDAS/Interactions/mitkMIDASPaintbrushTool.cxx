@@ -124,6 +124,11 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   m_DisplayInteractorConfigs.clear();
 }
 
+float mitk::MIDASPaintbrushTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
 float mitk::MIDASPaintbrushTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
