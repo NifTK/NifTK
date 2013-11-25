@@ -19,6 +19,7 @@
 #include <iostream>
 #include <cmath>
 #include <ctkDoubleSlider.h>
+#include <ctkRangeWidget.h>
 
 //-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorViewControlsImpl::MIDASMorphologicalSegmentorViewControlsImpl()
@@ -38,6 +39,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 {
   Ui_MIDASMorphologicalSegmentorViewControls::setupUi(parent);
 
+  m_ThresholdingThresholdsSlider->layout()->setSpacing(2);
+
+  m_ThresholdingAxialCutoffSlider->layout()->setSpacing(2);
   m_ThresholdingAxialCutoffSlider->setSingleStep(1.0);
   m_ThresholdingAxialCutoffSlider->setDecimals(0);
   // Trick alert!
@@ -45,6 +49,8 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_ThresholdingAxialCutoffSlider->setMaximum(100.0);
 
   m_ErosionsUpperThresholdSlider->setTracking(false);
+  m_ErosionsUpperThresholdSlider->layout()->setSpacing(2);
+  m_ErosionsNumberOfErosionsSlider->layout()->setSpacing(2);
   m_ErosionsNumberOfErosionsSlider->setMinimum(0.0);
   m_ErosionsNumberOfErosionsSlider->setMaximum(6.0);
   m_ErosionsNumberOfErosionsSlider->setValue(0.0);
@@ -53,16 +59,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_ErosionsNumberOfErosionsSlider->setTickInterval(1.0);
   m_ErosionsNumberOfErosionsSlider->setTickPosition(QSlider::TicksBelow);
 
-  m_DilationsLowerThresholdSlider->setMinimum(0);
-  m_DilationsLowerThresholdSlider->setMaximum(100);
-  m_DilationsLowerThresholdSlider->setValue(60);
-  m_DilationsLowerThresholdSlider->setTickInterval(1);
+  m_DilationsThresholdsSlider->layout()->setSpacing(2);
+  m_DilationsThresholdsSlider->setMinimum(0);
+  m_DilationsThresholdsSlider->setMaximum(300);
+  m_DilationsThresholdsSlider->setMinimumValue(60);
+  m_DilationsThresholdsSlider->setMaximumValue(160);
+  m_DilationsThresholdsSlider->setTickInterval(1.0);
 
-  m_DilationsUpperThresholdSlider->setMinimum(100);
-  m_DilationsUpperThresholdSlider->setMaximum(300);
-  m_DilationsUpperThresholdSlider->setValue(160);
-  m_DilationsUpperThresholdSlider->setTickInterval(1);
-
+  m_DilationsNumberOfDilationsSlider->layout()->setSpacing(2);
   m_DilationsNumberOfDilationsSlider->setMinimum(0.0);
   m_DilationsNumberOfDilationsSlider->setMaximum(10.0);
   m_DilationsNumberOfDilationsSlider->setValue(0.0);
@@ -71,6 +75,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_DilationsNumberOfDilationsSlider->setTickInterval(1.0);
   m_DilationsNumberOfDilationsSlider->setTickPosition(QSlider::TicksBelow);
 
+  m_RethresholdingBoxSizeSlider->layout()->setSpacing(2);
   m_RethresholdingBoxSizeSlider->setSingleStep(1.0);
   m_RethresholdingBoxSizeSlider->setDecimals(0);
   m_RethresholdingBoxSizeSlider->setTickInterval(1.0);
@@ -79,17 +84,16 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_RethresholdingBoxSizeSlider->setValue(0.0);
   m_RethresholdingBoxSizeSlider->setTickPosition(QSlider::TicksBelow);
 
-  connect(m_ThresholdingLowerThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdLowerValueChanged(double)));
-  connect(m_ThresholdingUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnThresholdUpperValueChanged(double)));
-  connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(double)), this, SLOT(OnAxialCuttoffSliderChanged()));
-  connect(m_BackButton, SIGNAL(clicked()), this, SLOT(OnBackButtonClicked()));
-  connect(m_NextButton, SIGNAL(clicked()), this, SLOT(OnNextButtonClicked()));
-  connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsUpperThresholdChanged()));
-  connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnErosionsSliderChanged()));
-  connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(double)), this, SLOT(OnDilationsSliderChanged()));
-  connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), this, SLOT(OnRethresholdingSliderChanged()));
-//  connect(m_CancelButton, SIGNAL(clicked()), this, SIGNAL(CancelButtonClicked()));
-  connect(m_RestartButton, SIGNAL(clicked()), this, SLOT(OnRestartButtonClicked()));
+  this->connect(m_ThresholdingThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdLowerValueChanged()));
+  this->connect(m_ThresholdingThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdUpperValueChanged()));
+  this->connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(double)), SLOT(OnAxialCuttoffSliderChanged()));
+  this->connect(m_BackButton, SIGNAL(clicked()), SLOT(OnBackButtonClicked()));
+  this->connect(m_NextButton, SIGNAL(clicked()), SLOT(OnNextButtonClicked()));
+  this->connect(m_ErosionsUpperThresholdSlider, SIGNAL(valueChanged(double)), SLOT(OnErosionsUpperThresholdChanged()));
+  this->connect(m_ErosionsNumberOfErosionsSlider, SIGNAL(valueChanged(double)), SLOT(OnErosionsSliderChanged()));
+  this->connect(m_DilationsNumberOfDilationsSlider, SIGNAL(valueChanged(double)), SLOT(OnDilationsSliderChanged()));
+  this->connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), SLOT(OnRethresholdingSliderChanged()));
+  this->connect(m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
 
   this->EnableControls(false);
 }
@@ -99,8 +103,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab1Thresholding(bool enable)
 {
   m_ThresholdingAxialCutoffSlider->setEnabled(enable);
-  m_ThresholdingLowerThresholdSlider->setEnabled(enable);
-  m_ThresholdingUpperThresholdSlider->setEnabled(enable);
+  m_ThresholdingThresholdsSlider->setEnabled(enable);
 }
 
 
@@ -115,8 +118,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab2Erosions(bool enable
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::EnableTab3Dilations(bool enable)
 {
-  m_DilationsLowerThresholdSlider->setEnabled(enable);
-  m_DilationsUpperThresholdSlider->setEnabled(enable);
+  m_DilationsThresholdsSlider->setEnabled(enable);
   m_DilationsNumberOfDilationsSlider->setEnabled(enable);
 }
 
@@ -231,16 +233,13 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
     stepSize = (highestValue - lowestValue) / 100.0;
     pageSize = (highestValue - lowestValue) / 10.0;
   }
-  m_ThresholdingLowerThresholdSlider->setMinimum(lowestValue);
-  m_ThresholdingLowerThresholdSlider->setMaximum(highestValue);
-  m_ThresholdingLowerThresholdSlider->setSingleStep(stepSize);
-  m_ThresholdingLowerThresholdSlider->setPageStep(pageSize);
-  m_ThresholdingLowerThresholdSlider->setValue(lowestValue);
-  m_ThresholdingUpperThresholdSlider->setMinimum(lowestValue);
-  m_ThresholdingUpperThresholdSlider->setMaximum(highestValue);
-  m_ThresholdingUpperThresholdSlider->setValue(lowestValue); // Intentionally set to lowest values, as this is what MIDAS does.
-  m_ThresholdingUpperThresholdSlider->setSingleStep(stepSize);
-  m_ThresholdingUpperThresholdSlider->setPageStep(pageSize);
+  m_ThresholdingThresholdsSlider->setMinimum(lowestValue);
+  m_ThresholdingThresholdsSlider->setMaximum(highestValue);
+  m_ThresholdingThresholdsSlider->setSingleStep(stepSize);
+  // Not implemented for ctkRangeWidget.
+//  m_ThresholdingThresholdsSlider->setPageStep(pageSize);
+  m_ThresholdingThresholdsSlider->setMinimumValue(lowestValue);
+  m_ThresholdingThresholdsSlider->setMaximumValue(lowestValue); // Intentionally set to lowest values, as this is what MIDAS does.
   m_ThresholdingAxialCutoffSlider->setMinimum(0);
   m_ThresholdingAxialCutoffSlider->setMaximum(numberOfAxialSlices - 1);
   if (upDirection > 0)
@@ -259,10 +258,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByImageData(double 
   m_ErosionsUpperThresholdSlider->setSingleStep(stepSize);
   m_ErosionsUpperThresholdSlider->setPageStep(pageSize);
 
-  m_DilationsLowerThresholdSlider->setSingleStep(1);  // this is a percentage.
-  m_DilationsLowerThresholdSlider->setPageStep(10); // this is a percentage.
-  m_DilationsUpperThresholdSlider->setSingleStep(1);  // this is a percentage.
-  m_DilationsUpperThresholdSlider->setPageStep(10); // this is a percentage.
+  m_DilationsThresholdsSlider->setSingleStep(1);  // this is a percentage.
+  // Not implemented for ctkRangeWidget.
+//  m_DilationsThresholdsSlider->setPageStep(10); // this is a percentage.
 
   this->blockSignals(false);
 }
@@ -273,13 +271,13 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
 {
   this->blockSignals(true);
 
-  m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
-  m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
+  m_ThresholdingThresholdsSlider->setMinimumValue(params.m_LowerIntensityThreshold);
+  m_ThresholdingThresholdsSlider->setMaximumValue(params.m_UpperIntensityThreshold);
   m_ThresholdingAxialCutoffSlider->setValue(params.m_AxialCutoffSlice);
   m_ErosionsUpperThresholdSlider->setValue(params.m_UpperErosionsThreshold);
   m_ErosionsNumberOfErosionsSlider->setValue(params.m_NumberOfErosions);
-  m_DilationsLowerThresholdSlider->setValue(params.m_LowerPercentageThresholdForDilations);
-  m_DilationsUpperThresholdSlider->setValue(params.m_UpperPercentageThresholdForDilations);
+  m_DilationsThresholdsSlider->setMinimumValue(params.m_LowerPercentageThresholdForDilations);
+  m_DilationsThresholdsSlider->setMaximumValue(params.m_UpperPercentageThresholdForDilations);
   m_DilationsNumberOfDilationsSlider->setValue(params.m_NumberOfDilations);
   m_RethresholdingBoxSizeSlider->setValue(params.m_BoxSize);
 
@@ -304,9 +302,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetTabNumber(int i)
   }
   if (i == 1)
   {
-    m_ErosionsUpperThresholdSlider->setMinimum(m_ThresholdingLowerThresholdSlider->value());
-    m_ErosionsUpperThresholdSlider->setMaximum(m_ThresholdingUpperThresholdSlider->value());
-    m_ErosionsUpperThresholdSlider->setValue(m_ThresholdingUpperThresholdSlider->value());
+    m_ErosionsUpperThresholdSlider->setMinimum(m_ThresholdingThresholdsSlider->minimumValue());
+    m_ErosionsUpperThresholdSlider->setMaximum(m_ThresholdingThresholdsSlider->maximumValue());
+    m_ErosionsUpperThresholdSlider->setValue(m_ThresholdingThresholdsSlider->maximumValue());
   }
 
   this->EnableByTabNumber(i);
@@ -320,8 +318,8 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetTabNumber(int i)
 void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
 {
   emit ThresholdingValuesChanged(
-         m_ThresholdingLowerThresholdSlider->value(),
-         m_ThresholdingUpperThresholdSlider->value(),
+         m_ThresholdingThresholdsSlider->minimumValue(),
+         m_ThresholdingThresholdsSlider->maximumValue(),
          static_cast<int>(m_ThresholdingAxialCutoffSlider->value())
        );
 }
@@ -341,8 +339,8 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitErosionValues()
 void MIDASMorphologicalSegmentorViewControlsImpl::EmitDilationValues()
 {
   emit DilationValuesChanged(
-         m_DilationsLowerThresholdSlider->value(),
-         m_DilationsUpperThresholdSlider->value(),
+         m_DilationsThresholdsSlider->minimumValue(),
+         m_DilationsThresholdsSlider->maximumValue(),
          static_cast<int>(m_DilationsNumberOfDilationsSlider->value())
        );
 }
@@ -358,27 +356,15 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitRethresholdingValues()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdLowerValueChanged(double d)
+void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdLowerValueChanged()
 {
-  if (d >= m_ThresholdingUpperThresholdSlider->value())
-  {
-    m_ThresholdingUpperThresholdSlider->blockSignals(true);
-    m_ThresholdingUpperThresholdSlider->setValue(d + m_ThresholdingUpperThresholdSlider->tickInterval());
-    m_ThresholdingUpperThresholdSlider->blockSignals(false);
-  }
   this->EmitThresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged(double d)
+void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged()
 {
-  if (d <= m_ThresholdingLowerThresholdSlider->value())
-  {
-    m_ThresholdingLowerThresholdSlider->blockSignals(true);
-    m_ThresholdingLowerThresholdSlider->setValue(d - m_ThresholdingLowerThresholdSlider->tickInterval());
-    m_ThresholdingLowerThresholdSlider->blockSignals(false);
-  }
   this->EmitThresholdingValues();
 }
 

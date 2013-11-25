@@ -69,8 +69,8 @@ signals:
 
 protected slots:
 
-  void OnThresholdLowerValueChanged(double);
-  void OnThresholdUpperValueChanged(double);
+  void OnThresholdLowerValueChanged();
+  void OnThresholdUpperValueChanged();
   void OnAxialCuttoffSliderChanged();
   void OnBackButtonClicked();
   void OnNextButtonClicked();
