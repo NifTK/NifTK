@@ -86,6 +86,38 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
+bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const
+{
+//  if (stateEvent->GetEvent()->GetType() == 5)
+//  {
+//    return false;
+//  }
+//  MITK_INFO << "QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const " << stateEvent->GetEvent()->GetType();
+  // If we have a render window part (aka. editor or display)...
+  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
+  {
+//    MITK_INFO << "QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const we hav render window part";
+    // and it has a focused render window...
+    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
+    {
+//      MITK_INFO << "QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const it has active render window";
+      // whose renderer is the sender of this event...
+      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
+      {
+//        MITK_INFO << "QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const that sent this event";
+        // then we let the event pass through.
+        return false;
+      }
+    }
+  }
+
+//  MITK_INFO << "QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const reject";
+  // Otherwise, if it comes from another window, we reject it.
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::Activated()
 {
   QmitkBaseView::Activated();
@@ -136,6 +168,18 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     assert ( toolManager );
     toolManager->SetDataStorage( *(this->GetDataStorage()) );
     toolManager->InitializeTools();
+
+    mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
+    mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
+    for ( ; it != tools.end(); ++it)
+    {
+      mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
+      if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+      {
+        midasSM->InstallEventFilter(this);
+      }
+    }
+
 
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
