@@ -84,6 +84,10 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_RethresholdingBoxSizeSlider->setValue(0.0);
   m_RethresholdingBoxSizeSlider->setTickPosition(QSlider::TicksBelow);
 
+  m_TabWidget->setTabEnabled(1, false);
+  m_TabWidget->setTabEnabled(2, false);
+  m_TabWidget->setTabEnabled(3, false);
+
   this->connect(m_ThresholdingThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdLowerValueChanged()));
   this->connect(m_ThresholdingThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdUpperValueChanged()));
   this->connect(m_ThresholdingAxialCutoffSlider, SIGNAL(valueChanged(double)), SLOT(OnAxialCuttoffSliderChanged()));
@@ -145,9 +149,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableRestartButton(bool enabl
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
+void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabIndex(int tabIndex)
 {
-  if (i == 0)
+  if (tabIndex == 0)
   {
     this->EnableTab1Thresholding(true);
     this->EnableTab2Erosions(false);
@@ -159,7 +163,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     this->EnableCancelButton(true);
     this->EnableRestartButton(false);
   }
-  else if (i == 1)
+  else if (tabIndex == 1)
   {
     this->EnableTab1Thresholding(false);
     this->EnableTab2Erosions(true);
@@ -170,8 +174,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
+    m_TabWidget->setTabEnabled(tabIndex, true);
   }
-  else if (i == 2)
+  else if (tabIndex == 2)
   {
     this->EnableTab1Thresholding(false);
     this->EnableTab2Erosions(false);
@@ -182,8 +187,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     m_NextButton->setText("Next >");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
+    m_TabWidget->setTabEnabled(tabIndex, true);
   }
-  else if (i == 3)
+  else if (tabIndex == 3)
   {
     this->EnableTab1Thresholding(false);
     this->EnableTab2Erosions(false);
@@ -194,6 +200,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableByTabNumber(int i)
     m_NextButton->setText("Finish");
     this->EnableCancelButton(true);
     this->EnableRestartButton(true);
+    m_TabWidget->setTabEnabled(tabIndex, true);
   }
 }
 
@@ -203,7 +210,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EnableControls(bool b)
 {
   if (b)
   {
-    this->EnableByTabNumber(this->GetTabNumber());
+    this->EnableByTabIndex(this->GetTabNumber());
   }
   else
   {
@@ -283,7 +290,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByParameterValues(M
 
   this->blockSignals(false);
 
-  this->SetTabNumber(params.m_Stage);
+  this->SetTabIndex(params.m_Stage);
 }
 
 
@@ -295,22 +302,19 @@ int MIDASMorphologicalSegmentorViewControlsImpl::GetTabNumber()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetTabNumber(int i)
+void MIDASMorphologicalSegmentorViewControlsImpl::SetTabIndex(int tabIndex)
 {
-  if (i == 0)
-  {
-  }
-  if (i == 1)
+  if (tabIndex == 1)
   {
     m_ErosionsUpperThresholdSlider->setMinimum(m_ThresholdingThresholdsSlider->minimumValue());
     m_ErosionsUpperThresholdSlider->setMaximum(m_ThresholdingThresholdsSlider->maximumValue());
     m_ErosionsUpperThresholdSlider->setValue(m_ThresholdingThresholdsSlider->maximumValue());
   }
 
-  this->EnableByTabNumber(i);
+  this->EnableByTabIndex(tabIndex);
 
-  m_TabWidget->setCurrentIndex(i);
-  emit TabChanged(i);
+  m_TabWidget->setCurrentIndex(tabIndex);
+  emit TabChanged(tabIndex);
 }
 
 
@@ -380,7 +384,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCuttoffSliderChanged()
 void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
 {
   int tabNumber = this->GetTabNumber();
-  this->SetTabNumber(tabNumber - 1);
+  this->SetTabIndex(tabNumber - 1);
 }
 
 
@@ -390,7 +394,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnNextButtonClicked()
   int tabNumber = this->GetTabNumber();
   if (tabNumber < 3)
   {
-    this->SetTabNumber(tabNumber + 1);
+    this->SetTabIndex(tabNumber + 1);
   }
   else
   {
@@ -430,6 +434,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderChanged(
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewControlsImpl::OnRestartButtonClicked()
 {
+  m_TabWidget->setTabEnabled(1, false);
+  m_TabWidget->setTabEnabled(2, false);
+  m_TabWidget->setTabEnabled(3, false);
   emit RestartButtonClicked();
 }
 

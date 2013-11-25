@@ -45,7 +45,7 @@ public:
   int GetTabNumber();
 
   /// \brief Set the current tab number, which enables and disables widgets appropriately.
-  void SetTabNumber(int i);
+  void SetTabIndex(int i);
 
   /// \brief Enables/disables all controls.
   void EnableControls(bool b);
@@ -90,7 +90,7 @@ private:
   void EnableTab4ReThresholding(bool enable);
   void EnableCancelButton(bool enable);
   void EnableRestartButton(bool enable);
-  void EnableByTabNumber(int i);
+  void EnableByTabIndex(int i);
 
   void EmitThresholdingValues();
   void EmitErosionValues();

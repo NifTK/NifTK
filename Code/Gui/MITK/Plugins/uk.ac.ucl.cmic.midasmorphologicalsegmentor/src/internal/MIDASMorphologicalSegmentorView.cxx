@@ -276,12 +276,12 @@ void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
+void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
   if (segmentationNode.IsNotNull())
   {
-    if (i == 1 || i == 2)
+    if (tabIndex == 1 || tabIndex == 2)
     {
       m_ToolSelector->SetEnabled(true);
 
@@ -291,7 +291,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
       mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(1);
       mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(3);
 
-      if (i == 1)
+      if (tabIndex == 1)
       {
         paintbrushTool->SetErosionMode(true);
         erodeSubtractNode->SetVisibility(true);
@@ -332,11 +332,11 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int i)
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
-    segmentationNode->SetIntProperty("midas.morph.stage", i);
+    segmentationNode->SetIntProperty("midas.morph.stage", tabIndex);
     m_PipelineManager->UpdateSegmentation();
     this->RequestRenderWindowUpdate();
   }
-  m_TabCounter = i;
+  m_TabCounter = tabIndex;
 }
 
 
@@ -348,9 +348,9 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    bool wasBlocked = m_MorphologicalControls->m_TabWidget->blockSignals(true);
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->FinalizeSegmentation();
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
@@ -385,9 +385,9 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalControls->m_TabWidget->blockSignals(true);
+    bool wasBlocked = m_MorphologicalControls->m_TabWidget->blockSignals(true);
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalControls->m_TabWidget->blockSignals(false);
+    m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
     m_PipelineManager->DestroyPipeline();
     this->GetDataStorage()->Remove(segmentationNode);
@@ -502,10 +502,10 @@ mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingN
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool b)
+void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
   int tabNumber = m_MorphologicalControls->GetTabNumber();
-  if (b && (tabNumber == 1 || tabNumber == 2))
+  if (enabled && (tabNumber == 1 || tabNumber == 2))
   {
     m_ToolSelector->SetEnabled(true);
   }
@@ -514,7 +514,7 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool b)
     m_ToolSelector->SetEnabled(false);
   }
 
-  m_MorphologicalControls->EnableControls(b);
+  m_MorphologicalControls->EnableControls(enabled);
 }
 
 
