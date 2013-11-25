@@ -22,19 +22,23 @@
 #include <NiftyLinkUtils.h>
 #include <cv.h>
 #include <QCoreApplication>
-
-const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
+#include <sstream>
 
 //-----------------------------------------------------------------------------
-QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
+QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage, int channelNumber)
 : QmitkIGILocalDataSource(storage)
 , m_VideoSource(NULL)
+, m_ChannelNumber(0)
 {
   qRegisterMetaType<mitk::VideoSource*>();
 
-  this->SetName("QmitkIGIOpenCVDataSource");
+  std::ostringstream channelNameString;
+  channelNameString << "OpenCV-" << channelNumber;
+  m_SourceName = channelNameString.str();
+  
+  this->SetName(m_SourceName);
   this->SetType("Frame Grabber");
-  this->SetDescription("OpenCV");
+  this->SetDescription(m_SourceName);
   this->SetStatus("Initialised");
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -44,10 +48,10 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
   // Create this node up front, so that the Update doesn't have to (and risk triggering GUI update events).
-  mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+  mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
   if (node.IsNull())
   {
-    MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+    MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
   }
 
   // This creates and starts up the thread.
@@ -154,10 +158,10 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
     // Get Data Node.
-    mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+    mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
     if (node.IsNull())
     {
-      MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+      MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
       return result;
     }
 

@@ -36,12 +36,7 @@ class NIFTKIGIGUI_EXPORT QmitkIGIOpenCVDataSource : public QmitkIGILocalDataSour
 public:
 
   mitkClassMacro(QmitkIGIOpenCVDataSource, QmitkIGILocalDataSource);
-  mitkNewMacro1Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*);
-
-  /**
-   * \brief We store the node name here so other classes can refer to it.
-   */
-  static const std::string OPENCV_IMAGE_NAME;
+  mitkNewMacro2Param(QmitkIGIOpenCVDataSource, mitk::DataStorage*, int);
 
   /**
    * \see mitk::IGIDataSource::GetSaveInBackground()
@@ -97,7 +92,7 @@ public:
 
 protected:
 
-  QmitkIGIOpenCVDataSource(mitk::DataStorage* storage); // Purposefully hidden.
+  QmitkIGIOpenCVDataSource(mitk::DataStorage* storage, int channelNumber); // Purposefully hidden.
   virtual ~QmitkIGIOpenCVDataSource(); // Purposefully hidden.
 
   QmitkIGIOpenCVDataSource(const QmitkIGIOpenCVDataSource&); // Purposefully not implemented.
@@ -124,7 +119,8 @@ private:
 
   std::set<igtlUint64>              m_PlaybackIndex;
   std::string                       m_PlaybackDirectoryName;
-
+  int                               m_ChannelNumber;
+  std::string                       m_SourceName;
 }; // end class
 
 Q_DECLARE_METATYPE(mitk::VideoSource*)

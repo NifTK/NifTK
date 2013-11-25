@@ -287,8 +287,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   //         selection index to distinguish between source types, etc.
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
-  m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
-
+  m_SourceSelectComboBox->addItem("local left frame grabber", mitk::IGIDataSource::SOURCE_TYPE_LEFT_FRAME_GRABBER);
+  m_SourceSelectComboBox->addItem("local right frame grabber", mitk::IGIDataSource::SOURCE_TYPE_RIGHT_FRAME_GRABBER);
+  
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
@@ -431,10 +432,14 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     }
     source = niftyLinkSource;
   }
-  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER)
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_LEFT_FRAME_GRABBER)
   {
-    source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
+    source = QmitkIGIOpenCVDataSource::New(m_DataStorage, 0);
   }
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_RIGHT_FRAME_GRABBER)
+  {
+    source = QmitkIGIOpenCVDataSource::New(m_DataStorage, 1);
+  }  
 #ifdef _USE_NVAPI
   else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI)
   {
