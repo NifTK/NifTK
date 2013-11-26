@@ -223,13 +223,6 @@ const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std
 
 
 //-----------------------------------------------------------------------------
-mitk::MIDASTool::~MIDASTool()
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::MIDASTool::MIDASTool(const char* type) :
     FeedbackContourTool(type)
 , m_AddToPointSetInteractor(NULL)
@@ -238,6 +231,41 @@ mitk::MIDASTool::MIDASTool(const char* type) :
 , m_IsActivated(false)
 , m_BlockNumberOfSeedsSignal(false)
 {
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::MIDASTool::~MIDASTool()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+float mitk::MIDASTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::InstallEventFilter(const MIDASEventFilter::Pointer eventFilter)
+{
+  mitk::MIDASStateMachine::InstallEventFilter(eventFilter);
+  if (m_AddToPointSetInteractor.IsNotNull())
+  {
+    m_AddToPointSetInteractor->InstallEventFilter(eventFilter);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::RemoveEventFilter(const MIDASEventFilter::Pointer eventFilter)
+{
+  if (m_AddToPointSetInteractor.IsNotNull())
+  {
+    m_AddToPointSetInteractor->RemoveEventFilter(eventFilter);
+  }
+  mitk::MIDASStateMachine::RemoveEventFilter(eventFilter);
 }
 
 
@@ -265,6 +293,14 @@ void mitk::MIDASTool::Activated()
     if (m_AddToPointSetInteractor.IsNull())
     {
       m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
+
+      std::vector<mitk::MIDASEventFilter::Pointer> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator itEnd = eventFilters.end();
+      for ( ; it != itEnd; ++it)
+      {
+        m_AddToPointSetInteractor->InstallEventFilter(*it);
+      }
     }
     mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
 
@@ -303,6 +339,13 @@ void mitk::MIDASTool::Deactivated()
 
   if (m_AddToPointSetInteractor.IsNotNull())
   {
+    std::vector<mitk::MIDASEventFilter::Pointer> eventFilters = this->GetEventFilters();
+    std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator it = eventFilters.begin();
+    std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator itEnd = eventFilters.end();
+    for ( ; it != itEnd; ++it)
+    {
+      m_AddToPointSetInteractor->RemoveEventFilter(*it);
+    }
     mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
   }
 
@@ -419,20 +462,17 @@ void mitk::MIDASTool::OnSeedsModified()
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (event->GetId() == 2   // right mouse down
-          )
-      )
+  if (stateEvent->GetId() == 2)   // right mouse down
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::FeedbackContourTool::CanHandleEvent(event);
+    // Note that the superclass is not a MIDAS state machine and it does not
+    // have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }

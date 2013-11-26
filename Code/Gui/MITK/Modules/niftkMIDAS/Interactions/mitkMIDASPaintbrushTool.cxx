@@ -124,28 +124,33 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   m_DisplayInteractorConfigs.clear();
 }
 
-float mitk::MIDASPaintbrushTool::CanHandleEvent(const StateEvent *event) const
+float mitk::MIDASPaintbrushTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
+float mitk::MIDASPaintbrushTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  if (event != NULL
-      && event->GetEvent() != NULL
-      && (   event->GetId() == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
-          || event->GetId() == 505 // left mouse up
-          || event->GetId() == 530 // left mouse down and move
-          || event->GetId() == 4   // middle mouse down
-          || event->GetId() == 506 // middle mouse up
-          || event->GetId() == 533 // middle mouse down and move
-          || event->GetId() == 2   // right mouse down
-          || event->GetId() == 507 // right mouse up
-          || event->GetId() == 531 // right mouse down and move
-          )
+  int eventId = stateEvent->GetId();
+  if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
+      || eventId == 505 // left mouse up
+      || eventId == 530 // left mouse down and move
+      || eventId == 4   // middle mouse down
+      || eventId == 506 // middle mouse up
+      || eventId == 533 // middle mouse down and move
+      || eventId == 2   // right mouse down
+      || eventId == 507 // right mouse up
+      || eventId == 531 // right mouse down and move
       )
   {
-    return 1;
+    return 1.0f;
   }
   else
   {
-    return mitk::StateMachine::CanHandleEvent(event);
+    /// Note that the superclass is not a MIDASStateMachine and it does not
+    /// have a CanHandle function.
+    return Superclass::CanHandleEvent(stateEvent);
   }
 }
 

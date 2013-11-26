@@ -36,6 +36,8 @@
 #include <mitkToolManager.h>
 #include <itkImage.h>
 
+#include <mitkMIDASEventFilter.h>
+
 class QmitkRenderWindow;
 
 /**
@@ -49,7 +51,7 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView
+class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public mitk::MIDASEventFilter
 {
 
   Q_OBJECT
@@ -59,6 +61,10 @@ public:
   QmitkMIDASBaseSegmentationFunctionality();
   QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
   virtual ~QmitkMIDASBaseSegmentationFunctionality();
+
+  /// \brief Returns true if the event should be filtered, i.e. not processed,
+  /// otherwise false.
+  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const;
 
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).

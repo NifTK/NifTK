@@ -21,9 +21,8 @@
 #include <mitkAction.h>
 #include <mitkInteractionConst.h>
 
-mitk::MIDASPointSetInteractor
-::MIDASPointSetInteractor(const char * type, DataNode* dataNode, int n)
-:PointSetInteractor(type, dataNode, n)
+mitk::MIDASPointSetInteractor::MIDASPointSetInteractor(const char * type, DataNode* dataNode, int n)
+: mitk::PointSetInteractor(type, dataNode, n)
 {
 }
 
@@ -31,53 +30,57 @@ mitk::MIDASPointSetInteractor::~MIDASPointSetInteractor()
 {
 }
 
+float mitk::MIDASPointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
 //##Documentation
 //## overwritten cause this class can handle it better!
-float mitk::MIDASPointSetInteractor::CanHandleEvent(StateEvent const* stateEvent) const
+float mitk::MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEvent) const
 {
-  float returnValue = 0.0;
+  float returnValue = 0.0f;
 
   //if it is a key event that can be handled in the current state, then return 0.5
-  mitk::DisplayPositionEvent const  *disPosEvent =
-    dynamic_cast <const mitk::DisplayPositionEvent *> (stateEvent->GetEvent());
+  const mitk::DisplayPositionEvent* displayPositionEvent =
+    dynamic_cast<const mitk::DisplayPositionEvent*>(stateEvent->GetEvent());
 
-  //Key event handling:
-  if (disPosEvent == NULL)
+  // Key event handling:
+  if (!displayPositionEvent)
   {
-    //check, if the current state has a transition waiting for that key event.
-    if (this->GetCurrentState()->GetTransition(stateEvent->GetId())!=NULL)
+    // Check, if the current state has a transition waiting for that key event.
+    if (this->GetCurrentState()->GetTransition(stateEvent->GetId()))
     {
-      return 0.5;
+      return 0.5f;
     }
     else
     {
-      return 0;
+      return 0.0f;
     }
   }
 
-  //get the time of the sender to look for the right transition.
-  mitk::BaseRenderer* sender = stateEvent->GetEvent()->GetSender();
-  if (sender != NULL)
+  // Get the time of the sender to look for the right transition.
+  mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
+  if (renderer)
   {
-    unsigned int timeStep = sender->GetTimeStep(m_DataNode->GetData());
+    unsigned int timeStep = renderer->GetTimeStep(m_DataNode->GetData());
 
-    //if the event can be understood and if there is a transition waiting for that event
+    // If the event can be understood and if there is a transition waiting for that event
     mitk::State const* state = this->GetCurrentState(timeStep);
-    if (state!= NULL)
+    if (state)
     {
-      if (state->GetTransition(stateEvent->GetId())!=NULL)
+      if (state->GetTransition(stateEvent->GetId()))
       {
-        returnValue = 0.5;//it can be understood
+        returnValue = 0.5; //it can be understood
       }
     }
 
-
-    mitk::PointSet *pointSet = dynamic_cast<mitk::PointSet*>(m_DataNode->GetData());
-    if ( pointSet != NULL )
+    mitk::PointSet* pointSet = dynamic_cast<mitk::PointSet*>(m_DataNode->GetData());
+    if (pointSet)
     {
-      //if we have one point or more, then check if the have been picked
-      if ( (pointSet->GetSize( timeStep ) > 0)
-        && (pointSet->SearchPoint(disPosEvent->GetWorldPosition(), m_Precision, timeStep) > -1) )
+      // if we have one point or more, then check if the have been picked
+      if (pointSet->GetSize(timeStep) > 0
+          && pointSet->SearchPoint(displayPositionEvent->GetWorldPosition(), m_Precision, timeStep) > -1)
       {
         returnValue = 1.0;
       }

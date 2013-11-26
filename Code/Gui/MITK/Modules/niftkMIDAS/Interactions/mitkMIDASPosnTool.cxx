@@ -19,7 +19,8 @@
 
 #include <itkImageRegionConstIterator.h>
 
-namespace mitk{
+namespace mitk
+{
   MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
 }
 
