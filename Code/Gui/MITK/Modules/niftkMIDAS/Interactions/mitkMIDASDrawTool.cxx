@@ -74,10 +74,10 @@ const char** mitk::MIDASDrawTool::GetXPM() const
 
 
 //-----------------------------------------------------------------------------
-float mitk::MIDASDrawTool::CanHandle(const mitk::StateEvent* event) const
+float mitk::MIDASDrawTool::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.
-  int eventId = event->GetId();
+  int eventId = stateEvent->GetId();
   if (eventId == 1   // left mouse down - see QmitkNiftyViewApplicationPlugin::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML
       || eventId == 505 // left mouse up
       || eventId == 530 // left mouse down and move
@@ -90,7 +90,7 @@ float mitk::MIDASDrawTool::CanHandle(const mitk::StateEvent* event) const
   }
   else
   {
-    return Superclass::CanHandle(event);
+    return Superclass::CanHandle(stateEvent);
   }
 }
 

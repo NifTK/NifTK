@@ -90,7 +90,7 @@ protected:
   virtual ~MIDASPolyTool(); // purposely hidden
 
   /// \see mitk::MIDASStateMachine::CanHandle
-  float CanHandle(const mitk::StateEvent* stateEvent) const;
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
 private:
 

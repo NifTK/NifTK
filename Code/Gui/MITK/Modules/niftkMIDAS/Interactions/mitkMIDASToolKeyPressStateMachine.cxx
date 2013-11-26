@@ -37,6 +37,13 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(const char * stateM
 
 
 //-----------------------------------------------------------------------------
+float mitk::MIDASToolKeyPressStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
 float MIDASToolKeyPressStateMachine::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   // See StateMachine.xml for event Ids.

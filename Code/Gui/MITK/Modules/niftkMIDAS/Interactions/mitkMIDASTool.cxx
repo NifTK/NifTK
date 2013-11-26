@@ -240,10 +240,12 @@ mitk::MIDASTool::~MIDASTool()
 }
 
 
+//-----------------------------------------------------------------------------
 float mitk::MIDASTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
   return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
 }
+
 
 //-----------------------------------------------------------------------------
 void mitk::MIDASTool::InstallEventFilter(const MIDASEventFilter::Pointer eventFilter)

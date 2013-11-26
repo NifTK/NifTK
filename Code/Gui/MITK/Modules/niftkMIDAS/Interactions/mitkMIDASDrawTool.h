@@ -93,7 +93,7 @@ protected:
   virtual ~MIDASDrawTool(); // purposely hidden
 
   /// \see mitk::MIDASStateMachine::CanHandle
-  float CanHandle(const mitk::StateEvent* stateEvent) const;
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
   /**
   \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).

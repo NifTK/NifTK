@@ -35,14 +35,15 @@ namespace mitk
  * them to the MIDAS state machines. This can be used to discard
  * events that come from an unwanted render window. With other
  * words, we can limit the scope of the state machine to certain
- * render windows, e.g. our DnD Display.
+ * render windows, e.g. to the active render window of the main display.
  *
- * The class provides an implementation of the mitk::StateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent)
+ * The class provides an implementation for the mitk::StateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent)
  * function that first checks if the event is filtered, and if not it calls the
- * protected CanHandle function. Classes derived from this should allow new
+ * protected CanHandle function. Derived classes should override mitk::StateMachine::CanHandleEvent()
+ * and delegate the call to the CanHandleEvent() function of this class. They should allow new
  * types of events by overriding the CanHandle function.
  *
- * Note that this class is not derived from
+ * Note that this class is not derived from mitk::StateMachine.
  */
 class NIFTKMIDAS_EXPORT MIDASStateMachine
 {
@@ -55,12 +56,21 @@ public:
   /// \brief Destructs the MIDASStateMachine object.
   virtual ~MIDASStateMachine();
 
-  /// \brief Overrides mitk::StateMachine::CanHandleEvent and enables event filtering.
+  /// \brief This function is to replace the original CanHandleEvent function to support event filtering.
   ///
   /// Checks if the event is filtered by one of the registered event filters. If yes, it returns 0.
   /// Otherwise, it calls CanHandle(const mitk::StateEvent*) and returns with its result.
   ///
-  /// Note that this function is not virtual. Derived classes should override the CanHandle function.
+  /// Note that this function is not virtual. Derived classes should override the
+  /// mitk::StateMachine::CanHandleEvent() function and delegate the call to this function.
+  ///
+  /// float CanHandleEvent(const mitk::StateEvent* stateEvent) const
+  /// {
+  ///   return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+  /// }
+  ///
+  /// The original logic should be implemented in the CanHandle function.
+  ///
   /// \see mitk::StateMachine::CanHandleEvent
   float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
 

@@ -52,6 +52,16 @@ protected:
    **/
   virtual ~MIDASPointSetInteractor();
 
+  /// \brief Tells if this tool can handle the given event.
+  ///
+  /// This implementation delegates the call to mitk::MIDASStateMachine::CanHandleEvent(),
+  /// that checks if the event is filtered by one of the installed event filters and if not,
+  /// calls CanHandle() and returns with its result.
+  ///
+  /// Note that this function is purposefully not virtual. Eventual subclasses should
+  /// override the CanHandle function.
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
+
   /**
    * \brief overriden the base class function, to enable mouse move events.
    */

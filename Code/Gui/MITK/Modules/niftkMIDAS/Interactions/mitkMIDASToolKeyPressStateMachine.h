@@ -43,8 +43,18 @@ protected:
   /// \brief Purposely hidden, destructor.
   ~MIDASToolKeyPressStateMachine(){}
 
+  /// \brief Tells if this tool can handle the given event.
+  ///
+  /// This implementation delegates the call to mitk::MIDASStateMachine::CanHandleEvent(),
+  /// that checks if the event is filtered by one of the installed event filters and if not,
+  /// calls CanHandle() and returns with its result.
+  ///
+  /// Note that this function is purposefully not virtual. Eventual subclasses should
+  /// override the CanHandle function.
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
+
   /// \see mitk::MIDASStateMachine::CanHandleEvent
-  float CanHandle(const mitk::StateEvent* stateEvent) const;
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
 
   /// \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(Action*, const StateEvent*);

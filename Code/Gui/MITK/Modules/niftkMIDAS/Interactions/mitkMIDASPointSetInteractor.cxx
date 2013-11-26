@@ -30,11 +30,16 @@ mitk::MIDASPointSetInteractor::~MIDASPointSetInteractor()
 {
 }
 
+float mitk::MIDASPointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  return mitk::MIDASStateMachine::CanHandleEvent(stateEvent);
+}
+
 //##Documentation
 //## overwritten cause this class can handle it better!
 float mitk::MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEvent) const
 {
-  float returnValue = 0.0;
+  float returnValue = 0.0f;
 
   //if it is a key event that can be handled in the current state, then return 0.5
   const mitk::DisplayPositionEvent* displayPositionEvent =
@@ -46,11 +51,11 @@ float mitk::MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEven
     // Check, if the current state has a transition waiting for that key event.
     if (this->GetCurrentState()->GetTransition(stateEvent->GetId()))
     {
-      return 0.5;
+      return 0.5f;
     }
     else
     {
-      return 0;
+      return 0.0f;
     }
   }
 
