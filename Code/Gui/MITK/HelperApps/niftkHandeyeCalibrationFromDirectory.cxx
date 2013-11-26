@@ -42,6 +42,12 @@ int main(int argc, char** argv)
     Calibrator->SetPixelScaleFactor(pixelScales);
     Calibrator->SetSwapVideoChannels(swapVideoChannels);
     Calibrator->InitialiseTracking();
+
+    if ( existingCalibrationDirectory != "" ) 
+    {
+      MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingCalibrationDirectory;
+      Calibrator->LoadExistingIntrinsicCalibrations(existingCalibrationDirectory);
+    }
     Calibrator->InitialiseVideo();
 
     returnStatus = EXIT_SUCCESS;
