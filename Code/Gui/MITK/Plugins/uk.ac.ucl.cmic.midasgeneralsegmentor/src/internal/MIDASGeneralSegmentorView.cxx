@@ -3880,16 +3880,16 @@ MIDASGeneralSegmentorView
 
   Point3DType originOfProjectedSlice;
   Point3DType offsetToProject;
-  Point3DType axesInMillimetres[2];
+  Point3DType axesInMm[2];
 
   itkImage->TransformIndexToPhysicalPoint(projectedRegionIndex, originOfProjectedSlice);
-  itkImage->TransformIndexToPhysicalPoint(axes[0], axesInMillimetres[0]);
-  itkImage->TransformIndexToPhysicalPoint(axes[1], axesInMillimetres[1]);
+  itkImage->TransformIndexToPhysicalPoint(axes[0], axesInMm[0]);
+  itkImage->TransformIndexToPhysicalPoint(axes[1], axesInMm[1]);
 
   for (int i = 0; i < 3; i++)
   {
-    axesInMillimetres[0][i] -= originOfSlice[i];
-    axesInMillimetres[1][i] -= originOfSlice[i];
+    axesInMm[0][i] -= originOfSlice[i];
+    axesInMm[1][i] -= originOfSlice[i];
     offsetToProject[i] = originOfProjectedSlice[i] - originOfSlice[i];
   }
 
@@ -3914,25 +3914,35 @@ MIDASGeneralSegmentorView
   {
     mitk::ContourModel::Pointer contour = mitk::ContourModel::New();
     contour->SetIsClosed(false);
-    // TODO These functions are not provided by the new MITK contour classes.
-//    contour->SetSelected(false);
-//    contour->SetWidth(1);
-    mitk::Point3D pointInMillimetres;
 
     typename PathType::Pointer path = extractContoursFilter->GetOutput(i);
     const typename PathType::VertexListType* list = path->GetVertexList();
-    typename PathType::VertexType vertex;
 
+    mitk::Point3D pointInMm;
     for (unsigned long int j = 0; j < list->Size(); j++)
     {
-      vertex = list->ElementAt(j);
+      typename PathType::VertexType vertex = list->ElementAt(j);
 
-      pointInMillimetres[0] = originOfSlice[0] + (vertex[0] * axesInMillimetres[0][0]) + (vertex[1] * axesInMillimetres[1][0]) + offsetToProject[0];
-      pointInMillimetres[1] = originOfSlice[1] + (vertex[0] * axesInMillimetres[0][1]) + (vertex[1] * axesInMillimetres[1][1]) + offsetToProject[1];
-      pointInMillimetres[2] = originOfSlice[2] + (vertex[0] * axesInMillimetres[0][2]) + (vertex[1] * axesInMillimetres[1][2]) + offsetToProject[2];
+      // We keep only the corner points. If one of the coordinates is a round number, we skip it.
+      if ((vertex[0] == std::floor(vertex[0])) || (vertex[1] == std::floor(vertex[1])))
+      {
+        continue;
+      }
 
-      contour->AddVertex(pointInMillimetres);
+      pointInMm[0] = originOfSlice[0] + (vertex[0] * axesInMm[0][0]) + (vertex[1] * axesInMm[1][0]) + offsetToProject[0];
+      pointInMm[1] = originOfSlice[1] + (vertex[0] * axesInMm[0][1]) + (vertex[1] * axesInMm[1][1]) + offsetToProject[1];
+      pointInMm[2] = originOfSlice[2] + (vertex[0] * axesInMm[0][2]) + (vertex[1] * axesInMm[1][2]) + offsetToProject[2];
+
+      contour->AddVertex(pointInMm);
     }
+
+    // Note that the original contour has to be closed, i.e. its start and end point must be the same.
+    // We can assume that the start point is always on the side of a pixel, i.e. not a corner point.
+    // Since we removed the pixel-side points, the contour is not closed any more. Therefore,
+    // we have to connect the last corner point to the first one.
+    pointInMm = contour->GetVertexAt(0)->Coordinates;
+    contour->AddVertex(pointInMm);
+
     outputContourSet->AddContourModel(contour);
   }
 }
