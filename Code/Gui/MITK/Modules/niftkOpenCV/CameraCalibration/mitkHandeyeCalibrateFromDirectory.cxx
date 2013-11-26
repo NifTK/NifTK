@@ -118,6 +118,13 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
      &litemp, &ldtemp);
   mitk::LoadStereoTransformsFromPlainText(directory+"calib.right.intrinsic.txt",
      &ritemp, &rdtemp);
+
+  *m_IntrinsicMatrixLeft = CvMat(litemp);
+  *m_DistortionCoefficientsLeft = CvMat(ldtemp);
+  *m_IntrinsicMatrixRight = CvMat(ritemp);
+  *m_DistortionCoefficientsRight = CvMat(rdtemp);
+  m_OptimiseIntrinsics=false;
+  return true;
 }
 
 //-----------------------------------------------------------------------------
