@@ -16,6 +16,7 @@
 
 #include <mitkEvent.h>
 #include <mitkStateEvent.h>
+#include <mitkBaseRenderer.h>
 
 //-----------------------------------------------------------------------------
 mitk::MIDASRendererFilter::MIDASRendererFilter()
