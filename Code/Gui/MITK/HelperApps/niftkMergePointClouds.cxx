@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     mitk::PointSet::Pointer   result = merger->GetOutput();
 
     // dont bother with mitk's pointset writer. it's ridiculously slow.
-    std::ofstream   mpsfile(output);
+    std::ofstream   mpsfile(output.c_str());
     mpsfile << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<point_set_file>\n<file_version>0.1</file_version>\n<point_set><time_series><time_series_id>0</time_series_id>" << std::endl;
     for (mitk::PointSet::PointsConstIterator i = result->Begin(); i != result->End(); ++i)
     {
