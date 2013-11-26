@@ -438,7 +438,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       *outputRightToLeftTranslation,
       *outputEssentialMatrix,
       *outputFundamentalMatrix,
-      m_OptimiseIntrinsics
+      ! m_OptimiseIntrinsics
       );
   
   //write it out
