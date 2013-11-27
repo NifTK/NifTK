@@ -300,6 +300,9 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
   const PlaneGeometry* planeGeometry =
       dynamic_cast<const PlaneGeometry*>(positionEvent->GetSender()->GetCurrentWorldGeometry2D());
+
+  mitk::Vector3D spacing = planeGeometry->GetSpacing();
+
   mitk::Point2D centre;
   planeGeometry->Map(mousePositionInMm, centre);
 
@@ -368,6 +371,13 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
         }
         else if (t[0] != t[1])
         {
+          int axis = 0;
+          while (axis < 3 && startPoint[axis] == endPoint[axis])
+          {
+            ++axis;
+          }
+          assert(axis != 3);
+
           if (t[0] >= 0.0f)
           {
             // The contour intersects the circle. Entry point hit.
@@ -375,7 +385,15 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
             mitk::Point3D entryPoint;
             planeGeometry->Map(entry, entryPoint);
 
-            outputContour->AddVertex(entryPoint);
+            // Find the last corner point before the entry point and add it
+            // to the contour if it is different than the start point.
+            float length = entryPoint[axis] - startPoint[axis];
+            if (std::abs(length) >= spacing[axis])
+            {
+              entryPoint[axis] -= std::fmod(length, spacing[axis]);
+              outputContour->AddVertex(entryPoint);
+            }
+
             outputContourSet->AddContourModel(outputContour);
             outputContour = 0;
           }
@@ -388,7 +406,16 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
             outputContour = mitk::ContourModel::New();
             mitk::MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
-            outputContour->AddVertex(exitPoint);
+
+            // Find the first corner point after the exit point and add it
+            // to the contour if it is different than the end point.
+            float length = endPoint[axis] - exitPoint[axis];
+            if (std::abs(length) >= spacing[axis])
+            {
+              exitPoint[axis] += std::fmod(length, spacing[axis]);
+              outputContour->AddVertex(exitPoint);
+            }
+
             outputContour->AddVertex(endPoint);
           }
         }
