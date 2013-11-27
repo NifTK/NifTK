@@ -134,6 +134,18 @@ bool mitk::MIDASDrawTool::OnLeftMousePressed (Action* action, const StateEvent* 
   MIDASContourTool::SetBackgroundContourVisible(false);
   MIDASContourTool::SetBackgroundContourColorDefault();
 
+  // The default opacity of contours is 0.5. The FeedbackContourTool does not expose the
+  // feedback contour node, only the contour data. Therefore, we have to access it through the
+  // data manager. The node is added to / removed from the data manager by the SetFeedbackContourVisible()
+  // function. So, we can do this now.
+  if (mitk::DataStorage* dataStorage = m_ToolManager->GetDataStorage())
+  {
+    if (mitk::DataNode* feedbackContourNode = dataStorage->GetNamedNode("One of FeedbackContourTool's feedback nodes"))
+    {
+      feedbackContourNode->SetOpacity(1.0);
+    }
+  }
+
   // Set reference data, but we don't draw anything at this stage
   m_MostRecentPointInMm = positionEvent->GetWorldPosition();
   return true;
