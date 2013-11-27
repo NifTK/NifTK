@@ -14,8 +14,9 @@
 
 #include "QmitkMIDASDrawToolGUI.h"
 
+#include <ctkSliderWidget.h>
+
 #include <QLabel>
-#include <QSlider>
 #include <QLayout>
 #include <QPainter>
 
@@ -27,28 +28,27 @@ MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, QmitkMIDASDrawToolGUI, "")
 QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
-, m_SizeLabel(NULL)
 , m_Frame(NULL)
 {
   // create the visible widgets
-  QBoxLayout* layout = new QHBoxLayout( this );
-  this->setContentsMargins( 0, 0, 0, 0 );
+  QBoxLayout* layout = new QHBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setSpacing(3);
 
-  QLabel* label = new QLabel( "Eraser ", this );
+  QLabel* label = new QLabel("Eraser radius (mm):", this);
   layout->addWidget(label);
 
-  m_SizeLabel = new QLabel( " 1", this );
-  layout->addWidget(m_SizeLabel);
+  m_Slider = new ctkSliderWidget(this);
+  m_Slider->layout()->setSpacing(3);
+  m_Slider->setMinimum(0.5);
+  m_Slider->setMaximum(30.0);
+  m_Slider->setSingleStep(0.5);
+  m_Slider->setPageStep(0.1);
+  m_Slider->setValue(0.5);
+  layout->addWidget(m_Slider);
 
-  m_Slider = new QSlider( Qt::Horizontal, this );
-  m_Slider->setMinimum(1);
-  m_Slider->setMaximum(30);
-  m_Slider->setPageStep(1);
-  m_Slider->setValue(1);
-  connect( m_Slider, SIGNAL(valueChanged(int)), this, SLOT(OnSliderValueChanged(int)));
-  layout->addWidget( m_Slider );
-
-  connect( this, SIGNAL(NewToolAssociated(mitk::Tool*)), this, SLOT(OnNewToolAssociated(mitk::Tool*)) );
+  this->connect(m_Slider, SIGNAL(valueChanged(double)), SLOT(OnSliderValueChanged(double)));
+  this->connect(this, SIGNAL(NewToolAssociated(mitk::Tool*)), SLOT(OnNewToolAssociated(mitk::Tool*)));
 }
 
 
@@ -57,7 +57,7 @@ QmitkMIDASDrawToolGUI::~QmitkMIDASDrawToolGUI()
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, int>( this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged );
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 }
 
@@ -67,31 +67,31 @@ void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, int>( this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged );
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 
-  m_DrawTool = dynamic_cast<mitk::MIDASDrawTool*>( tool );
+  m_DrawTool = dynamic_cast<mitk::MIDASDrawTool*>(tool);
 
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, int>( this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged );
+    this->OnCursorSizeChanged(m_DrawTool->GetCursorSize());
+    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASDrawToolGUI::OnSliderValueChanged(int value)
+void QmitkMIDASDrawToolGUI::OnSliderValueChanged(double value)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->SetCursorSize( value );
-    m_SizeLabel->setText(QString::number(value));
+    m_DrawTool->SetCursorSize(value);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASDrawToolGUI::OnCursorSizeChanged(int current)
+void QmitkMIDASDrawToolGUI::OnCursorSizeChanged(double cursorSize)
 {
-  m_Slider->setValue(current);
+  m_Slider->setValue(cursorSize);
 }

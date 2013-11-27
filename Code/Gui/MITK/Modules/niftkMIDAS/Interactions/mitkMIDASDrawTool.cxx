@@ -38,7 +38,7 @@ namespace mitk{
 
 //-----------------------------------------------------------------------------
 mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
-, m_CursorSize(1)
+, m_CursorSize(0.5)
 , m_Interface(NULL)
 {
   // great magic numbers, connecting interactor straight to method calls.
@@ -235,9 +235,9 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASDrawTool::SetCursorSize(int current)
+void mitk::MIDASDrawTool::SetCursorSize(double cursorSize)
 {
-  m_CursorSize = current;
+  m_CursorSize = cursorSize;
 }
 
 
@@ -333,7 +333,7 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
     planeGeometry->Map(startPoint, start);
 
     mitk::Vector2D f = start - centre;
-    float c = f * f - m_CursorSize * m_CursorSize;
+    double c = f * f - m_CursorSize * m_CursorSize;
     if (c > 0.0f)
     {
       // Outside of the radius.
@@ -349,9 +349,9 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
       planeGeometry->Map(endPoint, end);
 
       mitk::Vector2D d = end - start;
-      float a = d * d;
-      float b = f * d;
-      float discriminant = b * b - a * c;
+      double a = d * d;
+      double b = f * d;
+      double discriminant = b * b - a * c;
       if (discriminant < 0.0f)
       {
         // No intersection.

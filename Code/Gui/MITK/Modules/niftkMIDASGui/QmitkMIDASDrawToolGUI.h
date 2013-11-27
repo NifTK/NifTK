@@ -19,9 +19,9 @@
 #include <mitkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
 
-class QSlider;
-class QLabel;
 class QFrame;
+
+class ctkSliderWidget;
 
 /**
  * \class QmitkMIDASDrawToolGUI
@@ -44,7 +44,7 @@ public:
   itkNewMacro(QmitkMIDASDrawToolGUI);
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
-  void OnCursorSizeChanged(int current);
+  void OnCursorSizeChanged(double cursorSize);
 
 signals:
 
@@ -56,15 +56,14 @@ protected slots:
   void OnNewToolAssociated(mitk::Tool*);
 
   /// \brief Qt slot called when the user moves the slider.
-  void OnSliderValueChanged(int value);
+  void OnSliderValueChanged(double value);
 
 protected:
 
   QmitkMIDASDrawToolGUI();
   virtual ~QmitkMIDASDrawToolGUI();
 
-  QSlider* m_Slider;
-  QLabel* m_SizeLabel;
+  ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
   mitk::MIDASDrawTool::Pointer m_DrawTool;
