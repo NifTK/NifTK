@@ -45,7 +45,7 @@ niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataS
   // So, for now, we just make sure they are not processed by this class.
   m_NodeFilter = mitk::DataNodeStringPropertyFilter::New();
   m_NodeFilter->SetPropertyName("name");
-  m_NodeFilter->AddToList("FeedbackContourTool");
+  m_NodeFilter->AddToList("One of FeedbackContourTool's feedback nodes");
   m_NodeFilter->AddToList("MIDASContourTool");
   m_NodeFilter->AddToList("MIDAS_SEEDS");
   m_NodeFilter->AddToList("MIDAS_CURRENT_CONTOURS");

@@ -176,7 +176,7 @@ int mitkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
 
   testClass->TestCreateFilter();
   testClass->TestFilterPassWithNoPropertiesSet();
-  testClass->TestFilterFailWithGivenString("FeedbackContourTool");
+  testClass->TestFilterFailWithGivenString("One of FeedbackContourTool's feedback nodes");
   testClass->TestFilterFailWithGivenString("MIDASContourTool");
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::SEED_POINT_SET_NAME);
   testClass->TestFilterFailWithGivenString(mitk::MIDASTool::CURRENT_CONTOURS_NAME);

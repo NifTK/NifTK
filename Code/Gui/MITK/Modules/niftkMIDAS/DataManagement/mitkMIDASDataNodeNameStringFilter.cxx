@@ -22,7 +22,7 @@ namespace mitk
 //-----------------------------------------------------------------------------
 MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
 {
-  this->AddToList("FeedbackContourTool");
+  this->AddToList("One of FeedbackContourTool's feedback nodes");
   this->AddToList("MIDASContourTool");
   this->AddToList(mitk::MIDASTool::SEED_POINT_SET_NAME);
   this->AddToList(mitk::MIDASTool::CURRENT_CONTOURS_NAME);

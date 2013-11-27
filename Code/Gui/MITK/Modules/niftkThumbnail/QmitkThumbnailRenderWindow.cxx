@@ -96,7 +96,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
 
   m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
   m_MIDASToolNodeNameFilter->SetPropertyName("name");
-  m_MIDASToolNodeNameFilter->AddToList("FeedbackContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
   m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
