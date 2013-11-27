@@ -130,7 +130,6 @@ QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
   if (m_MainAxialSnc)
   {
     mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
-    axialSnc->Disconnect(m_MainAxialSnc);
     m_MainAxialSnc->Disconnect(axialSnc);
     m_MainAxialWindow = 0;
     m_MainAxialSnc = 0;
@@ -138,7 +137,6 @@ QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
   if (m_MainSagittalSnc)
   {
     mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
-    sagittalSnc->Disconnect(m_MainSagittalSnc);
     m_MainSagittalSnc->Disconnect(sagittalSnc);
     m_MainSagittalWindow = 0;
     m_MainSagittalSnc = 0;
@@ -146,7 +144,6 @@ QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
   if (m_MainCoronalSnc)
   {
     mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-    coronalSnc->Disconnect(m_MainCoronalSnc);
     m_MainCoronalSnc->Disconnect(coronalSnc);
     m_MainCoronalWindow = 0;
     m_MainCoronalSnc = 0;
@@ -184,22 +181,16 @@ void QmitkMIDASSegmentationViewWidget::OnAMainWindowDestroyed(QObject* mainWindo
 {
   if (mainWindow == m_MainAxialWindow)
   {
-    mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
-    axialSnc->Disconnect(m_MainAxialSnc);
     m_MainAxialWindow = 0;
     m_MainAxialSnc = 0;
   }
   else if (mainWindow == m_MainSagittalWindow)
   {
-    mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
-    sagittalSnc->Disconnect(m_MainSagittalSnc);
     m_MainSagittalWindow = 0;
     m_MainSagittalSnc = 0;
   }
   else if (mainWindow == m_MainCoronalWindow)
   {
-    mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-    coronalSnc->Disconnect(m_MainCoronalSnc);
     m_MainCoronalWindow = 0;
     m_MainCoronalSnc = 0;
   }
@@ -424,17 +415,14 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     // If there was a main window then disconnect from it.
     if (m_MainAxialSnc)
     {
-      axialSnc->Disconnect(m_MainAxialSnc);
       m_MainAxialSnc->Disconnect(axialSnc);
     }
     if (m_MainSagittalSnc)
     {
-      sagittalSnc->Disconnect(m_MainSagittalSnc);
       m_MainSagittalSnc->Disconnect(sagittalSnc);
     }
     if (m_MainCoronalSnc)
     {
-      coronalSnc->Disconnect(m_MainCoronalSnc);
       m_MainCoronalSnc->Disconnect(coronalSnc);
     }
   }
@@ -509,17 +497,14 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
     if (mainAxialSnc)
     {
-      axialSnc->ConnectGeometryEvents(mainAxialSnc);
       mainAxialSnc->ConnectGeometryEvents(axialSnc);
     }
     if (mainSagittalSnc)
     {
-      sagittalSnc->ConnectGeometryEvents(mainSagittalSnc);
       mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
     }
     if (mainCoronalSnc)
     {
-      coronalSnc->ConnectGeometryEvents(mainCoronalSnc);
       mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
     }
   }
