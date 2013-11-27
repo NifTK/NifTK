@@ -53,14 +53,14 @@ public:
   /// \see mitk::Tool::GetXPM()
   virtual const char** GetXPM() const;
 
-  /// \brief Get the Cursor size, default 1.
-  itkGetConstMacro(CursorSize, int);
+  /// \brief Get the Cursor size, default 0.5.
+  itkGetConstMacro(CursorSize, double);
 
-  /// \brief Set the cursor size, default 1.
-  void SetCursorSize(int current);
+  /// \brief Set the cursor size, default 0.5.
+  void SetCursorSize(double cursorSize);
 
   /// \brief Used to send messages when the cursor size is changed or should be updated in a GUI. */
-  Message1<int> CursorSizeChanged;
+  Message1<double> CursorSizeChanged;
 
   /// \brief Start drawing a line at the given mouse point.
   virtual bool OnLeftMousePressed  (Action* action, const StateEvent* stateEvent);
@@ -123,7 +123,7 @@ private:
   bool DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent);
 
   /// \brief Cursor size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.
-  int m_CursorSize;
+  double m_CursorSize;
 
   /// \brief Stores the most recent point, (i.e. the end of the line if we are drawing a line).
   mitk::Point3D m_MostRecentPointInMm;
