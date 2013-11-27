@@ -126,7 +126,7 @@ private:
   int m_CursorSize;
 
   /// \brief Stores the most recent point, (i.e. the end of the line if we are drawing a line).
-  mitk::Point3D m_MostRecentPointInMillimetres;
+  mitk::Point3D m_MostRecentPointInMm;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASDrawToolEventInterface::Pointer m_Interface;
