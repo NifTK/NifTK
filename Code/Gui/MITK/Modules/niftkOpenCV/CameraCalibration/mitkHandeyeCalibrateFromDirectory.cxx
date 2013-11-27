@@ -114,11 +114,10 @@ bool HandeyeCalibrateFromDirectory::LoadExistingIntrinsicCalibrations(std::strin
   cv::Mat ritemp = cv::Mat(m_IntrinsicMatrixRight);
   cv::Mat rdtemp = cv::Mat(m_DistortionCoefficientsRight);
 
-  mitk::LoadStereoTransformsFromPlainText(directory+"calib.left.intrinsic.txt",
+  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.left.intrinsic.txt",
      &litemp, &ldtemp);
-  mitk::LoadStereoTransformsFromPlainText(directory+"calib.right.intrinsic.txt",
+  mitk::LoadCameraIntrinsicsFromPlainText(directory+"calib.right.intrinsic.txt",
      &ritemp, &rdtemp);
-
   *m_IntrinsicMatrixLeft = CvMat(litemp);
   *m_DistortionCoefficientsLeft = CvMat(ldtemp);
   *m_IntrinsicMatrixRight = CvMat(ritemp);
@@ -153,6 +152,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //get frame count doesn't work for 264 files, which are just 
   //raw data get the frame count from the framemap log
   int numberOfFrames = m_Matcher->GetNumberOfFrames();
+
   double framewidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
   double frameheight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
   
