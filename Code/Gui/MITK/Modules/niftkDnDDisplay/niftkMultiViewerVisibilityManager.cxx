@@ -294,8 +294,17 @@ void niftkMultiViewerVisibilityManager::NodeAddedProxy( const mitk::DataNode* no
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::NodeAdded( const mitk::DataNode* node)
+void niftkMultiViewerVisibilityManager::NodeAdded(const mitk::DataNode* node)
 {
+  // If the node has a "managed visibility" property and it is set to false,
+  // then we do not manage its visibility.
+  bool managedVisibility;
+  if (node->GetBoolProperty("managed visibility", managedVisibility)
+      && !managedVisibility)
+  {
+    return;
+  }
+
   // TODO: Is there a way round this, because its ugly.
   // Basically, when drawing on an image, you interactively add/remove contours or seeds.
   // So, these objects are not "dropped" into a viewer, they are like overlays.
