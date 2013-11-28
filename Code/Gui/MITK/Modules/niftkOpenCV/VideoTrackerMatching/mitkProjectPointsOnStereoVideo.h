@@ -95,7 +95,15 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
-  itkSetMacro ( WorldPoints, std::vector< std::pair < cv::Point3d, cv::Scalar > > );
+
+  /**
+   * \brief sets the world points and corresponding vectors
+   */
+  void SetWorldPoints ( std::vector<  std::pair < cv::Point3d, cv::Scalar >  > points );
+  /** 
+   * \brief set only the world points, the corresponding scalars get set to a default value
+   */
+  void SetWorldPoints ( std::vector< cv::Point3d > points );
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
@@ -139,7 +147,7 @@ private:
   /* m_ProjectPoints [framenumber][pointID](left.right);*/
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::vector <cv::Point3d> >    
+  std::vector < std::vector < std::pair < cv::Point3d, cv::Scalar > > >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points

@@ -162,9 +162,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, c
 /**
  * \brief multiplies a set of points and corresponding scalar values by a 4x4 transformation matrix
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p);
-
-
+extern "C++" NIFTKOPENCV_EXPORT std::vector <std::pair < cv::Point3d, cv::Scalar > > operator*(cv::Mat M, 
+    const std::vector< std::pair < cv::Point3d, cv::Scalar > >& p);
 
 /**
  * \brief multiplies a  point by a 4x4 transformation matrix
