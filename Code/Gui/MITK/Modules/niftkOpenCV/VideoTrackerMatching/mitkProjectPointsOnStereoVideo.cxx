@@ -240,14 +240,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
             {
-              cv::circle(videoImage, screenPoints[i].first,10, cvScalar(255,0,0), 3, 8, 0 );
+              cv::circle(videoImage, screenPoints[i].first,10, pointsInLeftLensCS[i].second, 3, 8, 0 );
             }
           }
           else
           {
             for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
             {
-              cv::circle(videoImage, screenPoints[i].second,10, cvScalar(255,0,0), 3, 8, 0 );
+              cv::circle(videoImage, screenPoints[i].second,10, pointsInLeftLensCS[i].second, 3, 8, 0 );
             } 
           }
         }
@@ -258,18 +258,18 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             unsigned int i;
             for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
             {
-              cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, cvScalar(255,0,0) );
+              cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, pointsInLeftLensCS[i].second );
             }
-            cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, cvScalar(255,0,0) );
+            cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, pointsInLeftLensCS[i].second );
           }
           else
           {
             unsigned int i;
             for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
             {
-              cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, cvScalar(255,0,0) );
+              cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, pointsInLeftLensCS[i].second );
             } 
-            cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, cvScalar(255,0,0) );
+            cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, pointsInLeftLensCS[i].second );
           }
         }
         if ( m_DrawAxes && drawProjection )
