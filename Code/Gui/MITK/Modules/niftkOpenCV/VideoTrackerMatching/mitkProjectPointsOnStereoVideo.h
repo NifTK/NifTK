@@ -95,7 +95,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
-  itkSetMacro ( WorldPoints, std::vector<cv::Point3d> );
+  itkSetMacro ( WorldPoints, std::vector< std::pair < cv::Point3d, cv::Scalar > > );
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
   std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
@@ -116,7 +116,8 @@ private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
-  std::vector<cv::Point3d>      m_WorldPoints;  //the world points to project
+  std::vector< std::pair < cv::Point3d, cv::Scalar > >     
+                                m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   int                           m_ReferenceIndex; //the reference index to use for frame matching, not used by default
