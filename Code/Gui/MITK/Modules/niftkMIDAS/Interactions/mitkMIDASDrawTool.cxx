@@ -40,16 +40,38 @@ namespace mitk{
 mitk::MIDASDrawTool::MIDASDrawTool() : MIDASContourTool("MIDASDrawTool")
 , m_CursorSize(0.5)
 , m_Interface(NULL)
+, m_EraserScopeVisible(false)
 {
   // great magic numbers, connecting interactor straight to method calls.
   CONNECT_ACTION( 320410, OnLeftMousePressed );
   CONNECT_ACTION( 320411, OnLeftMouseReleased );
   CONNECT_ACTION( 320412, OnLeftMouseMoved );
   CONNECT_ACTION( 320413, OnMiddleMousePressed );
-  CONNECT_ACTION( 320414, OnMiddleMouseMoved );
+  CONNECT_ACTION( 320414, OnMiddleMouseReleased );
+  CONNECT_ACTION( 320415, OnMiddleMouseMoved );
 
   m_Interface = MIDASDrawToolEventInterface::New();
   m_Interface->SetMIDASDrawTool(this);
+
+  m_EraserScope = mitk::PlanarCircle::New();
+  mitk::Point2D centre;
+  centre[0] = 0.0;
+  centre[1] = 0.0;
+  m_EraserScope->PlaceFigure(centre);
+  this->SetCursorSize(m_CursorSize);
+
+  m_EraserScopeNode = mitk::DataNode::New();
+  m_EraserScopeNode->SetData(m_EraserScope);
+  m_EraserScopeNode->SetName("Draw tool eraser");
+  m_EraserScopeNode->SetBoolProperty("helper object", true);
+  // This is for the DnD display, so that it does not try to change the
+  // visibility after node addition.
+  m_EraserScopeNode->SetBoolProperty("managed visibility", false);
+  m_EraserScopeNode->SetBoolProperty("includeInBoundingBox", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawname", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawoutline", false);
+  m_EraserScopeNode->SetBoolProperty("planarfigure.drawshadow", false);
 }
 
 
@@ -238,15 +260,34 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 void mitk::MIDASDrawTool::SetCursorSize(double cursorSize)
 {
   m_CursorSize = cursorSize;
+
+  mitk::Point2D controlPoint = m_EraserScope->GetControlPoint(0);
+  controlPoint[0] += cursorSize;
+  m_EraserScope->SetControlPoint(1, controlPoint);
 }
 
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent* stateEvent)
 {
-  bool result = false;
-  result = result & this->DeleteFromContour(2, action, stateEvent);
-  result = result & this->DeleteFromContour(3, action, stateEvent);
+  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  if (!positionEvent)
+  {
+    return false;
+  }
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
+  m_EraserScope->SetGeometry2D(const_cast<mitk::Geometry2D*>(geometry2D));
+  mitk::Point2D mousePosition;
+  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  m_EraserScope->SetControlPoint(0, mousePosition);
+
+  this->SetEraserScopeVisible(true, positionEvent->GetSender());
+
+  bool result = true;
+  result = result && this->DeleteFromContour(2, action, stateEvent);
+  result = result && this->DeleteFromContour(3, action, stateEvent);
   return result;
 }
 
@@ -254,13 +295,32 @@ bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent*
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent)
 {
-  return this->OnMiddleMousePressed(action, stateEvent);
+  const PositionEvent* positionEvent = dynamic_cast<const PositionEvent*>(stateEvent->GetEvent());
+  if (!positionEvent)
+  {
+    return false;
+  }
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::Geometry2D* geometry2D = renderer->GetCurrentWorldGeometry2D();
+  mitk::Point2D mousePosition;
+  geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
+  m_EraserScope->SetControlPoint(0, mousePosition);
+
+  bool result = true;
+  result = result && this->DeleteFromContour(2, action, stateEvent);
+  result = result && this->DeleteFromContour(3, action, stateEvent);
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 bool mitk::MIDASDrawTool::OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent)
 {
+  this->SetEraserScopeVisible(false, stateEvent->GetEvent()->GetSender());
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
   return true;
 }
 
@@ -683,4 +743,29 @@ void mitk::MIDASDrawTool::Activated()
 {
   mitk::MIDASTool::Activated();
   CursorSizeChanged.Send(m_CursorSize);
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASDrawTool::SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer)
+{
+  if (m_EraserScopeVisible == visible)
+  {
+    return;
+  }
+
+  if (mitk::DataStorage* dataStorage = m_ToolManager->GetDataStorage())
+  {
+    if (visible)
+    {
+      dataStorage->Add(m_EraserScopeNode);
+    }
+    else
+    {
+      dataStorage->Remove(m_EraserScopeNode);
+    }
+  }
+
+  m_EraserScopeNode->SetVisibility(visible, renderer);
+  m_EraserScopeVisible = visible;
 }

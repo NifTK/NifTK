@@ -19,6 +19,8 @@
 #include "mitkMIDASContourTool.h"
 #include "mitkMIDASDrawToolEventInterface.h"
 
+#include <mitkPlanarCircle.h>
+
 namespace mitk {
 
 /**
@@ -122,6 +124,9 @@ private:
   /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourModelSet representing the "currentContours" ie Green lines in MIDAS.
   bool DeleteFromContour(const int &workingDataNumber, Action* action, const StateEvent* stateEvent);
 
+  /// \brief Shows or hides the transparent circle around the mouse pointer during the erasure.
+  void SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer = 0);
+
   /// \brief Cursor size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.
   double m_CursorSize;
 
@@ -131,6 +136,9 @@ private:
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASDrawToolEventInterface::Pointer m_Interface;
 
+  mitk::PlanarCircle::Pointer m_EraserScope;
+  mitk::DataNode::Pointer m_EraserScopeNode;
+  bool m_EraserScopeVisible;
 };
 
 }
