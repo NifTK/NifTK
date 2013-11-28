@@ -36,6 +36,14 @@
     </file>
     
     <file fileExtensions="*.txt">
+      <name>input3DWithScalars</name>
+      <longflag>input3DWithScalars</longflag>
+      <description>Input 3D points and their scalar values</description>
+      <label>Input 3D points and their scalar values</label>
+      <channel>input</channel>
+    </file>
+    
+    <file fileExtensions="*.txt">
       <name>input2D</name>
       <longflag>input2D</longflag>
       <description>Input 2D points</description>
