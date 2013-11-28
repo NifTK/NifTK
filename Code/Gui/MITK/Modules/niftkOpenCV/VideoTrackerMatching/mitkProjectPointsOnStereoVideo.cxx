@@ -318,6 +318,26 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectOK = true;
 
 }
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetWorldPoints ( 
+    std::vector < std::pair < cv::Point3d , cv::Scalar > > points )
+{
+  m_WorldPoints = points;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetWorldPoints ( 
+    std::vector < cv::Point3d > points )
+{
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
+  {
+    std::pair < cv::Point3d, cv::Scalar > point = 
+      std::pair < cv::Point3d , cv::Scalar > ( points[i], cv::Scalar (255,0,0) );
+    m_WorldPoints.push_back(point);
+  }
+}
+
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
