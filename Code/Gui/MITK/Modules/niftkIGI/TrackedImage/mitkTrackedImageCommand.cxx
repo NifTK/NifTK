@@ -21,7 +21,8 @@
 namespace mitk
 {
 
-const std::string TrackedImageCommand::TRACKED_IMAGE_NODE_NAME("TrackedImageViewPlane");
+const char* TrackedImageCommand::TRACKED_IMAGE_NODE_NAME("TrackedImageViewPlane");
+const char* TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME("niftk.trackedimage");
 
 //-----------------------------------------------------------------------------
 TrackedImageCommand::TrackedImageCommand()
