@@ -210,7 +210,7 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString openCVVersion(NIFTK_VERSION_OPENCV);
     QString openCVLocation(NIFTK_LOCATION_OPENCV);
     QString openCVText = QObject::tr(
-      "<tr><td><a href=\"http://pointclouds.org/\">OpenCV</a></td><td>%1</td><td><a href=\"https://github.com/PointCloudLibrary/pcl/blob/master/LICENSE.txt\">Intel (BSD-like)</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      "<tr><td><a href=\"http://opencv.org/\">OpenCV</a></td><td>%1</td><td><a href=\"https://github.com/Itseez/opencv/blob/master/doc/license.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(openCVVersion).arg(openCVLocation);
     
   #endif
