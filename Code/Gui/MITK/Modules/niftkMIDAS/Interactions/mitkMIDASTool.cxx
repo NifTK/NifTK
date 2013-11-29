@@ -24,6 +24,8 @@
 
 #include <Interactions/mitkDnDDisplayInteractor.h>
 
+#include "mitkMIDASEventFilter.h"
+
 const std::string mitk::MIDASTool::SEED_POINT_SET_NAME = std::string("MIDAS_SEEDS");
 const std::string mitk::MIDASTool::CURRENT_CONTOURS_NAME = std::string("MIDAS_CURRENT_CONTOURS");
 const std::string mitk::MIDASTool::PRIOR_CONTOURS_NAME = std::string("MIDAS_PRIOR_CONTOURS");
@@ -248,7 +250,7 @@ float mitk::MIDASTool::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASTool::InstallEventFilter(const MIDASEventFilter::Pointer eventFilter)
+void mitk::MIDASTool::InstallEventFilter(mitk::MIDASEventFilter* eventFilter)
 {
   mitk::MIDASStateMachine::InstallEventFilter(eventFilter);
   if (m_AddToPointSetInteractor.IsNotNull())
@@ -259,7 +261,7 @@ void mitk::MIDASTool::InstallEventFilter(const MIDASEventFilter::Pointer eventFi
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASTool::RemoveEventFilter(const MIDASEventFilter::Pointer eventFilter)
+void mitk::MIDASTool::RemoveEventFilter(mitk::MIDASEventFilter* eventFilter)
 {
   if (m_AddToPointSetInteractor.IsNotNull())
   {
@@ -294,9 +296,9 @@ void mitk::MIDASTool::Activated()
     {
       m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASSeedDropper", pointSetNode);
 
-      std::vector<mitk::MIDASEventFilter::Pointer> eventFilters = this->GetEventFilters();
-      std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator it = eventFilters.begin();
-      std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator itEnd = eventFilters.end();
+      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_AddToPointSetInteractor->InstallEventFilter(*it);
@@ -339,9 +341,9 @@ void mitk::MIDASTool::Deactivated()
 
   if (m_AddToPointSetInteractor.IsNotNull())
   {
-    std::vector<mitk::MIDASEventFilter::Pointer> eventFilters = this->GetEventFilters();
-    std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator it = eventFilters.begin();
-    std::vector<mitk::MIDASEventFilter::Pointer>::const_iterator itEnd = eventFilters.end();
+    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
     for ( ; it != itEnd; ++it)
     {
       m_AddToPointSetInteractor->RemoveEventFilter(*it);

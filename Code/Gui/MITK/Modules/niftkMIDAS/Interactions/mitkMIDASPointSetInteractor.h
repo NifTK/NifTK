@@ -20,8 +20,6 @@
 #include <mitkPointSetInteractor.h>
 #include "mitkMIDASStateMachine.h"
 
-#include "mitkMIDASEventFilter.h"
-
 #include <vector>
 
 namespace mitk

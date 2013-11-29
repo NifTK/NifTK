@@ -61,12 +61,12 @@ public:
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
   /// Overrides mitkMIDASStateMachine::InstallEventFilter() so that it adds every filter also to the
   /// internal point set interactor.
-  virtual void InstallEventFilter(const MIDASEventFilter::Pointer eventFilter);
+  virtual void InstallEventFilter(MIDASEventFilter* eventFilter);
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
   /// Overrides mitkMIDASStateMachine::InstallEventFilter() to that it removes every filter also from the
   /// internal point set interactor.
-  virtual void RemoveEventFilter(const MIDASEventFilter::Pointer eventFilter);
+  virtual void RemoveEventFilter(MIDASEventFilter* eventFilter);
 
 protected:
 
