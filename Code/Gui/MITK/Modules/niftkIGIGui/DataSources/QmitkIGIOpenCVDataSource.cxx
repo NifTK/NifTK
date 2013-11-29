@@ -22,32 +22,47 @@
 #include <NiftyLinkUtils.h>
 #include <cv.h>
 #include <QCoreApplication>
+#include <sstream>
 
-const std::string QmitkIGIOpenCVDataSource::OPENCV_IMAGE_NAME = std::string("OpenCV image");
+QSet<int> QmitkIGIOpenCVDataSource::m_SourcesInUse = QSet<int>();
 
 //-----------------------------------------------------------------------------
 QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_VideoSource(NULL)
 {
+  m_Lock.lock();
+  unsigned int sourceCounter = 0;
+  while(m_SourcesInUse.contains(sourceCounter))
+  {
+    sourceCounter++;
+  }
+  m_SourcesInUse.insert(sourceCounter);
+  m_ChannelNumber = sourceCounter;
+  m_Lock.unlock();
+  
   qRegisterMetaType<mitk::VideoSource*>();
 
-  this->SetName("QmitkIGIOpenCVDataSource");
+  std::ostringstream channelNameString;
+  channelNameString << "OpenCV-" << m_ChannelNumber;
+  m_SourceName = channelNameString.str();
+  
+  this->SetName(m_SourceName);
   this->SetType("Frame Grabber");
-  this->SetDescription("OpenCV");
+  this->SetDescription(m_SourceName);
   this->SetStatus("Initialised");
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
-  m_VideoSource->SetVideoCameraInput(0);
+  m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
 
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
   // Create this node up front, so that the Update doesn't have to (and risk triggering GUI update events).
-  mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+  mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
   if (node.IsNull())
   {
-    MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+    MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
   }
 
   // This creates and starts up the thread.
@@ -59,6 +74,9 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
+  m_Lock.lock();
+  m_SourcesInUse.remove(m_ChannelNumber);
+  m_Lock.unlock();
 }
 
 
@@ -154,10 +172,10 @@ bool QmitkIGIOpenCVDataSource::Update(mitk::IGIDataType* data)
   if (dataType.IsNotNull())
   {
     // Get Data Node.
-    mitk::DataNode::Pointer node = this->GetDataNode(OPENCV_IMAGE_NAME);
+    mitk::DataNode::Pointer node = this->GetDataNode(m_SourceName);
     if (node.IsNull())
     {
-      MITK_ERROR << "Can't find mitk::DataNode with name " << OPENCV_IMAGE_NAME << std::endl;
+      MITK_ERROR << "Can't find mitk::DataNode with name " << m_SourceName << std::endl;
       return result;
     }
 

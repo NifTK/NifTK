@@ -24,6 +24,7 @@
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
+#include <stdexcept>
 
 #ifdef _USE_NVAPI
 #include <QmitkIGINVidiaDataSource.h>
@@ -288,7 +289,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
   m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
-
+  
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
 #endif
@@ -443,7 +444,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
 #endif
   else
   {
-    std::cerr << "Matt, not implemented yet" << std::endl;
+    throw std::runtime_error("Data source not implemented yet!");
   }
 
   source->SetSourceType(sourceType);
