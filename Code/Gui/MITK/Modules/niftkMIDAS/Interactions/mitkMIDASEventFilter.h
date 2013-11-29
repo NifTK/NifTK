@@ -17,8 +17,6 @@
 
 #include "niftkMIDASExports.h"
 
-#include <mitkCommon.h>
-
 namespace mitk {
 
 class StateEvent;
@@ -32,23 +30,17 @@ class StateEvent;
  * This can be used e.g. to restrict the scope of a tool or interactor to specific
  * render windows.
  */
-class NIFTKMIDAS_EXPORT MIDASEventFilter : public itk::Object
+class NIFTKMIDAS_EXPORT MIDASEventFilter
 {
 
 public:
 
-  mitkClassMacro(MIDASEventFilter, itk::Object);
+  MIDASEventFilter();
+  virtual ~MIDASEventFilter();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
   virtual bool EventFilter(const mitk::StateEvent* stateEvent) const = 0;
-
-protected:
-
-  MIDASEventFilter(); // purposefully hidden
-  virtual ~MIDASEventFilter(); // purposefully hidden
-
-private:
 
 };
 

@@ -25,6 +25,7 @@
 
 #include <Interactions/mitkDnDDisplayInteractor.h>
 
+#include "mitkMIDASEventFilter.h"
 
 //-----------------------------------------------------------------------------
 mitk::MIDASStateMachine::MIDASStateMachine()
@@ -51,9 +52,9 @@ float mitk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASStateMachine::InstallEventFilter(const mitk::MIDASEventFilter::Pointer eventFilter)
+void mitk::MIDASStateMachine::InstallEventFilter(mitk::MIDASEventFilter* eventFilter)
 {
-  std::vector<MIDASEventFilter::Pointer>::iterator it =
+  std::vector<MIDASEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
 
   if (it == m_EventFilters.end())
@@ -64,9 +65,9 @@ void mitk::MIDASStateMachine::InstallEventFilter(const mitk::MIDASEventFilter::P
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASStateMachine::RemoveEventFilter(const mitk::MIDASEventFilter::Pointer eventFilter)
+void mitk::MIDASStateMachine::RemoveEventFilter(mitk::MIDASEventFilter* eventFilter)
 {
-  std::vector<MIDASEventFilter::Pointer>::iterator it =
+  std::vector<MIDASEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
 
   if (it != m_EventFilters.end())
@@ -77,7 +78,7 @@ void mitk::MIDASStateMachine::RemoveEventFilter(const mitk::MIDASEventFilter::Po
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::MIDASEventFilter::Pointer> mitk::MIDASStateMachine::GetEventFilters() const
+std::vector<mitk::MIDASEventFilter*> mitk::MIDASStateMachine::GetEventFilters() const
 {
   return m_EventFilters;
 }
@@ -92,8 +93,8 @@ bool mitk::MIDASStateMachine::IsFiltered(const mitk::StateEvent* event) const
     return false;
   }
 
-  std::vector<MIDASEventFilter::Pointer>::const_iterator it = m_EventFilters.begin();
-  std::vector<MIDASEventFilter::Pointer>::const_iterator itEnd = m_EventFilters.end();
+  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
 
   for ( ; it != itEnd; ++it)
   {
