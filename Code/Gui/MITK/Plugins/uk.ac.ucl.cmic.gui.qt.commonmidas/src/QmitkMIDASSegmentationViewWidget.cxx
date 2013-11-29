@@ -131,22 +131,16 @@ QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
   {
     mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
     m_MainAxialSnc->Disconnect(axialSnc);
-    m_MainAxialWindow = 0;
-    m_MainAxialSnc = 0;
   }
   if (m_MainSagittalSnc)
   {
     mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
     m_MainSagittalSnc->Disconnect(sagittalSnc);
-    m_MainSagittalWindow = 0;
-    m_MainSagittalSnc = 0;
   }
   if (m_MainCoronalSnc)
   {
     mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
     m_MainCoronalSnc->Disconnect(coronalSnc);
-    m_MainCoronalWindow = 0;
-    m_MainCoronalSnc = 0;
   }
 
   // Register focus observer.
@@ -384,47 +378,63 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
   QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
   QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
-  QmitkRenderWindow* main3DWindow = m_ContainingFunctionality->GetRenderWindow("3d");
 
-  // Main windows could be 0 if main window not initialised,
-  // or no valid QmitkRenderer returned from mitkIRenderWindowPart.
-  if (!mainAxialWindow || !mainSagittalWindow || !mainCoronalWindow || !main3DWindow)
-  {
-    return;
-  }
+  mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow ? mainAxialWindow->GetSliceNavigationController() : 0;
+  mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow ? mainSagittalWindow->GetSliceNavigationController() : 0;
+  mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow ? mainCoronalWindow->GetSliceNavigationController() : 0;
 
   // Check if the user selected a completely different main window widget, or
   // if the user selected a different layout (axial, coronal, sagittal) within
   // the same DnDMultiWindowWidget.
   bool mainWindowChanged = false;
-  if (   mainAxialWindow    != m_MainAxialWindow
-      || mainSagittalWindow != m_MainSagittalWindow
-      || mainCoronalWindow  != m_MainCoronalWindow
-      || main3DWindow       != m_Main3DWindow
-      )
-  {
-    mainWindowChanged = true;
-  }
 
-  mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
-  mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
-  mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-
-  if (mainWindowChanged)
+  if (mainAxialWindow != m_MainAxialWindow)
   {
-    // If there was a main window then disconnect from it.
+    mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
     if (m_MainAxialSnc)
     {
       m_MainAxialSnc->Disconnect(axialSnc);
     }
+    if (mainAxialSnc)
+    {
+      mainAxialSnc->ConnectGeometryEvents(axialSnc);
+      this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    }
+    m_MainAxialWindow = mainAxialWindow;
+    m_MainAxialSnc = mainAxialSnc;
+    mainWindowChanged = true;
+  }
+  if (mainSagittalWindow != m_MainSagittalWindow)
+  {
+    mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
     if (m_MainSagittalSnc)
     {
       m_MainSagittalSnc->Disconnect(sagittalSnc);
     }
+    if (mainSagittalSnc)
+    {
+      mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
+      this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    }
+    m_MainSagittalWindow = mainSagittalWindow;
+    m_MainSagittalSnc = mainSagittalSnc;
+    mainWindowChanged = true;
+  }
+  if (mainCoronalWindow != m_MainCoronalWindow)
+  {
+    mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
     if (m_MainCoronalSnc)
     {
       m_MainCoronalSnc->Disconnect(coronalSnc);
     }
+    if (mainCoronalSnc)
+    {
+      mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
+      this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    }
+    m_MainCoronalWindow = mainCoronalWindow;
+    m_MainCoronalSnc = mainCoronalSnc;
+    mainWindowChanged = true;
   }
 
   // This will only be valid if we are not currently focused on THIS widget.
@@ -446,25 +456,9 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
       mitk::TimeGeometry::Pointer timeGeometry = const_cast<mitk::TimeGeometry*>(worldTimeGeometry);
       assert(timeGeometry);
 
-      m_MainAxialWindow = mainAxialWindow;
-      m_MainSagittalWindow = mainSagittalWindow;
-      m_MainCoronalWindow = mainCoronalWindow;
-      m_Main3DWindow = main3DWindow;
-
-      m_MainAxialSnc = mainAxialWindow->GetSliceNavigationController();
-      m_MainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
-      m_MainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
-
-      // Note:
-      // We have to disconnect from the main window SNCs when the main windows are destroyed,
-      // and also have to set the data members that store them and their SNCs to 0.
-      this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-      this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-      this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-
       m_Viewer->SetGeometry(timeGeometry);
       m_Viewer->SetBoundGeometryActive(false);
-      m_Viewer->SetShow3DWindowIn2x2WindowLayout(true);
+      m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
       if (!m_Viewer->IsEnabled())
       {
         m_Viewer->SetEnabled(true);
@@ -487,26 +481,6 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   else if (mainWindowOrientationChanged)
   {
     this->ChangeLayout();
-  }
-
-  if (mainWindowChanged)
-  {
-    // If there is a new main window then connect to it.
-    mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
-    mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
-    mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
-    if (mainAxialSnc)
-    {
-      mainAxialSnc->ConnectGeometryEvents(axialSnc);
-    }
-    if (mainSagittalSnc)
-    {
-      mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
-    }
-    if (mainCoronalSnc)
-    {
-      mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
-    }
   }
 
   m_Renderer = focusedRenderer;
