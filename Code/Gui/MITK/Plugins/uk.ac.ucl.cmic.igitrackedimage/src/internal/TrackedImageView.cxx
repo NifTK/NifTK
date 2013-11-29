@@ -151,8 +151,25 @@ void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
     if (image != NULL && image->GetGeometry() != NULL)
     {
+      this->m_Controls->m_DoUpdateCheckBox->setChecked(false);
+      
+      // Set a property saying which node is selected by this plugin.
+      for (int i = 0; i < this->m_Controls->m_ImageNode->count(); i++)
+      {
+        mitk::DataNode::Pointer aNode = this->m_Controls->m_ImageNode->GetNode(i);
+        aNode->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
+      }
+      mitk::DataNode::Pointer nodeToUpdate = this->GetDataStorage()->GetNamedNode(node->GetName());
+      if (nodeToUpdate.IsNotNull())
+      {
+        nodeToUpdate->SetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);        
+      }
+      
+      // Update the view to match the image geometry.
       mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
 
+      // Generate a plane to visualise in the 3D window, and in this plugins Render Window.
+      // This view is a shared VTK resource, which may be buggy on some systems.
       float white[3] = {1.0f,1.0f,1.0f};
       mitk::Geometry2DDataMapper2D::Pointer mapper(NULL);
 
