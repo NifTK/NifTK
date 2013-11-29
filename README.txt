@@ -68,7 +68,7 @@ Mods    : 4.3.2.1: Removed path length check in top level CMakeLists.txt
 Library : OpenCV
 Website : http://opencv.willowgarage.com/wiki
 Purpose : Computer Vision.
-License : Doc/Licences/OpenCV.txt (BSD 2 clause license)
+License : Doc/Licences/OpenCV.txt (BSD 3 clause license)
 
 Library : Aruco
 Website : http://www.uco.es/investiga/grupos/ava/node/26
