@@ -24,6 +24,7 @@
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
+#include <stdexcept>
 
 #ifdef _USE_NVAPI
 #include <QmitkIGINVidiaDataSource.h>
@@ -287,8 +288,7 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   //         selection index to distinguish between source types, etc.
   m_SourceSelectComboBox->addItem("networked tracker", mitk::IGIDataSource::SOURCE_TYPE_TRACKER);
   m_SourceSelectComboBox->addItem("networked ultrasonix scanner", mitk::IGIDataSource::SOURCE_TYPE_IMAGER);
-  m_SourceSelectComboBox->addItem("local left frame grabber", mitk::IGIDataSource::SOURCE_TYPE_LEFT_FRAME_GRABBER);
-  m_SourceSelectComboBox->addItem("local right frame grabber", mitk::IGIDataSource::SOURCE_TYPE_RIGHT_FRAME_GRABBER);
+  m_SourceSelectComboBox->addItem("local frame grabber", mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER);
   
 #ifdef _USE_NVAPI
   m_SourceSelectComboBox->addItem("local NVidia SDI", mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI);
@@ -432,14 +432,10 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     }
     source = niftyLinkSource;
   }
-  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_LEFT_FRAME_GRABBER)
+  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_FRAME_GRABBER)
   {
-    source = QmitkIGIOpenCVDataSource::New(m_DataStorage, 0);
+    source = QmitkIGIOpenCVDataSource::New(m_DataStorage);
   }
-  else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_RIGHT_FRAME_GRABBER)
-  {
-    source = QmitkIGIOpenCVDataSource::New(m_DataStorage, 1);
-  }  
 #ifdef _USE_NVAPI
   else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_NVIDIA_SDI)
   {
@@ -448,7 +444,7 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
 #endif
   else
   {
-    std::cerr << "Matt, not implemented yet" << std::endl;
+    throw std::runtime_error("Data source not implemented yet!");
   }
 
   source->SetSourceType(sourceType);

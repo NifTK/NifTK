@@ -24,16 +24,27 @@
 #include <QCoreApplication>
 #include <sstream>
 
+QSet<int> QmitkIGIOpenCVDataSource::m_SourcesInUse = QSet<int>();
+
 //-----------------------------------------------------------------------------
-QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage, int channelNumber)
+QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage)
 : QmitkIGILocalDataSource(storage)
 , m_VideoSource(NULL)
-, m_ChannelNumber(0)
 {
+  m_Lock.lock();
+  unsigned int sourceCounter = 0;
+  while(m_SourcesInUse.contains(sourceCounter))
+  {
+    sourceCounter++;
+  }
+  m_SourcesInUse.insert(sourceCounter);
+  m_ChannelNumber = sourceCounter;
+  m_Lock.unlock();
+  
   qRegisterMetaType<mitk::VideoSource*>();
 
   std::ostringstream channelNameString;
-  channelNameString << "OpenCV-" << channelNumber;
+  channelNameString << "OpenCV-" << m_ChannelNumber;
   m_SourceName = channelNameString.str();
   
   this->SetName(m_SourceName);
@@ -42,7 +53,7 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage, i
   this->SetStatus("Initialised");
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
-  m_VideoSource->SetVideoCameraInput(0);
+  m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
 
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
@@ -63,6 +74,9 @@ QmitkIGIOpenCVDataSource::QmitkIGIOpenCVDataSource(mitk::DataStorage* storage, i
 QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
 {
   this->StopCapturing();
+  m_Lock.lock();
+  m_SourcesInUse.remove(m_ChannelNumber);
+  m_Lock.unlock();
 }
 
 
