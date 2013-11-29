@@ -126,8 +126,11 @@ private:
   /// \brief Callback for when the focus changes, where we update the geometry to match the right window.
   void OnFocusChanged();
 
-  /// \brief Works out the MIDASOrientation of the currently focused window.
-  MIDASOrientation GetCurrentMainWindowOrientation();
+  /// \brief Works out the orientation of the currently focused window.
+  MIDASOrientation GetMainWindowOrientation();
+
+  /// \brief Works out the orientation of a renderer.
+  MIDASOrientation GetWindowOrientation(mitk::BaseRenderer* renderer);
 
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
@@ -138,19 +141,20 @@ private:
   QmitkRenderWindow* m_MainAxialWindow;
   QmitkRenderWindow* m_MainSagittalWindow;
   QmitkRenderWindow* m_MainCoronalWindow;
-  QmitkRenderWindow* m_Main3DWindow;
 
   mitk::SliceNavigationController* m_MainAxialSnc;
   mitk::SliceNavigationController* m_MainSagittalSnc;
   mitk::SliceNavigationController* m_MainCoronalSnc;
 
-  mitk::BaseRenderer* m_Renderer;
+  /// \brief Renderer of the currently focused window of the main display.
+  mitk::BaseRenderer* m_FocusedRenderer;
 
   mitk::DataNodeAddedVisibilitySetter::Pointer m_NodeAddedSetter;
   mitk::DataStorageVisibilityTracker::Pointer m_VisibilityTracker;
 
   double m_Magnification;
 
+  /// \brief The orientation of the currently focused window of the main display.
   MIDASOrientation m_MainWindowOrientation;
 
   /// \brief Stores the last single window layout of the internal viewer,
@@ -159,6 +163,7 @@ private:
 
   mitk::MIDASDataNodeNameStringFilter::Pointer m_MIDASToolNodeNameFilter;
 
+  mitk::TimeGeometry* m_Geometry;
 };
 
 #endif
