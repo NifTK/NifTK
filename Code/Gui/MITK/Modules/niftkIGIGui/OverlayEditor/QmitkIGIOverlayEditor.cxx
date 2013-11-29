@@ -21,6 +21,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
+#include <mitkTrackedImageCommand.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
@@ -58,6 +59,19 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
 //-----------------------------------------------------------------------------
 QmitkIGIOverlayEditor::~QmitkIGIOverlayEditor()
 {
+  this->DeRegisterDataStorageListeners();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::DeRegisterDataStorageListeners()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->ChangedNodeEvent.RemoveListener
+      (mitk::MessageDelegate1<QmitkIGIOverlayEditor, const mitk::DataNode*>
+      (this, &QmitkIGIOverlayEditor::NodeChanged ) );
+  }
 }
 
 
@@ -118,6 +132,20 @@ void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 {
+  if (m_DataStorage.IsNotNull() && m_DataStorage != storage)
+  {
+    this->DeRegisterDataStorageListeners();
+  }
+
+  m_DataStorage = storage;
+  
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->ChangedNodeEvent.AddListener
+      (mitk::MessageDelegate1<QmitkIGIOverlayEditor, const mitk::DataNode*>
+      (this, &QmitkIGIOverlayEditor::NodeChanged ) );
+  }
+  
   mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
@@ -133,6 +161,19 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_TransformCombo->SetPredicate(isTransform);
   m_TransformCombo->SetAutoSelectNewItems(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
+{
+  bool propValue = false;
+  if (node != NULL 
+    && node->GetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue) 
+    && propValue)
+  {
+    m_ImageCombo->SetSelectedNode(const_cast<mitk::DataNode*>(node));
+  }
 }
 
 
