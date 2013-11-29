@@ -67,6 +67,17 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 //-----------------------------------------------------------------------------
 QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionality()
 {
+  mitk::ToolManager::ToolVectorTypeConst tools = this->GetToolManager()->GetTools();
+  mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
+  for ( ; it != tools.end(); ++it)
+  {
+    mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
+    if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+    {
+      midasSM->RemoveEventFilter(this);
+    }
+  }
+
   if (m_ImageAndSegmentationSelector != NULL)
   {
     delete m_ImageAndSegmentationSelector;
