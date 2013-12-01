@@ -77,14 +77,15 @@ QmitkBaseView::QmitkBaseView()
 {
   Q_D(QmitkBaseView);
 
-  mitk::DataStorage* dataStorage = GetDataStorage();
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
   if (dataStorage) {
 
     mitk::DataStorage::SetOfObjects::ConstPointer everyNode = dataStorage->GetAll();
     mitk::DataStorage::SetOfObjects::ConstIterator it = everyNode->Begin();
     mitk::DataStorage::SetOfObjects::ConstIterator end = everyNode->End();
-    while (it != end) {
-      onNodeAddedInternal(it->Value());
+    while (it != end)
+    {
+      this->onNodeAddedInternal(it->Value());
       ++it;
     }
 
@@ -96,12 +97,9 @@ QmitkBaseView::QmitkBaseView()
         new mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>(this, &QmitkBaseView::onNodeRemovedInternal);
     dataStorage->RemoveNodeEvent.AddListener(*d->removeNodeEventListener);
   }
-  else {
-    MITK_INFO << "QmitkBaseView() data storage not ready";
-  }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     itk::SimpleMemberCommand<QmitkBaseView>::Pointer onFocusChangedCommand =
       itk::SimpleMemberCommand<QmitkBaseView>::New();
@@ -126,15 +124,17 @@ QmitkBaseView::~QmitkBaseView() {
     delete d->removeNodeEventListener;
   }
 
-  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys()) {
+  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys())
+  {
     mitk::BaseProperty* property = node->GetProperty("visible");
-    if (property) {
+    if (property)
+    {
       property->RemoveObserver(d->visibilityObserverTags[node]);
     }
   }
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     focusManager->RemoveObserver(d->m_FocusManagerObserverTag);
   }
@@ -153,7 +153,8 @@ void QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
   mitk::BaseProperty* property = node->GetProperty("visible");
-  if (property) {
+  if (property)
+  {
     VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
     d->visibilityObserverTags[node] = property->AddObserver(itk::ModifiedEvent(), command);
   }
@@ -164,7 +165,8 @@ void QmitkBaseView::onNodeAddedInternal(const mitk::DataNode* node)
 void QmitkBaseView::onNodeRemovedInternal(const mitk::DataNode* node)
 {
   Q_D(QmitkBaseView);
-  if (d->visibilityObserverTags.contains(node)) {
+  if (d->visibilityObserverTags.contains(node))
+  {
     mitk::BaseProperty* property = node->GetProperty("visible");
     if (property) {
       property->RemoveObserver(d->visibilityObserverTags[node]);
@@ -375,6 +377,20 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
   }
 
   return window;
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow()
+{
+  QmitkRenderWindow* renderWindow = 0;
+
+  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
+  {
+    renderWindow = renderWindowPart->GetActiveQmitkRenderWindow();
+  }
+
+  return renderWindow;
 }
 
 

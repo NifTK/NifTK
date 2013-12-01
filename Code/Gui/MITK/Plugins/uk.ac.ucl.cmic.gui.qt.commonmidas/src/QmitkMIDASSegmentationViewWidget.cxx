@@ -31,13 +31,10 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
 : m_ContainingFunctionality(functionality)
 , m_FocusManagerObserverTag(0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
+, m_MainWindow(0)
 , m_MainAxialWindow(0)
 , m_MainSagittalWindow(0)
 , m_MainCoronalWindow(0)
-, m_MainAxialSnc(0)
-, m_MainSagittalSnc(0)
-, m_MainCoronalSnc(0)
-, m_FocusedRenderer(0)
 , m_NodeAddedSetter(0)
 , m_VisibilityTracker(0)
 , m_Magnification(0.0)
@@ -115,14 +112,6 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
     onFocusChangedCommand->SetCallbackFunction( this, &QmitkMIDASSegmentationViewWidget::OnFocusChanged );
 
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-
-    // Force this because:
-    // If user launches Drag and Drop Display, loads image, drops into window, and THEN launches this widget,
-    // you don't get the first OnFocusChanged as the window has already been clicked on, and then the
-    // geometry is initialised incorrectly.
-    this->OnFocusChanged();
-
-    m_Viewer->SetSelected(false);
   }
 }
 
@@ -130,20 +119,17 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
 //-----------------------------------------------------------------------------
 QmitkMIDASSegmentationViewWidget::~QmitkMIDASSegmentationViewWidget()
 {
-  if (m_MainAxialSnc)
+  if (m_MainAxialWindow)
   {
-    mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
-    m_MainAxialSnc->Disconnect(axialSnc);
+    m_MainAxialWindow->GetSliceNavigationController()->Disconnect(m_Viewer->GetAxialWindow()->GetSliceNavigationController());
   }
-  if (m_MainSagittalSnc)
+  if (m_MainSagittalWindow)
   {
-    mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
-    m_MainSagittalSnc->Disconnect(sagittalSnc);
+    m_MainSagittalWindow->GetSliceNavigationController()->Disconnect(m_Viewer->GetSagittalWindow()->GetSliceNavigationController());
   }
-  if (m_MainCoronalSnc)
+  if (m_MainCoronalWindow)
   {
-    mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
-    m_MainCoronalSnc->Disconnect(coronalSnc);
+    m_MainCoronalWindow->GetSliceNavigationController()->Disconnect(m_Viewer->GetCoronalWindow()->GetSliceNavigationController());
   }
 
   // Register focus observer.
@@ -179,17 +165,14 @@ void QmitkMIDASSegmentationViewWidget::OnAMainWindowDestroyed(QObject* mainWindo
   if (mainWindow == m_MainAxialWindow)
   {
     m_MainAxialWindow = 0;
-    m_MainAxialSnc = 0;
   }
   else if (mainWindow == m_MainSagittalWindow)
   {
     m_MainSagittalWindow = 0;
-    m_MainSagittalSnc = 0;
   }
   else if (mainWindow == m_MainCoronalWindow)
   {
     m_MainCoronalWindow = 0;
-    m_MainCoronalSnc = 0;
   }
 }
 
@@ -370,29 +353,50 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
     return;
   }
 
-  mitk::SliceNavigationController* axialSnc = m_Viewer->GetAxialWindow()->GetSliceNavigationController();
-  mitk::SliceNavigationController* sagittalSnc = m_Viewer->GetSagittalWindow()->GetSliceNavigationController();
-  mitk::SliceNavigationController* coronalSnc = m_Viewer->GetCoronalWindow()->GetSliceNavigationController();
+  this->SetMainWindow(m_ContainingFunctionality->GetSelectedRenderWindow());
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWindow)
+{
+  if (mainWindow == m_MainWindow)
+  {
+    return;
+  }
 
   // Get hold of main windows, using QmitkAbstractView lookup mitkIRenderWindowPart.
   QmitkRenderWindow* mainAxialWindow = m_ContainingFunctionality->GetRenderWindow("axial");
   QmitkRenderWindow* mainSagittalWindow = m_ContainingFunctionality->GetRenderWindow("sagittal");
   QmitkRenderWindow* mainCoronalWindow = m_ContainingFunctionality->GetRenderWindow("coronal");
 
+  if (mainWindow != mainAxialWindow
+      && mainWindow != mainSagittalWindow
+      && mainWindow != mainCoronalWindow)
+  {
+    return;
+  }
+
+  m_MainWindow = mainWindow;
+
+  QmitkRenderWindow* axialWindow = m_Viewer->GetAxialWindow();
+  QmitkRenderWindow* sagittalWindow = m_Viewer->GetSagittalWindow();
+  QmitkRenderWindow* coronalWindow = m_Viewer->GetCoronalWindow();
+
   if (m_MainAxialWindow && m_MainAxialWindow != mainAxialWindow)
   {
-    m_MainAxialSnc->Disconnect(axialSnc);
+    m_MainAxialWindow->GetSliceNavigationController()->Disconnect(axialWindow->GetSliceNavigationController());
   }
   if (m_MainSagittalWindow && m_MainSagittalWindow != mainSagittalWindow)
   {
-    m_MainSagittalSnc->Disconnect(sagittalSnc);
+    m_MainSagittalWindow->GetSliceNavigationController()->Disconnect(sagittalWindow->GetSliceNavigationController());
   }
   if (m_MainCoronalWindow && m_MainCoronalWindow != mainCoronalWindow)
   {
-    m_MainCoronalSnc->Disconnect(coronalSnc);
+    m_MainCoronalWindow->GetSliceNavigationController()->Disconnect(coronalWindow->GetSliceNavigationController());
   }
 
-  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(focusedRenderer->GetTimeWorldGeometry());
+  mitk::TimeGeometry* geometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetTimeWorldGeometry());
 
   if (geometry && geometry != m_Geometry)
   {
@@ -414,53 +418,39 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   m_Geometry = geometry;
   m_Viewer->SetEnabled(geometry != 0);
 
-  mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow ? mainAxialWindow->GetSliceNavigationController() : 0;
-  mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow ? mainSagittalWindow->GetSliceNavigationController() : 0;
-  mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow ? mainCoronalWindow->GetSliceNavigationController() : 0;
-
-  if (mainAxialWindow != m_MainAxialWindow)
+  if (mainAxialWindow && mainAxialWindow != m_MainAxialWindow)
   {
-    if (mainAxialSnc)
-    {
-      axialSnc->GetSlice()->SetPos(mainAxialSnc->GetSlice()->GetPos());
-      mainAxialSnc->ConnectGeometryEvents(axialSnc);
-      this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-    }
-    m_MainAxialWindow = mainAxialWindow;
-    m_MainAxialSnc = mainAxialSnc;
+    mainAxialWindow->GetSliceNavigationController()->ConnectGeometryEvents(axialWindow->GetSliceNavigationController());
+    this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
-  if (mainSagittalWindow != m_MainSagittalWindow)
+  if (mainSagittalWindow && mainSagittalWindow != m_MainSagittalWindow)
   {
-    if (mainSagittalSnc)
-    {
-      sagittalSnc->GetSlice()->SetPos(mainSagittalSnc->GetSlice()->GetPos());
-      mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
-      this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-    }
-    m_MainSagittalWindow = mainSagittalWindow;
-    m_MainSagittalSnc = mainSagittalSnc;
+    mainSagittalWindow->GetSliceNavigationController()->ConnectGeometryEvents(sagittalWindow->GetSliceNavigationController());
+    this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
-  if (mainCoronalWindow != m_MainCoronalWindow)
+  if (mainCoronalWindow && mainCoronalWindow != m_MainCoronalWindow)
   {
-    if (mainCoronalSnc)
-    {
-      coronalSnc->GetSlice()->SetPos(mainCoronalSnc->GetSlice()->GetPos());
-      mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
-      this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
-    }
-    m_MainCoronalWindow = mainCoronalWindow;
-    m_MainCoronalSnc = mainCoronalSnc;
+    mainCoronalWindow->GetSliceNavigationController()->ConnectGeometryEvents(coronalWindow->GetSliceNavigationController());
+    this->connect(mainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
 
-  m_FocusedRenderer = focusedRenderer;
+  m_MainAxialWindow = mainAxialWindow;
+  m_MainSagittalWindow = mainSagittalWindow;
+  m_MainCoronalWindow = mainCoronalWindow;
 
-  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(focusedRenderer);
+  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
 
   if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     m_MainWindowOrientation = mainWindowOrientation;
     this->ChangeLayout();
   }
+
+  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
+  /// Therefore, we resend the main window position here.
+  mainAxialWindow->GetSliceNavigationController()->SendSlice();
+  mainSagittalWindow->GetSliceNavigationController()->SendSlice();
+  mainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
 }

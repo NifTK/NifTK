@@ -79,6 +79,12 @@ public:
    */
   void SetEnabled(bool enabled);
 
+  /// \brief Sets the selected render window of the main display.
+  /// This view then might need to change its window layout so that it shows the image
+  /// of a different orientation.
+  /// \param mainWindow The selected render window of the main display.
+  void SetMainWindow(QmitkRenderWindow* mainWindow);
+
 signals:
 
   /**
@@ -111,11 +117,6 @@ protected slots:
   /// \brief Called when the magnification is changed by zooming in a renderer window.
   void OnScaleFactorChanged(niftkSingleViewerWidget* view, double magnification);
 
-  /**
-   * \brief Called when one of the main 2D windows has been destroyed.
-   */
-  virtual void OnAMainWindowDestroyed(QObject* mainWindow);
-
 protected:
 
 private:
@@ -132,19 +133,24 @@ private:
   /// \brief Works out the orientation of a renderer.
   MIDASOrientation GetWindowOrientation(mitk::BaseRenderer* renderer);
 
+private slots:
+
+  /// \brief Called when one of the main 2D windows has been destroyed.
+  virtual void OnAMainWindowDestroyed(QObject* mainWindow);
+
+private:
+
   QmitkMIDASBaseSegmentationFunctionality* m_ContainingFunctionality;
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;
 
+  QmitkRenderWindow* m_MainWindow;
+
   QmitkRenderWindow* m_MainAxialWindow;
   QmitkRenderWindow* m_MainSagittalWindow;
   QmitkRenderWindow* m_MainCoronalWindow;
-
-  mitk::SliceNavigationController* m_MainAxialSnc;
-  mitk::SliceNavigationController* m_MainSagittalSnc;
-  mitk::SliceNavigationController* m_MainCoronalSnc;
 
   /// \brief Renderer of the currently focused window of the main display.
   mitk::BaseRenderer* m_FocusedRenderer;

@@ -98,6 +98,12 @@ public:
    */
   virtual QmitkRenderWindow* GetRenderWindow(QString id);
 
+  /**
+   * \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
+   * \return QmitkRenderWindow* The selected render window or NULL if it no render window is selected.
+   */
+  virtual QmitkRenderWindow* GetSelectedRenderWindow();
+
 protected:
 
   /**
