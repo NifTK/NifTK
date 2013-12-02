@@ -533,12 +533,12 @@ mark_as_advanced(
   
 # we want to know dll filenames on windows.
 # this allows us to delay-load cuda, i.e. proceed at load time and only fail at runtime.
-if (MSVC)
-   # cudart64_50_35.dll
-   # cudart32_50_35.dll
-   # cudart64_55.dll
-   # cudart32_55.dll
-   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(MSVC AND CUDA_TOOLKIT_ROOT_DIR)
+  # cudart64_50_35.dll
+  # cudart32_50_35.dll
+  # cudart64_55.dll
+  # cudart32_55.dll
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CUDA_DLL_SUFFIX "64" )
   else(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CUDA_DLL_SUFFIX "32" )
@@ -550,7 +550,7 @@ if (MSVC)
   get_filename_component(CUDA_CUDART_DLL_NAME ${CUDA_CUDART_DLL} NAME)
   # message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
   # message("CUDA_CUDART_DLL_NAME=${CUDA_CUDART_DLL_NAME}")
-endif (MSVC)
+endif()
 
 #######################
 # Look for some of the toolkit helper libraries
