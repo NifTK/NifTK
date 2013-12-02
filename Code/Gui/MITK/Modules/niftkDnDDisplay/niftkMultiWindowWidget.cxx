@@ -1305,62 +1305,53 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   QmitkRenderWindow* windowToFocus = 0;
 
+  bool showAxial = false;
+  bool showSagittal = false;
+  bool showCoronal = false;
+  bool show3D = false;
   switch (windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
-    this->mitkWidget1Container->show();
-    this->mitkWidget2Container->hide();
-    this->mitkWidget3Container->hide();
-    this->mitkWidget4Container->hide();
+    showAxial = true;
     if (hasFocus && !mitkWidget1->hasFocus())
     {
       windowToFocus = mitkWidget1;
     }
     break;
   case WINDOW_LAYOUT_SAGITTAL:
-    this->mitkWidget1Container->hide();
-    this->mitkWidget2Container->show();
-    this->mitkWidget3Container->hide();
-    this->mitkWidget4Container->hide();
+    showSagittal = true;
     if (hasFocus && !mitkWidget2->hasFocus())
     {
       windowToFocus = mitkWidget2;
     }
     break;
   case WINDOW_LAYOUT_CORONAL:
-    this->mitkWidget1Container->hide();
-    this->mitkWidget2Container->hide();
-    this->mitkWidget3Container->show();
-    this->mitkWidget4Container->hide();
+    showCoronal = true;
     if (hasFocus && !mitkWidget3->hasFocus())
     {
       windowToFocus = mitkWidget3;
     }
     break;
   case WINDOW_LAYOUT_ORTHO:
-    this->mitkWidget1Container->show();
-    this->mitkWidget2Container->show();
-    this->mitkWidget3Container->show();
-    this->mitkWidget4Container->show();
+    showAxial = true;
+    showSagittal = true;
+    showCoronal = true;
+    show3D = true;
     // If we have the focus, it will stay there, otherwise we do not steel it
     // from another window.
     break;
   case WINDOW_LAYOUT_3H:
   case WINDOW_LAYOUT_3V:
-    this->mitkWidget1Container->show();
-    this->mitkWidget2Container->show();
-    this->mitkWidget3Container->show();
-    this->mitkWidget4Container->hide();
+    showAxial = true;
+    showSagittal = true;
+    showCoronal = true;
     if (hasFocus && mitkWidget4->hasFocus())
     {
       windowToFocus = mitkWidget1;
     }
     break;
   case WINDOW_LAYOUT_3D:
-    this->mitkWidget1Container->hide();
-    this->mitkWidget2Container->hide();
-    this->mitkWidget3Container->hide();
-    this->mitkWidget4Container->show();
+    show3D = true;
     if (hasFocus && !mitkWidget4->hasFocus())
     {
       windowToFocus = mitkWidget4;
@@ -1368,10 +1359,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     break;
   case WINDOW_LAYOUT_COR_SAG_H:
   case WINDOW_LAYOUT_COR_SAG_V:
-    this->mitkWidget1Container->hide();
-    this->mitkWidget2Container->show();
-    this->mitkWidget3Container->show();
-    this->mitkWidget4Container->hide();
+    showSagittal = true;
+    showCoronal = true;
     if (hasFocus && (mitkWidget1->hasFocus() || mitkWidget4->hasFocus()))
     {
       windowToFocus = mitkWidget2;
@@ -1379,10 +1368,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     break;
   case WINDOW_LAYOUT_COR_AX_H:
   case WINDOW_LAYOUT_COR_AX_V:
-    this->mitkWidget1Container->show();
-    this->mitkWidget2Container->hide();
-    this->mitkWidget3Container->show();
-    this->mitkWidget4Container->hide();
+    showAxial = true;
+    showCoronal = true;
     if (hasFocus && (mitkWidget2->hasFocus() || mitkWidget4->hasFocus()))
     {
       windowToFocus = mitkWidget1;
@@ -1390,10 +1377,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     break;
   case WINDOW_LAYOUT_SAG_AX_H:
   case WINDOW_LAYOUT_SAG_AX_V:
-    this->mitkWidget1Container->show();
-    this->mitkWidget2Container->show();
-    this->mitkWidget3Container->hide();
-    this->mitkWidget4Container->hide();
+    showAxial = true;
+    showSagittal = true;
     if (hasFocus && (mitkWidget3->hasFocus() || mitkWidget4->hasFocus()))
     {
       windowToFocus = mitkWidget1;
@@ -1404,6 +1389,27 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
     break;
   }
+
+  if (!showAxial)
+  {
+    this->mitkWidget1->GetRenderWindow()->SetSize(0, 0);
+  }
+  if (!showSagittal)
+  {
+    this->mitkWidget2->GetRenderWindow()->SetSize(0, 0);
+  }
+  if (!showCoronal)
+  {
+    this->mitkWidget3->GetRenderWindow()->SetSize(0, 0);
+  }
+  if (!show3D)
+  {
+    this->mitkWidget4->GetRenderWindow()->SetSize(0, 0);
+  }
+  this->mitkWidget1Container->setVisible(showAxial);
+  this->mitkWidget2Container->setVisible(showSagittal);
+  this->mitkWidget3Container->setVisible(showCoronal);
+  this->mitkWidget4Container->setVisible(show3D);
 
   if (windowToFocus)
   {
