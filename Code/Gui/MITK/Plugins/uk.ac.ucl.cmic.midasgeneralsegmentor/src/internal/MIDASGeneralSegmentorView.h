@@ -222,9 +222,6 @@ protected slots:
   /// to store contour lines that we are drawing, and seeds for region growing.
   void OnCreateNewSegmentationButtonPressed();
 
-  /// \brief Qt slot called from the ToolManager when a segmentation tool is activated.
-  virtual void OnToolSelected(int id);
-
   /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
   void OnSeePriorCheckBoxToggled(bool checked);
 

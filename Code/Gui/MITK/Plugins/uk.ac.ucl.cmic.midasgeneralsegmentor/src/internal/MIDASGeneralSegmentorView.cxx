@@ -1055,13 +1055,6 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnToolSelected(int id)
-{
-  //QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
-}
-
-
-//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::ToggleTool(int toolId)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
@@ -2020,9 +2013,12 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
         m_IsUpdating = false;
 
-        if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>())
+        if (mitk::MIDASPolyTool* polyTool = dynamic_cast<mitk::MIDASPolyTool*>(toolManager->GetActiveTool()))
         {
-          toolManager->ActivateTool(-1);
+//          toolManager->ActivateTool(-1);
+          /// This makes the poly tool save its result to the working data nodes and stay it open.
+          polyTool->Deactivated();
+          polyTool->Activated();
         }
 
         bool updateRendering(false);

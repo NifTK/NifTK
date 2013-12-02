@@ -234,17 +234,11 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
-  // See http://bugs.mitk.org/show_bug.cgi?id=12302 - new interaction concept.
-  if (toolID >= 0)
+  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
+  /// (like 'a' and 'z' for changing slice) keep on working.
+  if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())
   {
-    // Enabling a tool - so just the tool receives the event,
-    // so tool must return a high value from mitk::CanHandleEvent
-    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_ONE);
-  }
-  else
-  {
-    // Disabling a tool - revert to default behaviour.
-    mitk::GlobalInteraction::GetInstance()->SetEventNotificationPolicy(mitk::GlobalInteraction::INFORM_MULTIPLE);
+    mainWindow->setFocus();
   }
 }
 
