@@ -1055,13 +1055,6 @@ void MIDASGeneralSegmentorView::OnResetButtonPressed()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnToolSelected(int id)
-{
-  //QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(id);
-}
-
-
-//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::ToggleTool(int toolId)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
