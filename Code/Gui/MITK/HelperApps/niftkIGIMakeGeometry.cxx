@@ -61,6 +61,10 @@ int main(int argc, char** argv)
   {
     surface = MakeLaparoscope (rigidBodyFile, handeye);
   }
+  if ( geometry == "laparoscopePolaris" )
+  {
+    surface = MakeLaparoscopePolaris (rigidBodyFile, handeye);
+  }
   if ( geometry == "pointer" )
   {
     surface = MakePointer (rigidBodyFile, handeye);
@@ -68,6 +72,10 @@ int main(int argc, char** argv)
   if ( geometry == "reference" )
   {
     surface = MakeReference (rigidBodyFile, handeye);
+  }
+  if ( geometry == "referencePolaris" )
+  {
+    surface = MakeReferencePolaris (rigidBodyFile, handeye);
   }
   if ( geometry == "XAxis" )
   {
@@ -97,7 +105,8 @@ int main(int argc, char** argv)
   {
     MITK_ERROR << "Failed to make specified geometry, available options are: ";
     MITK_INFO << " backwall frontwall leftwall rightwall ceiling floor";
-    MITK_INFO << " laparoscope pointer reference";
+    MITK_INFO << " laparoscope laparoscopePolaris pointer";
+    MITK_INFO << " reference referencePolaris";
     MITK_INFO << " XAxis YAxis ZAxis laplensAxes";
     MITK_INFO << " optotrak transRectalUSProbe";
     exit (EXIT_FAILURE);
