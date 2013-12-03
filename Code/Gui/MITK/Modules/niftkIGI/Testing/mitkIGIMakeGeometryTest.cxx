@@ -84,18 +84,35 @@ int mitkIGIMakeGeometryTest(int argc, char* argv[])
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 862 ) ,
       ".. Testing make laparoscope");
 
+  surface = MakeLaparoscopePolaris (baseDirectory + "lap_06_09.rig", baseDirectory + "calib.left.handeye.txt");
+  surface->GetVtkPolyData()->Update();
+  MITK_TEST_CONDITION_REQUIRED(
+      ( surface->GetVtkPolyData()->GetNumberOfCells() == 1387 ) &&
+      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 862 ) ,
+      ".. Testing make laparoscopePolaris");
+
+
   surface = MakePointer ( baseDirectory + "pointer_cal.rig", "" );
   surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 360 ) ,
       ".. Testing make pointer");
+  
   surface = MakeReference ( baseDirectory + "reference.rig", "" );
   surface->GetVtkPolyData()->Update();
   MITK_TEST_CONDITION_REQUIRED(
       ( surface->GetVtkPolyData()->GetNumberOfCells() == 677 ) &&
       ( surface->GetVtkPolyData()->GetNumberOfPoints() == 360 ) ,
       ".. Testing make reference");
+
+  surface = MakeReferencePolaris ( baseDirectory + "reference.rig", "" );
+  surface->GetVtkPolyData()->Update();
+  MITK_TEST_CONDITION_REQUIRED(
+      ( surface->GetVtkPolyData()->GetNumberOfCells() == 673 ) &&
+      ( surface->GetVtkPolyData()->GetNumberOfPoints() == 352 ) ,
+      ".. Testing make referencePolaris");
+
 
   surface = MakeXAxes();
   surface->GetVtkPolyData()->Update();

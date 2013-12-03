@@ -35,6 +35,14 @@ public:
   vtkSmartPointer<vtkPolyData> MakeLaparoscope(std::string rigidBodyFilename, std::string handeyeFilename );
 
   /**
+  * \brief For visualisation purposes, creates a representation of the laparoscope.
+  * \param the rigid body filename to define the location of the tracking markers
+  * \param the handeye calibration to define the tool origin
+  */
+  vtkSmartPointer<vtkPolyData> MakeLaparoscopePolaris(std::string rigidBodyFilename, std::string handeyeFilename );
+
+
+  /**
   * \brief For visualisation purposes, creates a representation of the pointer.
   * \param the rigid body filename to define the location of the tracking markers
   * \param the handeye calibration to define the tool origin
@@ -47,6 +55,14 @@ public:
   * \param the handeye calibration to define the tool origin
   */
   vtkSmartPointer<vtkPolyData> MakeReference(std::string rigidBodyFilename, std::string handeyeFilename );
+
+  /**
+  * \brief For visualisation purposes, creates a representation of the reference.
+  * \param the rigid body filename to define the location of the tracking markers
+  * \param the handeye calibration to define the tool origin
+  */
+  vtkSmartPointer<vtkPolyData> MakeReferencePolaris(std::string rigidBodyFilename, std::string handeyeFilename );
+
 
   /**
   * \brief For visualisation purposes, make a wall of a cube
