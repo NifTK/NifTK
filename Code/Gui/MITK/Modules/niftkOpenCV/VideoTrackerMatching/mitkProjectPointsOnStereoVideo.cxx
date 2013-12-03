@@ -236,6 +236,12 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       screenPoints.push_back(pointPair);
     }
     m_ProjectedPoints.push_back(screenPoints);
+    
+    //de-allocate the matrices    
+    cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
+    cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
+    cvReleaseMat(&output2DPointsLeft);
+    cvReleaseMat(&output2DPointsRight);
 
     if ( m_Visualise || m_SaveVideo ) 
     {
