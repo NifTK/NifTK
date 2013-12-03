@@ -16,6 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <cv.h>
+//#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
 
@@ -44,7 +45,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
-, m_Writer(NULL)
+, m_LeftWriter(NULL)
+, m_RightWriter(NULL)
 {
 }
 
@@ -285,6 +287,27 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[1].second,cvScalar(255,0,0));
             cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[2].second,cvScalar(0,255,0));
             cv::line(videoImage,m_ScreenAxesPoints[0].second,m_ScreenAxesPoints[3].second,cvScalar(0,0,255));         
+          }
+        }
+      }
+      if ( m_SaveVideo )
+      {
+        if ( m_LeftWriter != NULL ) 
+        {
+          if ( framenumber%2 == 0 ) 
+          {
+           // *m_LeftWriter << videoImage;
+            //m_LeftWriter->write(videoImage);
+            IplImage image(videoImage);
+            cvWriteFrame(m_LeftWriter,&image);
+          }
+        }
+        if ( m_RightWriter != NULL ) 
+        {
+          if ( framenumber%2 != 0 ) 
+          {
+            IplImage image(videoImage);
+            cvWriteFrame(m_RightWriter,&image);
           }
         }
       }

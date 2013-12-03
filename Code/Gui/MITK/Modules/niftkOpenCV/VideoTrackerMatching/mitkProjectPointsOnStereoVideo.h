@@ -155,7 +155,8 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   CvCapture*                    m_Capture;
-  CvVideoWriter*                m_Writer;
+  CvVideoWriter*                m_LeftWriter;
+  CvVideoWriter*                m_RightWriter;
 
   void ProjectAxes();
 }; // end class
