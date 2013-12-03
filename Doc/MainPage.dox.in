@@ -22,10 +22,12 @@ The term @NIFTK_PLATFORM@ refers to the whole collection of Nifty<Something> pac
 developed by <a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> and listed 
 <a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a>.
 
-This specific documentation refers to the parent project @NIFTK_PLATFORM@ which directly provides
-the graphical user interface (GUI) NiftyView and additionally various command line programs and scripts.
-Furthermore, this project can download, build and install all of the smaller Nifty<Something> packages
-thereby providing an integrated suite of applications.
+In addition, there is a specific code repository called @NIFTK_PLATFORM@, which can be considered
+as a parent project, containing several graphical user interfaces (GUIs) such as NiftyView, NiftyMIDAS and
+NiftyIGI, many command line programs and assorted scripts. Furthermore, this parent project, called @NIFTK_PLATFORM@,
+can download and build all of the smaller Nifty<Something> packages, thereby providing an integrated suite
+of applications. So this specific page and linked pages of documentation refer specifically to the @NIFTK_PLATFORM@
+code repository.
 
 Further information can be obtained via:
 
