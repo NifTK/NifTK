@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( input2D.length() == 0 && input3D.length() == 0 )
+  if ( input2D.length() == 0 && input3D.length() == 0 && input3DWithScalars.length() == 0  )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -77,6 +77,7 @@ int main(int argc, char** argv)
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
     unsigned int setPointsFrameNumber;
     std::vector < cv::Point3d > worldPoints;
+    std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -92,7 +93,7 @@ int main(int argc, char** argv)
       fin.close();
       projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber,matcher);
     }
-  if ( input3D.length() != 0 ) 
+    if ( input3D.length() != 0 ) 
     {
       std::ifstream fin(input3D.c_str());
       double x;
@@ -105,6 +106,26 @@ int main(int argc, char** argv)
       projector->SetWorldPoints(worldPoints);
       fin.close();
     }
+   
+    if ( input3DWithScalars.length() != 0 ) 
+    {
+      std::ifstream fin(input3DWithScalars.c_str());
+      double x;
+      double y;
+      double z;
+      int b; 
+      int g;
+      int r;
+
+      while ( fin >> x >> y >> z >> b >> g >> r )
+      {
+        worldPointsWithScalars.push_back(std::pair < cv::Point3d,cv::Scalar > 
+            (cv::Point3d(x,y,z), cv::Scalar(r,g,b) ));
+      }
+      projector->SetWorldPoints(worldPointsWithScalars);
+      fin.close();
+    }
+
 
     projector->Project(matcher);
    

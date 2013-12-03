@@ -293,6 +293,31 @@ void CopyToOpenCVMatrix(const vtkMatrix4x4& matrix, cv::Matx44d& openCVMatrix)
   }
 }
 
+//-----------------------------------------------------------------------------
+std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const std::vector< std::pair < cv::Point3d, cv::Scalar > > & p)
+{
+  cv::Mat src ( 4, p.size(), CV_64F );
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    src.at<double>(0,i) = p[i].first.x;
+    src.at<double>(1,i) = p[i].first.y;
+    src.at<double>(2,i) = p[i].first.z;
+    src.at<double>(3,i) = 1.0;
+  }
+  cv::Mat dst = M*src;
+  std::vector < std::pair <cv::Point3d, cv::Scalar > > returnPoints;
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  {
+    cv::Point3d point;
+    point.x = dst.at<double>(0,i);
+    point.y = dst.at<double>(1,i);
+    point.z = dst.at<double>(2,i);
+    returnPoints.push_back(std::pair<cv::Point3d, cv::Scalar> (point, p[i].second));
+  }
+  return returnPoints;
+}
+
+
 
 //-----------------------------------------------------------------------------
 std::vector <cv::Point3d> operator*(cv::Mat M, const std::vector<cv::Point3d>& p)
