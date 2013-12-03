@@ -19,7 +19,6 @@
 #include "ui_QmitkRMSErrorWidget.h"
 #include <QWidget>
 #include <mitkDataStorage.h>
-#include <vtkMatrix4x4.h>
 
 /**
  * \class QmitkRMSErrorWidget
@@ -37,7 +36,15 @@ public:
   virtual ~QmitkRMSErrorWidget();
 
   void SetDataStorage(const mitk::DataStorage* dataStorage);
-  double UpdateTransformation(const vtkMatrix4x4& matrix);
+
+  /**
+   * \brief Recalculates the RMS.
+   *
+   * This could have been done by registering to the DataSource and listening
+   * to the selected node modified events. However, in order to keep things simple,
+   * clients can simply call this at the right time.
+   */  
+  void Update();
   
 private slots:
 

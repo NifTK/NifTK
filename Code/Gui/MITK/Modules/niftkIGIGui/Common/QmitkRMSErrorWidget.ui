@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>466</width>
+    <height>224</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
            <string>Select one set of moving fiducials, of same size as target fiducials</string>
           </property>
           <property name="text">
-           <string>moving</string>
+           <string>Moving</string>
           </property>
          </widget>
         </item>
@@ -49,13 +49,23 @@
          <widget class="QmitkDataStorageComboBox" name="m_MovingCombo"/>
         </item>
         <item row="2" column="0">
+         <widget class="QLabel" name="m_TransformLabel">
+          <property name="text">
+           <string>Transform</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QmitkDataStorageComboBox" name="m_TransformCombo"/>
+        </item>
+        <item row="3" column="0">
          <widget class="QLabel" name="m_RMSErrorLabel">
           <property name="text">
            <string>RMS error</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="3" column="1">
          <widget class="QLineEdit" name="m_RMSError"/>
         </item>
        </layout>
