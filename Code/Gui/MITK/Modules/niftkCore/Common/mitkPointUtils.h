@@ -20,6 +20,7 @@
 #include <mitkPositionEvent.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
+#include <mitkCoordinateAxesData.h>
 
 /**
  * \file mitkPointUtils.h
@@ -40,7 +41,18 @@ NIFTKCORE_EXPORT bool AreDifferent(const mitk::Point3D& a, const mitk::Point3D& 
 /**
  * \brief Returns the squared Euclidean distance between a and b.
  */
-NIFTKCORE_EXPORT float GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b);
+NIFTKCORE_EXPORT double GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b);
+
+/**
+ * \brief Gets the RMS error between fixed point set and a moving point set, with optional transform specified.
+ *
+ * Iterates through the moving point set, and if the corresponding point exists in the fixed point set, 
+ * will compute the squared distance error, and accumulate this into the RMS error.
+ */
+NIFTKCORE_EXPORT double GetRMSErrorBetweenPoints(
+  const mitk::PointSet& fixed, 
+  const mitk::PointSet& moving, 
+  const mitk::CoordinateAxesData * const transform = NULL);
 
 /**
  * \brief Returns as output the vector difference of a-b.
