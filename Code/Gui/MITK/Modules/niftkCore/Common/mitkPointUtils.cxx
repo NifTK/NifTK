@@ -92,12 +92,10 @@ double mitk::GetRMSErrorBetweenPoints(
       if (transform != NULL)
       {
         transformedMovingPoint = transform->MultiplyPoint(movingPoint); 
-        std::cerr << "Matt, mp=" << movingPoint << ", tp=" << transformedMovingPoint << ", fp=" << fixedPoint << std::endl;
         rmsError += mitk::GetSquaredDistanceBetweenPoints(fixedPoint, transformedMovingPoint);
       }
       else
       {
-        std::cerr << "Matt, mp=" << movingPoint << ", fp=" << fixedPoint << std::endl;
         rmsError += mitk::GetSquaredDistanceBetweenPoints(fixedPoint, movingPoint);
       }
       numberOfPointsUsed++;
