@@ -86,7 +86,7 @@ public:
    */
   void SetWorldPointsByTriangulation 
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs, 
-     unsigned int frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
+     std::vector < unsigned int>  frameNumber , mitk::VideoTrackerMatching::Pointer matcher, 
      std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
