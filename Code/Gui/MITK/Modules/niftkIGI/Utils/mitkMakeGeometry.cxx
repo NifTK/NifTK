@@ -32,6 +32,17 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::str
 }
 
 //-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeLaparoscopePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> laparoscope = maker.MakeLaparoscopePolaris(rigidBodyFilename, handeyeFilename);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(laparoscope);
+  return surface;
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
   niftk::VTKIGIGeometry maker;
@@ -50,6 +61,17 @@ mitk::Surface::Pointer MakeReference ( std::string rigidBodyFilename, std::strin
   surface->SetVtkPolyData(reference);
   return surface;
 }
+
+//-----------------------------------------------------------------------------
+mitk::Surface::Pointer MakeReferencePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+{
+  niftk::VTKIGIGeometry maker;
+  vtkSmartPointer<vtkPolyData> reference = maker.MakeReferencePolaris(rigidBodyFilename, handeyeFilename);
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(reference);
+  return surface;
+}
+
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size, 
