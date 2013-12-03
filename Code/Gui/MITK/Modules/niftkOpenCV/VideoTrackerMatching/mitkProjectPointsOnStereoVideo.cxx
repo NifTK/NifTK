@@ -323,7 +323,10 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 void ProjectPointsOnStereoVideo::SetWorldPoints ( 
     std::vector < std::pair < cv::Point3d , cv::Scalar > > points )
 {
-  m_WorldPoints = points;
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
+  {
+    m_WorldPoints.push_back(points[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -341,9 +344,11 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     (std::vector< std::pair<cv::Point2d,cv::Point2d> > onScreenPointPairs,
-     unsigned int framenumber , mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+     std::vector< unsigned int > framenumber  , mitk::VideoTrackerMatching::Pointer trackerMatcher, 
      std::vector<double> * perturbation)
 {
+  assert ( framenumber.size() == onScreenPointPairs.size() );
+
   if ( ! trackerMatcher->IsReady () ) 
   {
     MITK_ERROR << "Attempted to triangulate points without tracking matrices.";
@@ -403,23 +408,19 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     rightCameraTranslationVectorMat,
     *leftCameraTriangulatedWorldPoints);
 
-  std::vector < std::pair <cv::Point3d, cv::Scalar > > points;
+  std::pair  <cv::Point3d, cv::Scalar > point;
+  unsigned int wpSize=m_WorldPoints.size();
   for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
   {
-    points.push_back(std::pair < cv::Point3d , cv::Scalar > (
+    point = std::pair < cv::Point3d , cv::Scalar > (
           cv::Point3d (
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,0),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ),
-          cv::Scalar(255,0,0))) ;
-  }
-
-  m_WorldPoints = trackerMatcher->GetCameraTrackingMatrix(framenumber , NULL , m_TrackerIndex, perturbation, m_ReferenceIndex) * points;
-
-  for ( unsigned int i = 0 ; i < onScreenPointPairs.size(); i ++ ) 
-  {
-    MITK_INFO << framenumber << " " << onScreenPointPairs[i].first << ","
-      << onScreenPointPairs[i].second << " => " << points[i].first << " => " << m_WorldPoints[i].first;
+          cv::Scalar(255,0,0)) ;
+    m_WorldPoints.push_back ( trackerMatcher->GetCameraTrackingMatrix(framenumber[i] , NULL , m_TrackerIndex, perturbation, m_ReferenceIndex) * point );
+    MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
+      << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i-wpSize].first;
   }
 
 }

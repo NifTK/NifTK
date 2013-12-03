@@ -317,6 +317,28 @@ std::vector <std::pair <cv::Point3d, cv::Scalar> > operator*(cv::Mat M, const st
   return returnPoints;
 }
 
+//-----------------------------------------------------------------------------
+std::pair <cv::Point3d, cv::Scalar>  operator*(cv::Mat M, const  std::pair < cv::Point3d, cv::Scalar >  & p)
+{
+  cv::Mat src ( 4, 1 , CV_64F );
+  src.at<double>(0,0) = p.first.x;
+  src.at<double>(1,0) = p.first.y;
+  src.at<double>(2,0) = p.first.z;
+  src.at<double>(3,0) = 1.0;
+
+  cv::Mat dst = M*src;
+  std::pair <cv::Point3d, cv::Scalar >  returnPoint;
+   
+  cv::Point3d point;
+  point.x = dst.at<double>(0,0);
+  point.y = dst.at<double>(1,0);
+  point.z = dst.at<double>(2,0);
+  returnPoint = std::pair<cv::Point3d, cv::Scalar> (point, p.second);
+  
+  return returnPoint;
+}
+
+
 
 
 //-----------------------------------------------------------------------------

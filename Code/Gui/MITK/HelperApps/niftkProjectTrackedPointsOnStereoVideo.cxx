@@ -75,23 +75,24 @@ int main(int argc, char** argv)
     projector->SetDrawAxes(DrawAxes);
     
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
-    unsigned int setPointsFrameNumber;
+    std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < cv::Point3d > worldPoints;
     std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
-      fin >> setPointsFrameNumber;
+      unsigned int frameNumber;
       double x1;
       double y1;
       double x2;
       double y2;
-      while ( fin >> x1 >> y1 >> x2 >> y2 )
+      while ( fin >> frameNumber >> x1 >> y1 >> x2 >> y2 )
       {
         screenPoints.push_back(std::pair<cv::Point2d,cv::Point2d> (cv::Point2d(x1,y1), cv::Point2d(x2,y2)));
+        screenPointFrameNumbers.push_back(frameNumber);
       }
       fin.close();
-      projector->SetWorldPointsByTriangulation(screenPoints,setPointsFrameNumber,matcher);
+      projector->SetWorldPointsByTriangulation(screenPoints,screenPointFrameNumbers,matcher);
     }
     if ( input3D.length() != 0 ) 
     {
