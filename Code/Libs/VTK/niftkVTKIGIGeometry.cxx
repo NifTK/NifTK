@@ -43,6 +43,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
   lensCyl->SetHeight(20.0);
   lensCyl->SetCenter(0.0,0.0,0.0);
   lensCyl->SetResolution(40);
+  lensCyl->CappingOff();
   
   lensCowl=lensCyl->GetOutput();
 
@@ -90,6 +91,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscopePolaris ( std::strin
   lensCyl->SetHeight(20.0);
   lensCyl->SetCenter(0.0,0.0,0.0);
   lensCyl->SetResolution(40);
+  lensCyl->CappingOff();
   
   lensCowl=lensCyl->GetOutput();
 
