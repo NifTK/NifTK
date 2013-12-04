@@ -267,11 +267,11 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
   mitk::Point3D planeCentre = geometry->GetCenter();
   planeCentre[2] = geometry->GetOrigin()[axialAxis] - geometry->GetSpacing()[axialAxis];
 
-  mitk::Plane::Pointer axialCutoOffPlane = mitk::Plane::New();
-  axialCutoOffPlane->SetOrigin(planeCentre);
+  mitk::Plane::Pointer axialCutOffPlane = mitk::Plane::New();
+  axialCutOffPlane->SetOrigin(planeCentre);
 
   /// The size of the plane is the size of the image in the other two directions.
-  axialCutoOffPlane->SetExtent(geometry->GetExtentInMM(sagittalAxis), geometry->GetExtentInMM(coronalAxis));
+  axialCutOffPlane->SetExtent(geometry->GetExtentInMM(sagittalAxis), geometry->GetExtentInMM(coronalAxis));
 
   mitk::DataNode::Pointer axialCutOffPlaneNode = mitk::DataNode::New();
   axialCutOffPlaneNode->SetName("Axial cut-off plane");
@@ -288,7 +288,7 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
   axialCutOffPlaneNode->SetBoolProperty("managed visibility", false);
 
   // Put the data into the node.
-  axialCutOffPlaneNode->SetData(axialCutoOffPlane);
+  axialCutOffPlaneNode->SetData(axialCutOffPlane);
 
   return axialCutOffPlaneNode;
 }
@@ -430,6 +430,11 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
     m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->FinalizeSegmentation();
+
+    /// Remove the axial cut-off plane node from the data storage.
+    mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    this->GetDataStorage()->Remove(axialCutOffPlaneNode);
+
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -449,6 +454,26 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
     this->SetControlsByImageData();
     this->SetControlsByParameterValues();
     m_PipelineManager->UpdateSegmentation();
+
+    /// Reset the axial cut-off plane to the bottom of the image.
+    {
+      mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+      mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
+      mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+
+      mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
+
+      int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+
+      // The centre of the plane is the same as the centre of the image, but it is shifted
+      // along the axial axis to a position determined by axialSliceNumber.
+      // As an initial point we set it one slice below the 'height' of the origin.
+      mitk::Point3D planeCentre = geometry->GetCenter();
+      planeCentre[2] = geometry->GetOrigin()[axialAxis] - geometry->GetSpacing()[axialAxis];
+
+      axialCutOffPlane->SetOrigin(planeCentre);
+    }
+
     this->FireNodeSelected(segmentationNode);
     this->RequestRenderWindowUpdate();
   }
