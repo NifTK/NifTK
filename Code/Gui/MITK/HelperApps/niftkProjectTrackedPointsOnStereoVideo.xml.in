@@ -73,6 +73,14 @@
       <label>output the world to camera matrices</label>
       <channel>output</channel>
     </file>
+
+    <file>
+      <name>outputVideo</name>
+      <longflag>outputVideo</longflag>
+      <description>Write out video files</description>
+      <label>Write out video files</label>
+      <channel>output</channel>
+    </file>
  
     <integer>
       <name>videoLag</name>

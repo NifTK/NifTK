@@ -136,7 +136,7 @@ void ProjectPointsOnStereoVideo::SetVisualise ( bool visualise )
   return;
 }
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
+void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string prefix )
 {
   if ( m_InitOK ) 
   {
@@ -145,9 +145,9 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
   m_SaveVideo = savevideo;
   if ( savevideo )
   {
-    cv::Size S = cv::Size((int) 960,    // Acquire input size
-                        (int) 540 );
-    m_LeftWriter =cvCreateVideoWriter("/dev/shm/leftchannel.avi", CV_FOURCC('D','I','V','X'),15,S, true);
+    cv::Size S = cv::Size((int) 960, (int) 540 );
+    m_LeftWriter =cvCreateVideoWriter(std::string(prefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+    m_RightWriter =cvCreateVideoWriter(std::string(prefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
   }
   m_InitOK = false;
   return;
@@ -320,7 +320,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           if ( framenumber%2 != 0 ) 
           {
             IplImage image(videoImage);
-            cvWriteFrame(m_RightWriter,&image);
+            cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
+            cvWriteFrame(m_RightWriter,smallcorrectedimage);
           }
         }
       }
@@ -353,6 +354,10 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   if ( m_LeftWriter != NULL )
   {
     cvReleaseVideoWriter(&m_LeftWriter);
+  }
+  if ( m_RightWriter != NULL )
+  {
+    cvReleaseVideoWriter(&m_RightWriter);
   }
   m_ProjectOK = true;
 

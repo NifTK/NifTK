@@ -90,7 +90,7 @@ public:
      std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
-  void SetSaveVideo( bool);
+  void SetSaveVideo( bool state, std::string prefix = "" );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
