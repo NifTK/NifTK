@@ -16,13 +16,16 @@
 #define MIDASMorphologicalSegmentorView_h
 
 #include <QmitkMIDASBaseSegmentationFunctionality.h>
+
 #include <mitkImage.h>
+
 #include <MorphologicalSegmentorPipeline.h>
 #include <MorphologicalSegmentorPipelineInterface.h>
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
 #include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
+
 
 /**
  * \class MIDASMorphologicalSegmentorView
@@ -74,7 +77,7 @@ protected slots:
   void OnCreateNewSegmentationButtonPressed();
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when thresholding sliders or spin boxes changed.
-  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
   /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when erosion sliders or spin boxes changed.
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
@@ -139,6 +142,9 @@ protected:
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
 
 private:
+
+  /// \brief Creates a node for storing the axial cut-off plane.
+  mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(mitk::Image* referenceImage);
 
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
   void SetDefaultParameterValuesFromReferenceImage();
