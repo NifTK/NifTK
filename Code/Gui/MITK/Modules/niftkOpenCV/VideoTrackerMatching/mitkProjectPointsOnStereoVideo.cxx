@@ -145,9 +145,9 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
   m_SaveVideo = savevideo;
   if ( savevideo )
   {
-    cv::Size S = cv::Size((int) 1980,    // Acquire input size
+    cv::Size S = cv::Size((int) 960,    // Acquire input size
                         (int) 540 );
-    //m_LeftWriter =cvCreateVideoWriter("/dev/shm/leftchannel.avi", 1,15,S, true);
+    m_LeftWriter =cvCreateVideoWriter("/dev/shm/leftchannel.avi", CV_FOURCC('D','I','V','X'),15,S, true);
   }
   m_InitOK = false;
   return;
@@ -181,6 +181,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   int key = 0;
   bool drawProjection = true;
   IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
+  IplImage *smallcorrectedimage = cvCreateImage (cvSize(960, 540), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     //put the world points into the coordinates of the left hand camera.
@@ -310,7 +311,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           if ( framenumber%2 == 0 ) 
           {
             IplImage image(videoImage);
-            cvWriteFrame(m_LeftWriter,&image);
+            cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
+            cvWriteFrame(m_LeftWriter,smallcorrectedimage);
           }
         }
         if ( m_RightWriter != NULL ) 
@@ -347,6 +349,10 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
     }
     framenumber ++;
+  }
+  if ( m_LeftWriter != NULL )
+  {
+    cvReleaseVideoWriter(&m_LeftWriter);
   }
   m_ProjectOK = true;
 
