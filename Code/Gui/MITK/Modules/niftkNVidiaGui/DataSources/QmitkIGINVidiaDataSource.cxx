@@ -478,7 +478,8 @@ bool QmitkIGINVidiaDataSource::SaveData(mitk::IGIDataType* data, std::string& ou
     // FIXME: use qt for this
     //        see https://cmicdev.cs.ucl.ac.uk/trac/ticket/2546
     SYSTEMTIME  now;
-    GetSystemTime(&now);
+    // we used to have utc here but all the other data sources use local time too.
+    GetLocalTime(&now);
 
     std::string directoryPath = this->GetSaveDirectoryName();
     QDir directory(QString::fromStdString(directoryPath));
