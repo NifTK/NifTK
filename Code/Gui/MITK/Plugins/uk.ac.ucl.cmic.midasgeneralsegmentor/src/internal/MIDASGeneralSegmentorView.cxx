@@ -1076,7 +1076,7 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASSeedTool>();
-  this->ToggleTool(toolId);
+  toolManager->ActivateTool(toolId);
   return true;
 }
 
@@ -1086,7 +1086,7 @@ bool MIDASGeneralSegmentorView::SelectDrawTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASDrawTool>();
-  this->ToggleTool(toolId);
+  toolManager->ActivateTool(toolId);
   return true;
 }
 
@@ -1096,7 +1096,7 @@ bool MIDASGeneralSegmentorView::SelectPolyTool()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int toolId = toolManager->GetToolIdByToolType<mitk::MIDASPolyTool>();
-  this->ToggleTool(toolId);
+  toolManager->ActivateTool(toolId);
   return true;
 }
 
