@@ -17,14 +17,17 @@
 #include <QMessageBox>
 
 #include <berryIWorkbenchPage.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkITKImageImport.h>
-#include <mitkImage.h>
-#include <mitkImageCast.h>
-#include <mitkImageStatisticsHolder.h>
+
 #include <mitkColorProperty.h>
 #include <mitkDataStorageUtils.h>
+#include <mitkImage.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkImageCast.h>
+#include <mitkImageStatisticsHolder.h>
+#include <mitkITKImageImport.h>
+#include <mitkPlane.h>
 #include <mitkUndoController.h>
+
 #include <mitkMIDASImageUtils.h>
 #include <mitkMIDASOrientationUtils.h>
 
@@ -32,6 +35,9 @@
 #include <mitkITKRegionParametersDataNodeProperty.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPaintbrushTool.h>
+
+#include <mitkMIDASOrientationUtils.h>
+
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
@@ -110,7 +116,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     }
     else
     {
-      newSegmentation = CreateNewSegmentation(m_DefaultSegmentationColor);
+      newSegmentation = this->CreateNewSegmentation(m_DefaultSegmentationColor);
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
@@ -118,6 +124,9 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
         return;
       }
     }
+
+    mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(image);
+    this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
 
     this->WaitCursorOn();
 
@@ -244,9 +253,78 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneNode(mitk::Image* referenceImage)
+{
+  mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+
+  int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int sagittalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
+  int coronalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_CORONAL);
+
+  // The centre of the plane is the same as the centre of the image, but it is shifted
+  // along the axial axis to a position determined by axialSliceNumber.
+  // As an initial point we set it one slice below the 'height' of the origin.
+  mitk::Point3D planeCentre = geometry->GetCenter();
+  planeCentre[2] = geometry->GetOrigin()[axialAxis] - geometry->GetSpacing()[axialAxis];
+
+  mitk::Plane::Pointer axialCutoOffPlane = mitk::Plane::New();
+  axialCutoOffPlane->SetOrigin(planeCentre);
+
+  /// The size of the plane is the size of the image in the other two directions.
+  axialCutoOffPlane->SetExtent(geometry->GetExtentInMM(sagittalAxis), geometry->GetExtentInMM(coronalAxis));
+
+  mitk::DataNode::Pointer axialCutOffPlaneNode = mitk::DataNode::New();
+  axialCutOffPlaneNode->SetName("Axial cut-off plane");
+  axialCutOffPlaneNode->SetColor(1.0, 1.0, 0.0);
+  axialCutOffPlaneNode->SetIntProperty("layer", 1000);
+  axialCutOffPlaneNode->SetOpacity(0.5);
+  axialCutOffPlaneNode->SetBoolProperty("helper object", true);
+  axialCutOffPlaneNode->SetBoolProperty("includeInBoundingBox", false);
+
+  axialCutOffPlaneNode->SetVisibility(true);
+
+  // This is for the DnD display, so that it does not try to change the
+  // visibility after node addition.
+  axialCutOffPlaneNode->SetBoolProperty("managed visibility", false);
+
+  // Put the data into the node.
+  axialCutOffPlaneNode->SetData(axialCutoOffPlane);
+
+  return axialCutOffPlaneNode;
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber)
 {
   m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
+
+  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+  mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNodeFromToolManager();
+  mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
+  mitk::Geometry3D* geometry = referenceImage->GetGeometry();
+
+  mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
+
+  int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+
+  /// The effectiveSlice stores the slice index numbered always from the bottom to top.
+  int effectiveSlice;
+  if (axialUpDirection == -1)
+  {
+    effectiveSlice = geometry->GetExtent(axialAxis) - axialSliceNumber;
+  }
+  else
+  {
+    effectiveSlice = axialSliceNumber;
+  }
+
+  // Lift the axial cut-off plane to the height determined by axialSliceNumber.
+  mitk::Point3D planeCentre = geometry->GetCenter();
+  planeCentre[2] = geometry->GetOrigin()[axialAxis] + (effectiveSlice - 1) * geometry->GetSpacing()[axialAxis];
+  axialCutOffPlane->SetOrigin(planeCentre);
+
   this->RequestRenderWindowUpdate();
 }
 
@@ -390,6 +468,8 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
     m_MorphologicalControls->m_TabWidget->blockSignals(wasBlocked);
     m_PipelineManager->RemoveWorkingData();
     m_PipelineManager->DestroyPipeline();
+    mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
     this->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
