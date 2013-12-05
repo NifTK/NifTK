@@ -4010,7 +4010,9 @@ MIDASGeneralSegmentorView
     {
       typename PathType::VertexType vertex = list->ElementAt(j);
 
-      // We keep only the corner points. If one of the coordinates is a round number, we skip it.
+      /// We keep only the corner points. If one of the coordinates is a round number, we skip it.
+      /// See the comment in MIDASGeneralSegmentorViewHelper.cxx in the ConvertMITKContoursAndAppendToITKContours
+      /// function.
       if ((vertex[0] == std::floor(vertex[0])) || (vertex[1] == std::floor(vertex[1])))
       {
         continue;
