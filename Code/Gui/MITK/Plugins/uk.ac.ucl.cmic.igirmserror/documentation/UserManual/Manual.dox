@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igirmserror} The RMS Error View
+
+\image html icon.png "The Icon for RMS Error View"
+
+\section RMSErrorIntro Introduction
+
+Do an introduction here.
+
+\section RMSErrorUsage Usage
+
+Put all usage information here.
+
+\section RMSErrorPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section RMSErrorReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+
