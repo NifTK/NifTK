@@ -25,6 +25,7 @@
 
 #include <itkGE5000_TomosynthesisGeometry.h>
 #include <itkGE6000_TomosynthesisGeometry.h>
+#include <itkSiemensMammomat_TomosynthesisGeometry.h>
 #include <itkIsocentricConeBeamRotationGeometry.h>
 
 #include <itkImageReconstructionMetric.h>
@@ -81,6 +82,8 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH,  "GE5000", 0, "Use the 'old' GE-5000, 11 projection geometry [21 projection]"},
   {OPT_SWITCH,  "GE6000", 0, "Use the 'new' GE-6000, 15 projection geometry [21 projection]"},
   
+  {OPT_SWITCH,  "Mammomat", 0, "Use the Siemens Mammomat Inspiration 25 projection geometry [21 projection]"},
+  
   {OPT_DOUBLE,  "thetaX", "angle", "Add an additional rotation in 'x' [none]"},
   {OPT_DOUBLE,  "thetaY", "angle", "Add an additional rotation in 'y' [none]"},
   {OPT_DOUBLE,  "thetaZ", "angle", "Add an additional rotation in 'z' [none]"},
@@ -125,6 +128,8 @@ enum {
 
   O_GE5000,
   O_GE6000,
+
+  O_MAMMOMAT,
 
   O_THETAX,
   O_THETAY,
@@ -177,6 +182,7 @@ int main(int argc, char** argv)
 
   bool flgGE_5000 = false;	// Use the GE 5000 11 projection geometry
   bool flgGE_6000 = false;	// Use the GE 6000 15 projection geometry
+  bool flgMammomat = false;	// Use the Siemens Mammomat Inspiration 25 projection geometry
 
   bool flgTransX = false;	// Translation in 'x' has been set
   bool flgTransY = false;	// Translation in 'y' has been set
@@ -296,6 +302,8 @@ int main(int argc, char** argv)
   CommandLineOptions.GetArgument(O_GE5000, flgGE_5000);
   CommandLineOptions.GetArgument(O_GE6000, flgGE_6000);
 
+  CommandLineOptions.GetArgument(O_MAMMOMAT, flgMammomat);
+
   CommandLineOptions.GetArgument(O_THETAX, thetaX);
   CommandLineOptions.GetArgument(O_THETAY, thetaY);
   CommandLineOptions.GetArgument(O_THETAZ, thetaZ);
@@ -320,31 +328,44 @@ int main(int argc, char** argv)
   
 
   if ( fileInputProjectionVolume.length() == 0 || fileOutputReconstruction.length() == 0 ) {
+
     CommandLineOptions.PrintUsage();
     return EXIT_FAILURE;
   }
 
-  if ( fileInputCurrentEstimate.length() != 0 && ((flgInputImage3D_SizeSet == true) || (flgInputImage3D_ResSet == true)) ) {
+  if ( fileInputCurrentEstimate.length() != 0 && 
+       ((flgInputImage3D_SizeSet == true) || (flgInputImage3D_ResSet == true)) ) {
+
     std::cerr << "Command line options '-est' and '-s3D' or '-r3D' are exclusive.";
-    CommandLineOptions.PrintUsage();
-    return EXIT_FAILURE;
-  }
-
-  if ( flgGE_5000 && flgGE_6000 ) {
-    std::cerr <<"Command line options '-GE5000' and '-GE6000' are exclusive.";
 
     CommandLineOptions.PrintUsage();
     return EXIT_FAILURE;
   }
 
-  if ( (flgGE_5000 || flgGE_6000) && (flgFirstAngleSet || angularRange || focalLength || axis) ) {
-    std::cerr <<"Command line options '-GE5000' or '-GE6000' and "
-				   "'-1stAngle' or '-AngRange' or '-FocalLength' or '-axis' are exclusive.";
+  if ( ( flgGE_5000  && flgGE_6000 ) ||
+       ( flgGE_5000  && flgMammomat ) ||
+       ( flgMammomat && flgGE_6000 ) ) {
+
+    std::cerr << "Command line options '-GE5000', '-GE6000'and '-Mammomat' are exclusive." 
+              << std::endl;
+
+    CommandLineOptions.PrintUsage();
     return EXIT_FAILURE;
   }
 
-  if ( (flgGE_5000 || flgGE_6000) && (flgTransX || flgTransY || flgTransZ) ) {
+  if ( (flgGE_5000 || flgGE_6000 || flgMammomat) && 
+       (flgFirstAngleSet || angularRange || focalLength || axis) ) {
+
+    std::cerr << "Command line options '-GE5000' or '-GE6000' and "
+              << "'-1stAngle' or '-AngRange' or '-FocalLength' or '-axis' are exclusive.";
+
+    return EXIT_FAILURE;
+  }
+
+  if ( (flgGE_5000 || flgGE_6000 || flgMammomat) && (flgTransX || flgTransY || flgTransZ) ) {
+
     std::cerr <<"Command line options '-transX|Y|Z' can only be used with isocentric geometry.";
+
     return EXIT_FAILURE;
   }
 
@@ -439,6 +460,19 @@ int main(int argc, char** argv)
 
     typedef itk::GE6000_TomosynthesisGeometry< IntensityType > GE6000_TomosynthesisGeometryType;
     geometry = GE6000_TomosynthesisGeometryType::New();
+  }
+
+  // Siemens Mammomat Inspiration 25 projection geometry
+
+  else if (flgMammomat) {
+
+    if (nProjections != 25) {
+      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 25 for Siemens Mammomat geometry" << endl;
+      return EXIT_FAILURE;
+    }
+    
+    typedef itk::SiemensMammomat_TomosynthesisGeometry< IntensityType > SiemensMammomat_TomosynthesisGeometryType;
+    geometry = SiemensMammomat_TomosynthesisGeometryType::New();
   }
 
   // Create an isocentric cone bean rotation geometry

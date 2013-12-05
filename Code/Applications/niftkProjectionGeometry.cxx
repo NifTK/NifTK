@@ -15,8 +15,14 @@
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
 
+#include <itkImageFileReader.h>
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
+
 #include <itkGE5000_TomosynthesisGeometry.h>
 #include <itkGE6000_TomosynthesisGeometry.h>
+#include <itkSiemensMammomat_TomosynthesisGeometry.h>
 #include <itkIsocentricConeBeamRotationGeometry.h>
 
 #include <itkTransformFileWriter.h>
@@ -27,6 +33,12 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "v", NULL,   "Output verbose info"},
   {OPT_SWITCH, "dbg", NULL, "Output debugging info"},
+
+  {OPT_SWITCH, "left", NULL, "Projection is for the left side."},
+  {OPT_SWITCH, "right", NULL, "Projection is for the right side."},
+
+  {OPT_SWITCH, "CC", NULL, "Projection is for the CC view."},
+  {OPT_SWITCH, "MLO", NULL, "Projection is for the MLO view."},
 
   {OPT_INTx3|OPT_REQ,   "sz3D", "nx,ny,nz", "The size of the reconstructed volume in voxels"},
   {OPT_FLOATx3|OPT_REQ, "res3D", "rx,ry,rz", "The resolution of the reconstructed volume in mm"},
@@ -48,11 +60,15 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH,  "GE5000", 0, "Use the 'old' GE-5000, 11 projection geometry [21 projection]"},
   {OPT_SWITCH,  "GE6000", 0, "Use the 'new' GE-6000, 15 projection geometry [21 projection]"},
   
+  {OPT_SWITCH,  "Mammomat", 0, "Use the Siemens Mammomat Inspiration 25 projection geometry [21 projection]"},
+  
   {OPT_DOUBLE,  "thetaX", "angle", "Add an additional rotation in 'x' [none]"},
   {OPT_DOUBLE,  "thetaY", "angle", "Add an additional rotation in 'y' [none]"},
   {OPT_DOUBLE,  "thetaZ", "angle", "Add an additional rotation in 'z' [none]"},
 
-  {OPT_STRING|OPT_REQ,  "o", "filename", "Output file stem for the transformation files"},
+  {OPT_STRING,  "dcm", "filename", "A DICOM file from which to read the geometry parameters."},
+
+  {OPT_STRING|OPT_REQ,  "o", "filename", "Output file stem for the transformation file(s)"},
 
   {OPT_DONE, NULL, NULL, 
    "Create a set of tomosynthesis projection matrices.\n"
@@ -62,6 +78,12 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 enum {
   O_VERBOSE = 0,
   O_DEBUG,
+
+  O_LEFT_SIDE,
+  O_RIGHT_SIDE,
+
+  O_CC_VIEW,
+  O_MLO_VIEW,
 
   O_RECONSTRUCTION_SIZE,
   O_RECONSTRUCTION_RES,
@@ -83,29 +105,73 @@ enum {
   O_GE5000,
   O_GE6000,
 
+  O_MAMMOMAT,
+
   O_THETAX,
   O_THETAY,
   O_THETAZ,
+
+  O_DICOM_FILE,
 
   O_OUTPUT_FILESTEM
 };
  
 
-/**
- * \brief Create a set of tomosynthesis projection matrices.
- */
+typedef itk::MetaDataDictionary DictionaryType;
+typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+
+// -------------------------------------------------------------------------
+// GetTagValue
+// -------------------------------------------------------------------------
+
+std::string GetTagValue( std::string tagID, DictionaryType &dictionary )
+{
+  std::string tagValue;
+
+  DictionaryType::ConstIterator tagItr = dictionary.Find( tagID );
+  DictionaryType::ConstIterator end = dictionary.End();
+   
+  if( tagItr != end )
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+    
+    if ( entryvalue )
+    {
+      tagValue = entryvalue->GetMetaDataObjectValue();
+      return tagValue;
+    }
+  }
+
+  return tagValue;
+};
+
+
+// -------------------------------------------------------------------------
+// Create a set of tomosynthesis projection matrices.
+// -------------------------------------------------------------------------
+
 int main(int argc, char** argv)
 {
+  std::string fileInputDICOMFile;
   std::string fileOutputFilestem;
 
-  bool flgGE_5000 = false;	// Use the GE 5000 11 projection geometry
-  bool flgGE_6000 = false;	// Use the GE 6000 15 projection geometry
+  bool flgGE_5000  = false;	// Use the GE 5000 11 projection geometry
+  bool flgGE_6000  = false;	// Use the GE 6000 15 projection geometry
+  bool flgMammomat = false;	// Use the Siemens Mammomat Inspiration 25 projection geometry
 
   bool flgFirstAngleSet = false; // Has the user set the first angle
 
   bool flgTransX = false;	// Translation in 'x' has been set
   bool flgTransY = false;	// Translation in 'y' has been set
   bool flgTransZ = false;	// Translation in 'z' has been set
+
+  bool flgLeftSide = false;     // Project the left side
+  bool flgRightSide = false;    // Project the right side
+
+  bool flgCCview = false;       // Project the CC view
+  bool flgMLOview = false;      // Project the MLO view
 
   unsigned int nProjections = 0; // The number of projections in the sequence
 
@@ -148,7 +214,13 @@ int main(int argc, char** argv)
   // printed out as they are parsed.
 
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
-  
+
+  CommandLineOptions.GetArgument(O_LEFT_SIDE,  flgLeftSide);
+  CommandLineOptions.GetArgument(O_RIGHT_SIDE, flgRightSide);
+
+  CommandLineOptions.GetArgument(O_CC_VIEW,  flgCCview);
+  CommandLineOptions.GetArgument(O_MLO_VIEW, flgMLOview);
+
   if (CommandLineOptions.GetArgument(O_RECONSTRUCTION_SIZE, clo_size)) {
     pVolumeSize[0] = clo_size[0];
     pVolumeSize[1] = clo_size[1];
@@ -185,9 +257,13 @@ int main(int argc, char** argv)
   CommandLineOptions.GetArgument(O_GE5000, flgGE_5000);
   CommandLineOptions.GetArgument(O_GE6000, flgGE_6000);
 
+  CommandLineOptions.GetArgument(O_MAMMOMAT, flgMammomat);
+
   CommandLineOptions.GetArgument(O_THETAX, thetaX);
   CommandLineOptions.GetArgument(O_THETAY, thetaY);
   CommandLineOptions.GetArgument(O_THETAZ, thetaZ);
+
+  CommandLineOptions.GetArgument(O_DICOM_FILE, fileInputDICOMFile);
 
   CommandLineOptions.GetArgument(O_OUTPUT_FILESTEM, fileOutputFilestem);
 
@@ -201,24 +277,60 @@ int main(int argc, char** argv)
   }
 
   
-
-  if ( flgGE_5000 && flgGE_6000 ) {
-    std::cout << "Command line options '-GE5000' and '-GE6000' are exclusive." << std::endl;
+  if ( flgLeftSide && flgRightSide ) 
+  {
+    std::cout << "ERROR: Command line options '-left' and '-right' are exclusive."
+              << std::endl;
 
     CommandLineOptions.PrintUsage();
     return EXIT_FAILURE;
   }
-       
-  if ( (flgGE_5000 || flgGE_6000) && (nProjections || flgFirstAngleSet || angularRange || focalLength) ) {
-    std::cout << "Command line options '-GE5000' or '-GE6000' and '-nProjs' "
-				   "or '-1stAngle' or '-AngRange' or '-FocalLength' are exclusive." << std::endl;
+  
+  if ( flgCCview && flgMLOview ) 
+  {
+    std::cout << "ERROR: Command line options '-CC' and '-MLO' are exclusive."
+              << std::endl;
+
+    CommandLineOptions.PrintUsage();
+    return EXIT_FAILURE;
+  }
+  
+  if ( ( fileInputDICOMFile.length() > 0 ) &&
+       ( flgGE_5000 || flgGE_6000 || flgMammomat ||
+         nProjections || flgFirstAngleSet || angularRange || focalLength ) ) 
+  {
+    std::cout << "ERROR: Command line option '-dcm' cannot be used with any of:" << std::endl
+              << "   '-GE5000', '-GE6000', '-nProjs', '-1stAngle', '-AngRange' or '-FocalLength'."
+              << std::endl;
 
     CommandLineOptions.PrintUsage();
     return EXIT_FAILURE;
   }
       
-  if ( (flgGE_5000 || flgGE_6000) && (flgTransX || flgTransY || flgTransZ) ) {
-    std::cout << "Command line options '-transX|Y|Z' can only be used with isocentric geometry." << std::endl;
+
+  if ( ( flgGE_5000  && flgGE_6000 ) ||
+       ( flgGE_5000  && flgMammomat ) ||
+       ( flgMammomat && flgGE_6000 ) )
+  {
+    std::cout << "ERROR: Command line options '-GE5000', '-GE6000'and '-Mammomat' are exclusive." << std::endl;
+
+    CommandLineOptions.PrintUsage();
+    return EXIT_FAILURE;
+  }
+       
+  if ( ( flgGE_5000 || flgGE_6000 || flgMammomat) && 
+       ( nProjections || flgFirstAngleSet || angularRange || focalLength ) ) 
+  {
+    std::cout << "ERROR: Command line options '-GE5000' or '-GE6000' and '-nProjs' "
+              << "or '-1stAngle' or '-AngRange' or '-FocalLength' are exclusive." << std::endl;
+
+    CommandLineOptions.PrintUsage();
+    return EXIT_FAILURE;
+  }
+      
+  if ( (flgGE_5000 || flgGE_6000) && (flgTransX || flgTransY || flgTransZ) ) 
+  {
+    std::cout << "ERROR: Command line options '-transX|Y|Z' can only be used with isocentric geometry." << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -231,9 +343,52 @@ int main(int argc, char** argv)
 
   ProjectionGeometryType::Pointer geometry; 
 
-  // Create the GE-5000 11 projection geometry 
+  // Create the geometry from a DICOM file
 
-  if (flgGE_5000) {
+  if ( fileInputDICOMFile.length() > 0 )
+  {
+    typedef signed short InputPixelType;
+    const unsigned int   InputDimension = 2;
+
+    typedef itk::Image< InputPixelType, InputDimension > InputImageType;
+    typedef itk::ImageFileReader< InputImageType > ReaderType;
+
+    typedef itk::GDCMImageIO           ImageIOType;
+    ImageIOType::Pointer gdcmImageIO = ImageIOType::New();
+
+    ReaderType::Pointer reader = ReaderType::New();
+
+    reader->SetImageIO( gdcmImageIO );
+    reader->SetFileName( fileInputDICOMFile );
+    
+    try
+    {
+      reader->Update();
+    }
+
+    catch (itk::ExceptionObject &ex)
+    {
+      std::cout << "Error reading DICOM file: " << fileInputDICOMFile << std::endl 
+		<< ex << std::endl << std::endl;
+      return EXIT_FAILURE;
+    }
+ 
+    InputImageType::Pointer image;
+
+    image = reader->GetOutput();
+    image->DisconnectPipeline();
+
+    DictionaryType &dictionary = image->GetMetaDataDictionary();
+
+    std::string modelName = GetTagValue( "0008|1090", dictionary );
+
+    std::cout << "Manufacturer's Model Name: " << modelName << std::endl;
+  }
+
+
+  // Create the GE-5000 11 projection geometry 
+  
+  else if (flgGE_5000) {
 
     typedef itk::GE5000_TomosynthesisGeometry< IntensityType > GE5000_TomosynthesisGeometryType;
     geometry = GE5000_TomosynthesisGeometryType::New();
@@ -245,6 +400,14 @@ int main(int argc, char** argv)
 
     typedef itk::GE6000_TomosynthesisGeometry< IntensityType > GE6000_TomosynthesisGeometryType;
     geometry = GE6000_TomosynthesisGeometryType::New();
+  }
+
+  // Siemens Mammomat Inspiration 25 projection geometry
+
+  else if (flgMammomat) {
+
+    typedef itk::SiemensMammomat_TomosynthesisGeometry< IntensityType > SiemensMammomat_TomosynthesisGeometryType;
+    geometry = SiemensMammomat_TomosynthesisGeometryType::New();
   }
 
   // Create an isocentric cone bean rotation geometry
@@ -298,6 +461,20 @@ int main(int argc, char** argv)
 
     geometry = isoGeometry;
   }
+
+  if (flgLeftSide)
+    geometry->SetProjectionSide(ProjectionGeometryType::LEFT_SIDE);
+
+  else if (flgRightSide)
+    geometry->SetProjectionSide(ProjectionGeometryType::RIGHT_SIDE);
+
+
+  if (flgCCview)
+    geometry->SetProjectionView(ProjectionGeometryType::CC_VIEW);
+
+  else if (flgMLOview)
+    geometry->SetProjectionView(ProjectionGeometryType::MLO_VIEW);
+
 
   // Specify the projection and volume sizes
 
