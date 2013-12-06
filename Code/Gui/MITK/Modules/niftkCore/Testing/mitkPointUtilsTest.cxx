@@ -253,6 +253,65 @@ public:
     MITK_TEST_OUTPUT(<< "Finished TestFilterMatchingPoints...");
   }
 
+  //-----------------------------------------------------------------------------
+  static void TestRMS()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestRMS...");
+    
+    mitk::PointSet::Pointer fixedPoints = mitk::PointSet::New();
+    mitk::PointSet::Pointer movingPoints = mitk::PointSet::New();
+
+    mitk::Point3D p1f, p1m;
+    mitk::Point3D p2f, p2m;
+    mitk::Point3D p3f, p3m;
+
+    p1f[0] = 0;  p1m[0] = 1;
+    p1f[1] = 1;  p1m[1] = 2;
+    p1f[2] = 2;  p1m[2] = 3;
+
+    p2f[0] = 3;  p2m[0] = 4;
+    p2f[1] = 4;  p2m[1] = 5;
+    p2f[2] = 5;  p2m[2] = 6;
+
+    p3f[0] = 6;  p3m[0] = 8;
+    p3f[1] = 7;  p3m[1] = 9;
+    p3f[2] = 8;  p3m[2] = 10;
+    
+    fixedPoints->InsertPoint(1, p1f);
+    fixedPoints->InsertPoint(2, p2f);
+    movingPoints->InsertPoint(1, p1m);
+    movingPoints->InsertPoint(3, p3m);
+
+    // RMS should be difference between fixed and moving point 1.
+    double rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);
+    double expected = 1.732050808;
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 1, expected=" << expected << ", actual=" << rms);
+
+    // 2 points with same error gives same RMS.
+    movingPoints->InsertPoint(2, p2m);
+    rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);    
+    expected = 1.732050808;
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 2, expected=" << expected << ", actual=" << rms);
+
+    // Adding extra point, which has larger error.
+    fixedPoints->InsertPoint(3, p3f);
+    rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);
+    expected = 2.449489743;
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 3, expected=" << expected << ", actual=" << rms);
+    
+    // Add transformation of -1, -1, -1, which should remove all error, except point 3.
+    // And in this case, as it is RMS, we have 3 points, so the mean goes down to 1, and is not SQRT(3).
+    mitk::Point3D trans;
+    trans[0] = -1;
+    trans[1] = -1;
+    trans[2] = -1;
+    mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
+    transform->SetTranslation(trans);
+    rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints, transform.GetPointer());
+    expected = 1;
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 4, expected=" << expected << ", actual=" << rms);
+  }
+  
 };
 
 /**
@@ -270,7 +329,8 @@ int mitkPointUtilsTest(int argc, char * argv[])
   mitkPointUtilsTestClass::TestNormalise();
   mitkPointUtilsTestClass::TestComputeNormalFromPoints();
   mitkPointUtilsTestClass::TestFilterMatchingPoints();
-
+  mitkPointUtilsTestClass::TestRMS();
+  
   MITK_TEST_END();
 }
 

@@ -52,7 +52,7 @@ bool mitk::AreDifferent(const mitk::Point3D& a, const mitk::Point3D& b)
 
 
 //-----------------------------------------------------------------------------
-float mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b)
+double mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::Point3D& b)
 {
     double distance = 0;
 
@@ -62,6 +62,55 @@ float mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk::
     }
 
     return distance;
+}
+
+
+//-----------------------------------------------------------------------------
+double mitk::GetRMSErrorBetweenPoints(
+  const mitk::PointSet& fixedPoints, 
+  const mitk::PointSet& movingPoints, 
+  const mitk::CoordinateAxesData * const transform)
+{
+  mitk::PointSet::DataType* itkPointSet = movingPoints.GetPointSet(0);
+  mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+  mitk::PointSet::PointsIterator pIt;
+  mitk::PointSet::PointIdentifier pointID;
+  mitk::PointSet::PointType fixedPoint;
+  mitk::PointSet::PointType movingPoint;
+  mitk::PointSet::PointType transformedMovingPoint;
+  
+  double rmsError = 0;
+  unsigned long int numberOfPointsUsed = 0;
+  
+  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+  {
+    pointID = pIt->Index();
+    movingPoint = pIt->Value();
+    
+    if (fixedPoints.GetPointIfExists(pointID, &fixedPoint))
+    {
+      if (transform != NULL)
+      {
+        transformedMovingPoint = transform->MultiplyPoint(movingPoint); 
+        rmsError += mitk::GetSquaredDistanceBetweenPoints(fixedPoint, transformedMovingPoint);
+      }
+      else
+      {
+        rmsError += mitk::GetSquaredDistanceBetweenPoints(fixedPoint, movingPoint);
+      }
+      numberOfPointsUsed++;
+    }
+  }
+  if (numberOfPointsUsed > 0)
+  {
+    rmsError /= static_cast<double>(numberOfPointsUsed);
+    rmsError = sqrt(rmsError);      
+  }
+  else
+  {
+    rmsError = 0;
+  }
+  return rmsError;
 }
 
 

@@ -19,6 +19,7 @@
 #include <itkImageRegion.h>
 #include <mitkBaseData.h>
 #include <vtkMatrix4x4.h>
+#include <mitkVector.h>
 
 namespace mitk {
 
@@ -58,6 +59,21 @@ public:
   void GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const;
   void SetVtkMatrix(const vtkMatrix4x4& matrix);
 
+  /**
+   * \brief Warning: slow method to transform point by current matrix.
+   */
+  mitk::Point3D MultiplyPoint(const mitk::Point3D& point) const;
+  
+  /**
+   * \brief Utility method for unit testing that will simply set the transformation to be equal to a translation.
+   */
+  void SetTranslation(const mitk::Point3D& translation);
+
+  /**
+   * \brief Utility method for unit testing that will simply set the transformation to be equal to a translation.
+   */  
+  void SetTranslation(const double& tx, const double& ty, const double& tz);
+  
 protected:
   CoordinateAxesData();
   ~CoordinateAxesData();
