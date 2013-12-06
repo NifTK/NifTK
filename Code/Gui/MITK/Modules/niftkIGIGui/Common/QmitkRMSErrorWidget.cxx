@@ -76,25 +76,49 @@ void QmitkRMSErrorWidget::Update()
     return;
   }
   
-  mitk::PointSet::ConstPointer fixedPoints = dynamic_cast<mitk::PointSet*>(m_FixedCombo->GetSelectedNode().GetPointer());
-  if (fixedPoints.IsNull())
+  mitk::PointSet::Pointer fixedPoints = NULL;
+  if(m_FixedCombo->GetSelectedNode())
   {
-    m_RMSError->setText("Fixed point set is invalid.");
-    return;
+    mitk::BaseData::Pointer fixedPointsNode = m_FixedCombo->GetSelectedNode()->GetData();
+    if (fixedPointsNode.IsNotNull())
+    {
+      fixedPoints = dynamic_cast<mitk::PointSet*>(fixedPointsNode.GetPointer());
+      if (fixedPoints.IsNull())
+      {
+        m_RMSError->setText("Fixed point set is invalid.");
+        return;
+      }
+    }
   }
-  
-  mitk::PointSet::ConstPointer movingPoints = dynamic_cast<mitk::PointSet*>(m_MovingCombo->GetSelectedNode().GetPointer());
-  if (movingPoints.IsNull())
+
+  mitk::PointSet::Pointer movingPoints = NULL;
+  if(m_MovingCombo->GetSelectedNode())
   {
-    m_RMSError->setText("Moving point set is invalid.");
-    return;
+    mitk::BaseData::Pointer movingPointsNode = m_MovingCombo->GetSelectedNode()->GetData();
+    if (movingPointsNode.IsNotNull())
+    {
+      movingPoints = dynamic_cast<mitk::PointSet*>(movingPointsNode.GetPointer());
+      if (movingPoints.IsNull())
+      {
+        m_RMSError->setText("Moving point set is invalid.");
+        return;
+      }
+    }
   }
-  
-  mitk::CoordinateAxesData::ConstPointer transform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformCombo->GetSelectedNode().GetPointer());
-  if (transform.IsNull())
+
+  mitk::CoordinateAxesData::Pointer transform = NULL;
+  if(m_TransformCombo->GetSelectedNode())
   {
-    m_RMSError->setText("Transform is invalid.");
-    return;    
+    mitk::BaseData::Pointer transformNode = m_TransformCombo->GetSelectedNode()->GetData();
+    if (transformNode.IsNotNull())
+    {
+      transform = dynamic_cast<mitk::CoordinateAxesData*>(transformNode.GetPointer());
+      if (transform.IsNull())
+      {
+        m_RMSError->setText("Transform is invalid.");
+        return;
+      }
+    }
   }
   
   if (movingPoints->GetSize() != fixedPoints->GetSize())
