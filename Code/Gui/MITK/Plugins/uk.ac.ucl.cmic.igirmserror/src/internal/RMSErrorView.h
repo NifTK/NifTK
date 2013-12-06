@@ -17,7 +17,7 @@
 
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
-#include "ui_RMSErrorView.h"
+#include <QmitkRMSErrorWidget.h>
 
 /**
  * \class RMSErrorView
@@ -69,7 +69,7 @@ private:
   /**
    * \brief All the controls for the main view part.
    */
-  Ui::RMSErrorView *m_Controls;
+  QmitkRMSErrorWidget *m_Controls;
 };
 
 #endif // RMSErrorView_h

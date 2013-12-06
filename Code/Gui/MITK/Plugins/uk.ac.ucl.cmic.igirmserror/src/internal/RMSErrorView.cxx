@@ -52,13 +52,13 @@ void RMSErrorView::CreateQtPartControl( QWidget *parent )
 {
   if (!m_Controls)
   {
-    m_Controls = new Ui::RMSErrorView();
+    m_Controls = new QmitkRMSErrorWidget();
     m_Controls->setupUi(parent);
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
-//    m_Controls->SetDataStorage(dataStorage);
+    m_Controls->SetDataStorage(dataStorage);
 
     ctkServiceReference ref = mitk::RMSErrorViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
@@ -71,9 +71,11 @@ void RMSErrorView::CreateQtPartControl( QWidget *parent )
   }
 }
 
+
 //-----------------------------------------------------------------------------
 void RMSErrorView::SetFocus()
 {
+  m_Controls->setFocus();
 }
 
 
@@ -81,5 +83,5 @@ void RMSErrorView::SetFocus()
 void RMSErrorView::OnUpdate(const ctkEvent& event)
 {
   Q_UNUSED(event);
-//  this->m_Controls->Update();
+  this->m_Controls->Update();
 }

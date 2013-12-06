@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RMSErrorView</class>
- <widget class="QWidget" name="RMSErrorView">
+ <class>QmitkRMSErrorWidget</class>
+ <widget class="QWidget" name="QmitkRMSErrorWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,14 +15,18 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QPushButton" name="pushButton">
-     <property name="text">
-      <string>hello</string>
-     </property>
-    </widget>
+    <widget class="QRMSErrorWidget" name="m_RMSErrorWidget" native="true"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QRMSErrorWidget</class>
+   <extends>QWidget</extends>
+   <header>QRMSErrorWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
