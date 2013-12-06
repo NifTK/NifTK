@@ -866,19 +866,27 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
       int sagittalDirection = this->GetSliceUpDirection(MIDAS_ORIENTATION_SAGITTAL);
       int coronalDirection = this->GetSliceUpDirection(MIDAS_ORIENTATION_CORONAL);
 
-      // Neurological convention. Note that this is different from the radiological convention.
+      /// The place of the direction annotations on the render window:
+      ///
+      /// +----0----+
+      /// |         |
+      /// 3         1
+      /// |         |
+      /// +----2----+
       m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(0, coronalDirection > 0 ? "A" : "P");
-      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(1, sagittalDirection > 0 ? "L" : "R");
       m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(2, coronalDirection > 0 ? "P" : "A");
-      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(3, sagittalDirection > 0 ? "R" : "L");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(3, sagittalDirection > 0 ? "L" : "R");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_AXIAL]->SetText(1, sagittalDirection > 0 ? "R" : "L");
+
       m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL]->SetText(0, axialDirection > 0 ? "I" : "S");
-      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL]->SetText(1, coronalDirection > 0 ? "P" : "A");
       m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL]->SetText(2, axialDirection > 0 ? "S" : "I");
       m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL]->SetText(3, coronalDirection > 0 ? "A" : "P");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_SAGITTAL]->SetText(1, coronalDirection > 0 ? "P" : "A");
+
       m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(0, axialDirection > 0 ? "I" : "S");
-      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(1, sagittalDirection > 0 ? "L" : "R");
       m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(2, axialDirection > 0 ? "S" : "I");
-      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(3, sagittalDirection > 0 ? "R" : "L");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(3, sagittalDirection > 0 ? "L" : "R");
+      m_DirectionAnnotations[MIDAS_ORIENTATION_CORONAL]->SetText(1, sagittalDirection > 0 ? "R" : "L");
     }
 
     // If m_RenderingManager is a local rendering manager
