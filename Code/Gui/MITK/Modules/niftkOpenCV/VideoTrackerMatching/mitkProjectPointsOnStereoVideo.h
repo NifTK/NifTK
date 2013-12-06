@@ -110,6 +110,11 @@ public:
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
 
+  /**
+   * \brief calculates the projection / and or reconstruction errors
+   */
+  void CalculateProjectionErrors ();
+
 protected:
 
   ProjectPointsOnStereoVideo();
@@ -154,10 +159,32 @@ private:
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
+  // a bunch of stuff for calculating errors
+  std::vector < std::pair < unsigned int , cv::Point2d > >
+                                m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
+  std::vector < std::pair < unsigned int , cv::Point2d > >
+                                m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
+
+  std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels
+  std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
+  std::vector < cv::Point3d >   m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_Writer;
 
   void ProjectAxes();
+
+  /* \brief 
+   * calculates the x and y errors between the passed point and the nearest point in 
+   * m_ProjectedPoints
+   */
+  cv::Point2d CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  /* \brief 
+   * Finds  the nearest point in 
+   * m_ProjectedPoints
+   */
+  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
 }; // end class
 
 } // end namespace

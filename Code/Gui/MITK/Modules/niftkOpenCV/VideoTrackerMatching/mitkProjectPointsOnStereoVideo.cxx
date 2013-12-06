@@ -320,6 +320,56 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 }
 
 //-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionErrors ()
+{
+  if ( ! m_ProjectOK ) 
+  {
+    MITK_ERROR << "Attempted to run CalculateProjectionErrors, before running project(), no result.";
+    return;
+  }
+
+  // for each point in the gold standard vectors m_LeftGoldStandardPoints
+  // find the corresponding point in m_ProjectedPoints and calculate the projection 
+  // error in pixels. We don't define what the point correspondence is, so 
+  // maybe assume that the closest point is the match? Should be valid as long as the 
+  // density of the projected points is significantly less than the expected errors
+  // Then, estimate the mm error by taking the z measure from m_PointsInLeftLensCS
+  // and projecting onto it.
+  //
+  for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
+  {
+  }
+
+
+}
+
+cv::Point2d ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+{
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left ) ;
+  
+  return matchingPoint - GSPoint.second;
+
+}
+
+//-----------------------------------------------------------------------------
+cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left )
+{
+  std::vector < cv::Point2d > pointVector;
+  for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].size() ; i ++ )
+  {
+    if ( left )
+    {
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].first );
+    }
+    else
+    {
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].second );
+    }
+  }
+  return mitk::FindNearestPoint( GSPoint.second , pointVector );
+}
+
+//-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPoints ( 
     std::vector < std::pair < cv::Point3d , cv::Scalar > > points )
 {
