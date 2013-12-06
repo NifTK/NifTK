@@ -312,7 +312,7 @@ extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
  * to the passed point, and returns the index of that point
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d& point,
-    const std::vector < cv::Point2d >& matchingPonints );
+    const std::vector < cv::Point2d >& matchingPonints , unsigned int * index = NULL );
 
 } // end namespace
 

@@ -1130,7 +1130,7 @@ double StdDev(const std::vector<double>& input)
 
 //-----------------------------------------------------------------------------
 cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
-    const std::vector < cv::Point2d>& matchingPoints ) 
+    const std::vector < cv::Point2d>& matchingPoints, unsigned int * Index ) 
 {
   unsigned int index = 0 ;
   double mindistance;
@@ -1153,6 +1153,10 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
         index = i;
       }
     }
+  }
+  if ( Index != NULL ) 
+  {
+    *Index = index;
   }
   return matchingPoints[index];
 }
