@@ -31,8 +31,8 @@ const int SurfaceBasedRegistration::DEFAULT_MAX_POINTS = 8000;
 const bool SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE = false;
 //-----------------------------------------------------------------------------
 SurfaceBasedRegistration::SurfaceBasedRegistration()
-:m_MaximumIterations(50)
-,m_MaximumNumberOfLandmarkPointsToUse(200)
+:m_MaximumIterations(SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS)
+,m_MaximumNumberOfLandmarkPointsToUse(SurfaceBasedRegistration::DEFAULT_MAX_POINTS)
 ,m_Method(VTK_ICP)
 ,m_Matrix(NULL)
 {
