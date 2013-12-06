@@ -394,7 +394,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors ()
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+cv::Point3d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
   unsigned int* index = new unsigned int;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, index ) ;
@@ -402,12 +402,40 @@ cv::Point2d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair <
 
   if ( ! left )
   {
-    //need to multiply by r2l.inv to put it in right lens coordinates
+    cv::Mat m1 = cvCreateMat(3,1,CV_64FC1);
+    m1.at<double>(0,0) = matchingPointInLensCS.x;
+    m1.at<double>(1,0) = matchingPointInLensCS.y;
+    m1.at<double>(2,0) = matchingPointInLensCS.z;
+
+    m1 = m1 * m_RightToLeftRotationMatrix->inv() - *m_RightToLeftTranslationVector;
+    
+    matchingPointInLensCS.x = m1.at<double>(0,0);
+    matchingPointInLensCS.y = m1.at<double>(1,0);
+    matchingPointInLensCS.z = m1.at<double>(2,0);
   }
   
-  delete index;
-  return matchingPoint - GSPoint.second;
+  cv::Point3d reProjectionGS;
+  if ( left ) 
+  {
+    cv::Point2d undistortedPoint;
+    mitk::UndistortPoint (GSPoint.second, *m_LeftIntrinsicMatrix, 
+        *m_LeftDistortionVector, undistortedPoint);
+    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_LeftIntrinsicMatrix);
+  }
+  else
+  {
+    cv::Point2d undistortedPoint;
+    mitk::UndistortPoint (GSPoint.second, *m_RightIntrinsicMatrix, 
+        *m_RightDistortionVector, undistortedPoint);
+    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_RightIntrinsicMatrix);
+  }
+  
+  reProjectionGS.x *= matchingPointInLensCS.z;
+  reProjectionGS.y *= matchingPointInLensCS.z;
+  reProjectionGS.z *= matchingPointInLensCS.z;
 
+  delete index;
+  return matchingPointInLensCS - reProjectionGS;
 }
 
 //-----------------------------------------------------------------------------

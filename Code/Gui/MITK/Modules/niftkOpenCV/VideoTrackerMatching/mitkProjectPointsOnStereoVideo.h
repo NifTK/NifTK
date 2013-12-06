@@ -186,7 +186,7 @@ private:
    * calculates the x,y, and z error between the passed point and the nearest point in 
    * m_ProjectedPoints when projected onto a plane distant from the camera
    */
-  cv::Point2d CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  cv::Point3d CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
  
   /* \brief 
    * Finds  the nearest point in 
