@@ -1128,4 +1128,33 @@ double StdDev(const std::vector<double>& input)
   return stdev;
 }
 
+//-----------------------------------------------------------------------------
+cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
+    const std::vector < cv::Point2d>& matchingPoints ) 
+{
+  unsigned int index = 0 ;
+  double mindistance;
+  for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ ) 
+  {
+    double distance = sqrt ( 
+        ( point.x - matchingPoints[i].x ) * 
+        ( point.x - matchingPoints[i].x ) +
+        ( point.y - matchingPoints[i].y ) * 
+        ( point.y - matchingPoints[i].y ) );
+    if ( i == 0 ) 
+    {
+      mindistance = distance;
+    }
+    else
+    {
+      if ( distance < mindistance )
+      {
+        mindistance = distance;
+        index = i;
+      }
+    }
+  }
+  return matchingPoints[index];
+}
+
 } // end namespace
