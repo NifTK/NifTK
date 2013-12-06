@@ -534,6 +534,11 @@ extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   CvMat& output3DPoints
   );
 
+/** 
+ * \brief Reprojects undistorted  screen points to normalised points (x/z, y/z, 1.0) in lens coordinates.
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d ReProjectPoint (
+    const cv::Point2d& inputUndistortedPoint, const cv::Mat& CameraIntrinsicParams);
 
 /**
  * \brief Triangulates a vector of un-distorted (i.e. already correction for distortion) 2D point pairs back into 3D.
