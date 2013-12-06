@@ -90,7 +90,7 @@ public:
      std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
-  void SetSaveVideo( bool);
+  void SetSaveVideo( bool state, std::string prefix = "" );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
@@ -171,7 +171,8 @@ private:
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
   CvCapture*                    m_Capture;
-  CvVideoWriter*                m_Writer;
+  CvVideoWriter*                m_LeftWriter;
+  CvVideoWriter*                m_RightWriter;
 
   void ProjectAxes();
 

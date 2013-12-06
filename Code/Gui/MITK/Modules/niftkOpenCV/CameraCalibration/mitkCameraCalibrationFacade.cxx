@@ -2098,6 +2098,10 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
 {
   std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  // i'm undecided about whether we should break on eof too...
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit /*| std::ifstream::eofbit*/);
+
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
@@ -2106,11 +2110,16 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
     }
   }
 
-  int distortionVectorLength = CameraDistortion->size().height * CameraDistortion->size().width;
-
-  for ( int col = 0 ; col < distortionVectorLength ; col++ )
+  if (CameraDistortion != 0)
   {
-    fin >> CameraDistortion->at<double>(0,col);
+    // this should work around any row-vs-column vector opencv matrix confusion issues.
+    for (int row = 0; row < CameraDistortion->size().height; ++row)
+    {
+      for (int col = 0; col < CameraDistortion->size().width; ++col)
+      {
+        fin >> CameraDistortion->at<double>(row, col);
+      }
+    }
   }
 }
 
@@ -2120,16 +2129,24 @@ void LoadStereoTransformsFromPlainText (const std::string& filename,
     cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
 {
   std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  // i'm undecided about whether we should break on eof too...
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit /*| std::ifstream::eofbit*/);
+
   for ( int row = 0; row < 3; row ++ )
   {
     for ( int col = 0; col < 3; col ++ )
     {
        fin >> rightToLeftRotationMatrix->at<double>(row,col);
     }
-  } 
-  for ( int col = 0 ; col < 3 ; col++ )
+  }
+
+  for (int row = 0; row < rightToLeftTranslationVector->size().height; ++row)
   {
-    fin >> rightToLeftTranslationVector->at<double>(0,col);
+    for (int col = 0; col < rightToLeftTranslationVector->size().width; ++col)
+    {
+      fin >> rightToLeftTranslationVector->at<double>(row, col);
+    }
   }
 }
 

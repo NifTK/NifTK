@@ -16,6 +16,7 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
 #include <cv.h>
+//#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
 
@@ -44,7 +45,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
-, m_Writer(NULL)
+, m_LeftWriter(NULL)
+, m_RightWriter(NULL)
 {
 }
 
@@ -134,13 +136,19 @@ void ProjectPointsOnStereoVideo::SetVisualise ( bool visualise )
   return;
 }
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
+void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string prefix )
 {
   if ( m_InitOK ) 
   {
     MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
   }
   m_SaveVideo = savevideo;
+  if ( savevideo )
+  {
+    cv::Size S = cv::Size((int) 960, (int) 540 );
+    m_LeftWriter =cvCreateVideoWriter(std::string(prefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+    m_RightWriter =cvCreateVideoWriter(std::string(prefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
+  }
   m_InitOK = false;
   return;
 }
@@ -172,6 +180,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   int framenumber = 0 ;
   int key = 0;
   bool drawProjection = true;
+  IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
+  IplImage *smallcorrectedimage = cvCreateImage (cvSize(960, 540), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     //put the world points into the coordinates of the left hand camera.
@@ -227,6 +237,12 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       screenPoints.push_back(pointPair);
     }
     m_ProjectedPoints.push_back(screenPoints);
+    
+    //de-allocate the matrices    
+    cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
+    cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
+    cvReleaseMat(&output2DPointsLeft);
+    cvReleaseMat(&output2DPointsRight);
 
     if ( m_Visualise || m_SaveVideo ) 
     {
@@ -288,10 +304,30 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           }
         }
       }
+      if ( m_SaveVideo )
+      {
+        if ( m_LeftWriter != NULL ) 
+        {
+          if ( framenumber%2 == 0 ) 
+          {
+            IplImage image(videoImage);
+            cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
+            cvWriteFrame(m_LeftWriter,smallcorrectedimage);
+          }
+        }
+        if ( m_RightWriter != NULL ) 
+        {
+          if ( framenumber%2 != 0 ) 
+          {
+            IplImage image(videoImage);
+            cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
+            cvWriteFrame(m_RightWriter,smallcorrectedimage);
+          }
+        }
+      }
       if ( m_Visualise ) 
       {
         IplImage image(videoImage);
-        IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
         cvResize (&image, smallimage,CV_INTER_LINEAR);
         if ( framenumber %2 == 0 ) 
         {
@@ -314,6 +350,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
     }
     framenumber ++;
+  }
+  if ( m_LeftWriter != NULL )
+  {
+    cvReleaseVideoWriter(&m_LeftWriter);
+  }
+  if ( m_RightWriter != NULL )
+  {
+    cvReleaseVideoWriter(&m_RightWriter);
   }
   m_ProjectOK = true;
 
