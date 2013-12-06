@@ -257,7 +257,6 @@ void SurfaceRegView::OnCalculateButtonPressed()
     }
   }
 
-  registration->ApplyTransform(movingnode);
   // we seem to need an explicit node-modified to trigger the usual listeners.
   // and even with this, the window will not re-render on its own, have to click in it.
   movingnode->Modified();
@@ -267,7 +266,12 @@ void SurfaceRegView::OnCalculateButtonPressed()
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
-  ApplyMatrixToNodes(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
+  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+  std::vector<mitk::DataNode*> nodes = m_Controls->m_ComposeWithDataNode->GetSelectedNodes();
+  for ( unsigned int i = 0 ; i < nodes.size() ; i ++ ) 
+  {
+    registration->ApplyTransform(nodes[i],m_Matrix);
+  }
 }
 
 
