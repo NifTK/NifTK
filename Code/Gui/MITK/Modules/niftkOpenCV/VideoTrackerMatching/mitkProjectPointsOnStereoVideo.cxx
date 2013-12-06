@@ -382,11 +382,18 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors ()
   //
   for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
   {
+    bool left = true;
+    m_LeftProjectionErrors.push_back(this->CalculateProjectionError( m_LeftGoldStandardPoints[i], left) );
   }
-
+  for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
+  {
+    bool left = false;
+    m_RightProjectionErrors.push_back(this->CalculateProjectionError( m_RightGoldStandardPoints[i], left) );
+  }
 
 }
 
+//-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left ) ;
