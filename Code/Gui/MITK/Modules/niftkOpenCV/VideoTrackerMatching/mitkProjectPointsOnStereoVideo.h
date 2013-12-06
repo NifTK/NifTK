@@ -181,11 +181,18 @@ private:
    * m_ProjectedPoints
    */
   cv::Point2d CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+
+  /* \brief 
+   * calculates the x,y, and z error between the passed point and the nearest point in 
+   * m_ProjectedPoints when projected onto a plane distant from the camera
+   */
+  cv::Point2d CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+ 
   /* \brief 
    * Finds  the nearest point in 
    * m_ProjectedPoints
    */
-  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left, unsigned int * index = NULL );
 }; // end class
 
 } // end namespace
