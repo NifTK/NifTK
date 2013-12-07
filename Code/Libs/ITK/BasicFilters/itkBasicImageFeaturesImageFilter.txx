@@ -138,6 +138,9 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   derivativeFilterX = DerivativeFilterTypeX::New();
   derivativeFilterY = DerivativeFilterTypeY::New();
 
+  derivativeFilterX->SetSingleThreadedExecution();
+  derivativeFilterY->SetSingleThreadedExecution();
+
   derivativeFilterX->SetSigma( m_Sigma );
   derivativeFilterY->SetSigma( m_Sigma );
 
@@ -174,7 +177,6 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 
   m_S00 = GetDerivative(DerivativeFilterTypeX::ZeroOrder,
 			DerivativeFilterTypeY::ZeroOrder );
-
   // S10
 
   niftkitkInfoMacro(<< "Computing S10");
@@ -277,6 +279,28 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
 }
 
 
+/* -----------------------------------------------------------------------
+   GenerateInputRequestedRegion()
+   ----------------------------------------------------------------------- */
+template< typename TInputImage, typename TOutputImage >
+void
+BasicImageFeaturesImageFilter< TInputImage, TOutputImage >
+::GenerateInputRequestedRegion()
+throw( InvalidRequestedRegionError )
+{
+  // call the superclass' implementation of this method. this should
+  // copy the output requested region to the input requested region
+  Superclass::GenerateInputRequestedRegion();
+
+  // This filter needs all of the input
+  typename BasicImageFeaturesImageFilter< TInputImage, TOutputImage >
+    ::InputImagePointer image = const_cast< InputImageType * >( this->GetInput() );
+
+  if ( image )
+  {
+    image->SetRequestedRegion( this->GetInput()->GetLargestPossibleRegion() );
+  }
+}
 
 
 /* -----------------------------------------------------------------------
@@ -307,7 +331,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     this->BeforeThreadedGenerateData();
   
     // Set up the multithreaded processing
-    typename ImageSource<TOutputImage>::ThreadStruct str;
+    BasicImageFeaturesThreadStruct str;
     str.Filter = this;
     
     this->GetMultiThreader()->SetNumberOfThreads( 1 );
@@ -338,6 +362,7 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
   vnl_double_2 *dirn = 0;		// The list of vector orientations
   vnl_double_2 *orient = 0;		// Vector orientations for the current pixel (eg. wrt. to origin)
 
+  niftkitkDebugMacro( << "BIF Region: " << outputRegionForThread );
 
   // Array to ensure oriented BIFs are correctly ordered
 
