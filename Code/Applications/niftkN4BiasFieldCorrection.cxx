@@ -105,6 +105,7 @@ public:
   float NumberOfControlPoints;
 
   std::string fileInputImage;
+  std::string fileInputMask;
   std::string fileOutputBiasField;
   std::string fileOutputImage;
 
@@ -139,6 +140,7 @@ public:
     std::cout << "ARG: No of control points: " << NumberOfControlPoints << std::endl;
     
     std::cout << "ARG: Input image file: " << fileInputImage << std::endl;
+    std::cout << "ARG: Input mask file: " << fileInputMask << std::endl;
     std::cout << "ARG: Output bias field: " << fileOutputBiasField << std::endl;
     std::cout << "ARG: Output corrected image: " << fileOutputImage << std::endl;
     
@@ -219,6 +221,10 @@ int DoMain(Arguments &args)
   }
 
   typename InputImageType::Pointer imOriginal = imageReader->GetOutput();
+  imOriginal->SetRegions( imageReader->GetOutput()->GetLargestPossibleRegion() ) ;
+  imOriginal->SetOrigin(imageReader->GetOutput()->GetOrigin());
+  imOriginal->SetSpacing(imageReader->GetOutput()->GetSpacing());
+  imOriginal->SetDirection(imageReader->GetOutput()->GetDirection());
   imOriginal->DisconnectPipeline();
 
   progress = ++iStep/nSteps;
@@ -231,48 +237,68 @@ int DoMain(Arguments &args)
 
   typedef unsigned char MaskPixelType;
   typedef itk::Image<MaskPixelType, Dimension> MaskImageType;
-  typedef itk::OtsuThresholdImageFilter< InputImageType, 
+  typedef itk::ImageFileReader< MaskImageType > MaskFileReaderType;
+  typename MaskFileReaderType::Pointer maskReader = MaskFileReaderType::New();
+  typedef itk::OtsuThresholdImageFilter< InputImageType,
                                          MaskImageType > OtsuThresholdImageFilterType;
 
   typename OtsuThresholdImageFilterType::Pointer thresholder = OtsuThresholdImageFilterType::New();
 
-  thresholder->SetInput( imOriginal );
+  if ( args.fileInputMask.length() == 0) {
+      thresholder->SetInput( imOriginal );
 
-  thresholder->SetInsideValue( 0 );
-  thresholder->SetOutsideValue( 1 );
+      thresholder->SetInsideValue( 0 );
+      thresholder->SetOutsideValue( 1 );
 
-  thresholder->SetNumberOfHistogramBins( 200 );
+      thresholder->SetNumberOfHistogramBins( 200 );
 
-  try
-  {
-    std::cout << "Thresholding to obtain image mask" << std::endl;
-    thresholder->Update();
-  }
-  catch (itk::ExceptionObject &e)
-  {
-    std::cerr << e << std::endl;
-  }
+      try
+      {
+        std::cout << "Thresholding to obtain image mask" << std::endl;
+        thresholder->Update();
+      }
+      catch (itk::ExceptionObject &e)
+      {
+        std::cerr << e << std::endl;
+      }
 
+      progress = ++iStep/nSteps;
+      std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
+
+      // Write the mask image to a file?
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      if ( args.fileOutputMask.length() != 0 )
+      {
+        WriteImageToFile< MaskImageType >( args.fileOutputMask, "mask image",
+                                           thresholder->GetOutput() );
+      }
+    }
+    else {
+      try
+      {
+        std::cout << "Reading input image mask" << std::endl;
+        maskReader->SetFileName( args.fileInputMask );
+        maskReader->Update();
+      }
+      catch (itk::ExceptionObject &e)
+      {
+        std::cerr << e << std::endl;
+      }
+
+      if ( args.fileOutputMask.length() != 0 )
+      {
+        WriteImageToFile< MaskImageType >( args.fileOutputMask, "mask image",
+                                           maskReader->GetOutput() );
+      }
+
+    }
   progress = ++iStep/nSteps;
   std::cout << "<filter-progress>" << std::endl
-	    << progress << std::endl
-	    << "</filter-progress>" << std::endl;
-
-
-  // Write the mask image to a file?
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  if ( args.fileOutputMask.length() != 0 ) 
-  {
-    WriteImageToFile< MaskImageType >( args.fileOutputMask, "mask image",
-                                       thresholder->GetOutput() );
-  }
-  
-  progress = ++iStep/nSteps;
-  std::cout << "<filter-progress>" << std::endl
-	    << progress << std::endl
-	    << "</filter-progress>" << std::endl;
-
+        << progress << std::endl
+        << "</filter-progress>" << std::endl;
 
   // Shrink the image and the mask
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -319,7 +345,12 @@ int DoMain(Arguments &args)
  
   typename ShrinkMaskFilterType::Pointer maskShrinkFilter = ShrinkMaskFilterType::New();
 
-  maskShrinkFilter->SetInput( thresholder->GetOutput() );
+  if ( args.fileInputMask.length() == 0) {
+    maskShrinkFilter->SetInput( thresholder->GetOutput() );
+  }
+  else {
+    maskShrinkFilter->SetInput( maskReader->GetOutput() );
+  }
 
   maskShrinkFilter->SetShrinkFactor(0, args.subsampling);
   maskShrinkFilter->SetShrinkFactor(1, args.subsampling);
@@ -577,6 +608,7 @@ int main( int argc, char *argv[] )
   args.NumberOfControlPoints           = NumberOfControlPoints;                
 
   args.fileInputImage      = fileInputImage;
+  args.fileInputMask       = fileInputMask;
   args.fileOutputBiasField = fileOutputBiasField;
   args.fileOutputImage     = fileOutputImage;
   
