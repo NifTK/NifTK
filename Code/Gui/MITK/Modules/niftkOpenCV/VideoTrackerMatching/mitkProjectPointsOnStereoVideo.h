@@ -95,6 +95,8 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
+  void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
+  void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
   /**
    * \brief sets the world points and corresponding vectors
@@ -113,7 +115,7 @@ public:
   /**
    * \brief calculates the projection / and or reconstruction errors
    */
-  void CalculateProjectionErrors ();
+  void CalculateProjectionErrors (std::string outPrefix);
 
 protected:
 

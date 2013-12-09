@@ -202,7 +202,7 @@ int main(int argc, char** argv)
       std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
       while ( fin >> frameNumber >> x1 >> y1 )
       {
-        leftGS.push_back(std::pair<unsigned int,cv::Point2d> (framenumber, cv::Point2d(x1,y1)));
+        leftGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
       }
       fin.close();
       projector->SetLeftGoldStandardPoints(leftGS);
@@ -216,15 +216,15 @@ int main(int argc, char** argv)
       std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
       while ( fin >> frameNumber >> x1 >> y1 )
       {
-        rightGS.push_back(std::pair<unsigned int,cv::Point2d> (framenumber, cv::Point2d(x1,y1)));
+        rightGS.push_back(std::pair<unsigned int,cv::Point2d> (frameNumber, cv::Point2d(x1,y1)));
       }
       fin.close();
-      projector->SetRightGoldStandardPoints(leftGS);
+      projector->SetRightGoldStandardPoints(rightGS);
     }
 
     if ( outputErrors.length() != 0 ) 
     {
-      projector->CalculateProjectionErrors();
+      projector->CalculateProjectionErrors(outputErrors);
     }
    
 

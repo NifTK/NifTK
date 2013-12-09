@@ -364,7 +364,21 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateProjectionErrors ()
+void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
+    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+{
+   m_LeftGoldStandardPoints = points;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
+    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+{
+   m_RightGoldStandardPoints = points;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefix)
 {
   if ( ! m_ProjectOK ) 
   {
@@ -384,12 +398,46 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors ()
   {
     bool left = true;
     m_LeftProjectionErrors.push_back(this->CalculateProjectionError( m_LeftGoldStandardPoints[i], left) );
+    m_LeftReProjectionErrors.push_back(this->CalculateReProjectionError ( m_LeftGoldStandardPoints[i] , left ));
   }
   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
   {
     bool left = false;
     m_RightProjectionErrors.push_back(this->CalculateProjectionError( m_RightGoldStandardPoints[i], left) );
+    m_RightReProjectionErrors.push_back(this->CalculateReProjectionError ( m_RightGoldStandardPoints[i], left ));
   }
+
+  std::ofstream lpout (std::string (outPrefix + "_leftProjection.errors").c_str());
+  lpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_LeftProjectionErrors.size() ; i ++ )
+  {
+    lpout << m_LeftProjectionErrors[i] ;
+  }
+  lpout.close();
+
+  std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
+  rpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_RightProjectionErrors.size() ; i ++ )
+  {
+    rpout << m_RightProjectionErrors[i] ;
+  }
+  rpout.close();
+
+  std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
+  lrpout << "#xmm ymm zmm" << std::endl;
+  for ( unsigned int i = 0 ; i < m_LeftReProjectionErrors.size() ; i ++ )
+  {
+    lrpout << m_LeftReProjectionErrors[i] ;
+  }
+  lrpout.close();
+
+  std::ofstream rrpout (std::string (outPrefix + "_rightReProjection.errors").c_str());
+  rrpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_RightReProjectionErrors.size() ; i ++ )
+  {
+    rrpout << m_RightReProjectionErrors[i] ;
+  }
+  rrpout.close();
 
 }
 
