@@ -99,9 +99,9 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     std::cout << "Triangulate2DPointPairsTo3D: Read in " << pointPairs.size() << " point pairs." << std::endl;
 
     cv::Mat leftIntrinsic = cvCreateMat (3,3,CV_64FC1);
-    cv::Mat leftDistortion = cvCreateMat (1,5,CV_64FC1);
+    cv::Mat leftDistortion = cvCreateMat (1,4,CV_64FC1);    // not used (yet)
     cv::Mat rightIntrinsic = cvCreateMat (3,3,CV_64FC1);
-    cv::Mat rightDistortion = cvCreateMat (1,5,CV_64FC1);
+    cv::Mat rightDistortion = cvCreateMat (1,4,CV_64FC1);   // not used (yet)
     cv::Mat rightToLeftRotationMatrix = cvCreateMat (3,3,CV_64FC1);
     cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
 
@@ -110,28 +110,26 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     LoadCameraIntrinsicsFromPlainText(intrinsicRightFileName, &rightIntrinsic, &rightDistortion);
     LoadStereoTransformsFromPlainText(rightToLeftExtrinsics, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
-    // Triangulate each point.
-    std::vector< cv::Point3d > pointsIn3D;
+    // batch-triangulate all points.
+    std::vector <cv::Point3d> pointsIn3D = TriangulatePointPairsUsingGeometry(
+        pointPairs,
+        leftIntrinsic,
+        rightIntrinsic,
+        rightToLeftRotationMatrix,
+        rightToLeftTranslationVector,
+        // choose an arbitrary threshold that is unlikely to overflow.
+        std::numeric_limits<int>::max());
+
     mitk::PointSet::Pointer ps = mitk::PointSet::New();
-
-    for (unsigned int i = 0; i < pointPairs.size(); i++)
+    for (unsigned int i = 0; i < pointsIn3D.size(); i++)
     {
-      cv::Point3d pointIn3D = mitk::TriangulatePointPairUsingGeometry(
-          pointPairs[i],
-          leftIntrinsic,
-          rightIntrinsic,
-          rightToLeftRotationMatrix,
-          rightToLeftTranslationVector
-          );
-      pointsIn3D.push_back(pointIn3D);
-
       mitk::Point3D p;
       p[0] = pointsIn3D[i].x;
       p[1] = pointsIn3D[i].y;
       p[2] = pointsIn3D[i].z;
       ps->InsertPoint(i, p);
-
     }
+
     mitk::IOUtil::SavePointSet(ps, outputFileName);
     isSuccessful = true;
   }
