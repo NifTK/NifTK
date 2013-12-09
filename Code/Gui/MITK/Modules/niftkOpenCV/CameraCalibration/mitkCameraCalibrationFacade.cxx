@@ -2099,8 +2099,7 @@ void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
 {
   std::ifstream fin(filename.c_str());
   // make sure we throw an exception if parsing fails for any reason.
-  // i'm undecided about whether we should break on eof too...
-  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit /*| std::ifstream::eofbit*/);
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
   for ( int row = 0; row < 3; row ++ )
   {
@@ -2130,8 +2129,7 @@ void LoadStereoTransformsFromPlainText (const std::string& filename,
 {
   std::ifstream fin(filename.c_str());
   // make sure we throw an exception if parsing fails for any reason.
-  // i'm undecided about whether we should break on eof too...
-  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit /*| std::ifstream::eofbit*/);
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
   for ( int row = 0; row < 3; row ++ )
   {
