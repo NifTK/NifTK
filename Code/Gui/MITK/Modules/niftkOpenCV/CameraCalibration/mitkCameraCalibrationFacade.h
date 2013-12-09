@@ -656,6 +656,9 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (co
 /**
  * \brief Load camera intrinsics from a plain text file and return results as
  * cv::Mat
+ * \param cameraIntrinsic 3x3 matrix (double!)
+ * \param cameraDistortion is optional, number of components needs to match the file! (double!)
+ * \throws something if parsing fails for any reason.
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
   cv::Mat* cameraIntrinsic, cv::Mat* cameraDistortion);
@@ -664,6 +667,7 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const s
 /**
  * \brief Load stereo camera parameters from a plain text file
  * cv::Mat
+ * \throws something if parsing fails for any reason.
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadStereoTransformsFromPlainText ( const std::string& filename,
   cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
