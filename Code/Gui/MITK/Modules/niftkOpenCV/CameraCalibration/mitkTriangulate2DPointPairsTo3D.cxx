@@ -133,7 +133,7 @@ bool Triangulate2DPointPairsTo3D::Triangulate(const std::string& input2DPointPai
     mitk::IOUtil::SavePointSet(ps, outputFileName);
     isSuccessful = true;
   }
-  catch(std::logic_error& e)
+  catch (const std::logic_error& e)
   {
     std::cerr << "Triangulate2DPointPairsTo3D::Project: exception thrown e=" << e.what() << std::endl;
   }
