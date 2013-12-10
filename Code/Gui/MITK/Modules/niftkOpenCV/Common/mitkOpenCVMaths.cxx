@@ -471,7 +471,8 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
 
 
 //-----------------------------------------------------------------------------
-cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers, 
+    cv::Point2d * StandardDeviation)
 {
   cv::Point2d centroid;
   centroid.x = 0.0;
@@ -487,7 +488,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
 
   centroid.x /= (double) numberOfPoints;
   centroid.y /= (double) numberOfPoints;
-  if ( ! RefineForOutliers )
+  if ( ( ! RefineForOutliers ) && ( StandardDeviation == NULL ) )
   {
     return centroid;
   }
@@ -503,6 +504,12 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   }
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
+
+  if ( ! RefineForOutliers ) 
+  {
+    *StandardDeviation = standardDeviation;
+    return centroid;
+  }
 
   cv::Point2d highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
   cv::Point2d lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
@@ -524,6 +531,27 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   centroid.x /= (double) goodPoints;
   centroid.y /= (double) goodPoints;
 
+  if ( StandardDeviation == NULL ) 
+  {
+    return centroid;
+  }
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
+         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    {
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  
+  *StandardDeviation = standardDeviation;
   return centroid;
 }
 
