@@ -1585,7 +1585,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
   bool isVisible = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   double lowerThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
-  double upperThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
+  double upperThreshold = m_GeneralControls->m_ThresholdsSlider->maximumValue();
   bool skipUpdate = !isVisible;
 
   if (isVisible)
