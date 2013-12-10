@@ -162,8 +162,10 @@ int ReorientateImage( arguments &args )
   inputImage->DisconnectPipeline();
 
   if ( args.flgVerbose ) 
+  {
     std::cout << std::endl << "Input image: " <<  args.fileInputImage.c_str() << std::endl;
-
+    PrintOrientationInfo<Dimension, ScalarType>( inputImage );
+  }
   
   // Correct the input image orientation if it is incorrect
 
@@ -172,17 +174,22 @@ int ReorientateImage( arguments &args )
     AdaptorType adaptor;
     DirectionType newDirection;
 
-    if ( args.flgVerbose ) 
-      std::cout << std::endl << "Input orientation specified as: " 
-		<< args.strInputOrientation.c_str() << std::endl;
-
     newDirection = adaptor.ToDirectionCosines( itk::ConvertStringToSpatialOrientation( args.strInputOrientation ) );
+
+    if ( args.flgVerbose ) 
+    {
+      std::cout << std::endl << "Input orientation specified as: " 
+		<< args.strInputOrientation.c_str() << std::endl
+                << "Setting image direction to: " << std::endl << newDirection;
+    }
 
     inputImage->SetDirection( newDirection );
   }
 
+
   if ( args.flgVerbose ) 
     PrintOrientationInfo<Dimension, ScalarType>( inputImage );
+
 
 
   // Reorientate the image
@@ -206,6 +213,15 @@ int ReorientateImage( arguments &args )
 
   try
   {
+    if ( args.flgVerbose ) 
+    {
+      if ( args.strOutputOrientation.length() )
+        std::cout << std::endl << "Output orientation specified as: " 
+                  << args.strOutputOrientation.c_str() << std::endl;
+      else
+        std::cout << std::endl << "Default output orientation: RAI" << std::endl;
+    }
+
     orienter->Update();
   }
   catch( itk::ExceptionObject & err ) 
@@ -224,11 +240,16 @@ int ReorientateImage( arguments &args )
 
   typename ImageType::Pointer reorientatedImage = orienter->GetOutput();
   reorientatedImage->DisconnectPipeline();
+    
+  if ( args.flgVerbose ) 
+    PrintOrientationInfo<Dimension, ScalarType>( reorientatedImage );
 
 
   // Preserve the origin in the same voxel?
 
   typename ImageType::PointType newOrigin;
+
+#if 0
 
   if ( ! args.flgResetOriginToZero )
   {
@@ -260,14 +281,27 @@ int ReorientateImage( arguments &args )
 
   // or reset it to [0,0,0]
 
-  else 
+  else
     for ( iDim=0; iDim<Dimension; iDim++ )
       newOrigin[ iDim ] = 0.;
-    
-
-    reorientatedImage->SetOrigin( newOrigin );
-
   
+  
+  reorientatedImage->SetOrigin( newOrigin );
+    
+#else
+
+  if ( args.flgResetOriginToZero )
+  {
+    for ( iDim=0; iDim<Dimension; iDim++ )
+      newOrigin[ iDim ] = 0.;
+        
+    reorientatedImage->SetOrigin( newOrigin );
+  }
+
+#endif
+
+
+#if 0
   // and reorientate the direction cosines
 
   DirectionType oldDirection = inputImage->GetDirection();
@@ -296,7 +330,7 @@ int ReorientateImage( arguments &args )
     
     PrintOrientationInfo<Dimension, ScalarType>( reorientatedImage );
   }
-
+#endif
 
   // Write the image to a file
         
