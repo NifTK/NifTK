@@ -14,7 +14,8 @@
 
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
-#include <strstream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <CameraCalibration/mitkCameraCalibrationFacade.h>
 
