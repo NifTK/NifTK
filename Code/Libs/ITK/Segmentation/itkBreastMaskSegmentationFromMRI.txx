@@ -795,6 +795,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   region.SetIndex( start );
 
+  if (flgVerbose) 
+    std::cout << "Searching for sternum starting from: " << start << std::endl
+              << "Search region is: " << region << std::endl;
+
   LineIteratorType itSegLinear( imSegmented, region );
 
   itSegLinear.SetDirection( 1 );
@@ -808,12 +812,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     ++itSegLinear;
   }
 
+  if (flgVerbose) 
+    std::cout << "Mid-sternum location: " << idxMidSternum << std::endl;
+
   typename InternalImageType::PixelType 
     pixelValueMidSternumT2 = imStructural->GetPixel( idxMidSternum );
 
   if (flgVerbose) 
-    std::cout << "Mid-sternum location: " << idxMidSternum << std::endl
-	      << "Mid-sternum structural voxel intensity: " << pixelValueMidSternumT2
+    std::cout << "Mid-sternum structural voxel intensity: " << pixelValueMidSternumT2
 	      << std::endl;
 
   
