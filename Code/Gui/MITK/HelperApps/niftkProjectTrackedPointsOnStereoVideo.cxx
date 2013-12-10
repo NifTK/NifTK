@@ -224,6 +224,7 @@ int main(int argc, char** argv)
 
     if ( outputErrors.length() != 0 ) 
     {
+      projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       projector->CalculateProjectionErrors(outputErrors);
     }
    

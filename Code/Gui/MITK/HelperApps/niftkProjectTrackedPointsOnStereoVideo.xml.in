@@ -113,7 +113,16 @@
       <label>The video lag</label>
       <default>0</default>
     </integer>
-							
+ 
+    <float>
+	<name>pointMatchingRatio</name>
+	<longflag>pointMatchingRatio</longflag>
+	<description>The minimum ratio between the lowest 2 distance when matching Gold standard points</description>
+	<label>The minimum ratio between the lowest 2 distance when matching Gold standard points</label>
+	<default>3.0</default>
+    </float>
+
+						
 
   </parameters>
   
