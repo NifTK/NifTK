@@ -47,6 +47,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_Capture(NULL)
 , m_LeftWriter(NULL)
 , m_RightWriter(NULL)
+, m_AllowablePointMatchingRatio (1.0) 
 {
 }
 
@@ -473,7 +474,15 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
   unsigned int* index = new unsigned int;
-  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, index ) ;
+  double minRatio;
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
+  
+  if ( minRatio < m_AllowablePointMatchingRatio ) 
+  {
+    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from re-projection errors"; 
+    return;
+  }
+ 
   cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first][*index].first;
 
   if ( ! left )
@@ -525,7 +534,14 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
-  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left ) ;
+  double minRatio;
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
+
+  if ( minRatio < m_AllowablePointMatchingRatio ) 
+  {
+    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from projection errors"; 
+    return;
+  }
   
   if ( left ) 
   {
@@ -539,7 +555,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , unsigned int* index)
+cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
 {
   std::vector < cv::Point2d > pointVector;
   for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].size() ; i ++ )
@@ -553,8 +569,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
       pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].second );
     }
   }
-  double minRatio;
-  return mitk::FindNearestPoint( GSPoint.second , pointVector ,&minRatio, index );
+  return mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, index );
 }
 
 //-----------------------------------------------------------------------------

@@ -176,6 +176,8 @@ private:
   CvVideoWriter*                m_LeftWriter;
   CvVideoWriter*                m_RightWriter;
 
+  double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
+
   void ProjectAxes();
 
   /* \brief 
@@ -195,7 +197,7 @@ private:
    * Finds  the nearest point in 
    * m_ProjectedPoints
    */
-  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left, unsigned int * index = NULL );
+  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
 }; // end class
 
 } // end namespace
