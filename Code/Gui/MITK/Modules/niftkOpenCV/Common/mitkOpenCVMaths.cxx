@@ -519,8 +519,8 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   unsigned int goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
-    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -540,8 +540,8 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
-    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
     {
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
@@ -625,9 +625,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -652,9 +652,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     { 
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
