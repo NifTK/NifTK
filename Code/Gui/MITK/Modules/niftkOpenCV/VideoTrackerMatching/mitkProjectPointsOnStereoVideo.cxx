@@ -418,10 +418,18 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   cv::Point2d errorMean;
   errorMean = mitk::GetCentroid(m_LeftProjectionErrors, false, &errorStdDev);
   lpout << "#Mean Error     = " << errorMean << std::endl;
-  lpout << "#StdDev         = " << errorStdDev << std::endl; 
+  lpout << "#StdDev         = " << errorStdDev << std::endl;
+  double xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  double yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  double rms = sqrt ( xrms*xrms + yrms*yrms);
+  lpout << "#rms            = " << xrms << ", " << yrms << ", " << rms << std::endl;
   errorMean = mitk::GetCentroid(m_LeftProjectionErrors, true, &errorStdDev);
   lpout << "#Ref Mean Error = " << errorMean << std::endl;
   lpout << "#Ref StdDev     = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lpout << "#Ref. rms       = " << xrms << ", " << yrms << ", " << rms << std::endl;
   lpout.close();
 
   std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
@@ -433,9 +441,17 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   errorMean = mitk::GetCentroid(m_RightProjectionErrors, false, &errorStdDev);
   rpout << "#Mean Error      = " << errorMean << std::endl;
   rpout << "#StdDev          = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
   errorMean = mitk::GetCentroid(m_RightProjectionErrors, true, &errorStdDev);
   rpout << "#Ref. Mean Error = " << errorMean << std::endl;
   rpout << "#Ref. StdDev     = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   rpout.close();
 
   std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
@@ -449,9 +465,17 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, false, &error3dStdDev);
   lrpout << "#Mean Error      = " << error3dMean << std::endl;
   lrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
   error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, true, &error3dStdDev);
   lrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
   lrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   lrpout.close();
 
   std::ofstream rrpout (std::string (outPrefix + "_rightReProjection.errors").c_str());
@@ -463,9 +487,17 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, false, &error3dStdDev);
   rrpout << "#Mean Error      = " << error3dMean << std::endl;
   rrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
   error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, true, &error3dStdDev);
   rrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
   rrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   rrpout.close();
 
 }
