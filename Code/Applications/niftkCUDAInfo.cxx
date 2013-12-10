@@ -17,7 +17,7 @@
 #include <iostream>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
-#include <cuda_utils_gpu.h>
+//#include <cuda_utils_gpu.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -33,7 +33,7 @@ void Usage(char *exec)
     std::cout << "  Prints out information on the GPU enabled devices on the current machine." << std::endl;
     std::cout << "  Test program copied from 'deviceQuery' that ships with NVidia SDK" << std::endl;
     std::cout << "  " << std::endl;
-    std::cout << "  Useage: " << exec << std::endl;
+    std::cout << "  Usage: " << exec << std::endl;
     std::cout << "  " << std::endl;
   }
 
@@ -70,8 +70,8 @@ int main(int argc, char** argv)
   }
   if (gotA && gotB)
   {
-    float c = TestAdd(a,b);
-    std::cerr << a << " + " << b << " = " << c << std::endl;
+    //float c = TestAdd(a,b);
+    std::cerr << a << " + " << b << " = " << /*c*/ "NOT IMPLEMENTED" << std::endl;
   }
 
   unsigned long int tempULongInt;
