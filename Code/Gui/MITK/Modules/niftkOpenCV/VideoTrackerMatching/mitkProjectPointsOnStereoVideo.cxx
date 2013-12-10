@@ -416,8 +416,11 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   cv::Point2d errorStdDev;
   cv::Point2d errorMean;
   errorMean = mitk::GetCentroid(m_LeftProjectionErrors, false, &errorStdDev);
-  lpout << "#Mean Error = " << errorMean << std::endl;
-  lpout << "#StdDev     = " << errorStdDev << std::endl; 
+  lpout << "#Mean Error     = " << errorMean << std::endl;
+  lpout << "#StdDev         = " << errorStdDev << std::endl; 
+  errorMean = mitk::GetCentroid(m_LeftProjectionErrors, true, &errorStdDev);
+  lpout << "#Ref Mean Error = " << errorMean << std::endl;
+  lpout << "#Ref StdDev     = " << errorStdDev << std::endl; 
   lpout.close();
 
   std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
@@ -427,8 +430,11 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
     rpout << m_RightProjectionErrors[i] << std::endl;
   }
   errorMean = mitk::GetCentroid(m_RightProjectionErrors, false, &errorStdDev);
-  rpout << "#Mean Error = " << errorMean << std::endl;
-  rpout << "#StdDev     = " << errorStdDev << std::endl; 
+  rpout << "#Mean Error      = " << errorMean << std::endl;
+  rpout << "#StdDev          = " << errorStdDev << std::endl; 
+  errorMean = mitk::GetCentroid(m_RightProjectionErrors, true, &errorStdDev);
+  rpout << "#Ref. Mean Error = " << errorMean << std::endl;
+  rpout << "#Ref. StdDev     = " << errorStdDev << std::endl; 
   rpout.close();
 
   std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
@@ -440,8 +446,11 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   cv::Point3d error3dStdDev;
   cv::Point3d error3dMean;
   error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, false, &error3dStdDev);
-  lrpout << "#Mean Error = " << error3dMean << std::endl;
-  lrpout << "#StdDev     = " << error3dStdDev << std::endl; 
+  lrpout << "#Mean Error      = " << error3dMean << std::endl;
+  lrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, true, &error3dStdDev);
+  lrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
+  lrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
   lrpout.close();
 
   std::ofstream rrpout (std::string (outPrefix + "_rightReProjection.errors").c_str());
@@ -451,8 +460,11 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
     rrpout << m_RightReProjectionErrors[i] << std::endl;
   }
   error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, false, &error3dStdDev);
-  rrpout << "#Mean Error = " << error3dMean << std::endl;
-  rrpout << "#StdDev     = " << error3dStdDev << std::endl; 
+  rrpout << "#Mean Error      = " << error3dMean << std::endl;
+  rrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, true, &error3dStdDev);
+  rrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
+  rrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
   rrpout.close();
 
 }
