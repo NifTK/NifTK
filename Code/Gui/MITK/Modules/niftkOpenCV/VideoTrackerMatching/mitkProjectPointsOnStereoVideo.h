@@ -180,15 +180,16 @@ private:
 
   /* \brief 
    * calculates the x and y errors between the passed point and the nearest point in 
-   * m_ProjectedPoints
+   * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
    */
-  cv::Point2d CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  void CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
 
   /* \brief 
    * calculates the x,y, and z error between the passed point and the nearest point in 
    * m_ProjectedPoints when projected onto a plane distant from the camera
+   * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
    */
-  cv::Point3d CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+  void CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
  
   /* \brief 
    * Finds  the nearest point in 

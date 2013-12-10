@@ -397,14 +397,14 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
   {
     bool left = true;
-    m_LeftProjectionErrors.push_back(this->CalculateProjectionError( m_LeftGoldStandardPoints[i], left) );
-    m_LeftReProjectionErrors.push_back(this->CalculateReProjectionError ( m_LeftGoldStandardPoints[i] , left ));
+    this->CalculateProjectionError( m_LeftGoldStandardPoints[i], left);
+    this->CalculateReProjectionError ( m_LeftGoldStandardPoints[i] , left);
   }
   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
   {
     bool left = false;
-    m_RightProjectionErrors.push_back(this->CalculateProjectionError( m_RightGoldStandardPoints[i], left) );
-    m_RightReProjectionErrors.push_back(this->CalculateReProjectionError ( m_RightGoldStandardPoints[i], left ));
+    this->CalculateProjectionError( m_RightGoldStandardPoints[i], left);
+    this->CalculateReProjectionError ( m_RightGoldStandardPoints[i], left);
   }
 
   std::ofstream lpout (std::string (outPrefix + "_leftProjection.errors").c_str());
@@ -470,7 +470,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 }
 
 //-----------------------------------------------------------------------------
-cv::Point3d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
   unsigned int* index = new unsigned int;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, index ) ;
@@ -511,15 +511,30 @@ cv::Point3d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair <
   reProjectionGS.z *= matchingPointInLensCS.z;
 
   delete index;
-  return matchingPointInLensCS - reProjectionGS;
+  if ( left ) 
+  {
+    m_LeftReProjectionErrors.push_back (matchingPointInLensCS - reProjectionGS);
+  }
+  else
+  {
+    m_RightReProjectionErrors.push_back (matchingPointInLensCS - reProjectionGS);
+  }
+
 }
 
 //-----------------------------------------------------------------------------
-cv::Point2d ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
 {
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left ) ;
   
-  return matchingPoint - GSPoint.second;
+  if ( left ) 
+  {
+    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.second);
+  }
+  else
+  {
+    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.second);
+  }
 
 }
 
@@ -538,7 +553,8 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
       pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].second );
     }
   }
-  return mitk::FindNearestPoint( GSPoint.second , pointVector , index );
+  double minRatio;
+  return mitk::FindNearestPoint( GSPoint.second , pointVector ,&minRatio, index );
 }
 
 //-----------------------------------------------------------------------------
