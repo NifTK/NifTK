@@ -483,7 +483,7 @@ cv::Point3d ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair <
     m1.at<double>(1,0) = matchingPointInLensCS.y;
     m1.at<double>(2,0) = matchingPointInLensCS.z;
 
-    m1 = m1 * m_RightToLeftRotationMatrix->inv() - *m_RightToLeftTranslationVector;
+    m1 = m_RightToLeftRotationMatrix->inv() * m1 - *m_RightToLeftTranslationVector;
     
     matchingPointInLensCS.x = m1.at<double>(0,0);
     matchingPointInLensCS.y = m1.at<double>(1,0);
