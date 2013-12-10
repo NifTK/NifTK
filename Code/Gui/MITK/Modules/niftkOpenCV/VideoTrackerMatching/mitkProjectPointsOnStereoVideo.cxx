@@ -411,7 +411,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   lpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < m_LeftProjectionErrors.size() ; i ++ )
   {
-    lpout << m_LeftProjectionErrors[i] ;
+    lpout << m_LeftProjectionErrors[i] << std::endl;
   }
   lpout.close();
 
@@ -419,7 +419,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   rpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < m_RightProjectionErrors.size() ; i ++ )
   {
-    rpout << m_RightProjectionErrors[i] ;
+    rpout << m_RightProjectionErrors[i] << std::endl;
   }
   rpout.close();
 
@@ -427,7 +427,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   lrpout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_LeftReProjectionErrors.size() ; i ++ )
   {
-    lrpout << m_LeftReProjectionErrors[i] ;
+    lrpout << m_LeftReProjectionErrors[i] << std::endl;
   }
   lrpout.close();
 
@@ -435,7 +435,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   rrpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < m_RightReProjectionErrors.size() ; i ++ )
   {
-    rrpout << m_RightReProjectionErrors[i] ;
+    rrpout << m_RightReProjectionErrors[i] << std::endl;
   }
   rrpout.close();
 
