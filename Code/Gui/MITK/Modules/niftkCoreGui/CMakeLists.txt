@@ -25,6 +25,10 @@ target_link_libraries(niftkCoreGui
   niftkVTK
   )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkCoreGui)
+endif()
+
 if(BUILD_TESTING)
   #add_subdirectory(Testing)
 endif(BUILD_TESTING)

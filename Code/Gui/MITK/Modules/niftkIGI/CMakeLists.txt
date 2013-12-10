@@ -34,6 +34,10 @@ if(MSVC)
   endif()
 endif()
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkIGI)
+endif()
+
 if(BUILD_TESTING)
   add_subdirectory(Testing)
 endif()  

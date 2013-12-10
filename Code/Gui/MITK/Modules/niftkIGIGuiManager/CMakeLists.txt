@@ -32,6 +32,10 @@ MITK_CREATE_MODULE(niftkIGIGuiManager
   QT_MODULE 
 )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkIGIGuiManager)
+endif()
+
 if(BUILD_TESTING)  
   #add_subdirectory(Testing)
 endif()
