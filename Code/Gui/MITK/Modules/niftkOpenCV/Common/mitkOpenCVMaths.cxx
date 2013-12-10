@@ -1158,11 +1158,8 @@ double StdDev(const std::vector<double>& input)
 
 //-----------------------------------------------------------------------------
 cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
-    const std::vector < cv::Point2d>& matchingPoints, unsigned int * Index ) 
+    const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index ) 
 {
-  double mindistance;
-  double minPlusOneDistance;
-
   std::vector <cv::Point2d>  sortedMatches;
   for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ )
   {
@@ -1177,41 +1174,21 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
 
   std::sort ( sortedMatches.begin(), sortedMatches.end () , DistanceCompare );
 
+  if ( minRatio != NULL )
+  {
+    if ( sortedMatches.size() > 1 )
+    {
+      *minRatio =  
+        sqrt(sortedMatches[1].x * sortedMatches[1].x + sortedMatches[1].y * sortedMatches[1].y ) /
+        sqrt(sortedMatches[0].x * sortedMatches[0].x + sortedMatches[0].y * sortedMatches[0].y ); 
+    }
+    else 
+    {
+      *minRatio = 0.0;
+    }
+  }
+  
   return  point - sortedMatches [0];
-  /*
-  for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ ) 
-  {
-    double distance = sqrt ( 
-        ( point.x - matchingPoints[i].x ) * 
-        ( point.x - matchingPoints[i].x ) +
-        ( point.y - matchingPoints[i].y ) * 
-        ( point.y - matchingPoints[i].y ) );
-    if ( i == 0 ) 
-    {
-      mindistance = distance;
-      minPlusOneDistance = distance;
-      index = i;
-    }
-    else
-    {
-      if ( distance < mindistance )
-      {
-        minPlusOneDistance = mindistance;
-        mindistance = distance;
-        index = i;
-      }
-      if ( minPlusOneDistance == mindistance )
-      {
-
-    }
-  }
-  if ( Index != NULL ) 
-  {
-    *Index = index;
-  }
-  return matchingPoints[index];
-  */
-
 }
 
 //-----------------------------------------------------------------------------

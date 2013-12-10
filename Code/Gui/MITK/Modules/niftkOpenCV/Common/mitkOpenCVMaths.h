@@ -312,7 +312,8 @@ extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
  * to the passed point, and returns the index of that point
  */
 extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d& point,
-    const std::vector < cv::Point2d >& matchingPonints , unsigned int * index = NULL );
+    const std::vector < cv::Point2d >& matchingPonints , 
+    double* minRatio = NULL , unsigned int * index = NULL );
 
 /**
  * \brief Compare two cv point based on their distance from 0,0
