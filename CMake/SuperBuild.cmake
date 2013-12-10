@@ -203,6 +203,16 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -D_WIN32_WINNT=0x0601")
   endif()
 
+  # unfortunately, putting this here means we cannot enable pch on a non-superbuild.
+  # instead it must be initially enabled, and later on can be disabled/enabled at will.
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    # visual studio needs an extra parameter to increase the pch heap size.
+    if (MSVC)
+      set(NIFTK_ADDITIONAL_C_FLAGS "${NIFTK_ADDITIONAL_C_FLAGS} -Zm200")
+      set(NIFTK_ADDITIONAL_CXX_FLAGS "${NIFTK_ADDITIONAL_CXX_FLAGS} -Zm200")
+    endif()
+  endif()
+
   ExternalProject_Add(${proj}
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ""
@@ -244,6 +254,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNVAPI_LIBRARY:PATH=${NVAPI_LIBRARY}
       -DNIFTK_USE_FFTW:BOOL=${NIFTK_USE_FFTW}
       -DNIFTK_USE_CUDA:BOOL=${NIFTK_USE_CUDA}
+      -DNIFTK_USE_COTIRE:BOOL=${NIFTK_USE_COTIRE}
       -DNIFTK_WITHIN_SUPERBUILD:BOOL=ON                    # Set this to ON, as some compilation flags rely on knowing if we are doing superbuild.
       -DNIFTK_VERSION_MAJOR:STRING=${NIFTK_VERSION_MAJOR}
       -DNIFTK_VERSION_MINOR:STRING=${NIFTK_VERSION_MINOR}

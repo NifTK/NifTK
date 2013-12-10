@@ -55,10 +55,6 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
   if(_APP_BUILD_CLI)
     add_executable(${_APP_NAME} ${_APP_NAME}.cxx )
     target_link_libraries(${_APP_NAME} ${_APP_TARGET_LIBRARIES} )
-    if (NIFTK_USE_COTIRE AND COMMAND cotire)
-      cotire(${_APP_NAME})
-    endif()
-	
     MITK_INSTALL(TARGETS ${_APP_NAME})
   endif()
 

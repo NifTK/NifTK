@@ -22,5 +22,9 @@ MITK_CREATE_MODULE(niftkOpenCV
 target_link_libraries(niftkOpenCV
   niftkcommon
   )
-    
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkOpenCV)
+endif() 
+
 add_subdirectory(Testing)
