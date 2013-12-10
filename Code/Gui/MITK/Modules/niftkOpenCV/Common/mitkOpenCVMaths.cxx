@@ -471,7 +471,8 @@ std::vector <cv::Point2d> FindIntersects (std::vector <cv::Vec4i> lines  , bool 
 
 
 //-----------------------------------------------------------------------------
-cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers)
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers, 
+    cv::Point2d * StandardDeviation)
 {
   cv::Point2d centroid;
   centroid.x = 0.0;
@@ -487,7 +488,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
 
   centroid.x /= (double) numberOfPoints;
   centroid.y /= (double) numberOfPoints;
-  if ( ! RefineForOutliers )
+  if ( ( ! RefineForOutliers ) && ( StandardDeviation == NULL ) )
   {
     return centroid;
   }
@@ -504,6 +505,12 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
 
+  if ( ! RefineForOutliers ) 
+  {
+    *StandardDeviation = standardDeviation;
+    return centroid;
+  }
+
   cv::Point2d highLimit (centroid.x + 2 * standardDeviation.x , centroid.y + 2 * standardDeviation.y);
   cv::Point2d lowLimit (centroid.x - 2 * standardDeviation.x , centroid.y - 2 * standardDeviation.y);
 
@@ -512,8 +519,8 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   unsigned int goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
-    if ( ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) ) 
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -524,6 +531,27 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   centroid.x /= (double) goodPoints;
   centroid.y /= (double) goodPoints;
 
+  if ( StandardDeviation == NULL ) 
+  {
+    return centroid;
+  }
+  standardDeviation.x = 0.0;
+  standardDeviation.y = 0.0;
+  goodPoints = 0 ;
+  for (unsigned int i = 0; i < numberOfPoints ; ++i )
+  {
+    if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
+    {
+      standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
+      standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
+      goodPoints++;
+    }
+  }
+  standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
+  standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
+  
+  *StandardDeviation = standardDeviation;
   return centroid;
 }
 
@@ -597,9 +625,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -624,9 +652,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
-         ( points[i].x < highLimit.x ) && ( points[i].x > lowLimit.x ) &&
-         ( points[i].y < highLimit.y ) && ( points[i].y > lowLimit.y ) &&
-         ( points[i].z < highLimit.z ) && ( points[i].z > lowLimit.z )) 
+         ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
     { 
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
@@ -1127,5 +1155,49 @@ double StdDev(const std::vector<double>& input)
   double stdev = std::sqrt(squared / ((double)(input.size()) - 1.0));
   return stdev;
 }
+
+//-----------------------------------------------------------------------------
+cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
+    const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index ) 
+{
+  std::vector <cv::Point2d>  sortedMatches;
+  for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ )
+  {
+    sortedMatches.push_back ( point - matchingPoints[i] );
+  }
+  
+  if ( Index != NULL ) 
+  {
+    *Index = std::min_element(sortedMatches.begin(), sortedMatches.end(), DistanceCompare) -
+      sortedMatches.begin();
+  }
+
+  std::sort ( sortedMatches.begin(), sortedMatches.end () , DistanceCompare );
+
+  if ( minRatio != NULL )
+  {
+    if ( sortedMatches.size() > 1 )
+    {
+      *minRatio =  
+        sqrt(sortedMatches[1].x * sortedMatches[1].x + sortedMatches[1].y * sortedMatches[1].y ) /
+        sqrt(sortedMatches[0].x * sortedMatches[0].x + sortedMatches[0].y * sortedMatches[0].y ); 
+    }
+    else 
+    {
+      *minRatio = 0.0;
+    }
+  }
+  
+  return  point - sortedMatches [0];
+}
+
+//-----------------------------------------------------------------------------
+bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
+{
+  double d1 = sqrt( p1.x * p1.x + p1.y * p1.y );
+  double d2 = sqrt( p2.x * p2.x + p2.y * p2.y );
+  return d1 < d2;
+}
+
 
 } // end namespace

@@ -193,7 +193,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector <cv::Point2d> FindIntersects (std::v
 /**
  * \brief Calculates the centroid of a vector of points.
  */
-extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false);
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers = false, cv::Point2d* StandardDeviation = NULL);
 
 
 /**
@@ -307,6 +307,19 @@ extern "C++" NIFTKOPENCV_EXPORT double Mean(const std::vector<double>& input);
  */
 extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
 
+/** 
+ * \brief Searches through vector of 2D points to find the one closest (by distance)
+ * to the passed point, and returns the index of that point
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d& point,
+    const std::vector < cv::Point2d >& matchingPonints , 
+    double* minRatio = NULL , unsigned int * index = NULL );
+
+/**
+ * \brief Compare two cv point based on their distance from 0,0
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
+    const cv::Point2d& p2 );
 } // end namespace
 
 #endif

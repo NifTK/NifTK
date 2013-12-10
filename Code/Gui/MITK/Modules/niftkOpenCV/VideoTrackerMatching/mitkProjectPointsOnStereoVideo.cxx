@@ -47,6 +47,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_Capture(NULL)
 , m_LeftWriter(NULL)
 , m_RightWriter(NULL)
+, m_AllowablePointMatchingRatio (1.0) 
 {
 }
 
@@ -361,6 +362,246 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   }
   m_ProjectOK = true;
 
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
+    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+{
+   m_LeftGoldStandardPoints = points;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
+    std::vector < std::pair < unsigned int , cv::Point2d > > points )
+{
+   m_RightGoldStandardPoints = points;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefix)
+{
+  if ( ! m_ProjectOK ) 
+  {
+    MITK_ERROR << "Attempted to run CalculateProjectionErrors, before running project(), no result.";
+    return;
+  }
+
+  // for each point in the gold standard vectors m_LeftGoldStandardPoints
+  // find the corresponding point in m_ProjectedPoints and calculate the projection 
+  // error in pixels. We don't define what the point correspondence is, so 
+  // maybe assume that the closest point is the match? Should be valid as long as the 
+  // density of the projected points is significantly less than the expected errors
+  // Then, estimate the mm error by taking the z measure from m_PointsInLeftLensCS
+  // and projecting onto it.
+  //
+  for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
+  {
+    bool left = true;
+    this->CalculateProjectionError( m_LeftGoldStandardPoints[i], left);
+    this->CalculateReProjectionError ( m_LeftGoldStandardPoints[i] , left);
+  }
+  for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
+  {
+    bool left = false;
+    this->CalculateProjectionError( m_RightGoldStandardPoints[i], left);
+    this->CalculateReProjectionError ( m_RightGoldStandardPoints[i], left);
+  }
+
+  std::ofstream lpout (std::string (outPrefix + "_leftProjection.errors").c_str());
+  lpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_LeftProjectionErrors.size() ; i ++ )
+  {
+    lpout << m_LeftProjectionErrors[i] << std::endl;
+  }
+  cv::Point2d errorStdDev;
+  cv::Point2d errorMean;
+  errorMean = mitk::GetCentroid(m_LeftProjectionErrors, false, &errorStdDev);
+  lpout << "#Mean Error     = " << errorMean << std::endl;
+  lpout << "#StdDev         = " << errorStdDev << std::endl;
+  double xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  double yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  double rms = sqrt ( xrms*xrms + yrms*yrms);
+  lpout << "#rms            = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  errorMean = mitk::GetCentroid(m_LeftProjectionErrors, true, &errorStdDev);
+  lpout << "#Ref Mean Error = " << errorMean << std::endl;
+  lpout << "#Ref StdDev     = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lpout << "#Ref. rms       = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  lpout.close();
+
+  std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
+  rpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_RightProjectionErrors.size() ; i ++ )
+  {
+    rpout << m_RightProjectionErrors[i] << std::endl;
+  }
+  errorMean = mitk::GetCentroid(m_RightProjectionErrors, false, &errorStdDev);
+  rpout << "#Mean Error      = " << errorMean << std::endl;
+  rpout << "#StdDev          = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  errorMean = mitk::GetCentroid(m_RightProjectionErrors, true, &errorStdDev);
+  rpout << "#Ref. Mean Error = " << errorMean << std::endl;
+  rpout << "#Ref. StdDev     = " << errorStdDev << std::endl; 
+  xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
+  yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  rpout.close();
+
+  std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
+  lrpout << "#xmm ymm zmm" << std::endl;
+  for ( unsigned int i = 0 ; i < m_LeftReProjectionErrors.size() ; i ++ )
+  {
+    lrpout << m_LeftReProjectionErrors[i] << std::endl;
+  }
+  cv::Point3d error3dStdDev;
+  cv::Point3d error3dMean;
+  error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, false, &error3dStdDev);
+  lrpout << "#Mean Error      = " << error3dMean << std::endl;
+  lrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, true, &error3dStdDev);
+  lrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
+  lrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  lrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  lrpout.close();
+
+  std::ofstream rrpout (std::string (outPrefix + "_rightReProjection.errors").c_str());
+  rrpout << "#xpixels ypixels" << std::endl;
+  for ( unsigned int i = 0 ; i < m_RightReProjectionErrors.size() ; i ++ )
+  {
+    rrpout << m_RightReProjectionErrors[i] << std::endl;
+  }
+  error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, false, &error3dStdDev);
+  rrpout << "#Mean Error      = " << error3dMean << std::endl;
+  rrpout << "#StdDev          = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, true, &error3dStdDev);
+  rrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
+  rrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl; 
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  rrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  rrpout.close();
+
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+{
+  unsigned int* index = new unsigned int;
+  double minRatio;
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
+  
+  if ( minRatio < m_AllowablePointMatchingRatio ) 
+  {
+    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from re-projection errors"; 
+    return;
+  }
+ 
+  cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first][*index].first;
+
+  if ( ! left )
+  {
+    cv::Mat m1 = cvCreateMat(3,1,CV_64FC1);
+    m1.at<double>(0,0) = matchingPointInLensCS.x;
+    m1.at<double>(1,0) = matchingPointInLensCS.y;
+    m1.at<double>(2,0) = matchingPointInLensCS.z;
+
+    m1 = m_RightToLeftRotationMatrix->inv() * m1 - *m_RightToLeftTranslationVector;
+    
+    matchingPointInLensCS.x = m1.at<double>(0,0);
+    matchingPointInLensCS.y = m1.at<double>(1,0);
+    matchingPointInLensCS.z = m1.at<double>(2,0);
+  }
+  
+  cv::Point3d reProjectionGS;
+  if ( left ) 
+  {
+    cv::Point2d undistortedPoint;
+    mitk::UndistortPoint (GSPoint.second, *m_LeftIntrinsicMatrix, 
+        *m_LeftDistortionVector, undistortedPoint);
+    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_LeftIntrinsicMatrix);
+  }
+  else
+  {
+    cv::Point2d undistortedPoint;
+    mitk::UndistortPoint (GSPoint.second, *m_RightIntrinsicMatrix, 
+        *m_RightDistortionVector, undistortedPoint);
+    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_RightIntrinsicMatrix);
+  }
+  
+  reProjectionGS.x *= matchingPointInLensCS.z;
+  reProjectionGS.y *= matchingPointInLensCS.z;
+  reProjectionGS.z *= matchingPointInLensCS.z;
+
+  delete index;
+  if ( left ) 
+  {
+    m_LeftReProjectionErrors.push_back (matchingPointInLensCS - reProjectionGS);
+  }
+  else
+  {
+    m_RightReProjectionErrors.push_back (matchingPointInLensCS - reProjectionGS);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned int, cv::Point2d > GSPoint, bool left )
+{
+  double minRatio;
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
+
+  if ( minRatio < m_AllowablePointMatchingRatio ) 
+  {
+    MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from projection errors"; 
+    return;
+  }
+  
+  if ( left ) 
+  {
+    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.second);
+  }
+  else
+  {
+    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.second);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
+{
+  std::vector < cv::Point2d > pointVector;
+  for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].size() ; i ++ )
+  {
+    if ( left )
+    {
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].first );
+    }
+    else
+    {
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].second );
+    }
+  }
+  return mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, index );
 }
 
 //-----------------------------------------------------------------------------

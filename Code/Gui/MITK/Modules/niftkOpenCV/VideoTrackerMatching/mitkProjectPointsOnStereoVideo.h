@@ -95,6 +95,9 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
+  itkSetMacro ( AllowablePointMatchingRatio, double);
+  void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
+  void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
   /**
    * \brief sets the world points and corresponding vectors
@@ -109,6 +112,11 @@ public:
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
+
+  /**
+   * \brief calculates the projection / and or reconstruction errors
+   */
+  void CalculateProjectionErrors (std::string outPrefix);
 
 protected:
 
@@ -154,11 +162,43 @@ private:
 
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
+  // a bunch of stuff for calculating errors
+  std::vector < std::pair < unsigned int , cv::Point2d > >
+                                m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
+  std::vector < std::pair < unsigned int , cv::Point2d > >
+                                m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
+
+  std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels
+  std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
+  std::vector < cv::Point3d >   m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_LeftWriter;
   CvVideoWriter*                m_RightWriter;
 
+  double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
+
   void ProjectAxes();
+
+  /* \brief 
+   * calculates the x and y errors between the passed point and the nearest point in 
+   * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
+   */
+  void CalculateProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+
+  /* \brief 
+   * calculates the x,y, and z error between the passed point and the nearest point in 
+   * m_ProjectedPoints when projected onto a plane distant from the camera
+   * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
+   */
+  void CalculateReProjectionError (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left );
+ 
+  /* \brief 
+   * Finds  the nearest point in 
+   * m_ProjectedPoints
+   */
+  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
 }; // end class
 
 } // end namespace

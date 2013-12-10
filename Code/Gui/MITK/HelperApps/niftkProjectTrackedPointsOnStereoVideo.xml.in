@@ -50,7 +50,23 @@
       <label>Input 2D points</label>
       <channel>input</channel>
     </file>
- 
+
+    <file>
+      <name>leftGoldStandard</name>
+      <longflag>leftGoldStandard</longflag>
+      <description>The measured points in the left screen</description>
+      <label>The measured points in the left screen</label>
+      <channel>input</channel>
+    </file>
+    
+    <file>
+      <name>rightGoldStandard</name>
+      <longflag>rightGoldStandard</longflag>
+      <description>The measured points in the rightscreen</description>
+      <label>The measured points in the right screen</label>
+      <channel>input</channel>
+    </file>
+
     <file>
       <name>output3D</name>
       <longflag>output3D</longflag>
@@ -81,6 +97,14 @@
       <label>Write out video files</label>
       <channel>output</channel>
     </file>
+
+    <file>
+      <name>outputErrors</name>
+      <longflag>outputErrors</longflag>
+      <description>Write out the projection / reprojection errors</description>
+      <label>Write out the projection / reprojection errors</label>
+      <channel>output</channel>
+    </file>
  
     <integer>
       <name>videoLag</name>
@@ -89,7 +113,16 @@
       <label>The video lag</label>
       <default>0</default>
     </integer>
-							
+ 
+    <float>
+	<name>pointMatchingRatio</name>
+	<longflag>pointMatchingRatio</longflag>
+	<description>The minimum ratio between the lowest 2 distance when matching Gold standard points</description>
+	<label>The minimum ratio between the lowest 2 distance when matching Gold standard points</label>
+	<default>3.0</default>
+    </float>
+
+						
 
   </parameters>
   

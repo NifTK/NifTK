@@ -2390,4 +2390,14 @@ cv::Mat AverageMatrices ( std::vector <cv::Mat> Matrices )
 } 
 
 //-----------------------------------------------------------------------------------------
+cv::Point3d ReProjectPoint ( const cv::Point2d& point , const cv::Mat& IntrinsicMatrix )
+{
+  cv::Mat m1 = cvCreateMat ( 3,1,CV_64FC1);
+  m1.at<double>(0,0) = point.x;
+  m1.at<double>(1,0) = point.y;
+  m1.at<double>(2,0) = 1.0;
+  m1 = IntrinsicMatrix.inv() * m1;
+  return cv::Point3d ( m1.at<double>(0,0), m1.at<double>(1,0), m1.at<double>(2,0));
+}
+  
 } // end namespace

@@ -477,10 +477,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
  */
-extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2f& inputObservedPoint,
+extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObservedPoint,
   const cv::Mat& cameraIntrinsics3x3,
-  const cv::Mat& cameraDistortionParams5x1,
-  cv::Point2f& outputIdealPoint
+  const cv::Mat& cameraDistortionParams,
+  cv::Point2d& outputIdealPoint
   );
 
 
@@ -534,6 +534,11 @@ extern "C++" NIFTKOPENCV_EXPORT void CStyleTriangulatePointPairsUsingSVD(
   CvMat& output3DPoints
   );
 
+/** 
+ * \brief Reprojects undistorted  screen points to normalised points (x/z, y/z, 1.0) in lens coordinates.
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Point3d ReProjectPoint (
+    const cv::Point2d& inputUndistortedPoint, const cv::Mat& CameraIntrinsicParams);
 
 /**
  * \brief Triangulates a vector of un-distorted (i.e. already correction for distortion) 2D point pairs back into 3D.
