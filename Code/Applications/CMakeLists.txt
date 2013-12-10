@@ -26,10 +26,14 @@ set(NIFTK_APPLICATION_LINK_LIBRARIES
   ${Boost_LIBRARIES}
 )
 
-set(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
-  niftkcudautilsgpu
-  ${NIFTK_APPLICATION_LINK_LIBRARIES}
-)
+find_package(CUDA)
+if(CUDA_FOUND)
+  set(NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
+    ${CUDA_CUDA_LIBRARY}
+    ${CUDA_CUDART_LIBRARY}
+    ${NIFTK_APPLICATION_LINK_LIBRARIES}
+  )
+endif()
 
 # Note: vtkRendering seems to force a dependency on Qt. See below.
 set(NIFTK_APPLICATION_WITH_VTK_LINK_LIBRARIES
@@ -376,20 +380,19 @@ endif(VTK_FOUND)
   
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
 
-  #include(${CMAKE_SOURCE_DIR}/CMake/cuda/FindCUDA.cmake)
-
   ##############################################################
   # Add new programs to this list.
   ##############################################################
-  #set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
-  #  niftkCUDAInfo
-  #)
+  set(APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES
+    niftkCUDAInfo
+  )
 
-  #foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES})
-  #  add_executable(${APP} ${APP}.cxx )
-  #  target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
-  #  install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
-  #endforeach()
+  foreach(APP ${APPS_DEPENDING_ON_NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES})
+    add_executable(${APP} ${APP}.cxx )
+    include_directories(${CUDA_TOOLKIT_INCLUDE})
+    target_link_libraries(${APP} ${NIFTK_APPLICATION_WITH_CUDA_LINK_LIBRARIES} )
+    install(TARGETS ${APP} RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)
+  endforeach()
   
 endif()
 

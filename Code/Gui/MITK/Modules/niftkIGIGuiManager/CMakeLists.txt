@@ -16,7 +16,7 @@ set(niftkIGIGuiManager_DEPENDS
   niftkIGIGui
 )
 
-if(NVAPI_FOUND)
+if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   set(niftkIGIGuiManager_DEPENDS
     ${niftkIGIGuiManager_DEPENDS}
     niftkNVidia
