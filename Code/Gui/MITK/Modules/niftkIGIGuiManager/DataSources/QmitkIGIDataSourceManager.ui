@@ -21,7 +21,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
@@ -93,21 +93,15 @@
       </layout>
      </item>
      <item>
-      <widget class="QWidget" name="widget" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>23</height>
-        </size>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string/>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="leftMargin">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
          <number>0</number>
         </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -291,6 +285,9 @@
           <property name="columnCount">
            <number>6</number>
           </property>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
