@@ -417,103 +417,109 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex].second );
       rightGSIndex ++;
     }
-
-    for ( unsigned int i = 0 ; i < leftPoints.size() ; i ++ ) 
+//check timing error here
+    if ( abs (m_PointsInLeftLensCS[frameNumber].first) < m_AllowableTimingError )
     {
-      unsigned int index;
-      double minRatio;
-      bool left = true;
-      this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
-          ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
-      if ( minRatio < m_AllowablePointMatchingRatio ) 
+      for ( unsigned int i = 0 ; i < leftPoints.size() ; i ++ ) 
       {
-        MITK_WARN << "Ambiguous point match at left frame " << frameNumber << " discarding point from triangulation  errors"; 
-      }
-      else 
-      {
-        left = false;
-        for ( unsigned int j = 0 ; j < rightPoints.size() ; j ++ ) 
+        unsigned int index;
+        double minRatio;
+        bool left = true;
+        this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
+            ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
+        if ( minRatio < m_AllowablePointMatchingRatio ) 
         {
-          unsigned int rightIndex;
-          this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
-            ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
-          if ( minRatio < m_AllowablePointMatchingRatio ) 
+          MITK_WARN << "Ambiguous point match at left frame " << frameNumber << " discarding point from triangulation  errors"; 
+        }
+        else 
+        {
+          left = false;
+          for ( unsigned int j = 0 ; j < rightPoints.size() ; j ++ ) 
           {
-            MITK_WARN << "Ambiguous point match at right frame " << frameNumber << " discarding point from triangulation errors"; 
-          }
-          else
-          {
-            if ( rightIndex == index ) 
+            unsigned int rightIndex;
+            this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
+              ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
+            if ( minRatio < m_AllowablePointMatchingRatio ) 
             {
-              matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                 (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i], rightPoints[j] )));
+              MITK_WARN << "Ambiguous point match at right frame " << frameNumber << " discarding point from triangulation errors"; 
+            }
+            else
+            {
+              if ( rightIndex == index ) 
+              {
+                matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
+                   (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i], rightPoints[j] )));
+              }
             }
           }
         }
       }
-    }
 
-    for ( unsigned int i = 0 ; i < matchedPairs.size() ; i ++ ) 
-    {
-      cv::Point2d leftUndistorted;
-      mitk::UndistortPoint(matchedPairs[i].second.first,
-             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftUndistorted);
-      cv::Point2d rightUndistorted;
-      mitk::UndistortPoint(matchedPairs[i].second.second,
-             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightUndistorted);    
-     
-      cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-      cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-      cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
-      cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
-
-      for ( int j = 0 ; j < 3 ; j ++ )
+      for ( unsigned int i = 0 ; i < matchedPairs.size() ; i ++ ) 
       {
-        leftCameraTranslationVector.at<double>(j,0) = 0.0;
-        leftCameraRotationVector.at<double>(j,0) = 0.0;
-      }
-      rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
-      cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
- 
-      CvMat* leftScreenPointsMat = cvCreateMat (1,2,CV_64FC1);
-      CvMat* rightScreenPointsMat = cvCreateMat (1,2,CV_64FC1);
-      CvMat leftCameraIntrinsicMat= *m_LeftIntrinsicMatrix;
-      CvMat leftCameraRotationVectorMat= leftCameraRotationVector;
-      CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
-      CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
-      CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
-      CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
-      CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (1,3,CV_64FC1);
-      
-      CV_MAT_ELEM(*leftScreenPointsMat,double,0,0) = leftUndistorted.x;
-      CV_MAT_ELEM(*leftScreenPointsMat,double,0,1) = leftUndistorted.y;
-      CV_MAT_ELEM(*rightScreenPointsMat,double,0,0) = rightUndistorted.x;
-      CV_MAT_ELEM(*rightScreenPointsMat,double,0,1) = rightUndistorted.y;
+        cv::Point2d leftUndistorted;
+        mitk::UndistortPoint(matchedPairs[i].second.first,
+               *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftUndistorted);
+        cv::Point2d rightUndistorted;
+        mitk::UndistortPoint(matchedPairs[i].second.second,
+               *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightUndistorted);    
+       
+        cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+        cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
+        cv::Mat rightCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
+        cv::Mat rightCameraRotationVector = cv::Mat (3,1,CV_64FC1);
 
-      mitk::CStyleTriangulatePointPairsUsingSVD(
-        *leftScreenPointsMat,
-        *rightScreenPointsMat,
-        leftCameraIntrinsicMat,
-        leftCameraRotationVectorMat,
-        leftCameraTranslationVectorMat,
-        rightCameraIntrinsicMat,
-        rightCameraRotationVectorMat,
-        rightCameraTranslationVectorMat,
-        *leftCameraTriangulatedWorldPoints);
+        for ( int j = 0 ; j < 3 ; j ++ )
+        {
+          leftCameraTranslationVector.at<double>(j,0) = 0.0;
+          leftCameraRotationVector.at<double>(j,0) = 0.0;
+        }
+        rightCameraTranslationVector = *m_RightToLeftTranslationVector * -1;
+        cv::Rodrigues ( m_RightToLeftRotationMatrix->inv(), rightCameraRotationVector  );
+   
+        CvMat* leftScreenPointsMat = cvCreateMat (1,2,CV_64FC1);
+        CvMat* rightScreenPointsMat = cvCreateMat (1,2,CV_64FC1);
+        CvMat leftCameraIntrinsicMat= *m_LeftIntrinsicMatrix;
+        CvMat leftCameraRotationVectorMat= leftCameraRotationVector;
+        CvMat leftCameraTranslationVectorMat= leftCameraTranslationVector;
+        CvMat rightCameraIntrinsicMat = *m_RightIntrinsicMatrix;
+        CvMat rightCameraRotationVectorMat = rightCameraRotationVector;
+        CvMat rightCameraTranslationVectorMat= rightCameraTranslationVector;
+        CvMat* leftCameraTriangulatedWorldPoints = cvCreateMat (1,3,CV_64FC1);
+        
+        CV_MAT_ELEM(*leftScreenPointsMat,double,0,0) = leftUndistorted.x;
+        CV_MAT_ELEM(*leftScreenPointsMat,double,0,1) = leftUndistorted.y;
+        CV_MAT_ELEM(*rightScreenPointsMat,double,0,0) = rightUndistorted.x;
+        CV_MAT_ELEM(*rightScreenPointsMat,double,0,1) = rightUndistorted.y;
+
+        mitk::CStyleTriangulatePointPairsUsingSVD(
+          *leftScreenPointsMat,
+          *rightScreenPointsMat,
+          leftCameraIntrinsicMat,
+          leftCameraRotationVectorMat,
+          leftCameraTranslationVectorMat,
+          rightCameraIntrinsicMat,
+          rightCameraRotationVectorMat,
+          rightCameraTranslationVectorMat,
+          *leftCameraTriangulatedWorldPoints);
+        
+        cv::Point3d triangulatedGS;
+        triangulatedGS.x = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,0);
+        triangulatedGS.y = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,1);
+        triangulatedGS.z = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,2);
       
-      cv::Point3d triangulatedGS;
-      triangulatedGS.x = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,0);
-      triangulatedGS.y = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,1);
-      triangulatedGS.z = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,2);
-    
-      m_TriangulationErrors.push_back(triangulatedGS - 
-          m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
-      cvReleaseMat (&leftScreenPointsMat);
-      cvReleaseMat (&rightScreenPointsMat);
-      cvReleaseMat (&rightScreenPointsMat);
+        m_TriangulationErrors.push_back(triangulatedGS - 
+            m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
+        cvReleaseMat (&leftScreenPointsMat);
+        cvReleaseMat (&rightScreenPointsMat);
+        cvReleaseMat (&rightScreenPointsMat);
+      }
     }
-  }
-  
+    else 
+    {
+      MITK_WARN << "Rejecting triangulation error at frame " << frameNumber << " due to high timing error " << m_PointsInLeftLensCS[frameNumber].first << " > "  << m_AllowableTimingError ;
+    }
+  } 
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
   tout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_TriangulationErrors.size() ; i ++ )
