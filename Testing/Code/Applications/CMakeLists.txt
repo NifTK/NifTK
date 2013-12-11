@@ -19,3 +19,12 @@ add_test(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TE
 
 # Additional image checks can be added to niftkTestCompareImage to make it more useful.
 # Additional ctest tests should be added below, eventually covering all the applications in NifTK/Code/Applications.
+
+add_test(niftkReorientateImage-NoOptions     ${EXECUTABLE_OUTPUT_PATH}/niftkReorientateImage -o ${TEMP}/niftkReorientateImage-NoOptions-RAI.nii ${INPUT_DATA}/reference/avg152T1_RL_nifti.nii)
+add_test(niftkReorientateImage-TestNoOptions ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkReorientateImage-NoOptions-RAI.nii -j ${BASELINE}/niftkReorientateImage-NoOptions-RAI.nii -intensity )
+
+add_test(niftkReorientateImage-OutOrient     ${EXECUTABLE_OUTPUT_PATH}/niftkReorientateImage -outOrient PRS -o ${TEMP}/niftkReorientateImage-OutOrient-PRS.nii ${INPUT_DATA}/reference/avg152T1_LR_nifti.nii)
+add_test(niftkReorientateImage-TestOutOrient ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkReorientateImage-OutOrient-PRS.nii -j ${BASELINE}/niftkReorientateImage-OutOrient-PRS.nii -intensity )
+
+add_test(niftkReorientateImage-InOutOrient     ${EXECUTABLE_OUTPUT_PATH}/niftkReorientateImage -inOrient RAS -outOrient ILP -o ${TEMP}/niftkReorientateImage-InOutOrient-ILP.nii ${INPUT_DATA}/CT_xR2L_yA2P_zS2I_Sub4.nii)
+add_test(niftkReorientateImage-TestInOutOrient ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkReorientateImage-InOutOrient-ILP.nii -j ${BASELINE}/niftkReorientateImage-InOutOrient-ILP.nii -intensity )
