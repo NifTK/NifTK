@@ -114,9 +114,15 @@ public:
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
 
   /**
-   * \brief calculates the projection / and or reconstruction errors
+   * \brief calculates the projection and re-projection errors
    */
   void CalculateProjectionErrors (std::string outPrefix);
+
+  /**
+   * \brief calculates the triangulation errors
+   */
+  void CalculateTriangulationErrors (std::string outPrefix);
+
 
 protected:
 
@@ -172,6 +178,7 @@ private:
   std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
   std::vector < cv::Point3d >   m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
   CvCapture*                    m_Capture;
   CvVideoWriter*                m_LeftWriter;
@@ -198,7 +205,9 @@ private:
    * Finds  the nearest point in 
    * m_ProjectedPoints
    */
-  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
+  cv::Point2d FindNearestScreenPoint (  std::pair < unsigned int, cv::Point2d > GSPoint, 
+      bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
+  
 }; // end class
 
 } // end namespace
