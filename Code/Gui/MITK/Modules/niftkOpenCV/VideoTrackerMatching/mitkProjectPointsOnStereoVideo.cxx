@@ -400,12 +400,17 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
     std::vector < cv::Point2d > rightPoints;
     std::vector < std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > > > matchedPairs;
     
-    while ( m_LeftGoldStandardPoints[leftGSIndex].first == frameNumber ) 
+    while ( m_LeftGoldStandardPoints[leftGSIndex].first == frameNumber && leftGSIndex < m_LeftGoldStandardPoints.size() ) 
     {
       leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex].second );
       leftGSIndex ++;
     }
-    while ( m_RightGoldStandardPoints[rightGSIndex].first == frameNumber ) 
+    while ( m_RightGoldStandardPoints[rightGSIndex].first != frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    {
+      rightGSIndex ++;
+    }
+
+    while ( m_RightGoldStandardPoints[rightGSIndex].first == frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
       rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex].second );
       rightGSIndex ++;
@@ -506,7 +511,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       cvReleaseMat (&rightScreenPointsMat);
     }
   }
-
+  
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
   tout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_TriangulationErrors.size() ; i ++ )
