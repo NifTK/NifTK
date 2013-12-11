@@ -76,8 +76,8 @@ Usage:
 
 
 Default source directory is 'NifTK'.
-Default build directory is '<source directory>-${build type}'
-Default log directory is '<build-directory>-logs'.
+Default build directory is '<source directory>-<build type>'
+Default log directory is '<build directory>-logs'.
 
 Options:
 
@@ -127,6 +127,8 @@ Options:
     --prefix <directory>            Installation prefix. Default is '/usr/local'.
 
     -p, --package                   Creates installer packages.
+
+    -h, --help                      Prints this help.
 
 "
   exit
@@ -343,6 +345,9 @@ then
 else
   log_dir="${build_dir}-logs"
 fi
+
+# Convert the build root to absolute path.
+build_root=$(cd ${build_root} ; pwd)
 
 source_path=${build_root}/${source_dir}
 build_path=${build_root}/${build_dir}
