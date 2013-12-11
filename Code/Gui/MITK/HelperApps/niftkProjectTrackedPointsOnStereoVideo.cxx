@@ -48,6 +48,7 @@ int main(int argc, char** argv)
   {
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
     projector->SetVisualise(Visualise);
+    projector->SetAllowableTimingError(maxTimingError * 1e6);
     
     if ( outputVideo.length() != 0 ) 
     {

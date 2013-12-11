@@ -113,7 +113,16 @@
       <label>The video lag</label>
       <default>0</default>
     </integer>
+  
+    <integer>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum timing error in  milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>20</default>
+    </integer>
  
+
     <float>
 	<name>pointMatchingRatio</name>
 	<longflag>pointMatchingRatio</longflag>
