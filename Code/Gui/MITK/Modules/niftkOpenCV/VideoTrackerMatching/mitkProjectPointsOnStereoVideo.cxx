@@ -682,13 +682,19 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   unsigned int* index = new unsigned int;
   double minRatio;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
-  
+ 
+  if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
+  {
+    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from re-projection errors";
+    return;
+  }
+
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
     MITK_WARN << "Ambiguous point match at frame " << GSPoint.first << " discarding point from re-projection errors"; 
     return;
   }
- 
+
   cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first].second[*index].first;
 
   if ( ! left )
@@ -742,6 +748,13 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 {
   double minRatio;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
+
+  if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
+  {
+    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from re-projection errors";
+    return;
+  }
+
 
   if ( minRatio < m_AllowablePointMatchingRatio ) 
   {
