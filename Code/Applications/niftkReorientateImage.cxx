@@ -249,47 +249,6 @@ int ReorientateImage( arguments &args )
 
   typename ImageType::PointType newOrigin;
 
-#if 0
-
-  if ( ! args.flgResetOriginToZero )
-  {
-    typename ImageType::PointType oldOrigin = inputImage->GetOrigin();
-
-    typename ImageType::SpacingType sp = inputImage->GetSpacing();
-  
-    typename ImageType::SizeType sz = inputImage->GetLargestPossibleRegion().GetSize();
-  
-    if ( args.flgVerbose )
-      std::cout << "Spacing: " 
-		<< sp[0] << ", " 
-		<< sp[1] << ", " 
-		<< sp[2] << std::endl
-		<< "Dimensions: " 
-		<< sz[0] << ", " 
-		<< sz[1] << ", " 
-		<< sz[2] << std::endl 
-		<< "Origin: " 
-		<< oldOrigin << std::endl << std::endl;
-    
-    for ( iDim=0; iDim<Dimension; iDim++ )
-      newOrigin[ permuteAxes[ iDim ] ] = oldOrigin[ iDim ];
-    
-    for ( iDim=0; iDim<Dimension; iDim++ )
-      if ( flipAxes[ iDim ] )
-	newOrigin[ iDim ] = newOrigin[ iDim ] - ( sz[iDim] - 1. )*sp[iDim];
-  }
-
-  // or reset it to [0,0,0]
-
-  else
-    for ( iDim=0; iDim<Dimension; iDim++ )
-      newOrigin[ iDim ] = 0.;
-  
-  
-  reorientatedImage->SetOrigin( newOrigin );
-    
-#else
-
   if ( args.flgResetOriginToZero )
   {
     for ( iDim=0; iDim<Dimension; iDim++ )
@@ -298,39 +257,6 @@ int ReorientateImage( arguments &args )
     reorientatedImage->SetOrigin( newOrigin );
   }
 
-#endif
-
-
-#if 0
-  // and reorientate the direction cosines
-
-  DirectionType oldDirection = inputImage->GetDirection();
-  DirectionType newDirection;
-  
-  for ( iDim=0; iDim<Dimension; iDim++ )
-    for ( iDirn=0; iDirn<Dimension; iDirn++ )
-      newDirection[ iDirn ][ permuteAxes[ iDim ] ] = oldDirection[ iDirn ][ iDim ];
-
-  for ( iDim=0; iDim<Dimension; iDim++ )
-    if ( flipAxes[ iDim ] )
-      for ( iDirn=0; iDirn<Dimension; iDirn++ )
-	newDirection[ iDirn ][ iDim ] = -newDirection[ iDirn ][ iDim ];
-
-  reorientatedImage->SetDirection( newDirection );
-
-  if ( args.flgVerbose ) 
-  {
-    if ( args.strOutputOrientation.length() )
-      std::cout << "Output orientation specified as: " 
-		<< args.strOutputOrientation.c_str() << std::endl;
-    else
-      std::cout << "Default output orientation: RAI" << std::endl;
-
-    std::cout << "Origin: " << newOrigin << std::endl;
-    
-    PrintOrientationInfo<Dimension, ScalarType>( reorientatedImage );
-  }
-#endif
 
   // Write the image to a file
         
