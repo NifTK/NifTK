@@ -109,7 +109,7 @@ void TrackerAnalysis::TemporalCalibration(std::string calibrationfilename ,
       projector->SetWorldPoints(worldPoint);
       projector->SetTrackerIndex(trackerIndex);
       projector->Project(this);
-      std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
+      std::vector < std::pair < long long ,std::vector < std::pair < cv::Point2d, cv::Point2d > > > > projectedPoints = 
         projector->GetProjectedPoints();
       
       std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
@@ -320,7 +320,7 @@ void TrackerAnalysis::HandeyeSensitivityTest(std::string calibrationfilename ,
                 projector->SetWorldPoints(worldPoint);
                 projector->SetTrackerIndex(trackerIndex);
                 projector->Project(this, &state);
-                std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > projectedPoints = 
+                std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > > projectedPoints = 
                 projector->GetProjectedPoints();
                 
                 std::pair <double, double> projectedRMS = mitk::RMSError ( projectedPoints,  onScreenPoints );
