@@ -50,7 +50,9 @@ int main(int argc, char** argv)
     projector->SetVisualise(Visualise);
     
     if ( outputVideo.length() != 0 ) 
-    projector->SetSaveVideo(true, outputVideo);
+    {
+      projector->SetSaveVideo(true, outputVideo);
+    }
     projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
