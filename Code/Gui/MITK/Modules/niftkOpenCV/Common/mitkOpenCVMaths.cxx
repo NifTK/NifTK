@@ -1199,5 +1199,12 @@ bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
   return d1 < d2;
 }
 
+//-----------------------------------------------------------------------------
+bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d >& p1, 
+    const std::pair < unsigned int , cv::Point2d> & p2 )
+{
+  return p1.first < p2.first;
+}
+
 
 } // end namespace
