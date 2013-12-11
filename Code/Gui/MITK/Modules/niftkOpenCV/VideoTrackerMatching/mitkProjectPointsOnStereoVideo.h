@@ -96,6 +96,7 @@ public:
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
+  itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
   void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
@@ -185,7 +186,8 @@ private:
   CvVideoWriter*                m_RightWriter;
 
   double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
-
+  
+  long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;
   void ProjectAxes();
 
   /* \brief 

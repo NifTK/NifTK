@@ -48,6 +48,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_LeftWriter(NULL)
 , m_RightWriter(NULL)
 , m_AllowablePointMatchingRatio (1.0) 
+, m_AllowableTimingError (20e6) // 20 milliseconds 
 {
 }
 
@@ -188,7 +189,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     //put the world points into the coordinates of the left hand camera.
     //worldtotracker * trackertocamera
     //in general the tracker matrices are trackertoworld
-    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, NULL, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
+    long long timingError;
+    cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
     
     m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
     std::vector < std::pair < cv::Point3d , cv::Scalar > > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
@@ -869,9 +871,20 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,1),
         CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,i,2) ),
           cv::Scalar(255,0,0)) ;
-    m_WorldPoints.push_back ( trackerMatcher->GetCameraTrackingMatrix(framenumber[i] , NULL , m_TrackerIndex, perturbation, m_ReferenceIndex) * point );
-    MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
-      << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i-wpSize].first;
+    long long timingError;
+    point =  trackerMatcher->GetCameraTrackingMatrix(framenumber[i] , &timingError , m_TrackerIndex, perturbation, m_ReferenceIndex) * point;
+    if ( abs(timingError) < m_AllowableTimingError )
+    {
+      m_WorldPoints.push_back ( point );
+      MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
+        << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i-wpSize].first;
+    }
+    else
+    {
+      MITK_WARN << framenumber[i] << "Point rejected due to excessive timing error: " << timingError << " > " << m_AllowableTimingError;
+    }
+
+
   }
 
 }
