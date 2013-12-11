@@ -688,13 +688,6 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::CopySeeds(const mitk::PointSet& inputPoints, mitk::PointSet& outputPoints)
-{
-  mitk::CopyPointSets(inputPoints, outputPoints);
-}
-
-
-//-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::HasInitialisedWorkingData()
 {
   bool result = false;
@@ -1333,7 +1326,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 
   if (sliceNumber >= 0 && axisNumber >= 0)
   {
-    this->GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
+    Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -1514,7 +1507,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[4]->GetData());
-    this->GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
+    Self::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -1530,7 +1523,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingNodes[5]->GetData());
-    this->GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
+    Self::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -2535,14 +2528,8 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
           if (direction == 0)
           {
-            this->CopySeeds(
-                *seeds,
-                *copyOfInputSeeds
-                );
-            this->CopySeeds(
-                *seeds,
-                *outputSeeds
-                );
+            mitk::CopyPointSets(*seeds, *copyOfInputSeeds);
+            mitk::CopyPointSets(*seeds, *outputSeeds);
 
             AccessFixedDimensionByItk_n(workingImage,
                 ITKCalculateSliceRegionAsVector, 3,
@@ -3006,7 +2993,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
       mitk::PointSet* newSeeds = op->GetSeeds();
       assert(newSeeds);
 
-      this->CopySeeds(*newSeeds, *seeds);
+      mitk::CopyPointSets(*newSeeds, *seeds);
 
       seeds->Modified();
       seedsNode->Modified();
@@ -3242,7 +3229,7 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::RegionType RegionType;
 
   RegionType largestPossibleRegion = itkImage->GetLargestPossibleRegion();
-  this->ITKFillRegion(itkImage, largestPossibleRegion, (TPixel)0);
+  Self::ITKFillRegion(itkImage, largestPossibleRegion, (TPixel)0);
 }
 
 
@@ -3282,7 +3269,7 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::RegionType RegionType;
 
   RegionType sliceRegion;
-  this->ITKCalculateSliceRegion(input, axis, slice, sliceRegion);
+  Self::ITKCalculateSliceRegion(input, axis, slice, sliceRegion);
 
   itk::ImageRegionConstIterator<ImageType> inputIterator(input, sliceRegion);
   itk::ImageRegionIterator<ImageType> outputIterator(output, sliceRegion);
@@ -3339,7 +3326,7 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
 
   RegionType region;
-  this->ITKCalculateSliceRegion(itkImage, axis, slice, region);
+  Self::ITKCalculateSliceRegion(itkImage, axis, slice, region);
 
   SizeType regionSize = region.GetSize();
   IndexType regionIndex = region.GetIndex();
@@ -3368,8 +3355,8 @@ MIDASGeneralSegmentorView
   RegionType sliceRegion;
   TPixel pixelValue = 0;
 
-  this->ITKCalculateSliceRegion(itkImage, axis, slice, sliceRegion);
-  this->ITKFillRegion(itkImage, sliceRegion, pixelValue);
+  Self::ITKCalculateSliceRegion(itkImage, axis, slice, sliceRegion);
+  Self::ITKFillRegion(itkImage, sliceRegion, pixelValue);
 }
 
 
@@ -3433,7 +3420,7 @@ MIDASGeneralSegmentorView
     typedef typename ImageType::IndexType IndexType;
 
     mitk::PointSet::Pointer filteredSeeds = mitk::PointSet::New();
-    this->ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axis, slice, *(filteredSeeds.GetPointer()));
+    Self::ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axis, slice, *(filteredSeeds.GetPointer()));
 
     if (filteredSeeds->GetSize() == 0)
     {
@@ -3572,7 +3559,7 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::RegionType RegionType;
 
   RegionType region;
-  this->ITKCalculateSliceRegion(itkImage, axis, slice, region);
+  Self::ITKCalculateSliceRegion(itkImage, axis, slice, region);
 
   outputSliceIsEmpty = true;
 
@@ -3704,7 +3691,7 @@ MIDASGeneralSegmentorView
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
-  this->CopySeeds(inputSeeds, outputCopyOfInputSeeds);
+  mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
 
   // Work out the output region of interest that will be affected.
   // We want the region upstream/downstream/both of the slice of interest
@@ -3735,16 +3722,16 @@ MIDASGeneralSegmentorView
   outputRegion.push_back(outputRegionSize[2]);
 
   mitk::PointSet::Pointer temporaryPointSet = mitk::PointSet::New();
-  this->ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axisNumber, sliceNumber, *(temporaryPointSet.GetPointer()));
+  Self::ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axisNumber, sliceNumber, *(temporaryPointSet.GetPointer()));
 
   if (direction == 1 || direction == -1)
   {
-    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    Self::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
   }
   else if (direction == 0)
   {
-    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
-    this->ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    Self::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    Self::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
   }
 
   // Get hold of ITK version of MITK image.
@@ -3755,7 +3742,7 @@ MIDASGeneralSegmentorView
   outputToItk->UpdateLargestPossibleRegion();
 
   // For each slice in the region growing output, calculate new seeds on a per slice basis.
-  this->ITKAddNewSeedsToPointSet(
+  Self::ITKAddNewSeedsToPointSet(
       outputToItk->GetOutput(),
       outputITKRegion,
       sliceNumber,
@@ -4218,7 +4205,7 @@ MIDASGeneralSegmentorView
         setOfLabels.insert(voxelValue);
 
         // Work out the best seed position.
-        this->ITKGetLargestMinimumDistanceSeedLocation<typename IntegerImageType::PixelType, VImageDimension>(connectedComponentsFilter->GetOutput(), voxelValue, voxelIndex, notUsed);
+        Self::ITKGetLargestMinimumDistanceSeedLocation<typename IntegerImageType::PixelType, VImageDimension>(connectedComponentsFilter->GetOutput(), voxelValue, voxelIndex, notUsed);
 
         // And convert that seed position to a 3D point.
         itkImage->TransformIndexToPhysicalPoint(voxelIndex, point);
@@ -4278,13 +4265,10 @@ MIDASGeneralSegmentorView
     if (newSliceIsEmpty)
     {
       // Copy all input seeds, as we are moving to an empty slice.
-      this->CopySeeds(
-          inputSeeds,
-          outputCopyOfInputSeeds
-          );
+      mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
 
       // Take all seeds on the current slice number, and propagate to new slice.
-      this->ITKPropagateSeedsToNewSlice(
+      Self::ITKPropagateSeedsToNewSlice(
           itkImage,
           &inputSeeds,
           &outputNewSeeds,
@@ -4307,7 +4291,7 @@ MIDASGeneralSegmentorView
         region.SetIndex(regionIndex);
 
         // We copy all seeds except those on the new slice.
-        this->ITKFilterInputPointSetToExcludeRegionOfInterest(
+        Self::ITKFilterInputPointSetToExcludeRegionOfInterest(
             itkImage,
             region,
             inputSeeds,
@@ -4316,7 +4300,7 @@ MIDASGeneralSegmentorView
             );
 
         // We then re-generate a new set of seeds for the new slice.
-        this->ITKAddNewSeedsToPointSet(
+        Self::ITKAddNewSeedsToPointSet(
             itkImage,
             region,
             newSliceNumber,
@@ -4332,7 +4316,7 @@ MIDASGeneralSegmentorView
     if (optimiseSeedPosition)
     {
       // We copy all seeds except those on the current slice.
-      this->ITKFilterInputPointSetToExcludeRegionOfInterest(
+      Self::ITKFilterInputPointSetToExcludeRegionOfInterest(
           itkImage,
           region,
           inputSeeds,
@@ -4341,7 +4325,7 @@ MIDASGeneralSegmentorView
           );
 
       // Here we calculate new seeds based on the connected component analysis - i.e. 1 seed per region.
-      this->ITKAddNewSeedsToPointSet(
+      Self::ITKAddNewSeedsToPointSet(
           itkImage,
           region,
           sliceNumber,
@@ -4353,18 +4337,12 @@ MIDASGeneralSegmentorView
 
   if (outputCopyOfInputSeeds.GetSize() == 0)
   {
-    this->CopySeeds(
-        inputSeeds,
-        outputCopyOfInputSeeds
-        );
+    mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
   }
 
   if (outputNewSeeds.GetSize() == 0)
   {
-    this->CopySeeds(
-        inputSeeds,
-        outputNewSeeds
-        );
+    mitk::CopyPointSets(inputSeeds, outputNewSeeds);
   }
 }
 
@@ -4421,7 +4399,7 @@ MIDASGeneralSegmentorView
 
   // We take a complete copy of the input seeds, and copy any seeds not in the current slice
   // as these seeds in the current slice will be overwritten in AddNewSeedsToPointSet.
-  this->ITKFilterInputPointSetToExcludeRegionOfInterest(
+  Self::ITKFilterInputPointSetToExcludeRegionOfInterest(
       itkImage,
       region,
       inputSeeds,
@@ -4562,7 +4540,7 @@ void MIDASGeneralSegmentorView
 
   // Filter seeds to only use ones on current slice.
   mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
-  this->ITKFilterSeedsToCurrentSlice(itkImage, seeds, axis, slice, *(seedsForThisSlice.GetPointer()));
+  Self::ITKFilterSeedsToCurrentSlice(itkImage, seeds, axis, slice, *(seedsForThisSlice.GetPointer()));
 
   GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = slice;
@@ -4594,7 +4572,7 @@ void MIDASGeneralSegmentorView
   workingImageToItk = NULL;
 
   // Check the output, to see if we have seeds inside non-enclosing green contours.
-  sliceDoesHaveUnenclosedSeeds = this->ITKImageHasNonZeroEdgePixels<
+  sliceDoesHaveUnenclosedSeeds = Self::ITKImageHasNonZeroEdgePixels<
       mitk::Tool::DefaultSegmentationDataType, VImageDimension>
       (pipeline.m_RegionGrowingFilter->GetOutput());
 }
@@ -4768,7 +4746,7 @@ void MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  bool newSliceHasSeeds = this->ITKSliceDoesHaveSeeds(itkImage, currentSeeds, axis, newSliceNumber);
+  bool newSliceHasSeeds = Self::ITKSliceDoesHaveSeeds(itkImage, currentSeeds, axis, newSliceNumber);
 
   newSeeds->Clear();
 
@@ -4839,7 +4817,7 @@ MIDASGeneralSegmentorView
 
   RegionType region = itkImage->GetLargestPossibleRegion();
 
-  this->ITKAddNewSeedsToPointSet(
+  Self::ITKAddNewSeedsToPointSet(
       itkImage,
       region,
       0,
