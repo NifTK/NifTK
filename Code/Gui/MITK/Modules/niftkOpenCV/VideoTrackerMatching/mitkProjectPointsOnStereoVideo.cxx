@@ -751,7 +751,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 
   if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
   {
-    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from re-projection errors";
+    MITK_WARN << "High timing error at frame " << GSPoint.first << " discarding point from projection errors";
     return;
   }
 
