@@ -109,7 +109,7 @@ public:
    */
   void SetWorldPoints ( std::vector< cv::Point3d > points );
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
-  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
+  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -159,10 +159,10 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
-  /* m_ProjectPoints [framenumber][pointID](left.right);*/
-  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >
+  /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
+  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::vector < std::pair < cv::Point3d, cv::Scalar > > >    
+  std::vector < std::pair < long long , std::vector < std::pair < cv::Point3d, cv::Scalar > > > >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points

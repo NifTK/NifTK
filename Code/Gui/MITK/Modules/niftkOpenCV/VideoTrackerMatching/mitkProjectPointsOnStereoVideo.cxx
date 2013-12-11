@@ -193,7 +193,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
     
     m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
-    std::vector < std::pair < cv::Point3d , cv::Scalar > > pointsInLeftLensCS = WorldToLeftCamera * m_WorldPoints; 
+    std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > pointsInLeftLensCS = std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > ( timingError , WorldToLeftCamera * m_WorldPoints); 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
 
     //project onto screen
@@ -202,14 +202,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     CvMat* output2DPointsLeft = NULL ;
     CvMat* output2DPointsRight = NULL;
     
-    cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.size(),3,CV_64FC1);
-    cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.size(),3,CV_64FC1);
+    cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
+    cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
 
-    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
+    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
     {
-      leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS[i].first.x;
-      leftCameraWorldPoints.at<double>(i,1) = pointsInLeftLensCS[i].first.y;
-      leftCameraWorldPoints.at<double>(i,2) = pointsInLeftLensCS[i].first.z;
+      leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS.second[i].first.x;
+      leftCameraWorldPoints.at<double>(i,1) = pointsInLeftLensCS.second[i].first.y;
+      leftCameraWorldPoints.at<double>(i,2) = pointsInLeftLensCS.second[i].first.z;
       leftCameraWorldNormals.at<double>(i,0) = 0.0;
       leftCameraWorldNormals.at<double>(i,1) = 0.0;
       leftCameraWorldNormals.at<double>(i,2) = -1.0;
@@ -232,14 +232,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
     std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
     
-    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.size() ; i ++ ) 
+    for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
     {
-      std::pair<cv::Point2d, cv::Point2d>  pointPair;
+      std::pair < cv::Point2d , cv::Point2d > pointPair;
       pointPair.first = cv::Point2d(CV_MAT_ELEM(*output2DPointsLeft,double,i,0),CV_MAT_ELEM(*output2DPointsLeft,double,i,1));
       pointPair.second = cv::Point2d(CV_MAT_ELEM(*output2DPointsRight,double,i,0),CV_MAT_ELEM(*output2DPointsRight,double,i,1));
       screenPoints.push_back(pointPair);
     }
-    m_ProjectedPoints.push_back(screenPoints);
+    m_ProjectedPoints.push_back(std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > ( timingError, screenPoints));
     
     //de-allocate the matrices    
     cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
@@ -250,7 +250,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     if ( m_Visualise || m_SaveVideo ) 
     {
       cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
-      MITK_INFO << framenumber << " " << m_WorldPoints[0].first << " " << pointsInLeftLensCS[0].first << " => " << screenPoints[0].first << screenPoints[0].second;
+      MITK_INFO << framenumber << " " << m_WorldPoints[0].first << " " << pointsInLeftLensCS.second[0].first << " => " << screenPoints[0].first << screenPoints[0].second;
       if ( drawProjection )
       {
         if ( ! m_DrawLines ) 
@@ -259,14 +259,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
             {
-              cv::circle(videoImage, screenPoints[i].first,10, pointsInLeftLensCS[i].second, 3, 8, 0 );
+              cv::circle(videoImage, screenPoints[i].first,10, pointsInLeftLensCS.second[i].second, 3, 8, 0 );
             }
           }
           else
           {
             for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
             {
-              cv::circle(videoImage, screenPoints[i].second,10, pointsInLeftLensCS[i].second, 3, 8, 0 );
+              cv::circle(videoImage, screenPoints[i].second,10, pointsInLeftLensCS.second[i].second, 3, 8, 0 );
             } 
           }
         }
@@ -277,18 +277,18 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             unsigned int i;
             for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
             {
-              cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, pointsInLeftLensCS[i].second );
+              cv::line(videoImage, screenPoints[i].first,screenPoints[i+1].first, pointsInLeftLensCS.second[i].second );
             }
-            cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, pointsInLeftLensCS[i].second );
+            cv::line(videoImage, screenPoints[i].first,screenPoints[0].first, pointsInLeftLensCS.second[i].second );
           }
           else
           {
             unsigned int i;
             for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
             {
-              cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, pointsInLeftLensCS[i].second );
+              cv::line(videoImage, screenPoints[i].second,screenPoints[i+1].second, pointsInLeftLensCS.second[i].second );
             } 
-            cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, pointsInLeftLensCS[i].second );
+            cv::line(videoImage, screenPoints[i].second,screenPoints[0].second, pointsInLeftLensCS.second[i].second );
           }
         }
         if ( m_DrawAxes && drawProjection )
@@ -507,7 +507,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       triangulatedGS.z = CV_MAT_ELEM(*leftCameraTriangulatedWorldPoints,double,0,2);
     
       m_TriangulationErrors.push_back(triangulatedGS - 
-          m_PointsInLeftLensCS[frameNumber][matchedPairs[i].first].first);
+          m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
       cvReleaseMat (&leftScreenPointsMat);
       cvReleaseMat (&rightScreenPointsMat);
       cvReleaseMat (&rightScreenPointsMat);
@@ -683,7 +683,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
     return;
   }
  
-  cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first][*index].first;
+  cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first].second[*index].first;
 
   if ( ! left )
   {
@@ -758,15 +758,15 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
 {
   std::vector < cv::Point2d > pointVector;
-  for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].second.size() ; i ++ )
   {
     if ( left )
     {
-      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].first );
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first].second[i].first );
     }
     else
     {
-      pointVector.push_back ( m_ProjectedPoints[GSPoint.first][i].second );
+      pointVector.push_back ( m_ProjectedPoints[GSPoint.first].second[i].second );
     }
   }
   return mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, index );
@@ -895,16 +895,16 @@ std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsI
   for ( unsigned int i = 0 ; i < m_PointsInLeftLensCS.size() ; i ++ ) 
   {
     std::vector < cv::Point3d > thesePoints;
-    for ( unsigned int j = 0 ; j < m_PointsInLeftLensCS[i].size() ; j ++ ) 
+    for ( unsigned int j = 0 ; j < m_PointsInLeftLensCS[i].second.size() ; j ++ ) 
     {
-      thesePoints.push_back ( m_PointsInLeftLensCS[i][j].first );
+      thesePoints.push_back ( m_PointsInLeftLensCS[i].second[j].first );
     }
     returnPoints.push_back(thesePoints);
   }
   return returnPoints;
 }
 
-std::vector < std::vector <std::pair <cv::Point2d, cv::Point2d> > > ProjectPointsOnStereoVideo::GetProjectedPoints()
+std::vector < std::pair < long long , std::vector <std::pair <cv::Point2d, cv::Point2d> > > > ProjectPointsOnStereoVideo::GetProjectedPoints()
 {
   return m_ProjectedPoints;
 }
