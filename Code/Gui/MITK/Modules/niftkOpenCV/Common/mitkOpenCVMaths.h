@@ -320,6 +320,13 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point2d FindNearestPoint ( const cv::Point2d
  */
 extern "C++" NIFTKOPENCV_EXPORT bool DistanceCompare ( const cv::Point2d& p1, 
     const cv::Point2d& p2 );
+
+/**
+ * \brief Compare pairs based on the value of the first bit
+ */
+extern "C++" NIFTKOPENCV_EXPORT bool CompareGSPointPair ( const std::pair < unsigned int , cv::Point2d> & p1, 
+    const std::pair < unsigned int, cv::Point2d>& p2 );
+
 } // end namespace
 
 #endif
