@@ -285,6 +285,15 @@ extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector 
     std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
     double outlierSD = 2.0 );
 
+/** 
+ * \brief Returns the RMS error between two point vectors, with the measured values containing 
+ * a measure of the timing error
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::pair <double,double> RMSError (std::vector < std::pair < long long , std::vector < std::pair < cv::Point2d, cv::Point2d > > > >  measured , 
+    std::vector <std::vector <std::pair <cv::Point2d, cv::Point2d > > > actual, int index = -1 ,
+    double outlierSD = 2.0, long long allowableTimingError = 30e6 );
+
+
 
 /**
  * \brief perturbs a 4x4 matrix with a 6 dof rigid transform. The transform is
