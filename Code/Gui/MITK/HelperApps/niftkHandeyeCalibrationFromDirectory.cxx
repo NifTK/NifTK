@@ -22,32 +22,32 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  bool SortByDistance = !DontSortByDistance;
+  bool sortByDistance = !DontSortByDistance;
   try
   {
     mitk::Point2D pixelScales;
     pixelScales[0] = pixelScaleFactors[0];
     pixelScales[1] = pixelScaleFactors[1];
 
-    mitk::HandeyeCalibrateFromDirectory::Pointer Calibrator = mitk::HandeyeCalibrateFromDirectory::New();
-    Calibrator->SetDirectory(trackingInputDirectory);
-    Calibrator->SetTrackerIndex(trackerIndex);
-    Calibrator->SetAbsTrackerTimingError(MaxTimingError);
-    Calibrator->SetFramesToUse(FramesToUse);
-    Calibrator->SetSortByDistance(SortByDistance);
-    Calibrator->SetFlipTracking(FlipTracking);
-    Calibrator->SetFlipExtrinsic(FlipExtrinsic);
-    Calibrator->SetSortByAngle(false);
-    Calibrator->SetPixelScaleFactor(pixelScales);
-    Calibrator->SetSwapVideoChannels(swapVideoChannels);
-    Calibrator->InitialiseTracking();
+    mitk::HandeyeCalibrateFromDirectory::Pointer calibrator = mitk::HandeyeCalibrateFromDirectory::New();
+    calibrator->SetDirectory(trackingInputDirectory);
+    calibrator->SetTrackerIndex(trackerIndex);
+    calibrator->SetAbsTrackerTimingError(MaxTimingError);
+    calibrator->SetFramesToUse(FramesToUse);
+    calibrator->SetSortByDistance(sortByDistance);
+    calibrator->SetFlipTracking(FlipTracking);
+    calibrator->SetFlipExtrinsic(FlipExtrinsic);
+    calibrator->SetSortByAngle(false);
+    calibrator->SetPixelScaleFactor(pixelScales);
+    calibrator->SetSwapVideoChannels(swapVideoChannels);
+    calibrator->InitialiseTracking();
 
     if ( existingCalibrationDirectory != "" ) 
     {
       MITK_INFO << "Attempting to use existing intrinsic calibration from " << existingCalibrationDirectory;
-      Calibrator->LoadExistingIntrinsicCalibrations(existingCalibrationDirectory);
+      calibrator->LoadExistingIntrinsicCalibrations(existingCalibrationDirectory);
     }
-    Calibrator->InitialiseVideo();
+    calibrator->InitialiseVideo();
 
     returnStatus = EXIT_SUCCESS;
   }
