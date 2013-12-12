@@ -30,12 +30,6 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionEvent" event_variant="PlaneDown" target="start">
             <action name="ScrollOneDown"/>
         </transition>
-        <transition event_class="MousePressEvent"  event_variant="StartScroll" target="scroll">
-            <action name="init"/>
-        </transition>
-        <transition event_class="MousePressEvent"  event_variant="StartAdjustLevelWindow" target="adjustlevelwindow">
-            <action name="init"/>
-        </transition>
     </state>
     <state name="move">
       <transition event_class="InteractionPositionEvent" event_variant="Moving" target="move">
@@ -48,18 +42,5 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="zoom"/>
       </transition>
       <transition event_class="InteractionPositionEvent" event_variant="EndZooming" target="start"/>
-    </state>
-    <state name="scroll">
-      <transition event_class="InteractionPositionEvent" event_variant="Scrolling" target="scroll">
-            <action name="scroll"/>
-      </transition>
-      <transition event_class="InteractionPositionEvent" event_variant="EndScrolling" target="start"/>
-      <transition event_class="InteractionPositionEvent" event_variant="EndScrollingVar" target="start"/>
-    </state>
-    <state name="adjustlevelwindow">
-      <transition event_class="InteractionPositionEvent" event_variant="adjustlevelwindow" target="adjustlevelwindow">
-            <action name="levelWindow"/>
-      </transition>
-      <transition event_class="InteractionPositionEvent" event_variant="EndLevelWindow" target="start"/>
     </state>
 </statemachine>
