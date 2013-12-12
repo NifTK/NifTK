@@ -21,7 +21,6 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
-  std::vector<double> ReprojectionError;
 
   bool SortByDistance = !DontSortByDistance;
   try
