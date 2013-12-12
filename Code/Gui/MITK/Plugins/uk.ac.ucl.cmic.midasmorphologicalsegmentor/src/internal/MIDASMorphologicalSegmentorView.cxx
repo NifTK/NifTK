@@ -687,16 +687,16 @@ void MIDASMorphologicalSegmentorView::SetDefaultParameterValuesFromReferenceImag
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 {
-  mitk::Image::Pointer image = m_PipelineManager->GetReferenceImageFromToolManager(0);
-  if (image.IsNotNull())
+  mitk::Image::Pointer referenceImage = m_PipelineManager->GetReferenceImageFromToolManager(0);
+  if (referenceImage.IsNotNull())
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
-    int numberOfAxialSlices = image->GetDimension(axialAxis);
-    int upDirection = mitk::GetUpDirection(image, MIDAS_ORIENTATION_AXIAL);
+    int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
+    int upDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
     m_MorphologicalControls->SetControlsByImageData(    
-        image->GetStatistics()->GetScalarValueMin(),
-        image->GetStatistics()->GetScalarValueMax(),
+        referenceImage->GetStatistics()->GetScalarValueMin(),
+        referenceImage->GetStatistics()->GetScalarValueMax(),
         numberOfAxialSlices,
         upDirection);
   }
@@ -706,8 +706,6 @@ void MIDASMorphologicalSegmentorView::SetControlsByImageData()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::SetControlsByParameterValues()
 {
-  this->SetControlsByImageData();
-
   MorphologicalSegmentorPipelineParams params;
   m_PipelineManager->GetParameterValuesFromSegmentationNode(params);
 
