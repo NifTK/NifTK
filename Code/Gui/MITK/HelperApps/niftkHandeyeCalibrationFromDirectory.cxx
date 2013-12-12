@@ -30,7 +30,8 @@ int main(int argc, char** argv)
     pixelScales[1] = pixelScaleFactors[1];
 
     mitk::HandeyeCalibrateFromDirectory::Pointer calibrator = mitk::HandeyeCalibrateFromDirectory::New();
-    calibrator->SetDirectory(trackingInputDirectory);
+    calibrator->SetInputDirectory(trackingInputDirectory);
+    calibrator->SetOutputDirectory(outputDirectory);
     calibrator->SetTrackerIndex(trackerIndex);
     calibrator->SetAbsTrackerTimingError(MaxTimingError);
     calibrator->SetFramesToUse(FramesToUse);

@@ -46,7 +46,8 @@ public:
   void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
-  itkSetMacro(Directory, std::string);
+  itkSetMacro(InputDirectory, std::string);
+  itkSetMacro(OutputDirectory, std::string);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
 
@@ -86,7 +87,8 @@ private:
   unsigned int                        m_NumberCornersHeight;
   double                              m_SquareSizeInMillimetres;
   mitk::Point2D                       m_PixelScaleFactor;
-  std::string                         m_Directory;
+  std::string                         m_InputDirectory;
+  std::string                         m_OutputDirectory;  
   bool                                m_WriteOutChessboards;
   bool                                m_WriteOutCalibrationImages;
   mitk::VideoTrackerMatching::Pointer m_Matcher;
@@ -115,7 +117,6 @@ private:
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
   bool                                m_OptimiseIntrinsics;
-
 
 }; // end class
 
