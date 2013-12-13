@@ -97,6 +97,7 @@ public:
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
+  itkSetMacro ( ClassifierWorldPoints, std::vector < cv::Point3d > );
   void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
   void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
@@ -174,8 +175,7 @@ private:
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
   std::vector < std::pair < unsigned int , cv::Point2d > >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
-  std::vector< std::pair < cv::Point3d, cv::Scalar > >     
-                                m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector< cv::Point3d >    m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
 

@@ -168,6 +168,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectOK = false;
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();
+  m_ClassifierProjectedPoints.clear();
   if ( m_WorldPoints.size() == 0 ) 
   {
     MITK_WARN << "Called project with nothing to project";
@@ -194,6 +195,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     
     m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
     std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > pointsInLeftLensCS = std::pair < long long , std::vector < std::pair < cv::Point3d , cv::Scalar > > > ( timingError , WorldToLeftCamera * m_WorldPoints); 
+    
+    std::pair < long long , std::vector < cv::Point3d > >  classifierPointsInLeftLensCS = std::pair < long long , std::vector < cv::Point3d > > ( timingError , WorldToLeftCamera * m_ClassifierWorldPoints); 
     m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
 
     //project onto screen
@@ -204,7 +207,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     
     cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
     cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.second.size(),3,CV_64FC1);
-
+    
+    CvMat* classifierOutputLeftCameraWorldPointsIn3D = NULL;
+    CvMat* classifierOutputLeftCameraWorldNormalsIn3D = NULL ;
+    CvMat* classifierOutput2DPointsLeft = NULL ;
+    CvMat* classifierOutput2DPointsRight = NULL;
+    
+    cv::Mat classifierLeftCameraWorldPoints = cv::Mat (classifierPointsInLeftLensCS.second.size(),3,CV_64FC1);
+    cv::Mat classifierLeftCameraWorldNormals = cv::Mat (classifierPointsInLeftLensCS.second.size(),3,CV_64FC1);
+    
     for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
     {
       leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS.second[i].first.x;
@@ -214,6 +225,16 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       leftCameraWorldNormals.at<double>(i,1) = 0.0;
       leftCameraWorldNormals.at<double>(i,2) = -1.0;
     }
+    for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.second.size() ; i ++ ) 
+    {
+      classifierLeftCameraWorldPoints.at<double>(i,0) = classifierPointsInLeftLensCS.second[i].x;
+      classifierLeftCameraWorldPoints.at<double>(i,1) = classifierPointsInLeftLensCS.second[i].y;
+      classifierLeftCameraWorldPoints.at<double>(i,2) = classifierPointsInLeftLensCS.second[i].z;
+      classifierLeftCameraWorldNormals.at<double>(i,0) = 0.0;
+      classifierLeftCameraWorldNormals.at<double>(i,1) = 0.0;
+      classifierLeftCameraWorldNormals.at<double>(i,2) = -1.0;
+    }
+   
     cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
     leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
     leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
@@ -229,8 +250,21 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
         outputLeftCameraWorldNormalsIn3D,
         output2DPointsLeft,
         output2DPointsRight);
+    
+    mitk::ProjectVisible3DWorldPointsToStereo2D
+      ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
+        leftCameraPositionToFocalPointUnitVector,
+        *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
+        *m_RightIntrinsicMatrix,*m_RightDistortionVector,
+        *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
+        classifierOutputLeftCameraWorldPointsIn3D,
+        classifierOutputLeftCameraWorldNormalsIn3D,
+        classifierOutput2DPointsLeft,
+        classifierOutput2DPointsRight);
+
 
     std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;
+    std::vector < std::pair < cv::Point2d , cv::Point2d > > classifierScreenPoints;
     
     for ( unsigned int i = 0 ; i < pointsInLeftLensCS.second.size() ; i ++ ) 
     {
@@ -241,11 +275,24 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     }
     m_ProjectedPoints.push_back(std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > ( timingError, screenPoints));
     
+    for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.second.size() ; i ++ ) 
+    {
+      std::pair < cv::Point2d , cv::Point2d > pointPair;
+      pointPair.first = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,1));
+      pointPair.second = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,1));
+      classifierScreenPoints.push_back(pointPair);
+    }
+    m_ClassifierProjectedPoints.push_back(std::pair < long long , std::vector < std::pair < cv::Point2d , cv::Point2d > > > ( timingError, classifierScreenPoints));
+    
     //de-allocate the matrices    
     cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
     cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
     cvReleaseMat(&output2DPointsLeft);
     cvReleaseMat(&output2DPointsRight);
+    cvReleaseMat(&classifierOutputLeftCameraWorldPointsIn3D);
+    cvReleaseMat(&classifierOutputLeftCameraWorldNormalsIn3D);
+    cvReleaseMat(&classifierOutput2DPointsLeft);
+    cvReleaseMat(&classifierOutput2DPointsRight);
 
     if ( m_Visualise || m_SaveVideo ) 
     {
