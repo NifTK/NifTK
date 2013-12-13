@@ -83,6 +83,7 @@ int main(int argc, char** argv)
     std::vector < std::pair < cv::Point2d, cv::Point2d > > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < cv::Point3d > worldPoints;
+    std::vector < cv::Point3d > classifierWorldPoints;
     std::vector < std::pair < cv::Point3d , cv::Scalar > > worldPointsWithScalars;
     if ( input2D.length() != 0 ) 
     {
@@ -114,6 +115,21 @@ int main(int argc, char** argv)
       fin.close();
     }
    
+    if ( classifier3D.length() != 0 ) 
+    {
+      std::ifstream fin(classifier3D.c_str());
+      double x;
+      double y;
+      double z;
+      while ( fin >> x >> y >> z  )
+      {
+        classifierWorldPoints.push_back(cv::Point3d(x,y,z));
+      }
+      projector->SetClassifierWorldPoints(classifierWorldPoints);
+      fin.close();
+    }
+   
+
     if ( input3DWithScalars.length() != 0 ) 
     {
       std::ifstream fin(input3DWithScalars.c_str());

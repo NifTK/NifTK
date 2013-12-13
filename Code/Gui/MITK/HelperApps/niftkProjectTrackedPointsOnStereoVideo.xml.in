@@ -67,6 +67,14 @@
       <channel>input</channel>
     </file>
 
+    <file fileExtensions="*.txt">
+      <name>classifier3D</name>
+      <longflag>classifier3D</longflag>
+      <description>3D points used for classifing GS points during error calculation</description>
+      <label>3D points used for classifing GS points during error calculation</label>
+      <channel>input</channel>
+    </file>
+   
     <file>
       <name>output3D</name>
       <longflag>output3D</longflag>
