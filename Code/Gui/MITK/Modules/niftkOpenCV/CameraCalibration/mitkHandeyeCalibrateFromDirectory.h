@@ -42,12 +42,11 @@ public:
   mitkClassMacro(HandeyeCalibrateFromDirectory, itk::Object);
   itkNewMacro(HandeyeCalibrateFromDirectory);
   
+  void InitialiseOutputDirectory();
   void InitialiseVideo ();
   void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
-  itkSetMacro(InputDirectory, std::string);
-  itkSetMacro(OutputDirectory, std::string);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
 
@@ -63,7 +62,9 @@ public:
   itkSetMacro(SwapVideoChannels, bool);
 
   bool LoadExistingIntrinsicCalibrations (std::string directory);
-
+  void SetInputDirectory(const std::string& inputDir);
+  virtual void SetOutputDirectory(const std::string& outputDir);
+  
 protected:
 
   HandeyeCalibrateFromDirectory();
@@ -88,7 +89,6 @@ private:
   double                              m_SquareSizeInMillimetres;
   mitk::Point2D                       m_PixelScaleFactor;
   std::string                         m_InputDirectory;
-  std::string                         m_OutputDirectory;  
   bool                                m_WriteOutChessboards;
   bool                                m_WriteOutCalibrationImages;
   mitk::VideoTrackerMatching::Pointer m_Matcher;

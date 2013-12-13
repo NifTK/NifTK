@@ -34,6 +34,7 @@ HandeyeCalibrate::HandeyeCalibrate()
 , m_DoGridToWorld(true)
 , m_CameraToMarker(cvCreateMat(4,4,CV_64FC1))
 , m_GridToWorld(cvCreateMat(4,4,CV_64FC1))
+, m_OutputDirectory("")
 {
 }
 
@@ -42,6 +43,14 @@ HandeyeCalibrate::HandeyeCalibrate()
 HandeyeCalibrate::~HandeyeCalibrate()
 {
 
+}
+
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrate::SetOutputDirectory(const std::string& outputDir)
+{
+  m_OutputDirectory = outputDir;
+  this->Modified();
 }
 
 
@@ -75,7 +84,12 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   }
   int NumberOfViews = MarkerToWorld.size();
  
-
+  std::string outputDirectory = m_OutputDirectory;
+  if (outputDirectory.length() != 0)
+  {
+    outputDirectory = outputDirectory.append("/");
+  }
+  
   if ( m_FlipTracking )
   {
     MarkerToWorld = mitk::FlipMatrices(MarkerToWorld);
@@ -285,9 +299,10 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::cout << "Camera To Marker Matrix = " << std::endl << m_CameraToMarker << std::endl;
   std::cout << "Rotational Residual = " << residuals [0] << std::endl;
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
+  std::cout << "Output directory = " << outputDirectory << std::endl;
   
   std::ofstream handeyeStream;
-  handeyeStream.open("calib.left.handeye.txt");
+  handeyeStream.open((outputDirectory + "calib.left.handeye.txt").c_str());
   if ( handeyeStream ) 
   {
     for ( int i = 0 ; i < 4 ; i ++ ) 
@@ -313,7 +328,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
       gridToWorld = cameraToWorld *(GridToCamera[i]);
       gridToWorlds.push_back(gridToWorld);
       std::ofstream gridCornersStream;
-      std::string gridCornersName = "calib.gridcorners" +boost::lexical_cast<std::string>(i) + ".txt";
+      std::string gridCornersName = outputDirectory + "calib.gridcorners" +boost::lexical_cast<std::string>(i) + ".txt";
       gridCornersStream.open (gridCornersName.c_str());
       if (gridCornersStream )
       {
@@ -333,7 +348,7 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
     m_GridToWorld = mitk::AverageMatrices (gridToWorlds);
     MITK_INFO << "Average Grid to World Transform" << std::endl << m_GridToWorld;
     std::ofstream gridCornersStream;
-    gridCornersStream.open("calib.gridcorners.txt");
+    gridCornersStream.open((outputDirectory + "calib.gridcorners.txt").c_str());
     if ( gridCornersStream )
     {
       for ( int i = 0 ; i < 2 ; i ++ ) 
