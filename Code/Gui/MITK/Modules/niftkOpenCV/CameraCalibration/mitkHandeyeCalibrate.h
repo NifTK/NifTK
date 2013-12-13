@@ -54,6 +54,8 @@ public:
   itkGetMacro(CameraToMarker, cv::Mat);
   itkGetMacro(GridToWorld, cv::Mat);
 
+  virtual void SetOutputDirectory(const std::string& outputDir);
+  
 protected:
 
   HandeyeCalibrate();
@@ -70,7 +72,8 @@ protected:
   
   cv::Mat m_CameraToMarker; //the handeye matrix
   cv::Mat m_GridToWorld;    //the position of the calibration grid in world coordinates
-
+  std::string m_OutputDirectory;
+  
 private: 
 
 }; // end class
