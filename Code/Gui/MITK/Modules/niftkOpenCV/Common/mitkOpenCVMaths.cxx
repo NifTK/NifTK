@@ -989,6 +989,25 @@ std::pair < double, double >  RMSError (std::vector < std::vector < std::pair <c
   return RMSError;
 }
 //-----------------------------------------------------------------------------
+std::pair < double, double >  RMSError (std::vector < std::pair < long long , std::vector < std::pair <cv::Point2d, cv::Point2d> > > >  measured , std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 
+    int indexToUse , double outlierSD, long long allowableTimingError )
+{
+  std::vector < std::vector < std::pair < cv::Point2d, cv::Point2d > > > culledMeasured;
+  for ( unsigned int i = 0 ; i < measured.size() ; i ++ ) 
+  {
+    if ( measured[i].first < abs (allowableTimingError) )
+    {
+      culledMeasured.push_back( measured[i].second );
+    }
+    else 
+    {
+      MITK_WARN << "Dropping point pair " << i << " due to high timing error " << measured[i].first << " > " << allowableTimingError;
+    }
+  }
+  return mitk::RMSError ( culledMeasured, actual, indexToUse, outlierSD );
+}
+
+//-----------------------------------------------------------------------------
 std::pair < cv::Point2d, cv::Point2d >  MeanError (
     std::vector < std::vector < std::pair <cv::Point2d, cv::Point2d> > >  measured , 
     std::vector < std::vector <std::pair<cv::Point2d, cv::Point2d> > > actual , 

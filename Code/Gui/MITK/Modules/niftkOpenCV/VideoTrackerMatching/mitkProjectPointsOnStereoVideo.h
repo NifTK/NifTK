@@ -96,6 +96,8 @@ public:
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
+  itkSetMacro ( AllowableTimingError, long long);
+  itkSetMacro ( ClassifierWorldPoints, std::vector < cv::Point3d > );
   void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
   void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
@@ -108,7 +110,7 @@ public:
    */
   void SetWorldPoints ( std::vector< cv::Point3d > points );
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
-  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >  GetProjectedPoints();
+  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -121,7 +123,7 @@ public:
   /**
    * \brief calculates the triangulation errors
    */
-  void CalculateTriangulationErrors (std::string outPrefix);
+  void CalculateTriangulationErrors (std::string outPrefix,  mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
 
 protected:
@@ -158,10 +160,10 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
-  /* m_ProjectPoints [framenumber][pointID](left.right);*/
-  std::vector < std::vector < std::pair<cv::Point2d, cv::Point2d> > >
+  /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
+  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ProjectedPoints; // the projected points
-  std::vector < std::vector < std::pair < cv::Point3d, cv::Scalar > > >    
+  std::vector < std::pair < long long , std::vector < std::pair <cv::Point3d, cv::Scalar> > > >    
                                 m_PointsInLeftLensCS; // the points in left lens coordinates.
   std::vector < std::pair<cv::Point2d, cv::Point2d> > 
                                 m_ScreenAxesPoints; // the projected axes points
@@ -173,6 +175,9 @@ private:
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
   std::vector < std::pair < unsigned int , cv::Point2d > >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
+  std::vector< cv::Point3d >    m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
+                                m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
 
   std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels
   std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
@@ -185,7 +190,8 @@ private:
   CvVideoWriter*                m_RightWriter;
 
   double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
-
+  
+  long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;
   void ProjectAxes();
 
   /* \brief 
