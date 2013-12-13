@@ -793,19 +793,34 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 //-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
 {
+  assert ( m_ClassifierProjectedPoints[GSPoint.first].second.size() ==
+    m_ProjectedPoints[GSPoint.first].second.size() );
   std::vector < cv::Point2d > pointVector;
-  for ( unsigned int i = 0 ; i < m_ProjectedPoints[GSPoint.first].second.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.first].second.size() ; i ++ )
   {
     if ( left )
     {
-      pointVector.push_back ( m_ProjectedPoints[GSPoint.first].second[i].first );
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.first].second[i].first );
     }
     else
     {
-      pointVector.push_back ( m_ProjectedPoints[GSPoint.first].second[i].second );
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.first].second[i].second );
     }
   }
-  return mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, index );
+  unsigned int myIndex;
+  mitk::FindNearestPoint( GSPoint.second , pointVector ,minRatio, &myIndex );
+  if ( index != NULL ) 
+  {
+    *index = myIndex;
+  }
+  if ( left ) 
+  {
+    return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+  }
+  else
+  {
+    return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+  }
 }
 
 //-----------------------------------------------------------------------------
