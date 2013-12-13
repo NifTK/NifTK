@@ -200,8 +200,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
-  unsigned int numberAdded = this->DrawLineAroundVoxelEdges
-                             (
+  unsigned int numberAdded = this->DrawLineAroundVoxelEdges(
                                *m_WorkingImage,
                                *m_WorkingImageGeometry,
                                *planeGeometry,

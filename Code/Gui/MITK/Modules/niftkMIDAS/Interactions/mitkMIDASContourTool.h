@@ -96,12 +96,12 @@ protected:
   void AccumulateContourInWorkingData(mitk::ContourModel& contour, int dataSetNumber);
 
   // Utility methods for helping draw lines that require m_Geometry to be set.
-  void ConvertPointToVoxelCoordinate(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
-  void ConvertPointToNearestVoxelCentre(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
-  void ConvertPointToNearestVoxelCentreInMillimetreCoordinates(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInMillimetreCoordinates);
-  void GetClosestCornerPoint2D(const mitk::Point3D& pointInMillimetreCoordinate, int* whichTwoAxesInVoxelSpace, mitk::Point3D& cornerPointInMillimetreCoordinates);
-  bool AreDiagonallyOpposite(const mitk::Point3D& cornerPointInMillimetreCoordinates1, const mitk::Point3D& cornerPointInMillimetreCoordinates2, int* whichTwoAxesInVoxelSpace);
-  void GetAdditionalCornerPoint(const mitk::Point3D& cornerPoint1InMillimetreCoordinates, const mitk::Point3D& point2InMillimetreCoordinates, const mitk::Point3D& cornerPoint2InMillimetreCoordinates, int* whichTwoAxesInVoxelSpace, mitk::Point3D& outputInMillimetreCoordinates);
+  void ConvertPointInMmToVx(const mitk::Point3D& pointInMm, mitk::Point3D& pointInVx);
+  void ConvertPointToNearestVoxelCentreInVx(const mitk::Point3D& pointInMm, mitk::Point3D& nearestVoxelCentreInVx);
+  void ConvertPointToNearestVoxelCentreInMm(const mitk::Point3D& pointInMm, mitk::Point3D& nearestVoxelCentreInMm);
+  void GetClosestCornerPoint2D(const mitk::Point3D& pointInMm, int* whichTwoAxesInVx, mitk::Point3D& cornerPointInMm);
+  bool AreDiagonallyOpposite(const mitk::Point3D& cornerPoint1InMm, const mitk::Point3D& cornerPoint2InMm, int* whichTwoAxesInVx);
+  void GetAdditionalCornerPoint(const mitk::Point3D& cornerPoint1InMm, const mitk::Point3D& point2InMm, const mitk::Point3D& cornerPoint2InMm, int* whichTwoAxesInVx, mitk::Point3D& newCornerPointInMm);
 
   // Main method for drawing a line:
   //   1.) from previousPoint to currentPoint working around voxel corners, output in contourAroundCorners
