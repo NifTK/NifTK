@@ -407,7 +407,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex].second );
       leftGSIndex ++;
     }
-    while ( m_RightGoldStandardPoints[rightGSIndex].first != frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
+    while ( m_RightGoldStandardPoints[rightGSIndex].first < frameNumber  && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
       rightGSIndex ++;
     }
