@@ -381,7 +381,8 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPrefix)
+void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPrefix, 
+    mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
   if ( ! m_ProjectOK ) 
   {
@@ -394,6 +395,13 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   
   unsigned int leftGSIndex = 0;
   unsigned int rightGSIndex = 0;
+
+  std::vector < std::vector < cv::Point3d > > classifiedPoints;
+  for ( unsigned int i = 0 ; i < m_PointsInLeftLensCS[0].second.size() ; i ++ )
+  {
+    std::vector < cv::Point3d > pointvector;
+    classifiedPoints.push_back(pointvector);
+  }
 
   while ( leftGSIndex < m_LeftGoldStandardPoints.size() && rightGSIndex < m_RightGoldStandardPoints.size() )
   {
@@ -510,6 +518,10 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       
         m_TriangulationErrors.push_back(triangulatedGS - 
             m_PointsInLeftLensCS[frameNumber].second[matchedPairs[i].first].first);
+        
+        cv::Mat leftCameraToWorld = trackerMatcher->GetCameraTrackingMatrix(frameNumber, NULL, m_TrackerIndex, NULL, m_ReferenceIndex);
+      
+        classifiedPoints[matchedPairs[i].first].push_back(leftCameraToWorld * triangulatedGS);
         cvReleaseMat (&leftScreenPointsMat);
         cvReleaseMat (&rightScreenPointsMat);
         cvReleaseMat (&rightScreenPointsMat);
@@ -520,6 +532,11 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       MITK_WARN << "Rejecting triangulation error at frame " << frameNumber << " due to high timing error " << m_PointsInLeftLensCS[frameNumber].first << " > "  << m_AllowableTimingError ;
     }
   } 
+  for ( unsigned int i = 0 ; i < classifiedPoints.size() ; i ++ ) 
+  {
+    MITK_INFO << "Point " << i << " triangulated mean " << mitk::GetCentroid (classifiedPoints[i],true);
+  }
+
   std::ofstream tout (std::string (outPrefix + "_triangulation.errors").c_str());
   tout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_TriangulationErrors.size() ; i ++ )

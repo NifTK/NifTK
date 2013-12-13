@@ -229,7 +229,7 @@ int main(int argc, char** argv)
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       projector->CalculateProjectionErrors(outputErrors);
-      projector->CalculateTriangulationErrors(outputErrors);
+      projector->CalculateTriangulationErrors(outputErrors, matcher);
     }
    
 

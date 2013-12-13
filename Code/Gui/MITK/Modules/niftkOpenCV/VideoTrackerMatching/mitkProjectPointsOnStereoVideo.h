@@ -122,7 +122,7 @@ public:
   /**
    * \brief calculates the triangulation errors
    */
-  void CalculateTriangulationErrors (std::string outPrefix);
+  void CalculateTriangulationErrors (std::string outPrefix,  mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
 
 protected:
