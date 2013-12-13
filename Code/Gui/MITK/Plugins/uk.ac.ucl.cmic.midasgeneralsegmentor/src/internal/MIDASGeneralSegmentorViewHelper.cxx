@@ -88,10 +88,7 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
       int axisOfRunningCoordinate = -1;
       for (int axis = 0; axis < 3; ++ axis)
       {
-        /// TODO
-        /// This should be a simple '!=' operator, but the draw tool does not
-        /// save perfect corner coordinates now.
-        if (std::abs(endPoint[axis] - startPoint[axis]) > 0.00001)
+        if (std::abs(endPoint[axis] - startPoint[axis]) > 0.01)
         {
           /// Only one coordinate can differ at this point, otherwise the representation
           /// is incorrect. The contour can turn only at voxel corners.
@@ -123,7 +120,7 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
           /// TODO
           /// This should be a simple '!=' operator, but the draw tool does not
           /// save perfect corner coordinates now.
-          if (std::abs(newEndPoint[axis] - startPoint[axis]) > 0.00001)
+          if (std::abs(newEndPoint[axis] - startPoint[axis]) > 0.01)
           {
             ++numberOfDifferentCoordinates;
             axisWithDifferentCoordinate = axis;
