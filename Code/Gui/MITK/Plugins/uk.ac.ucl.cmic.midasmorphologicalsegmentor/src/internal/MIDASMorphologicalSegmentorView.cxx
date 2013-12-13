@@ -262,6 +262,8 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
   int coronalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_CORONAL);
 
   int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int sagittalUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
+  int coronalUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_CORONAL);
 
   /// The centre of the plane is the same as the centre of the image, but it is shifted
   /// along the axial axis to a position determined by axialSliceNumber.
@@ -269,7 +271,10 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
   /// The world coordinate always increases from the bottom to the top, but the slice
   /// numbering depends on the image. (This is what the 'up direction' tells.)
   mitk::Point3D planeCentre = geometry->GetCenter();
-  planeCentre[2] = geometry->GetOrigin()[2] - geometry->GetSpacing()[2];
+  mitk::Vector3D spacing = geometry->GetSpacing();
+  planeCentre[0] += sagittalUpDirection * 0.5 * spacing[sagittalAxis];
+  planeCentre[1] += coronalUpDirection * 0.5 * spacing[coronalAxis];
+  planeCentre[2] = geometry->GetOrigin()[2] - axialUpDirection * 0.5 * spacing[axialAxis];
   if (axialUpDirection == -1)
   {
     planeCentre[2] -= geometry->GetExtentInMM(axialAxis);
@@ -312,14 +317,14 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::Geometry3D* geometry = referenceImage->GetGeometry();
 
+  int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+
   mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
-  int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  double axialSpacing = geometry->GetSpacing()[2];
-
   // Lift the axial cut-off plane to the height determined by axialSliceNumber.
-  mitk::Point3D planeCentre = geometry->GetCenter();
-  planeCentre[2] = geometry->GetOrigin()[2] - axialSpacing + axialUpDirection * axialSliceNumber * axialSpacing;
+  mitk::Point3D planeCentre = axialCutOffPlane->GetGeometry()->GetOrigin();
+  planeCentre[2] = geometry->GetOrigin()[2] + (axialUpDirection * axialSliceNumber - 0.5) * geometry->GetSpacing()[axialAxis];
   axialCutOffPlane->SetOrigin(planeCentre);
 
   this->RequestRenderWindowUpdate();
