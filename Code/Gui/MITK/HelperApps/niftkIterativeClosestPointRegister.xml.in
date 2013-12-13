@@ -57,6 +57,13 @@
       <default>0</default>
     </boolean>
 
+    <file>
+      <name>initTrans</name>
+      <longflag>initTrans</longflag>
+      <description>Transform the source by initial transform</description>
+      <label>Transform the source by initial transform</label>
+      <channel>input</channel>
+    </file>
   </parameters>
   
 </executable>
