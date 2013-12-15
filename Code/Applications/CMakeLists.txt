@@ -91,6 +91,7 @@ if(SlicerExecutionModel_FOUND)
     niftkN4BiasFieldCorrection
     niftkNegateImage
     niftkOtsuThresholdImage
+    niftkScalarConnectedComponentImageFilter
     niftkSubsampleImage
     niftkSubtract
     niftkUnaryImageOperatorsOnDirectoryTree
