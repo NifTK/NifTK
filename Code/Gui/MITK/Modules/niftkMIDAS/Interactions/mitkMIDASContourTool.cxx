@@ -308,7 +308,7 @@ void mitk::MIDASContourTool::GetAdditionalCornerPoint(
   }
 }
 
-unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
+bool mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
     const mitk::Image& image,                 // input
     const mitk::Geometry3D& geometry3D,       // input
     const mitk::PlaneGeometry& planeGeometry, // input
@@ -318,8 +318,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
     mitk::ContourModel& contourAlongLine           // output
     )
 {
-  // We keep track of this, because if any iteration adds 0 points, then calling routines may need to know.
-  unsigned int numberOfPointsAdded = 0;
+  bool contourAugmented = false;
 
   // Need to work out which two axes we are working in, and bail out if it fails.
   int affectedDimension( -1 );
@@ -327,7 +326,7 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
 
   if (!(SegTool2D::DetermineAffectedImageSlice( &image, &planeGeometry, affectedDimension, affectedSlice )))
   {
-    return numberOfPointsAdded;
+    return contourAugmented;
   }
 
   int whichTwoAxesInVx[2];
@@ -354,7 +353,6 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
 
   // Get the current position in millimetres and voxel.
   mitk::Point3D mostRecentPointInMm = previousPointInMm;
-  mitk::Point3D mostRecentPointInContourInMm;
   mitk::Point3D currentPointInVx;
   this->ConvertPointInMmToVx(currentPointInMm, currentPointInVx);
 
@@ -418,42 +416,49 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
         mitk::Point3D closestCornerPointToIncrementedPoint;
         this->GetClosestCornerPoint2D(incrementedPoint, whichTwoAxesInVx, closestCornerPointToIncrementedPoint);
 
-        mitk::Point3D pointToCheckForDifference;
+        mitk::Point3D lastContourPointInMm;
         int currentNumberOfPoints = contourAroundCorners.GetNumberOfVertices();
         if (currentNumberOfPoints == 0)
         {
-          pointToCheckForDifference = closestCornerPointToMostRecentPoint;
+          lastContourPointInMm = closestCornerPointToMostRecentPoint;
         }
         else
         {
-          mostRecentPointInContourInMm = contourAroundCorners.GetVertexAt(currentNumberOfPoints - 1)->Coordinates;
-          pointToCheckForDifference = mostRecentPointInContourInMm;
+          lastContourPointInMm = contourAroundCorners.GetVertexAt(currentNumberOfPoints - 1)->Coordinates;
           if (currentNumberOfPoints > 1)
           {
             lastEqualCoordinateAxes = this->GetEqualCoordinateAxes(
                   contourAroundCorners.GetVertexAt(currentNumberOfPoints - 2)->Coordinates,
-                  pointToCheckForDifference,
+                  lastContourPointInMm,
                   whichTwoAxesInVx);
           }
         }
 
-        int equalCoordinateAxes = this->GetEqualCoordinateAxes(pointToCheckForDifference, closestCornerPointToIncrementedPoint, whichTwoAxesInVx);
+        int equalCoordinateAxes = this->GetEqualCoordinateAxes(lastContourPointInMm, closestCornerPointToIncrementedPoint, whichTwoAxesInVx);
         if (equalCoordinateAxes != 3)
         {
           if (currentNumberOfPoints == 0)
           {
-            contourAroundCorners.AddVertex(pointToCheckForDifference);
-            numberOfPointsAdded++;
+            contourAroundCorners.AddVertex(lastContourPointInMm);
           }
 
           // Caveat, if the two corner points are diagonally opposite, we need to additionally insert
           if (equalCoordinateAxes == 0)
           {
             mitk::Point3D additionalCornerPoint;
-            this->GetAdditionalCornerPoint(pointToCheckForDifference, incrementedPoint, closestCornerPointToIncrementedPoint, whichTwoAxesInVx, additionalCornerPoint);
-            contourAroundCorners.AddVertex(additionalCornerPoint);
-            lastEqualCoordinateAxes = this->GetEqualCoordinateAxes(additionalCornerPoint, closestCornerPointToIncrementedPoint, whichTwoAxesInVx);
-            numberOfPointsAdded++;
+            this->GetAdditionalCornerPoint(lastContourPointInMm, incrementedPoint, closestCornerPointToIncrementedPoint, whichTwoAxesInVx, additionalCornerPoint);
+            equalCoordinateAxes = this->GetEqualCoordinateAxes(lastContourPointInMm, additionalCornerPoint, whichTwoAxesInVx);
+            if (equalCoordinateAxes == lastEqualCoordinateAxes)
+            {
+              // If this is a new point along the same line, we simple override the coordinates of the previous point.
+              const mitk::ContourModel::VertexType* lastVertex = contourAroundCorners.GetVertexAt(contourAroundCorners.GetNumberOfVertices() - 1);
+              const_cast<mitk::ContourModel::VertexType*>(lastVertex)->Coordinates = additionalCornerPoint;
+            }
+            else
+            {
+              contourAroundCorners.AddVertex(additionalCornerPoint);
+              lastEqualCoordinateAxes = equalCoordinateAxes;
+            }
           }
           else if (equalCoordinateAxes == lastEqualCoordinateAxes)
           {
@@ -464,20 +469,18 @@ unsigned int mitk::MIDASContourTool::DrawLineAroundVoxelEdges(
           else
           {
             contourAroundCorners.AddVertex(closestCornerPointToIncrementedPoint);
-            numberOfPointsAdded++;
             lastEqualCoordinateAxes = equalCoordinateAxes;
           }
 
+          contourAugmented = true;
 
           mostRecentPointInMm = incrementedPoint;
-          mostRecentPointInContourInMm = closestCornerPointToIncrementedPoint;
-
         } // end if two points are different
       } // end for k, for each step
     } // end if steps > 0
   } // end if length > 0
 
-  return numberOfPointsAdded;
+  return contourAugmented;
 }
 
 void mitk::MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::ContourModel& b)

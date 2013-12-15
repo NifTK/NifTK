@@ -112,8 +112,8 @@ protected:
   // Main method for drawing a line:
   //   1.) from previousPoint to currentPoint working around voxel corners, output in contourAroundCorners
   //   2.) from previousPoint to currentPoint working in a straight line, output in contourAlongLine
-  // Returns the number of points added to contourAroundCorners
-  unsigned int DrawLineAroundVoxelEdges(
+  // Returns true if new points added to contourAroundCorners or the last point updated, otherwise false.
+  bool DrawLineAroundVoxelEdges(
       const mitk::Image& image,                 // input
       const mitk::Geometry3D& geometry3D,       // input
       const mitk::PlaneGeometry& planeGeometry, // input
