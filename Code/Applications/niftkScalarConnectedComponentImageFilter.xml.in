@@ -39,10 +39,17 @@
     <label>Parameters</label>
     <description><![CDATA[Parameters that control the connected component filter]]></description>
     
+    <boolean>
+      <name>flgLargestObject</name>
+      <longflag>largest</longflag>
+      <description>Only extract the largest object.</description>
+      <label>Largest object only?</label>
+    </boolean>
+
     <float>
       <name>distanceThreshold</name>
       <longflag>interval</longflag>
-      <description>The distance between adjacent voxels considered members of the same object</description>
+      <description>The distance between adjacent voxels considered members of the same object.</description>
       <label>Object intensity inteval</label>
       <default>0</default>
       <constraints>
@@ -54,8 +61,8 @@
     
     <float>
       <name>minSize</name>
-      <longflag>minsize</longflag>
-      <description>The minimum object size</description>
+      <longflag>minSize</longflag>
+      <description>The minimum object size in voxels to be labelled.</description>
       <label>Minimum object size</label>
       <default>20</default>
       <constraints>
@@ -64,13 +71,35 @@
         <step>1</step>
       </constraints>
      </float>
-
-    <boolean>
-      <name>flgLargestObject</name>
-      <longflag>largest</longflag>
-      <description>Only extract the largest object.</description>
-      <label>Largest object only?</label>
-    </boolean>
+    
+    <float>
+      <name>minLabelRank</name>
+      <longflag>minLabelRank</longflag>
+      <description>The minimum object label (label 1 is the largest object) to keep. For instance if the background is the biggest region (label 1), but this region should be ignored, then set this parameter to 2.</description>
+      <label>Minimum object label to keep</label>
+      <default>-1e9</default>
+     </float>
+    
+    <float>
+      <name>maxLabelRank</name>
+      <longflag>maxLabelRank</longflag>
+      <description>The maximum object label (label 1 is the largest object) to keep. For instance setting this parameter to 10 would keep the ten largest objects.</description>
+      <label>Maximum object label to keep</label>
+      <default>1e9</default>
+     </float>
+    
+    <float>
+      <name>border</name>
+      <longflag>border</longflag>
+      <description>The width of the image border to ignore.</description>
+      <label>Ignore image border of width</label>
+      <default>0</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>1000</maximum>
+        <step>1</step>
+      </constraints>
+     </float>
 
   </parameters>
 
