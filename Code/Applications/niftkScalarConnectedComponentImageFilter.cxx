@@ -21,7 +21,8 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkRelabelComponentImageFilter.h>
-
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
 #include <itkScalarConnectedComponentImageFilter.h>
 
 #include <niftkScalarConnectedComponentImageFilterCLP.h>
@@ -43,9 +44,15 @@
 
 struct arguments
 {
+  bool flgLargestObject;
+
   float distanceThreshold;
   float minSize;
-  bool flgLargestObject;
+
+  float minLabelRank;
+  float maxLabelRank;
+
+  float border;
 
   std::string inputImage;
   std::string outputImage;
@@ -53,6 +60,11 @@ struct arguments
   arguments() {
     distanceThreshold = 0.;
     minSize = 20;
+
+    minLabelRank = 0.;
+    maxLabelRank = 0.;
+
+    border = 0;
   }
   
 };
@@ -74,6 +86,62 @@ int DoMain(arguments args)
 
   typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName( args.inputImage );
+  
+  try
+  {
+    std::cout << "Reading input image: " << args.inputImage << std::endl; 
+    imageReader->Update(); 
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << std::endl << "ERROR: Failed to read the input image: " << err
+	      << std::endl << std::endl; 
+    return EXIT_FAILURE;
+  }                
+
+  typename InputImageType::Pointer image = imageReader->GetOutput();
+  image->DisconnectPipeline();
+
+
+  // Ignore the image border
+
+  if ( args.border )
+  {
+    int i;
+
+    typename InputImageType::RegionType region = image->GetLargestPossibleRegion();
+    typename InputImageType::SizeType size = region.GetSize();
+
+    typename InputImageType::IndexType start = region.GetIndex();
+
+    for ( i=0; i<Dimension; i++ )
+    {
+      start[i] += static_cast<int>( args.border );
+      size[i]  -= static_cast<int>( 2.*args.border );
+    }
+
+    region.SetSize( size );
+    region.SetIndex( start );
+
+    typedef itk::ImageRegionIteratorWithIndex< InputImageType > InputIteratorType;
+  
+    InputIteratorType itImage( image, image->GetLargestPossibleRegion() );
+
+    typename InputImageType::IndexType idx;
+    
+    itImage.GoToBegin();
+    while (! itImage.IsAtEnd() ) 
+    {
+      idx = itImage.GetIndex();
+
+      if ( ! region.IsInside( idx ) )
+      {
+        itImage.Set( 0.);
+      }
+      
+      ++itImage;
+    }
+  }
 
 
   // Detect connected components
@@ -85,7 +153,7 @@ int DoMain(arguments args)
   typename ConnectedComponentImageFilterType::Pointer connected =
     ConnectedComponentImageFilterType::New ();
 
-  connected->SetInput( imageReader->GetOutput() );
+  connected->SetInput( image );
   connected->SetDistanceThreshold( args.distanceThreshold );
 
   // Relabel the object by size
@@ -102,6 +170,40 @@ int DoMain(arguments args)
   try
   {
     relabel->Update(); 
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "Failed: " << err << std::endl; 
+    return EXIT_FAILURE;
+  }                
+
+  // Set the label range to be keep i.e. set labels outside this range to zero
+
+  typename LabelImageType::Pointer imLabels = relabel->GetOutput();
+  imLabels->DisconnectPipeline();
+
+  typedef itk::ImageRegionIterator< LabelImageType > LabelIteratorType;
+  
+  LabelIteratorType itImage( imLabels, imLabels->GetLargestPossibleRegion() );
+    
+  itImage.GoToBegin();
+
+  while (! itImage.IsAtEnd() ) 
+  {
+    if ( ( itImage.Get() < args.minLabelRank ) || 
+         ( itImage.Get() > args.maxLabelRank ) )
+    {
+      itImage.Set( 0.);
+    }
+    
+    ++itImage;
+  }
+  
+  relabel->SetInput( imLabels );
+
+  try
+  {
+    relabel->Update(); 
 
     std::cout << "Number of connected objects: " << relabel->GetNumberOfObjects() << std::endl << std::endl
               << "Size of largest object: " << relabel->GetSizeOfObjectsInPixels()[0] << std::endl << std::endl;
@@ -111,7 +213,8 @@ int DoMain(arguments args)
     std::cerr << "Failed: " << err << std::endl; 
     return EXIT_FAILURE;
   }                
-  
+
+
   // Extract the largest object?
 
   if ( args.flgLargestObject )
@@ -130,6 +233,7 @@ int DoMain(arguments args)
   
   try
   {
+    std::cout << "Writing labelled image: " << args.outputImage << std::endl; 
     imageWriter->Update(); 
   }
   catch( itk::ExceptionObject & err ) 
@@ -137,7 +241,6 @@ int DoMain(arguments args)
     std::cerr << "Failed: " << err << std::endl; 
     return EXIT_FAILURE;
   }                
-
 
   return EXIT_SUCCESS;
 }
@@ -155,9 +258,15 @@ int main(int argc, char** argv)
   // To pass around command line args
   struct arguments args;
 
+  args.flgLargestObject = flgLargestObject;
+
   args.distanceThreshold = distanceThreshold;
   args.minSize = minSize;
-  args.flgLargestObject = flgLargestObject;
+
+  args.minLabelRank = minLabelRank;
+  args.maxLabelRank = maxLabelRank;
+
+  args.border = border;
 
   args.inputImage=inputImage.c_str();
   args.outputImage=outputImage.c_str();
@@ -167,7 +276,12 @@ int main(int argc, char** argv)
 
   std::cout << std::endl
             << "Connected object intensity difference threshold: " << args.distanceThreshold << std::endl
-            << "Min object size: " << args.minSize << std::endl;
+            << "Min object size: " << args.minSize << std::endl
+            << "Border width: " << args.border << std::endl;
+
+  if ( args.minLabelRank || args.maxLabelRank )
+    std::cout << "Object size rank range to be keep (1=largest): " << args.minLabelRank 
+              << " to " << args.maxLabelRank << std::endl;
 
 
   // Validate command line args
