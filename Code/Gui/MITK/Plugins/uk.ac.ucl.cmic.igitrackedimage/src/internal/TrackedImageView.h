@@ -64,6 +64,13 @@ protected:
    */
   virtual void SetFocus();
 
+signals:
+
+  /**
+   * \brief We publish an update signal on topic "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" onto the Event Bus so that any other plugin can listen.
+   */
+  void Updated(const ctkDictionary&);
+  
 protected slots:
 
 protected:
@@ -102,7 +109,7 @@ private:
    */
   vtkSmartPointer<vtkMatrix4x4>   m_ImageToTrackingSensorTransform;
   std::string                     m_ImageToTrackingSensorFileName;
-  mitk::DataNode::Pointer         m_PlaneNode;
+  mitk::DataNode::Pointer         m_PlaneNode; // we use this to proxy the modified time of this class.
   mitk::Point2D                   m_ImageScaling;
 };
 

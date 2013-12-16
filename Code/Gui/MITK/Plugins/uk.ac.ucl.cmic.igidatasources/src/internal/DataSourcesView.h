@@ -63,7 +63,7 @@ protected:
 signals:
 
   /**
-   * \brief We publish an update signal onto the Event Bus so that any other plugin can listen.
+   * \brief We publish an update signal on topic "uk/ac/ucl/cmic/IGIUPDATE" onto the Event Bus so that any other plugin can listen.
    */
   void Updated(const ctkDictionary&);
 

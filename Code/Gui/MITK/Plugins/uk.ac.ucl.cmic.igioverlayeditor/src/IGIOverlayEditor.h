@@ -129,10 +129,15 @@ protected:
 private slots:
 
   /**
-   * \brief We can listen to the event bus to trigger updates.
+   * \brief We listen to "uk/ac/ucl/cmic/IGIUPDATE" and call this method.
    */
-  void OnUpdate(const ctkEvent& event);
+  void OnIGIUpdate(const ctkEvent& event);
 
+  /**
+   * \brief We listen to "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" and call this method.
+   */
+  void OnTrackedImageUpdate(const ctkEvent& event);
+  
 private:
 
   const QScopedPointer<IGIOverlayEditorPrivate> d;
