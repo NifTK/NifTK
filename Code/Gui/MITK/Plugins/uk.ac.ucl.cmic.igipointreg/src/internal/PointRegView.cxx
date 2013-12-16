@@ -217,7 +217,7 @@ void PointRegView::OnCalculateButtonPressed()
 //-----------------------------------------------------------------------------
 void PointRegView::OnComposeWithDataButtonPressed()
 {
-  ApplyTransformToNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
+  ComposeTransformWithNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
 
 
