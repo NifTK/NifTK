@@ -179,11 +179,11 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 ///
 /// and appends them to the ITK contour list.
 ///
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours);
-
-/** Convert all contours for a pipeline into ITK points. */
-void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours);
+/// The function needs to know the spacing of the original image. Note that the geometry of the MITK contours cannot be
+/// set to the same as that of the reference image or the segmentation image, otherwise the contours would be rendered
+/// to a wrong location in space. Therefore, the spacing has to be retrieved from either the MITK or ITK image and
+/// passed to this function.
+///
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing);
 
 #endif
-
-

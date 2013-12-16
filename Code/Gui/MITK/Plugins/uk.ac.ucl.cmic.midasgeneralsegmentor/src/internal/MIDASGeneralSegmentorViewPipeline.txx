@@ -87,9 +87,12 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_ManualContours.clear();
     
     // 3. Convert seeds / contours.
+    const mitk::Vector3D& spacing = m_ExtractBinaryRegionOfInterestFilter->GetInput()->GetSpacing();
+
     ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  
-    ConvertMITKContoursAndAppendToITKContours(params, m_ManualContours); 
-    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacing);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacing);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacing);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -198,6 +201,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
             }
             voxelIndex[m_AxisNumber] = m_SliceNumber;
+            MITK_INFO << "GeneralSegmentorPipeline::Update() manual contour vx cont.: " << continuousIndex;
+            MITK_INFO << "GeneralSegmentorPipeline::Update() manual contour vx round: " << voxelIndex;
             paintingRegion.SetIndex(voxelIndex);
   
             if (region3D.IsInside(paintingRegion))
@@ -216,7 +221,22 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         } // end if size of line at least 3.
       } // end for j
     } // end if we have some contours.
-     
+
+    static int counter = 0;
+    ++counter;
+    std::ostringstream fileName;
+    fileName << "/Users/espakm/Desktop/16856/segmentationContour-" << counter << ".nii.gz";
+    itk::ImageFileWriter<itk::Image<unsigned char, 3> >::Pointer fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
+    fileWriter->SetFileName(fileName.str());
+    fileWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
+    fileWriter->Update();
+    ++counter;
+    std::ostringstream fileName2;
+    fileName2 << "/Users/espakm/Desktop/16856/manualContour-" << counter << ".nii.gz";
+    fileWriter->SetFileName(fileName2.str());
+    fileWriter->SetInput(m_CastToManualContourFilter->GetOutput());
+    fileWriter->Update();
+
     // 6. Update Region growing.
     m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
     m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
