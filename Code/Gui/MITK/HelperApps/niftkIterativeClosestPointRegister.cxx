@@ -68,7 +68,7 @@ int main(int argc, char** argv)
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
   
   MITK_INFO << "Starting registration";
-  registerer->Update(fixednode, movingnode, resultMatrix);
+  registerer->Update(fixednode, movingnode, *resultMatrix);
   MITK_INFO << *resultMatrix;
   return EXIT_SUCCESS;
 } 

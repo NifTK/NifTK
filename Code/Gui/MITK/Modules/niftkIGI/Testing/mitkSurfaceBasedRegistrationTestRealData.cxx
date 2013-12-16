@@ -94,7 +94,7 @@ int mitkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   
   registerer->SetMaximumIterations(MaxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(MaxLandmarks);
-  registerer->Update(fixednode, movingnode, resultMatrix);
+  registerer->Update(fixednode, movingnode, *resultMatrix);
   std::cerr << *resultMatrix;
   MITK_TEST_CONDITION_REQUIRED(MatrixOK(resultMatrix), ".. Testing result matrix is a number");
   return EXIT_SUCCESS;
