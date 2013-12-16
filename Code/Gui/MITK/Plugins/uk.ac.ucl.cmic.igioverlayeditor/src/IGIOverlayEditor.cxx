@@ -285,9 +285,14 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
     if (ref)
     {
       ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
-      ctkDictionary properties;
-      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+      
+      ctkDictionary propertiesIGI;
+      propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnIGIUpdate(ctkEvent)), propertiesIGI);
+      
+      ctkDictionary propertiesTrackedImage;
+      propertiesTrackedImage[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnTrackedImageUpdate(ctkEvent)), propertiesTrackedImage, Qt::DirectConnection);
     }
   }
 }
@@ -373,7 +378,15 @@ void IGIOverlayEditor::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnUpdate(const ctkEvent& event)
+void IGIOverlayEditor::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIOverlayEditor->Update();
 }
+
+
+//-----------------------------------------------------------------------------
+void IGIOverlayEditor::OnTrackedImageUpdate(const ctkEvent& event)
+{
+  d->m_IGIOverlayEditor->Update();
+}
+
