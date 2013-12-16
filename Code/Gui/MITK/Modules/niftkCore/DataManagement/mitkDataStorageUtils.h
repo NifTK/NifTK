@@ -83,13 +83,30 @@ namespace mitk
 
 
   /**
-   * \brief Applies the given transformation to the given node.
-   * \param[In] node a data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
-   * \param[In] transform the VTK transformation
-   * \param[In] makeUndoAble if true, use the Global Undo/Redo framework, and otherwise don't.
-   * \return bool true if successful and false otherwise.
+   * \brief Retrieves the current tranform from the mitk::Geometry object of an mitk::DataNode.
+   * \param[In] node a non-NULL mitk::DataNode
+   * \param[Out] outputMatrix a matrix that is updated
+   * \throws mitk::Exception if node points to null object
    */
-  NIFTKCORE_EXPORT bool ApplyToNode(mitk::DataNode::Pointer& node, const vtkMatrix4x4* transform, const bool& makeUndoAble);
+  NIFTKCORE_EXPORT void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node, vtkMatrix4x4& outputMatrix );
+
+
+  /**
+   * \brief Composes (pre-multiplies) the given transform with the given node.
+   * \param[In] transform a VTK transformation
+   * \param[Out] node a non-NULL data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \throws mitk::Exception if node points to null object
+   */
+  NIFTKCORE_EXPORT void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node);
+
+
+  /**
+   * \brief Applies (sets, i.e. copies) the given transform to the given node.
+   * \param[In] transform a VTK transformation
+   * \param[Out] node a non-NULL data node, and as each node has a mitk::Geometry3D in the mitk::BaseData, we can transform anything.
+   * \throws mitk::Exception if node points to null object
+   */
+  NIFTKCORE_EXPORT void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node);
 }
 
 #endif
