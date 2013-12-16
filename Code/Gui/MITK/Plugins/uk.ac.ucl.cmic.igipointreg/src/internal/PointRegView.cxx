@@ -113,9 +113,9 @@ void PointRegView::RetrievePreferenceValues()
 void PointRegView::OnCalculateButtonPressed()
 {
   mitk::PointSet::Pointer fixedPoints = NULL;
-  mitk::DataNode* node = m_Controls->m_FixedPointsCombo->GetSelectedNode();
+  mitk::DataNode::Pointer node = m_Controls->m_FixedPointsCombo->GetSelectedNode();
 
-  if (node != NULL)
+  if (node.IsNotNull())
   {
     fixedPoints = dynamic_cast<mitk::PointSet*>(node->GetData());
   }
@@ -134,7 +134,7 @@ void PointRegView::OnCalculateButtonPressed()
   mitk::PointSet::Pointer movingPoints = NULL;
   node = m_Controls->m_MovingPointsCombo->GetSelectedNode();
 
-  if (node != NULL)
+  if (node.IsNotNull())
   {
     movingPoints = dynamic_cast<mitk::PointSet*>(node->GetData());
   }
@@ -190,6 +190,7 @@ void PointRegView::OnCalculateButtonPressed()
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
   registration->SetUseICPInitialisation(m_UseICPInitialisation);
   registration->SetUsePointIDToMatchPoints(false);
+
   double fiducialRegistrationError = std::numeric_limits<double>::max();
   bool isSuccessful = registration->Update(fixedPoints, movingPoints, *m_Matrix, fiducialRegistrationError);
 
@@ -216,7 +217,7 @@ void PointRegView::OnCalculateButtonPressed()
 //-----------------------------------------------------------------------------
 void PointRegView::OnComposeWithDataButtonPressed()
 {
-  ApplyMatrixToNodes(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
+  ApplyTransformToNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
 
 

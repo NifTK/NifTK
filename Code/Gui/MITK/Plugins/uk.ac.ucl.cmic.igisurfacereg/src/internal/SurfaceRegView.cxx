@@ -131,10 +131,11 @@ void SurfaceRegView::OnComputeDistance()
   // essentially the same stuff that SurfaceBasedRegistration::Update() does.
   // we should do that before we kick off the worker thread! 
   // otherwise someone else might move around the node's matrices.
-  vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), fixedPoly);
-  vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), movingPoly);
+  vtkPolyData *fixedPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
+
+  vtkPolyData *movingPoly = vtkPolyData::New();
+  mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
 
   // this seems a bit messy here:
   // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
@@ -220,10 +221,10 @@ void SurfaceRegView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnCalculateButtonPressed()
 {
-  mitk::DataNode* fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
-  mitk::DataNode* movingnode = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer fixednode = m_Controls->m_FixedSurfaceComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer movingnode = m_Controls->m_MovingSurfaceComboBox->GetSelectedNode();
 
-  if ( fixednode == NULL )
+  if ( fixednode.IsNull() )
   {
     QMessageBox msgBox;
     msgBox.setText("The fixed surface or point set is non-existent, or not-selected.");
@@ -235,7 +236,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
 
-  if ( movingnode == NULL )
+  if ( movingnode.IsNull() )
   {
     QMessageBox msgBox;
     msgBox.setText("The moving surface is non-existent, or not-selected.");
@@ -247,7 +248,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
-  registration->Update(fixednode, movingnode, m_Matrix);
+  registration->Update(fixednode, movingnode, *m_Matrix);
   
   for (int i = 0; i < 4; i++)
   {
@@ -266,12 +267,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
 //--------------------------------------------------------------------------------
 void SurfaceRegView::OnComposeWithDataButtonPressed()
 {
-  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
-  std::vector<mitk::DataNode*> nodes = m_Controls->m_ComposeWithDataNode->GetSelectedNodes();
-  for ( unsigned int i = 0 ; i < nodes.size() ; i ++ ) 
-  {
-    registration->ApplyTransform(nodes[i],m_Matrix);
-  }
+  ComposeTransformWithNode(*m_Matrix, *m_Controls->m_ComposeWithDataNode);
 }
 
 
