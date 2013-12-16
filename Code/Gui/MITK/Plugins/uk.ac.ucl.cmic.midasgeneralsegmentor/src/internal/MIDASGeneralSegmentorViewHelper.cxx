@@ -55,10 +55,10 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
     /// TODO
     /// Contours should not be empty. Currently, the draw tool can create empty
     /// contours. We skip them for now, but this should be fixed in the draw tool.
-//    if (mitkContourIt == mitkContourEnd)
-//    {
-//      continue;
-//    }
+    if (mitkContourIt == mitkContourEnd)
+    {
+      continue;
+    }
 
     /// Contours must not be empty. (Contour sets can be empty but if they
     /// contain contours, none of them can.)
@@ -67,7 +67,6 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
     mitk::Point3D startPoint = (*mitkContourIt)->Coordinates;
     idx.CastFrom(startPoint);
     itkContour->AddVertex(idx);
-    MITK_INFO << "ConvertMITKContoursAndAppendToITKContours itk point start: " << idx;
 
     for (++mitkContourIt; mitkContourIt != mitkContourEnd; ++mitkContourIt)
     {
@@ -157,7 +156,6 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
           sidePoint[axisOfRunningCoordinate] = runningCoordinate;
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
-          MITK_INFO << "ConvertMITKContoursAndAppendToITKContours itk point in: " << idx;
         }
       }
       else
@@ -167,13 +165,11 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
           sidePoint[axisOfRunningCoordinate] = runningCoordinate;
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
-          MITK_INFO << "ConvertMITKContoursAndAppendToITKContours itk point in: " << idx;
         }
       }
 
       idx.CastFrom(endPoint);
       itkContour->AddVertex(idx);
-      MITK_INFO << "ConvertMITKContoursAndAppendToITKContours itk point end: " << idx;
 
       startPoint = endPoint;
     }
