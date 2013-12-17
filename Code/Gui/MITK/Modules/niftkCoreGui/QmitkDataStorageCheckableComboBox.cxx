@@ -381,7 +381,6 @@ void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNo
 
 void QmitkDataStorageCheckableComboBox::Init()
 {
-  connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
 }
 
 void QmitkDataStorageCheckableComboBox::Reset()
