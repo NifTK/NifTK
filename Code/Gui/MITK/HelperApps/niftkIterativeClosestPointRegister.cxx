@@ -81,5 +81,9 @@ int main(int argc, char** argv)
   vtkMatrix4x4 * compound = vtkMatrix4x4::New();
   resultMatrix->Multiply4x4(resultMatrix, initialTransform , compound);
   MITK_INFO << "Full Result " << *compound;
+  if ( output.length () != 0 ) 
+  {
+    niftk::SaveMatrix4x4ToFile(output, *compound);
+  }
   return EXIT_SUCCESS;
 } 

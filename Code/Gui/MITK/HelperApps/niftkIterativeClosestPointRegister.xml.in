@@ -64,6 +64,16 @@
       <label>Transform the source by initial transform</label>
       <channel>input</channel>
     </file>
+  
+    <file>
+      <name>output</name>
+      <longflag>output</longflag>
+      <description>Write the result to file</description>
+      <label>Write the result to file</label>
+      <channel>output</channel>
+    </file>
+
+
   </parameters>
   
 </executable>
