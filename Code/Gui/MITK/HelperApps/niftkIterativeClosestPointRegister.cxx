@@ -61,14 +61,29 @@ int main(int argc, char** argv)
   mitk::Surface::Pointer MovingSurface = mitk::Surface::New();
   SurfaceReader->Update();
   MovingSurface = SurfaceReader->GetOutput();
-  
+ 
   movingnode->SetData(MovingSurface);
+
+  vtkMatrix4x4 * initialTransform = vtkMatrix4x4::New();
+  if ( initTrans.length() != 0 ) 
+  {
+    initialTransform = niftk::LoadMatrix4x4FromFile(initTrans);
+    registerer->ApplyTransform(movingnode, initialTransform);
+  }
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   registerer->SetMaximumIterations(maxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
   
   MITK_INFO << "Starting registration";
   registerer->Update(fixednode, movingnode, resultMatrix);
-  MITK_INFO << *resultMatrix;
+  MITK_INFO << "Init" << *initialTransform;
+  MITK_INFO << "Result" << *resultMatrix;
+  vtkMatrix4x4 * compound = vtkMatrix4x4::New();
+  resultMatrix->Multiply4x4(resultMatrix, initialTransform , compound);
+  MITK_INFO << "Full Result " << *compound;
+  if ( output.length () != 0 ) 
+  {
+    niftk::SaveMatrix4x4ToFile(output, *compound);
+  }
   return EXIT_SUCCESS;
 } 
