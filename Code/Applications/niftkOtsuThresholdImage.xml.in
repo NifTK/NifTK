@@ -24,6 +24,15 @@
     </image>
 
     <image>
+      <name>fileInputMask</name>
+      <flag>m</flag>
+      <longflag>inMask</longflag>
+      <description>Input mask image</description>      
+      <label>Input mask</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
       <name>fileOutputMask</name>
       <flag>o</flag>
       <longflag>outMask</longflag>
@@ -33,6 +42,14 @@
       <channel>output</channel>
     </image>
 
+   <boolean>
+      <name>flgInvertOutputMask</name>
+      <longflag>invert</longflag>
+      <description>Invert the output mask.</description>
+      <label>Invert output mask</label>
+      <channel>input</channel>
+    </boolean>
+ 
   </parameters>
 
 </executable>
