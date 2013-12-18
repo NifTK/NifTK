@@ -107,6 +107,11 @@ public:
   void SetCameraTrackingMode(const bool& isCameraTracking);
 
   /**
+   * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
+   */  
+  void SetClipToImagePlane(const bool& clipToImagePlane);
+  
+  /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
    */
   void Update();

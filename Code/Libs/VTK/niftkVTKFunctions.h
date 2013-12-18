@@ -215,7 +215,8 @@ extern "C++" NIFTKVTK_WINEXPORT void SetCameraParallelTo2DImage(
     const double *yAxis,
     const double *clippingRange,
     const bool& flipYAxis,
-    vtkCamera& camera
+    vtkCamera& camera,
+    const double& distanceToFocalPoint = -1000
     );
 
 /**

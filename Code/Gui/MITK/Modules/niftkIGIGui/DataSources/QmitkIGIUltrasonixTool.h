@@ -67,6 +67,19 @@ public:
    */
   float GetCurrentMotorPosition() const;
 
+  /**
+   * \brief Flips image in horizontal axis, default is off.
+   */
+  itkSetMacro(FlipHorizontally, bool);
+  itkGetMacro(FlipHorizontally, bool);
+
+  /**
+   * \brief Flips image in vertical axis, default is off.
+   */
+  itkSetMacro(FlipVertically, bool);
+  itkGetMacro(FlipVertically, bool);
+
+
 public slots:
 
   /**
@@ -98,6 +111,9 @@ private:
    * \brief Stores the most recent matrix processed by InterpretMessage.
    */
   igtl::Matrix4x4 m_CurrentMatrix;
+
+  bool m_FlipHorizontally;
+  bool m_FlipVertically;
 
 }; // end class
 

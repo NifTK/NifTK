@@ -528,7 +528,8 @@ void SetCameraParallelTo2DImage(
     const double *yAxis,
     const double *clippingRange,
     const bool& flipYAxis,
-    vtkCamera& camera
+    vtkCamera& camera,
+    const double& distanceToFocalPoint 
     )
 {
   double focalPoint[3] = {0, 0, 1};
@@ -542,8 +543,7 @@ void SetCameraParallelTo2DImage(
   double vectorAlongX[3] = {1, 0, 0};
   double vectorAlongY[3] = {0, 1, 0};
   double vectorAlongZ[3] = {0, 0, 1};
-
-  double distanceToFocalPoint = -1000;
+  
   double viewUpScaleFactor = 1.0e9;
   if ( flipYAxis )
   {

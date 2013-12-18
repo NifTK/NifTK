@@ -29,6 +29,8 @@ const float QmitkIGIUltrasonixTool::RAD_TO_DEGREES = 180 / 3.1415926535897932384
 //-----------------------------------------------------------------------------
 QmitkIGIUltrasonixTool::QmitkIGIUltrasonixTool(mitk::DataStorage* storage,  NiftyLinkSocketObject * socket )
 : QmitkIGINiftyLinkDataSource(storage, socket)
+, m_FlipHorizontally(false)
+, m_FlipVertically(false)
 {
 }
 
@@ -97,7 +99,6 @@ void QmitkIGIUltrasonixTool::InterpretMessage(NiftyLinkMessage::Pointer msg)
     this->AddData(wrapper.GetPointer());
     this->SetStatus("Receiving");
   }
-
 }
 
 
@@ -150,12 +151,18 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     }
 
     NiftyLinkImageMessage::Pointer imageMsg;
-    imageMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
+    imageMsg = dynamic_cast<NiftyLinkImageMessage*>(pointerToMessage);
 
     if (imageMsg.data() != NULL)
     {
       imageMsg->PreserveMatrix();
       QImage qImage = imageMsg->GetQImage();
+
+      // Slow.
+      if (m_FlipHorizontally || m_FlipVertically)
+      {
+        qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
+      }
 
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
 
@@ -169,7 +176,6 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
 
           m_DataStorage->Remove(node);
           node->SetData(filter->GetOutput());
-
           m_DataStorage->Add(node);
         }
         else
