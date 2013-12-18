@@ -73,56 +73,41 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 ::IsCrossingLine(
   const ParametricPathVectorType* contours,
   const typename OutputImageType::IndexType &index1,
-  const typename OutputImageType::IndexType &index2
-)
+  const typename OutputImageType::IndexType &index2)
 {
-
   bool result = false;
 
   if (contours != NULL && contours->size() > 0)
   {
-    for (unsigned long int contourCounter = 0; contourCounter < contours->size(); contourCounter++)
+    ContinuousIndexType halfWayBetweenIndexPoints;
+    for (int i = 0; i < TInputImage::ImageDimension; i++)
     {
-      ParametricPathPointer path = (*contours)[contourCounter];
+      halfWayBetweenIndexPoints[i] = (index2[i] + index1[i]) / 2.0;
+    }
+
+    for (unsigned long int i = 0; i < contours->size(); i++)
+    {
+      ParametricPathPointer path = (*contours)[i];
       const ParametricPathVertexListType* list = path->GetVertexList();
 
-      if (list != NULL && list->Size() > 1)
+      assert(list);
+
+      /// ITK contours should contain corner points at the beginning and the end.
+      /// We can skip them here.
+      for (unsigned long int k = 1; k < list->Size() - 1; k++)
       {
-        ParametricPathVertexType previousVertex;
-        ParametricPathVertexType currentVertex;
-        ContinuousIndexType previousVertexInVoxelCoordinates;
-        ContinuousIndexType currentVertexInVoxelCoordinates;
-        ContinuousIndexType halfwayBetweenContourPoints;
-        ContinuousIndexType halfwayBetweenIndexPoints;
-        double distance = 0;
+        ParametricPathVertexType contourPointInMm = list->ElementAt(k);
 
-        previousVertex = list->ElementAt(0);
+        ContinuousIndexType contourPointInVx;
+        this->GetManualContourImage()->TransformPhysicalPointToContinuousIndex(contourPointInMm, contourPointInVx);
 
-        for (unsigned long int k = 1; k < list->Size(); k++)
+        if (contourPointInVx.EuclideanDistanceTo(halfWayBetweenIndexPoints) < 0.01)
         {
-          currentVertex = list->ElementAt(k);
-
-          this->GetManualContourImage()->TransformPhysicalPointToContinuousIndex(previousVertex, previousVertexInVoxelCoordinates);
-          this->GetManualContourImage()->TransformPhysicalPointToContinuousIndex(currentVertex, currentVertexInVoxelCoordinates);
-
-          for (int j = 0; j < TInputImage::ImageDimension; j++)
-          {
-            halfwayBetweenContourPoints[j] = (previousVertexInVoxelCoordinates[j] + currentVertexInVoxelCoordinates[j])/2.0;
-            halfwayBetweenIndexPoints[j] = (index2[j] + index1[j])/2.0;
-          }
-
-          distance = halfwayBetweenContourPoints.EuclideanDistanceTo(halfwayBetweenIndexPoints);
-
-          if (distance < 0.01)
-          {
-            result = true;
-          }
-
-          previousVertex = currentVertex;
+          result = true;
+          break;
         }
       }
     }
-
   }
 
   return result;
@@ -136,46 +121,57 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     const typename OutputImageType::IndexType &currentImgIdx,
     const typename OutputImageType::IndexType &nextImgIdx,
     const bool &isFullyConnected
-    ) {
-
-  if (   this->GetOutput()->GetPixel(nextImgIdx) == m_BackgroundValue // i.e. not already set.
-      && this->GetInput()->GetPixel(nextImgIdx) >= m_LowerThreshold   // i.e. between thresholds
-      && this->GetInput()->GetPixel(nextImgIdx) <= m_UpperThreshold   // i.e. between thresholds
-      && (   this->GetSegmentationContourImage() == NULL
-          || (    this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageInsideValue
-               && isFullyConnected
-             )
-          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageInsideValue
-              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageBorderValue
-              && !isFullyConnected
-             )
-          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
-              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageBorderValue
-              && isFullyConnected
-             )
-          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageBorderValue
-              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageInsideValue
-             )
-          || (    this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageOutsideValue
-               && isFullyConnected
-             )
-          || (this->GetSegmentationContourImage()->GetPixel(currentImgIdx) == m_SegmentationContourImageOutsideValue
-              && this->GetSegmentationContourImage()->GetPixel(nextImgIdx) == m_SegmentationContourImageBorderValue
-              && !isFullyConnected
-             )
-         )
-      && (   this->GetManualContourImage() == NULL
-          || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageNonBorderValue
-             )
-          || (this->GetManualContourImage()->GetPixel(currentImgIdx) == m_ManualContourImageBorderValue
-              && isFullyConnected
-              && !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)
-             )
-         )
-     )
+    )
+{
+  if (this->GetOutput()->GetPixel(nextImgIdx) == m_BackgroundValue    /// i.e. not already set.
+      && this->GetInput()->GetPixel(nextImgIdx) >= m_LowerThreshold   /// i.e. between thresholds
+      && this->GetInput()->GetPixel(nextImgIdx) <= m_UpperThreshold)  /// i.e. between thresholds
   {
-    r_stack.push(nextImgIdx);
-    this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
+    OutputPixelType segmentationContourImageCurrentPixel = this->GetSegmentationContourImage()->GetPixel(currentImgIdx);
+    OutputPixelType segmentationContourImageNextPixel = this->GetSegmentationContourImage()->GetPixel(nextImgIdx);
+
+    if ((segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+         && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && !isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && !isFullyConnected))
+
+    if (((segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+            || segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue)
+           && (segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+               || isFullyConnected))
+          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+              && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+              && isFullyConnected)
+          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+              && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
+          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+              && isFullyConnected)
+          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+              && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+              && !isFullyConnected))
+    {
+      OutputPixelType manualContourCurrentPixel = this->GetManualContourImage()->GetPixel(currentImgIdx);
+
+      if ((manualContourCurrentPixel == m_ManualContourImageNonBorderValue)
+          || (manualContourCurrentPixel == m_ManualContourImageBorderValue
+              && isFullyConnected
+              && !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)))
+      {
+        r_stack.push(nextImgIdx);
+        this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
+      }
+    }
   }
 }
 

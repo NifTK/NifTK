@@ -96,18 +96,24 @@ protected:
   void AccumulateContourInWorkingData(mitk::ContourModel& contour, int dataSetNumber);
 
   // Utility methods for helping draw lines that require m_Geometry to be set.
-  void ConvertPointToVoxelCoordinate(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
-  void ConvertPointToNearestVoxelCentre(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInVoxelCoordinates);
-  void ConvertPointToNearestVoxelCentreInMillimetreCoordinates(const mitk::Point3D& inputInMillimetreCoordinates, mitk::Point3D& outputInMillimetreCoordinates);
-  void GetClosestCornerPoint2D(const mitk::Point3D& pointInMillimetreCoordinate, int* whichTwoAxesInVoxelSpace, mitk::Point3D& cornerPointInMillimetreCoordinates);
-  bool AreDiagonallyOpposite(const mitk::Point3D& cornerPointInMillimetreCoordinates1, const mitk::Point3D& cornerPointInMillimetreCoordinates2, int* whichTwoAxesInVoxelSpace);
-  void GetAdditionalCornerPoint(const mitk::Point3D& cornerPoint1InMillimetreCoordinates, const mitk::Point3D& point2InMillimetreCoordinates, const mitk::Point3D& cornerPoint2InMillimetreCoordinates, int* whichTwoAxesInVoxelSpace, mitk::Point3D& outputInMillimetreCoordinates);
+  void ConvertPointInMmToVx(const mitk::Point3D& pointInMm, mitk::Point3D& pointInVx);
+  void ConvertPointToNearestVoxelCentreInVx(const mitk::Point3D& pointInMm, mitk::Point3D& nearestVoxelCentreInVx);
+  void ConvertPointToNearestVoxelCentreInMm(const mitk::Point3D& pointInMm, mitk::Point3D& nearestVoxelCentreInMm);
+  void GetClosestCornerPoint2D(const mitk::Point3D& pointInMm, int* whichTwoAxesInVx, mitk::Point3D& cornerPointInMm);
+
+  /// \brief Compares two coordinates of the points and tells which of them are equal.
+  /// The axes of the two coordinates to compare are given in @a whichTwoAxesInVx.
+  /// Returns 0 if both coordinates are different, 1 if only the first coordinates are equal,
+  /// 2 if only the second coordinates are equal and 3 the points are the same.
+  int GetEqualCoordinateAxes(const mitk::Point3D& cornerPoint1InMm, const mitk::Point3D& cornerPoint2InMm, int* whichTwoAxesInVx);
+
+  void GetAdditionalCornerPoint(const mitk::Point3D& cornerPoint1InMm, const mitk::Point3D& point2InMm, const mitk::Point3D& cornerPoint2InMm, int* whichTwoAxesInVx, mitk::Point3D& newCornerPointInMm);
 
   // Main method for drawing a line:
   //   1.) from previousPoint to currentPoint working around voxel corners, output in contourAroundCorners
   //   2.) from previousPoint to currentPoint working in a straight line, output in contourAlongLine
-  // Returns the number of points added
-  unsigned int DrawLineAroundVoxelEdges(
+  // Returns true if new points added to contourAroundCorners or the last point updated, otherwise false.
+  bool DrawLineAroundVoxelEdges(
       const mitk::Image& image,                 // input
       const mitk::Geometry3D& geometry3D,       // input
       const mitk::PlaneGeometry& planeGeometry, // input

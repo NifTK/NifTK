@@ -200,8 +200,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
   mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
-  unsigned int numberAdded = this->DrawLineAroundVoxelEdges
-                             (
+  bool contourAugmented = this->DrawLineAroundVoxelEdges(
                                *m_WorkingImage,
                                *m_WorkingImageGeometry,
                                *planeGeometry,
@@ -212,7 +211,7 @@ bool mitk::MIDASDrawTool::OnLeftMouseMoved(Action* action, const StateEvent* sta
                              );
 
   // This gets updated as the mouse moves, so that each new segement of line gets added onto the previous.
-  if (numberAdded > 0)
+  if (contourAugmented)
   {
     m_MostRecentPointInMm = positionEvent->GetWorldPosition();
   }
@@ -387,6 +386,12 @@ bool mitk::MIDASDrawTool::DeleteFromContour(const int &workingDataNumber, Action
 
     mitk::ContourModel::VertexIterator it = contour->Begin();
     mitk::ContourModel::VertexIterator itEnd = contour->End();
+
+    if (it == itEnd)
+    {
+      // TODO this should not happen.
+      continue;
+    }
 
     mitk::Point3D startPoint = (*it)->Coordinates;
     mitk::Point2D start;
