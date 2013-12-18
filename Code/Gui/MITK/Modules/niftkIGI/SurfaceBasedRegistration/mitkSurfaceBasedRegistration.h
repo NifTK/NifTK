@@ -24,6 +24,7 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 namespace mitk {
 
@@ -40,33 +41,34 @@ public:
 
   enum Method 
   {
-    VTK_ICP, //VTK's ICP algorithm, point to surface
-    DEFORM //A hypothetical non rigid point to surface algorithm
+    VTK_ICP, // VTK's ICP algorithm, point to surface
+    DEFORM   // A hypothetical non rigid point to surface algorithm
   };
 
   static const int DEFAULT_MAX_ITERATIONS;
   static const int DEFAULT_MAX_POINTS;
   static const bool DEFAULT_USE_DEFORMABLE;
-  /**
-   * \brief Write My Documentation
-   */
-  void Update(const mitk::DataNode* fixedNode,
-           const mitk::DataNode* movingNode,
-           vtkMatrix4x4* transformMovingToFixed);
-
-  /**
-   * \brief apply the transform to a given data node
-   */
-  void ApplyTransform (mitk::DataNode::Pointer node);
-  void ApplyTransform (mitk::DataNode::Pointer node, vtkMatrix4x4* transform);
-  static void GetCurrentTransform ( const mitk::DataNode * node , vtkMatrix4x4* matrix );
 
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
 
-  static void NodeToPolyData ( const mitk::DataNode* , vtkPolyData* PolyOut);
-  static void PointSetToPolyData ( const mitk::PointSet::Pointer PointsIn, vtkPolyData* PolyOut);
+  /**
+   * \brief Write My Documentation
+   */
+  void Update(const mitk::DataNode::Pointer fixedNode,
+           const mitk::DataNode::Pointer movingNode,
+           vtkMatrix4x4& transformMovingToFixed);
+
+  /**
+   * \brief Generates a poly data from a mitk::DataNode.
+   */
+  static void NodeToPolyData ( const mitk::DataNode::Pointer node , vtkPolyData& polyOut);
+
+  /**
+   * \brief Generates a poly data from a mitk::PointSet.
+   */
+  static void PointSetToPolyData ( const mitk::PointSet::Pointer pointsIn, vtkPolyData& polyOut);
 
 protected:
 
@@ -82,12 +84,12 @@ private:
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
 
-  vtkMatrix4x4* m_Matrix;
-
+  vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 
   void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,
-           vtkMatrix4x4* transformMovingToFixed);
+           vtkMatrix4x4& transformMovingToFixed);
+
 }; // end class
 
 } // end namespace

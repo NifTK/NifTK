@@ -404,31 +404,89 @@ void LoadMatrixOrCreateDefault(
 
 
 //-----------------------------------------------------------------------------
-bool ApplyToNode(
-    mitk::DataNode::Pointer& node,
-    const vtkMatrix4x4* transform,
-    const bool& makeUndoAble)
+void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node , vtkMatrix4x4& outputMatrix )
 {
-  bool isSuccessful = false;
-
-  if (node.IsNotNull())
+  if (node.IsNull())
   {
-    mitk::BaseData::Pointer baseData = node->GetData();
-    if (baseData.IsNotNull())
+    mitkThrow() << "In GetCurrentTransform, node is NULL";
+  }
+
+  mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
+  itk::Matrix<float, 3, 3>  matrix;
+  itk::Vector<float, 3> offset;
+  matrix = affineTransform->GetMatrix();
+  offset = affineTransform->GetOffset();
+
+  outputMatrix.Identity();
+  for ( int i = 0 ; i < 3 ; i ++ )
+  {
+    for ( int j = 0 ; j < 3 ; j ++ )
     {
-      mitk::Geometry3D::Pointer geometry = baseData->GetGeometry();
-      if (geometry.IsNotNull())
-      {
-        vtkMatrix4x4 *nonConstTransform = const_cast<vtkMatrix4x4*>(transform);
-        geometry->SetIndexToWorldTransformByVtkMatrix(nonConstTransform);
-        geometry->Modified();
-        isSuccessful = true;
-      }
+      outputMatrix.SetElement (i, j, matrix[i][j]);
     }
   }
-  return isSuccessful;
+  for ( int i = 0 ; i < 3 ; i ++ )
+  {
+    outputMatrix.SetElement (i, 3, offset[i]);
+  }
 }
 
+
+//-----------------------------------------------------------------------------
+void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node)
+{
+  if (node.IsNull())
+  {
+    mitkThrow() << "In ComposeTransformWithNode, node is NULL";
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkMatrix4x4::New();
+  GetCurrentTransformFromNode(node, *currentMatrix);
+
+  vtkSmartPointer<vtkMatrix4x4> newMatrix = vtkMatrix4x4::New();
+  newMatrix->Multiply4x4(&transform, currentMatrix, newMatrix);
+
+  mitk::CoordinateAxesData::Pointer axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  if (axes.IsNotNull())
+  {
+    mitk::AffineTransformDataNodeProperty::Pointer property = dynamic_cast<mitk::AffineTransformDataNodeProperty*>(node->GetProperty("niftk.transform"));
+    if (property.IsNotNull())
+    {
+      property->SetTransform(*newMatrix);
+      property->Modified();
+    }
+  }
+  ApplyTransformToNode(*newMatrix, node);
+}
+
+
+//-----------------------------------------------------------------------------
+void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer& node)
+{
+  if (node.IsNull())
+  {
+    mitkThrow() << "In ApplyTransformToNode, node is NULL";
+  }
+
+  mitk::BaseData::Pointer baseData = node->GetData();
+  if (baseData.IsNull())
+  {
+    mitkThrow() << "In ApplyTransformToNode, baseData is NULL";
+  }
+
+  mitk::Geometry3D::Pointer geometry = baseData->GetGeometry();
+  if (geometry.IsNull())
+  {
+    mitkThrow() << "In ApplyTransformToNode, geometry is NULL";
+  }
+
+  vtkMatrix4x4 *nonConstTransform = const_cast<vtkMatrix4x4*>(&transform);
+  geometry->SetIndexToWorldTransformByVtkMatrix(nonConstTransform);
+  geometry->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 } // end namespace
 
 

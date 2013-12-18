@@ -34,15 +34,19 @@ NIFTKIGIGUI_EXPORT QString CreateTestDeviceDescriptor();
 
 /**
  * \brief Saves the matrix to file, returning true if successful and false otherwise.
- * TODO: Move this function somewhere sensible.
+ * This function also raises QMessage boxes, so, possibly no need to return the true/false status.
  */
 NIFTKIGIGUI_EXPORT bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName);
 
 /**
- * \brief Saves the matrix to file, returning true if successful and false otherwise.
- * TODO: Move this function somewhere sensible.
+ * \brief Applies (sets, i.e. copies) the given transform to all checked nodes in the comboBox.
  */
-NIFTKIGIGUI_EXPORT void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageCheckableComboBox& comboBox);
+NIFTKIGIGUI_EXPORT void ApplyTransformToNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
+
+/**
+ * \brief Composes the given transform with all checked nodes in the comboBox.
+ */
+NIFTKIGIGUI_EXPORT void ComposeTransformWithNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
 
 /**
  * \brief For visualisation purposes, creates a representation of the laparoscope.

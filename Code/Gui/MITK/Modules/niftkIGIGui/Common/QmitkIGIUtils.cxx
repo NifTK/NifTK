@@ -109,7 +109,9 @@ bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName)
 
 
 //-----------------------------------------------------------------------------
-void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageCheckableComboBox& comboBox)
+// Deliberately not exposed.
+//-----------------------------------------------------------------------------
+void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox, bool composeRatherThanSet)
 {
   std::vector<mitk::DataNode*> nodes = comboBox.GetSelectedNodes();
   mitk::DataNode::Pointer node = NULL;
@@ -145,18 +147,31 @@ void ApplyMatrixToNodes(const vtkMatrix4x4& matrix, const QmitkDataStorageChecka
       msgBox.exec();
     }
 
-    bool successful = mitk::ApplyToNode(node, &matrix, true);
-
-    if (!successful)
+    // These throw exceptions if there is any error.
+    if (composeRatherThanSet)
     {
-      QMessageBox msgBox;
-      msgBox.setText(QString("Failed to apply transform to item ") + QString::fromStdString(node->GetName()));
-      msgBox.setInformativeText("Please check the console.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
+      mitk::ComposeTransformWithNode(transform, node);
     }
+    else
+    {
+      mitk::ApplyTransformToNode(transform, node);
+    }
+
   } // end foreach node
+}
+
+
+//-----------------------------------------------------------------------------
+void ApplyTransformToNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+{
+  ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ComposeTransformWithNode(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+{
+  ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, true);
 }
 
 

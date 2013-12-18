@@ -18,6 +18,7 @@
 #include <mitkSurfaceBasedRegistration.h>
 #include <mitkPointSetReader.h>
 #include <mitkSTLFileReader.h>
+#include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
 #include <vtkTransform.h>
@@ -68,14 +69,14 @@ int main(int argc, char** argv)
   if ( initTrans.length() != 0 ) 
   {
     initialTransform = niftk::LoadMatrix4x4FromFile(initTrans);
-    registerer->ApplyTransform(movingnode, initialTransform);
+    mitk::ComposeTransformWithNode(*initialTransform, movingnode);
   }
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   registerer->SetMaximumIterations(maxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
   
   MITK_INFO << "Starting registration";
-  registerer->Update(fixednode, movingnode, resultMatrix);
+  registerer->Update(fixednode, movingnode, *resultMatrix);
   MITK_INFO << "Init" << *initialTransform;
   MITK_INFO << "Result" << *resultMatrix;
   vtkMatrix4x4 * compound = vtkMatrix4x4::New();
