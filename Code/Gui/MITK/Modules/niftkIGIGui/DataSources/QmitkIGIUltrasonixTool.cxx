@@ -150,7 +150,7 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
     }
 
     NiftyLinkImageMessage::Pointer imageMsg;
-    imageMsg = static_cast<NiftyLinkImageMessage*>(pointerToMessage);
+    imageMsg = dynamic_cast<NiftyLinkImageMessage*>(pointerToMessage);
 
     if (imageMsg.data() != NULL)
     {
