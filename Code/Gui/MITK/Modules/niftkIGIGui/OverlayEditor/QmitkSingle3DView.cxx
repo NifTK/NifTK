@@ -46,6 +46,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 , m_IsCalibrated(false)
 , m_ZNear(2.0)
 , m_ZFar(5000)
+, m_ClipToImagePlane(true)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -290,6 +291,13 @@ void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingle3DView::SetClipToImagePlane(const bool& clipToImagePlane)
+{
+  m_ClipToImagePlane = clipToImagePlane;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
 {
   bool isCalibrated = false;
@@ -452,9 +460,19 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
     imageSize[0] = m_Image->GetDimension(0);
     imageSize[1] = m_Image->GetDimension(1);
 
+    double distanceToFocalPoint = -1000;
     double clippingRange[2];
-    clippingRange[0] = m_ZNear;
-    clippingRange[1] = m_ZFar;
+    
+    if (m_ClipToImagePlane)
+    {
+      clippingRange[0] = 999;
+      clippingRange[1] = 1001;      
+    }
+    else
+    {
+      clippingRange[0] = m_ZNear;
+      clippingRange[1] = m_ZFar;         
+    }
 
     double origin[3];
     double spacing[3];
@@ -475,7 +493,7 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
       yAxis[i] = geometryYAxis[i];
     }
 
-    niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, true, *m_MatrixDrivenCamera);
+    niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, true, *m_MatrixDrivenCamera, distanceToFocalPoint);
   }
 }
 
