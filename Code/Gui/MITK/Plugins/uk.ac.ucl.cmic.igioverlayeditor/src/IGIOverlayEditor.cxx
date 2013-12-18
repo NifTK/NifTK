@@ -364,6 +364,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
   std::string calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
   d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
   d->m_IGIOverlayEditor->SetCameraTrackingMode(prefs->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true));
+  d->m_IGIOverlayEditor->SetClipToImagePlane(prefs->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
 }
 
 

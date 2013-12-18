@@ -22,6 +22,7 @@ class QWidget;
 class QRadioButton;
 class QPushButton;
 class QWidgetAction;
+class QCheckBox;
 class ctkPathLineEdit;
 
 /**
@@ -87,6 +88,11 @@ public:
    */
   static const std::string CAMERA_TRACKING_MODE;
 
+  /**
+   * \brief Stores the name of the preference node containing whether we are using clipping planes in Image Tracking mode.
+   */  
+  static const std::string CLIP_TO_IMAGE_PLANE;
+  
 public slots:
 
   void FirstColorChanged();
@@ -98,6 +104,7 @@ protected:
   QWidget         *m_MainControl;
   QRadioButton    *m_CameraTrackingMode;
   QRadioButton    *m_ImageTrackingMode;
+  QCheckBox       *m_ClipToImagePlane;
   QPushButton     *m_ColorButton1;
   QPushButton     *m_ColorButton2;
   ctkPathLineEdit *m_CalibrationFileName;

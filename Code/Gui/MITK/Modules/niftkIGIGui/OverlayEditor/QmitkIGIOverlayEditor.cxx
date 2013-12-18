@@ -244,6 +244,13 @@ void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
+void QmitkIGIOverlayEditor::SetClipToImagePlane(const bool& clipToImagePlane)
+{
+  m_OverlayViewer->SetClipToImagePlane(clipToImagePlane);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const std::string path)
 {
   m_OverlayViewer->SetDepartmentLogoPath(path.c_str());

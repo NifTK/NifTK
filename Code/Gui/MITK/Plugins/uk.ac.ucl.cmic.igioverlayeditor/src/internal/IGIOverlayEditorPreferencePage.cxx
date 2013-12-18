@@ -20,6 +20,7 @@
 #include <QFormLayout>
 #include <QRadioButton>
 #include <QColorDialog>
+#include <QCheckBox>
 #include <ctkPathLineEdit.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
@@ -30,6 +31,7 @@ const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first
 const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
 const std::string IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 const std::string IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE("camera tracking mode");
+const std::string IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE("clip to imae plane");
 
 //-----------------------------------------------------------------------------
 IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
@@ -38,6 +40,7 @@ IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
 , m_ImageTrackingMode(NULL)
 , m_ColorButton1(NULL)
 , m_ColorButton2(NULL)
+, m_ClipToImagePlane(NULL)
 {
 }
 
@@ -64,6 +67,9 @@ void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_ImageTrackingMode = new QRadioButton();
   formLayout->addRow("image tracking mode", m_ImageTrackingMode);
 
+  m_ClipToImagePlane = new QCheckBox();
+  formLayout->addRow("image tracking clipping planes", m_ClipToImagePlane);
+  
   m_CameraTrackingMode = new QRadioButton();
   formLayout->addRow("camera tracking mode", m_CameraTrackingMode);
 
@@ -141,6 +147,7 @@ bool IGIOverlayEditorPreferencePage::PerformOk()
   m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
   m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
   m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, m_CameraTrackingMode->isChecked());
+  m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, m_ClipToImagePlane->isChecked());
   return true;
 }
 
@@ -179,6 +186,7 @@ void IGIOverlayEditorPreferencePage::Update()
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
   m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
 
+  m_ClipToImagePlane->setChecked(m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
   bool isCameraTracking = m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true);
   m_CameraTrackingMode->setChecked(isCameraTracking);
   m_ImageTrackingMode->setChecked(!isCameraTracking);
