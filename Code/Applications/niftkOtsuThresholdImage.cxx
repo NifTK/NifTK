@@ -25,6 +25,8 @@
 
 #include <itkOtsuThresholdImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionConstIterator.h>
 
 #include <niftkOtsuThresholdImageCLP.h>
 
@@ -35,8 +37,15 @@
 
 struct arguments
 {
+  bool flgInvertOutputMask;
+
   std::string fileInputImage;
+  std::string fileInputMask;
   std::string fileOutputMask;
+
+  arguments() {
+    flgInvertOutputMask = false;
+  }
 };
 
 
@@ -64,7 +73,7 @@ int DoMain(arguments &args)
   try
   { 
     std::cout << "Reading the input image" << std::endl;
-    imageReader->Update();
+    imageReader->UpdateLargestPossibleRegion();
   }
   catch (itk::ExceptionObject &ex)
   { 
@@ -72,19 +81,156 @@ int DoMain(arguments &args)
     return EXIT_FAILURE;
   }
 
+  typename InputImageType::Pointer image = imageReader->GetOutput();
+  image->DisconnectPipeline();  
 
-  // Create a mask by thresholding
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  typename InputImageType::RegionType  inputRegion  = image->GetLargestPossibleRegion(); 
+  typename InputImageType::PointType   inputOrigin  = image->GetOrigin(); 
+  typename InputImageType::SpacingType inputSpacing = image->GetSpacing(); 
+
+  std::cout << "Origin: "  << inputOrigin << std::endl
+            << "Spacing: " << inputSpacing << std::endl
+            << inputRegion << std::endl;
+
+
+  // Read the input mask?
+  // ~~~~~~~~~~~~~~~~~~~~
 
   typedef unsigned char MaskPixelType;
   typedef itk::Image<MaskPixelType, Dimension> MaskImageType;
+
+  typename MaskImageType::Pointer inMask = 0;
+
+  if ( args.fileInputMask.length() != 0 ) 
+  {
+    
+    typedef itk::ImageFileReader< MaskImageType > MaskReaderType;
+
+    typename MaskReaderType::Pointer maskReader = MaskReaderType::New();
+
+    maskReader->SetFileName( args.fileInputMask );
+
+    try
+    { 
+      std::cout << "Reading the mask image" << std::endl;
+      maskReader->UpdateLargestPossibleRegion();
+    }
+    catch (itk::ExceptionObject &ex)
+    { 
+      std::cout << ex << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    inMask = maskReader->GetOutput();
+
+    typename MaskImageType::RegionType  maskRegion  = inMask->GetLargestPossibleRegion(); 
+    typename MaskImageType::PointType   maskOrigin  = inMask->GetOrigin(); 
+    typename MaskImageType::SpacingType maskSpacing = inMask->GetSpacing(); 
+    
+    std::cout << "Origin: "  << maskOrigin << std::endl
+              << "Spacing: " << maskSpacing << std::endl
+              << maskRegion  << std::endl;
+    
+    if ( inputRegion == maskRegion )
+      std::cout << "Input image and mask regions coincide" << std::endl;
+    else
+    {
+      std::cout << "Input image and mask regions do not coincide" << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+
+
+  // Calculate the indices of the max and min intensities in the input image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef typename InputImageType::IndexType IndexType;
+
+  InputPixelType value;
+
+  IndexType minIndex;
+  IndexType maxIndex;
+
+  double min = std::numeric_limits<double>::max();
+  double max = std::numeric_limits<double>::min();
+
+  itk::ImageRegionConstIteratorWithIndex< InputImageType > itImage( image, 
+                                                                    image->GetLargestPossibleRegion() );
+
+  if ( inMask )
+  {
+
+    itk::ImageRegionConstIterator< MaskImageType > itInputMask( inMask, 
+                                                           inMask->GetLargestPossibleRegion() );
+
+    for ( itImage.GoToBegin(), itInputMask.GoToBegin(); 
+          ! itImage.IsAtEnd(); 
+          ++itImage, ++itInputMask )
+    {
+      if ( itInputMask.Get() )
+      {
+        
+        value = itImage.Get();
+        
+        if (value > max) 
+        {
+          max = value;
+          maxIndex = itImage.GetIndex();
+        }
+        else if (value < min)
+        {
+          min = value;
+          minIndex = itImage.GetIndex();
+        }
+      }
+    }
+  }
+
+  else
+  {
+    for ( itImage.GoToBegin(); ! itImage.IsAtEnd(); ++itImage )
+    {
+      value = itImage.Get();
+      
+      if (value > max) 
+      {
+        max = value;
+        maxIndex = itImage.GetIndex();
+      }
+      else if (value < min)
+      {
+        min = value;
+        minIndex = itImage.GetIndex();
+      }
+    }
+  }
+
+  std::cout << "Minimum image intensity: " << min
+            << " at: " << minIndex << std::endl
+            << "Maximum image intensity: " << max
+            << " at: " << maxIndex << std::endl;
+
+
+  // Create a mask with the itk::OtsuThresholdImageFilterType
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typename MaskImageType::Pointer outMask;
+
   typedef itk::OtsuThresholdImageFilter< InputImageType, 
+                                         MaskImageType, 
                                          MaskImageType > OtsuThresholdImageFilterType;
 
   typename OtsuThresholdImageFilterType::Pointer thresholder = OtsuThresholdImageFilterType::New();
+    
+  thresholder->SetInput( image );
 
-  thresholder->SetInput( imageReader->GetOutput() );
-  
+  if ( inMask ) 
+  {
+    thresholder->SetMaskImage( inMask );
+  }
+
+  // Calculate the threshold
+    
   try
   {
     std::cout << "Thresholding to obtain image mask" << std::endl;
@@ -95,24 +241,56 @@ int DoMain(arguments &args)
     std::cerr << e << std::endl;
   }
 
+  outMask = thresholder->GetOutput();
+  outMask->DisconnectPipeline();  
+    
 
-  // Invert the mask
-  // ~~~~~~~~~~~~~~~
+  // If the image max intensity is not in the mask then invert it
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<MaskImageType> InvertFilterType;
+  bool flgInvertMask = false;
 
-  typename InvertFilterType::Pointer inverter = InvertFilterType::New();
-
-  inverter->SetInput( thresholder->GetOutput() );
-  
-  try
+  if ( ( ! outMask->GetPixel( maxIndex ) ) && ( outMask->GetPixel( minIndex ) ) )
   {
-    std::cout << "Inverting the mask" << std::endl;
-    inverter->Update();
+    std::cout << "WARNING: Maximum image intensity is not inside the calculated mask" << std::endl
+              << "   and minimum intensity is not outside so the mask will be inverted." << std::endl;
+    if ( ! args.flgInvertOutputMask )
+      flgInvertMask = true;
   }
-  catch (itk::ExceptionObject &e)
+  else if ( args.flgInvertOutputMask )
+      flgInvertMask = true;
+  }
+
+
+  if ( flgInvertMask ) 
   {
-    std::cerr << e << std::endl;
+    itk::ImageRegionIterator< MaskImageType > itOutputMask( outMask, 
+                                                            outMask->GetLargestPossibleRegion() );
+
+    if ( inMask )
+    {
+      
+      itk::ImageRegionConstIterator< MaskImageType > itInputMask( inMask, 
+                                                                  inMask->GetLargestPossibleRegion() );
+      
+      for ( itOutputMask.GoToBegin(), itInputMask.GoToBegin(); 
+            ! itOutputMask.IsAtEnd(); 
+            ++itOutputMask, ++itInputMask )
+      {
+        if ( itInputMask.Get() )
+        {        
+          itOutputMask.Set( ! itOutputMask.Get() );
+        } 
+      }
+    }
+
+    else
+    {
+      for ( itOutputMask.GoToBegin(); ! itOutputMask.IsAtEnd(); ++itOutputMask )
+      {
+        itOutputMask.Set( ! itOutputMask.Get() );
+      }
+    }
   }
 
 
@@ -128,7 +306,7 @@ int DoMain(arguments &args)
     typename FileWriterType::Pointer writer = FileWriterType::New();
 
     writer->SetFileName( args.fileOutputMask );
-    writer->SetInput( inverter->GetOutput() );
+    writer->SetInput( outMask );
 
     try
     {
@@ -166,9 +344,11 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
-  args.fileInputImage  = fileInputImage;
+  args.fileInputImage = fileInputImage;
+  args.fileInputMask  = fileInputMask;
   args.fileOutputMask = fileOutputMask;
-  
+
+  args.flgInvertOutputMask = flgInvertOutputMask;
 
   int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fileInputImage);
   if (dims != 3)
