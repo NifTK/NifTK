@@ -71,7 +71,7 @@ double mitk::GetRMSErrorBetweenPoints(
   const mitk::PointSet& movingPoints, 
   const mitk::CoordinateAxesData * const transform)
 {
-  mitk::PointSet::DataType* itkPointSet = movingPoints.GetPointSet(0);
+  mitk::PointSet::DataType* itkPointSet = movingPoints.GetPointSet();
   mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
   mitk::PointSet::PointsIterator pIt;
   mitk::PointSet::PointIdentifier pointID;

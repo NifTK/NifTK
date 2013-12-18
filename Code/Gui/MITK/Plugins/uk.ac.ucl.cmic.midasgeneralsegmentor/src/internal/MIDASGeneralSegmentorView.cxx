@@ -830,9 +830,8 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
 
   mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
 
-  mitk::PointSet::PointsContainer* inputPointsContainer = inputPoints.GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator inputPointsIt = inputPointsContainer->Begin();
-  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPointsContainer->End();
+  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints.Begin();
+  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints.End();
   for ( ; inputPointsIt != inputPointsEnd; ++inputPointsIt)
   {
     mitk::PointSet::PointType point = inputPointsIt->Value();
@@ -3377,9 +3376,8 @@ void MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  mitk::PointSet::PointsContainer* inputSeedsContainer = inputSeeds.GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeedsContainer->End();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds.Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds.End();
   for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
     mitk::PointSet::PointType inputSeed = inputSeedsIt->Value();
@@ -3433,9 +3431,8 @@ MIDASGeneralSegmentorView
       max = std::numeric_limits<double>::min();
 
       // Iterate through each point, get voxel value, keep running total of min/max.
-      mitk::PointSet::PointsContainer* filteredSeedsContainer = filteredSeeds->GetPointSet()->GetPoints();
-      mitk::PointSet::PointsConstIterator filteredSeedsIt = filteredSeedsContainer->Begin();
-      mitk::PointSet::PointsConstIterator filteredSeedsEnd = filteredSeedsContainer->End();
+      mitk::PointSet::PointsConstIterator filteredSeedsIt = filteredSeeds->Begin();
+      mitk::PointSet::PointsConstIterator filteredSeedsEnd = filteredSeeds->End();
       for ( ; filteredSeedsIt != filteredSeedsEnd; ++filteredSeedsIt)
       {
         mitk::PointSet::PointType point = filteredSeedsIt->Value();
@@ -3485,9 +3482,8 @@ MIDASGeneralSegmentorView
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  mitk::PointSet::PointsContainer* inputSeedsContainer = inputSeeds.GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeedsContainer->End();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds.Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds.End();
   for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
     mitk::PointSet::PointType inputPoint = inputSeedsIt->Value();
@@ -3524,9 +3520,8 @@ bool MIDASGeneralSegmentorView
   typedef typename ImageType::PointType PointType;
 
   bool hasSeeds = false;
-  mitk::PointSet::PointsContainer* seedsContainer = seeds->GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator seedsIt = seedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator seedsEnd = seedsContainer->End();
+  mitk::PointSet::PointsConstIterator seedsIt = seeds->Begin();
+  mitk::PointSet::PointsConstIterator seedsEnd = seeds->End();
   for ( ; seedsIt != seedsEnd; ++seedsIt)
   {
     PointType voxelIndexInMillimetres = seedsIt->Value();
@@ -4449,9 +4444,8 @@ MIDASGeneralSegmentorView
   // Update the current point set.
   currentSeeds->Clear();
 
-  mitk::PointSet::PointsContainer* outputSeedsContainer = outputSeeds->GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator outputSeedsIt = outputSeedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator outputSeedsEnd = outputSeedsContainer->End();
+  mitk::PointSet::PointsConstIterator outputSeedsIt = outputSeeds->Begin();
+  mitk::PointSet::PointsConstIterator outputSeedsEnd = outputSeeds->End();
   for ( ; outputSeedsIt != outputSeedsEnd; ++outputSeedsIt)
   {
     mitk::PointSet::PointIdentifier outputSeedID = outputSeedsIt->Index();
@@ -4750,9 +4744,8 @@ void MIDASGeneralSegmentorView
 
   newSeeds->Clear();
 
-  mitk::PointSet::PointsContainer* currentSeedsContainer = currentSeeds->GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator currentSeedsIt = currentSeedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator currentSeedsEnd = currentSeedsContainer->End();
+  mitk::PointSet::PointsConstIterator currentSeedsIt = currentSeeds->Begin();
+  mitk::PointSet::PointsConstIterator currentSeedsEnd = currentSeeds->End();
   for ( ; currentSeedsIt != currentSeedsEnd; ++currentSeedsIt)
   {
     mitk::PointSet::PointType currentSeed = currentSeedsIt->Value();
