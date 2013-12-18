@@ -192,4 +192,52 @@ std::string GetOrientationString(const mitk::Image* image)
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+void GetAxesInWorldCoordinateOrder(const mitk::Image* mitkImage, int axesInWorldCoordinateOrder[3])
+{
+  axesInWorldCoordinateOrder[0] = mitk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_SAGITTAL);
+  axesInWorldCoordinateOrder[1] = mitk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_CORONAL);
+  axesInWorldCoordinateOrder[2] = mitk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_AXIAL);
+}
+
+
+//-----------------------------------------------------------------------------
+void GetSpacingInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& spacingInWorldCoordinateOrder)
+{
+  int axesInWorldCoordinateOrder[3];
+  mitk::GetAxesInWorldCoordinateOrder(mitkImage, axesInWorldCoordinateOrder);
+
+  mitk::Vector3D spacing = mitkImage->GetGeometry()->GetSpacing();
+  spacingInWorldCoordinateOrder[0] = spacing[axesInWorldCoordinateOrder[0]];
+  spacingInWorldCoordinateOrder[1] = spacing[axesInWorldCoordinateOrder[1]];
+  spacingInWorldCoordinateOrder[2] = spacing[axesInWorldCoordinateOrder[2]];
+}
+
+
+//-----------------------------------------------------------------------------
+void GetExtentsInVxInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& extentsInVxInWorldCoordinateOrder)
+{
+  int axesInWorldCoordinateOrder[3];
+  mitk::GetAxesInWorldCoordinateOrder(mitkImage, axesInWorldCoordinateOrder);
+
+  mitk::Geometry3D* geometry = mitkImage->GetGeometry();
+  extentsInVxInWorldCoordinateOrder[0] = geometry->GetExtent(axesInWorldCoordinateOrder[0]);
+  extentsInVxInWorldCoordinateOrder[1] = geometry->GetExtent(axesInWorldCoordinateOrder[1]);
+  extentsInVxInWorldCoordinateOrder[2] = geometry->GetExtent(axesInWorldCoordinateOrder[2]);
+}
+
+
+//-----------------------------------------------------------------------------
+void GetExtentsInMmInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Vector3D& extentsInMmInWorldCoordinateOrder)
+{
+  int axesInWorldCoordinateOrder[3];
+  mitk::GetAxesInWorldCoordinateOrder(mitkImage, axesInWorldCoordinateOrder);
+
+  mitk::Geometry3D* geometry = mitkImage->GetGeometry();
+  extentsInMmInWorldCoordinateOrder[0] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[0]);
+  extentsInMmInWorldCoordinateOrder[1] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[1]);
+  extentsInMmInWorldCoordinateOrder[2] = geometry->GetExtentInMM(axesInWorldCoordinateOrder[2]);
+}
+
 } // end namespace

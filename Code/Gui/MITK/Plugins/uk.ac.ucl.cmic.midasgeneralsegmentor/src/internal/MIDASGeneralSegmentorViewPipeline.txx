@@ -20,6 +20,8 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
+#include <mitkMIDASOrientationUtils.h>
+
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
@@ -87,9 +89,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_ManualContours.clear();
     
     // 3. Convert seeds / contours.
+    mitk::Vector3D spacingInWorldCoordinateOrder;
+    mitk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
+
     ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  
-    ConvertMITKContoursAndAppendToITKContours(params, m_ManualContours); 
-    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -105,16 +111,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_CastToManualContourFilter->UpdateLargestPossibleRegion();
 
     // 5. Declare some variables.
-    IndexType voxelIndex;
-    ContinuousIndexType continuousIndex;
-    ParametricPathVertexType vertex;
-    
+    IndexType paintingRegionIndex;
+    paintingRegionIndex[m_AxisNumber] = m_SliceNumber;
+
     SizeType   paintingRegionSize;
-    paintingRegionSize.Fill(2);
     paintingRegionSize[m_AxisNumber] = 1;
         
     RegionType paintingRegion;
-    paintingRegion.SetSize(paintingRegionSize);
                               
     unsigned char segImageInside = 0;
     unsigned char segImageBorder = 1;
@@ -138,14 +141,38 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         {
           for (unsigned int k = 0; k < list->Size(); k++)
           {
-            vertex = list->ElementAt(k);            
-            m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
-            for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
+            ParametricPathVertexType pointInMm = list->ElementAt(k);
+            ContinuousIndexType pointInVx;
+            m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+#ifndef NDEBUG
+            bool isOnVoxelSide = true;
+#endif
+            for (int axis = 0; axis < 3; ++axis)
             {
-              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
+              if (axis != m_AxisNumber)
+              {
+                double roundedIndex = std::floor(pointInVx[axis] + 0.5);
+                if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
+                {
+#ifndef NDEBUG
+                  /// The contour points must be on the side of voxels, never in their centre.
+                  /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
+                  assert(isOnVoxelSide);
+                  isOnVoxelSide = false;
+#endif
+                  paintingRegionIndex[axis] = roundedIndex;
+                  paintingRegionSize[axis] = 1;
+                }
+                else
+                {
+                  paintingRegionSize[axis] = 2;
+                  paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
+                }
+              }
             }
-            voxelIndex[m_AxisNumber] = m_SliceNumber;
-            paintingRegion.SetIndex(voxelIndex);
+            paintingRegion.SetIndex(paintingRegionIndex);
+            paintingRegion.SetSize(paintingRegionSize);
 
             if (region3D.IsInside(paintingRegion))
             {
@@ -178,7 +205,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
       } // end for j
     } // end if we have some contours.
 
-    // 8. Render the manual contours into the manual contour image.    
+    // 8. Render the manual contours into the manual contour image.
     if (m_ManualContours.size() > 0)
     {
       for (unsigned int j = 0; j < m_ManualContours.size(); j++)
@@ -190,33 +217,71 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         {
           for (unsigned int k = 0; k < list->Size(); k++)
           {
-            vertex = list->ElementAt(k);            
-            m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
-              
-            for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
+            ParametricPathVertexType pointInMm = list->ElementAt(k);
+            ContinuousIndexType pointInVx;
+            m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+#ifndef NDEBUG
+            bool isOnVoxelSide = true;
+#endif
+            for (int axis = 0; axis < 3; ++axis)
             {
-              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
+              if (axis != m_AxisNumber)
+              {
+                double roundedIndex = std::floor(pointInVx[axis] + 0.5);
+                if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
+                {
+#ifndef NDEBUG
+                  /// The contour points must be on the side of voxels, never in their centre.
+                  /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
+                  assert(isOnVoxelSide);
+                  isOnVoxelSide = false;
+#endif
+                  paintingRegionIndex[axis] = roundedIndex;
+                  paintingRegionSize[axis] = 1;
+                }
+                else
+                {
+                  paintingRegionSize[axis] = 2;
+                  paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
+                }
+              }
             }
-            voxelIndex[m_AxisNumber] = m_SliceNumber;
-            paintingRegion.SetIndex(voxelIndex);
-  
+            paintingRegion.SetIndex(paintingRegionIndex);
+            paintingRegion.SetSize(paintingRegionSize);
+
             if (region3D.IsInside(paintingRegion))
             {
               itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToManualContourFilter->GetOutput(), paintingRegion);
               
-              for (countourImageIterator.GoToBegin(); 
-                   !countourImageIterator.IsAtEnd(); 
+              for (countourImageIterator.GoToBegin();
+                   !countourImageIterator.IsAtEnd();
                    ++countourImageIterator
                    )
               {
                 countourImageIterator.Set(manualImageBorder);
               }
             }
-          } // end for k         
+          } // end for k
         } // end if size of line at least 3.
       } // end for j
     } // end if we have some contours.
-     
+
+//    static int counter = 0;
+//    ++counter;
+//    std::ostringstream fileName;
+//    fileName << "/Users/espakm/Desktop/16856/segmentationContour-" << counter << ".nii.gz";
+//    itk::ImageFileWriter<itk::Image<unsigned char, 3> >::Pointer fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
+//    fileWriter->SetFileName(fileName.str());
+//    fileWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
+//    fileWriter->Update();
+//    ++counter;
+//    std::ostringstream fileName2;
+//    fileName2 << "/Users/espakm/Desktop/16856/manualContour-" << counter << ".nii.gz";
+//    fileWriter->SetFileName(fileName2.str());
+//    fileWriter->SetInput(m_CastToManualContourFilter->GetOutput());
+//    fileWriter->Update();
+
     // 6. Update Region growing.
     m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
     m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
@@ -237,7 +302,15 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
     
-    // 7. Paste it back into output image. 
+//    ++counter;
+//    std::ostringstream fileName3;
+//    fileName3 << "/Users/espakm/Desktop/16856/regionGrowing-" << counter << ".nii.gz";
+//    fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
+//    fileWriter->SetFileName(fileName3.str());
+//    fileWriter->SetInput(m_RegionGrowingFilter->GetOutput());
+//    fileWriter->Update();
+
+    // 7. Paste it back into output image.
     if (m_UseOutput && m_OutputImage != NULL)
     {
       itk::ImageRegionConstIterator<SegmentationImageType> regionGrowingIter(m_RegionGrowingFilter->GetOutput(), region3D);

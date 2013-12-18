@@ -38,134 +38,143 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 
 
 //-----------------------------------------------------------------------------
-void ConvertMITKContoursAndAppendToITKContours(GeneralSegmentorPipelineParams &params, ParametricPathVectorType& contours)
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
-  ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, contours);
-  ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, contours);
-}
-
-
-//-----------------------------------------------------------------------------
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContourSet, ParametricPathVectorType& itkContourVector)
-{
-  /// Note that we store the contours in a different way in the MITK and the ITK contour set.
-  /// ITK filters expect a contour in which there is a point on the side of every pixel, but
-  /// not necessarily in the corners.
-  ///
-  /// E.g. a contour around three adjacent pixels can be stored like this (1):
-  ///
-  /// +---o---+---o---+---o---+
-  /// |       |       |       |
-  /// o       |       |       o
-  /// |       |       |       |
-  /// +---o---+---o---+---o---+
-  ///
-  /// If we simply copy these points to an MITK contour set, it would be renderered like this:
-  ///
-  ///     -----------------
-  ///   /                   \
-  /// <                       >
-  ///   \                   /
-  ///     -----------------
-  ///
-  /// That is, the adjacent contour points would be connected by a straight line, cutting off the corners.
-  /// To get around this, we use a modified version of the contour extraction filter that keeps the corners,
-  /// i.e. creates a contour of a segmentation like this (2):
-  ///
-  /// o---o---+---o---+---o---o
-  /// |       |       |       |
-  /// o       |       |       o
-  /// |       |       |       |
-  /// o---o---+---o---+---o---o
-  ///
-  /// Note that the corner points are stored only when the contour "turns", not at at every pixel corner.
-  /// The intermediate points are still at a side of the pixels.
-  ///
-  /// If we copy this to an MITK contour set as it is, it is rendered to a rectangle.
-  ///
-  /// +-----------------------+
-  /// |                       |
-  /// |                       |
-  /// |                       |
-  /// +-----------------------+
-  ///
-  /// However, the following MITK contour would render to the same rectangle (3):
-  ///
-  /// o-------+-------+-------o
-  /// |       |       |       |
-  /// |       |       |       |
-  /// |       |       |       |
-  /// o-------+-------+-------o
-  ///
-  /// Reducing the number of contour points can significantly speed up the rendering. Moreover,
-  /// the MITK contours are often cloned because of the undo-redo operations, so it is good to
-  /// minimise the number of contour points.
-  ///
-  /// However, the calculations are done in ITK filters, and here we need to convert the MITK
-  /// contours stored as (3) to ITK contours stored as (2).
-
-  mitk::Geometry3D* geometry = mitkContourSet->GetGeometry();
-  const mitk::Vector3D& spacing = geometry->GetSpacing();
-
-  mitk::ContourModelSet::ContourModelSetIterator iter;
-  for (iter = mitkContourSet->Begin(); iter != mitkContourSet->End(); ++iter)
+  mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
+  mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();
+  for ( ; mitkContoursIt != mitkContoursEnd; ++mitkContoursIt)
   {
-    mitk::ContourModel::Pointer mitkContour = *iter;
-    ParametricPathType::Pointer itkContour = ParametricPathType::New();
-    mitk::ContourModel::VertexIterator vertexIter = mitkContour->Begin();
-    mitk::ContourModel::VertexIterator vertexEnd = mitkContour->End();
+    mitk::ContourModel::Pointer mitkContour = *mitkContoursIt;
 
+    ParametricPathType::Pointer itkContour = ParametricPathType::New();
     ParametricPathType::ContinuousIndexType idx;
-    mitk::ContourModel::VertexType* vertex = *vertexIter;
-    idx.CastFrom(vertex->Coordinates);
+
+    mitk::ContourModel::VertexIterator mitkContourIt = mitkContour->Begin();
+    mitk::ContourModel::VertexIterator mitkContourEnd = mitkContour->End();
+
+    /// TODO
+    /// Contours should not be empty. Currently, the draw tool can create empty
+    /// contours. We skip them for now, but this should be fixed in the draw tool.
+    /// The empty contours are probably created when points are deleted from the
+    /// contour.
+    if (mitkContourIt == mitkContourEnd)
+    {
+      continue;
+    }
+
+    /// Contours must not be empty. (Contour sets can be empty but if they
+    /// contain contours, none of them can.)
+    assert(mitkContourIt != mitkContourEnd);
+
+    mitk::Point3D startPoint = (*mitkContourIt)->Coordinates;
+    idx.CastFrom(startPoint);
     itkContour->AddVertex(idx);
 
-    mitk::ContourModel::VertexType* lastVertex = vertex;
-
-    for (++vertexIter; vertexIter != vertexEnd; ++vertexIter)
+    for (++mitkContourIt; mitkContourIt != mitkContourEnd; ++mitkContourIt)
     {
-      mitk::ContourModel::VertexType* vertex = *vertexIter;
-
-      const mitk::Point3D& startPoint = lastVertex->Coordinates;
-      const mitk::Point3D& endPoint = vertex->Coordinates;
+      mitk::Point3D endPoint = (*mitkContourIt)->Coordinates;
 
       /// Find the axis of the running coordinate.
-      int axis = 0;
-      while (axis < 3 && endPoint[axis] == lastVertex->Coordinates[axis])
+      int axisOfRunningCoordinate = -1;
+      for (int axis = 0; axis < 3; ++ axis)
       {
-        ++axis;
+        if (std::abs(endPoint[axis] - startPoint[axis]) > 0.01)
+        {
+          /// Only one coordinate can differ at this point, otherwise the representation
+          /// is incorrect. The contour can turn only at voxel corners.
+          assert(axisOfRunningCoordinate == -1);
+
+          axisOfRunningCoordinate = axis;
+
+          /// In debug builds we do not break here, so that the assertion above can fail
+          /// if two adjacent points of the contour is not on a line along voxel boundaries.
+#ifdef NDEBUG
+          break;
+#endif
+        }
       }
-      assert(axis < 3);
+      /// A contour must not contain the same point twice, one directly after the other.
+      /// (The start and end point of a contour can be the same for closed contours,
+      /// but they must contain other points in between.)
+      assert(axisOfRunningCoordinate >= 0 && axisOfRunningCoordinate < 3);
+
+      /// If the MITK contour stores several subsequent points along the same line,
+      /// we skip the intermediate points and keep only the first and last one.
+      for (mitk::ContourModel::VertexIterator it = mitkContourIt + 1; it != mitkContourEnd; ++it)
+      {
+        const mitk::Point3D& newEndPoint = (*it)->Coordinates;
+        int numberOfDifferentCoordinates = 0;
+        int axisWithDifferentCoordinate = -1;
+        for (int axis = 0; axis < 3; ++ axis)
+        {
+          /// TODO
+          /// This should be a simple '!=' operator, but the draw tool does not
+          /// save perfect corner coordinates now.
+          if (std::abs(newEndPoint[axis] - startPoint[axis]) > 0.01)
+          {
+            ++numberOfDifferentCoordinates;
+            axisWithDifferentCoordinate = axis;
+          }
+        }
+        if (numberOfDifferentCoordinates == 1 && axisWithDifferentCoordinate == axisOfRunningCoordinate)
+        {
+          /// The next point was on the line of the same contour edge, so we
+          /// discard the previous end point, the end of the edge is this new point.
+          mitkContourIt = it;
+          endPoint = newEndPoint;
+        }
+        else if (numberOfDifferentCoordinates == 2)
+        {
+          /// The contour has turned, so there is no more point on the same line,
+          /// no more intermediate point to skip.
+          break;
+        }
+        else if (numberOfDifferentCoordinates == 0)
+        {
+          /// TODO
+          /// Contours should not contain the same point multiple times, subsequently.
+          /// The draw tool currently creates such contours, so here we just silently
+          /// skip the duplicated points.
+          mitkContourIt = it;
+        }
+        else
+        {
+          /// We should not arrive here, otherwise the contour is incorrectly
+          /// represented. Contours must be on a single slice, and they must
+          /// go along the boundary of voxels. Only the start and end point
+          /// can be equal.
+          assert(false);
+        }
+      }
 
       mitk::Point3D sidePoint = startPoint;
-      double endCoordinate = endPoint[axis];
-      double s = spacing[axis];
-      if (endCoordinate > startPoint[axis])
+      double startCoordinate = startPoint[axisOfRunningCoordinate];
+      double endCoordinate = endPoint[axisOfRunningCoordinate];
+      double s = spacingInWorldCoordinateOrder[axisOfRunningCoordinate];
+      if (startCoordinate < endCoordinate)
       {
-        // 'r' is the running coordinate.
-        for (double r = sidePoint[axis] + s / 2.0; r < endCoordinate; r += s)
+        for (double runningCoordinate = startCoordinate + s / 2.0; runningCoordinate < endCoordinate; runningCoordinate += s)
         {
-          sidePoint[axis] = r;
+          sidePoint[axisOfRunningCoordinate] = runningCoordinate;
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
         }
       }
       else
       {
-        // 'r' is the running coordinate.
-        for (double r = sidePoint[axis] - s / 2.0; r > endCoordinate; r -= s)
+        for (double runningCoordinate = startCoordinate - s / 2.0; runningCoordinate > endCoordinate; runningCoordinate -= s)
         {
-          sidePoint[axis] = r;
+          sidePoint[axisOfRunningCoordinate] = runningCoordinate;
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
         }
       }
 
-      idx.CastFrom(vertex->Coordinates);
+      idx.CastFrom(endPoint);
       itkContour->AddVertex(idx);
 
-      lastVertex = vertex;
+      startPoint = endPoint;
     }
-    itkContourVector.push_back(itkContour);
+    itkContours.push_back(itkContour);
   }
 }

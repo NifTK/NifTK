@@ -373,7 +373,7 @@ void mitk::MIDASPolyTool::UpdateContours(Action* action, const StateEvent* state
 
     // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
     mitk::Point3D closestCornerPoint;
-    this->ConvertPointToNearestVoxelCentreInMillimetreCoordinates(positionEvent->GetWorldPosition(), closestCornerPoint);
+    this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetWorldPosition(), closestCornerPoint);
 
     // Redraw the "previous" contour line in green.
     this->DrawWholeContour(*(m_PreviousContourReferencePoints.GetPointer()), *planeGeometry, *(m_PreviousContour.GetPointer()), *backgroundContour);
@@ -410,7 +410,7 @@ bool mitk::MIDASPolyTool::OnLeftMousePressed (Action* action, const StateEvent* 
 
   // Convert mouse click to closest corner point, as in effect, we always draw from corner to corner.
   mitk::Point3D closestCornerPoint;
-  this->ConvertPointToNearestVoxelCentreInMillimetreCoordinates(positionEvent->GetWorldPosition(), closestCornerPoint);
+  this->ConvertPointToNearestVoxelCentreInMm(positionEvent->GetWorldPosition(), closestCornerPoint);
 
   mitk::Point3D previousPoint;
   if (m_ReferencePoints->GetNumberOfVertices() > 0)
