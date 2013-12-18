@@ -38,7 +38,7 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 
 
 //-----------------------------------------------------------------------------
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing)
+void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();
@@ -55,6 +55,8 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
     /// TODO
     /// Contours should not be empty. Currently, the draw tool can create empty
     /// contours. We skip them for now, but this should be fixed in the draw tool.
+    /// The empty contours are probably created when points are deleted from the
+    /// contour.
     if (mitkContourIt == mitkContourEnd)
     {
       continue;
@@ -148,7 +150,7 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
       mitk::Point3D sidePoint = startPoint;
       double startCoordinate = startPoint[axisOfRunningCoordinate];
       double endCoordinate = endPoint[axisOfRunningCoordinate];
-      double s = spacing[axisOfRunningCoordinate];
+      double s = spacingInWorldCoordinateOrder[axisOfRunningCoordinate];
       if (startCoordinate < endCoordinate)
       {
         for (double runningCoordinate = startCoordinate + s / 2.0; runningCoordinate < endCoordinate; runningCoordinate += s)

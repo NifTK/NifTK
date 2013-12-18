@@ -20,6 +20,8 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
+#include <mitkMIDASOrientationUtils.h>
+
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
@@ -87,12 +89,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_ManualContours.clear();
     
     // 3. Convert seeds / contours.
-    const mitk::Vector3D& spacing = m_ExtractBinaryRegionOfInterestFilter->GetInput()->GetSpacing();
+    mitk::Vector3D spacingInWorldCoordinateOrder;
+    mitk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
 
     ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  
-    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacing);
-    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacing);
-    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacing);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -136,8 +139,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
         if (list != NULL && list->Size() >= 2)
         {
-          /// Skip the first and last corner point.
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             ParametricPathVertexType pointInMm = list->ElementAt(k);
             ContinuousIndexType pointInVx;
@@ -213,8 +215,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
         if (list != NULL && list->Size() >= 2)
         {
-          /// Skip the first and last corner point.
-          for (unsigned int k = 1; k < list->Size() - 1; k++)
+          for (unsigned int k = 0; k < list->Size(); k++)
           {
             ParametricPathVertexType pointInMm = list->ElementAt(k);
             ContinuousIndexType pointInVx;
@@ -265,50 +266,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         } // end if size of line at least 3.
       } // end for j
     } // end if we have some contours.
-//    if (m_ManualContours.size() > 0)
-//    {
-//      paintingRegionSize.Fill(2);
-//      paintingRegionSize[m_AxisNumber] = 1;
-//      paintingRegion.SetSize(paintingRegionSize);
-
-//      for (unsigned int j = 0; j < m_ManualContours.size(); j++)
-//      {
-//        ParametricPathPointer path = m_ManualContours[j];
-//        const ParametricPathVertexListType* list = path->GetVertexList();
-
-//        if (list != NULL && list->Size() >= 2)
-//        {
-//          for (unsigned int k = 0; k < list->Size(); k++)
-//          {
-//            ParametricPathVertexType vertex;
-//            vertex = list->ElementAt(k);
-//            ContinuousIndexType continuousIndex;
-//            m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(vertex, continuousIndex);
-
-//            IndexType voxelIndex;
-//            for (unsigned int a = 0; a < sliceSize3D.GetSizeDimension(); a++)
-//            {
-//              voxelIndex[a] = static_cast<typename IndexType::IndexValueType>(continuousIndex[a]);
-//            }
-//            voxelIndex[m_AxisNumber] = m_SliceNumber;
-//            paintingRegion.SetIndex(voxelIndex);
-
-//            if (region3D.IsInside(paintingRegion))
-//            {
-//              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToManualContourFilter->GetOutput(), paintingRegion);
-
-//              for (countourImageIterator.GoToBegin();
-//                   !countourImageIterator.IsAtEnd();
-//                   ++countourImageIterator
-//                   )
-//              {
-//                countourImageIterator.Set(manualImageBorder);
-//              }
-//            }
-//          } // end for k
-//        } // end if size of line at least 3.
-//      } // end for j
-//    } // end if we have some contours.
 
 //    static int counter = 0;
 //    ++counter;
