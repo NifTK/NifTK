@@ -20,9 +20,8 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
   unsigned long numberOfPoints = points->GetNumberOfPoints();
   PointSetType::PointsContainer* pointsContainer = points->GetPoints();
 
-  mitk::PointSet::PointsContainer* seedsContainer = seeds->GetPointSet()->GetPoints();
-  mitk::PointSet::PointsConstIterator seedsIt = seedsContainer->Begin();
-  mitk::PointSet::PointsConstIterator seedsEnd = seedsContainer->End();
+  mitk::PointSet::PointsConstIterator seedsIt = seeds->Begin();
+  mitk::PointSet::PointsConstIterator seedsEnd = seeds->End();
   for ( ; seedsIt != seedsEnd; ++seedsIt)
   {
     mitk::Point3D mitkPointIn3DMillimetres = seedsIt->Value();
