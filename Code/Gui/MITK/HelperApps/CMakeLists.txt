@@ -39,6 +39,7 @@ if(BUILD_IGI)
   list(APPEND HELPER_APPS_REQUIRED_MODULES 
     niftkOpenCV 
     niftkIGI
+    niftkCore
   ) 
 endif()
 
