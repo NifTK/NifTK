@@ -258,6 +258,7 @@ int DoMain(arguments &args)
       flgInvertMask = true;
   }
   else if ( args.flgInvertOutputMask )
+  {
       flgInvertMask = true;
   }
 
@@ -279,7 +280,7 @@ int DoMain(arguments &args)
       {
         if ( itInputMask.Get() )
         {        
-          itOutputMask.Set( ! itOutputMask.Get() );
+          itOutputMask.Set( itOutputMask.Get() ? 0 : 255 );
         } 
       }
     }
@@ -288,7 +289,7 @@ int DoMain(arguments &args)
     {
       for ( itOutputMask.GoToBegin(); ! itOutputMask.IsAtEnd(); ++itOutputMask )
       {
-        itOutputMask.Set( ! itOutputMask.Get() );
+        itOutputMask.Set( itOutputMask.Get() ? 0 : 255 );
       }
     }
   }
@@ -351,59 +352,114 @@ int main( int argc, char *argv[] )
   args.flgInvertOutputMask = flgInvertOutputMask;
 
   int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fileInputImage);
-  if (dims != 3)
+
+  if ( (dims != 2) && (dims != 3) )
   {
-    std::cout << "ERROR: Unsupported image dimension, image must be 3D" << std::endl;
+    std::cout << "ERROR: Unsupported image dimension, image must be 2D or 3D" << std::endl;
     return EXIT_FAILURE;
   }
   
   int result;
 
-  switch (itk::PeekAtComponentType(args.fileInputImage))
+  if ( dims == 2 )
   {
-  case itk::ImageIOBase::UCHAR:
-    result = DoMain<3, unsigned char>(args);
-    break;
+    switch (itk::PeekAtComponentType(args.fileInputImage))
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = DoMain<2, unsigned char>(args);
+      break;
 
-  case itk::ImageIOBase::CHAR:
-    result = DoMain<3, char>(args);
-    break;
+    case itk::ImageIOBase::CHAR:
+      result = DoMain<2, char>(args);
+      break;
 
-  case itk::ImageIOBase::USHORT:
-    result = DoMain<3, unsigned short>(args);
-    break;
+    case itk::ImageIOBase::USHORT:
+      result = DoMain<2, unsigned short>(args);
+      break;
 
-  case itk::ImageIOBase::SHORT:
-    result = DoMain<3, short>(args);
-    break;
+    case itk::ImageIOBase::SHORT:
+      result = DoMain<2, short>(args);
+      break;
 
-  case itk::ImageIOBase::UINT:
-    result = DoMain<3, unsigned int>(args);
-    break;
+    case itk::ImageIOBase::UINT:
+      result = DoMain<2, unsigned int>(args);
+      break;
 
-  case itk::ImageIOBase::INT:
-    result = DoMain<3, int>(args);
-    break;
+    case itk::ImageIOBase::INT:
+      result = DoMain<2, int>(args);
+      break;
 
-  case itk::ImageIOBase::ULONG:
-    result = DoMain<3, unsigned long>(args);
-    break;
+    case itk::ImageIOBase::ULONG:
+      result = DoMain<2, unsigned long>(args);
+      break;
 
-  case itk::ImageIOBase::LONG:
-    result = DoMain<3, long>(args);
-    break;
+    case itk::ImageIOBase::LONG:
+      result = DoMain<2, long>(args);
+      break;
 
-  case itk::ImageIOBase::FLOAT:
-    result = DoMain<3, float>(args);
-    break;
+    case itk::ImageIOBase::FLOAT:
+      result = DoMain<2, float>(args);
+      break;
 
-  case itk::ImageIOBase::DOUBLE:
-    result = DoMain<3, double>(args);
-    break;
+    case itk::ImageIOBase::DOUBLE:
+      result = DoMain<2, double>(args);
+      break;
 
-  default:
-    std::cerr << "ERROR: Unsupported pixel format" << std::endl;
-    return EXIT_FAILURE;
+    default:
+      std::cerr << "ERROR: Unsupported pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
   }
+  else 
+  {
+
+    switch (itk::PeekAtComponentType(args.fileInputImage))
+    {
+    case itk::ImageIOBase::UCHAR:
+      result = DoMain<3, unsigned char>(args);
+      break;
+
+    case itk::ImageIOBase::CHAR:
+      result = DoMain<3, char>(args);
+      break;
+
+    case itk::ImageIOBase::USHORT:
+      result = DoMain<3, unsigned short>(args);
+      break;
+
+    case itk::ImageIOBase::SHORT:
+      result = DoMain<3, short>(args);
+      break;
+
+    case itk::ImageIOBase::UINT:
+      result = DoMain<3, unsigned int>(args);
+      break;
+
+    case itk::ImageIOBase::INT:
+      result = DoMain<3, int>(args);
+      break;
+
+    case itk::ImageIOBase::ULONG:
+      result = DoMain<3, unsigned long>(args);
+      break;
+
+    case itk::ImageIOBase::LONG:
+      result = DoMain<3, long>(args);
+      break;
+
+    case itk::ImageIOBase::FLOAT:
+      result = DoMain<3, float>(args);
+      break;
+
+    case itk::ImageIOBase::DOUBLE:
+      result = DoMain<3, double>(args);
+      break;
+
+    default:
+      std::cerr << "ERROR: Unsupported pixel format" << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+
   return result;
 }
