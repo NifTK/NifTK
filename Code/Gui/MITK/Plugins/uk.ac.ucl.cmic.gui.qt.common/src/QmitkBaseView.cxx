@@ -350,10 +350,18 @@ bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
         mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
 
   mitk::DataStorage* dataStorage = this->GetDataStorage();
+  if (!dataStorage)
+  {
+    return false;
+  }
 
   crossPlaneNameProperty->SetValue("widget1Plane");
   crossPlaneRendererProperty->SetValue(mainAxialRenderer);
   mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+  if (!axialCrossPlaneNode)
+  {
+    return false;
+  }
 
   crossPlaneNameProperty->SetValue("widget2Plane");
   crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
