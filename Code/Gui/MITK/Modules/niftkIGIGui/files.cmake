@@ -17,6 +17,7 @@ set(CPP_FILES
   Common/QmitkStereoImageAndCameraSelectionWidget.cxx
   Common/StereoCameraCalibrationSelectionWidget.cxx
   Common/QmitkRMSErrorWidget.cxx
+  Common/QmitkUltrasoundPinCalibrationWidget.cxx
   DataSources/QmitkQImageToMitkImageFilter.cxx
   DataSources/TrackerControlsWidget.cxx
   DataSources/QmitkIGITimerBasedThread.cxx
@@ -44,6 +45,7 @@ set(MOC_H_FILES
   Common/QmitkStereoImageAndCameraSelectionWidget.h
   Common/StereoCameraCalibrationSelectionWidget.h
   Common/QmitkRMSErrorWidget.h
+  Common/QmitkUltrasoundPinCalibrationWidget.h
   DataSources/TrackerControlsWidget.h
   DataSources/QmitkIGITimerBasedThread.h
   DataSources/QmitkFiducialRegistrationWidgetDialog.h
@@ -66,6 +68,7 @@ set(UI_FILES
   Common/QmitkStereoImageAndCameraSelectionWidget.ui
   Common/StereoCameraCalibrationSelectionWidget.ui
   Common/QmitkRMSErrorWidget.ui
+  Common/QmitkUltrasoundPinCalibrationWidget.ui
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
   DataSources/QmitkIGITrackerSourceGui.ui

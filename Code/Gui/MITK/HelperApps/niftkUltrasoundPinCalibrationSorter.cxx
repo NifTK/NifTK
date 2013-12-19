@@ -16,16 +16,18 @@
 #include <limits>
 #include <niftkUltrasoundPinCalibrationSorterCLP.h>
 #include <mitkVector.h>
+#include <QApplication>
+#include <QmitkUltrasoundPinCalibrationWidget.h>
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if ( inputMatrixDirectory.length() == 0 
-  || inputImageDirectory.length() == 0
-  || outputMatrixDirectory.length() == 0
-  || outputPointDirectory.length() == 0
+  if (inputMatrixDirectory.length() == 0 
+  ||  inputImageDirectory.length() == 0
+  ||  outputMatrixDirectory.length() == 0
+  ||  outputPointDirectory.length() == 0
   )
   {
     commandLine.getOutput()->usage(commandLine);
@@ -34,6 +36,19 @@ int main(int argc, char** argv)
 
   try
   {
+
+    QApplication app(argc,argv);
+    
+    QmitkUltrasoundPinCalibrationWidget cw(
+      QString::fromStdString(inputMatrixDirectory),
+      QString::fromStdString(inputImageDirectory),
+      QString::fromStdString(outputMatrixDirectory),
+      QString::fromStdString(outputPointDirectory),
+      &app
+    );
+    cw.show();
+    
+    returnStatus = app.exec();
   }
   catch (std::exception& e)
   {
