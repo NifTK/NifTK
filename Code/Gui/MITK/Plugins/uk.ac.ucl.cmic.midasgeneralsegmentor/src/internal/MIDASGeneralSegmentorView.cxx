@@ -172,23 +172,41 @@ void MIDASGeneralSegmentorView::CreateConnections()
   if ( m_GeneralControls )
   {
     this->connect(m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
-    this->connect(m_GeneralControls->m_CleanButton, SIGNAL(pressed()), SLOT(OnCleanButtonPressed()));
-    this->connect(m_GeneralControls->m_WipeButton, SIGNAL(pressed()), SLOT(OnWipeButtonPressed()));
-    this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(pressed()), SLOT(OnWipePlusButtonPressed()));
-    this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(pressed()), SLOT(OnWipeMinusButtonPressed()));
-    this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(pressed()), SLOT(OnPropagateUpButtonPressed()));
-    this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(pressed()), SLOT(OnPropagateDownButtonPressed()));
-    this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(pressed()), SLOT(OnPropagate3DButtonPressed()));
-    this->connect(m_GeneralControls->m_OKButton, SIGNAL(pressed()), SLOT(OnOKButtonPressed()));
-    this->connect(m_GeneralControls->m_ResetButton, SIGNAL(pressed()), SLOT(OnResetButtonPressed()));
-    this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(pressed()), SLOT(OnThresholdApplyButtonPressed()));
+    this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
+    this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
+    this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
+    this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnWipeMinusButtonClicked()));
+    this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnPropagateUpButtonClicked()));
+    this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
+    this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
+    this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
+    this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
+    this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeImageCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+
+    /// Transfer the focus back to the main window if any button is pressed.
+    /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
+    this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+    this->connect(m_GeneralControls->m_SeeImageCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()) );
   }
 }
 
@@ -416,7 +434,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonPressed()
+void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
@@ -948,7 +966,7 @@ void MIDASGeneralSegmentorView::RestoreInitialSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnOKButtonPressed()
+void MIDASGeneralSegmentorView::OnOKButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -962,7 +980,7 @@ void MIDASGeneralSegmentorView::OnOKButtonPressed()
 
   if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
   {
-    this->OnThresholdApplyButtonPressed();
+    this->OnThresholdApplyButtonClicked();
   }
 
   this->DestroyPipeline();
@@ -1010,7 +1028,7 @@ void MIDASGeneralSegmentorView::DiscardSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnResetButtonPressed()
+void MIDASGeneralSegmentorView::OnResetButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1344,7 +1362,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::CleanSlice()
 {
-  this->OnCleanButtonPressed();
+  this->OnCleanButtonClicked();
   return true;
 }
 
@@ -1617,7 +1635,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnThresholdApplyButtonPressed()
+void MIDASGeneralSegmentorView::OnThresholdApplyButtonClicked()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
@@ -2044,7 +2062,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCleanButtonPressed()
+void MIDASGeneralSegmentorView::OnCleanButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -2316,14 +2334,14 @@ void MIDASGeneralSegmentorView::OnCleanButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipeButtonPressed()
+void MIDASGeneralSegmentorView::OnWipeButtonClicked()
 {
   this->DoWipe(0);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
+void MIDASGeneralSegmentorView::OnWipePlusButtonClicked()
 {
 
   MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
@@ -2361,7 +2379,7 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipeMinusButtonPressed()
+void MIDASGeneralSegmentorView::OnWipeMinusButtonClicked()
 {
   MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
 
@@ -2526,21 +2544,21 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagate3DButtonPressed()
+void MIDASGeneralSegmentorView::OnPropagate3DButtonClicked()
 {
   this->DoPropagate(false, true);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagateUpButtonPressed()
+void MIDASGeneralSegmentorView::OnPropagateUpButtonClicked()
 {
   this->DoPropagate(true, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagateDownButtonPressed()
+void MIDASGeneralSegmentorView::OnPropagateDownButtonClicked()
 {
   this->DoPropagate(false, false);
 }
@@ -2732,6 +2750,18 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
   }
 
   this->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::OnAnyButtonClicked()
+{
+  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
+  /// (like 'a' and 'z' for changing slice) keep on working.
+  if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())
+  {
+    mainWindow->setFocus();
+  }
 }
 
 
