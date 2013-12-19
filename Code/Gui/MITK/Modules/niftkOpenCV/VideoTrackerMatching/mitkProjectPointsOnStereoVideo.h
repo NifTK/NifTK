@@ -109,6 +109,12 @@ public:
    * \brief set only the world points, the corresponding scalars get set to a default value
    */
   void SetWorldPoints ( std::vector< cv::Point3d > points );
+
+  /** 
+   * \brief clear the list of world points
+   */
+  void ClearWorldPoints ();
+
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
   itkGetMacro ( InitOK, bool);

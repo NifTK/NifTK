@@ -1057,5 +1057,12 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
     m_ScreenAxesPoints.push_back(pointPair);
   }
 }
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::ClearWorldPoints()
+{
+  m_WorldPoints.clear();
+  m_ProjectOK = false;
+}
+
 
 } // end namespace
