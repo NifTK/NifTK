@@ -840,6 +840,8 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 //-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
 {
+  MITK_INFO << m_ClassifierProjectedPoints[GSPoint.first].second.size();
+  MITK_INFO << m_ProjectedPoints[GSPoint.first].second.size();
   assert ( m_ClassifierProjectedPoints[GSPoint.first].second.size() ==
     m_ProjectedPoints[GSPoint.first].second.size() );
   std::vector < cv::Point2d > pointVector;
@@ -878,8 +880,18 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
   {
     m_WorldPoints.push_back(points[i]);
   }
+  m_ProjectOK = false;
 }
-
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetClassifierWorldPoints ( 
+    std::vector < cv::Point3d > points )
+{
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
+  {
+    m_ClassifierWorldPoints.push_back(points[i]);
+  }
+  m_ProjectOK = false;
+}
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPoints ( 
     std::vector < cv::Point3d > points )
@@ -890,6 +902,7 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
       std::pair < cv::Point3d , cv::Scalar > ( points[i], cv::Scalar (255,0,0) );
     m_WorldPoints.push_back(point);
   }
+  m_ProjectOK = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -985,6 +998,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
 
   }
   cvReleaseMat (&leftCameraTriangulatedWorldPoints);
+  m_ProjectOK = false;
 }
 
 std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()

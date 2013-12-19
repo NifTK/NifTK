@@ -97,7 +97,6 @@ public:
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
-  itkSetMacro ( ClassifierWorldPoints, std::vector < cv::Point3d > );
   void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
   void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
@@ -109,7 +108,11 @@ public:
    * \brief set only the world points, the corresponding scalars get set to a default value
    */
   void SetWorldPoints ( std::vector< cv::Point3d > points );
-
+ 
+  /** 
+   * \brief set only the classifier world points
+   */
+  void SetClassifierWorldPoints ( std::vector < cv::Point3d > points );
   /** 
    * \brief clear the list of world points
    */
