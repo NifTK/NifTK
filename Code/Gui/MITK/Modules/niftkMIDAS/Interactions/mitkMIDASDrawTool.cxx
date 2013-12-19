@@ -282,7 +282,8 @@ bool mitk::MIDASDrawTool::OnMiddleMousePressed(Action* action, const StateEvent*
   geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
 
-  this->SetEraserScopeVisible(true, positionEvent->GetSender());
+  this->SetEraserScopeVisible(true, renderer);
+  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
 
   bool result = true;
   result = result && this->DeleteFromContour(2, action, stateEvent);
@@ -305,6 +306,7 @@ bool mitk::MIDASDrawTool::OnMiddleMouseMoved(Action* action, const StateEvent* s
   mitk::Point2D mousePosition;
   geometry2D->Map(positionEvent->GetWorldPosition(), mousePosition);
   m_EraserScope->SetControlPoint(0, mousePosition);
+  mitk::RenderingManager::GetInstance()->RequestUpdate(renderer->GetRenderWindow());
 
   bool result = true;
   result = result && this->DeleteFromContour(2, action, stateEvent);
