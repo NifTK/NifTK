@@ -130,142 +130,139 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_CastToManualContourFilter->GetOutput()->FillBuffer(manualImageNonBorder);
 
     // 7. Render the segmentation contours into the segmentation contour image.    
-    if (m_SegmentationContours.size() > 0)
+    for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
     {
-      for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
+      ParametricPathPointer path = m_SegmentationContours[j];
+      const ParametricPathVertexListType* list = m_SegmentationContours[j]->GetVertexList();
+
+      assert(list);
+
+      if (list->Size() >= 2)
       {
-        ParametricPathPointer path = m_SegmentationContours[j];
-        const ParametricPathVertexListType* list = path->GetVertexList();
-
-        if (list != NULL && list->Size() >= 2)
+        for (unsigned int k = 0; k < list->Size(); k++)
         {
-          for (unsigned int k = 0; k < list->Size(); k++)
-          {
-            ParametricPathVertexType pointInMm = list->ElementAt(k);
-            ContinuousIndexType pointInVx;
-            m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+          ParametricPathVertexType pointInMm = list->ElementAt(k);
+          ContinuousIndexType pointInVx;
+          m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
 
 #ifndef NDEBUG
-            bool isOnVoxelSide = true;
+          bool isOnVoxelSide = true;
 #endif
-            for (int axis = 0; axis < 3; ++axis)
+          for (int axis = 0; axis < 3; ++axis)
+          {
+            if (axis != m_AxisNumber)
             {
-              if (axis != m_AxisNumber)
+              double roundedIndex = std::floor(pointInVx[axis] + 0.5);
+              if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
               {
-                double roundedIndex = std::floor(pointInVx[axis] + 0.5);
-                if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
-                {
 #ifndef NDEBUG
-                  /// The contour points must be on the side of voxels, never in their centre.
-                  /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
-                  assert(isOnVoxelSide);
-                  isOnVoxelSide = false;
+                /// The contour points must be on the side of voxels, never in their centre.
+                /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
+                assert(isOnVoxelSide);
+                isOnVoxelSide = false;
 #endif
-                  paintingRegionIndex[axis] = roundedIndex;
-                  paintingRegionSize[axis] = 1;
+                paintingRegionIndex[axis] = roundedIndex;
+                paintingRegionSize[axis] = 1;
+              }
+              else
+              {
+                paintingRegionSize[axis] = 2;
+                paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
+              }
+            }
+          }
+          paintingRegion.SetIndex(paintingRegionIndex);
+          paintingRegion.SetSize(paintingRegionSize);
+
+          if (region3D.IsInside(paintingRegion))
+          {
+
+            itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToSegmentationContourFilter->GetOutput(), paintingRegion);
+            itk::ImageRegionIterator<SegmentationImageType> segmentationImageIterator(m_ExtractBinaryRegionOfInterestFilter->GetOutput(), paintingRegion);
+
+            for (countourImageIterator.GoToBegin(),
+                 segmentationImageIterator.GoToBegin();
+                 !countourImageIterator.IsAtEnd();
+                 ++countourImageIterator,
+                 ++segmentationImageIterator
+                 )
+            {
+              if (countourImageIterator.Get() == segImageInside)
+              {
+                if (segmentationImageIterator.Get())
+                {
+                  countourImageIterator.Set(segImageBorder);
                 }
                 else
                 {
-                  paintingRegionSize[axis] = 2;
-                  paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
+                  countourImageIterator.Set(segImageOutside);
                 }
               }
             }
-            paintingRegion.SetIndex(paintingRegionIndex);
-            paintingRegion.SetSize(paintingRegionSize);
-
-            if (region3D.IsInside(paintingRegion))
-            {
-            
-              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToSegmentationContourFilter->GetOutput(), paintingRegion);
-              itk::ImageRegionIterator<SegmentationImageType> segmentationImageIterator(m_ExtractBinaryRegionOfInterestFilter->GetOutput(), paintingRegion);
-              
-              for (countourImageIterator.GoToBegin(),
-                   segmentationImageIterator.GoToBegin(); 
-                   !countourImageIterator.IsAtEnd(); 
-                   ++countourImageIterator,
-                   ++segmentationImageIterator
-                   )
-              {
-                if (countourImageIterator.Get() == segImageInside)
-                {
-                  if (segmentationImageIterator.Get())
-                  {
-                    countourImageIterator.Set(segImageBorder);
-                  }
-                  else
-                  {
-                    countourImageIterator.Set(segImageOutside);
-                  }
-                }
-              }
-            }
-          } // end for k         
-        } // end if size of line at least 3.
-      } // end for j
-    } // end if we have some contours.
+          }
+        } // end for k
+      } // end if size of line at least 3.
+    } // end for j
 
     // 8. Render the manual contours into the manual contour image.
-    if (m_ManualContours.size() > 0)
+    for (unsigned int j = 0; j < m_ManualContours.size(); j++)
     {
-      for (unsigned int j = 0; j < m_ManualContours.size(); j++)
+      const ParametricPathVertexListType* list = m_ManualContours[j]->GetVertexList();
+
+      assert(list);
+
+      if (list->Size() >= 2)
       {
-        ParametricPathPointer path = m_ManualContours[j];
-        const ParametricPathVertexListType* list = path->GetVertexList();
-
-        if (list != NULL && list->Size() >= 2)
+        for (unsigned int k = 0; k < list->Size(); k++)
         {
-          for (unsigned int k = 0; k < list->Size(); k++)
+          ParametricPathVertexType pointInMm = list->ElementAt(k);
+          ContinuousIndexType pointInVx;
+          m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+#ifndef NDEBUG
+          bool isOnVoxelSide = true;
+#endif
+          for (int axis = 0; axis < 3; ++axis)
           {
-            ParametricPathVertexType pointInMm = list->ElementAt(k);
-            ContinuousIndexType pointInVx;
-            m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
-
-#ifndef NDEBUG
-            bool isOnVoxelSide = true;
-#endif
-            for (int axis = 0; axis < 3; ++axis)
+            if (axis != m_AxisNumber)
             {
-              if (axis != m_AxisNumber)
+              double roundedIndex = std::floor(pointInVx[axis] + 0.5);
+              if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
               {
-                double roundedIndex = std::floor(pointInVx[axis] + 0.5);
-                if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
-                {
 #ifndef NDEBUG
-                  /// The contour points must be on the side of voxels, never in their centre.
-                  /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
-                  assert(isOnVoxelSide);
-                  isOnVoxelSide = false;
+                /// The contour points must be on the side of voxels, never in their centre.
+                /// I.e., there must not be any point in the contour, whose each coordinate is a round number.
+                assert(isOnVoxelSide);
+                isOnVoxelSide = false;
 #endif
-                  paintingRegionIndex[axis] = roundedIndex;
-                  paintingRegionSize[axis] = 1;
-                }
-                else
-                {
-                  paintingRegionSize[axis] = 2;
-                  paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
-                }
+                paintingRegionIndex[axis] = roundedIndex;
+                paintingRegionSize[axis] = 1;
+              }
+              else
+              {
+                paintingRegionSize[axis] = 2;
+                paintingRegionIndex[axis] = std::floor(pointInVx[axis]);
               }
             }
-            paintingRegion.SetIndex(paintingRegionIndex);
-            paintingRegion.SetSize(paintingRegionSize);
+          }
+          paintingRegion.SetIndex(paintingRegionIndex);
+          paintingRegion.SetSize(paintingRegionSize);
 
-            if (region3D.IsInside(paintingRegion))
+          if (region3D.IsInside(paintingRegion))
+          {
+            itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToManualContourFilter->GetOutput(), paintingRegion);
+
+            for (countourImageIterator.GoToBegin();
+                 !countourImageIterator.IsAtEnd();
+                 ++countourImageIterator
+                 )
             {
-              itk::ImageRegionIterator<SegmentationImageType> countourImageIterator(m_CastToManualContourFilter->GetOutput(), paintingRegion);
-              
-              for (countourImageIterator.GoToBegin();
-                   !countourImageIterator.IsAtEnd();
-                   ++countourImageIterator
-                   )
-              {
-                countourImageIterator.Set(manualImageBorder);
-              }
+              countourImageIterator.Set(manualImageBorder);
             }
-          } // end for k
-        } // end if size of line at least 3.
-      } // end for j
-    } // end if we have some contours.
+          }
+        } // end for k
+      } // end if size of line at least 3.
+    } // end for j
 
 //    static int counter = 0;
 //    ++counter;
