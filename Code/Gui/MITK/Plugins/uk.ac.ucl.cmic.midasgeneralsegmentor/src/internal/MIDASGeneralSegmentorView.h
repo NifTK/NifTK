@@ -376,10 +376,6 @@ private:
   /// changed orientation.
   void OnFocusChanged();
 
-  /// \brief Sets the visibility of the cursor (aka. crosshair) in the 2D render windows of the main display.
-  /// \return The actual visibility of the cursor when this function is called.
-  bool SetMainWindowCursorVisible(bool visible);
-
   /// \brief Used to create an image used for the region growing, see class intro.
   mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
 
@@ -891,11 +887,6 @@ private:
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
 
-  /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
-  bool m_MainWindowCursorWasVisible;
-
-  /// \brief Stores the visibility state of the cursor in the viewer of this plugin before activating a tool.
-  bool m_OwnCursorWasVisible;
 };
 
 #endif

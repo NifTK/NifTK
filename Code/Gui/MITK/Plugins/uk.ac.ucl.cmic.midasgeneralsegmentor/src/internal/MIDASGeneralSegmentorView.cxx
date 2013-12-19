@@ -22,11 +22,6 @@
 #include <mitkStringProperty.h>
 #include <mitkColorProperty.h>
 #include <mitkDataNodeObject.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkWeakPointerProperty.h>
-#include <mitkNodePredicateAnd.h>
-#include <mitkNodePredicateNot.h>
 #include <mitkProperties.h>
 #include <mitkRenderingManager.h>
 #include <mitkSegTool2D.h>
@@ -35,7 +30,6 @@
 #include <mitkPointUtils.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkTool.h>
-#include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkSlicedGeometry3D.h>
@@ -100,8 +94,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_IsDeleting(false)
 , m_IsChangingSlice(false)
 , m_PreviousSliceNumber(0)
-, m_MainWindowCursorWasVisible(true)
-, m_OwnCursorWasVisible(true)
 {
   m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
   m_Interface->SetMIDASGeneralSegmentorView(this);
@@ -1076,10 +1068,6 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
   if (seedToolId != activeToolId)
   {
     toolManager->ActivateTool(seedToolId);
-
-    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
   }
 
   return true;
@@ -1096,10 +1084,6 @@ bool MIDASGeneralSegmentorView::SelectDrawTool()
   if (drawToolId != activeToolId)
   {
     toolManager->ActivateTool(drawToolId);
-
-    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
   }
 
   return true;
@@ -1116,10 +1100,6 @@ bool MIDASGeneralSegmentorView::SelectPolyTool()
   if (polyToolId != activeToolId)
   {
     toolManager->ActivateTool(polyToolId);
-
-    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
   }
 
   return true;
@@ -1134,62 +1114,9 @@ bool MIDASGeneralSegmentorView::UnselectTools()
   if (toolManager->GetActiveToolID() != -1)
   {
     toolManager->ActivateTool(-1);
-    this->SetMainWindowCursorVisible(m_MainWindowCursorWasVisible);
-    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorWasVisible);
   }
 
   return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::SetMainWindowCursorVisible(bool visible)
-{
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
-
-  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
-  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
-  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
-
-  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
-  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
-
-  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
-        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
-        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
-
-  mitk::DataStorage* dataStorage = this->GetDataStorage();
-
-  crossPlaneNameProperty->SetValue("widget1Plane");
-  crossPlaneRendererProperty->SetValue(mainAxialRenderer);
-  mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
-
-  crossPlaneNameProperty->SetValue("widget2Plane");
-  crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
-  mitk::DataNode* sagittalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
-
-  crossPlaneNameProperty->SetValue("widget3Plane");
-  crossPlaneRendererProperty->SetValue(mainCoronalRenderer);
-  mitk::DataNode* coronalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
-
-  bool wasVisible;
-  axialCrossPlaneNode->GetVisibility(wasVisible, mainSagittalRenderer);
-
-  axialCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
-  axialCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
-  axialCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
-  sagittalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
-  sagittalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
-  sagittalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
-  coronalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
-  coronalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
-  coronalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
-
-  mainAxialRenderer->RequestUpdate();
-  mainSagittalRenderer->RequestUpdate();
-  mainCoronalRenderer->RequestUpdate();
-
-  return wasVisible;
 }
 
 
