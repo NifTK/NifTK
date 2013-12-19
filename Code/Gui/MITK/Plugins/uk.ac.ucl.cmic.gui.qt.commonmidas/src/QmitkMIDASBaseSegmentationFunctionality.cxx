@@ -19,10 +19,6 @@
 #include <mitkILinkedRenderWindowPart.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkDataNodeObject.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkNodePredicateAnd.h>
-#include <mitkNodePredicateNot.h>
 #include <mitkProperties.h>
 #include <mitkColorProperty.h>
 #include <mitkRenderingManager.h>
@@ -57,6 +53,8 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 , m_ImageAndSegmentationSelector(NULL)
 , m_ToolSelector(NULL)
 , m_SegmentationView(NULL)
+, m_MainWindowCursorWasVisible(true)
+, m_OwnCursorWasVisible(true)
 , m_Context(NULL)
 , m_EventAdmin(NULL)
 {
@@ -234,6 +232,18 @@ mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
+  if (toolID != -1)
+  {
+    m_MainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
+    m_OwnCursorWasVisible = this->m_SegmentationView->m_Viewer->IsCursorVisible();
+    this->m_SegmentationView->m_Viewer->SetCursorVisible(false);
+  }
+  else
+  {
+    this->SetMainWindowCursorVisible(m_MainWindowCursorWasVisible);
+    this->m_SegmentationView->m_Viewer->SetCursorVisible(m_OwnCursorWasVisible);
+  }
+
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
   if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())

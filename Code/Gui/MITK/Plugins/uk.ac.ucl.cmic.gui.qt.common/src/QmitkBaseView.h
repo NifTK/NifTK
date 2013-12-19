@@ -104,6 +104,10 @@ public:
    */
   virtual QmitkRenderWindow* GetSelectedRenderWindow();
 
+  /// \brief Sets the visibility of the cursor (aka. crosshair) in the 2D render windows of the main display.
+  /// \return The actual visibility of the cursor when this function is called.
+  bool SetMainWindowCursorVisible(bool visible);
+
 protected:
 
   /**

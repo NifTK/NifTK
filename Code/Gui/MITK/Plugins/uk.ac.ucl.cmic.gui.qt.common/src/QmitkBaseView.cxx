@@ -18,6 +18,9 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkSliceNavigationController.h>
+#include <mitkWeakPointerProperty.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
 #include <QmitkRenderWindow.h>
 
 class QmitkBaseViewPrivate
@@ -327,6 +330,57 @@ bool QmitkBaseView::IsVisible()
 {
   Q_D(QmitkBaseView);
   return d->m_IsVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+
+  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
+  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
+  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
+
+  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
+  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+
+  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
+        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
+        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
+
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+
+  crossPlaneNameProperty->SetValue("widget1Plane");
+  crossPlaneRendererProperty->SetValue(mainAxialRenderer);
+  mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+
+  crossPlaneNameProperty->SetValue("widget2Plane");
+  crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
+  mitk::DataNode* sagittalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+
+  crossPlaneNameProperty->SetValue("widget3Plane");
+  crossPlaneRendererProperty->SetValue(mainCoronalRenderer);
+  mitk::DataNode* coronalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+
+  bool wasVisible;
+  axialCrossPlaneNode->GetVisibility(wasVisible, mainSagittalRenderer);
+
+  axialCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  axialCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  axialCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  sagittalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
+  coronalCrossPlaneNode->SetVisibility(visible, mainCoronalRenderer);
+
+  mainAxialRenderer->RequestUpdate();
+  mainSagittalRenderer->RequestUpdate();
+  mainCoronalRenderer->RequestUpdate();
+
+  return wasVisible;
 }
 
 
