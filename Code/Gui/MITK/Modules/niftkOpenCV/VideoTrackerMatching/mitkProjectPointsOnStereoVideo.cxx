@@ -840,8 +840,6 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
 //-----------------------------------------------------------------------------
 cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d> GSPoint, bool left , double* minRatio, unsigned int* index)
 {
-  MITK_INFO << m_ClassifierProjectedPoints[GSPoint.first].second.size();
-  MITK_INFO << m_ProjectedPoints[GSPoint.first].second.size();
   assert ( m_ClassifierProjectedPoints[GSPoint.first].second.size() ==
     m_ProjectedPoints[GSPoint.first].second.size() );
   std::vector < cv::Point2d > pointVector;
