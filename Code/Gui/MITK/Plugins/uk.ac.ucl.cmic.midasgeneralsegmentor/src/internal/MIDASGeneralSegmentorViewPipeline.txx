@@ -128,27 +128,137 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     segmentationContourImage->FillBuffer(segImageInside);
     manualContourImage->FillBuffer(manualImageNonBorder);
 
-    // 7. Render the segmentation contours into the segmentation contour image.    
+    /// 7. Render the segmentation contours into the segmentation contour image.
+    /// 7.a First, process every side point and the internal corner points.
+    /// (Where the contour 'turns', not the start and end point.)
     for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
     {
       const ParametricPathVertexListType* list = m_SegmentationContours[j]->GetVertexList();
       assert(list);
 
-      if (list->Size() >= 2)
+      for (unsigned int k = 1; k < list->Size() - 1; k++)
       {
-        for (unsigned int k = 0; k < list->Size(); k++)
+        ParametricPathVertexType pointInMm = list->ElementAt(k);
+        ContinuousIndexType pointInVx;
+        segmentationContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+        this->SetPaintingRegion(pointInVx, paintingRegion);
+
+        if (region3D.IsInside(paintingRegion))
         {
-          ParametricPathVertexType pointInMm = list->ElementAt(k);
-          ContinuousIndexType pointInVx;
-          segmentationContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+          itk::ImageRegionIterator<SegmentationImageType> countourImageIt(segmentationContourImage, paintingRegion);
+          itk::ImageRegionIterator<SegmentationImageType> segmentationImageIt(segmentationImage, paintingRegion);
 
-          this->SetPaintingRegion(pointInVx, paintingRegion);
-
-          if (region3D.IsInside(paintingRegion))
+          for (countourImageIt.GoToBegin(), segmentationImageIt.GoToBegin();
+               !countourImageIt.IsAtEnd();
+               ++countourImageIt, ++segmentationImageIt)
           {
-            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(segmentationContourImage, paintingRegion);
-            itk::ImageRegionIterator<SegmentationImageType> segmentationImageIt(segmentationImage, paintingRegion);
+            if (countourImageIt.Get() == segImageInside)
+            {
+              if (segmentationImageIt.Get())
+              {
+                countourImageIt.Set(segImageBorder);
+              }
+              else
+              {
+                countourImageIt.Set(segImageOutside);
+              }
+            }
+          }
+        }
+      }
+    }
 
+    /// 7.b Then process the start and end corner points.
+    ///
+    /// Voxels around corner points can be painted in two ways. If there are two edges
+    /// starting from or ending at the corner points, then we have to paint all the four
+    /// voxels around it. In the previous round we painted only the voxels adjacent to
+    /// the edges and internal corner points, w.r.t. there may be some voxels around the
+    /// start and end corner points.
+    ///
+    /// Let's consider the following example:
+    ///
+    ///    +-------+-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 48 |   0   |   2   |   2   |   2   |
+    ///    |       |       |       |       |
+    ///    +-------o---o---+---o---+---o---+
+    ///    |       |       |       |       |
+    /// 47 |   2   o   1   |   1   |   1   |
+    ///    |       |       |       |       |
+    ///    +-------+-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 46 |   2   o   1   |   0   |   0   |
+    ///    |       |       |       |       |
+    ///    +-------+-------+-------+-------+
+    ///       12      13      14      15
+    ///
+    /// which shows two contours:
+    ///
+    ///    (12.5, 47.5), (13, 47.5), (14, 47.5), (15, 47.5), ...
+    ///
+    /// and
+    ///
+    ///    ..., (12.5, 46), (12.5, 47), (12.5, 47.5).
+    ///
+    /// The two contours touch, so we should paint (12, 48) to 2. However, since (12.5, 47.5)
+    /// is a start or end point of both contours, we have not processed it in the previous round,
+    /// and it is still 0 now.
+    ///
+    /// If the corner point is the start or end of only one contour, like in the following example,
+    /// we do not need to do anything.
+    ///
+    ///    +-------+-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 48 |   0   |   2   |   2   |   2   |
+    ///    |       |       |       |       |
+    ///    +-------o---o---+---o---+---o---+
+    ///    |       |       |       |       |
+    /// 47 |   0   |   1   |   1   |   1   |
+    ///    |       |       |       |       |
+    ///    +-------+-------+-------+-------+
+    ///    |       |       |       |       |
+    /// 46 |   0   |   0   |   0   |   0   |
+    ///    |       |       |       |       |
+    ///    +-------+-------+-------+-------+
+    ///       12      13      14      15
+    ///
+    ///
+    /// The rule is the following:
+    ///
+    /// If the 2x2 region around a start/end corner point has *exactly* one 0 voxel,
+    /// we paint it to 1 or 2 depending on whether it was inside or outside of the previous
+    /// segmentation.
+    ///
+    for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
+    {
+      const ParametricPathVertexListType* list = m_SegmentationContours[j]->GetVertexList();
+      assert(list);
+
+      for (unsigned int k = 0; k < list->Size(); k += list->Size() - 1)
+      {
+        ParametricPathVertexType pointInMm = list->ElementAt(k);
+        ContinuousIndexType pointInVx;
+        segmentationContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+        this->SetPaintingRegion(pointInVx, paintingRegion);
+
+        if (region3D.IsInside(paintingRegion))
+        {
+          itk::ImageRegionIterator<SegmentationImageType> countourImageIt(segmentationContourImage, paintingRegion);
+          itk::ImageRegionIterator<SegmentationImageType> segmentationImageIt(segmentationImage, paintingRegion);
+
+          unsigned char unsetVoxels = 0;
+          for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
+          {
+            if (countourImageIt.Get() == segImageInside)
+            {
+              ++unsetVoxels;
+            }
+          }
+          if (unsetVoxels == 1)
+          {
             for (countourImageIt.GoToBegin(), segmentationImageIt.GoToBegin();
                  !countourImageIt.IsAtEnd();
                  ++countourImageIt, ++segmentationImageIt)
@@ -166,38 +276,77 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
               }
             }
           }
-        } // end for k
-      } // end if size of line at least 3.
-    } // end for j
+        }
+      }
+    }
 
-    // 8. Render the manual contours into the manual contour image.
+    /// 8. Render the manual contours into the manual contour image.
+    /// 8.a First, process every side point and the internal corner points.
+    /// (Where the contour 'turns', not the start and end point.)
     for (unsigned int j = 0; j < m_ManualContours.size(); j++)
     {
       const ParametricPathVertexListType* list = m_ManualContours[j]->GetVertexList();
       assert(list);
 
-      if (list->Size() >= 2)
+      for (unsigned int k = 1; k < list->Size() - 1; k++)
       {
-        for (unsigned int k = 0; k < list->Size(); k++)
+        ParametricPathVertexType pointInMm = list->ElementAt(k);
+        ContinuousIndexType pointInVx;
+        manualContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+        this->SetPaintingRegion(pointInVx, paintingRegion);
+
+        if (region3D.IsInside(paintingRegion))
         {
-          ParametricPathVertexType pointInMm = list->ElementAt(k);
-          ContinuousIndexType pointInVx;
-          manualContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+          itk::ImageRegionIterator<SegmentationImageType> countourImageIt(manualContourImage, paintingRegion);
 
-          this->SetPaintingRegion(pointInVx, paintingRegion);
-
-          if (region3D.IsInside(paintingRegion))
+          for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
           {
-            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(manualContourImage, paintingRegion);
+            countourImageIt.Set(manualImageBorder);
+          }
+        }
+      }
+    }
 
-            for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
+    /// 8.b Then process the start and end corner points. See the previous comment for rationale.
+    for (unsigned int j = 0; j < m_ManualContours.size(); j++)
+    {
+      const ParametricPathVertexListType* list = m_ManualContours[j]->GetVertexList();
+      assert(list);
+
+      for (unsigned int k = 0; k < list->Size(); k += list->Size() - 1)
+      {
+        ParametricPathVertexType pointInMm = list->ElementAt(k);
+        ContinuousIndexType pointInVx;
+        manualContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+
+        this->SetPaintingRegion(pointInVx, paintingRegion);
+
+        if (region3D.IsInside(paintingRegion))
+        {
+          itk::ImageRegionIterator<SegmentationImageType> countourImageIt(manualContourImage, paintingRegion);
+
+          unsigned char unsetVoxels = 0;
+          for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
+          {
+            if (countourImageIt.Get() == manualImageNonBorder)
             {
-              countourImageIt.Set(manualImageBorder);
+              ++unsetVoxels;
             }
           }
-        } // end for k
-      } // end if size of line at least 3.
-    } // end for j
+          if (unsetVoxels == 1)
+          {
+            for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
+            {
+              if (countourImageIt.Get() == manualImageNonBorder)
+              {
+                countourImageIt.Set(manualImageBorder);
+              }
+            }
+          }
+        }
+      }
+    }
 
 //    static int counter = 0;
 //    ++counter;
