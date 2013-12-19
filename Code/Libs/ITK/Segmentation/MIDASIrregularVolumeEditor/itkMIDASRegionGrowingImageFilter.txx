@@ -145,21 +145,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
             && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
             && !isFullyConnected))
-
-    if (((segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
-            || segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue)
-           && (segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-               || isFullyConnected))
-          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
-              && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-              && isFullyConnected)
-          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
-              && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
-          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
-              && isFullyConnected)
-          || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
-              && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-              && !isFullyConnected))
     {
       OutputPixelType manualContourCurrentPixel = this->GetManualContourImage()->GetPixel(currentImgIdx);
 
