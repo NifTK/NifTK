@@ -2156,8 +2156,8 @@ void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
 
   if (enabled)
   {
-    std::vector<mitk::BaseRenderer*> renderers(4);
-    for (unsigned i = 0; i < 4; ++i)
+    std::vector<mitk::BaseRenderer*> renderers(3);
+    for (unsigned i = 0; i < 3; ++i)
     {
       renderers[i] = m_RenderWindows[i]->GetRenderer();
     }
