@@ -82,6 +82,23 @@ public:
   /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.
   void DisconnectPipeline();
 
+private:
+
+  /// \brief Creates a 2 or 4 voxel sized region around contour points.
+  ///
+  /// If a contour point is on a vertical edge, it creates a 2x1 sized region with
+  /// one voxel on each side of the edge.
+  /// If a contour point is on a horizontal edge, it creates a 1x2 sized region with
+  /// one voxel on each side of the edge.
+  /// If a contour point is in a voxel corner, it creates a 2x2 sized region with
+  /// the voxels having that corner.
+  ///
+  /// The function assumes that the the index and size is set for the axis of the
+  /// current slice. (The index should be the slice number (m_Axis) and the size should be 1.
+  void SetPaintingRegion(const ContinuousIndexType& voxel, RegionType& paintingRegion);
+
+public:
+
   // Member variables.
   int m_SliceNumber;
   int m_AxisNumber;
