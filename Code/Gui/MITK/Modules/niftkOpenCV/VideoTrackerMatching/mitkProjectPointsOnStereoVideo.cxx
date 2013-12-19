@@ -975,7 +975,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     {
       m_WorldPoints.push_back ( point );
       MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
-        << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i-wpSize].first;
+        << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i+wpSize].first;
     }
     else
     {
@@ -984,7 +984,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
 
 
   }
-
+  cvReleaseMat (&leftCameraTriangulatedWorldPoints);
 }
 
 std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
