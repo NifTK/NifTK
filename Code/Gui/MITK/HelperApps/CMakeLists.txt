@@ -113,6 +113,7 @@ if(SlicerExecutionModel_FOUND)
       niftkProjectTrackedPointsOnStereoVideo
       niftkFindAndTriangulateCrossHair
       niftkUltrasoundPinCalibration
+      niftkUltrasoundPinCalibrationSorter
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
       niftkIGIMakeGeometry
