@@ -103,12 +103,15 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     m_ExtractBinaryRegionOfInterestFilter->SetExtractionRegion(region3D);
     m_ExtractBinaryRegionOfInterestFilter->UpdateLargestPossibleRegion();   
+    typename SegmentationImageType::Pointer segmentationImage = m_ExtractBinaryRegionOfInterestFilter->GetOutput();
         
     m_CastToSegmentationContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_CastToSegmentationContourFilter->UpdateLargestPossibleRegion();
+    typename SegmentationImageType::Pointer segmentationContourImage = m_CastToSegmentationContourFilter->GetOutput();
     
     m_CastToManualContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_CastToManualContourFilter->UpdateLargestPossibleRegion();
+    typename SegmentationImageType::Pointer manualContourImage = m_CastToManualContourFilter->GetOutput();
 
     // 5. Declare some variables.
     RegionType paintingRegion;
@@ -122,8 +125,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     unsigned char manualImageBorder = 1;
         
     // 6. Blank the contour images.
-    m_CastToSegmentationContourFilter->GetOutput()->FillBuffer(segImageInside);
-    m_CastToManualContourFilter->GetOutput()->FillBuffer(manualImageNonBorder);
+    segmentationContourImage->FillBuffer(segImageInside);
+    manualContourImage->FillBuffer(manualImageNonBorder);
 
     // 7. Render the segmentation contours into the segmentation contour image.    
     for (unsigned int j = 0; j < m_SegmentationContours.size(); j++)
@@ -137,14 +140,14 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         {
           ParametricPathVertexType pointInMm = list->ElementAt(k);
           ContinuousIndexType pointInVx;
-          m_CastToSegmentationContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+          segmentationContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
 
           this->SetPaintingRegion(pointInVx, paintingRegion);
 
           if (region3D.IsInside(paintingRegion))
           {
-            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(m_CastToSegmentationContourFilter->GetOutput(), paintingRegion);
-            itk::ImageRegionIterator<SegmentationImageType> segmentationImageIt(m_ExtractBinaryRegionOfInterestFilter->GetOutput(), paintingRegion);
+            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(segmentationContourImage, paintingRegion);
+            itk::ImageRegionIterator<SegmentationImageType> segmentationImageIt(segmentationImage, paintingRegion);
 
             for (countourImageIt.GoToBegin(), segmentationImageIt.GoToBegin();
                  !countourImageIt.IsAtEnd();
@@ -179,13 +182,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
         {
           ParametricPathVertexType pointInMm = list->ElementAt(k);
           ContinuousIndexType pointInVx;
-          m_CastToManualContourFilter->GetOutput()->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
+          manualContourImage->TransformPhysicalPointToContinuousIndex(pointInMm, pointInVx);
 
           this->SetPaintingRegion(pointInVx, paintingRegion);
 
           if (region3D.IsInside(paintingRegion))
           {
-            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(m_CastToManualContourFilter->GetOutput(), paintingRegion);
+            itk::ImageRegionIterator<SegmentationImageType> countourImageIt(manualContourImage, paintingRegion);
 
             for (countourImageIt.GoToBegin(); !countourImageIt.IsAtEnd(); ++countourImageIt)
             {
@@ -202,13 +205,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 //    fileName << "/Users/espakm/Desktop/16856/segmentationContour-" << counter << ".nii.gz";
 //    itk::ImageFileWriter<itk::Image<unsigned char, 3> >::Pointer fileWriter = itk::ImageFileWriter<itk::Image<unsigned char, 3> >::New();
 //    fileWriter->SetFileName(fileName.str());
-//    fileWriter->SetInput(m_CastToSegmentationContourFilter->GetOutput());
+//    fileWriter->SetInput(segmentationContourImage);
 //    fileWriter->Update();
 //    ++counter;
 //    std::ostringstream fileName2;
 //    fileName2 << "/Users/espakm/Desktop/16856/manualContour-" << counter << ".nii.gz";
 //    fileWriter->SetFileName(fileName2.str());
-//    fileWriter->SetInput(m_CastToManualContourFilter->GetOutput());
+//    fileWriter->SetInput(manualContourImage);
 //    fileWriter->Update();
 
     // 6. Update Region growing.
@@ -221,11 +224,11 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetUsePropMaskMode(false);
     m_RegionGrowingFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_RegionGrowingFilter->SetSeedPoints(*(m_AllSeeds.GetPointer()));
-    m_RegionGrowingFilter->SetSegmentationContourImage(m_CastToSegmentationContourFilter->GetOutput());
+    m_RegionGrowingFilter->SetSegmentationContourImage(segmentationContourImage);
     m_RegionGrowingFilter->SetSegmentationContourImageInsideValue(segImageInside);
     m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
     m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
-    m_RegionGrowingFilter->SetManualContourImage(m_CastToManualContourFilter->GetOutput());
+    m_RegionGrowingFilter->SetManualContourImage(manualContourImage);
     m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
