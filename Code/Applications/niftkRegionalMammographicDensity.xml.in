@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MG</category>
+  <title>Calculate Regional Density</title>
+  <description><![CDATA[Calculates the density of regions on interest across a mammogram.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Input</label>
+    <description><![CDATA[Input Parameters]]></description>
+
+    <string>
+      <name>filePectoralisLinePointXML</name>
+      <flag>p</flag>
+      <longflag>pectoral</longflag>
+      <description>Input pectoralis XML file</description>
+      <label>Input pectoralis XML file</label>
+    </string>
+
+    <string>
+      <name>fileImageXML</name>
+      <flag>i</flag>
+      <longflag>image</longflag>
+      <description>Input image info XML file</description>      
+      <label>Input image info XML file</label>
+    </string>
+
+    <string>
+      <name>fileTumourXML</name>
+      <flag>t</flag>
+      <longflag>tumour</longflag>
+      <description>Input tumour mask info XML file</description>      
+      <label>Input tumour mask info XML file</label>
+    </string>
+
+    <string>
+      <name>fileBreastEdgeXML</name>
+      <flag>e</flag>
+      <longflag>edge</longflag>
+      <description>Input breast edge points XML file</description>      
+      <label>Input breast edge XML file</label>
+    </string>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Verbose</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Output</label>
+    <description><![CDATA[Output Parameters]]></description>
+
+    <directory>
+      <name>dirOutput</name>
+      <longflag>outDir</longflag>
+      <description>Output top-level directory to write images and data to</description>
+      <label>Output directory to write to</label>
+      <channel>output</channel>
+    </directory>
+
+  </parameters>
+
+</executable>
