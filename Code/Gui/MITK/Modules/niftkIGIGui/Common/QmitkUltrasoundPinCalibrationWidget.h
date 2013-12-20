@@ -16,13 +16,15 @@
 #define QmitkUltrasoundPinCalibrationWidget_h
 
 #include "niftkIGIGuiExports.h"
-#include "ui_QmitkUltrasoundPinCalibrationWidget.h"
 #include <QVTKWidget.h>
-#include <QString>
+#include <QMouseEvent>
 #include <QKeyEvent>
+#include <QEvent>
+#include <QString>
 #include <vtkImageViewer.h>
 #include <vtkSmartPointer.h>
 #include <vtkPNGReader.h>
+#include <mitkTrackingMatrixTimeStamps.h>
 
 /**
  * \class QmitkUltrasoundPinCalibrationWidget
@@ -39,7 +41,7 @@ public:
     const QString& inputImageDirectory,
     const QString& outputMatrixDirectory,
     const QString& outputPointDirectory,
-    const unsigned int timingToleranceInMilliseconds,
+    const unsigned long long timingToleranceInMilliseconds,
     QWidget *parent = 0
   );
   virtual ~QmitkUltrasoundPinCalibrationWidget();
@@ -64,22 +66,35 @@ public:
    */
   virtual void keyPressEvent(QKeyEvent* event);
   
+  /**
+   * \brief To Force the size of the window.
+   */
+  virtual void enterEvent(QEvent* event);
+
 private slots:
   
 private:
 
-  QString m_InputTrackerDirectory;
-  QString m_InputImageDirectory;
-  QString m_OutputMatrixDirectory;
-  QString m_OutputPointDirectory;
+  const QString m_InputTrackerDirectory;
+  const QString m_InputImageDirectory;
+  const QString m_OutputMatrixDirectory;
+  const QString m_OutputPointDirectory;
+  const unsigned long long m_TimingToleranceInMilliseconds;
+
   vtkSmartPointer<vtkImageViewer> m_ImageViewer;
   vtkSmartPointer<vtkPNGReader> m_PNGReader;
-  const unsigned int m_TimingToleranceInMilliseconds;
-  
+  mitk::TrackingMatrixTimeStamps m_TrackingTimeStamps;
+  std::vector<std::string> m_ImageFiles;
+  int m_ImageWidth;
+  int m_ImageHeight;
+  unsigned long int m_ImageFileCounter;
+
   void NextImage();
   void PreviousImage();
   void QuitApplication();
-  void StorePoint();
+  void StorePoint(QMouseEvent* event);
+  void ShowImage(const unsigned long int& imageNumber);
+  void CreateDirectory(const std::string& dir);
 };
 
 #endif // QmitkUltrasoundPinCalibrationWidget_h

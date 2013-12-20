@@ -29,6 +29,7 @@ namespace fs = boost::filesystem;
 namespace niftk
 {
 
+
 //-----------------------------------------------------------------------------
 std::string GetFileSeparator()
 {	
@@ -313,6 +314,7 @@ std::vector<std::string> GetFilesInDirectory(const std::string& fullDirectoryNam
   return fileNames;
 }
 
+
 //  -------------------------------------------------------------------------
 void GetRecursiveFilesInDirectory( const std::string &directoryName, 
 				   std::vector<std::string> &fileNames )
@@ -355,6 +357,8 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
     fileNames.push_back( full_path.string() );    
   }
 }
+
+
 //  -------------------------------------------------------------------------
 bool NumericStringCompare( const std::string &string1, const std::string &string2) 
 {
@@ -364,6 +368,8 @@ bool NumericStringCompare( const std::string &string1, const std::string &string
   int d2 = boost::lexical_cast<long long int>(path2.stem().string());
   return d1 < d2;
 }
+
+
 //  -------------------------------------------------------------------------
 std::vector<std::string> FindVideoData( std::string directory) 
 {
@@ -390,4 +396,26 @@ std::vector<std::string> FindVideoData( std::string directory)
   }
   return returnStrings;
 }
+
+
+//  -------------------------------------------------------------------------
+std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension)
+{
+  std::vector<std::string> returnStrings;
+  boost::filesystem::recursive_directory_iterator endItr;
+  boost::regex extensionFilter ( extension, boost::regex::icase);
+
+  if (niftk::DirectoryExists(fullDirectoryName))
+  {
+    for ( boost::filesystem::recursive_directory_iterator it(niftk::ConvertToFullNativePath(fullDirectoryName)); it != endItr; ++it)
+    {
+      if ( boost::regex_match (it->path().extension().c_str(), extensionFilter))
+      {
+        returnStrings.push_back(it->path().string());
+      }
+    }
+  }
+  return returnStrings;
 }
+
+} // end namespace
