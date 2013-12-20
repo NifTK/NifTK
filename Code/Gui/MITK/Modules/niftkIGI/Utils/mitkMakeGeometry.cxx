@@ -31,6 +31,7 @@ mitk::Surface::Pointer MakeLaparoscope ( std::string rigidBodyFilename, std::str
   return surface;
 }
 
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeLaparoscopePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
@@ -52,6 +53,7 @@ mitk::Surface::Pointer MakePointer ( std::string rigidBodyFilename, std::string 
   return surface;
 }
 
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
 {
@@ -61,6 +63,7 @@ mitk::Surface::Pointer MakeReference ( std::string rigidBodyFilename, std::strin
   surface->SetVtkPolyData(reference);
   return surface;
 }
+
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeReferencePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
@@ -97,6 +100,8 @@ mitk::Surface::Pointer MakeXAxes( const float& length ,const bool& symmetric )
   surface->SetVtkPolyData(axis);
   return surface;
 }
+
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeYAxes( const float& length ,const bool& symmetric )
 {
@@ -106,6 +111,8 @@ mitk::Surface::Pointer MakeYAxes( const float& length ,const bool& symmetric )
   surface->SetVtkPolyData(axis);
   return surface;
 }
+
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeZAxes( const float& length ,const bool& symmetric )
 {
@@ -115,6 +122,8 @@ mitk::Surface::Pointer MakeZAxes( const float& length ,const bool& symmetric )
   surface->SetVtkPolyData(axis);
   return surface;
 }
+
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeLapLensAxes()
 {
@@ -124,6 +133,8 @@ mitk::Surface::Pointer MakeLapLensAxes()
   surface->SetVtkPolyData(axes);
   return surface;
 }
+
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeOptotrak( const float & width )
 {
@@ -133,6 +144,8 @@ mitk::Surface::Pointer MakeOptotrak( const float & width )
   surface->SetVtkPolyData(optotrak);
   return surface;
 }
+
+
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename )
 {
