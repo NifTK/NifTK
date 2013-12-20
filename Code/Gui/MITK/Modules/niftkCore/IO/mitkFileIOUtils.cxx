@@ -18,6 +18,7 @@
 
 namespace mitk {
 
+//-----------------------------------------------------------------------------
 bool LoadDoublesFromFile(const std::string& fileName, std::vector<double>& output)
 {
   bool isSuccessful = false;
@@ -122,6 +123,5 @@ bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& ma
   }
   return isSuccessful;
 }
-
 
 } // end namespace

@@ -54,7 +54,6 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeReference(std::string rigidBodyFilena
  */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeReferencePolaris(std::string rigidBodyFilename, std::string handeyeFilename );
 
-
 /**
  * \brief For visualisation purposes, make a wall of a cube
  * \param the size of the cube in mm 
@@ -71,12 +70,14 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeAWall( const int& whichwall, const fl
  * \param whether or not the axis is symmetric 
  * */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeXAxes( const float& length = 4000,const bool& symmetric = false);
+
 /**
  * \brief For visualisation purposes, make a nice big axes
  * \param the length of the axis
  * \param whether or not the axis is symmetric 
  * */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeYAxes( const float& length = 4000,const bool& symmetric = false);
+
 /**
  * \brief For visualisation purposes, make a nice big axes
  * \param the length of the axis
@@ -101,6 +102,5 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeOptotrak( const float & width = 500);
  * \param the handeye calibration to define the tool origin
  */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handeyeFilename );
-
 
 #endif

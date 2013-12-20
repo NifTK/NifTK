@@ -163,6 +163,13 @@ namespace niftk
    */
   NIFTKCOMMON_WINEXPORT std::vector<std::string> FindVideoData(std::string directory); 
 
+  /**
+   * Non-recursively searches a directory, looking for files with the specified extension.
+   * \param fullDirectoryName Directory name
+   * \param extension file extension including the dot.
+   */
+  NIFTKCOMMON_WINEXPORT std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension);
+
 } // end namespace
 
 

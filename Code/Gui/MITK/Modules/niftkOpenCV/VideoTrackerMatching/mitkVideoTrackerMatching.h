@@ -20,27 +20,14 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
+#include "mitkTrackingMatrices.h"
+#include "mitkTrackingMatrixTimeStamps.h"
 
 namespace mitk
 {
 
-
-class NIFTKOPENCV_EXPORT TrackingMatrices
-{
-public:
-  std::vector<cv::Mat>   m_TrackingMatrices;
-  std::vector<long long> m_TimingErrors;
-};
-class NIFTKOPENCV_EXPORT TrackingMatrixTimeStamps
-{
-public:
-  std::vector<unsigned long long> m_TimeStamps;
-  unsigned long long GetNearestTimeStamp (unsigned long long timestamp , long long * delta = NULL );
-};
-
 /**
- * \brief A class to match video frames to tracking frames, when reading 
- * recorded tracking data. 
+ * \brief A class to match video frames to tracking frames, when reading recorded tracking data. 
  */
 class NIFTKOPENCV_EXPORT VideoTrackerMatching : public itk::Object
 {
@@ -49,18 +36,17 @@ public:
   itkNewMacro (VideoTrackerMatching);
 
   /**
-   * \brief Initialise the class by passing it a directory name
+   * \brief Initialise the class by passing it a directory name.
    */
-
   void Initialise (std::string directory);
 
   /**
-   * \brief Return the tracking matrix for a given video frame number
+   * \brief Return the tracking matrix for a given video frame number.
    */
   cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 );
 
   /**
-   * \brief Return the tracking matrix multiplied by the camera to tracker matrix for a given video frame number
+   * \brief Return the tracking matrix multiplied by the camera to tracker matrix for a given video frame number.
    */
   cv::Mat GetCameraTrackingMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 , std::vector <double> * Perturbation = NULL , int ReferenceIndex = -1 );
 
@@ -71,10 +57,14 @@ public:
   { 
     return m_Ready;
   } 
+  
+  /**
+   * \brief Set a flag as to whether to flip matrices between left/right handed, default is right.
+   */
   itkSetMacro (FlipMatrices, bool);
 
   /**
-   * \brief get the frame count
+   * \brief Get the frame count.
    */
   int GetNumberOfFrames () 
   {
@@ -82,7 +72,7 @@ public:
   }
 
   /**
-   * \brief if the tracking data is ahead of the video data you can set a video lag in 
+   * \brief If the tracking data is ahead of the video data you can set a video lag in 
    * milliseconds to account for this. If the video is ahead of the tracking set 
    * argument 2 to true
    */
@@ -123,25 +113,24 @@ protected:
   std::vector < std::vector <cv::Point3d> >  ReadPointsInLensCSFile (std::string filename, 
       int PointsPerFrame = 1 ,
       std::vector < std::vector <std::pair < cv::Point2d, cv::Point2d > > >* onScreenPoints = NULL);
-private:
-  std::vector<TrackingMatrices>         m_TrackingMatrices; 
-  std::vector<std::string>              m_TrackingMatrixDirectories;
-  std::string                           m_FrameMap;
-
-  std::vector<std::string> FindFrameMaps();
-  void                     FindTrackingMatrixDirectories();
-  TrackingMatrixTimeStamps FindTrackingTimeStamps(std::string directory);
-  bool                     CheckIfDirectoryContainsTrackingMatrices(std::string directory);
-  void                     ProcessFrameMapFile();
-  cv::Mat                  ReadTrackerMatrix(std::string filename);
-  bool                     CheckTimingErrorStats();
-  std::vector<cv::Mat>     m_CameraToTracker;
-
-  std::vector <unsigned long long>
-                           m_VideoLag; //the delay between the tracking and video data
-  std::vector <bool>       m_VideoLeadsTracking; //if the video lag is negative, set this to true
-
   
+private:
+  
+  std::vector<TrackingMatrices>     m_TrackingMatrices; 
+  std::vector<std::string>          m_TrackingMatrixDirectories;
+  std::string                       m_FrameMap;
+
+  std::vector<std::string>          FindFrameMaps();
+  void                              FindTrackingMatrixDirectories();
+  TrackingMatrixTimeStamps          FindTrackingTimeStamps(std::string directory);
+  bool                              CheckIfDirectoryContainsTrackingMatrices(std::string directory);
+  void                              ProcessFrameMapFile();
+  bool                              CheckTimingErrorStats();
+  std::vector<cv::Mat>              m_CameraToTracker;
+
+  std::vector <unsigned long long> m_VideoLag; //the delay between the tracking and video data
+  std::vector <bool>               m_VideoLeadsTracking; //if the video lag is negative, set this to true
+
 };
 
 
