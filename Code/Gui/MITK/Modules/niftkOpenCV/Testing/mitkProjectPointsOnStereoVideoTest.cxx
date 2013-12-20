@@ -48,14 +48,10 @@ bool CheckTransformedPointVector (std::vector < std::vector <cv::Point3d> > poin
     Error += fabs ( points[0][i].x - frame0000points[i].x);
     Error += fabs ( points[0][i].y - frame0000points[i].y);
     Error += fabs ( points[0][i].z - frame0000points[i].z);
-    MITK_INFO << points[0];
-    MITK_INFO << Error;
 
     Error += fabs ( points[1155][i].x - frame1155points[i].x);
     Error += fabs ( points[1155][i].y - frame1155points[i].y);
     Error += fabs ( points[1155][i].z - frame1155points[i].z);
-    MITK_INFO << points[1155];
-    MITK_INFO << Error;
   }
 
 
@@ -146,6 +142,40 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK"); 
 
   MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS()), "Testing projected points");
+
+  //these are the gold standard projected points for frame 1155
+  //1155 664.844 69.984 753.793 68.306 628.092 279.283 711.968 279.424 1264.44 296.217 1365.82 296.783 1277.2 79.8817 1380.06 75.8718
+  //these are perturbed world points that should yield the following errors for frame 1155
+  Projector->ClearWorldPoints();
+  WorldGridPoints.clear();
+  WorldGridPoints.push_back(cv::Point3d (-826.2000 ,  -207.2000 ,-2010.6000 ));
+  WorldGridPoints.push_back(cv::Point3d (-820.4406 ,  -202.5256 , -2036.5725 ));
+  WorldGridPoints.push_back(cv::Point3d (-820.5379 ,  -165.6142 , -2037.2575 ));
+  WorldGridPoints.push_back(cv::Point3d (-826.7656 ,  -167.0234 , -2008.2263 ));
+  Projector->SetWorldPoints(WorldGridPoints);
+  Projector->SetClassifierWorldPoints(WorldGridPoints);
+  Projector->Project(matcher);
+
+  std::vector < std::pair < unsigned int , cv::Point2d> > leftGS;
+  std::vector < std::pair < unsigned int , cv::Point2d> > rightGS;
+  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(664.844, 69.984)));
+  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(628.092, 279.283)));
+  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1264.44, 296.217)));
+  leftGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1277.2, 79.8817)));
+  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(753.793, 68.306)));
+  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(711.968, 279.424)));
+  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1365.82, 296.783)));
+  rightGS.push_back(std::pair<unsigned int, cv::Point2d> (1155, cv::Point2d(1380.06, 75.8718)));
+  Projector->SetLeftGoldStandardPoints(leftGS);
+  Projector->SetRightGoldStandardPoints(rightGS);
+  Projector->CalculateProjectionErrors("");
+  Projector->CalculateTriangulationErrors("", matcher);
+  //
+  //           0.00000   0.00000   0.00000   0.00000
+  //              2.50000   0.00000   0.00000   0.00000
+  //                 0.00000   3.60000   0.00000   0.00000
+  //                    1.20000   1.40000   0.00000   0.00000
+  //
   //return EXIT_SUCCESS;
   MITK_TEST_END();
 }
