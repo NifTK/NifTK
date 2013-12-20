@@ -115,9 +115,9 @@ std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
-  std::vector<std::string> directories = mitk::FindTrackingMatrixDirectories(m_Directory);
+  m_TrackingMatrixDirectories = mitk::FindTrackingMatrixDirectories(m_Directory);
   
-  for (unsigned int i = 0; i < directories.size(); i++)
+  for (unsigned int i = 0; i < m_TrackingMatrixDirectories.size(); i++)
   {
     //need to init tracking matrix vector
     TrackingMatrices tempMatrices; 
