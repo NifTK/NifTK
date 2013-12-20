@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   Common/mitkOpenCVMaths.cxx
+  Common/mitkOpenCVFileIOUtils.cxx
   Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
@@ -37,6 +38,7 @@ set(CPP_FILES
   Registration/mitkArunLeastSquaresPointRegistrationWrapper.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/mitkLiuLeastSquaresWithNormalsRegistrationWrapper.cxx
+  VideoTrackerMatching/mitkTrackingMatrixTimeStamps.cxx
   VideoTrackerMatching/mitkVideoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx

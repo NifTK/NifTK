@@ -13,12 +13,11 @@
 =============================================================================*/
 #include "mitkVideoTrackerMatching.h"
 #include <mitkCameraCalibrationFacade.h>
-#include <mitkUltrasoundPinCalibration.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 
 #include <sstream>
 #include <fstream>
@@ -26,15 +25,18 @@
 
 namespace mitk 
 {
+
 //---------------------------------------------------------------------------
 VideoTrackerMatching::VideoTrackerMatching () 
 : m_Ready(false)
 , m_FlipMatrices(false)
 {}
 
+
 //---------------------------------------------------------------------------
 VideoTrackerMatching::~VideoTrackerMatching () 
 {}
+
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::Initialise(std::string directory)
@@ -62,7 +64,7 @@ void VideoTrackerMatching::Initialise(std::string directory)
     {
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        TrackingMatrixTimeStamps tempTimeStamps = FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
+        TrackingMatrixTimeStamps tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.m_TimeStamps.size() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
         m_TrackingMatrixTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
@@ -102,93 +104,25 @@ void VideoTrackerMatching::Initialise(std::string directory)
   return;
 }
 
+
 //---------------------------------------------------------------------------
 std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
 {
-  boost::filesystem::recursive_directory_iterator end_itr;
-  boost::regex framelogfilter ( "(.+)(framemap.log)");
-  std::vector<std::string> returnStrings;
-
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
-      it != end_itr ; ++it)
-   {
-     if ( boost::filesystem::is_regular_file (it->status()) )
-     {
-       boost::cmatch what;
-       //  if ( it->path().extension() == ".framemap.log" )
-       const std::string stringthing = it->path().filename().string();
-
-       if ( boost::regex_match( stringthing.c_str(), what, framelogfilter) )
-       {
-         returnStrings.push_back(it->path().string());
-       }
-     }
-   }
-  return returnStrings;
+  return mitk::FindVideoFrameMapFiles(m_Directory);
 }
+
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::FindTrackingMatrixDirectories()
 {
-  //need to work in this
-  boost::filesystem::recursive_directory_iterator end_itr;
-  for ( boost::filesystem::recursive_directory_iterator it(m_Directory); 
-      it != end_itr ; ++it)
+  std::vector<std::string> directories = mitk::FindTrackingMatrixDirectories(m_Directory);
+  
+  for (unsigned int i = 0; i < directories.size(); i++)
   {
-    if ( boost::filesystem::is_directory (it->status()) )
-    {
-      if ( CheckIfDirectoryContainsTrackingMatrices(it->path().string()))
-      {
-         m_TrackingMatrixDirectories.push_back(it->path().string());
-         //need to init tracking matrix vector
-         TrackingMatrices TempMatrices; 
-         m_TrackingMatrices.push_back(TempMatrices);
-      }
-    }
+    //need to init tracking matrix vector
+    TrackingMatrices tempMatrices; 
+    m_TrackingMatrices.push_back(tempMatrices);
   }
-  std::sort (m_TrackingMatrixDirectories.begin(), m_TrackingMatrixDirectories.end());
-  return;
-}
-//---------------------------------------------------------------------------
-TrackingMatrixTimeStamps VideoTrackerMatching::FindTrackingTimeStamps(std::string directory)
-{
-  boost::filesystem::directory_iterator end_itr;
-  boost::regex TimeStampFilter ( "([0-9]{19})(.txt)");
-  TrackingMatrixTimeStamps ReturnStamps;
-  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
-   {
-   if ( boost::filesystem::is_regular_file (it->status()) )
-    {
-      boost::cmatch what;
-      std::string stringthing = it->path().filename().string();
-      if ( boost::regex_match( stringthing.c_str(),what , TimeStampFilter) )
-      {
-        ReturnStamps.m_TimeStamps.push_back(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
-      }
-    }
-  }
-  //sort the vectorreinterpret_cast<const char*>
-  std::sort ( ReturnStamps.m_TimeStamps.begin() , ReturnStamps.m_TimeStamps.end());
-  return ReturnStamps;
-}
-//---------------------------------------------------------------------------
-bool VideoTrackerMatching::CheckIfDirectoryContainsTrackingMatrices(std::string directory)
-{
-  boost::filesystem::directory_iterator end_itr;
-  boost::regex TimeStampFilter ( "([0-9]{19})(.txt)");
-  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
-   {
-   if ( boost::filesystem::is_regular_file (it->status()) )
-    {
-      boost::cmatch what;
-      std::string stringthing = it->path().filename().string();
-      if ( boost::regex_match( stringthing.c_str(),what , TimeStampFilter) )
-      {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 
@@ -263,50 +197,6 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     
 }
 
-//---------------------------------------------------------------------------
-unsigned long long TrackingMatrixTimeStamps::GetNearestTimeStamp (unsigned long long timestamp, long long * Delta)
-{
-  std::vector<unsigned long long>::iterator upper = std::upper_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
-  std::vector<unsigned long long>::iterator lower = std::lower_bound (m_TimeStamps.begin() , m_TimeStamps.end(), timestamp);
-
-  if (upper == m_TimeStamps.end())
-    --upper;
-  if (lower == m_TimeStamps.end())
-    --lower;
-
-  long long deltaUpper = *upper - timestamp ;
-  long long deltaLower = timestamp - *lower ;
-  unsigned long long returnValue;
-  long long delta;
-  if ( deltaLower == 0 ) 
-  {
-    returnValue = *lower;
-    delta = 0;
-  }
-  else
-  {
-    if (lower != m_TimeStamps.begin())
-      --lower;
-
-    deltaLower = timestamp - *lower;
-    if ( abs(deltaLower) < abs(deltaUpper) ) 
-    {
-      returnValue = *lower;
-      delta = (long long) timestamp - *lower;
-    }
-    else
-    {
-      returnValue = *upper;
-      delta = (long long) timestamp - *upper;
-    }
-  }
-
-  if ( Delta != NULL ) 
-  {
-    *Delta = delta;
-  }
-  return returnValue;
-}
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag, bool VideoLeadsTracking , int trackerIndex) 
@@ -342,25 +232,8 @@ void VideoTrackerMatching::SetVideoLagMilliseconds ( unsigned long long VideoLag
   }
   return;
 }
-//---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::ReadTrackerMatrix(std::string filename)
-{
-  cv::Mat TrackerMatrix = cv::Mat(4,4, CV_64FC1);
-  std::ifstream fin(filename.c_str());
-  if ( !fin )
-  {
-    MITK_WARN << "Failed to open matrix file " << filename;
-    return TrackerMatrix;
-  }
-  for ( int row = 0 ; row < 4 ; row ++ )
-  {
-    for ( int col = 0 ; col < 4 ; col ++ ) 
-    {
-      fin >> TrackerMatrix.at<double>(row,col);
-    }
-  }
-  return TrackerMatrix;
-}
+
+
 //---------------------------------------------------------------------------
 bool VideoTrackerMatching::CheckTimingErrorStats()
 {
@@ -418,6 +291,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   return ok;
 }
 
+
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
 {
@@ -439,6 +313,8 @@ void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
   }
 
 }
+
+
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
 {
@@ -481,6 +357,8 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
     return returnMat;
   }
 }
+
+
 //---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation, int ReferenceIndex )
 {
@@ -531,6 +409,7 @@ cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber
      }
    }
 }
+
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
@@ -583,6 +462,8 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
     MITK_INFO << m_CameraToTracker[i];
   }
 } 
+
+
 //---------------------------------------------------------------------------
 std::vector < std::vector <cv::Point3d> > VideoTrackerMatching::ReadPointsInLensCSFile(std::string calibrationfilename, 
     int PointsPerFrame, 
@@ -658,4 +539,5 @@ std::vector < std::vector <cv::Point3d> > VideoTrackerMatching::ReadPointsInLens
   fin.close();
   return pointsInLensCS;
 }
+
 } // namespace
