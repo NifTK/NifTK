@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+
 #include "itkBreastMaskSegmForBreastDensity.h"
 
 
@@ -56,6 +57,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   // Initialise the segmentation
   this->Initialise();
   this->SmoothTheInputImages();
+  this->GreyScaleClosing();
 
   // Calculate the Maximum Image
   this->CalculateTheMaximumImage();
@@ -84,9 +86,21 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   else 
     this->MaskBreastWithSphere();
   
-  // Finally smooth the mask and threshold to round corners etc.
+  // Smooth the mask and threshold to round corners etc.
   this->SmoothMask();
 
+  // Extract the largest object
+  this->ExtractLargestObject( this->LEFT_BREAST );
+
+  std::string fileOutputLeft( "LabelledLeftImage.nii" );
+  WriteImageToFile( fileOutputLeft, "largest objects", 
+                    this->imSegmented );      
+
+  this->ExtractLargestObject( this->RIGHT_BREAST );
+
+  std::string fileOutputRight( "LabelledRightImage.nii" );
+  WriteImageToFile( fileOutputRight, "largest objects", 
+                    this->imSegmented );      
 
 }
 

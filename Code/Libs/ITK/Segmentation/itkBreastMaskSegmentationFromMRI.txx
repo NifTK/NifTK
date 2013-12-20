@@ -12,8 +12,10 @@
 
 =============================================================================*/
 
-#include "itkBreastMaskSegmentationFromMRI.h"
-
+#include <itkBreastMaskSegmentationFromMRI.h>
+#include <itkHistogramMatchingImageFilter.h>
+#include <itkScalarConnectedComponentImageFilter.h>
+#include <itkRelabelComponentImageFilter.h>
 
 namespace itk
 {
@@ -203,6 +205,258 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
 
 // --------------------------------------------------------------------------
+// ScanLineMaxima()
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::ScanLineMaxima( typename InternalImageType::Pointer inImage,
+                  unsigned int direction, bool flgForward )
+{
+  InputPixelType maxVoxel;
+
+  typename InternalImageType::RegionType region;
+  typename InternalImageType::SizeType size;
+  typename InternalImageType::IndexType start;
+
+  typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage( inImage );
+  try
+  {
+    duplicator->Update();
+  }
+  catch (itk::ExceptionObject &e)
+  {
+    std::cerr << e << std::endl;
+    exit( EXIT_FAILURE );
+  }
+
+  typename InternalImageType::Pointer outImage = duplicator->GetOutput();
+  outImage->DisconnectPipeline();
+ 
+  region = outImage->GetLargestPossibleRegion();
+  start  = region.GetIndex();
+  size   = region.GetSize();
+
+  
+  LineIteratorType itImage( outImage, region );
+
+  itImage.SetDirection( direction );
+
+  if ( flgForward )
+  {
+    for ( itImage.GoToBegin(); 
+          ! itImage.IsAtEnd(); 
+          itImage.NextLine() )
+    {
+      itImage.GoToBeginOfLine();
+      
+      maxVoxel = itImage.Get();
+      
+      while ( ! itImage.IsAtEndOfLine() )
+      {
+        if ( itImage.Get() > maxVoxel )
+        {
+          maxVoxel = itImage.Get();
+        }
+        
+        itImage.Set( maxVoxel );
+        
+        ++itImage;
+      }
+    }
+  }
+
+  else
+  {
+    for ( itImage.GoToBegin(); 
+          ! itImage.IsAtEnd(); 
+          itImage.NextLine() )
+    {
+      itImage.GoToReverseBeginOfLine();
+      
+      maxVoxel = itImage.Get();
+      
+      while ( ! itImage.IsAtReverseEndOfLine() )
+      {
+        if ( itImage.Get() > maxVoxel )
+        {
+          maxVoxel = itImage.Get();
+        }
+        
+        itImage.Set( maxVoxel );
+        
+        --itImage;
+      }
+    }
+  }
+
+  return outImage;
+};
+
+
+// --------------------------------------------------------------------------
+// GreyScaleCloseImage(typename InternalImageType::Pointer, unsigned int direction)
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::GreyScaleCloseImage( typename InternalImageType::Pointer inImage,
+                       unsigned int direction )
+{
+  typename InternalImageType::Pointer imScanLineMaxima[ 2 ];
+
+  imScanLineMaxima[0] = ScanLineMaxima( inImage, direction, true );
+  imScanLineMaxima[1] = ScanLineMaxima( inImage, direction, false );
+
+  // Compute the voxel-wise minimum intensities
+            
+  IteratorType fwdIterator( imScanLineMaxima[0],
+                            imScanLineMaxima[0]->GetLargestPossibleRegion() );
+
+  IteratorType revIterator( imScanLineMaxima[1],
+                            imScanLineMaxima[1]->GetLargestPossibleRegion() );
+        
+  for ( fwdIterator.GoToBegin(), revIterator.GoToBegin(); 
+        ! fwdIterator.IsAtEnd();
+        ++fwdIterator, ++revIterator )
+  {
+    if ( fwdIterator.Get() > revIterator.Get() )
+      fwdIterator.Set( revIterator.Get() );
+  }
+  
+  return imScanLineMaxima[0];
+};
+
+
+// --------------------------------------------------------------------------
+// GreyScaleClosing(typename InternalImageType::Pointer)
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+typename BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >::InternalImageType::Pointer
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::GreyScaleCloseImage( typename InternalImageType::Pointer inImage )
+{
+  typename InternalImageType::Pointer inImageCloseInX;
+  typename InternalImageType::Pointer inImageCloseInY;
+  typename InternalImageType::Pointer inImageCloseInZ;
+
+  inImageCloseInX = GreyScaleCloseImage( inImage, 0 );
+  inImageCloseInY = GreyScaleCloseImage( inImage, 1 );
+  inImageCloseInZ = GreyScaleCloseImage( inImage, 2 );
+
+#if 0
+  std::string fileStructuralCloseInX( "inImageCloseInX.nii" );
+  WriteImageToFile( fileStructuralCloseInX, "structural image closed in X", 
+                    inImageCloseInX, flgLeft, flgRight );      
+
+  std::string fileStructuralCloseInY( "inImageCloseInY.nii" );
+  WriteImageToFile( fileStructuralCloseInY, "structural image closed in Y", 
+                    inImageCloseInY, flgLeft, flgRight );      
+
+  std::string fileStructuralCloseInZ( "inImageCloseInZ.nii" );
+  WriteImageToFile( fileStructuralCloseInZ, "structural image closed in Z", 
+                    inImageCloseInZ, flgLeft, flgRight );      
+#endif
+
+  InputPixelType xVoxel, yVoxel, zVoxel;
+            
+  IteratorType xIterator( inImageCloseInX,
+                          inImageCloseInX->GetLargestPossibleRegion() );
+
+  IteratorType yIterator( inImageCloseInY,
+                          inImageCloseInY->GetLargestPossibleRegion() );
+        
+  IteratorType zIterator( inImageCloseInZ,
+                          inImageCloseInZ->GetLargestPossibleRegion() );
+        
+  for ( xIterator.GoToBegin(), yIterator.GoToBegin(), zIterator.GoToBegin(); 
+        ! xIterator.IsAtEnd();
+        ++xIterator, ++yIterator, ++zIterator )
+  {
+    xVoxel = xIterator.Get();
+    yVoxel = yIterator.Get();
+    zVoxel = zIterator.Get();
+
+    
+#if 0
+    // Calculate the median
+
+    if ( ( ( xVoxel < yVoxel ) && ( yVoxel <= zVoxel ) ) ||
+         ( ( zVoxel <= yVoxel ) && ( yVoxel < xVoxel ) ) )
+    {
+      xIterator.Set( yVoxel );
+    }
+    else if ( ( ( xVoxel < zVoxel ) && ( zVoxel <= yVoxel ) ) ||
+              ( ( yVoxel <= zVoxel ) && ( zVoxel < xVoxel ) ) )
+    {
+      xIterator.Set( zVoxel );
+    }
+#elif 1
+    // Calculate the minimum
+
+    if ( ( yVoxel < xVoxel ) && ( yVoxel <= zVoxel ) )
+    {
+      xIterator.Set( yVoxel );
+    }
+    else if ( ( zVoxel <= yVoxel ) && ( zVoxel < xVoxel ) )
+    {
+      xIterator.Set( zVoxel );
+    }
+#else
+    // Calculate the mean of the two lower values
+
+    if ( ( xVoxel <= yVoxel ) && ( zVoxel <= yVoxel ) )
+    {
+      xIterator.Set( (xVoxel + zVoxel)/2 );
+    }
+    else if ( ( xVoxel <= zVoxel ) && ( yVoxel <= zVoxel ) )
+    {
+      xIterator.Set( (xVoxel + yVoxel)/2 );
+    }
+    else
+    {
+      xIterator.Set( (yVoxel + zVoxel)/2 );
+    }
+#endif
+  }
+ 
+  return inImageCloseInX;
+};
+
+
+// --------------------------------------------------------------------------
+// GreyScaleClosing()
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::GreyScaleClosing( void )
+{
+  imStructural = GreyScaleCloseImage( imStructural );
+
+  WriteImageToFile( fileOutputClosedStructural, "structural image closed", 
+                    imStructural, flgLeft, flgRight );      
+
+#if 0
+  if ( imFatSat ) 
+  {
+    imFatSat = GreyScaleCloseImage( imFatSat );
+
+    std::string fileStructuralClose( "imFatSatClose.nii" );
+    WriteImageToFile( fileStructuralClose, "Fat-Sat image closed", 
+                      imFatSat, flgLeft, flgRight );      
+  }
+#endif
+};
+
+
+// --------------------------------------------------------------------------
 // CalculateTheMaximumImage()
 // --------------------------------------------------------------------------
 
@@ -213,7 +467,47 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 {
   if ( imFatSat ) 
   {
+
+#if 1
+    // Histogram match the images
+
+    typedef itk::HistogramMatchingImageFilter< InternalImageType, InternalImageType,
+                                               InputPixelType > HistogramMatchingImageFilterType;
+
+    typename HistogramMatchingImageFilterType::Pointer 
+      histMatcher = HistogramMatchingImageFilterType::New();
+
+    histMatcher->SetInput( imFatSat );
+    histMatcher->SetReferenceImage( imStructural );
+    histMatcher->ThresholdAtMeanIntensityOn();
     
+    try
+    {
+      std::cout << "Histogram matching the structural and FatSat images" << std::endl;
+      histMatcher->Update();
+    }
+    catch (itk::ExceptionObject &e)
+    {
+      std::cerr << e << std::endl;
+      exit( EXIT_FAILURE );
+    }
+    
+    imMax = histMatcher->GetOutput();
+
+    // Compute the voxel-wise maximum intensities
+            
+    IteratorType inputIterator( imStructural, imStructural->GetLargestPossibleRegion() );
+    IteratorType outputIterator( imMax, imMax->GetLargestPossibleRegion() );
+        
+    for ( inputIterator.GoToBegin(), outputIterator.GoToBegin(); 
+	 ! inputIterator.IsAtEnd();
+	 ++inputIterator, ++outputIterator )
+    {
+      if ( inputIterator.Get() > outputIterator.Get() )
+	outputIterator.Set( inputIterator.Get() );
+    }
+#else    
+
     // Copy the structural image into the maximum image 
 
     typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
@@ -235,11 +529,17 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
       if ( inputIterator.Get() > outputIterator.Get() )
 	outputIterator.Set( inputIterator.Get() );
     }
+#endif
   }
   else
     imMax = imStructural;
 
+  imMax = GreyScaleCloseImage( imMax );
 
+  std::string fileOutput( "imMax.nii" );
+  WriteImageToFile( fileOutput, "max image", 
+                    imMax, flgLeft, flgRight );      
+  
 
   // Smooth the image to increase separation of the background
 
@@ -795,9 +1095,14 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   region.SetIndex( start );
 
+  size[0] = 1;
+  size[1] = size[1] - start[1];
+  size[2] = 1;
+
+  region.SetSize( size );
+
   if (flgVerbose) 
-    std::cout << "Searching for sternum starting from: " << start << std::endl
-              << "Search region is: " << region << std::endl;
+    std::cout << "Searching for sternum starting from: " << start << std::endl;
 
   LineIteratorType itSegLinear( imSegmented, region );
 
@@ -830,7 +1135,15 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   // Left breast first
 
   region = imSegmented->GetLargestPossibleRegion();
+  size = region.GetSize();
+
   region.SetIndex( idxNippleLeft );
+
+  size[0] = 1;
+  size[1] = size[1] - idxNippleLeft[1];
+  size[2] = 1;
+
+  region.SetSize( size );  
 
   LineIteratorType itSegLinearLeftPosterior( imSegmented, region );
   itSegLinearLeftPosterior.SetDirection( 1 );
@@ -859,7 +1172,15 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   typename InternalImageType::IndexType idxRightPosterior;
 
   region = imSegmented->GetLargestPossibleRegion();
+  size = region.GetSize();
+
   region.SetIndex( idxNippleRight );
+
+  size[0] = 1;
+  size[1] = size[1] - idxNippleRight[1];
+  size[2] = 1;
+
+  region.SetSize( size );  
 
   LineIteratorType itSegLinearRightPosterior( imSegmented, region );
   itSegLinearRightPosterior.SetDirection( 1 );
@@ -907,6 +1228,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   size = region.GetSize();
     
   region.SetIndex( idxMidSternum );
+
+  size[0] = 1;
+  size[1] = size[1] - idxMidSternum[1];
+  size[2] = 1;
+
+  region.SetSize( size );
     
   LineIteratorType itBIFsLinear( imBIFs, region );
     
@@ -1077,8 +1404,6 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 		    fastMarching->GetOutput(), flgLeft, flgRight );
 
     
-
-
   typename ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
     
   thresholder->SetLowerThreshold(           0.0 );
@@ -1110,6 +1435,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   size = region.GetSize();
     
   region.SetIndex( idxMidSternum );
+
+  size[0] = 1;
+  size[1] = size[1] - idxMidSternum[1];
+  size[2] = 1;
+
+  region.SetSize( size );
     
   LineIteratorType itBIFsLinear2( imPectoralVoxels, region );
     
@@ -1123,6 +1454,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     }
     ++itBIFsLinear2;
   }
+
     
   // And region-grow the pectoral surface from this point
     
@@ -1506,6 +1838,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   derivativeFilterY->SetSigma( sigmaInMM );
   derivativeFilterZ->SetSigma( sigmaInMM );
 
+  derivativeFilterX->SetSingleThreadedExecution();
+  derivativeFilterY->SetSingleThreadedExecution();
+  derivativeFilterZ->SetSingleThreadedExecution();
+
   derivativeFilterX->SetInput( imSegmented );
   derivativeFilterY->SetInput( derivativeFilterX->GetOutput() );
   derivativeFilterZ->SetInput( derivativeFilterY->GetOutput() );
@@ -1594,6 +1930,140 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     else
       segIterator2.Set( 1000 );
 
+}
+
+
+// --------------------------------------------------------------------------
+// Extract the largest object
+// --------------------------------------------------------------------------
+
+template <const unsigned int ImageDimension, class InputPixelType>
+void
+BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
+::ExtractLargestObject( enumBreastSideType breastSide )
+{
+  typename InternalImageType::RegionType lateralRegion;
+  typename InternalImageType::IndexType lateralStart;
+  typename InternalImageType::SizeType lateralSize;
+
+  typedef unsigned int LabelPixelType;
+  typedef itk::Image<LabelPixelType, ImageDimension > LabelImageType;
+
+  typename InternalImageType::Pointer imLateral;
+
+  // Extract the left breast region
+
+  if ( breastSide == LEFT_BREAST ) 
+  {
+    typedef itk::RegionOfInterestImageFilter< InternalImageType, InternalImageType > FilterType;
+    typename FilterType::Pointer filter = FilterType::New();
+
+    lateralRegion = imSegmented->GetLargestPossibleRegion();
+
+    lateralSize = lateralRegion.GetSize();
+    lateralSize[0] = lateralSize[0]/2;
+
+    lateralStart = lateralRegion.GetIndex();
+    lateralRegion.SetSize( lateralSize );
+
+    filter->SetRegionOfInterest( lateralRegion );
+    filter->SetInput( imSegmented );
+
+    filter->Update();
+
+    imLateral = filter->GetOutput();
+  }
+
+  // Extract the right breast region
+
+  else if ( breastSide == RIGHT_BREAST ) 
+  {
+    typedef itk::RegionOfInterestImageFilter< InternalImageType, InternalImageType > FilterType;
+    typename FilterType::Pointer filter = FilterType::New();
+
+    lateralRegion = imSegmented->GetLargestPossibleRegion();
+
+    lateralSize = lateralRegion.GetSize();
+    lateralSize[0] = lateralSize[0]/2;
+
+    lateralStart = lateralRegion.GetIndex();
+    lateralStart[0] = lateralSize[0];
+
+    lateralRegion.SetIndex( lateralStart );
+    lateralRegion.SetSize( lateralSize );
+
+    filter->SetRegionOfInterest( lateralRegion );
+    filter->SetInput( imSegmented );
+
+    filter->Update();
+
+    imLateral = filter->GetOutput();
+  }
+
+  std::cout << lateralRegion << std::endl;
+
+  // Detect connected components
+
+  typedef itk::ScalarConnectedComponentImageFilter < InternalImageType, LabelImageType >
+    ConnectedComponentImageFilterType;
+
+  typename ConnectedComponentImageFilterType::Pointer connected =
+    ConnectedComponentImageFilterType::New ();
+
+  connected->SetInput( imLateral );
+  connected->SetDistanceThreshold( 0 );
+
+  // Relabel the object by size
+
+  typedef itk::RelabelComponentImageFilter < LabelImageType, LabelImageType >
+    RelabelFilterType;
+
+  typename RelabelFilterType::Pointer relabel = RelabelFilterType::New();
+
+  relabel->SetMinimumObjectSize( 500 );
+
+  relabel->SetInput( connected->GetOutput() );
+
+  try
+  {
+    relabel->Update(); 
+
+    std::cout << "Number of connected objects: " 
+              << relabel->GetNumberOfObjects() << std::endl << std::endl
+              << "Size of largest object: " 
+              << relabel->GetSizeOfObjectsInPixels()[0] << std::endl << std::endl;
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "Failed: " << err << std::endl; 
+    exit( EXIT_FAILURE );
+  }                
+
+  // The largest object should be the background: 0, the breasts next: 1 and 2
+
+  typename LabelImageType::IndexType idx;
+
+  typedef itk::ImageRegionIteratorWithIndex< LabelImageType > LabelIteratorType;
+  
+  LabelIteratorType labIterator( relabel->GetOutput(), 
+                                 relabel->GetOutput()->GetLargestPossibleRegion() );
+        
+  for ( labIterator.GoToBegin(); 
+        ! labIterator.IsAtEnd(); 
+        ++labIterator )
+  {
+    idx = labIterator.GetIndex();
+    idx[0] += lateralStart[0];
+
+    if ( ( labIterator.Get() == 2 ) )
+    {
+      imSegmented->SetPixel( idx, 1000 );
+    }
+    else
+    {
+      imSegmented->SetPixel( idx, 0 );
+    }
+  }
 }
 
 
