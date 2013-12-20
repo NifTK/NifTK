@@ -189,6 +189,7 @@ public:
 
   void SetOutputSmoothedStructural( std::string fn ) { fileOutputSmoothedStructural = fn; }
   void SetOutputSmoothedFatSat( std::string fn ) { fileOutputSmoothedFatSat = fn; }
+  void SetOutputClosedStructural( std::string fn ) { fileOutputClosedStructural = fn; }
   void SetOutputHistogram( std::string fn ) { fileOutputCombinedHistogram = fn; }
   void SetOutputFit( std::string fn ) { fileOutputRayleigh = fn; }
   void SetOutputCDF( std::string fn ) { fileOutputFreqLessBgndCDF = fn; }
@@ -303,6 +304,7 @@ protected:
 
   std::string fileOutputSmoothedStructural;
   std::string fileOutputSmoothedFatSat;
+  std::string fileOutputClosedStructural;
   std::string fileOutputCombinedHistogram;
   std::string fileOutputRayleigh;
   std::string fileOutputFreqLessBgndCDF;
@@ -364,6 +366,17 @@ protected:
   /// Smooth the structural and FatSat images
   void SmoothTheInputImages( void );
 
+  /// Scan an image in a particular direction and replace voxels with scanned maximum intensity
+  typename InternalImageType::Pointer ScanLineMaxima( typename InternalImageType::Pointer image,
+                                                      unsigned int direction, bool flgForward );
+  /// Scan an image in a particular direction and replace voxels with closed intensities
+  typename InternalImageType::Pointer GreyScaleCloseImage( typename InternalImageType::Pointer image,
+                                                           unsigned int direction );
+  /// Scan an image in all directions and replace voxels with closed intensities
+  typename InternalImageType::Pointer GreyScaleCloseImage( typename InternalImageType::Pointer image );
+  /// Scan rows and columns in the image to fill in the center of the breast
+  void GreyScaleClosing( void );
+
   /// Calculate the maximum image
   void CalculateTheMaximumImage( void );
 
@@ -391,6 +404,9 @@ protected:
   /// Smooth the mask and threshold to round corners etc.
   void SmoothMask( void );
 
+  /// Extract the largest object
+  void ExtractLargestObject( enumBreastSideType breastSide );
+
 
   double DistanceBetweenVoxels( typename InternalImageType::IndexType p, 
 				typename InternalImageType::IndexType q );
@@ -412,7 +428,7 @@ protected:
   bool WriteImageToFile( std::string &fileOutput,
 			 const char *description,
 			 typename InternalImageType::Pointer image, 
-			 bool flgLeft, bool flgRight );
+			 bool flgLeft=false, bool flgRight=false );
   
   bool WriteBinaryImageToUCharFile( std::string &fileOutput, 
 				    const char *description,

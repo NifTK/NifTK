@@ -60,6 +60,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_STRING, "osms", "filename", "Write the smoothed structural image to a file."},
   {OPT_STRING, "osmf", "filename", "Write the smoothed FatSat image to a file."},
+  {OPT_STRING, "ocls", "filename", "Write the grey-scale closed structural image to a file."},
 
   {OPT_STRING, "ohist", "filename", "Write the maximum image histogram to a file."},
   {OPT_STRING, "ofit",  "filename", "Write the Rayleigh distrbution fit to a file."},
@@ -125,6 +126,7 @@ enum {
 
   O_OUTPUT_SMOOTHED_STRUCTURAL,
   O_OUTPUT_SMOOTHED_FATSAT,
+  O_OUTPUT_CLOSED_STRUCTURAL,
 
   O_OUTPUT_HISTOGRAM,
   O_OUTPUT_FIT,
@@ -193,6 +195,7 @@ int main( int argc, char *argv[] )
 
   std::string fileOutputSmoothedStructural;
   std::string fileOutputSmoothedFatSat;
+  std::string fileOutputClosedStructural;
   std::string fileOutputCombinedHistogram;
   std::string fileOutputRayleigh;
   std::string fileOutputFreqLessBgndCDF;
@@ -277,6 +280,7 @@ int main( int argc, char *argv[] )
 
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_STRUCTURAL, fileOutputSmoothedStructural );
   CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_FATSAT,     fileOutputSmoothedFatSat );
+  CommandLineOptions.GetArgument( O_OUTPUT_CLOSED_STRUCTURAL,     fileOutputClosedStructural );
   CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM,     fileOutputCombinedHistogram );
   CommandLineOptions.GetArgument( O_OUTPUT_FIT,           fileOutputRayleigh );
   CommandLineOptions.GetArgument( O_OUTPUT_CDF,           fileOutputFreqLessBgndCDF );
@@ -358,6 +362,7 @@ int main( int argc, char *argv[] )
 
   breastMaskSegmentor->SetOutputSmoothedStructural( fileOutputSmoothedStructural );
   breastMaskSegmentor->SetOutputSmoothedFatSat( fileOutputSmoothedFatSat );
+  breastMaskSegmentor->SetOutputClosedStructural( fileOutputClosedStructural );
   breastMaskSegmentor->SetOutputHistogram( fileOutputCombinedHistogram );
   breastMaskSegmentor->SetOutputFit( fileOutputRayleigh );
   breastMaskSegmentor->SetOutputCDF( fileOutputFreqLessBgndCDF );
