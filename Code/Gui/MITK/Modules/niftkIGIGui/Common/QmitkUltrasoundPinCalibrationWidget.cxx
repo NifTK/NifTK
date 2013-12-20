@@ -13,11 +13,7 @@
 =============================================================================*/
 
 #include "QmitkUltrasoundPinCalibrationWidget.h"
-#include <mitkNodePredicateDataType.h>
-#include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <vtkSmartPointer.h>
-#include <mitkPointUtils.h>
+#include <stdexcept>
 
 //-----------------------------------------------------------------------------
 QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
@@ -25,13 +21,26 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   const QString& inputImageDirectory,
   const QString& outputMatrixDirectory,
   const QString& outputPointDirectory,  
-  QObject *parent)
+  const unsigned int timingToleranceInMilliseconds,
+  QWidget *parent)
+: QVTKWidget(parent)
+, m_TimingToleranceInMilliseconds(timingToleranceInMilliseconds)
 {
-  setupUi(this);
   m_InputTrackerDirectory = inputTrackerDirectory;
   m_InputImageDirectory = inputImageDirectory;
   m_OutputMatrixDirectory = outputMatrixDirectory;
   m_OutputPointDirectory = outputPointDirectory;
+  
+  m_ImageViewer = vtkImageViewer::New();
+  this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
+  m_ImageViewer->SetupInteractor(this->GetRenderWindow()->GetInteractor());
+  m_ImageViewer->SetColorLevel(127.5);
+  m_ImageViewer->SetColorWindow(255);  
+  
+  m_PNGReader = vtkPNGReader::New();
+  m_ImageViewer->SetInputConnection(m_PNGReader->GetOutputPort());
+
+  // Load all data, and set up the PNG reader to the first image.  
 }
 
 
@@ -44,14 +53,73 @@ QmitkUltrasoundPinCalibrationWidget::~QmitkUltrasoundPinCalibrationWidget()
 //-----------------------------------------------------------------------------
 void QmitkUltrasoundPinCalibrationWidget::mousePressEvent(QMouseEvent* event)
 {
-  std::cerr << "Matt, mouse pressed" << std::endl;  
+  try 
+  {
+    this->StorePoint();
+    event->accept();
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "Caught std::exception:" << e.what();
+    event->ignore();
+  }
+  catch (...)
+  {
+    std::cerr << "Caught unknown exception:";
+    event->ignore();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkUltrasoundPinCalibrationWidget::keyPressEvent(QKeyEvent* event)
 {
-  std::cerr << "Matt, key pressed" << std::endl;    
+  if (event->key() == Qt::Key_N)
+  {
+    this->NextImage();
+    event->accept();    
+  }
+  else if (event->key() == Qt::Key_P)
+  {
+    this->PreviousImage();
+    event->accept();
+  }
+  else if (event->key() == Qt::Key_Q)
+  {
+    this->QuitApplication();
+    event->accept();
+  }
+  else
+  {
+    event->ignore();
+  }
 }
 
+
+//-----------------------------------------------------------------------------
+void QmitkUltrasoundPinCalibrationWidget::QuitApplication()
+{
+  QApplication::exit(0);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkUltrasoundPinCalibrationWidget::NextImage()
+{
+  std::cerr << "Matt, next" << std::endl;  
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkUltrasoundPinCalibrationWidget::PreviousImage()
+{
+  std::cerr << "Matt, previous" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkUltrasoundPinCalibrationWidget::StorePoint()
+{
+  std::cerr << "Matt, StorePoint" << std::endl;
+}
 

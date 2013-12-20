@@ -68,7 +68,6 @@ set(UI_FILES
   Common/QmitkStereoImageAndCameraSelectionWidget.ui
   Common/StereoCameraCalibrationSelectionWidget.ui
   Common/QmitkRMSErrorWidget.ui
-  Common/QmitkUltrasoundPinCalibrationWidget.ui
   DataSources/TrackerControlsWidget.ui
   DataSources/QmitkFiducialRegistrationWidgetDialog.ui  
   DataSources/QmitkIGITrackerSourceGui.ui
