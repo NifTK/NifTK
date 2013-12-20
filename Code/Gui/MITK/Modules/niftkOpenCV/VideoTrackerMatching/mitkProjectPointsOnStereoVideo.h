@@ -97,7 +97,6 @@ public:
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
-  itkSetMacro ( ClassifierWorldPoints, std::vector < cv::Point3d > );
   void SetLeftGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
   void SetRightGoldStandardPoints ( std::vector < std::pair <unsigned int , cv::Point2d> > points );
 
@@ -109,12 +108,27 @@ public:
    * \brief set only the world points, the corresponding scalars get set to a default value
    */
   void SetWorldPoints ( std::vector< cv::Point3d > points );
+ 
+  /** 
+   * \brief set only the classifier world points
+   */
+  void SetClassifierWorldPoints ( std::vector < cv::Point3d > points );
+  /** 
+   * \brief clear the list of world points
+   */
+  void ClearWorldPoints ();
+
   std::vector < std::vector <cv::Point3d> > GetPointsInLeftLensCS();
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > > GetProjectedPoints();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
-
+  itkGetMacro ( LeftProjectionErrors, std::vector < cv::Point2d > ); 
+  itkGetMacro ( RightProjectionErrors, std::vector < cv::Point2d > );  
+  itkGetMacro ( LeftReProjectionErrors, std::vector < cv::Point3d > ); 
+  itkGetMacro ( RightReProjectionErrors, std::vector < cv::Point3d > );  
+  itkGetMacro ( TriangulationErrors, std::vector < cv::Point3d > );  
+ 
   /**
    * \brief calculates the projection and re-projection errors
    */

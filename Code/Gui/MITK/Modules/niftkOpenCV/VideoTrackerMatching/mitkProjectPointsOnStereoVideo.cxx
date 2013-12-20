@@ -745,7 +745,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
 {
   unsigned int* index = new unsigned int;
   double minRatio;
-  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
+  FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
  
   if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
   {
@@ -866,7 +866,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
   }
   else
   {
-    return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+    return m_ProjectedPoints[GSPoint.first].second[myIndex].second;
   }
 }
 
@@ -878,8 +878,18 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
   {
     m_WorldPoints.push_back(points[i]);
   }
+  m_ProjectOK = false;
 }
-
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetClassifierWorldPoints ( 
+    std::vector < cv::Point3d > points )
+{
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
+  {
+    m_ClassifierWorldPoints.push_back(points[i]);
+  }
+  m_ProjectOK = false;
+}
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetWorldPoints ( 
     std::vector < cv::Point3d > points )
@@ -890,6 +900,7 @@ void ProjectPointsOnStereoVideo::SetWorldPoints (
       std::pair < cv::Point3d , cv::Scalar > ( points[i], cv::Scalar (255,0,0) );
     m_WorldPoints.push_back(point);
   }
+  m_ProjectOK = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -975,7 +986,7 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
     {
       m_WorldPoints.push_back ( point );
       MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].first << ","
-        << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i-wpSize].first;
+        << onScreenPointPairs[i].second << " => " << point.first << " => " << m_WorldPoints[i+wpSize].first;
     }
     else
     {
@@ -984,7 +995,8 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
 
 
   }
-
+  cvReleaseMat (&leftCameraTriangulatedWorldPoints);
+  m_ProjectOK = false;
 }
 
 std::vector < std::vector <cv::Point3d> > ProjectPointsOnStereoVideo::GetPointsInLeftLensCS()
@@ -1057,5 +1069,12 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
     m_ScreenAxesPoints.push_back(pointPair);
   }
 }
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::ClearWorldPoints()
+{
+  m_WorldPoints.clear();
+  m_ProjectOK = false;
+}
+
 
 } // end namespace
