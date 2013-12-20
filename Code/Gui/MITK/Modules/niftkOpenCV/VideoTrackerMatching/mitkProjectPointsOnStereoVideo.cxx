@@ -745,7 +745,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
 {
   unsigned int* index = new unsigned int;
   double minRatio;
-  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
+  FindNearestScreenPoint ( GSPoint, left, &minRatio, index ) ;
  
   if ( abs (m_PointsInLeftLensCS[GSPoint.first].first) > m_AllowableTimingError ) 
   {
@@ -866,7 +866,7 @@ cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( std::pair < uns
   }
   else
   {
-    return m_ProjectedPoints[GSPoint.first].second[myIndex].first;
+    return m_ProjectedPoints[GSPoint.first].second[myIndex].second;
   }
 }
 
