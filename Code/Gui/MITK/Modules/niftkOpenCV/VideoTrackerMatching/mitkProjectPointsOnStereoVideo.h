@@ -123,7 +123,12 @@ public:
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
-
+  itkGetMacro ( LeftProjectionErrors, std::vector < cv::Point2d > ); 
+  itkGetMacro ( RightProjectionErrors, std::vector < cv::Point2d > );  
+  itkGetMacro ( LeftReProjectionErrors, std::vector < cv::Point3d > ); 
+  itkGetMacro ( RightReProjectionErrors, std::vector < cv::Point3d > );  
+  itkGetMacro ( TriangulationErrors, std::vector < cv::Point3d > );  
+ 
   /**
    * \brief calculates the projection and re-projection errors
    */
