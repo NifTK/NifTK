@@ -408,13 +408,16 @@ private:
   /// \brief Stores the selected time step. One for unbound, one for bound.
   int m_TimeSteps[2];                                             // Two, one for unbound, one for bound.
 
-  /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the cursor positions for the render windows of the layout.
   std::vector<mitk::Vector3D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
 
-  /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the scale factors of the render windows of the layout.
   std::vector<double> m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the selected render window for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  QmitkRenderWindow* m_SelectedRenderWindow[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
