@@ -669,8 +669,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
     bool hasBeenInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
-    MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) remember: " << m_RememberSettingsPerWindowLayout;
-    MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) has been initialised: " << hasBeenInitialised;
     if (m_RememberSettingsPerWindowLayout && hasBeenInitialised)
     {
       MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) restoring positions...";
@@ -681,8 +679,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
       m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
       m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
-//      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-//      m_MultiWidget->SetCursorPosition(m_CursorPositions[Index(windowLayout)]);
 
       unsigned numberOfRenderWindows = m_VisibleRenderWindows.size();
       for (unsigned i = 0; i < numberOfRenderWindows; ++i)
@@ -692,7 +688,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       }
 
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-//      emit CursorPositionChanged(this, m_CursorPositions[Index(windowLayout)][0]);
+      emit CursorPositionChanged(this, m_CursorPositions[Index(windowLayout)][0]);
       emit ScaleFactorChanged(this, m_ScaleFactors[Index(windowLayout)][0]);
     }
     else
