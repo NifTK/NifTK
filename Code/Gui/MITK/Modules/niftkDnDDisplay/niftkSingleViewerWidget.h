@@ -335,7 +335,10 @@ signals:
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
+//  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
+
+  /// \brief Emitted when the selected slice has changed in a render window of this viewer.
+  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
   void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Vector3D& cursorPosition);
@@ -355,10 +358,11 @@ signals:
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected slice has changed in a render window.
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+//  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+  virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
   virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
@@ -378,7 +382,6 @@ private:
   {
     return (index << 1) + m_IsBoundGeometryActive;
   }
-  void ResetRememberedPositions();
 
   /// \brief Used to move either anterior/posterior by a certain number of slices.
   bool MoveAnteriorPosterior(int slices);
@@ -399,9 +402,10 @@ private:
   WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
-  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];            // Two for each orientation. Unbound, then bound, alternatingly.
-  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2];               // Two for each orientation. Unbound, then bound, alternatingly.
-//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two for each window layout. Unbound, then bound, alternatingly.
+//  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];            // Two for each orientation. Unbound, then bound, alternatingly.
+  int m_TimeSteps[2];                                          // Two, one for unbound, one for bound.
+  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2]; // Two for each window layout. Unbound, then bound, alternatingly.
+  mitk::Vector3D m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];  // Two for each window layout. Unbound, then bound, alternatingly.
   double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];             // Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two for each window layout. Unbound, then bound, alternatingly.
 
@@ -411,12 +415,12 @@ private:
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
-  mitk::Vector3D m_CursorPosition;
-  mitk::Vector3D m_LastCursorPosition;
+//  mitk::Vector3D m_CursorPosition;
+//  mitk::Vector3D m_LastCursorPosition;
 //  mitk::Vector3D m_SecondLastCursorPosition;
-  mitk::Point3D m_SelectedPosition;
-  mitk::Point3D m_LastSelectedPosition;
-  mitk::Point3D m_SecondLastSelectedPosition;
+//  mitk::Point3D m_SelectedPosition;
+//  mitk::Point3D m_LastSelectedPosition;
+//  mitk::Point3D m_SecondLastSelectedPosition;
 //  std::deque<mitk::Point3D> m_LastSelectedPositions;
 
   mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;

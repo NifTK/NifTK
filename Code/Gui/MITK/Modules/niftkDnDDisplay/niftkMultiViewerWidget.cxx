@@ -255,7 +255,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 
   m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)));
+//  this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)));
+  this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, const mitk::Vector3D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
@@ -750,7 +751,32 @@ void niftkMultiViewerWidget::OnViewerNumberChanged(int rows, int columns)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, int sliceIndex)
+//void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, int sliceIndex)
+//{
+//  // If the viewer is not found, we do not do anything.
+//  if (std::find(m_Viewers.begin(), m_Viewers.end(), viewer) == m_Viewers.end())
+//  {
+//    return;
+//  }
+
+//  m_ControlPanel->SetSliceIndex(viewer->GetSliceIndex(viewer->GetOrientation()));
+
+//  if (m_ControlPanel->AreViewerPositionsBound())
+//  {
+//    mitk::Point3D selectedPosition = viewer->GetSelectedPosition();
+//    for (int i = 0; i < m_Viewers.size(); i++)
+//    {
+//      if (m_Viewers[i] != viewer)
+//      {
+//        m_Viewers[i]->SetSelectedPosition(selectedPosition);
+//      }
+//    }
+//  }
+//}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition)
 {
   // If the viewer is not found, we do not do anything.
   if (std::find(m_Viewers.begin(), m_Viewers.end(), viewer) == m_Viewers.end())
@@ -762,7 +788,6 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    mitk::Point3D selectedPosition = viewer->GetSelectedPosition();
     for (int i = 0; i < m_Viewers.size(); i++)
     {
       if (m_Viewers[i] != viewer)

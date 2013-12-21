@@ -348,7 +348,7 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // what we might not want.
   m_BlockDisplayGeometryEvents = true;
   this->SetSelectedRenderWindow(renderWindow);
-  emit NodesDropped(this, renderWindow, nodes);
+  emit NodesDropped(renderWindow, nodes);
   m_BlockDisplayGeometryEvents = false;
 }
 
@@ -838,11 +838,12 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation()
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitToDisplay()
 {
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
+  std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
   for (unsigned int i = 0; i < renderWindows.size(); i++)
   {
     m_BlockDisplayGeometryEvents = true;
     renderWindows[i]->GetRenderer()->GetDisplayGeometry()->Fit();
+    m_ScaleFactor = this->GetScaleFactor(renderWindows[i]);
     m_BlockDisplayGeometryEvents = false;
   }
 }
@@ -1622,7 +1623,8 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
     m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
     sliceIndex = selectedPositionInVx[axis];
 
-    emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
+//    emit SelectedPositionChanged(m_RenderWindows[orientation], sliceIndex);
+    emit SelectedPositionChanged(selectedPosition);
 
     // cursor[0] <-> axial[0] <-> coronal[0]
     // cursor[1] <-> axial[1] <-> 1.0 - sagittal[0]

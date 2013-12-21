@@ -306,10 +306,11 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(niftkMultiWindowWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
-  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+//  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+  void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed.
   void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
