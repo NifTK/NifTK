@@ -244,8 +244,9 @@ public:
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
 
-  /// \brief Sets the scale factor of the render window to the given value. (mm/px)
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor) const;
+  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// and moves the image so that the position of the focus remains the same.
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
 
   /// \brief Gets the scale factor of the selected render window or 0.0 if no
   /// window is selected.
@@ -404,9 +405,6 @@ private:
   /// voxel size, the three scale factors can differ if the image has anisotropic voxels.
   /// The voxel sizes are calculated when the geometry is set.
   mitk::Vector3D ComputeScaleFactors(double magnification);
-
-  /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
 
   /// \brief The magnification is calculated with the longer voxel side of an orientation.
   /// This function returns the index of this axis.
