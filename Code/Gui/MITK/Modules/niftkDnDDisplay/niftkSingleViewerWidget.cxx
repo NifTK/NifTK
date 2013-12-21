@@ -751,6 +751,13 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 //        cursorPosition.Fill(0.5);
 //        m_MultiWidget->SetCursorPosition(cursorPosition);
         m_MultiWidget->FitToDisplay();
+
+        /// If this is a multi window layout and the scale factors are bound,
+        /// we have to set the same scale factors for each window.
+        if (m_MultiWindowLayout == m_WindowLayout && this->AreScaleFactorsBound())
+        {
+          m_MultiWidget->SetScaleFactor(m_MultiWidget->GetScaleFactor());
+        }
         MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) selected point: " << m_MultiWidget->GetSelectedPosition();
         MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) cursor position: " << m_MultiWidget->GetCursorPosition();
         MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) scale factor: " << m_MultiWidget->GetScaleFactor();
