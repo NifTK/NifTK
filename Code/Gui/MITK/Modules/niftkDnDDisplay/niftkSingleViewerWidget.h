@@ -402,26 +402,31 @@ private:
   WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
-//  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];            // Two for each orientation. Unbound, then bound, alternatingly.
-  int m_TimeSteps[2];                                          // Two, one for unbound, one for bound.
-  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2]; // Two for each window layout. Unbound, then bound, alternatingly.
-  mitk::Vector3D m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];  // Two for each window layout. Unbound, then bound, alternatingly.
-  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];             // Two for each window layout. Unbound, then bound, alternatingly.
-  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two for each window layout. Unbound, then bound, alternatingly.
+  /// \brief Stores the selected point per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the selected time step. One for unbound, one for bound.
+  int m_TimeSteps[2];                                             // Two, one for unbound, one for bound.
+
+  /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// The vectors store the cursor positions for the render windows of the layout.
+//  std::vector<mitk::Vector3D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+  mitk::Vector3D m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// The vectors store the scale factors of the render windows of the layout.
+  std::vector<double> m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
+
+  std::vector<QmitkRenderWindow*> m_VisibleRenderWindows;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
-
-//  mitk::Vector3D m_CursorPosition;
-//  mitk::Vector3D m_LastCursorPosition;
-//  mitk::Vector3D m_SecondLastCursorPosition;
-//  mitk::Point3D m_SelectedPosition;
-//  mitk::Point3D m_LastSelectedPosition;
-//  mitk::Point3D m_SecondLastSelectedPosition;
-//  std::deque<mitk::Point3D> m_LastSelectedPositions;
 
   mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
 };
