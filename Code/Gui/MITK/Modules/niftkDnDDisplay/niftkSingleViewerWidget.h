@@ -410,8 +410,8 @@ private:
 
   /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the cursor positions for the render windows of the layout.
-//  std::vector<mitk::Vector3D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
-  mitk::Vector3D m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+  std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+//  mitk::Vector3D m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores the cursor positions per window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the scale factors of the render windows of the layout.

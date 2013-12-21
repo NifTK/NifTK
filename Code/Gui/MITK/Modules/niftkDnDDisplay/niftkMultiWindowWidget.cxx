@@ -1840,6 +1840,20 @@ const mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition(QmitkRenderWindow
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition)
+{
+//  m_CursorPosition = cursorPosition;
+
+  if (renderWindow && renderWindow->isVisible() && renderWindow != m_RenderWindows[3])
+  {
+    mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
+    this->SetOrigin(renderWindow, origin);
+    m_RenderingManager->RequestUpdate(renderWindow->GetRenderWindow());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
 {
   m_CursorPosition = cursorPosition;

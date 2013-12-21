@@ -634,10 +634,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_SelectedPositions[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedPosition();
       m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
       unsigned numberOfRenderWindows = m_VisibleRenderWindows.size();
-      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPosition();
+      m_CursorPositions[Index(m_WindowLayout)].resize(numberOfRenderWindows);
       m_ScaleFactors[Index(m_WindowLayout)].resize(numberOfRenderWindows);
       for (unsigned i = 0; i < numberOfRenderWindows; ++i)
       {
+        m_CursorPositions[Index(m_WindowLayout)][i] = m_MultiWidget->GetCursorPosition(m_VisibleRenderWindows[i]);
         m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(m_VisibleRenderWindows[i]);
       }
 
@@ -681,17 +682,17 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
       m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
 //      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-      m_MultiWidget->SetCursorPosition(m_CursorPositions[Index(windowLayout)]);
-//      m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
+//      m_MultiWidget->SetCursorPosition(m_CursorPositions[Index(windowLayout)]);
 
       unsigned numberOfRenderWindows = m_VisibleRenderWindows.size();
       for (unsigned i = 0; i < numberOfRenderWindows; ++i)
       {
+        m_MultiWidget->SetCursorPosition(m_VisibleRenderWindows[i], m_CursorPositions[Index(windowLayout)][i]);
         m_MultiWidget->SetScaleFactor(m_VisibleRenderWindows[i], m_ScaleFactors[Index(windowLayout)][i]);
       }
 
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-      emit CursorPositionChanged(this, m_CursorPositions[Index(windowLayout)][0]);
+//      emit CursorPositionChanged(this, m_CursorPositions[Index(windowLayout)][0]);
       emit ScaleFactorChanged(this, m_ScaleFactors[Index(windowLayout)][0]);
     }
     else
