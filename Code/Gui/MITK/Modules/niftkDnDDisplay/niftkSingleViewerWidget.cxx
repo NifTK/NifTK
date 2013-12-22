@@ -154,6 +154,18 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *window, std::vec
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
+  if (m_LastSelectedPositions.size() == 3)
+  {
+    m_LastSelectedPositions.pop_front();
+  }
+  m_LastSelectedPositions.push_back(selectedPosition);
+
+  if (m_LastCursorPositions.size() == 3)
+  {
+    m_LastCursorPositions.pop_front();
+  }
+  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition());
+
   emit SelectedPositionChanged(this, selectedPosition);
 }
 
@@ -161,6 +173,12 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnCursorPositionChanged(const mitk::Vector3D& cursorPosition)
 {
+  if (m_LastCursorPositions.size() == 3)
+  {
+    m_LastCursorPositions.pop_front();
+  }
+  m_LastCursorPositions.push_back(cursorPosition);
+
   emit CursorPositionChanged(this, cursorPosition);
 }
 
@@ -502,6 +520,11 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
+      m_LastSelectedPositions.clear();
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
+      m_LastCursorPositions.clear();
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition());
+
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -539,6 +562,11 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
+      m_LastSelectedPositions.clear();
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
+      m_LastCursorPositions.clear();
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition());
+
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -690,6 +718,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
       m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
 
+      m_LastSelectedPositions.clear();
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
+      m_LastCursorPositions.clear();
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition());
+
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
       emit CursorPositionChanged(this, m_CursorPositions[Index(windowLayout)][0]);
       emit ScaleFactorChanged(this, m_ScaleFactors[Index(windowLayout)][0]);
@@ -706,6 +739,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
         m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
         m_MultiWidget->SetTimeStep(0);
         m_MultiWidget->FitToDisplay();
+
+        m_LastSelectedPositions.clear();
+        m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
+        m_LastCursorPositions.clear();
+        m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition());
 
         /// If this is a multi window layout and the scale factors are bound,
         /// we have to set the same scale factors for each window.
@@ -949,13 +987,11 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     }
   }
 
-  // We have to switch back to the previous position because the double click should not change
-  // neither the selected position nor the cursor position.
-  /// TODO
-//  this->SetSelectedPosition(m_SecondLastSelectedPosition);
-//  this->SetCursorPosition(m_LastCursorPosition);
-//  m_MultiWidget->SetCursorPosition(m_LastCursorPosition);
-//  m_MultiWidget->SetSelectedPosition(m_SecondLastSelectedPosition);
+  /// We have to switch back to the actual positions before the double clicking,
+  /// because the double click should not change neither the selected position
+  /// nor the cursor position.
+  this->SetSelectedPosition(m_LastSelectedPositions.front());
+  this->SetCursorPosition(m_LastCursorPositions.front());
 
   this->SetWindowLayout(nextWindowLayout);
   emit WindowLayoutChanged(this, nextWindowLayout);

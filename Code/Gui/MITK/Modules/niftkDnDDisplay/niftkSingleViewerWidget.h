@@ -360,8 +360,7 @@ protected slots:
   /// \brief Called when nodes are dropped on the contained render windows.
   virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Called when the selected slice has changed in a render window.
-//  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+  /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
@@ -423,6 +422,16 @@ private:
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
 
   std::vector<QmitkRenderWindow*> m_VisibleRenderWindows;
+
+  /// \brief Stores the last three selected positions so that if the window layout is switched
+  /// between single and multi by double clicking, we can save the position from before the
+  /// double clicking.
+  std::deque<mitk::Point3D> m_LastSelectedPositions;
+
+  /// \brief Stores the last three cursor positions so that if the window layout is switched
+  /// between single and multi by double clicking, we can save the position from before the
+  /// double clicking.
+  std::deque<mitk::Vector3D> m_LastCursorPositions;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
