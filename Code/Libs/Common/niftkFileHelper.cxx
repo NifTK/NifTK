@@ -409,7 +409,7 @@ std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDire
   {
     for ( boost::filesystem::recursive_directory_iterator it(niftk::ConvertToFullNativePath(fullDirectoryName)); it != endItr; ++it)
     {
-      if ( boost::regex_match (static_cast<const char*>(it->path().extension().c_str()), extensionFilter))
+      if ( boost::regex_match (static_cast<const boost::filesystem::path::value_type *>(it->path().extension().c_str()), extensionFilter))
       {
         returnStrings.push_back(it->path().string());
       }
