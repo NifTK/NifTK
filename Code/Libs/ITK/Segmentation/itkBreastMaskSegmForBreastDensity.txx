@@ -93,14 +93,14 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
   this->ExtractLargestObject( this->LEFT_BREAST );
 
   std::string fileOutputLeft( "LabelledLeftImage.nii" );
-  WriteImageToFile( fileOutputLeft, "largest objects", 
-                    this->imSegmented );      
+  this->WriteImageToFile( fileOutputLeft, "largest objects", 
+                          this->imSegmented );      
 
   this->ExtractLargestObject( this->RIGHT_BREAST );
 
   std::string fileOutputRight( "LabelledRightImage.nii" );
-  WriteImageToFile( fileOutputRight, "largest objects", 
-                    this->imSegmented );      
+  this->WriteImageToFile( fileOutputRight, "largest objects", 
+                          this->imSegmented );      
 
 }
 
