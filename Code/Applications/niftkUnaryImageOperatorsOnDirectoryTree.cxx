@@ -107,92 +107,6 @@ void PrintDictionary( DictionaryType &dictionary )
 
 
 // -------------------------------------------------------------------------
-// GetImageFileSuffix
-// -------------------------------------------------------------------------
-
-std::string GetImageFileSuffix( std::string fileName )
-{
-  std::string suffix;
-  std::string compSuffix;
-
-  if ( ( fileName.length() >= 3 ) && 
-       ( ( fileName.substr( fileName.length() - 3 ) == std::string( ".gz" ) ) || 
-         ( fileName.substr( fileName.length() - 3 ) == std::string( ".GZ" ) ) ) )
-  {
-    compSuffix = fileName.substr( fileName.length() - 3 );
-  }
-
-  else if ( ( fileName.length() >= 4 ) && 
-            ( ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) || 
-              ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ) )
-  {
-    compSuffix = fileName.substr( fileName.length() - 4 );
-  }
-
-  if ( ( fileName.length() >= 4 ) && 
-       ( ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".dcm" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".DCM" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".nii" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".NII" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".bmp" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".BMP" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".tif" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".TIF" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".jpg" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".JPG" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".png" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".PNG" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".ima" ) ) ||
-         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".IMA" ) ) ) )
-  {
-    suffix = fileName.substr( fileName.length() - compSuffix.length() - 4 );
-  }
-
-  else if ( ( fileName.length() >= 5 ) && 
-            ( ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".tiff" ) ) || 
-              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".TIFF" ) ) ||
-              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".gipl" ) ) ||
-              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".GIPL" ) ) ) )
-  {
-    suffix = fileName.substr( fileName.length() - compSuffix.length() - 5 );
-  }
-
-  else if ( ( fileName.length() >= 6 ) && 
-            ( ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".dicom" ) ) ||
-              ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".DICOM" ) ) ) )
-  {
-    suffix =  fileName.substr( fileName.length() - compSuffix.length() - 6 );
-  }
-
-  return suffix;
-};
-
-
-// -------------------------------------------------------------------------
-// AddToFileSuffix
-// -------------------------------------------------------------------------
-
-std::string AddToFileSuffix( std::string fileName, std::string strAdd2Suffix, std::string suffix )
-{
-  std::string newSuffix;
-
-  std::cout << "Suffix: '" << suffix << "'" << std::endl;
-
-  newSuffix = strAdd2Suffix + suffix;
-
-  if ( ( fileName.length() >= newSuffix.length() ) && 
-       ( fileName.substr( fileName.length() - newSuffix.length() ) != newSuffix ) )
-  {
-    return fileName.substr( 0, fileName.length() - suffix.length() ) + newSuffix;
-  }
-  else
-  {
-    return fileName;
-  }
-};
-
-
-// -------------------------------------------------------------------------
 // DoMain()
 // -------------------------------------------------------------------------
 
@@ -411,9 +325,9 @@ int DoMain( arguments args,
 
   fileInputRelativePath = fileInputFullPath.substr( args.inDirectory.length() );
      
-  fileOutputRelativePath = AddToFileSuffix( fileInputRelativePath,
-                                            args.strAdd2Suffix, 
-                                            suffix );
+  fileOutputRelativePath \
+    = niftk::ModifyImageFileSuffix( fileInputRelativePath,
+                                    args.strAdd2Suffix + suffix );
     
   fileOutputFullPath = niftk::ConcatenatePath( args.outDirectory, 
                                                fileOutputRelativePath );
@@ -638,7 +552,7 @@ int main( int argc, char *argv[] )
     
       if ( args.outImageFileFormat == std::string( "unchanged" ) )
       {
-        outSuffix = GetImageFileSuffix( iterFilename );
+        outSuffix = niftk::ExtractImageFileSuffix( iterFilename );
       }
       else if ( args.outImageFileFormat == std::string( "DICOM (.dcm)" ) )
       {

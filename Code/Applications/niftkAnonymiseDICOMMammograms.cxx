@@ -100,61 +100,6 @@ struct arguments
 
 
 // -------------------------------------------------------------------------
-// AddAnonymousFileSuffix
-// -------------------------------------------------------------------------
-
-std::string AddAnonymousFileSuffix( std::string fileName, std::string strAdd2Suffix )
-{
-  std::string suffix;
-  std::string newSuffix;
-
-  if ( ( fileName.length() >= 4 ) && 
-       ( fileName.substr( fileName.length() - 4 ) == std::string( ".dcm" ) ) )
-  {
-    suffix = std::string( ".dcm" );
-  }
-
-  else if ( ( fileName.length() >= 4 ) && 
-	    ( fileName.substr( fileName.length() - 4 ) == std::string( ".DCM" ) ) )
-  {
-    suffix = std::string( ".DCM" );
-  }
-
-  else if ( ( fileName.length() >= 6 ) && 
-	    ( fileName.substr( fileName.length() - 6 ) == std::string( ".dicom" ) ) )
-  {
-    suffix = std::string( ".dicom" );
-  }
-
-  else if ( ( fileName.length() >= 6 ) && 
-	    ( fileName.substr( fileName.length() - 6 ) == std::string( ".DICOM" ) ) )
-  {
-    suffix = std::string( ".DICOM" );
-  }
-
-  else if ( ( fileName.length() >= 4 ) && 
-	    ( fileName.substr( fileName.length() - 4 ) == std::string( ".IMA" ) ) )
-  {
-    suffix = std::string( ".IMA" );
-  }
-
-  std::cout << "Suffix: '" << suffix << "'" << std::endl;
-
-  newSuffix = strAdd2Suffix + suffix;
-
-  if ( ( fileName.length() >= newSuffix.length() ) && 
-       ( fileName.substr( fileName.length() - newSuffix.length() ) != newSuffix ) )
-  {
-    return fileName.substr( 0, fileName.length() - suffix.length() ) + newSuffix;
-  }
-  else
-  {
-    return fileName;
-  }
-};
-
-
-// -------------------------------------------------------------------------
 // PrintDictionary()
 // -------------------------------------------------------------------------
 
@@ -403,10 +348,15 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
     }
   }
 
-  if ( ( tagModalityValue == std::string( "CR" ) ) || //  Computed Radiography
-       ( tagModalityValue == std::string( "MG" ) ) )  //  Mammography
+  if ( ( tagModalityValue == std::string( "CR" ) ) || // Computed Radiography
+       ( tagModalityValue == std::string( "MG" ) ) )  // Mammography
   {
     std::cout << "Image is definitely mammography - anonymising"
+	      << std::endl;
+  }
+  else if ( tagModalityValue == std::string( "RG" ) )  // Radiography?
+  {
+    std::cout << "Image could be mammography - anonymising"
 	      << std::endl;
   }
   else if ( ( tagModalityValue == std::string( "CT" ) ) || //  Computed Tomography
@@ -683,8 +633,8 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
 
   fileInputRelativePath = fileInputFullPath.substr( args.dcmDirectoryIn.length() );
      
-  fileOutputRelativePath = AddAnonymousFileSuffix( fileInputRelativePath,
-						   args.strAdd2Suffix );
+  fileOutputRelativePath = niftk::AddStringToImageFileSuffix( fileInputRelativePath,
+                                                              args.strAdd2Suffix );
     
   fileOutputFullPath = niftk::ConcatenatePath( args.dcmDirectoryOut, 
 					       fileOutputRelativePath );

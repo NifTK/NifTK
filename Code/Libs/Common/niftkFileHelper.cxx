@@ -418,4 +418,104 @@ std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDire
   return returnStrings;
 }
 
+
+//  -------------------------------------------------------------------------
+std::string ExtractImageFileSuffix( const std::string fileName )
+{
+  std::string suffix;
+  std::string compSuffix;       // The .gz or .zip suffix if present
+
+  suffix.clear();
+  compSuffix.clear();
+
+  if ( ( fileName.length() >= 3 ) && 
+       ( ( fileName.substr( fileName.length() - 3 ) == std::string( ".gz" ) ) || 
+         ( fileName.substr( fileName.length() - 3 ) == std::string( ".GZ" ) ) ) )
+  {
+    compSuffix = fileName.substr( fileName.length() - 3 );
+  }
+
+  else if ( ( fileName.length() >= 4 ) && 
+            ( ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) || 
+              ( fileName.substr( fileName.length() - 4 ) == std::string( ".zip" ) ) ) )
+  {
+    compSuffix = fileName.substr( fileName.length() - 4 );
+  }
+
+  if ( ( fileName.length() >= 4 + compSuffix.length() ) && 
+       ( ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".dcm" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".DCM" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".nii" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".NII" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".bmp" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".BMP" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".tif" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".TIF" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".jpg" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".JPG" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".png" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".PNG" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".ima" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".IMA" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".img" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".IMG" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".hdr" ) ) ||
+         ( fileName.substr( fileName.length() - compSuffix.length() - 4, 4 ) == std::string( ".HDR" ) ) ) )
+  {
+    suffix = fileName.substr( fileName.length() - compSuffix.length() - 4 );
+  }
+
+  else if ( ( fileName.length() >= 5 + compSuffix.length() ) && 
+            ( ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".tiff" ) ) || 
+              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".TIFF" ) ) ||
+              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".gipl" ) ) ||
+              ( fileName.substr( fileName.length() - compSuffix.length() - 5, 5 ) == std::string( ".GIPL" ) ) ) )
+  {
+    suffix = fileName.substr( fileName.length() - compSuffix.length() - 5 );
+  }
+
+  else if ( ( fileName.length() >= 6 + compSuffix.length() ) && 
+            ( ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".dicom" ) ) ||
+              ( fileName.substr( fileName.length() - compSuffix.length() - 6, 6 ) == std::string( ".DICOM" ) ) ) )
+  {
+    suffix =  fileName.substr( fileName.length() - compSuffix.length() - 6 );
+  }
+
+  return suffix;
+};
+
+
+//  -------------------------------------------------------------------------
+std::string ExtractImageFileSuffix( const std::string fileName,
+                                    std::string &fileNameWithoutSuffix )
+{
+  std::string suffix = niftk::ExtractImageFileSuffix( fileName );
+  fileNameWithoutSuffix = fileName.substr( 0, fileName.length() - suffix.length() );
+
+  return suffix;
+};
+
+
+//  -------------------------------------------------------------------------
+std::string AddStringToImageFileSuffix( const std::string fileName,
+                                        std::string stringToAdd )
+{
+  std::string fileNameWithoutSuffix;
+  std::string suffix = ExtractImageFileSuffix( fileName,
+                                               fileNameWithoutSuffix );
+  return fileNameWithoutSuffix + stringToAdd + suffix;
+};
+
+
+//  -------------------------------------------------------------------------
+std::string ModifyImageFileSuffix( const std::string fileName,
+                                   std::string newSuffix )
+{
+  std::string fileNameWithoutSuffix;
+  niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
+  return fileNameWithoutSuffix + newSuffix;
+};
+
+
+
 } // end namespace

@@ -548,6 +548,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BreastCancerImaging
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics

@@ -800,7 +800,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
     yFreqLessBgndCDF[ iBin ] = totalFrequency;
   }
 
-  for ( iBin=0; iBin<nBinsForFit; iBin++ ) {
+  for ( iBin=0; iBin<nBinsForFit; iBin++ ) 
+  {
     yFreqLessBgndCDF[ iBin ] /= totalFrequency;
     
     if ( yFreqLessBgndCDF[ iBin ] < bgndThresholdProb )
@@ -854,11 +855,12 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   IteratorType segIterator( imSegmented, imSegmented->GetLargestPossibleRegion() );
         
   for ( segIterator.GoToBegin(); ! segIterator.IsAtEnd(); ++segIterator )
+  {
     if ( segIterator.Get() )
       segIterator.Set( 0 );
     else
       segIterator.Set( 1000 );
-
+  }
 
   // Write the background mask to a file?
 
@@ -2835,8 +2837,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   }
 
   return imSurfaceMask;
-}
+};
  
-
 
 } // namespace itk

@@ -54,6 +54,9 @@ add_test(File-Helper-4 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHel
 add_test(File-Helper-5 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 5)
 add_test(File-Helper-6 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 6)
 add_test(File-Helper-7 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 7)
+add_test(File-Helper-8 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 8)
+add_test(File-Helper-9 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 9)
+add_test(File-Helper-10 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 10)
 
 set(FileUnitTests_SRCS
   niftkFileHelperTest.cxx
