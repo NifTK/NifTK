@@ -46,13 +46,18 @@
       <label>Input breast edge XML file</label>
     </string>
 
-    <boolean>
-      <name>flgVerbose</name>
-      <flag>v</flag>
-      <longflag>verbose</longflag>
-      <description>Generate verbose output (i.e. print the DICOM header).</description>
-      <label>Verbose</label>
-    </boolean>
+    <float>
+      <name>regionSizeInMM</name>
+      <longflag>regionSize</longflag>
+      <description>The dimension of the square region size in millimeters.</description>
+      <label>Region size in mm.</label>
+      <default>10</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>100</maximum>
+        <step>1</step>
+      </constraints>
+    </float>
 
   </parameters>
 
@@ -67,7 +72,47 @@
       <description>Output top-level directory to write images and data to</description>
       <label>Output directory to write to</label>
       <channel>output</channel>
+      <default>NiftyResults</default>
     </directory>
+
+    <string>
+      <name>fileOutputDensityCSV</name>
+      <flag>o</flag>
+      <longflag>csv</longflag>
+      <description>Output CSV file of patch densities</description>      
+      <label>Output CSV density file</label>
+      <channel>output</channel>
+      <default>NiftyDensityMeasurements.csv</default>
+    </string>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Verbose</label>
+    </boolean>
+
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>If the image already exists then overwrite it.</description>
+      <label>Overwrite output image if it exists?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>debug</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
 
   </parameters>
 

@@ -170,6 +170,42 @@ namespace niftk
    */
   NIFTKCOMMON_WINEXPORT std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension);
 
+
+  /**
+   * Extract common image suffixes from a file name including the .gz or .zip extension if present.
+   * \param fileName The input image file name.
+   * \return The image file extension, including the dot and .gz or .zip extension.
+   */
+  NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string fileName );
+
+
+  /**
+   * Extract common image suffixes from a file name including the .gz or .zip extension if present.
+   * \param fileName The input image file name.
+   * \param fileNameWithoutSuffix Output image file name without the suffix.
+   * \return The image file extension, including the dot and .gz or .zip extension.
+   */
+  NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix( const std::string fileName,
+                                                            std::string &fileNameWithoutSuffix );
+
+  /**
+   * Add a string just before the image suffix of a file name including the .gz or .zip extension if present.
+   * \param fileName The input image file name.
+   * \param stringToAdd The string to add just before the image suffix.
+   * \return The image file name with the text added just before the image suffix.
+   */
+  NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix( const std::string fileName,
+                                                                std::string stringToAdd );
+
+  /**
+   * Modify the image suffix of a file name, or append if no image suffix present.
+   * \param fileName The input image file name.
+   * \param newSuffix The text to replace the image suffix with.
+   * \return The image file name with the modified, or appended, image suffix.
+   */
+  NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix( const std::string fileName,
+                                                           std::string newSuffix );
+
 } // end namespace
 
 

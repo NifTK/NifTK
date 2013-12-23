@@ -19,395 +19,14 @@
 #include <itkCommandLineHelper.h>
 
 #include <itkDOMReader.h>
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
-#include <itkMetaDataDictionary.h>
-#include <itkMetaDataObject.h>
-#include <itkGDCMImageIO.h>
 
-#include <niftkRegionalDensityCLP.h>
+
+#include <itkRegionalMammographicDensity.h>
+
+#include <niftkRegionalMammographicDensityCLP.h>
 
 namespace fs = boost::filesystem;
 
-
-/*!
- * \file niftkRegionalDensity.cxx
- * \page niftkRegionalDensity
- * \section niftkRegionalDensitySummary Calculates the density of regions on interest across a mammogram
- *
- * \section niftkRegionalDensityCaveats Caveats
- * \li None
- */
-
-
-typedef itk::MetaDataDictionary DictionaryType;
-typedef itk::MetaDataObject< std::string > MetaDataStringType;
-
-enum MammogramType { 
-  UNKNOWN_MAMMO_TYPE,
-  DIAGNOSTIC_MAMMO,
-  PREDIAGNOSTIC_MAMMO
-};
-
-struct coord
-{
-  int id;
-  int x;
-  int y;
-
-  coord() {
-    id = 0;
-    x = 0;
-    y = 0;
-  }
-};
-
-bool CompareCoords(coord c1, coord c2) { 
-  return ( c1.id < c2.id ); 
-};
-
-
-
-// -----------------------------------------------------------------------------------
-// Class to store the data for diagnostic and pre-diagnostic images of a patient
-// -----------------------------------------------------------------------------------
-
-template <class InputPixelType, unsigned int InputDimension=2>
-class Patient
-{
-public:
-
-  typedef itk::Image< InputPixelType, InputDimension > InputImageType;
-  typedef itk::ImageFileReader< InputImageType > ReaderType;
-
-
-  Patient( std::string patientID ) {
-    id = patientID;
-
-    thresholdDiagnostic = 0;
-    thresholdPreDiagnostic = 0;
-
-    tumourLeft = 0;
-    tumourRight = 0;
-    tumourTop = 0;
-    tumourBottom = 0;
-
-    imDiagnostic = 0;
-    imPreDiagnostic = 0;
-  }
-
-  ~Patient() {
-  }
-
-  void SetIDDiagnosticImage( std::string &idDiagImage )       { idDiagnosticImage    = idDiagImage; }
-  void SetIDPreDiagnosticImage( std::string &idPreDiagImage ) { idPreDiagnosticImage = idPreDiagImage; }
-
-  void SetFileDiagnostic( std::string &fileDiag )       { fileDiagnostic       = fileDiag; }
-  void SetFilePreDiagnostic( std::string &filePreDiag ) { filePreDiagnostic    = filePreDiag; }
-
-  void SetTumourID( std::string &strTumID )           { strTumourID          = strTumID; }
-  void SetTumourImageID( std::string &strTumImageID ) { strTumourImageID     = strTumImageID; }
-
-  void SetThresholdDiagnostic(    int  thrDiag )   { thresholdDiagnostic    = thrDiag; }
-  void SetThresholdPreDiagnostic( int thrPreDiag ) { thresholdPreDiagnostic = thrPreDiag; }
-
-  void SetTumourLeft(   int tumLeft )   { tumourLeft   = tumLeft; }
-  void SetTumourRight(  int tumRight )  { tumourRight  = tumRight; }
-  void SetTumourTop(    int tumTop )    { tumourTop    = tumTop; }
-  void SetTumourBottom( int tumBottom ) { tumourBottom = tumBottom; }
-
-
-  std::string GetPatientID( void ) { return id; }
-
-  std::string GetIDDiagnosticImage( void )    { return idDiagnosticImage; }
-  std::string GetIDPreDiagnosticImage( void ) { return idPreDiagnosticImage; }
-
-  std::string GetFileDiagnostic( void )    { return fileDiagnostic; }
-  std::string GetFilePreDiagnostic( void ) { return filePreDiagnostic; }
-
-  std::string GetStrTumourID( void )      { return strTumourID; }
-  std::string GetStrTumourImageID( void ) { return strTumourImageID; }
-
-  int GetThresholdDiagnostic( void )    { return thresholdDiagnostic; }
-  int GetThresholdPreDiagnostic( void ) { return thresholdPreDiagnostic; }
-
-  int GetTumourLeft( void )   { return tumourLeft; }
-  int GetTumourRight( void )  { return tumourRight; }
-  int GetTumourTop( void )    { return tumourTop; }
-  int GetTumourBottom( void ) { return tumourBottom; }
-
-
-  void LoadImages( void ) {
-    ReadImage( DIAGNOSTIC_MAMMO );
-    ReadImage( PREDIAGNOSTIC_MAMMO );
-  }
-
-  void UnloadImages( void ) {
-    imDiagnostic = 0;
-    imPreDiagnostic = 0;   
-  }
-
-  void Print( bool flgVerbose = false ) {
-
-    std::vector< coord >::iterator itCoord;
-
-    std::cout << std::endl
-              << "Patient ID: " << id << std::endl;
-
-    std::cout << std::endl
-              << "   Diagnostic ID: " << idDiagnosticImage << std::endl
-              << "   Diagnostic file: " << fileDiagnostic << std::endl
-              << "   Diagnostic threshold: " <<  thresholdDiagnostic << std::endl
-              << std::endl;
-
-    std::cout << "   Diagnostic breast edge points: " << std::endl;
-
-    for ( itCoord = diagBreastEdgePoints.begin(); 
-          itCoord != diagBreastEdgePoints.end(); 
-          itCoord++ )
-    {
-      std::cout << "     " 
-                << std::right << std::setw(6) << (*itCoord).id << ": "
-                << std::right << std::setw(6) << (*itCoord).x << ", "
-                << std::right << std::setw(6) << (*itCoord).y << std::endl;
-    }
-
-    std::cout << std::endl
-              << "   Diagnostic pectoral points: " << std::endl;
-
-    for ( itCoord = diagPectoralPoints.begin(); 
-          itCoord != diagPectoralPoints.end(); 
-          itCoord++ )
-    {
-      std::cout << "     " 
-                << std::right << std::setw(6) << (*itCoord).id << ": "
-                << std::right << std::setw(6) << (*itCoord).x << ", "
-                << std::right << std::setw(6) << (*itCoord).y << std::endl;
-    }
-    
-    std::cout << std::endl
-              << "   Pre-diagnostic ID: " << idPreDiagnosticImage << std::endl
-              << "   Pre-diagnostic file: " << filePreDiagnostic << std::endl
-              << "   Pre-diagnostic threshold: " <<  thresholdPreDiagnostic << std::endl
-              << std::endl;
-
-    std::cout << "   Pre-diagnostic breast edge points: " << std::endl;
-
-    for ( itCoord = preDiagBreastEdgePoints.begin(); 
-          itCoord != preDiagBreastEdgePoints.end(); 
-          itCoord++ )
-    {
-      std::cout << "     " 
-                << std::right << std::setw(6) << (*itCoord).id << ": "
-                << std::right << std::setw(6) << (*itCoord).x << ", "
-                << std::right << std::setw(6) << (*itCoord).y << std::endl;
-    }
-
-    std::cout << std::endl
-              << "   Pre-diagnostic pectoral points: " << std::endl;
-
-    for ( itCoord = preDiagPectoralPoints.begin(); 
-          itCoord != preDiagPectoralPoints.end(); 
-          itCoord++ )
-    {
-      std::cout << "     " 
-                << std::right << std::setw(6) << (*itCoord).id << ": "
-                << std::right << std::setw(6) << (*itCoord).x << ", "
-                << std::right << std::setw(6) << (*itCoord).y << std::endl;
-    }
-    
-    std::cout << std::endl
-              << "   Tumour ID: " << strTumourID << std::endl
-              << "   Tumour image ID: " << strTumourImageID << std::endl
-              << "   Tumour left:   " <<  tumourLeft << std::endl
-              << "   Tumour right:  " <<  tumourRight << std::endl
-              << "   Tumour top:    " <<  tumourTop << std::endl
-              << "   Tumour bottom: " <<  tumourBottom << std::endl
-              << std::endl;
- 
-    if ( flgVerbose )
-    {
-      if ( imDiagnostic ) imDiagnostic->Print( std::cout );
-      if ( imPreDiagnostic ) imPreDiagnostic->Print( std::cout );
-
-      PrintDictionary( dictionary );
-    }
-      
-    
-   
-  }
-
-  void PushBackBreastEdgeCoord( std::string strBreastEdgeImageID, 
-                                int id, int x, int y ) {
-
-    coord c;
-
-    c.id = id;
-    c.x = x;
-    c.y = y;
-
-    if ( strBreastEdgeImageID == idDiagnosticImage ) 
-    {
-      diagBreastEdgePoints.push_back( c );
-      std::sort( diagBreastEdgePoints.begin(), diagBreastEdgePoints.end(), CompareCoords );
-    }
-    else if ( strBreastEdgeImageID == idPreDiagnosticImage ) 
-    {
-      preDiagBreastEdgePoints.push_back( c );
-      std::sort( preDiagBreastEdgePoints.begin(), preDiagBreastEdgePoints.end(), CompareCoords );
-    }
-    else 
-    {
-      std::cerr << "ERROR: This patient doesn't have and image with id: " 
-                << strBreastEdgeImageID << std::endl;
-      exit( EXIT_FAILURE );
-    }
-  }
-
-  void PushBackPectoralCoord( std::string strPectoralImageID, 
-                                int id, int x, int y ) {
-
-    coord c;
-
-    c.id = id;
-    c.x = x;
-    c.y = y;
-
-    if ( strPectoralImageID == idDiagnosticImage ) 
-    {
-      diagPectoralPoints.push_back( c );
-      std::sort( diagPectoralPoints.begin(), diagPectoralPoints.end(), CompareCoords );
-    }
-    else if ( strPectoralImageID == idPreDiagnosticImage ) 
-    {
-      preDiagPectoralPoints.push_back( c );
-      std::sort( preDiagPectoralPoints.begin(), preDiagPectoralPoints.end(), CompareCoords );
-    }
-    else 
-    {
-      std::cerr << "ERROR: This patient doesn't have and image with id: " 
-                << strPectoralImageID << std::endl;
-      exit( EXIT_FAILURE );
-    }
-  }
-
-
-protected:
-
-  std::string id;
-
-  // The diagnostic image
-
-  std::string idDiagnosticImage;
-  std::string fileDiagnostic;
-
-  int thresholdDiagnostic;
-
-  // The pre-diagnostic image
-
-  std::string idPreDiagnosticImage;
-  std::string filePreDiagnostic;
-
-  int thresholdPreDiagnostic;
-
-  // The tumour
-
-  std::string strTumourID;
-  std::string strTumourImageID;
-
-  int tumourLeft;
-  int tumourRight;
-  int tumourTop;
-  int tumourBottom;
-
-  DictionaryType dictionary;
-
-  typename InputImageType::Pointer imDiagnostic;
-  typename InputImageType::Pointer imPreDiagnostic;
-
-  std::vector< coord > diagBreastEdgePoints;
-  std::vector< coord > preDiagBreastEdgePoints;
-  
-
-  std::vector< coord > diagPectoralPoints;
-  std::vector< coord > preDiagPectoralPoints;
-  
-
-  void PrintDictionary( DictionaryType &dictionary ) {
-
-    DictionaryType::ConstIterator tagItr = dictionary.Begin();
-    DictionaryType::ConstIterator end = dictionary.End();
-    
-    while ( tagItr != end )
-    {
-      MetaDataStringType::ConstPointer entryvalue = 
-        dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-      
-      if ( entryvalue )
-      {
-        std::string tagkey = tagItr->first;
-        std::string tagID;
-        bool found =  itk::GDCMImageIO::GetLabelFromTag( tagkey, tagID );
-        
-        std::string tagValue = entryvalue->GetMetaDataObjectValue();
-        
-        std::cout << tagkey << " " << tagID <<  ": " << tagValue << std::endl;
-      }
-      
-      ++tagItr;
-    }
-  }
-
-  void ReadImage( MammogramType mammoType ) {
-    
-    std::string fileImage;
-
-    if ( mammoType == DIAGNOSTIC_MAMMO )
-    {
-      fileImage = fileDiagnostic;
-    }
-    else if ( mammoType == PREDIAGNOSTIC_MAMMO )
-    {
-      fileImage = filePreDiagnostic;
-    }
-
-    if ( ! fileImage.length() ) {
-      std::cerr << "ERROR: Cannot read image, filename not set" << std::endl;
-      exit( EXIT_FAILURE );
-    }
-
-
-    typedef itk::GDCMImageIO           ImageIOType;
-    ImageIOType::Pointer gdcmImageIO = ImageIOType::New();
-
-    typename ReaderType::Pointer reader = ReaderType::New();
-    reader->SetImageIO( gdcmImageIO );
-  
-    reader->SetFileName( fileImage );
-  
-    try
-    {
-      reader->UpdateLargestPossibleRegion();
-    }
-    
-    catch (itk::ExceptionObject &ex)
-    {
-      std::cerr << "ERROR: Could not read file: " << fileImage << std::endl;
-      exit( EXIT_FAILURE );
-    }
-
-    if ( mammoType == DIAGNOSTIC_MAMMO )
-    {
-      imDiagnostic = reader->GetOutput();
-      imDiagnostic->DisconnectPipeline();
-    }
-    else if ( mammoType == PREDIAGNOSTIC_MAMMO )
-    {
-      imPreDiagnostic = reader->GetOutput();
-      imPreDiagnostic->DisconnectPipeline();
-    }
-  }
-};
 
 
 // -----------------------------------------------------------------------------------
@@ -472,6 +91,39 @@ std::string GetText( itk::DOMNode::ChildrenListType::iterator &itNode, std::stri
 }                
 
 
+// --------------------------------------------------------------------------
+// WriteHeaderToCSVFile()
+// --------------------------------------------------------------------------
+
+void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
+{
+
+  *foutOutputDensityCSV 
+    //                                 123456789012345678901234567890
+    << std::right << std::setw(10) << "Patient id" << ", "
+
+    << std::right << std::setw(17) << "Diagnostic ID"   << ", "
+    << std::right << std::setw(60) << "Diagnostic file" << ", "
+    << std::right << std::setw(18) << "Diag threshold"  << ", "
+
+    << std::right << std::setw(17) << "Pre-diagnostic ID"   << ", "
+    << std::right << std::setw(60) << "Pre-diagnostic file" << ", "
+    << std::right << std::setw(18) << "Pre-diag threshold"  << ", "
+  
+    << std::right << std::setw( 9) << "Tumour ID"         << ", "
+    << std::right << std::setw(17) << "Tumour image ID"   << ", "
+    << std::right << std::setw(17) << "Tumour center (x)" << ", "
+    << std::right << std::setw(17) << "Tumour center (y)" << ", "
+
+    << std::right << std::setw(11) << "Patch size" << ", "
+
+    << std::right << std::setw(29) << "Random pre-diag patch number" << ", "
+    << std::right << std::setw(29) << "Random pre-diag patch density"
+
+    << std::endl;
+};
+
+
 // -----------------------------------------------------------------------------------
 /** \brief Calculates the density of regions on interest across a mammogram */
 // -----------------------------------------------------------------------------------
@@ -480,10 +132,10 @@ int main(int argc, char** argv)
 {
   int result = EXIT_SUCCESS;
     
-  std::string fileOutputRelativePath;
-  std::string fileOutputFullPath;
   std::string dirOutputFullPath;
     
+  std::ofstream *foutOutputDensityCSV = 0;
+
   const unsigned int   InputDimension = 2;
   typedef short InputPixelType;
 
@@ -506,8 +158,14 @@ int main(int argc, char** argv)
   std::string strPectoralID, strPectoralImageID;
 
 
-  std::list< Patient<InputPixelType, InputDimension> > listOfPatients;
-  std::list< Patient<InputPixelType, InputDimension> >::iterator itPatient;
+  typedef itk::RegionalMammographicDensity<InputPixelType, InputDimension> ROIMammoDensityType;
+
+  std::list< ROIMammoDensityType::Pointer > listOfPatients;
+  std::list< ROIMammoDensityType::Pointer >::iterator itPatient;
+
+  boost::random::mt19937 gen;
+
+  gen.seed(static_cast<unsigned int>(std::time(0)));
 
 
   // To pass around command line args
@@ -529,6 +187,22 @@ int main(int argc, char** argv)
     std::cerr << "ERROR: Input XML file(s) missing" << std::endl;
     return EXIT_FAILURE;
   }
+
+
+  // Open the output CSV density measurements file
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( fileOutputDensityCSV.length() != 0 ) {
+    foutOutputDensityCSV 
+      = new std::ofstream( niftk::ConcatenatePath( dirOutput, fileOutputDensityCSV ).c_str() );
+
+    if ((! *foutOutputDensityCSV) || foutOutputDensityCSV->bad()) {
+      std::cerr << "ERROR: Could not open file: " << foutOutputDensityCSV << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+ 
+  WriteToCSVFile( foutOutputDensityCSV );
 
 
   // Read the XML files
@@ -553,7 +227,7 @@ int main(int argc, char** argv)
 
     std::cout << std::endl << "Image: " << iNode << std::endl;
 
-    if ( flgVerbose )
+    if ( flgDebug )
       std::cout << "  tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
@@ -570,7 +244,7 @@ int main(int argc, char** argv)
 
       textNode = nodeRecord->GetTextChild();
 
-      if ( flgVerbose )
+      if ( flgDebug )
         std::cout << "    tag: " << std::left << std::setw(18) << nodeRecord->GetName()
                   << " path: " << std::left << std::setw(12) << nodeRecord->GetPath()
                   << " num: " << std::left << std::setw(12) << nodeRecord->GetNumberOfChildren()
@@ -619,15 +293,15 @@ int main(int argc, char** argv)
 
     bool flgFound = false;
 
-    Patient<InputPixelType, InputDimension> *patient = 0;
+    ROIMammoDensityType::Pointer patient = 0;
 
     for ( itPatient = listOfPatients.begin(); 
           itPatient != listOfPatients.end(); 
           itPatient++ )
     {
-      if ( (*itPatient).GetPatientID() == strPatientID )
+      if ( (*itPatient)->GetPatientID() == strPatientID )
       {
-        patient = &(*itPatient);
+        patient = (*itPatient);
         flgFound = true;
         break;
       };
@@ -635,7 +309,15 @@ int main(int argc, char** argv)
 
     if ( ! flgFound ) 
     {
-      patient = new Patient<InputPixelType, InputDimension>( strPatientID );
+      patient = ROIMammoDensityType::New();
+
+      patient->SetPatientID( strPatientID );
+      patient->SetOutputDirectory( dirOutput );
+      patient->SetRegionSizeInMM( regionSizeInMM );
+
+      if ( flgVerbose )   patient->SetVerboseOn();
+      if ( flgOverwrite ) patient->SetOverwriteOn();
+      if ( flgDebug )     patient->SetDebugOn();
     }
 
     if ( strMammoType == std::string( "diagnostic" ) )
@@ -653,8 +335,7 @@ int main(int argc, char** argv)
 
     if ( ! flgFound ) 
     {
-      listOfPatients.push_back( *patient );
-      delete patient;
+      listOfPatients.push_back( patient );
     }
   }
 
@@ -668,7 +349,7 @@ int main(int argc, char** argv)
   {
     node = domTumour->GetChild( iNode );
 
-    if ( flgVerbose )
+    if ( flgDebug )
       std::cout << std::endl << "Tumour: " << iNode << std::endl
                 << "  tag: " << node->GetName()
                 << " path: " << node->GetPath()
@@ -685,7 +366,7 @@ int main(int argc, char** argv)
 
       textNode = nodeRecord->GetTextChild();
 
-      if ( flgVerbose )
+      if ( flgDebug )
         std::cout << "    tag: " << std::left << std::setw(18) << nodeRecord->GetName()
                   << " path: " << std::left << std::setw(12) << nodeRecord->GetPath()
                   << " num: " << std::left << std::setw(12) << nodeRecord->GetNumberOfChildren()
@@ -730,15 +411,15 @@ int main(int argc, char** argv)
 
     bool flgFound = false;
 
-    Patient<InputPixelType, InputDimension> *patient = 0;
-
+    ROIMammoDensityType::Pointer patient = 0;
+    
     for ( itPatient = listOfPatients.begin(); 
           itPatient != listOfPatients.end(); 
           itPatient++ )
     {
-      if ( (*itPatient).GetIDDiagnosticImage() == strTumourImageID )
+      if ( (*itPatient)->GetIDDiagnosticImage() == strTumourImageID )
       {
-        patient = &(*itPatient);
+        patient = (*itPatient);
         flgFound = true;
         break;
       };
@@ -761,8 +442,7 @@ int main(int argc, char** argv)
 
     if ( ! flgFound ) 
     {
-      listOfPatients.push_back( *patient );
-      delete patient;
+      listOfPatients.push_back( patient );
     }
   }
 
@@ -780,7 +460,7 @@ int main(int argc, char** argv)
 
     std::cout << "BreastEdge: " << std::left << std::setw(6) << iNode;
 
-    if ( flgVerbose )
+    if ( flgDebug )
       std::cout << "  tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
@@ -797,7 +477,7 @@ int main(int argc, char** argv)
 
       textNode = nodeRecord->GetTextChild();
 
-      if ( flgVerbose )
+      if ( flgDebug )
         std::cout << "    tag: " << std::left << std::setw(18) << nodeRecord->GetName()
                   << " path: " << std::left << std::setw(12) << nodeRecord->GetPath()
                   << " num: " << std::left << std::setw(12) << nodeRecord->GetNumberOfChildren()
@@ -822,7 +502,7 @@ int main(int argc, char** argv)
       }
     }
    
-    std::cout << " breast edge id: "    << std::left << std::setw(6) << strBreastEdgeID
+    std::cout << " breast edge id: "       << std::left << std::setw(6) << strBreastEdgeID
               << " x coord: "              << std::left << std::setw(6) << strXCoord
               << " y coord: "              << std::left << std::setw(6) << strYCoord
               << " breast edge image id: " << std::left << std::setw(6) << strBreastEdgeImageID 
@@ -832,16 +512,16 @@ int main(int argc, char** argv)
 
     bool flgFound = false;
 
-    Patient<InputPixelType, InputDimension> *patient = 0;
+    ROIMammoDensityType::Pointer patient = 0;
 
     for ( itPatient = listOfPatients.begin(); 
           itPatient != listOfPatients.end(); 
           itPatient++ )
     {
-      if ( ( (*itPatient).GetIDDiagnosticImage() == strBreastEdgeImageID ) ||
-           ( (*itPatient).GetIDPreDiagnosticImage() == strBreastEdgeImageID ) )
+      if ( ( (*itPatient)->GetIDDiagnosticImage() == strBreastEdgeImageID ) ||
+           ( (*itPatient)->GetIDPreDiagnosticImage() == strBreastEdgeImageID ) )
       {
-        patient = &(*itPatient);
+        patient = (*itPatient);
         flgFound = true;
         break;
       };
@@ -872,7 +552,7 @@ int main(int argc, char** argv)
 
     std::cout << "Pectoral:   " << std::left << std::setw(6) << iNode;
 
-    if ( flgVerbose )
+    if ( flgDebug )
       std::cout << "    tag: " << node->GetName()
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
@@ -889,7 +569,7 @@ int main(int argc, char** argv)
 
       textNode = nodeRecord->GetTextChild();
 
-      if ( flgVerbose )
+      if ( flgDebug )
         std::cout << " tag: " << std::left << std::setw(18) << nodeRecord->GetName()
                   << " path: " << std::left << std::setw(12) << nodeRecord->GetPath()
                   << " num: " << std::left << std::setw(12) << nodeRecord->GetNumberOfChildren()
@@ -914,7 +594,7 @@ int main(int argc, char** argv)
       }
     }
    
-    std::cout << " pectoral id: "       << std::left << std::setw(6) << strPectoralID
+    std::cout << " pectoral id: "          << std::left << std::setw(6) << strPectoralID
               << " x coord: "              << std::left << std::setw(6) << strXCoord
               << " y coord: "              << std::left << std::setw(6) << strYCoord
               << " breast edge image id: " << std::left << std::setw(6) << strPectoralImageID 
@@ -924,16 +604,16 @@ int main(int argc, char** argv)
 
     bool flgFound = false;
 
-    Patient<InputPixelType, InputDimension> *patient = 0;
+    ROIMammoDensityType::Pointer patient = 0;
 
     for ( itPatient = listOfPatients.begin(); 
           itPatient != listOfPatients.end(); 
           itPatient++ )
     {
-      if ( ( (*itPatient).GetIDDiagnosticImage() == strPectoralImageID ) ||
-           ( (*itPatient).GetIDPreDiagnosticImage() == strPectoralImageID ) )
+      if ( ( (*itPatient)->GetIDDiagnosticImage() == strPectoralImageID ) ||
+           ( (*itPatient)->GetIDPreDiagnosticImage() == strPectoralImageID ) )
       {
-        patient = &(*itPatient);
+        patient = (*itPatient);
         flgFound = true;
         break;
       };
@@ -960,15 +640,26 @@ int main(int argc, char** argv)
         itPatient != listOfPatients.end(); 
         itPatient++ )
   {  
-    (*itPatient).LoadImages();
-    (*itPatient).Print( flgVerbose );
-  
+    (*itPatient)->LoadImages();
+    (*itPatient)->Compute();
+    (*itPatient)->Print( flgVerbose );
 
-    
+    if ( foutOutputDensityCSV ) 
+    {   
+      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV, gen );  
+    }
+
+    (*itPatient)->UnloadImages();
+  }
 
 
+  // Close the CSV file?
+  // ~~~~~~~~~~~~~~~~~~~
 
-    (*itPatient).LoadImages();
+  if ( foutOutputDensityCSV ) 
+  {
+    foutOutputDensityCSV->close();
+    delete foutOutputDensityCSV;
   }
 
   return result;
