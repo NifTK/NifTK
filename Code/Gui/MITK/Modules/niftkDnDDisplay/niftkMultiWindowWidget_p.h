@@ -203,33 +203,19 @@ public:
   /// \brief Sets the selected position in the world coordinate system (mm).
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-//  /// \brief Gets the cursor position normalised with the render window size.
-//  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-//  ///
-//  ///    pixel coordinate / render window size
-//  ///
-//  mitk::Vector3D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
-
-//  /// \brief Sets the cursor position normalised with the render window size.
-//  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-//  ///
-//  ///    pixel coordinate / render window size
-//  ///
-//  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
-
   /// \brief Gets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D GetCursorPosition2D(QmitkRenderWindow* renderWindow) const;
+  const mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  void SetCursorPosition2D(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
@@ -244,6 +230,20 @@ public:
   ///    pixel coordinate / render window size
   ///
   void SetCursorPosition(MIDASOrientation, const mitk::Vector2D& cursorPosition);
+
+  /// \brief Gets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
+
+  /// \brief Sets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
 //  /// \brief Gets the cursor position normalised with the size of the render windows.
 //  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:

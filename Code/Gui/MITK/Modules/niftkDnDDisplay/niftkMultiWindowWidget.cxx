@@ -1553,14 +1553,14 @@ unsigned int niftkMultiWindowWidget::GetMaxTimeStep() const
 ////-----------------------------------------------------------------------------
 mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition(MIDASOrientation orientation) const
 {
-  return this->GetCursorPosition2D(m_RenderWindows[orientation]);
+  return this->GetCursorPosition(m_RenderWindows[orientation]);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
-  this->SetCursorPosition2D(m_RenderWindows[orientation], cursorPosition);
+  this->SetCursorPosition(m_RenderWindows[orientation], cursorPosition);
 }
 
 
@@ -1583,7 +1583,7 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
 //      m_CursorPosition[0] = cursorPosition[0];
 //      m_CursorPosition[1] = cursorPosition[1];
       orientation = MIDAS_ORIENTATION_AXIAL;
-      m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition2D(renderWindow);
+      m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition(renderWindow);
       if (beingPanned && this->AreCursorPositionsBound())
       {
         m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
@@ -1595,7 +1595,7 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
 //      m_CursorPosition[1] = 1.0 - cursorPosition[0];
 //      m_CursorPosition[2] = cursorPosition[1];
       orientation = MIDAS_ORIENTATION_SAGITTAL;
-      m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition2D(renderWindow);
+      m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition(renderWindow);
       if (beingPanned && this->AreCursorPositionsBound())
       {
         m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
@@ -1607,7 +1607,7 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
 //      m_CursorPosition[0] = cursorPosition[0];
 //      m_CursorPosition[2] = cursorPosition[1];
       orientation = MIDAS_ORIENTATION_CORONAL;
-      m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition2D(renderWindow);
+      m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition(renderWindow);
       if (beingPanned && this->AreCursorPositionsBound())
       {
         m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
@@ -1734,9 +1734,9 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 //    mitk::Vector2D cursorPositionOnAxialDisplay = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
 //    mitk::Vector2D cursorPositionOnSagittalDisplay = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
 //    mitk::Vector2D cursorPositionOnCoronalDisplay = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
-    m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-    m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-    m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition2D(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
+    m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
+    m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
+    m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
 
     QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
 //    if (renderWindow == this->mitkWidget1)
@@ -1913,15 +1913,24 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 }
 
 
-////-----------------------------------------------------------------------------
-//const mitk::Vector3D& niftkMultiWindowWidget::GetCursorPosition() const
-//{
-//  return m_CursorPosition;
-//}
+//-----------------------------------------------------------------------------
+const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() const
+{
+  return m_CursorPositions;
+}
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition2D(QmitkRenderWindow* renderWindow) const
+void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
+{
+  this->SetCursorPosition(MIDAS_ORIENTATION_AXIAL, cursorPositions[MIDAS_ORIENTATION_AXIAL]);
+  this->SetCursorPosition(MIDAS_ORIENTATION_SAGITTAL, cursorPositions[MIDAS_ORIENTATION_SAGITTAL]);
+  this->SetCursorPosition(MIDAS_ORIENTATION_CORONAL, cursorPositions[MIDAS_ORIENTATION_CORONAL]);
+}
+
+
+//-----------------------------------------------------------------------------
+const mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition(QmitkRenderWindow* renderWindow) const
 {
   const mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
@@ -1945,7 +1954,7 @@ const mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition2D(QmitkRenderWind
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPosition2D(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition)
+void niftkMultiWindowWidget::SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition)
 {
 //  m_CursorPosition = cursorPosition;
 

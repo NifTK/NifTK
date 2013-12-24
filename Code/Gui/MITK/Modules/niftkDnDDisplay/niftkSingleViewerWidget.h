@@ -421,8 +421,6 @@ private:
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
 
-  std::vector<QmitkRenderWindow*> m_VisibleRenderWindows;
-
   /// \brief Stores the last three selected positions so that if the window layout is switched
   /// between single and multi by double clicking, we can save the position from before the
   /// double clicking.

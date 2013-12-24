@@ -164,7 +164,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
   {
     m_LastCursorPositions.pop_front();
   }
-  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow()));
+  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
   emit SelectedPositionChanged(this, selectedPosition);
 }
@@ -523,7 +523,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
       m_LastSelectedPositions.clear();
       m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastCursorPositions.clear();
-      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow()));
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
@@ -565,7 +565,7 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
       m_LastSelectedPositions.clear();
       m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastCursorPositions.clear();
-      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow()));
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
@@ -661,13 +661,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
       m_SelectedPositions[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedPosition();
       m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
-      unsigned numberOfRenderWindows = m_VisibleRenderWindows.size();
-      m_CursorPositions[Index(m_WindowLayout)].resize(numberOfRenderWindows);
-      m_ScaleFactors[Index(m_WindowLayout)].resize(numberOfRenderWindows);
-      for (unsigned i = 0; i < numberOfRenderWindows; ++i)
+      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
+      m_ScaleFactors[Index(m_WindowLayout)].resize(3);
+      for (unsigned i = 0; i < 3; ++i)
       {
-        m_CursorPositions[Index(m_WindowLayout)][i] = m_MultiWidget->GetCursorPosition2D(m_VisibleRenderWindows[i]);
-        m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(m_VisibleRenderWindows[i]);
+        m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(m_MultiWidget->GetRenderWindow((MIDASOrientation)i));
       }
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
 
@@ -683,8 +681,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     m_MultiWidget->SetWindowLayout(windowLayout);
     // Call Qt update to try and make sure we are painted at the right size.
     m_MultiWidget->update();
-
-    m_VisibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
 
     // Now store the current window layout/orientation.
     MIDASOrientation orientation = this->GetOrientation();
@@ -709,11 +705,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
       m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
 
-      unsigned numberOfRenderWindows = m_VisibleRenderWindows.size();
-      for (unsigned i = 0; i < numberOfRenderWindows; ++i)
+      m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
+      for (unsigned i = 0; i < 3; ++i)
       {
-        m_MultiWidget->SetCursorPosition2D(m_VisibleRenderWindows[i], m_CursorPositions[Index(windowLayout)][i]);
-        m_MultiWidget->SetScaleFactor(m_VisibleRenderWindows[i], m_ScaleFactors[Index(windowLayout)][i]);
+        m_MultiWidget->SetScaleFactor(m_MultiWidget->GetRenderWindow(MIDASOrientation(i)), m_ScaleFactors[Index(windowLayout)][i]);
       }
 
       m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
@@ -721,7 +716,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_LastSelectedPositions.clear();
       m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastCursorPositions.clear();
-      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow()));
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
       emit CursorPositionChanged(this, this->GetOrientation(), m_CursorPositions[Index(windowLayout)][this->GetOrientation()]);
@@ -743,7 +738,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
         m_LastSelectedPositions.clear();
         m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
         m_LastCursorPositions.clear();
-        m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow()));
+        m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
         /// If this is a multi window layout and the scale factors are bound,
         /// we have to set the same scale factors for each window.
@@ -753,7 +748,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
         }
 
         MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) selected point: " << m_MultiWidget->GetSelectedPosition();
-        MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) cursor position: " << m_MultiWidget->GetCursorPosition2D(m_MultiWidget->GetSelectedRenderWindow());
+        MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) cursor position: " << m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation());
         MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) scale factor: " << m_MultiWidget->GetScaleFactor();
         m_WindowLayoutInitialised[Index(windowLayout)] = true;
       }
