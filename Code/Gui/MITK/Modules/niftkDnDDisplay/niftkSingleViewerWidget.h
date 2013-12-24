@@ -236,10 +236,10 @@ public:
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Get the current cursor position on the render window in pixels, normalised with the size of the render windows.
-  const mitk::Vector3D& GetCursorPosition() const;
+  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
 
   /// \brief Set the current cursor position on the render window in pixels, normalised with the size of the render windows.
-  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
+  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Get the current magnification.
   double GetMagnification() const;
@@ -341,7 +341,7 @@ signals:
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Vector3D& cursorPosition);
+  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
   void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
@@ -364,7 +364,7 @@ protected slots:
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
-  virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
+  virtual void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor has changed.
   virtual void OnScaleFactorChanged(double scaleFactor);
@@ -409,7 +409,7 @@ private:
 
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the cursor positions for the render windows of the layout.
-  std::vector<mitk::Vector3D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+  std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the scale factors of the render windows of the layout.
@@ -431,7 +431,7 @@ private:
   /// \brief Stores the last three cursor positions so that if the window layout is switched
   /// between single and multi by double clicking, we can save the position from before the
   /// double clicking.
-  std::deque<mitk::Vector3D> m_LastCursorPositions;
+  std::deque<mitk::Vector2D> m_LastCursorPositions;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;

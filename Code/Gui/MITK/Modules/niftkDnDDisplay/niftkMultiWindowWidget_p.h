@@ -203,19 +203,19 @@ public:
   /// \brief Sets the selected position in the world coordinate system (mm).
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-  /// \brief Gets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  mitk::Vector3D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
+//  /// \brief Gets the cursor position normalised with the render window size.
+//  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+//  ///
+//  ///    pixel coordinate / render window size
+//  ///
+//  mitk::Vector3D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
 
-  /// \brief Sets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
+//  /// \brief Sets the cursor position normalised with the render window size.
+//  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+//  ///
+//  ///    pixel coordinate / render window size
+//  ///
+//  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
@@ -231,36 +231,50 @@ public:
   ///
   void SetCursorPosition2D(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
-  /// \brief Gets the cursor position normalised with the size of the render windows.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+  /// \brief Gets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-  /// coordinate corresponds to the second coordinate in the sagittal render window.
-  /// The correspondence of the orientation axes is the following:
-  ///
-  ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> 1.0 - sagittal[0]
-  ///     sagittal[1] <-> coronal[1]
-  ///
-  const mitk::Vector3D& GetCursorPosition() const;
+  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
 
-  /// \brief Moves the image (world) in the render windows so that the selected position gets to the
-  /// specified position in the render windows. The function does not change the selected position.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+  /// \brief Sets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-  /// coordinate corresponds to the second coordinate in the sagittal render window.
-  /// The correspondence of the orientation axes is the following:
-  ///
-  ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> 1.0 - sagittal[0]
-  ///     sagittal[1] <-> coronal[1]
-  ///
-  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
+  void SetCursorPosition(MIDASOrientation, const mitk::Vector2D& cursorPosition);
+
+//  /// \brief Gets the cursor position normalised with the size of the render windows.
+//  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+//  ///
+//  ///    pixel coordinate / render window size
+//  ///
+//  /// The first two coordinates correspond to the coordinates in the axial render window. The third
+//  /// coordinate corresponds to the second coordinate in the sagittal render window.
+//  /// The correspondence of the orientation axes is the following:
+//  ///
+//  ///     axial[0] <-> coronal[0]
+//  ///     axial[1] <-> 1.0 - sagittal[0]
+//  ///     sagittal[1] <-> coronal[1]
+//  ///
+//  const mitk::Vector3D& GetCursorPosition() const;
+
+//  /// \brief Moves the image (world) in the render windows so that the selected position gets to the
+//  /// specified position in the render windows. The function does not change the selected position.
+//  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
+//  ///
+//  ///    pixel coordinate / render window size
+//  ///
+//  /// The first two coordinates correspond to the coordinates in the axial render window. The third
+//  /// coordinate corresponds to the second coordinate in the sagittal render window.
+//  /// The correspondence of the orientation axes is the following:
+//  ///
+//  ///     axial[0] <-> coronal[0]
+//  ///     axial[1] <-> 1.0 - sagittal[0]
+//  ///     sagittal[1] <-> coronal[1]
+//  ///
+//  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
@@ -334,8 +348,11 @@ signals:
 //  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
+//  /// \brief Emitted when the cursor position has changed.
+//  void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
+
   /// \brief Emitted when the cursor position has changed.
-  void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
+  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed.
   void ScaleFactorChanged(double scaleFactor);
@@ -403,8 +420,8 @@ private:
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
 
-  /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
+//  /// \brief Computes the origin for a render window from the cursor position.
+//  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
@@ -445,7 +462,8 @@ private:
   bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
-  mitk::Vector3D m_CursorPosition;
+  std::vector<mitk::Vector2D> m_CursorPositions;
+//  mitk::Vector3D m_CursorPosition;
   double m_Magnification;
   double m_ScaleFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
