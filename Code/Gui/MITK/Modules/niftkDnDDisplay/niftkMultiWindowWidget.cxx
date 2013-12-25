@@ -1578,43 +1578,32 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
-    // axial[0] <-> coronal[0]
-    // axial[1] <-> 1.0 - sagittal[0]
-    // sagittal[1] <-> coronal[1]
-
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
-    {
-      m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
-      if (beingPanned && this->AreCursorPositionsBound())
-      {
-        m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
-        m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
-      }
-    }
-    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-    {
-      m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
-      if (beingPanned && this->AreCursorPositionsBound())
-      {
-        m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
-        m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
-      }
-    }
-    else if (orientation == MIDAS_ORIENTATION_CORONAL)
-    {
-      m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
-      if (beingPanned && this->AreCursorPositionsBound())
-      {
-        m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
-        m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
-      }
-    }
-
+    m_CursorPositions[orientation] = this->GetCursorPosition(m_RenderWindows[orientation]);
     m_RenderingManager->RequestUpdate(m_RenderWindows[orientation]->GetRenderWindow());
     emit CursorPositionChanged(orientation, m_CursorPositions[orientation]);
 
     if (beingPanned && this->AreCursorPositionsBound())
     {
+      // axial[0] <-> coronal[0]
+      // axial[1] <-> 1.0 - sagittal[0]
+      // sagittal[1] <-> coronal[1]
+
+      if (orientation == MIDAS_ORIENTATION_AXIAL)
+      {
+        m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
+        m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
+      }
+      else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+      {
+        m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
+        m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
+      }
+      else if (orientation == MIDAS_ORIENTATION_CORONAL)
+      {
+        m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
+        m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
+      }
+
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
       {
