@@ -208,14 +208,14 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
+  const mitk::Vector2D& GetCursorPosition(MIDASOrientation orientation) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  void SetCursorPosition(MIDASOrientation, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
