@@ -1658,7 +1658,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
     /// which the selected position has changed. If the event was a scroll event then
     /// the two orientations are equal. If it was a mouse click event then they will
     /// be different.
-    this->OnOriginChanged(this->GetOrientation(), true);
+    MIDASOrientation selectedWindowOrientation = this->GetOrientation();
+    if (selectedWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      this->OnOriginChanged(selectedWindowOrientation, true);
+    }
   }
 }
 
