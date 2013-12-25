@@ -124,7 +124,7 @@ void niftkSingleViewerWidget::Initialize(QString windowName,
   this->connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
-  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(double)), SLOT(OnScaleFactorChanged(double)));
+  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
 
   // Create/Connect the state machine
   m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
@@ -184,9 +184,9 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorChanged(double scaleFactor)
+void niftkSingleViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, scaleFactor);
+  emit ScaleFactorChanged(this, orientation, scaleFactor);
 }
 
 
@@ -665,7 +665,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_ScaleFactors[Index(m_WindowLayout)].resize(3);
       for (unsigned i = 0; i < 3; ++i)
       {
-        m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(m_MultiWidget->GetRenderWindow((MIDASOrientation)i));
+        m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(MIDASOrientation(i));
       }
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
 
@@ -708,7 +708,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       for (unsigned i = 0; i < 3; ++i)
       {
-        m_MultiWidget->SetScaleFactor(m_MultiWidget->GetRenderWindow(MIDASOrientation(i)), m_ScaleFactors[Index(windowLayout)][i]);
+        m_MultiWidget->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[Index(windowLayout)][i]);
       }
 
       m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
@@ -719,8 +719,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-      emit CursorPositionChanged(this, this->GetOrientation(), m_CursorPositions[Index(windowLayout)][this->GetOrientation()]);
-      emit ScaleFactorChanged(this, m_ScaleFactors[Index(windowLayout)][this->GetOrientation()]);
+      emit CursorPositionChanged(this, orientation, m_CursorPositions[Index(windowLayout)][orientation]);
+      emit ScaleFactorChanged(this, orientation, m_ScaleFactors[Index(windowLayout)][orientation]);
     }
     else
     {
@@ -792,35 +792,35 @@ void niftkSingleViewerWidget::SetCursorPosition(MIDASOrientation orientation, co
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMagnification() const
+double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetMagnification();
+  return m_MultiWidget->GetMagnification(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetMagnification(double magnification)
+void niftkSingleViewerWidget::SetMagnification(MIDASOrientation orientation, double magnification)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->SetMagnification(magnification);
+    m_MultiWidget->SetMagnification(orientation, magnification);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetScaleFactor() const
+double niftkSingleViewerWidget::GetScaleFactor(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetScaleFactor();
+  return m_MultiWidget->GetScaleFactor(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactor(double scaleFactor)
+void niftkSingleViewerWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->SetScaleFactor(scaleFactor);
+    m_MultiWidget->SetScaleFactor(orientation, scaleFactor);
   }
 }
 

@@ -136,7 +136,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Works out the orientation of the current window layout.
-  MIDASOrientation GetOrientation();
+  MIDASOrientation GetOrientation() const;
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   void SetBackgroundColor(QColor color);
@@ -263,11 +263,11 @@ public:
 //  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
-  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+  double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the position of the focus remains the same.
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Gets the scale factor of the selected render window or 0.0 if no
   /// window is selected.
@@ -288,10 +288,10 @@ public:
   void SetMagnification(double magnification);
 
   /// \brief Computes the magnification of a render window.
-  double GetMagnification(QmitkRenderWindow* renderWindow) const;
+  double GetMagnification(MIDASOrientation orientation) const;
 
   /// \brief Sets the magnification of a render window to the given value.
-  void SetMagnification(QmitkRenderWindow* renderWindow, double magnification);
+  void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -338,7 +338,7 @@ signals:
   void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed.
-  void ScaleFactorChanged(double scaleFactor);
+  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 protected slots:
 
@@ -415,7 +415,7 @@ private:
   void OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
+  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
@@ -457,8 +457,10 @@ private:
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
-  double m_Magnification;
   double m_ScaleFactor;
+  double m_Magnification;
+  std::vector<double> m_ScaleFactors;
+  std::vector<double> m_Magnifications;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
   mitk::TimeGeometry* m_TimeGeometry;

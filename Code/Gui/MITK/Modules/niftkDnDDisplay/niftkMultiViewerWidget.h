@@ -321,7 +321,7 @@ protected slots:
   void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, double scaleFactor);
+  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
   void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);

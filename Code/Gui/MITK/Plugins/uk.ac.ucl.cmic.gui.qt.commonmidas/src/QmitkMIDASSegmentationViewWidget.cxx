@@ -333,7 +333,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
     m_WindowLayout = nextLayout;
     m_Viewer->SetWindowLayout(m_WindowLayout);
 
-    double magnification = m_Viewer->GetMagnification();
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
@@ -355,7 +355,7 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
   {
     m_Viewer->SetSelectedRenderWindow(renderWindow);
 
-    double magnification = m_Viewer->GetMagnification();
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
     m_Magnification = magnification;
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
@@ -549,7 +549,7 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetMainWindowOrientation()
 //-----------------------------------------------------------------------------
 void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, double scaleFactor)
 {
-  double magnification = m_Viewer->GetMagnification();
+  double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
   bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
   m_MagnificationSpinBox->setValue(magnification);
@@ -578,7 +578,7 @@ void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnificati
   }
   else
   {
-    m_Viewer->SetMagnification(magnification);
+    m_Viewer->SetMagnification(m_Viewer->GetOrientation(), magnification);
     m_Magnification = magnification;
   }
 }

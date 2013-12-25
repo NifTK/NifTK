@@ -242,16 +242,16 @@ public:
   void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Get the current magnification.
-  double GetMagnification() const;
+  double GetMagnification(MIDASOrientation orientation) const;
 
   /// \brief Set the current magnification.
-  void SetMagnification(double magnification);
+  void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Get the current scale factor.
-  double GetScaleFactor() const;
+  double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void SetScaleFactor(double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -344,7 +344,7 @@ signals:
   void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
+  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Emitted when the window layout has changed in this viewer.
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
@@ -367,7 +367,7 @@ protected slots:
   virtual void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor has changed.
-  virtual void OnScaleFactorChanged(double scaleFactor);
+  virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 private:
 

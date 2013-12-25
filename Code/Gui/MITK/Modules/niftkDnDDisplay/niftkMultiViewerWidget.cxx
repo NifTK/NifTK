@@ -255,10 +255,9 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 
   m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-//  this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, QmitkRenderWindow*, int)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
-  this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
+  this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
 
@@ -816,9 +815,9 @@ void niftkMultiViewerWidget::OnCursorPositionChanged(niftkSingleViewerWidget* vi
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewer, double scaleFactor)
+void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor)
 {
-  double magnification = viewer->GetMagnification();
+  double magnification = viewer->GetMagnification(orientation);
   m_ControlPanel->SetMagnification(magnification);
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
@@ -827,7 +826,7 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetScaleFactor(scaleFactor);
+        otherViewer->SetScaleFactor(orientation, scaleFactor);
       }
     }
   }
@@ -886,7 +885,7 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first viewer already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
 
-  double magnification = selectedViewer->GetMagnification();
+  double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
 
   WindowLayout windowLayout = selectedViewer->GetWindowLayout();
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
@@ -897,7 +896,7 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   //  double scaleFactor = selectedViewer->GetScaleFactor();
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    dropOntoViewer->SetMagnification(magnification);
+    dropOntoViewer->SetMagnification(dropOntoViewer->GetOrientation(), magnification);
   }
 
 //  m_ControlPanel->SetMagnification(magnification);
@@ -968,7 +967,7 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
 
     double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
     double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
-    double magnification = selectedViewer->GetMagnification();
+    double magnification = selectedViewer->GetMagnification(orientation);
     m_ControlPanel->SetMinMagnification(minMagnification);
     m_ControlPanel->SetMaxMagnification(maxMagnification);
     m_ControlPanel->SetMagnification(magnification);
@@ -1085,7 +1084,7 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  selectedViewer->SetMagnification(magnification);
+  selectedViewer->SetMagnification(selectedViewer->GetOrientation(), magnification);
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
@@ -1093,7 +1092,7 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetMagnification(magnification);
+        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
       }
     }
   }
@@ -1302,12 +1301,12 @@ void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    double magnification = selectedViewer->GetMagnification();
+    double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetMagnification(magnification);
+        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
       }
     }
   }
@@ -1327,12 +1326,12 @@ void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
 void niftkMultiViewerWidget::UpdateBoundMagnification()
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  double magnification = selectedViewer->GetMagnification();
+  double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
   foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
   {
     if (otherViewer != selectedViewer)
     {
-      otherViewer->SetMagnification(magnification);
+      otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
     }
   }
 }
@@ -1669,12 +1668,12 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged()
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    double magnification = selectedViewer->GetMagnification();
+    double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetMagnification(magnification);
+        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
       }
     }
   }
