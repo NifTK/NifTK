@@ -785,6 +785,23 @@ void niftkSingleViewerWidget::SetCursorPosition(MIDASOrientation orientation, co
 
 
 //-----------------------------------------------------------------------------
+const std::vector<mitk::Vector2D>& niftkSingleViewerWidget::GetCursorPositions() const
+{
+  return m_MultiWidget->GetCursorPositions();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
+{
+  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
+  {
+    m_MultiWidget->SetCursorPositions(cursorPositions);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetMagnification(orientation);
@@ -814,6 +831,23 @@ void niftkSingleViewerWidget::SetScaleFactor(MIDASOrientation orientation, doubl
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
     m_MultiWidget->SetScaleFactor(orientation, scaleFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+const std::vector<double>& niftkSingleViewerWidget::GetScaleFactors() const
+{
+  return m_MultiWidget->GetScaleFactors();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
+{
+  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
+  {
+    m_MultiWidget->SetScaleFactors(scaleFactors);
   }
 }
 

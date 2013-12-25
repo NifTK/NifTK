@@ -2147,12 +2147,15 @@ void niftkMultiWindowWidget::SetCursorPositionsBound(bool bound)
   if (bound)
   {
     MIDASOrientation orientation = this->GetOrientation();
-    this->OnOriginChanged(orientation, true);
-    /// We raise the event in another window as well so that the cursors are in sync
-    /// along the third axis as well.
-    MIDASOrientation someOtherOrientation =
-        orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
-    this->OnOriginChanged(someOtherOrientation, true);
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      this->OnOriginChanged(orientation, true);
+      /// We raise the event in another window as well so that the cursors are in sync
+      /// along the third axis as well.
+      MIDASOrientation someOtherOrientation =
+          orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
+      this->OnOriginChanged(someOtherOrientation, true);
+    }
   }
 }
 
@@ -2178,11 +2181,14 @@ void niftkMultiWindowWidget::SetScaleFactorsBound(bool bound)
   if (bound)
   {
     MIDASOrientation orientation = this->GetOrientation();
-    for (int i = 0; i < 3; ++i)
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      if (i != orientation)
+      for (int i = 0; i < 3; ++i)
       {
-        this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+        if (i != orientation)
+        {
+          this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+        }
       }
     }
   }

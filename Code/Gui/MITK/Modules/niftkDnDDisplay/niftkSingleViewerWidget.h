@@ -235,11 +235,17 @@ public:
   /// \brief Set the currently selected position in world coordinates (mm)
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-  /// \brief Get the current cursor position on the render window in pixels, normalised with the size of the render windows.
+  /// \brief Get the current cursor position of the render window in pixels, normalised with the size of the render windows.
   mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
 
-  /// \brief Set the current cursor position on the render window in pixels, normalised with the size of the render windows.
+  /// \brief Set the current cursor position of the render window in pixels, normalised with the size of the render windows.
   void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+
+  /// \brief Gets the current cursor position of each render window in pixels, normalised with the size of the render windows.
+  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
+
+  /// \brief Sets the current cursor position of each render window in pixels, normalised with the size of the render windows.
+  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Get the current magnification.
   double GetMagnification(MIDASOrientation orientation) const;
@@ -252,6 +258,12 @@ public:
 
   /// \brief Set the current scale factor.
   void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Gets the current scale factor of each render window.
+  const std::vector<double>& GetScaleFactors() const;
+
+  /// \brief Sets the current scale factor for each render window.
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
