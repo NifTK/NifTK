@@ -2146,7 +2146,13 @@ void niftkMultiWindowWidget::SetCursorPositionsBound(bool bound)
 
   if (bound)
   {
-    this->OnOriginChanged(this->GetOrientation(), true);
+    MIDASOrientation orientation = this->GetOrientation();
+    this->OnOriginChanged(orientation, true);
+    /// We raise the event in another window as well so that the cursors are in sync
+    /// along the third axis as well.
+    MIDASOrientation someOtherOrientation =
+        orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
+    this->OnOriginChanged(someOtherOrientation, true);
   }
 }
 
