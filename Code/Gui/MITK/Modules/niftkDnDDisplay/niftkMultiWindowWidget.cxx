@@ -124,8 +124,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_CursorPositions(3)
-, m_ScaleFactor(1.0)
-, m_Magnification(0.0)
 , m_ScaleFactors(3)
 , m_Magnifications(3)
 , m_Geometry(NULL)
@@ -484,13 +482,8 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   {
     this->SetSelected(false);
   }
-  this->ForceImmediateUpdate();
 
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN && !this->AreScaleFactorsBound())
-  {
-    m_Magnifications[orientation] = this->GetMagnification(orientation);
-    m_ScaleFactors[orientation] = this->GetScaleFactor(orientation);
-  }
+  this->ForceImmediateUpdate();
 }
 
 
@@ -847,16 +840,17 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitToDisplay()
 {
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
-  for (unsigned int i = 0; i < renderWindows.size(); i++)
+  for (unsigned int i = 0; i < 3; i++)
   {
-    m_BlockDisplayGeometryEvents = true;
-    renderWindows[i]->GetRenderer()->GetDisplayGeometry()->Fit();
-    if (i < 3)
+    // TODO Check if this test is OK.
+    if (this->GetRenderWindow(MIDASOrientation(i))->isVisible())
     {
-      m_ScaleFactors[i] = this->GetScaleFactor(MIDASOrientation(i));
+      m_BlockDisplayGeometryEvents = true;
+      mitk::DisplayGeometry* displayGeometry = m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry();
+      displayGeometry->Fit();
+      m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+      m_BlockDisplayGeometryEvents = false;
     }
-    m_BlockDisplayGeometryEvents = false;
   }
 }
 
@@ -1658,30 +1652,13 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 
     emit SelectedPositionChanged(selectedPosition);
 
-    // axial[0] <-> coronal[0]
-    // axial[1] <-> 1.0 - sagittal[0]
-    // sagittal[1] <-> coronal[1]
-
-    m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_AXIAL]);
-    m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]);
-    m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition(m_RenderWindows[MIDAS_ORIENTATION_CORONAL]);
-
-    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-
-    if (this->AreCursorPositionsBound() && !this->AreScaleFactorsBound())
-    {
-      // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-      for (int i = 0; i < 3; ++i)
-      {
-        QmitkRenderWindow* otherRenderWindow = m_RenderWindows[i];
-        if (otherRenderWindow != renderWindow)
-        {
-          mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(MIDASOrientation(i), m_CursorPositions[i]);
-          this->SetOrigin(MIDASOrientation(i), origin);
-        }
-      }
-      this->RequestUpdate();
-    }
+    /// Note that this is the orientation of the selected render window, in which the
+    /// the mouse click or scroll changed the selected position.
+    /// In contrast, the argument of this function contains the orientation along
+    /// which the selected position has changed. If the event was a scroll event then
+    /// the two orientations are equal. If it was a mouse click event then they will
+    /// be different.
+    this->OnOriginChanged(this->GetOrientation(), true);
   }
 }
 
@@ -1835,74 +1812,6 @@ mitk::Vector2D niftkMultiWindowWidget::GetCursorPosition(QmitkRenderWindow* rend
 }
 
 
-////-----------------------------------------------------------------------------
-//void niftkMultiWindowWidget::SetCursorPosition(const mitk::Vector3D& cursorPosition)
-//{
-//  m_CursorPosition = cursorPosition;
-
-//  bool hasChanged = false;
-
-//  if (this->AreCursorPositionsBound())
-//  {
-//    // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
-//    for (int i = 0; i < 3; ++i)
-//    {
-//      QmitkRenderWindow* renderWindow = m_RenderWindows[i];
-//      if (renderWindow->isVisible())
-//      {
-//        mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
-//        this->SetOrigin(renderWindow, origin);
-//        hasChanged = true;
-//      }
-//    }
-//  }
-//  else
-//  {
-//    QmitkRenderWindow* renderWindow = this->GetSelectedRenderWindow();
-//    if (renderWindow
-//        && renderWindow->isVisible()
-//        && ((renderWindow == m_RenderWindows[0] && (cursorPosition[0] != -1 && cursorPosition[1] != -1))
-//            || (renderWindow == m_RenderWindows[1] && (cursorPosition[1] != -1 && cursorPosition[2] != -1))
-//            || (renderWindow == m_RenderWindows[2] && (cursorPosition[0] != -1 && cursorPosition[2] != -1)))
-//        && renderWindow != m_RenderWindows[3])
-//    {
-//      mitk::Vector2D origin = this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition);
-//      this->SetOrigin(renderWindow, origin);
-//      hasChanged = true;
-//    }
-//  }
-
-//  if (hasChanged)
-//  {
-//    this->RequestUpdate();
-//  }
-//}
-
-
-////-----------------------------------------------------------------------------
-//mitk::Vector2D niftkMultiWindowWidget::ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition)
-//{
-//  mitk::Vector2D cursorPosition2D;
-//  if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
-//  {
-//    cursorPosition2D[0] = cursorPosition[0];
-//    cursorPosition2D[1] = cursorPosition[1];
-//  }
-//  else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
-//  {
-//    cursorPosition2D[0] = 1.0 - cursorPosition[1];
-//    cursorPosition2D[1] = cursorPosition[2];
-//  }
-//  else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
-//  {
-//    cursorPosition2D[0] = cursorPosition[0];
-//    cursorPosition2D[1] = cursorPosition[2];
-//  }
-
-//  return this->ComputeOriginFromCursorPosition(renderWindow, cursorPosition2D);
-//}
-
-
 //-----------------------------------------------------------------------------
 mitk::Vector2D niftkMultiWindowWidget::ComputeOriginFromCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
@@ -1927,33 +1836,34 @@ mitk::Vector2D niftkMultiWindowWidget::ComputeOriginFromCursorPosition(MIDASOrie
 
 
 //-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::GetScaleFactor() const
+double niftkMultiWindowWidget::GetScaleFactor(MIDASOrientation orientation) const
 {
-  return m_ScaleFactors[this->GetOrientation()];
+  return m_ScaleFactors[orientation];
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactor(double scaleFactor)
+void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)
 {
-  MIDASOrientation orientation = this->GetOrientation();
-
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    this->SetScaleFactor(orientation, scaleFactor);
-
-    m_ScaleFactors[orientation] = scaleFactor;
-    m_Magnifications[orientation] = this->GetMagnification(orientation);
-    this->RequestUpdate();
+    if (scaleFactor != m_ScaleFactors[orientation])
+    {
+      this->SetScaleFactor(m_RenderWindows[orientation], scaleFactor);
+      m_ScaleFactors[orientation] = scaleFactor;
+      m_Magnifications[orientation] = this->GetMagnification(orientation);
+    }
 
     if (this->AreScaleFactorsBound())
     {
       // Loop over axial, coronal, sagittal windows, the first 3 of 4 QmitkRenderWindow.
       for (int i = 0; i < 3; ++i)
       {
-        if (i != orientation && m_RenderWindows[i]->isVisible())
+        if (i != orientation && m_RenderWindows[i]->isVisible() && scaleFactor != m_ScaleFactors[i])
         {
-          this->SetScaleFactor(MIDASOrientation(i), scaleFactor);
+          this->SetScaleFactor(m_RenderWindows[i], scaleFactor);
+          m_ScaleFactors[i] = scaleFactor;
+          m_Magnifications[i] = this->GetMagnification(MIDASOrientation(i));
         }
       }
     }
@@ -1962,10 +1872,23 @@ void niftkMultiWindowWidget::SetScaleFactor(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
+double niftkMultiWindowWidget::GetScaleFactor() const
+{
+  return this->GetScaleFactor(this->GetOrientation());
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetScaleFactor(double scaleFactor)
+{
+  this->SetScaleFactor(this->GetOrientation(), scaleFactor);
+}
+
+
+//-----------------------------------------------------------------------------
 double niftkMultiWindowWidget::GetMagnification() const
 {
   return this->GetMagnification(this->GetOrientation());
-//  return m_Magnification;
 }
 
 
@@ -1973,6 +1896,31 @@ double niftkMultiWindowWidget::GetMagnification() const
 void niftkMultiWindowWidget::SetMagnification(double magnification)
 {
   this->SetMagnification(this->GetOrientation(), magnification);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor)
+{
+  mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+
+  const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
+
+  mitk::Point2D focusInMm;
+  mitk::Point2D focusInPx;
+
+  displayGeometry->Map(selectedPosition, focusInMm);
+  displayGeometry->WorldToDisplay(focusInMm, focusInPx);
+
+  double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  m_BlockDisplayGeometryEvents = true;
+  if (displayGeometry->SetScaleFactor(scaleFactor))
+  {
+    mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
+    displayGeometry->SetOriginInMM(originInMm - focusInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
+    m_RenderingManager->RequestUpdate(renderWindow->GetRenderWindow());
+  }
+  m_BlockDisplayGeometryEvents = false;
 }
 
 
@@ -1999,14 +1947,12 @@ int niftkMultiWindowWidget::GetDominantAxis(MIDASOrientation orientation) const
 //-----------------------------------------------------------------------------
 double niftkMultiWindowWidget::GetMagnification(MIDASOrientation orientation) const
 {
-  double scaleFactorMmPerPx = this->GetScaleFactor(orientation);
-
   int dominantAxis = this->GetDominantAxis(orientation);
 
   // Note that we take the scale factor from the first axis always, consequently.
   // Other strategies could be followed as well, e.g. taking the axes with the smallest
   // voxel size.
-  double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / scaleFactorMmPerPx;
+  double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / m_ScaleFactors[orientation];
 
   // Finally, we calculate the magnification from the scale factor.
   double magnification = scaleFactorPxPerVx - 1.0;
@@ -2027,7 +1973,7 @@ void niftkMultiWindowWidget::SetMagnification(MIDASOrientation orientation, doub
   mitk::Vector3D scaleFactors = this->ComputeScaleFactors(magnification);
   double scaleFactor = scaleFactors[dominantAxis];
 
-  this->SetScaleFactor(scaleFactor);
+  this->SetScaleFactor(orientation, scaleFactor);
 }
 
 
@@ -2045,46 +1991,6 @@ mitk::Vector3D niftkMultiWindowWidget::ComputeScaleFactors(double magnification)
   }
 
   return m_MmPerVx * scaleFactorVxPerPx;
-}
-
-
-//-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::GetScaleFactor(MIDASOrientation orientation) const
-{
-  if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-  {
-    return 1.0;
-  }
-
-  mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
-  return displayGeometry->GetScaleFactorMMPerDisplayUnit();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)
-{
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
-
-    const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
-
-    mitk::Point2D focusInMm;
-    mitk::Point2D focusInPx;
-
-    displayGeometry->Map(selectedPosition, focusInMm);
-    displayGeometry->WorldToDisplay(focusInMm, focusInPx);
-
-    double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-    m_BlockDisplayGeometryEvents = true;
-    if (displayGeometry->SetScaleFactor(scaleFactor))
-    {
-      mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
-      displayGeometry->SetOriginInMM(originInMm - focusInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
-    }
-    m_BlockDisplayGeometryEvents = false;
-  }
 }
 
 
@@ -2245,6 +2151,13 @@ void niftkMultiWindowWidget::SetScaleFactorsBound(bool bound)
 
   if (bound)
   {
-    this->SetScaleFactor(this->GetScaleFactor());
+    MIDASOrientation orientation = this->GetOrientation();
+    for (int i = 0; i < 3; ++i)
+    {
+      if (i != orientation)
+      {
+        this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+      }
+    }
   }
 }

@@ -361,6 +361,10 @@ private:
   ///
   void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
+  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// and moves the image so that the position of the focus remains the same.
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
+
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
 
@@ -370,7 +374,8 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject& geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged.
+  /// The parameter describes which coordinate of the selected position has changed.
   void OnSelectedPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
@@ -457,10 +462,11 @@ private:
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
-  double m_ScaleFactor;
-  double m_Magnification;
+
+  /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
   std::vector<double> m_Magnifications;
+
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
   mitk::TimeGeometry* m_TimeGeometry;
