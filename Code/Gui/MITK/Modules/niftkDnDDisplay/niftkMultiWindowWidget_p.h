@@ -208,20 +208,6 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
-
-  /// \brief Sets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
-
-  /// \brief Gets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
   mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
@@ -348,10 +334,7 @@ signals:
 //  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
-//  /// \brief Emitted when the cursor position has changed.
-//  void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
-
-  /// \brief Emitted when the cursor position has changed.
+  /// \brief Emitted when the cursor position has changed in a render window.
   void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed.
@@ -363,6 +346,20 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
 private:
+
+  /// \brief Gets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
+
+  /// \brief Sets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -385,8 +382,8 @@ private:
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
-  // \brief Sets the origin of the display geometry of the render window
-  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
+  // \brief Sets the origin of the display geometry of the render window.
+  void SetOrigin(MIDASOrientation orientation, const mitk::Vector2D& originInMm);
 
   /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
   /// and the current scale factor.
@@ -420,11 +417,8 @@ private:
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
 
-//  /// \brief Computes the origin for a render window from the cursor position.
-//  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
-
   /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
+  mitk::Vector2D ComputeOriginFromCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the zoom factor for a render window from a magnification factor.
   /// The zoom factor is the ratio of the required and the current scale factor.
@@ -463,7 +457,6 @@ private:
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
-//  mitk::Vector3D m_CursorPosition;
   double m_Magnification;
   double m_ScaleFactor;
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
