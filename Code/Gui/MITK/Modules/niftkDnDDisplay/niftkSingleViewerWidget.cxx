@@ -662,11 +662,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_SelectedPositions[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedPosition();
       m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
       m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
-      m_ScaleFactors[Index(m_WindowLayout)].resize(3);
-      for (unsigned i = 0; i < 3; ++i)
-      {
-        m_ScaleFactors[Index(m_WindowLayout)][i] = m_MultiWidget->GetScaleFactor(MIDASOrientation(i));
-      }
+      m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
 
       MITK_INFO << "niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout) saving positions...";
@@ -706,10 +702,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
 
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-      for (unsigned i = 0; i < 3; ++i)
-      {
-        m_MultiWidget->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[Index(windowLayout)][i]);
-      }
+      m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
 
       m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
 

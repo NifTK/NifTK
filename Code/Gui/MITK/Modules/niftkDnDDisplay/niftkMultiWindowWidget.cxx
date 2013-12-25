@@ -1886,6 +1886,22 @@ void niftkMultiWindowWidget::SetScaleFactor(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
+const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
+{
+  return m_ScaleFactors;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
+{
+  this->SetScaleFactor(MIDAS_ORIENTATION_AXIAL, scaleFactors[MIDAS_ORIENTATION_AXIAL]);
+  this->SetScaleFactor(MIDAS_ORIENTATION_SAGITTAL, scaleFactors[MIDAS_ORIENTATION_SAGITTAL]);
+  this->SetScaleFactor(MIDAS_ORIENTATION_CORONAL, scaleFactors[MIDAS_ORIENTATION_CORONAL]);
+}
+
+
+//-----------------------------------------------------------------------------
 double niftkMultiWindowWidget::GetMagnification() const
 {
   return this->GetMagnification(this->GetOrientation());

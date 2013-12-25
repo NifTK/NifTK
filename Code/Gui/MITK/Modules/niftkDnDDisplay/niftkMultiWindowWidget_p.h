@@ -278,6 +278,14 @@ public:
   /// of the other windows as well.
   void SetScaleFactor(double scaleFactor);
 
+  /// \brief Gets the scale factors of the 2D render windows.
+  const std::vector<double>& GetScaleFactors() const;
+
+  /// \brief Sets the scale factor of the render windows to the given values.
+  /// If the zooming is bound across the windows then this will set the scaling
+  /// of the other windows as well.
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
+
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;
 
