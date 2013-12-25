@@ -403,13 +403,13 @@ private:
   void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
-  void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void AddDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
-  void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
+  void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint);

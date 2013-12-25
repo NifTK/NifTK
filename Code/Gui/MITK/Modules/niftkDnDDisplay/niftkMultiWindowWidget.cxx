@@ -34,13 +34,14 @@
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro3Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, QmitkRenderWindow*, mitk::DisplayGeometry*);
+  mitkNewMacro4Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, MIDASOrientation, QmitkRenderWindow*, mitk::DisplayGeometry*);
 
 
   //-----------------------------------------------------------------------------
-  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, QmitkRenderWindow* renderWindow, mitk::DisplayGeometry* displayGeometry)
+  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, MIDASOrientation orientation, QmitkRenderWindow* renderWindow, mitk::DisplayGeometry* displayGeometry)
   : itk::Command()
   , m_MultiWindowWidget(multiWindowWidget)
+  , m_Orientation(orientation)
   , m_RenderWindow(renderWindow)
   , m_DisplayGeometry(displayGeometry)
   , m_Origin(displayGeometry->GetOriginInMM())
@@ -86,7 +87,7 @@ public:
     {
       if (beingPanned)
       {
-        m_MultiWindowWidget->OnOriginChanged(m_RenderWindow, beingPanned);
+        m_MultiWindowWidget->OnOriginChanged(m_Orientation, beingPanned);
       }
       m_Origin = origin;
     }
@@ -94,6 +95,7 @@ public:
 
 private:
   niftkMultiWindowWidget* const m_MultiWindowWidget;
+  MIDASOrientation m_Orientation;
   QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
   mitk::Vector2D m_Origin;
@@ -252,7 +254,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (int i = 0; i < 3; ++i)
   {
     /// This call requires MITK modification. Currently, the displayed region is rescaled
@@ -262,7 +263,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
     /// so we can apply the rescaling in our way. This line is commented out until
     /// this feature is added to our MITK fork.
     m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
-    AddDisplayGeometryModificationObserver(renderWindows[i]);
+    this->AddDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
 
   // The mouse mode switcher is declared and initialised in QmitkStdMultiWidget. It creates an
@@ -293,10 +294,9 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
   // Stop listening to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (unsigned i = 0; i < 3; ++i)
   {
-    RemoveDisplayGeometryModificationObserver(renderWindows[i]);
+    this->RemoveDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
 
   for (int i = 0; i < 3; ++i)
@@ -313,23 +313,25 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
+void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrientation orientation)
 {
+  QmitkRenderWindow* renderWindow = m_RenderWindows[orientation];
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
   assert(renderer);
 
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
-  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, renderWindow, displayGeometry);
+  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation, renderWindow, displayGeometry);
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
   m_DisplayGeometryModificationObservers[renderWindow] = observerTag;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow)
+void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation)
 {
+  QmitkRenderWindow* renderWindow = m_RenderWindows[orientation];
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
   assert(renderer);
 
@@ -1572,7 +1574,7 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned)
+void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool beingPanned)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
@@ -1580,11 +1582,8 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
     // axial[1] <-> 1.0 - sagittal[0]
     // sagittal[1] <-> coronal[1]
 
-    MIDASOrientation orientation;
-
-    if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_AXIAL])
+    if (orientation == MIDAS_ORIENTATION_AXIAL)
     {
-      orientation = MIDAS_ORIENTATION_AXIAL;
       m_CursorPositions[MIDAS_ORIENTATION_AXIAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
       if (beingPanned && this->AreCursorPositionsBound())
       {
@@ -1592,9 +1591,8 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
         m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
       }
     }
-    else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL])
+    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
     {
-      orientation = MIDAS_ORIENTATION_SAGITTAL;
       m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
       if (beingPanned && this->AreCursorPositionsBound())
       {
@@ -1602,9 +1600,8 @@ void niftkMultiWindowWidget::OnOriginChanged(QmitkRenderWindow* renderWindow, bo
         m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
       }
     }
-    else if (renderWindow == m_RenderWindows[MIDAS_ORIENTATION_CORONAL])
+    else if (orientation == MIDAS_ORIENTATION_CORONAL)
     {
-      orientation = MIDAS_ORIENTATION_CORONAL;
       m_CursorPositions[MIDAS_ORIENTATION_CORONAL] = this->GetCursorPosition(m_RenderWindows[orientation]);
       if (beingPanned && this->AreCursorPositionsBound())
       {
@@ -2327,7 +2324,7 @@ void niftkMultiWindowWidget::SetCursorPositionsBound(bool bound)
 
   if (bound)
   {
-    this->OnOriginChanged(this->GetSelectedRenderWindow(), true);
+    this->OnOriginChanged(this->GetOrientation(), true);
   }
 }
 
