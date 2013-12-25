@@ -396,7 +396,7 @@ private:
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
   // \brief Sets the origin of the display geometry of the render window.
-  void SetOrigin(MIDASOrientation orientation, const mitk::Vector2D& originInMm);
+  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
   /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
   /// and the current scale factor.
@@ -431,7 +431,7 @@ private:
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the zoom factor for a render window from a magnification factor.
   /// The zoom factor is the ratio of the required and the current scale factor.
