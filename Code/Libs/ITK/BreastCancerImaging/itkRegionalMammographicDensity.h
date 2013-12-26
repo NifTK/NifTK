@@ -75,7 +75,7 @@ public:
   }
 
   float DistanceTo( PointOnBoundary c ) {
-    return sqrt( (x - c.x)*(x - c.x) + (y - c.y)*(y - c.y) );
+    return sqrt(static_cast<double>( (x - c.x)*(x - c.x) + (y - c.y)*(y - c.y) ) );
   }
 
   void Print( const char *indent ) {
