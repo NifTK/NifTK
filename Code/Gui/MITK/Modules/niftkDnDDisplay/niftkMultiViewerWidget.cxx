@@ -1135,7 +1135,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    this->SetLayout(windowLayout);
+    this->SetWindowLayout(windowLayout);
 
     // Update the focus to the selected window, to trigger things like thumbnail viewer refresh
     // (or indeed anything that's listening to the FocusManager).
@@ -1290,25 +1290,12 @@ bool niftkMultiViewerWidget::ToggleCursorVisibility()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
+void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   m_ControlPanel->SetWindowLayout(windowLayout);
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
   selectedViewer->SetWindowLayout(windowLayout);
-
-//  if (windowLayout == WINDOW_LAYOUT_AXIAL)
-//  {
-//    selectedViewer->SetSelectedRenderWindow(selectedViewer->GetAxialWindow());
-//  }
-//  else if (windowLayout == WINDOW_LAYOUT_SAGITTAL)
-//  {
-//    selectedViewer->SetSelectedRenderWindow(selectedViewer->GetSagittalWindow());
-//  }
-//  else if (windowLayout == WINDOW_LAYOUT_CORONAL)
-//  {
-//    selectedViewer->SetSelectedRenderWindow(selectedViewer->GetCoronalWindow());
-//  }
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
@@ -1321,14 +1308,46 @@ void niftkMultiViewerWidget::SetLayout(WindowLayout windowLayout)
     }
   }
 
-  if (m_ControlPanel->AreViewerMagnificationsBound())
+  MIDASOrientation orientation = selectedViewer->GetOrientation();
+
+  if (m_ControlPanel->AreViewerCursorsBound())
   {
-    double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
+    mitk::Vector2D cursorPosition = selectedViewer->GetCursorPosition(orientation);
+    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
+
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
+        if (m_ControlPanel->AreWindowCursorsBound())
+        {
+          otherViewer->SetCursorPositions(cursorPositions);
+        }
+        else
+        {
+          otherViewer->SetCursorPosition(orientation, cursorPosition);
+        }
+      }
+    }
+  }
+
+  if (m_ControlPanel->AreViewerMagnificationsBound())
+  {
+    double scaleFactor = selectedViewer->GetScaleFactor(orientation);
+    const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
+
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      {
+        if (m_ControlPanel->AreWindowMagnificationsBound())
+        {
+          otherViewer->SetScaleFactors(scaleFactors);
+        }
+        else
+        {
+          otherViewer->SetScaleFactor(orientation, scaleFactor);
+        }
       }
     }
   }
