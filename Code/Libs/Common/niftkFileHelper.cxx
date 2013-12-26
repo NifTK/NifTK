@@ -481,7 +481,7 @@ std::string ExtractImageFileSuffix( const std::string fileName )
   }
 
   return suffix;
-};
+}
 
 
 //  -------------------------------------------------------------------------
@@ -492,7 +492,7 @@ std::string ExtractImageFileSuffix( const std::string fileName,
   fileNameWithoutSuffix = fileName.substr( 0, fileName.length() - suffix.length() );
 
   return suffix;
-};
+}
 
 
 //  -------------------------------------------------------------------------
@@ -503,7 +503,7 @@ std::string AddStringToImageFileSuffix( const std::string fileName,
   std::string suffix = ExtractImageFileSuffix( fileName,
                                                fileNameWithoutSuffix );
   return fileNameWithoutSuffix + stringToAdd + suffix;
-};
+}
 
 
 //  -------------------------------------------------------------------------
@@ -513,7 +513,7 @@ std::string ModifyImageFileSuffix( const std::string fileName,
   std::string fileNameWithoutSuffix;
   niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
   return fileNameWithoutSuffix + newSuffix;
-};
+}
 
 
 

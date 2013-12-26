@@ -212,7 +212,7 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
       unsigned long long imageTimeStamp = timeStampString.toULongLong();
       m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
 
-      if (fabs(delta) < m_TimingToleranceInMilliseconds)
+      if (fabs(static_cast<double>(delta)) < m_TimingToleranceInMilliseconds)
       {
         // Output point.
         int xPixel = event->x();
