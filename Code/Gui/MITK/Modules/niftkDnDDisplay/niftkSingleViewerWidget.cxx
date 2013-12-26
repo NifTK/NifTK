@@ -656,6 +656,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       return;
     }
 
+    bool wasSelected = this->IsSelected();
+
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
@@ -715,7 +717,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
 
-      m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
+      if (wasSelected)
+      {
+        m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
+      }
 
       m_LastSelectedPositions.clear();
       m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
@@ -723,8 +728,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPosition(m_MultiWidget->GetOrientation()));
 
       emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-      emit CursorPositionChanged(this, orientation, m_CursorPositions[Index(windowLayout)][orientation]);
-      emit ScaleFactorChanged(this, orientation, m_ScaleFactors[Index(windowLayout)][orientation]);
+      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+      {
+        emit CursorPositionChanged(this, orientation, m_CursorPositions[Index(windowLayout)][orientation]);
+        emit ScaleFactorChanged(this, orientation, m_ScaleFactors[Index(windowLayout)][orientation]);
+      }
     }
     else
     {
