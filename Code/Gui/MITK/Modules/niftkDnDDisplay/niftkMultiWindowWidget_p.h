@@ -215,6 +215,9 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
+  /// This function does not change the selected position in world but moves the image
+  /// in the render windows so that the selected position gets to the specified position
+  /// in the render windows.
   void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
@@ -230,37 +233,6 @@ public:
   ///    pixel coordinate / render window size
   ///
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
-
-//  /// \brief Gets the cursor position normalised with the size of the render windows.
-//  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
-//  ///
-//  ///    pixel coordinate / render window size
-//  ///
-//  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-//  /// coordinate corresponds to the second coordinate in the sagittal render window.
-//  /// The correspondence of the orientation axes is the following:
-//  ///
-//  ///     axial[0] <-> coronal[0]
-//  ///     axial[1] <-> 1.0 - sagittal[0]
-//  ///     sagittal[1] <-> coronal[1]
-//  ///
-//  const mitk::Vector3D& GetCursorPosition() const;
-
-//  /// \brief Moves the image (world) in the render windows so that the selected position gets to the
-//  /// specified position in the render windows. The function does not change the selected position.
-//  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
-//  ///
-//  ///    pixel coordinate / render window size
-//  ///
-//  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-//  /// coordinate corresponds to the second coordinate in the sagittal render window.
-//  /// The correspondence of the orientation axes is the following:
-//  ///
-//  ///     axial[0] <-> coronal[0]
-//  ///     axial[1] <-> 1.0 - sagittal[0]
-//  ///     sagittal[1] <-> coronal[1]
-//  ///
-//  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(MIDASOrientation orientation) const;
@@ -339,7 +311,6 @@ signals:
   void NodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
-//  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed in a render window.
@@ -398,23 +369,6 @@ private:
   // \brief Sets the origin of the display geometry of the render window.
   void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
-  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
-  /// and the current scale factor.
-  /// \deprecated
-  /// {
-  ///   This function is deprecated because it requires the 'relative' scale factor.
-  ///   Use the SetScaleFactor functions instead.
-  /// }
-  void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
-
-  /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
-  /// \deprecated
-  /// {
-  ///   This should be calculated from the world geometry dimensions, display geometry dimensions
-  ///   and the scale factor of the display geometry.
-  /// }
-  void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
-
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
@@ -432,18 +386,6 @@ private:
 
   /// \brief Computes the origin for a render window from the cursor position.
   mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
-
-  /// \brief Computes the zoom factor for a render window from a magnification factor.
-  /// The zoom factor is the ratio of the required and the current scale factor.
-  /// \deprecated
-  /// {
-  ///   This function is deprecated because it needs to know the current scaling in the render window.
-  ///   The function was used to compute the zoom factor for the ZoomDisplayAboutCursor function that
-  ///   has been deprecated as well. Use the ComputeScaleFactors function to calculate the absolute
-  ///   scale factors from the magnification and the SetScaleFactor function to set the required
-  ///   scale factor for a render window.
-  /// }
-  double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
 
   /// \brief Computes the scale factors from the magnification for each axes in mm/px.
   /// Since the magnification is in linear relation with the px/vx ratio but not the
