@@ -840,16 +840,65 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitToDisplay()
 {
-  for (unsigned int i = 0; i < 3; i++)
+  double largestScaleFactor = -1.0;
+  int renderWindowWithLargestScaleFactor = -1;
+
+  for (int i = 0; i < 3; ++i)
   {
     if (m_RenderWindows[i]->isVisible())
     {
-      m_BlockDisplayGeometryEvents = true;
       mitk::DisplayGeometry* displayGeometry = m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry();
-      displayGeometry->Fit();
-      m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-      m_CursorPositions[i] = this->GetCursorPosition(m_RenderWindows[i]);
-      m_BlockDisplayGeometryEvents = false;
+
+      if (!m_ScaleFactorsAreBound)
+      {
+        /// If the scale factors are not bound, we simply fit each 'world' into their window.
+        m_BlockDisplayGeometryEvents = true;
+        displayGeometry->Fit();
+        m_BlockDisplayGeometryEvents = false;
+        m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+        m_CursorPositions[i] = this->GetCursorPosition(m_RenderWindows[i]);
+      }
+      else
+      {
+        /// If the scale factors are bound, first we find the window that requires the largest scaling...
+        double widthMmPerPx = displayGeometry->GetWorldGeometry()->GetParametricExtentInMM(0) / displayGeometry->GetDisplayWidth();
+        double heightMmPerPx = displayGeometry->GetWorldGeometry()->GetParametricExtentInMM(1) / displayGeometry->GetDisplayHeight();
+        if (widthMmPerPx > largestScaleFactor)
+        {
+          largestScaleFactor = widthMmPerPx;
+          renderWindowWithLargestScaleFactor = i;
+        }
+        if (heightMmPerPx > largestScaleFactor)
+        {
+          largestScaleFactor = heightMmPerPx;
+          renderWindowWithLargestScaleFactor = i;
+        }
+      }
+    }
+  }
+
+  if (m_ScaleFactorsAreBound)
+  {
+    /// ... then call mitk::DisplayGeometry::Fit() for that window ...
+    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[renderWindowWithLargestScaleFactor]->GetRenderer()->GetDisplayGeometry();
+    m_BlockDisplayGeometryEvents = true;
+    displayGeometry->Fit();
+    m_ScaleFactors[renderWindowWithLargestScaleFactor] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+    m_CursorPositions[renderWindowWithLargestScaleFactor] = this->GetCursorPosition(m_RenderWindows[renderWindowWithLargestScaleFactor]);
+    m_BlockDisplayGeometryEvents = false;
+
+    /// ... and finally, apply the same scale factor for the other render windows.
+    for (int i = 0; i < 3; ++i)
+    {
+      if (i != renderWindowWithLargestScaleFactor && m_RenderWindows[i]->isVisible())
+      {
+        m_BlockDisplayGeometryEvents = true;
+        m_CursorPositions[i].Fill(0.5);
+        m_ScaleFactors[i] = m_ScaleFactors[renderWindowWithLargestScaleFactor];
+        this->SetCursorPosition(m_RenderWindows[i], m_CursorPositions[i]);
+        this->SetScaleFactor(m_RenderWindows[i], m_ScaleFactors[i]);
+        m_BlockDisplayGeometryEvents = false;
+      }
     }
   }
 }
