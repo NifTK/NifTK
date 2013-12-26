@@ -33,11 +33,11 @@ namespace itk
 
 bool CmpCoordsAscending(PointOnBoundary c1, PointOnBoundary c2) { 
   return ( c1.id < c2.id ); 
-};
+}
 
 bool CmpCoordsDescending(PointOnBoundary c1, PointOnBoundary c2) { 
   return ( c1.id > c2.id ); 
-};
+}
 
 
 
@@ -67,7 +67,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   flgVerbose = false;
   flgOverwrite = false;
   flgDebug = false;
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -78,7 +78,7 @@ template <class InputPixelType, unsigned int InputDimension>
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::~RegionalMammographicDensity() 
 {
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -91,7 +91,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 ::LoadImages( void ) {
   ReadImage( DIAGNOSTIC_MAMMO );
   ReadImage( PREDIAGNOSTIC_MAMMO );
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -108,7 +108,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   imDiagnosticMask = 0;
   imPreDiagnosticMask = 0;   
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -254,7 +254,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     itPatches->second.Print( "     ", nPixelsInPatch );
   }
 
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -324,7 +324,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     << std::right << std::setw(29) << randomPreDiagDensity
 
     << std::endl;
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -358,7 +358,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   
     ++tagItr;
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -424,7 +424,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   
     preDiagDictionary = imPreDiagnostic->GetMetaDataDictionary();
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -457,7 +457,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
               << strBreastEdgeImageID << std::endl;
     exit( EXIT_FAILURE );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -491,7 +491,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
               << strPectoralImageID << std::endl;
     exit( EXIT_FAILURE );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -551,7 +551,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                        "pre-diagnostic labels", 
                        imPreDiagnosticLabels, preDiagDictionary );
 
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -580,7 +580,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   std::cout << "Output filename: " << fileOutput << std::endl;
 
   return fileOutput;
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -678,7 +678,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
               << " to file - filename is empty " << std::endl;
     exit( EXIT_FAILURE );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -753,7 +753,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
               << " to file - filename is empty " << std::endl;
     exit( EXIT_FAILURE );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -906,7 +906,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
               << " to file - filename is empty " << std::endl;
     exit( EXIT_FAILURE );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -939,7 +939,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   {
     polygon->AddPoint( point );
   }
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -1102,7 +1102,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
 
   return imMask;
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   return imMask;
-};
+}
 
 
 // --------------------------------------------------------------------------
@@ -1322,7 +1322,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   return imLabels;
-};
+}
 
 
 } // namespace itk
