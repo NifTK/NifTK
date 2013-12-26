@@ -842,13 +842,13 @@ void niftkMultiWindowWidget::FitToDisplay()
 {
   for (unsigned int i = 0; i < 3; i++)
   {
-    // TODO Check if this test is OK.
-    if (this->GetRenderWindow(MIDASOrientation(i))->isVisible())
+    if (m_RenderWindows[i]->isVisible())
     {
       m_BlockDisplayGeometryEvents = true;
       mitk::DisplayGeometry* displayGeometry = m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry();
       displayGeometry->Fit();
       m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+      m_CursorPositions[i] = this->GetCursorPosition(m_RenderWindows[i]);
       m_BlockDisplayGeometryEvents = false;
     }
   }
