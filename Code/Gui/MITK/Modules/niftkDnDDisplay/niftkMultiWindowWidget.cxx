@@ -34,15 +34,14 @@
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro4Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, MIDASOrientation, QmitkRenderWindow*, mitk::DisplayGeometry*);
+  mitkNewMacro3Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, MIDASOrientation, mitk::DisplayGeometry*);
 
 
   //-----------------------------------------------------------------------------
-  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, MIDASOrientation orientation, QmitkRenderWindow* renderWindow, mitk::DisplayGeometry* displayGeometry)
+  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, MIDASOrientation orientation, mitk::DisplayGeometry* displayGeometry)
   : itk::Command()
   , m_MultiWindowWidget(multiWindowWidget)
   , m_Orientation(orientation)
-  , m_RenderWindow(renderWindow)
   , m_DisplayGeometry(displayGeometry)
   , m_Origin(displayGeometry->GetOriginInMM())
   , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
@@ -75,7 +74,7 @@ public:
 
       if (focusPoint != m_FocusPoint)
       {
-        m_MultiWindowWidget->OnFocusChanged(m_RenderWindow, focusPoint);
+        m_MultiWindowWidget->OnFocusChanged(m_Orientation, focusPoint);
       }
       m_MultiWindowWidget->OnScaleFactorChanged(m_Orientation, scaleFactor);
       m_FocusPoint = focusPoint;
@@ -96,7 +95,6 @@ public:
 private:
   niftkMultiWindowWidget* const m_MultiWindowWidget;
   MIDASOrientation m_Orientation;
-  QmitkRenderWindow* const m_RenderWindow;
   mitk::DisplayGeometry* const m_DisplayGeometry;
   mitk::Vector2D m_Origin;
   mitk::Vector2D m_FocusPoint;
@@ -234,9 +232,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
   // The cursor is at the middle of the display at the beginning.
-//  m_CursorPosition[0] = 0.5;
-//  m_CursorPosition[1] = 0.5;
-//  m_CursorPosition[2] = 0.5;
   m_CursorPositions[MIDAS_ORIENTATION_AXIAL].Fill(0.5);
   m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL].Fill(0.5);
   m_CursorPositions[MIDAS_ORIENTATION_CORONAL].Fill(0.5);
@@ -315,31 +310,28 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrientation orientation)
 {
-  QmitkRenderWindow* renderWindow = m_RenderWindows[orientation];
-  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   assert(renderer);
 
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
-  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation, renderWindow, displayGeometry);
+  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation, displayGeometry);
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
-  m_DisplayGeometryModificationObservers[renderWindow] = observerTag;
+  m_DisplayGeometryModificationObservers[orientation] = observerTag;
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation)
 {
-  QmitkRenderWindow* renderWindow = m_RenderWindows[orientation];
-  mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
+  mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   assert(renderer);
 
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
-  displayGeometry->RemoveObserver(m_DisplayGeometryModificationObservers[renderWindow]);
-  m_DisplayGeometryModificationObservers.erase(renderWindow);
+  displayGeometry->RemoveObserver(m_DisplayGeometryModificationObservers[orientation]);
 }
 
 
@@ -1646,11 +1638,11 @@ void niftkMultiWindowWidget::SetOrigin(QmitkRenderWindow* renderWindow, const mi
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint)
+void niftkMultiWindowWidget::OnFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
-    mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
     mitk::Point2D focusPointInPx;
     focusPointInPx[0] = focusPoint[0];
     focusPointInPx[1] = focusPoint[1];
@@ -1711,14 +1703,32 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 
     /// Note that this is the orientation of the selected render window, in which the
     /// the mouse click or scroll changed the selected position.
-    /// In contrast, the argument of this function contains the orientation along
+    /// In contrast, the 'orientation' argument of this function contains the orientation along
     /// which the selected position has changed. If the event was a scroll event then
     /// the two orientations are equal. If it was a mouse click event then they will
     /// be different.
     MIDASOrientation selectedWindowOrientation = this->GetOrientation();
     if (selectedWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      this->OnOriginChanged(selectedWindowOrientation, true);
+      if (selectedWindowOrientation != orientation)
+      {
+        /// If the selected the position was changed by clicking in the render window
+        /// then it should have the same effect as panning.
+        this->OnOriginChanged(selectedWindowOrientation, true);
+      }
+      else
+      {
+        /// If the position has changed by scrolling through the slices in one window
+        /// then the image stays in place in each window, but the cursor positions change
+        /// in the other two windows, therefore we have to update them.
+        for (int i = 0; i < 3; ++i)
+        {
+          if (i != orientation)
+          {
+            m_CursorPositions[i] = this->GetCursorPosition(m_RenderWindows[i]);
+          }
+        }
+      }
     }
   }
 }

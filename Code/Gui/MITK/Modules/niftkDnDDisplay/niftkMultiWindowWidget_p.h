@@ -379,7 +379,7 @@ private:
   void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint);
+  void OnFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
@@ -427,7 +427,7 @@ private:
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
 
-  std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
+  unsigned long m_DisplayGeometryModificationObservers[3];
   bool m_BlockDisplayGeometryEvents;
 
   bool m_CursorPositionsAreBound;
