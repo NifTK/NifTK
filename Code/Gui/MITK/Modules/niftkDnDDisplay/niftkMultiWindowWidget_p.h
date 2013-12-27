@@ -433,6 +433,9 @@ private:
   bool m_CursorPositionsAreBound;
   bool m_ScaleFactorsAreBound;
 
+  /// \brief Controls if the axial and sagittal cursor positions are synchronised when the cursor positions are bound.
+  bool m_AxialSagittalCursorBindingEnabled;
+
   friend class DisplayGeometryModificationCommand;
 
   mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
