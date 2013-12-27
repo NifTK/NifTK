@@ -20,6 +20,7 @@
 #include <mitkInteractionPositionEvent.h>
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
+#include <mitkGlobalInteraction.h>
 
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers)
 : mitk::DisplayInteractor()
@@ -76,6 +77,29 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
   return true;
 }
+
+
+bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+  return Superclass::ScrollOneUp(action, interactionEvent);
+}
+
+
+bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+  return Superclass::ScrollOneDown(action, interactionEvent);
+}
+
 
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {

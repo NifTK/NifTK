@@ -62,6 +62,14 @@ namespace mitk
 
     virtual bool SelectPosition(StateMachineAction*, InteractionEvent*);
 
+    /// \brief Scrolls one slice up.
+    /// Overrides superclass function to set the focus to the renderer before scrolling.
+    virtual bool ScrollOneUp(StateMachineAction*, InteractionEvent*);
+
+    /// \brief Scrolls one slice down.
+    /// Overrides superclass function to set the focus to the renderer before scrolling.
+    virtual bool ScrollOneDown(StateMachineAction*, InteractionEvent*);
+
     virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
   private:
