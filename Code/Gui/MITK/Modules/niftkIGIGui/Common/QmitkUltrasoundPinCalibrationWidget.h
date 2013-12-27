@@ -94,7 +94,7 @@ private:
   void QuitApplication();
   void StorePoint(QMouseEvent* event);
   void ShowImage(const unsigned long int& imageNumber);
-  void CreateDirectory(const std::string& dir);
+  void CreateDir(const std::string& dir);
 };
 
 #endif // QmitkUltrasoundPinCalibrationWidget_h

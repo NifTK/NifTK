@@ -643,7 +643,7 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
     
   if ( ! niftk::DirectoryExists( dirOutputFullPath ) )
   {
-    niftk::CreateDirectoryAndParents( dirOutputFullPath );
+    niftk::CreateDirAndParents( dirOutputFullPath );
   }
       
   std::cout << "Input relative filename: " << fileInputRelativePath << std::endl

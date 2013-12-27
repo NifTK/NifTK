@@ -574,7 +574,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   if ( ! niftk::DirectoryExists( dirOutputFullPath ) )
   {
     std::cout << "Creating output directory: " << dirOutputFullPath << std::endl;
-    niftk::CreateDirectoryAndParents( dirOutputFullPath );
+    niftk::CreateDirAndParents( dirOutputFullPath );
   }
     
   std::cout << "Output filename: " << fileOutput << std::endl;
