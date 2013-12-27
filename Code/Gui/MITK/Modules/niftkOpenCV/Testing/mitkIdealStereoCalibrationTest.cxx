@@ -242,7 +242,7 @@ int mitkIdealStereoCalibrationTest ( int argc, char * argv[] )
     worldPoints.at<double>(corner11,1) << "," << 
     worldPoints.at<double>(corner11,2) << ")";
   std::string trackerDirectory = "testTrackerMatrices";
-  niftk::CreateDirectoryAndParents(trackerDirectory);
+  niftk::CreateDirAndParents(trackerDirectory);
 
   int views = MarkerToWorld.size(); 
   int stepSize = 1;

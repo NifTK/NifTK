@@ -167,7 +167,7 @@ bool DirectoryExists(const std::string& directoryPath)
 
 
 //-----------------------------------------------------------------------------
-bool CreateDirectoryAndParents(const std::string& directoryPath)
+bool CreateDirAndParents(const std::string& directoryPath)
 {
   std::deque< fs::path > directoryTree;
   std::deque< fs::path >::iterator iterDirectoryTree;       

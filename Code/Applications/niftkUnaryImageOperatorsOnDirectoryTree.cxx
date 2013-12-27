@@ -336,7 +336,7 @@ int DoMain( arguments args,
     
   if ( ! niftk::DirectoryExists( dirOutputFullPath ) )
   {
-    niftk::CreateDirectoryAndParents( dirOutputFullPath );
+    niftk::CreateDirAndParents( dirOutputFullPath );
   }
       
   std::cout << "Input relative filename: " << fileInputRelativePath << std::endl

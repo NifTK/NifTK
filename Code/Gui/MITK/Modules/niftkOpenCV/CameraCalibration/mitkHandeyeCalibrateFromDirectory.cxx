@@ -97,7 +97,7 @@ void HandeyeCalibrateFromDirectory::InitialiseOutputDirectory()
 {
   if (!niftk::DirectoryExists(m_OutputDirectory)) 
   {
-    if (!niftk::CreateDirectoryAndParents(m_OutputDirectory))
+    if (!niftk::CreateDirAndParents(m_OutputDirectory))
     {
       throw std::runtime_error("Failed to create output directory");
     }
@@ -551,7 +551,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   fs_r2l.close();
 
   std::string trackerDirectory = m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex);
-  niftk::CreateDirectoryAndParents(trackerDirectory);
+  niftk::CreateDirAndParents(trackerDirectory);
   for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 

@@ -170,11 +170,11 @@ void QmitkUltrasoundPinCalibrationWidget::PreviousImage()
 
 
 //-----------------------------------------------------------------------------
-void QmitkUltrasoundPinCalibrationWidget::CreateDirectory(const std::string& dir)
+void QmitkUltrasoundPinCalibrationWidget::CreateDir(const std::string& dir)
 {
   if (!niftk::DirectoryExists(dir))
   {
-    if (!niftk::CreateDirectoryAndParents(dir))
+    if (!niftk::CreateDirAndParents(dir))
     {
       QMessageBox::critical(this, tr("niftkUltrasoundPinCalibrationSorter"),
                                   tr("Can't write to\n%1").arg(QString::fromStdString(dir)),
@@ -190,8 +190,8 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
 {
   if (event != NULL)
   {
-    this->CreateDirectory(m_OutputPointDirectory.toStdString());
-    this->CreateDirectory(m_OutputMatrixDirectory.toStdString());
+    this->CreateDir(m_OutputPointDirectory.toStdString());
+    this->CreateDir(m_OutputMatrixDirectory.toStdString());
 
     QString imageFileName = QString::fromStdString(m_ImageFiles[m_ImageFileCounter]);
     QRegExp rx("([0-9]{19})");

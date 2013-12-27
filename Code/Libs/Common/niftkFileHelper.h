@@ -71,7 +71,7 @@ namespace niftk
    * \param the directory name
    * \return true if creation was successfull
    */
-  NIFTKCOMMON_WINEXPORT bool CreateDirectoryAndParents(const std::string& directoryPath);
+  NIFTKCOMMON_WINEXPORT bool CreateDirAndParents(const std::string& directoryPath);
 
   /**
    * Creates a unique file name for a file located in the O/S temporary directory.
