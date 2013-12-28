@@ -348,9 +348,6 @@ signals:
   void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-//  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
-
-  /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
@@ -430,6 +427,12 @@ private:
 
   /// \brief Stores the selected render window for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   QmitkRenderWindow* m_SelectedRenderWindow[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the cursor position binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_CursorPositionBinding[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the scale factor binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_ScaleFactorBinding[WINDOW_LAYOUT_NUMBER * 2];
 
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];

@@ -1474,6 +1474,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     windowToFocus->setFocus();
   }
 
+  m_CursorPositionsAreBound = ::IsMultiWindowLayout(windowLayout);
+  m_ScaleFactorsAreBound = ::IsMultiWindowLayout(windowLayout);
+
   m_WindowLayout = windowLayout;
 
   this->Update3DWindowVisibility();

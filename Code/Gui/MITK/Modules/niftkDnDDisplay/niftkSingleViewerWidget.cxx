@@ -682,6 +682,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 //      m_CursorPositions[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositions();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
+      m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->AreCursorPositionsBound();
+      m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->AreScaleFactorsBound();
     }
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
@@ -714,6 +716,9 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
       }
+
+      m_MultiWidget->SetCursorPositionsBound(m_CursorPositionBinding[Index(windowLayout)]);
+      m_MultiWidget->SetScaleFactorsBound(m_ScaleFactorBinding[Index(windowLayout)]);
 
       m_LastSelectedPositions.clear();
       m_LastSelectedPositionTimes.clear();
@@ -761,6 +766,9 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
         {
           m_MultiWidget->SetScaleFactor(m_MultiWidget->GetScaleFactor());
         }
+
+        m_MultiWidget->SetCursorPositionsBound(::IsMultiWindowLayout(windowLayout));
+        m_MultiWidget->SetScaleFactorsBound(::IsMultiWindowLayout(windowLayout));
 
         m_WindowLayoutInitialised[Index(windowLayout)] = true;
       }

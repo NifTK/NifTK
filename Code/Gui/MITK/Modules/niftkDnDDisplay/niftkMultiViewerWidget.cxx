@@ -681,7 +681,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     selectedViewer = m_Viewers[selectedViewerIndex];
   }
   this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
-  selectedViewer->FitToDisplay();
+//  selectedViewer->FitToDisplay();
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
@@ -1149,6 +1149,8 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* selectedViewer, WindowLayout windowLayout)
 {
   m_ControlPanel->SetWindowLayout(windowLayout);
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
   this->UpdateFocusManagerToSelectedViewer();
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
@@ -1292,10 +1294,12 @@ bool niftkMultiViewerWidget::ToggleCursorVisibility()
 //-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
-  m_ControlPanel->SetWindowLayout(windowLayout);
-
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
   selectedViewer->SetWindowLayout(windowLayout);
+
+  m_ControlPanel->SetWindowLayout(windowLayout);
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
