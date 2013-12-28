@@ -428,8 +428,10 @@ private:
   unsigned long m_DisplayGeometryModificationObservers[3];
   bool m_BlockDisplayGeometryEvents;
 
+  /// \brief Controls if the cursor positions are synchronised across the render windows.
+  /// The binding of the individual coordinates of the cursors can be controlled independently by
+  /// @a m_CursorAxialPositionsAreBound, @a m_CursorSagittalPositionsAreBound and @a m_CursorCoronalPositionsAreBound.
   bool m_CursorPositionsAreBound;
-  bool m_ScaleFactorsAreBound;
 
   /// \brief Controls if the axial coordinate of the cursor positions are synchronised when the cursor positions are bound.
   /// If true then panning the image vertically in the sagittal window will move the image in the coronal window
@@ -446,6 +448,8 @@ private:
   /// in the opposite direction, and vice versa. (Panning left in the sagittal window results in lifting up the image in the
   /// axial window.)
   bool m_CursorCoronalPositionsAreBound;
+
+  bool m_ScaleFactorsAreBound;
 
   friend class DisplayGeometryModificationCommand;
 

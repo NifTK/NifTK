@@ -128,10 +128,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_TimeGeometry(NULL)
 , m_BlockDisplayGeometryEvents(false)
 , m_CursorPositionsAreBound(true)
-, m_ScaleFactorsAreBound(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
 , m_CursorCoronalPositionsAreBound(false)
+, m_ScaleFactorsAreBound(true)
 {
   m_RenderWindows[0] = this->GetRenderWindow1();
   m_RenderWindows[1] = this->GetRenderWindow2();
@@ -1303,13 +1303,19 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 0, 3);  // 3D:       off
+    m_CursorAxialPositionsAreBound = true;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_3V)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 2, 0);  // axial:    on
-    m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
-    m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+    m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
+    m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 3, 0);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = true;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_COR_SAG_H)
   {
@@ -1317,6 +1323,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = true;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_COR_SAG_V)
   {
@@ -1324,6 +1333,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_COR_AX_H)
   {
@@ -1331,6 +1343,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 1, 0);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_COR_AX_V)
   {
@@ -1338,6 +1353,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: off
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = true;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_SAG_AX_H)
   {
@@ -1345,6 +1363,9 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 1, 0);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
   else if (windowLayout == WINDOW_LAYOUT_SAG_AX_V)
   {
@@ -1352,13 +1373,19 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 0);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
+    m_CursorAxialPositionsAreBound = false;
+    m_CursorSagittalPositionsAreBound = false;
+    m_CursorCoronalPositionsAreBound = false;
   }
-  else
+  else // if (windowLayout == WINDOW_LAYOUT_ORTHO)
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       on
+    m_CursorAxialPositionsAreBound = true;
+    m_CursorSagittalPositionsAreBound = true;
+    m_CursorCoronalPositionsAreBound = false;
   }
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
