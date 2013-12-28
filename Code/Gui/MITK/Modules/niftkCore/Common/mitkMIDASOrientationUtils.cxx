@@ -64,11 +64,11 @@ MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation)
 
 
 //-----------------------------------------------------------------------------
-int GetUpDirection(const mitk::Geometry3D* geometry, const MIDASOrientation& orientation)
+int GetUpDirection(const mitk::Geometry3D* geometry, itk::Orientation orientation)
 {
 
   int result = 0;
-  if (geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (geometry != NULL && orientation != itk::ORIENTATION_UNKNOWN)
   {
     itk::Matrix<double, 3, 3> directionMatrix;
     VnlVector axis0 = geometry->GetMatrixColumn(0);
@@ -94,8 +94,7 @@ int GetUpDirection(const mitk::Geometry3D* geometry, const MIDASOrientation& ori
 
     if (orientationString != "UNKNOWN")
     {
-      itk::Orientation itkOrientation = GetItkOrientation(orientation);
-      int axisOfInterest = itk::GetAxisFromOrientationString(orientationString, itkOrientation);
+      int axisOfInterest = itk::GetAxisFromOrientationString(orientationString, orientation);
 
       if (axisOfInterest >= 0)
       {

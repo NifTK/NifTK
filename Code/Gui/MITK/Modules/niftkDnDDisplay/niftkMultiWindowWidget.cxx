@@ -2254,12 +2254,12 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation(const QmitkRenderWindow*
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSliceUpDirection(MIDASOrientation orientation) const
+int niftkMultiWindowWidget::GetSliceUpDirection(int orientation) const
 {
   int result = 0;
   if (m_Geometry != NULL)
   {
-    result = mitk::GetUpDirection(m_Geometry, orientation);
+    result = mitk::GetUpDirection(m_Geometry, itk::Orientation(orientation));
   }
   return result;
 }

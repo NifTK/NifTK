@@ -15,8 +15,6 @@
 #ifndef niftkMultiWindowWidget_h
 #define niftkMultiWindowWidget_h
 
-//#include <itkConversionUtils.h>
-
 #include <QColor>
 
 #include <mitkDataNode.h>
@@ -285,7 +283,7 @@ public:
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(MIDASOrientation orientation) const;
+  int GetSliceUpDirection(int orientation) const;
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
