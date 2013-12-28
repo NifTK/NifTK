@@ -431,8 +431,21 @@ private:
   bool m_CursorPositionsAreBound;
   bool m_ScaleFactorsAreBound;
 
-  /// \brief Controls if the axial and sagittal cursor positions are synchronised when the cursor positions are bound.
-  bool m_AxialSagittalCursorBindingEnabled;
+  /// \brief Controls if the axial coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image vertically in the sagittal window will move the image in the coronal window
+  /// in the same direction, and vice versa.
+  bool m_CursorAxialPositionsAreBound;
+
+  /// \brief Controls if the sagittal coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image horizontally in the coronal window will move the image in the axial window
+  /// in the same direction, and vice versa.
+  bool m_CursorSagittalPositionsAreBound;
+
+  /// \brief Controls if the coronal coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image horizontally in the sagittal window will move the image in vertically in the axial window
+  /// in the opposite direction, and vice versa. (Panning left in the sagittal window results in lifting up the image in the
+  /// axial window.)
+  bool m_CursorCoronalPositionsAreBound;
 
   friend class DisplayGeometryModificationCommand;
 
