@@ -1726,8 +1726,6 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, 
   {
     if (scaleFactor != m_ScaleFactors[orientation])
     {
-      MITK_INFO << "niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor) orientation: " << orientation;
-      MITK_INFO << "niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor) scale factor: " << scaleFactor;
       m_ScaleFactors[orientation] = scaleFactor;
       m_Magnifications[orientation] = this->GetMagnification(orientation);
 
@@ -2107,8 +2105,6 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
     if (m_RenderWindows[orientation]->isVisible() && scaleFactor != m_ScaleFactors[orientation])
     {
       this->SetScaleFactor(m_RenderWindows[orientation], scaleFactor);
-      MITK_INFO << "niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor) orientation: " << orientation;
-      MITK_INFO << "niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor) scale factor: " << scaleFactor;
       m_ScaleFactors[orientation] = scaleFactor;
       m_Magnifications[orientation] = this->GetMagnification(orientation);
     }
@@ -2121,8 +2117,6 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
         if (i != orientation && m_RenderWindows[i]->isVisible() && scaleFactor != m_ScaleFactors[i])
         {
           this->SetScaleFactor(m_RenderWindows[i], scaleFactor);
-          MITK_INFO << "niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)2 orientation: " << orientation;
-          MITK_INFO << "niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)2 scale factor: " << scaleFactor;
           m_ScaleFactors[i] = scaleFactor;
           m_Magnifications[i] = this->GetMagnification(MIDASOrientation(i));
         }
