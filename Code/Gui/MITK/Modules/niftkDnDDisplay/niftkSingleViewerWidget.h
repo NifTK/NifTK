@@ -26,6 +26,7 @@
 #include <QmitkRenderWindow.h>
 
 #include <QColor>
+#include <QTime>
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
@@ -441,7 +442,13 @@ private:
   /// \brief Stores the last three cursor positions so that if the window layout is switched
   /// between single and multi by double clicking, we can save the position from before the
   /// double clicking.
-  std::deque<mitk::Vector2D> m_LastCursorPositions;
+  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
+
+  /// \brief Stores the time of the last position selection events in milliseconds.
+  /// This is used to distinguish between simple position selection events by a single click
+  /// and single/multiple window layout switch by double click. If latter happens, we have to
+  /// save the position from before the double clicking.
+  std::deque<QTime> m_LastPositionSelectionTimes;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
