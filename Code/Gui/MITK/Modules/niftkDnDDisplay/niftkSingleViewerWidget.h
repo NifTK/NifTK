@@ -437,21 +437,27 @@ private:
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
 
-  /// \brief Stores the last three selected positions so that if the window layout is switched
-  /// between single and multi by double clicking, we can save the position from before the
-  /// double clicking.
+  /// \brief Stores the last three selected positions.
+  ///
+  /// The aim with storing these positions is that if the window layout is switched
+  /// between single and multi by double clicking, we can can discard the position changes
+  /// because of the double clicking itself, and remember the previously selected position,
+  /// so that we can restore it next time when the user returns to the window layout.
   std::deque<mitk::Point3D> m_LastSelectedPositions;
-
-  /// \brief Stores the last three cursor positions so that if the window layout is switched
-  /// between single and multi by double clicking, we can save the position from before the
-  /// double clicking.
-  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
 
   /// \brief Stores the time of the last position selection events in milliseconds.
   /// This is used to distinguish between simple position selection events by a single click
   /// and single/multiple window layout switch by double click. If latter happens, we have to
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastSelectedPositionTimes;
+
+  /// \brief Stores the last five cursor positions.
+  ///
+  /// The aim with storing these positions is that if the window layout is switched
+  /// between single and multi by double clicking, we can can discard the position changes
+  /// because of the double clicking itself, and remember the previous cursor positions,
+  /// so that we can restore them next time when the user returns to the window layout.
+  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
 
   /// \brief Stores the time of the last cursor selection events in milliseconds.
   /// This is used to distinguish between simple position selection events by a single click
