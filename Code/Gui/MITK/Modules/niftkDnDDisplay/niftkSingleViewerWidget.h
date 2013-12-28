@@ -448,7 +448,13 @@ private:
   /// This is used to distinguish between simple position selection events by a single click
   /// and single/multiple window layout switch by double click. If latter happens, we have to
   /// save the position from before the double clicking.
-  std::deque<QTime> m_LastPositionSelectionTimes;
+  std::deque<QTime> m_LastSelectedPositionTimes;
+
+  /// \brief Stores the time of the last cursor selection events in milliseconds.
+  /// This is used to distinguish between simple position selection events by a single click
+  /// and single/multiple window layout switch by double click. If latter happens, we have to
+  /// save the position from before the double clicking.
+  std::deque<QTime> m_LastCursorPositionTimes;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
