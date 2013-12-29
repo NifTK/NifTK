@@ -872,7 +872,7 @@ void niftkMultiWindowWidget::FitToDisplay()
     }
   }
 
-  if (m_ScaleFactorsAreBound)
+  if (m_ScaleFactorsAreBound && renderWindowWithLargestScaleFactor != -1)
   {
     /// ... then call mitk::DisplayGeometry::Fit() for that window ...
     mitk::DisplayGeometry* displayGeometry = m_RenderWindows[renderWindowWithLargestScaleFactor]->GetRenderer()->GetDisplayGeometry();
