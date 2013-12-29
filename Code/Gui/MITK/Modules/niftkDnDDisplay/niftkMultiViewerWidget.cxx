@@ -578,6 +578,24 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     return;
   }
 
+  int numberOfSurvivingViewers = std::min(currentNumberOfViewers, requiredNumberOfViewers);
+  std::vector<mitk::Point3D> selectedPositionInSurvivingViewers(numberOfSurvivingViewers);
+  std::vector<std::vector<mitk::Vector2D> > cursorPositionsInSurvivingViewers(numberOfSurvivingViewers);
+  std::vector<std::vector<double> > scaleFactorsInSurvivingViewers(numberOfSurvivingViewers);
+
+  for (int i = 0; i < numberOfSurvivingViewers; ++i)
+  {
+    selectedPositionInSurvivingViewers[i] = m_Viewers[i]->GetSelectedPosition();
+    cursorPositionsInSurvivingViewers[i] = m_Viewers[i]->GetCursorPositions();
+    scaleFactorsInSurvivingViewers[i] = m_Viewers[i]->GetScaleFactors();
+  }
+
+  // Make all current viewers inVisible, as we are going to destroy layout.
+  foreach (niftkSingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->hide();
+  }
+
   /////////////////////////////////////////
   // Start: Rebuild the number of viewers.
   // NOTE:  The order of viewers in
@@ -647,16 +665,23 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   m_TopLevelLayout->addLayout(m_LayoutForRenderWindows, 1, 0);
 
-  int viewerCounter = 0;
+  int viewerIndex = 0;
   for (int row = 0; row < viewerRows; row++)
   {
     for (int column = 0; column < viewerColumns; column++)
     {
-      m_LayoutForRenderWindows->addWidget(m_Viewers[viewerCounter], row, column);
-      m_Viewers[viewerCounter]->show();
-      m_Viewers[viewerCounter]->setEnabled(true);
-      viewerCounter++;
+      m_LayoutForRenderWindows->addWidget(m_Viewers[viewerIndex], row, column);
+      m_Viewers[viewerIndex]->show();
+      m_Viewers[viewerIndex]->setEnabled(true);
+      viewerIndex++;
     }
+  }
+
+  for (int i = 0; i < numberOfSurvivingViewers; ++i)
+  {
+    m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
+    m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
+    m_Viewers[i]->SetScaleFactors(scaleFactorsInSurvivingViewers[i]);
   }
 
   ////////////////////////////////////////
@@ -681,7 +706,6 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     selectedViewer = m_Viewers[selectedViewerIndex];
   }
   this->SetSelectedRenderWindow(selectedViewerIndex, selectedRenderWindow);
-//  selectedViewer->FitToDisplay();
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
