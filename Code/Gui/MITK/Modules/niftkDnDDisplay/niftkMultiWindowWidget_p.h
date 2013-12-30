@@ -338,6 +338,9 @@ private:
   ///
   void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
+  /// \brief Gets the scale factor of the render window (mm/px).
+  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the position of the focus remains the same.
   void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);

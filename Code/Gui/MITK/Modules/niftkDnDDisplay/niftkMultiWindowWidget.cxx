@@ -836,7 +836,7 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation() const
 void niftkMultiWindowWidget::FitToDisplay()
 {
   double largestScaleFactor = -1.0;
-  int renderWindowWithLargestScaleFactor = -1;
+  int indexOfRenderWindowWithLargestScaleFactor = -1;
 
   for (int i = 0; i < 3; ++i)
   {
@@ -850,7 +850,7 @@ void niftkMultiWindowWidget::FitToDisplay()
         m_BlockDisplayGeometryEvents = true;
         displayGeometry->Fit();
         m_BlockDisplayGeometryEvents = false;
-        m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+        m_ScaleFactors[i] = this->GetScaleFactor(m_RenderWindows[i]);
         m_CursorPositions[i] = this->GetCursorPosition(m_RenderWindows[i]);
       }
       else
@@ -861,38 +861,37 @@ void niftkMultiWindowWidget::FitToDisplay()
         if (widthMmPerPx > largestScaleFactor)
         {
           largestScaleFactor = widthMmPerPx;
-          renderWindowWithLargestScaleFactor = i;
+          indexOfRenderWindowWithLargestScaleFactor = i;
         }
         if (heightMmPerPx > largestScaleFactor)
         {
           largestScaleFactor = heightMmPerPx;
-          renderWindowWithLargestScaleFactor = i;
+          indexOfRenderWindowWithLargestScaleFactor = i;
         }
       }
     }
   }
 
-  if (m_ScaleFactorsAreBound && renderWindowWithLargestScaleFactor != -1)
+  if (m_ScaleFactorsAreBound && indexOfRenderWindowWithLargestScaleFactor != -1)
   {
+    QmitkRenderWindow* renderWindowWithLargestScaleFactor = m_RenderWindows[indexOfRenderWindowWithLargestScaleFactor];
     /// ... then call mitk::DisplayGeometry::Fit() for that window ...
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[renderWindowWithLargestScaleFactor]->GetRenderer()->GetDisplayGeometry();
+    mitk::DisplayGeometry* displayGeometry = renderWindowWithLargestScaleFactor->GetRenderer()->GetDisplayGeometry();
     m_BlockDisplayGeometryEvents = true;
     displayGeometry->Fit();
-    m_ScaleFactors[renderWindowWithLargestScaleFactor] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-    m_CursorPositions[renderWindowWithLargestScaleFactor] = this->GetCursorPosition(m_RenderWindows[renderWindowWithLargestScaleFactor]);
     m_BlockDisplayGeometryEvents = false;
+    m_ScaleFactors[indexOfRenderWindowWithLargestScaleFactor] = this->GetScaleFactor(renderWindowWithLargestScaleFactor);
+    m_CursorPositions[indexOfRenderWindowWithLargestScaleFactor] = this->GetCursorPosition(renderWindowWithLargestScaleFactor);
 
     /// ... and finally, apply the same scale factor for the other render windows.
     for (int i = 0; i < 3; ++i)
     {
-      if (i != renderWindowWithLargestScaleFactor && m_RenderWindows[i]->isVisible())
+      if (i != indexOfRenderWindowWithLargestScaleFactor && m_RenderWindows[i]->isVisible())
       {
-        m_BlockDisplayGeometryEvents = true;
-        m_CursorPositions[i].Fill(0.5);
-        m_ScaleFactors[i] = m_ScaleFactors[renderWindowWithLargestScaleFactor];
-        this->SetCursorPosition(m_RenderWindows[i], m_CursorPositions[i]);
-        this->SetScaleFactor(m_RenderWindows[i], m_ScaleFactors[i]);
-        m_BlockDisplayGeometryEvents = false;
+        mitk::Vector2D cursorPosition;
+        cursorPosition.Fill(0.5);
+        this->SetCursorPosition(MIDASOrientation(i), cursorPosition);
+        this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[indexOfRenderWindowWithLargestScaleFactor]);
       }
     }
   }
@@ -2169,6 +2168,14 @@ double niftkMultiWindowWidget::GetMagnification() const
 void niftkMultiWindowWidget::SetMagnification(double magnification)
 {
   this->SetMagnification(this->GetOrientation(), magnification);
+}
+
+
+//-----------------------------------------------------------------------------
+double niftkMultiWindowWidget::GetScaleFactor(QmitkRenderWindow* renderWindow) const
+{
+  mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
+  return displayGeometry->GetScaleFactorMMPerDisplayUnit();
 }
 
 
