@@ -711,7 +711,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
 
       m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-      m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
+      mitk::Point3D focusPoint = this->GetSelectedPosition();
+      m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)], focusPoint);
 
       if (wasSelected)
       {
@@ -875,7 +876,8 @@ void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFa
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->SetScaleFactors(scaleFactors);
+    mitk::Point3D focusPoint = this->GetSelectedPosition();
+    m_MultiWidget->SetScaleFactors(scaleFactors, focusPoint);
   }
 }
 

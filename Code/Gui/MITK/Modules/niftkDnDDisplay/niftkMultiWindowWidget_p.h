@@ -254,7 +254,7 @@ public:
   /// \brief Sets the scale factor of the render windows to the given values.
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
-  void SetScaleFactors(const std::vector<double>& scaleFactors);
+  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Point3D& focusPoint);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;
@@ -342,8 +342,8 @@ private:
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
-  /// and moves the image so that the position of the focus remains the same.
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
+  /// and moves the image so that the focus point stays in the same position on the display.
+  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Point3D& focusPoint);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);

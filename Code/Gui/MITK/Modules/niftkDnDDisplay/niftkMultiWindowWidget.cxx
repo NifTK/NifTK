@@ -2101,9 +2101,11 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
 {
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
+    mitk::Point3D focusPoint = this->GetSelectedPosition();
+
     if (m_RenderWindows[orientation]->isVisible() && scaleFactor != m_ScaleFactors[orientation])
     {
-      this->SetScaleFactor(m_RenderWindows[orientation], scaleFactor);
+      this->SetScaleFactor(m_RenderWindows[orientation], scaleFactor, focusPoint);
       m_ScaleFactors[orientation] = scaleFactor;
       m_Magnifications[orientation] = this->GetMagnification(orientation);
     }
@@ -2115,7 +2117,7 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
       {
         if (i != orientation && m_RenderWindows[i]->isVisible() && scaleFactor != m_ScaleFactors[i])
         {
-          this->SetScaleFactor(m_RenderWindows[i], scaleFactor);
+          this->SetScaleFactor(m_RenderWindows[i], scaleFactor, focusPoint);
           m_ScaleFactors[i] = scaleFactor;
           m_Magnifications[i] = this->GetMagnification(MIDASOrientation(i));
         }
@@ -2147,12 +2149,12 @@ const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
+void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Point3D& focusPoint)
 {
   m_ScaleFactors = scaleFactors;
   for (int i = 0; i < 3; ++i)
   {
-    this->SetScaleFactor(m_RenderWindows[i], scaleFactors[i]);
+    this->SetScaleFactor(m_RenderWindows[i], scaleFactors[i], focusPoint);
   }
 }
 
@@ -2180,16 +2182,14 @@ double niftkMultiWindowWidget::GetScaleFactor(QmitkRenderWindow* renderWindow) c
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor)
+void niftkMultiWindowWidget::SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Point3D& focusPoint)
 {
   mitk::DisplayGeometry* displayGeometry = renderWindow->GetRenderer()->GetDisplayGeometry();
-
-  const mitk::Point3D& selectedPosition = this->GetSelectedPosition();
 
   mitk::Point2D focusInMm;
   mitk::Point2D focusInPx;
 
-  displayGeometry->Map(selectedPosition, focusInMm);
+  displayGeometry->Map(focusPoint, focusInMm);
   displayGeometry->WorldToDisplay(focusInMm, focusInPx);
 
   double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
