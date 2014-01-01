@@ -104,6 +104,11 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
   {
