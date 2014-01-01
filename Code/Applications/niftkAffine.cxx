@@ -342,21 +342,10 @@ int DoMain(arguments args)
       op->SetFunctionConvergenceTolerance(args.funcTol);
       op->SetAutomaticInitialSimplex(true);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      typename OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
   else if (args.optimizer == itk::GRADIENT_DESCENT)
     {
@@ -366,21 +355,10 @@ int DoMain(arguments args)
       op->SetNumberOfIterations(args.iterations);
       op->SetLearningRate(args.learningRate);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      typename OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
   else if (args.optimizer == itk::REGSTEP_GRADIENT_DESCENT)
     {
@@ -392,21 +370,10 @@ int DoMain(arguments args)
       op->SetMinimumStepLength(args.minStep);
       op->SetRelaxationFactor(args.relaxFactor);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
   else if (args.optimizer == itk::POWELL)
     {
@@ -419,21 +386,10 @@ int DoMain(arguments args)
       op->SetMaximumLineIteration(10);
       op->SetValueTolerance(0.0001);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());      
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
   else if (args.optimizer == itk::SIMPLE_REGSTEP)
     {
@@ -444,21 +400,10 @@ int DoMain(arguments args)
       op->SetMaximumStepLength(args.maxStep);
       op->SetMinimumStepLength(args.minStep);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);      
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
   else if (args.optimizer == itk::UCLPOWELL)
     {
@@ -472,21 +417,10 @@ int DoMain(arguments args)
       op->SetValueTolerance(1.0e-14);
       op->SetParameterTolerance(args.parameterChangeTolerance);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());      
-      OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
-      scales.Fill( 1.0 );      
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 9)
-      {
-        scales[6] = 100.0; 
-        scales[7] = 100.0; 
-        scales[8] = 100.0; 
-      }
-      if (singleResMethod->GetTransform()->GetNumberOfParameters() >= 12)
-      {
-        scales[9]  = 100.0; 
-        scales[10] = 100.0; 
-        scales[11] = 100.0; 
-      }
+
+      OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
+      std::cout << "Relative transformation parameter scale factors: " << scales << std::endl;
     }
 
   // Finish configuring single-res object
