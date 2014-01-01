@@ -225,6 +225,15 @@ public:
   ///
   const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
+  /// \brief Gets the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  std::vector<mitk::Point3D> GetCentrePoints(); //const;
+
+  void SetCentrePoints(const std::vector<mitk::Point3D>& centrePoints);
+
   /// \brief Sets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
@@ -255,6 +264,11 @@ public:
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
   void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Point3D& focusPoint);
+
+  /// \brief Sets the scale factor of the render windows to the given values.
+  /// If the zooming is bound across the windows then this will set the scaling
+  /// of the other windows as well.
+  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Vector2D& focusPositions);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;
@@ -329,21 +343,27 @@ private:
   ///
   ///    pixel coordinate / render window size
   ///
-  mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
+  mitk::Vector2D GetPositionOfPoint(QmitkRenderWindow* renderWindow, const mitk::Point3D& point) const;
+
+  mitk::Point3D GetPointAtPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& position) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  void SetCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
+  void SetPositionOfPoint(QmitkRenderWindow* renderWindow, const mitk::Point3D& point, const mitk::Vector2D& position);
 
   /// \brief Gets the scale factor of the render window (mm/px).
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the focus point stays in the same position on the display.
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Point3D& focusPoint);
+  void Zoom(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Point3D& focusPoint);
+
+  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// and moves the image so that the focus point stays in the same position on the display.
+  void Zoom(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Vector2D& focusPosition);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -384,9 +404,6 @@ private:
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
-
-  /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
 
   /// \brief Computes the scale factors from the magnification for each axes in mm/px.
   /// Since the magnification is in linear relation with the px/vx ratio but not the
