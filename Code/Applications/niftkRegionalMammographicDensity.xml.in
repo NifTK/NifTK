@@ -114,6 +114,14 @@
       <label>Debug</label>
     </boolean>
 
+    <boolean>
+      <name>flgRegister</name>
+      <flag>r</flag>
+      <longflag>register</longflag>
+      <description>Register the diagnostic image to the pre-diagnostic image to enable the tumour location to be mapped into the diagnostic image.</description>
+      <label>Register images</label>
+    </boolean>
+
   </parameters>
 
 </executable>

@@ -31,6 +31,17 @@
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkPolygonSpatialObject.h>
+ 
+#include <itkImageRegistrationFilter.h>
+#include <itkImageRegistrationFactory.h>
+#include <itkGradientDescentOptimizer.h>
+#include <itkUCLSimplexOptimizer.h>
+#include <itkUCLRegularStepGradientDescentOptimizer.h>
+#include <itkSingleResolutionImageRegistrationBuilder.h>
+#include <itkMaskedImageRegistrationMethod.h>
+#include <itkTransformFileWriter.h>
+#include <itkImageMomentsCalculator.h>
+#include <itkImageRegistrationFactory.h>
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -169,6 +180,9 @@ public:
   typedef unsigned int LabelPixelType;
   typedef Image< LabelPixelType, InputDimension> LabelImageType;
 
+  typedef short int OutputPixelType;
+  typedef itk::Image< OutputPixelType , InputDimension >  OutputImageType;
+
   typedef itk::MetaDataDictionary DictionaryType;
   typedef itk::MetaDataObject< std::string > MetaDataStringType;
 
@@ -186,6 +200,22 @@ public:
   typedef itk::PolygonSpatialObject< InputDimension > PolygonType;
 
 
+  // Setup objects to build registration.
+
+  typedef  double          ScalarType;
+  typedef  float           DeformableScalarType;
+
+  typedef typename itk::ImageRegistrationFactory< ImageType, InputDimension, ScalarType > FactoryType;
+  typedef typename itk::SingleResolutionImageRegistrationBuilder< ImageType, InputDimension, ScalarType > BuilderType;
+  typedef typename itk::MaskedImageRegistrationMethod< ImageType > SingleResImageRegistrationMethodType;
+  typedef typename itk::MultiResolutionImageRegistrationWrapper< ImageType > MultiResImageRegistrationMethodType;
+  typedef typename itk::ImageRegistrationFilter< ImageType, OutputImageType, InputDimension, ScalarType, DeformableScalarType > RegistrationFilterType;
+  typedef typename SingleResImageRegistrationMethodType::ParametersType ParametersType;
+  typedef typename itk::SimilarityMeasure< ImageType, ImageType > SimilarityMeasureType;
+  typedef typename itk::ImageMomentsCalculator< ImageType > ImageMomentCalculatorType;
+
+
+
   enum MammogramType 
   { 
     UNKNOWN_MAMMO_TYPE,
@@ -201,57 +231,60 @@ public:
   };
 
 
-  void SetPatientID( std::string &idPatient ) { id = idPatient; }
+  void SetPatientID( std::string &idPatient ) { m_Id = idPatient; }
 
-  void SetOutputDirectory( std::string &dirOut ) { dirOutput = dirOut; }
+  void SetOutputDirectory( std::string &dirOut ) { m_DirOutput = dirOut; }
 
-  void SetIDDiagnosticImage( std::string &idDiagImage )       { idDiagnosticImage    = idDiagImage; }
-  void SetIDPreDiagnosticImage( std::string &idPreDiagImage ) { idPreDiagnosticImage = idPreDiagImage; }
+  void SetIDDiagnosticImage( std::string &idDiagImage )       { m_IdDiagnosticImage    = idDiagImage; }
+  void SetIDPreDiagnosticImage( std::string &idPreDiagImage ) { m_IdPreDiagnosticImage = idPreDiagImage; }
 
-  void SetFileDiagnostic( std::string &fileDiag )       { fileDiagnostic       = fileDiag; }
-  void SetFilePreDiagnostic( std::string &filePreDiag ) { filePreDiagnostic    = filePreDiag; }
+  void SetFileDiagnostic( std::string &fileDiag )       { m_FileDiagnostic       = fileDiag; }
+  void SetFilePreDiagnostic( std::string &filePreDiag ) { m_FilePreDiagnostic    = filePreDiag; }
 
-  void SetTumourID( std::string &strTumID )           { strTumourID          = strTumID; }
-  void SetTumourImageID( std::string &strTumImageID ) { strTumourImageID     = strTumImageID; }
+  void SetTumourID( std::string &strTumID )           { m_StrTumourID          = strTumID; }
+  void SetTumourImageID( std::string &strTumImageID ) { m_StrTumourImageID     = strTumImageID; }
 
-  void SetThresholdDiagnostic(    int  thrDiag )   { thresholdDiagnostic    = thrDiag; }
-  void SetThresholdPreDiagnostic( int thrPreDiag ) { thresholdPreDiagnostic = thrPreDiag; }
+  void SetThresholdDiagnostic(    int  thrDiag )   { m_ThresholdDiagnostic    = thrDiag; }
+  void SetThresholdPreDiagnostic( int thrPreDiag ) { m_ThresholdPreDiagnostic = thrPreDiag; }
 
-  void SetTumourLeft(   int tumLeft )   { tumourLeft   = tumLeft; }
-  void SetTumourRight(  int tumRight )  { tumourRight  = tumRight; }
-  void SetTumourTop(    int tumTop )    { tumourTop    = tumTop; }
-  void SetTumourBottom( int tumBottom ) { tumourBottom = tumBottom; }
+  void SetTumourLeft(   int tumLeft )   { m_TumourLeft   = tumLeft; }
+  void SetTumourRight(  int tumRight )  { m_TumourRight  = tumRight; }
+  void SetTumourTop(    int tumTop )    { m_TumourTop    = tumTop; }
+  void SetTumourBottom( int tumBottom ) { m_TumourBottom = tumBottom; }
 
-  void SetRegionSizeInMM( float roiSize ) { regionSizeInMM = roiSize; }
+  void SetRegionSizeInMM( float roiSize ) { m_RegionSizeInMM = roiSize; }
 
-  void SetVerboseOn( void ) { flgVerbose = true; }
-  void SetVerboseOff( void ) { flgVerbose = false; }
+  void SetRegisterOn( void ) { m_FlgRegister = true; }
+  void SetRegisterOff( void ) { m_FlgRegister = false; }
 
-  void SetOverwriteOn( void ) { flgOverwrite = true; }
-  void SetOverwriteOff( void ) { flgOverwrite = false; }
+  void SetVerboseOn( void ) { m_FlgVerbose = true; }
+  void SetVerboseOff( void ) { m_FlgVerbose = false; }
 
-  void SetDebugOn( void ) { flgDebug = true; }
-  void SetDebugOff( void ) { flgDebug = false; }
+  void SetOverwriteOn( void ) { m_FlgOverwrite = true; }
+  void SetOverwriteOff( void ) { m_FlgOverwrite = false; }
+
+  void SetDebugOn( void ) { m_FlgDebug = true; }
+  void SetDebugOff( void ) { m_FlgDebug = false; }
 
 
-  std::string GetPatientID( void ) { return id; }
+  std::string GetPatientID( void ) { return m_Id; }
 
-  std::string GetIDDiagnosticImage( void )    { return idDiagnosticImage; }
-  std::string GetIDPreDiagnosticImage( void ) { return idPreDiagnosticImage; }
+  std::string GetIDDiagnosticImage( void )    { return m_IdDiagnosticImage; }
+  std::string GetIDPreDiagnosticImage( void ) { return m_IdPreDiagnosticImage; }
 
-  std::string GetFileDiagnostic( void )    { return fileDiagnostic; }
-  std::string GetFilePreDiagnostic( void ) { return filePreDiagnostic; }
+  std::string GetFileDiagnostic( void )    { return m_FileDiagnostic; }
+  std::string GetFilePreDiagnostic( void ) { return m_FilePreDiagnostic; }
 
-  std::string GetStrTumourID( void )      { return strTumourID; }
-  std::string GetStrTumourImageID( void ) { return strTumourImageID; }
+  std::string GetStrTumourID( void )      { return m_StrTumourID; }
+  std::string GetStrTumourImageID( void ) { return m_StrTumourImageID; }
 
-  int GetThresholdDiagnostic( void )    { return thresholdDiagnostic; }
-  int GetThresholdPreDiagnostic( void ) { return thresholdPreDiagnostic; }
+  int GetThresholdDiagnostic( void )    { return m_ThresholdDiagnostic; }
+  int GetThresholdPreDiagnostic( void ) { return m_ThresholdPreDiagnostic; }
 
-  int GetTumourLeft( void )   { return tumourLeft; }
-  int GetTumourRight( void )  { return tumourRight; }
-  int GetTumourTop( void )    { return tumourTop; }
-  int GetTumourBottom( void ) { return tumourBottom; }
+  int GetTumourLeft( void )   { return m_TumourLeft; }
+  int GetTumourRight( void )  { return m_TumourRight; }
+  int GetTumourTop( void )    { return m_TumourTop; }
+  int GetTumourBottom( void ) { return m_TumourBottom; }
 
   void LoadImages( void );
   void UnloadImages( void );
@@ -264,9 +297,10 @@ public:
   void PushBackPectoralCoord( std::string strPectoralImageID, 
                               int id, int x, int y ); 
 
+  void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
+
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV,
                            boost::random::mt19937 &gen );
-
 
   void Compute( void );
 
@@ -279,84 +313,96 @@ protected:
   /// Destructor
   virtual ~RegionalMammographicDensity();
 
-  bool flgVerbose;
-  bool flgOverwrite;
-  bool flgDebug;
+  bool m_FlgVerbose;
+  bool m_FlgDebug;
 
-  std::string id;
+  bool m_FlgOverwrite;
+  bool m_FlgRegister;
 
-  std::string dirOutput;
+  std::string m_Id;
+
+  std::string m_DirOutput;
 
   // The diagnostic image
 
-  std::string idDiagnosticImage;
-  std::string fileDiagnostic;
+  std::string m_IdDiagnosticImage;
+  std::string m_FileDiagnostic;
 
-  int thresholdDiagnostic;
+  int m_ThresholdDiagnostic;
 
   // The pre-diagnostic image
 
-  std::string idPreDiagnosticImage;
-  std::string filePreDiagnostic;
+  std::string m_IdPreDiagnosticImage;
+  std::string m_FilePreDiagnostic;
 
-  int thresholdPreDiagnostic;
+  int m_ThresholdPreDiagnostic;
 
   // The tumour
 
-  std::string strTumourID;
-  std::string strTumourImageID;
+  std::string m_StrTumourID;
+  std::string m_StrTumourImageID;
 
-  int tumourLeft;
-  int tumourRight;
-  int tumourTop;
-  int tumourBottom;
+  int m_TumourLeft;
+  int m_TumourRight;
+  int m_TumourTop;
+  int m_TumourBottom;
 
-  LabelPixelType tumourRegionValue;
+  LabelPixelType m_DiagTumourRegionValue;
 
-  typename LabelImageType::IndexType tumourCenterIndex;
-  typename LabelImageType::RegionType tumourRegion;
+  typename LabelImageType::IndexType  m_DiagTumourCenterIndex;
+  typename LabelImageType::RegionType m_DiagTumourRegion;
+
+  LabelPixelType m_PreDiagTumourRegionValue;
+
+  typename LabelImageType::IndexType m_PreDiagCenterIndex;
+  typename LabelImageType::RegionType m_PreDiagTumourRegion;
 
   // The region of interest size
 
-  float regionSizeInMM;
+  float m_RegionSizeInMM;
 
-  DictionaryType diagDictionary;
-  DictionaryType preDiagDictionary;
-
-
-  typename ImageType::Pointer imDiagnostic;
-  typename ImageType::Pointer imPreDiagnostic;
+  DictionaryType m_DiagDictionary;
+  DictionaryType m_PreDiagDictionary;
 
 
-  typename ImageType::Pointer imDiagnosticMask;
-  typename ImageType::Pointer imPreDiagnosticMask;
-
-  typename LabelImageType::Pointer imDiagnosticLabels;
-  typename LabelImageType::Pointer imPreDiagnosticLabels;
+  typename ImageType::Pointer m_ImDiagnostic;
+  typename ImageType::Pointer m_ImPreDiagnostic;
 
 
-  std::vector< PointOnBoundary > diagBreastEdgePoints;
-  std::vector< PointOnBoundary > preDiagBreastEdgePoints;
+  typename ImageType::Pointer m_ImDiagnosticMask;
+  typename ImageType::Pointer m_ImPreDiagnosticMask;
+
+  typename LabelImageType::Pointer m_ImDiagnosticLabels;
+  typename LabelImageType::Pointer m_ImPreDiagnosticLabels;
+
+
+  std::vector< PointOnBoundary > m_DiagBreastEdgePoints;
+  std::vector< PointOnBoundary > m_PreDiagBreastEdgePoints;
   
-  std::vector< PointOnBoundary > diagPectoralPoints;
-  std::vector< PointOnBoundary > preDiagPectoralPoints;
+  std::vector< PointOnBoundary > m_DiagPectoralPoints;
+  std::vector< PointOnBoundary > m_PreDiagPectoralPoints;
 
 
-  std::map< LabelPixelType, Patch > diagPatches;
-  std::map< LabelPixelType, Patch > preDiagPatches;
+  std::map< LabelPixelType, Patch > m_DiagPatches;
+  std::map< LabelPixelType, Patch > m_PreDiagPatches;
 
-  
+
+  typename FactoryType::EulerAffineTransformType::Pointer m_Transform;
+
   void PrintDictionary( DictionaryType &dictionary );
+
+  typename ImageType::SpacingType GetImageResolutionFromDictionary( DictionaryType &dictionary );
 
   void ReadImage( MammogramType mammoType );
 
   std::string BuildOutputFilename( std::string fileInput, std::string suffix );
 
-  void WriteBinaryImageToUCharFile( std::string fileInput, 
-                                    std::string suffix,
-                                    const char *description,
-                                    typename ImageType::Pointer image,
-                                    DictionaryType &dictionary );
+  template < typename TOutputImageType >
+  void CastImageAndWriteToFile( std::string fileInput, 
+                                std::string suffix,
+                                const char *description,
+                                typename ImageType::Pointer image,
+                                DictionaryType &dictionary );
 
   template < typename TOutputImageType >
   void WriteImageFile( std::string fileInput, 
@@ -369,6 +415,7 @@ protected:
                             std::string suffix, 
                             const char *description,
                             typename LabelImageType::Pointer image,
+                            typename LabelImageType::RegionType &tumourRegion,
                             DictionaryType &dictionary );
 
   void AddPointToPolygon( typename PolygonType::Pointer &polygon, 
@@ -381,8 +428,20 @@ protected:
 
   typename ImageType::Pointer MaskWithPolygon( MammogramType mammoType );
 
+  template <typename ScalesType>
+  ScalesType SetRegistrationParameterScales( typename itk::TransformTypeEnum transformType,
+                                             unsigned int nParameters );
+
+  void RegisterTheImages();
+
+   typename LabelImageType::IndexType
+    TransformTumourPositionIntoPreDiagImage( typename LabelImageType::IndexType &idxTumourCenter );
+
   typename LabelImageType::Pointer 
-    GenerateRegionLabels( typename ImageType::Pointer &image,
+    GenerateRegionLabels( typename LabelImageType::IndexType &idxTumourCenter,
+                          typename LabelImageType::RegionType &tumourRegion,
+                          LabelPixelType &tumourRegionValue,
+                          typename ImageType::Pointer &image,
                           typename ImageType::Pointer &imMask,
                           typename std::map< LabelPixelType, Patch > &listOfPatches,
                           int threshold );
