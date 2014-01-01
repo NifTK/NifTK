@@ -249,10 +249,10 @@ public:
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Get the currently selected position in world coordinates (mm)
-  std::vector<mitk::Point3D> GetCentrePoints() const;
+  std::vector<mitk::Point3D> GetPointsAtCentre() const;
 
   /// \brief Set the currently selected position in world coordinates (mm)
-  void SetCentrePoints(const std::vector<mitk::Point3D>& centrePoints);
+  void MovePointsToCentre(const std::vector<mitk::Point3D>& centrePoints);
 
   /// \brief Get the current magnification.
   double GetMagnification(MIDASOrientation orientation) const;
@@ -264,16 +264,16 @@ public:
   double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+  void ZoomAroundCursor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Gets the current scale factor of each render window.
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the current scale factor for each render window.
-  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Point3D& focusPoint);
+  void ZoomAroundCursor(const std::vector<double>& scaleFactors);
 
   /// \brief Sets the current scale factor for each render window.
-  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Vector2D& focusPosition);
+  void ZoomAroundCentre(const std::vector<double>& scaleFactors);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -459,28 +459,22 @@ private:
   std::deque<mitk::Point3D> m_LastSelectedPositions;
 
   /// \brief Stores the time of the last position selection events in milliseconds.
+  ///
   /// This is used to distinguish between simple position selection events by a single click
   /// and single/multiple window layout switch by double click. If latter happens, we have to
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastSelectedPositionTimes;
 
-  /// \brief Stores the last five cursor positions.
+  /// \brief Stores the points at the centre of the 2D render windows a the last five times.
   ///
   /// The aim with storing these positions is that if the window layout is switched
   /// between single and multi by double clicking, we can can discard the position changes
-  /// because of the double clicking itself, and remember the previous cursor positions,
-  /// so that we can restore them next time when the user returns to the window layout.
-  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
-
-  /// \brief Stores the time of the last cursor selection events in milliseconds.
-  /// This is used to distinguish between simple position selection events by a single click
-  /// and single/multiple window layout switch by double click. If latter happens, we have to
-  /// save the position from before the double clicking.
-  std::deque<QTime> m_LastCursorPositionTimes;
-
+  /// because of the double clicking itself, and remember the previously selected position,
+  /// so that we can restore it next time when the user returns to the window layout.
   std::deque<std::vector<mitk::Point3D> > m_LastCentrePoints;
 
-  /// \brief Stores the time of the last cursor selection events in milliseconds.
+  /// \brief Stores the time of the last events in milliseconds when the points in the centre of the 2D windows have changed.
+  ///
   /// This is used to distinguish between simple position selection events by a single click
   /// and single/multiple window layout switch by double click. If latter happens, we have to
   /// save the position from before the double clicking.

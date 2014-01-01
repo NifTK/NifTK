@@ -580,15 +580,13 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   int numberOfSurvivingViewers = std::min(currentNumberOfViewers, requiredNumberOfViewers);
   std::vector<mitk::Point3D> selectedPositionInSurvivingViewers(numberOfSurvivingViewers);
-  std::vector<std::vector<mitk::Vector2D> > cursorPositionsInSurvivingViewers(numberOfSurvivingViewers);
-  std::vector<std::vector<mitk::Point3D> > centrePointsInSurvivingViewers(numberOfSurvivingViewers);
+  std::vector<std::vector<mitk::Point3D> > pointsAtCentreInSurvivingViewers(numberOfSurvivingViewers);
   std::vector<std::vector<double> > scaleFactorsInSurvivingViewers(numberOfSurvivingViewers);
 
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
     selectedPositionInSurvivingViewers[i] = m_Viewers[i]->GetSelectedPosition();
-    cursorPositionsInSurvivingViewers[i] = m_Viewers[i]->GetCursorPositions();
-    centrePointsInSurvivingViewers[i] = m_Viewers[i]->GetCentrePoints();
+    pointsAtCentreInSurvivingViewers[i] = m_Viewers[i]->GetPointsAtCentre();
     scaleFactorsInSurvivingViewers[i] = m_Viewers[i]->GetScaleFactors();
   }
 
@@ -679,14 +677,11 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     }
   }
 
-  mitk::Vector2D centrePosition;
-  centrePosition.Fill(0.5);
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
     m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
-//    m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
-    m_Viewers[i]->SetCentrePoints(centrePointsInSurvivingViewers[i]);
-    m_Viewers[i]->SetScaleFactors(scaleFactorsInSurvivingViewers[i], centrePosition);
+    m_Viewers[i]->MovePointsToCentre(pointsAtCentreInSurvivingViewers[i]);
+    m_Viewers[i]->ZoomAroundCentre(scaleFactorsInSurvivingViewers[i]);
   }
 
   ////////////////////////////////////////
@@ -856,7 +851,7 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetScaleFactor(orientation, scaleFactor);
+        otherViewer->ZoomAroundCursor(orientation, scaleFactor);
       }
     }
   }
@@ -1266,7 +1261,7 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
         otherViewer->SetScaleFactorsBound(bound);
-        otherViewer->SetScaleFactors(scaleFactors, otherViewer->GetSelectedPosition());
+        otherViewer->ZoomAroundCursor(scaleFactors);
       }
     }
   }
@@ -1375,11 +1370,11 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowMagnificationsBound())
         {
-          otherViewer->SetScaleFactors(scaleFactors, otherViewer->GetSelectedPosition());
+          otherViewer->ZoomAroundCursor(scaleFactors);
         }
         else
         {
-          otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->ZoomAroundCursor(orientation, scaleFactor);
         }
       }
     }
@@ -1746,11 +1741,11 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged()
         otherViewer->SetScaleFactorsBound(windowScaleFactorsBound);
         if (windowScaleFactorsBound)
         {
-          otherViewer->SetScaleFactors(scaleFactors, otherViewer->GetSelectedPosition());
+          otherViewer->ZoomAroundCursor(scaleFactors);
         }
         else
         {
-          otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->ZoomAroundCursor(orientation, scaleFactor);
         }
       }
     }

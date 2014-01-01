@@ -195,89 +195,76 @@ public:
   /// \brief Set the current time step.
   void SetTimeStep(unsigned int timeStep);
 
-  /// \brief Gets the selected position in the world coordinate system (mm).
-  const mitk::Point3D GetSelectedPosition() const;
+  /// \brief Gets the selected point in the world coordinate system (mm).
+  const mitk::Point3D GetPointAtCursor() const;
 
   /// \brief Sets the selected position in the world coordinate system (mm).
-  void SetSelectedPosition(const mitk::Point3D& selectedPosition);
+  ///
+  /// This function does not necessarily move the image on the display, but
+  /// puts the cursor (aka. crosshair) to the selected world position.
+  void SetPointAtCursor(const mitk::Point3D& selectedPoint);
 
   /// \brief Gets the cursor position normalised with the render window size.
+  ///
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D& GetCursorPosition(MIDASOrientation orientation) const;
+  const mitk::Vector2D& GetPositionAtCursor(MIDASOrientation orientation) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
+  ///
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  /// This function does not change the selected position in world but moves the image
-  /// in the render windows so that the selected position gets to the specified position
-  /// in the render windows.
-  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  /// This function does not change the selected point in world but moves the image
+  /// in the given render window so that the cursor (aka. crosshair) gets to the specified
+  /// position in the render window.
+  void MoveCursorToPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
-  /// \brief Gets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  /// \brief Gets the positions of the cursor in the 2D render windows normalised with the render window size.
+  ///
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
   ///
   ///    pixel coordinate / render window size
   ///
-  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
+  const std::vector<mitk::Vector2D>& GetPositionsAtCursor() const;
 
-  /// \brief Gets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  /// \brief Sets the positions of the cursor in the 2D render windows normalised with the render window size.
+  ///
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
   ///
   ///    pixel coordinate / render window size
   ///
-  std::vector<mitk::Point3D> GetCentrePoints(); //const;
+  void MoveCursorToPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
-  void SetCentrePoints(const std::vector<mitk::Point3D>& centrePoints);
+  /// \brief Gets the points in world space (mm) that are in the centre of the render windows.
+  std::vector<mitk::Point3D> GetPointsAtCentre() const;
 
-  /// \brief Sets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
+  /// \brief Moves the given points (given in mm world coordinates) to the centre of the render windows.
+  void MovePointsToCentre(const std::vector<mitk::Point3D>& centrePoints);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the position of the focus remains the same.
-  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
-
-  /// \brief Gets the scale factor of the selected render window or 0.0 if no
-  /// window is selected.
-  double GetScaleFactor() const;
-
-  /// \brief Sets the scale factor of the selected window to the given value.
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
-  void SetScaleFactor(double scaleFactor);
+  void ZoomAroundCursor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Gets the scale factors of the 2D render windows.
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the scale factor of the render windows to the given values.
-  /// If the zooming is bound across the windows then this will set the scaling
-  /// of the other windows as well.
-  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Point3D& focusPoint);
+  void ZoomAroundCursor(const std::vector<double>& scaleFactors);
 
   /// \brief Sets the scale factor of the render windows to the given values.
-  /// If the zooming is bound across the windows then this will set the scaling
-  /// of the other windows as well.
-  void SetScaleFactors(const std::vector<double>& scaleFactors, const mitk::Vector2D& focusPositions);
+  void ZoomAroundCentre(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;
-
-  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
-  double GetMagnification() const;
-
-  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
-  void SetMagnification(double magnification);
 
   /// \brief Computes the magnification of a render window.
   double GetMagnification(MIDASOrientation orientation) const;
@@ -352,7 +339,7 @@ private:
   ///
   ///    pixel coordinate / render window size
   ///
-  void SetPositionOfPoint(QmitkRenderWindow* renderWindow, const mitk::Point3D& point, const mitk::Vector2D& position);
+  void MoveTo(QmitkRenderWindow* renderWindow, const mitk::Point3D& point, const mitk::Vector2D& position);
 
   /// \brief Gets the scale factor of the render window (mm/px).
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
