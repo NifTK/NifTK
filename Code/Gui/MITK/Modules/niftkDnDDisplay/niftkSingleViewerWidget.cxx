@@ -672,6 +672,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     }
 
     bool wasSelected = this->IsSelected();
+    QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -763,6 +764,19 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
         m_MultiWidget->SetScaleFactorsBound(::IsMultiWindowLayout(windowLayout));
 
         m_WindowLayoutInitialised[Index(windowLayout)] = true;
+      }
+
+      if (wasSelected)
+      {
+        /// If this viewer was selected before the window layout change, we select a window in the new layout.
+        /// If the previously selected window is still visible, we do not do anything.
+        /// Otherwise, we select the first visible window.
+        std::vector<QmitkRenderWindow*> visibleRenderWindows = m_MultiWidget->GetVisibleRenderWindows();
+        if (!visibleRenderWindows.empty()
+            && std::find(visibleRenderWindows.begin(), visibleRenderWindows.end(), selectedRenderWindow) == visibleRenderWindows.end())
+        {
+          m_MultiWidget->SetSelectedRenderWindow(visibleRenderWindows[0]);
+        }
       }
     }
   }
