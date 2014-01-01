@@ -117,8 +117,8 @@ void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 
     << std::right << std::setw(11) << "Patch size" << ", "
 
-    << std::right << std::setw(29) << "Random pre-diag patch number" << ", "
-    << std::right << std::setw(29) << "Random pre-diag patch density"
+    << std::right << std::setw(22) << "Pre-diag patch number" << ", "
+    << std::right << std::setw(22) << "Pre-diag patch density"
 
     << std::endl;
 };
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
   std::ofstream *foutOutputDensityCSV = 0;
 
   const unsigned int   InputDimension = 2;
-  typedef short InputPixelType;
+  typedef float InputPixelType;
 
   typedef itk::DOMNode::IdentifierType NodeIdentifierType;
 
@@ -315,8 +315,10 @@ int main(int argc, char** argv)
       patient->SetOutputDirectory( dirOutput );
       patient->SetRegionSizeInMM( regionSizeInMM );
 
-      if ( flgVerbose )   patient->SetVerboseOn();
       if ( flgOverwrite ) patient->SetOverwriteOn();
+      if ( flgRegister )  patient->SetRegisterOn();
+
+      if ( flgVerbose )   patient->SetVerboseOn();
       if ( flgDebug )     patient->SetDebugOn();
     }
 
@@ -646,7 +648,14 @@ int main(int argc, char** argv)
 
     if ( foutOutputDensityCSV ) 
     {   
-      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV, gen );  
+      if ( flgRegister )
+      {
+        (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );  
+      }
+      else
+      {
+        (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV, gen );  
+      }
     }
 
     (*itPatient)->UnloadImages();
