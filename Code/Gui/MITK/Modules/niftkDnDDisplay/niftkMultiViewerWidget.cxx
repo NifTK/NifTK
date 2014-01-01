@@ -1187,6 +1187,30 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
       }
     }
   }
+
+  if (m_ControlPanel->AreWindowCursorsBound())
+  {
+    std::vector<mitk::Vector2D> cursorPositions = selectedViewer->GetCursorPositions();
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      {
+        otherViewer->SetCursorPositions(cursorPositions);
+      }
+    }
+  }
+
+  if (m_ControlPanel->AreWindowMagnificationsBound())
+  {
+    std::vector<double> scaleFactors = selectedViewer->GetScaleFactors();
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer && otherViewer->isVisible())
+      {
+        otherViewer->ZoomAroundCursor(scaleFactors);
+      }
+    }
+  }
 }
 
 

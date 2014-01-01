@@ -414,6 +414,7 @@ private:
   bool m_CursorVisibility;
   bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
+  MIDASOrientation m_Orientation;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
