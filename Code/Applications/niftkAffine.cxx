@@ -355,7 +355,6 @@ int DoMain(arguments args)
       op->SetNumberOfIterations(args.iterations);
       op->SetLearningRate(args.learningRate);
       op->SetMaximize(similarityPointer->ShouldBeMaximized());
-      typename OptimizerType::ScalesType scales(singleResMethod->GetTransform()->GetNumberOfParameters());
 
       OptimizerType::ScalesType scales = transform->GetRelativeParameterWeightingFactors();
       op->SetScales(scales);
