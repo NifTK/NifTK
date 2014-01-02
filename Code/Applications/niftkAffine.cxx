@@ -29,6 +29,8 @@
 #include <itkTransformFileWriter.h>
 #include <itkImageMomentsCalculator.h>
 
+#include <niftkAffineCLP.h>
+
 /*!
  * \file niftkAffine.cxx
  * \page niftkAffine
@@ -578,21 +580,19 @@ int DoMain(arguments args)
 int main(int argc, char** argv)
 {
   // To pass around command line args
+  PARSE_ARGS;
+
+  // To pass around command line args
   struct arguments args;
 
   // Set defaults
   args.finalInterpolator = 4;
   args.registrationInterpolator = 2;
-  args.similarityMeasure = 4;
-  args.transformation = 3;
   args.registrationStrategy = 1;
-  args.optimizer = 6;
   args.bins = 64;
   args.iterations = 300;
   args.dilations = 0;
-  args.levels = 3;
   args.startLevel = 0;
-  args.stopLevel = args.levels -1;
   args.lowerIntensity = 0;
   args.higherIntensity = 0;
   args.dummyDefault = -987654321;
@@ -609,13 +609,105 @@ int main(int argc, char** argv)
   args.intensityFixedUpperBound = args.dummyDefault;
   args.intensityMovingLowerBound = args.dummyDefault;
   args.intensityMovingUpperBound = args.dummyDefault;
-  args.movingImagePadValue = 0;
   args.symmetricMetric = 0;
   args.isRescaleIntensity = false;
-  args.userSetPadValue = false;
   args.useWeighting = false; 
-  args.useCogInitialisation = false; 
 
+
+  args.fixedImage  = fixedImage;
+  args.movingImage = movingImage;
+
+  args.outputUCLTransformFile = outputUCLTransformFile;
+  args.outputImage = outputImage;
+
+  if     ( strSimilarityMeasure == std::string( "Sum Squared Difference" ) )
+  {
+    args.similarityMeasure = 1;
+  }
+  else if( strSimilarityMeasure == std::string( "Mean Squared Difference" ) )
+  {
+    args.similarityMeasure = 2;
+  }
+  else if( strSimilarityMeasure == std::string( "Sum Absolute Difference" ) )
+  {
+    args.similarityMeasure = 3;
+  }
+  else if( strSimilarityMeasure == std::string( "Normalized Cross Correlation" ) )
+  {
+    args.similarityMeasure = 4;
+  }
+  else if( strSimilarityMeasure == std::string( "Ratio Image Uniformity" ) )
+  {
+    args.similarityMeasure = 5;
+  }
+  else if( strSimilarityMeasure == std::string( "Partitioned Image Uniformity" ) )
+  {
+    args.similarityMeasure = 6;
+  }
+  else if( strSimilarityMeasure == std::string( "Joint Entropy" ) )
+  {
+    args.similarityMeasure = 7;
+  }
+  else if( strSimilarityMeasure == std::string( "Mutual Information" ) )
+  {
+    args.similarityMeasure = 8;
+  }
+  else if( strSimilarityMeasure == std::string( "Normalized Mutual Information" ) )
+  {
+    args.similarityMeasure = 9;
+  }
+
+  if( strTransformation == std::string( "Rigid" ) )
+  {
+    args.transformation = 2;
+  }
+  else if( strTransformation == std::string( "Rigid + Scale" ) )
+  {
+    args.transformation = 3;
+  }
+  else if( strTransformation == std::string( "Full Affine" ) )
+  {
+    args.transformation = 4;
+  }
+
+  if(      strOptimizer == std::string( "Simplex" ) )
+  {
+    args.optimizer = 1;
+  }
+  else if( strOptimizer == std::string( "Gradient Descent" ) )
+  {
+    args.optimizer = 2;
+  }
+  else if( strOptimizer == std::string( "Regular Step Size Gradient Descent" ) )
+  {
+    args.optimizer = 3;
+  }
+  else if( strOptimizer == std::string( "Powell optimisation" ) )
+  {
+    args.optimizer = 5;
+  }
+  else if( strOptimizer == std::string( "Regular Step Size" ) )
+  {
+    args.optimizer = 6;
+  }
+  else if( strOptimizer == std::string( "UCL Powell optimisation" ) )
+  {
+    args.optimizer = 7;
+  }
+
+  args.levels = nlevels;
+
+  if( levels2use <= nlevels ){
+    args.stopLevel = levels2use - 1;
+  }
+  else{
+    args.stopLevel = args.levels - 1;
+  }
+
+  args.movingImagePadValue = movingImagePadValue;
+  args.userSetPadValue = true;
+
+  args.useCogInitialisation = cog;
 
   for(int i=1; i < argc; i++){
     if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
@@ -787,8 +879,21 @@ int main(int argc, char** argv)
       args.useCogInitialisation=true; 
       std::cout << "Set -cog=" << niftk::ConvertToString(args.useCogInitialisation)<< std::endl;
     }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
+    else if( (strcmp(argv[i],          "--fixed") == 0) ||
+             (strcmp(argv[i],         "--moving") == 0) ||
+             (strcmp(argv[i],   "--outTransform") == 0) ||
+             (strcmp(argv[i],     "--registered") == 0) ||
+             (strcmp(argv[i],     "--similarity") == 0) ||
+             (strcmp(argv[i], "--transformation") == 0) || 
+             (strcmp(argv[i],      "--optimizer") == 0) || 
+             (strcmp(argv[i],        "--nlevels") == 0) || 
+             (strcmp(argv[i],     "--levels2use") == 0) || 
+             (strcmp(argv[i],            "--mip") == 0) )
+    {
+      i++;
+    }
+    else if( strcmp(argv[i], "--cog") != 0 ) {
+      std::cerr << argv[0] << ":\tParameter '" << argv[i] << "' unknown." << std::endl;
       return -1;
     }
   }
@@ -902,10 +1007,10 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  unsigned int dims = itk::PeekAtImageDimension(args.fixedImage);
+  unsigned int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.fixedImage);
   if (dims != 3 && dims != 2)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -920,7 +1025,7 @@ int main(int argc, char** argv)
         result = DoMain<3>(args);
       break;
       default:
-        std::cout << "Unsuported image dimension" << std::endl;
+        std::cout << "Unsupported image dimension" << std::endl;
         exit( EXIT_FAILURE );
     }
   return result;
