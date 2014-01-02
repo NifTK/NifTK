@@ -233,6 +233,7 @@ public:
 
   void SetPatientID( std::string &idPatient ) { m_Id = idPatient; }
 
+  void SetInputDirectory( std::string &dirIn ) { m_DirInput = dirIn; }
   void SetOutputDirectory( std::string &dirOut ) { m_DirOutput = dirOut; }
 
   void SetIDDiagnosticImage( std::string &idDiagImage )       { m_IdDiagnosticImage    = idDiagImage; }
@@ -321,6 +322,7 @@ protected:
 
   std::string m_Id;
 
+  std::string m_DirInput;
   std::string m_DirOutput;
 
   // The diagnostic image

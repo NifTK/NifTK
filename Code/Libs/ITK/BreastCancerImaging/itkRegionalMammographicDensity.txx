@@ -139,6 +139,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   std::cout << std::endl
             << "Patient ID: " << m_Id << std::endl;
 
+  std::cout << std::endl
+            << "    Input image directory: " << m_DirInput << std::endl
+            << "    Output directory: "      << m_DirOutput << std::endl;
+
   if ( m_FlgVerbose )
     std::cout << "   Verbose output: YES" << std::endl;
   else
@@ -511,7 +515,7 @@ void
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::ReadImage( MammogramType mammoType ) 
 {
-  
+  std::string fileInput;
   std::string fileImage;
 
   if ( mammoType == DIAGNOSTIC_MAMMO )
@@ -528,8 +532,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     exit( EXIT_FAILURE );
   }
 
-  std::cout << "Reading image: " << fileImage << std::endl;
+  fileInput = niftk::ConcatenatePath( m_DirInput, fileImage );
 
+  std::cout << "Reading image: " << fileInput << std::endl;
 
   typedef GDCMImageIO ImageIOType;
   ImageIOType::Pointer gdcmImageIO = ImageIOType::New();
@@ -537,7 +542,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   typename ReaderType::Pointer reader = ReaderType::New();
   reader->SetImageIO( gdcmImageIO );
 
-  reader->SetFileName( fileImage );
+  reader->SetFileName( fileInput );
 
   try
   {
@@ -546,7 +551,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   catch (ExceptionObject &ex)
   {
-    std::cerr << "ERROR: Could not read file: " << fileImage << std::endl 
+    std::cerr << "ERROR: Could not read file: " << fileInput << std::endl 
               << ex << std::endl;
     exit( EXIT_FAILURE );
   }
@@ -1734,8 +1739,11 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   typename SingleResImageRegistrationMethodType::Pointer singleResMethod = builder->GetSingleResolutionImageRegistrationMethod();
   typename MultiResImageRegistrationMethodType::Pointer multiResMethod = MultiResImageRegistrationMethodType::New();
 
-  singleResMethod->SetDebug( true );
-  multiResMethod->SetDebug( true );
+  if ( m_FlgDebug )
+  {
+    singleResMethod->SetDebug( true );
+    multiResMethod->SetDebug( true );
+  }
 
   // Sort out metric and optimizer  
 
@@ -1761,7 +1769,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
   }
   else if (optimizer == itk::GRADIENT_DESCENT)
   {
@@ -1776,7 +1787,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
   }
   else if (optimizer == itk::REGSTEP_GRADIENT_DESCENT)
   {
@@ -1793,7 +1807,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
   }
   else if (optimizer == itk::POWELL)
   {
@@ -1811,7 +1828,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
   }
   else if (optimizer == itk::SIMPLE_REGSTEP)
   {
@@ -1827,7 +1847,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
 #else
     OptimizerType::ScalesType scales;
     scales = SetRegistrationParameterScales< typename OptimizerType::ScalesType >((itk::TransformTypeEnum) transformation,
@@ -1852,7 +1875,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     op->SetScales( scales );
 
     if ( m_FlgDebug )
+    {
       std::cout << " Relative affine parameter weightings: " << scales << std::endl;
+      op->SetDebug( true );
+    }
   }
 
   // Finish configuring single-res object

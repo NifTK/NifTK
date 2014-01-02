@@ -14,37 +14,49 @@
     <label>Input</label>
     <description><![CDATA[Input Parameters]]></description>
 
-    <string>
-      <name>filePectoralisLinePointXML</name>
-      <flag>p</flag>
-      <longflag>pectoral</longflag>
-      <description>Input pectoralis XML file</description>
-      <label>Input pectoralis XML file</label>
-    </string>
+    <directory>
+      <name>dirInput</name>
+      <longflag>inDir</longflag>
+      <description>Top-level directory containing the input images</description>
+      <label>Input image directory</label>
+      <channel>output</channel>
+    </directory>
 
-    <string>
+    <file>
       <name>fileImageXML</name>
       <flag>i</flag>
       <longflag>image</longflag>
       <description>Input image info XML file</description>      
       <label>Input image info XML file</label>
-    </string>
+      <channel>input</channel>
+    </file>
 
-    <string>
+    <file>
       <name>fileTumourXML</name>
       <flag>t</flag>
       <longflag>tumour</longflag>
       <description>Input tumour mask info XML file</description>      
       <label>Input tumour mask info XML file</label>
-    </string>
+      <channel>input</channel>
+    </file>
 
-    <string>
+    <file>
       <name>fileBreastEdgeXML</name>
       <flag>e</flag>
       <longflag>edge</longflag>
       <description>Input breast edge points XML file</description>      
       <label>Input breast edge XML file</label>
-    </string>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>filePectoralisLinePointXML</name>
+      <flag>p</flag>
+      <longflag>pectoral</longflag>
+      <description>Input pectoralis XML file</description>
+      <label>Input pectoralis XML file</label>
+      <channel>input</channel>
+    </file>
 
     <float>
       <name>regionSizeInMM</name>
@@ -59,6 +71,14 @@
       </constraints>
     </float>
 
+    <boolean>
+      <name>flgRegister</name>
+      <flag>r</flag>
+      <longflag>register</longflag>
+      <description>Register the pre-diagnostic image to the diagnostic image to enable the tumour location to be mapped into the diagnostic image.</description>
+      <label>Register pre-diagnostic image to the diagnostic image?</label>
+    </boolean>
+
   </parameters>
 
   <parameters>
@@ -71,19 +91,19 @@
       <longflag>outDir</longflag>
       <description>Output top-level directory to write images and data to</description>
       <label>Output directory to write to</label>
-      <channel>output</channel>
       <default>NiftyResults</default>
+      <channel>output</channel>
     </directory>
 
-    <string>
+    <file>
       <name>fileOutputDensityCSV</name>
       <flag>o</flag>
       <longflag>csv</longflag>
       <description>Output CSV file of patch densities</description>      
       <label>Output CSV density file</label>
-      <channel>output</channel>
       <default>NiftyDensityMeasurements.csv</default>
-    </string>
+      <channel>output</channel>
+    </file>
 
     <boolean>
       <name>flgVerbose</name>
@@ -97,7 +117,7 @@
       <name>flgOverwrite</name>
       <longflag>overwrite</longflag>
       <description>If the image already exists then overwrite it.</description>
-      <label>Overwrite output image if it exists?</label>
+      <label>Overwrite output files if they exist?</label>
     </boolean>
 
   </parameters>
@@ -112,14 +132,6 @@
       <longflag>debug</longflag>
       <description>Generate debugging output.</description>
       <label>Debug</label>
-    </boolean>
-
-    <boolean>
-      <name>flgRegister</name>
-      <flag>r</flag>
-      <longflag>register</longflag>
-      <description>Register the diagnostic image to the pre-diagnostic image to enable the tumour location to be mapped into the diagnostic image.</description>
-      <label>Register images</label>
     </boolean>
 
   </parameters>
