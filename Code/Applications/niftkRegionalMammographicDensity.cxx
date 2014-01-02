@@ -196,8 +196,8 @@ int main(int argc, char** argv)
     foutOutputDensityCSV 
       = new std::ofstream( niftk::ConcatenatePath( dirOutput, fileOutputDensityCSV ).c_str() );
 
-    if ((! *foutOutputDensityCSV) || foutOutputDensityCSV->bad()) {
-      std::cerr << "ERROR: Could not open file: " << foutOutputDensityCSV << std::endl;
+    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad()) {
+      std::cerr << "ERROR: Could not open CSV output file: " << fileOutputDensityCSV << std::endl;
       return EXIT_FAILURE;
     }
   }
@@ -312,6 +312,7 @@ int main(int argc, char** argv)
       patient = ROIMammoDensityType::New();
 
       patient->SetPatientID( strPatientID );
+      patient->SetInputDirectory( dirInput );
       patient->SetOutputDirectory( dirOutput );
       patient->SetRegionSizeInMM( regionSizeInMM );
 
@@ -638,12 +639,33 @@ int main(int argc, char** argv)
   // Iterate through the patients analysing each image pair
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  float progress = 0.;
+  float iFile = 0.;
+  float nFiles = listOfPatients.size();
+
   for ( itPatient = listOfPatients.begin(); 
         itPatient != listOfPatients.end(); 
-        itPatient++ )
+        itPatient++, iFile += 1. )
   {  
+    progress = iFile/nFiles;
+    std::cout << "<filter-progress>" << std::endl
+	      << progress << std::endl
+	      << "</filter-progress>" << std::endl;
+
     (*itPatient)->LoadImages();
+
+    progress = (iFile + 0.25)/nFiles;
+    std::cout << "<filter-progress>" << std::endl
+	      << progress << std::endl
+	      << "</filter-progress>" << std::endl;
+
     (*itPatient)->Compute();
+
+    progress = (iFile + 0.5)/nFiles;
+    std::cout << "<filter-progress>" << std::endl
+	      << progress << std::endl
+	      << "</filter-progress>" << std::endl;
+
     (*itPatient)->Print( flgVerbose );
 
     if ( foutOutputDensityCSV ) 
@@ -658,8 +680,19 @@ int main(int argc, char** argv)
       }
     }
 
+    progress = (iFile + 0.75)/nFiles;
+    std::cout << "<filter-progress>" << std::endl
+	      << progress << std::endl
+	      << "</filter-progress>" << std::endl;
+
+
     (*itPatient)->UnloadImages();
   }
+
+  progress = iFile/nFiles;
+  std::cout << "<filter-progress>" << std::endl
+            << progress << std::endl
+            << "</filter-progress>" << std::endl;
 
 
   // Close the CSV file?
