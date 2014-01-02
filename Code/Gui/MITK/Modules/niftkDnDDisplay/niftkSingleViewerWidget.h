@@ -465,7 +465,7 @@ private:
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastSelectedPositionTimes;
 
-  /// \brief Stores the points at the centre of the 2D render windows a the last five times.
+  /// \brief Stores the points at the centre of the 2D render windows a the last seven times.
   ///
   /// The aim with storing these positions is that if the window layout is switched
   /// between single and multi by double clicking, we can can discard the position changes

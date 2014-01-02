@@ -172,11 +172,11 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
-  /// A double click can result in 0, 2 or 4 CursorPositionChanged events, depending on how many
-  /// SelectedPositionChanged events have been emitted. (Each of them causes exactly two
+  /// A double click can result in up to six CursorPositionChanged events, depending on how many
+  /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
   /// CursorPositionChanged events.)
-  /// Therefore, we need to keep the last five centre point triads, including the current one.
-  if (m_LastCentrePoints.size() == 5)
+  /// Therefore, we need to keep the last seven centre point triads, including the current one.
+  if (m_LastCentrePoints.size() == 7)
   {
     m_LastCentrePoints.pop_front();
     m_LastCentrePointTimes.pop_front();
