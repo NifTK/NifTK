@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Registration</category>
+  <title>Intensity-Based Affine Registration</title>
+  <description><![CDATA[A general purpose intensity-based affine registration.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Mandatory IO</label>
+    <description><![CDATA[Mandatory parameters]]></description>
+
+    <image>
+      <name>fixedImage</name>
+      <longflag>fixed</longflag>
+      <description>The fixed target or reference image.</description>
+      <label>Fixed target image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>movingImage</name>
+      <longflag>moving</longflag>
+      <description>The moving source image to be registered.</description>
+      <label>Moving source image</label>
+      <channel>input</channel>
+    </image>
+
+    <file>
+      <name>outputUCLTransformFile</name>
+      <longflag>outTransform</longflag>
+      <description>The output transformation.</description>      
+      <label>Output affine transformation</label>
+      <default>AffineTransformation.txt</default>
+      <channel>output</channel>
+    </file>
+
+    <image>
+      <name>outputImage</name>
+      <longflag>registered</longflag>
+      <description>The output moving image transformed into the space of the fixed image.</description>      
+      <label>Output registered image</label>
+      <default>RegisteredImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <string-enumeration>
+      <name>strSimilarityMeasure</name>
+      <longflag>similarity</longflag>
+      <description>The image similarity metric.</description>
+      <label>Similarity metric</label>
+      <default>Normalized Cross Correlation</default>
+      <element>Normalized Cross Correlation</element>
+      <element>Sum Squared Difference</element>
+      <element>Mean Squared Difference</element>
+      <element>Sum Absolute Difference</element>
+      <element>Ratio Image Uniformity</element>
+      <element>Partitioned Image Uniformity</element>
+      <element>Joint Entropy</element>
+      <element>Mutual Information</element>
+      <element>Normalized Mutual Information</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strTransformation</name>
+      <longflag>transformation</longflag>
+      <description>The transformation to use.</description>
+      <label>Transformation</label>
+      <default>Rigid + Scale</default>
+      <element>Rigid + Scale</element>
+      <element>Rigid</element>
+      <element>Full Affine</element>
+    </string-enumeration>
+
+    <string-enumeration>
+      <name>strOptimizer</name>
+      <longflag>optimizer</longflag>
+      <description>The optimiser to use.</description>
+      <label>Optimiser</label>
+      <default>Regular Step Size</default>
+      <element>Regular Step Size</element>
+      <element>Simplex</element>
+      <element>Gradient Descent</element>
+      <element>Regular Step Size Gradient Descent</element>
+      <element>Powell Optimisation</element>
+      <element>UCL Powell optimisation</element>
+    </string-enumeration>
+
+    <integer>
+      <name>nlevels</name>
+      <longflag>nlevels</longflag>
+      <description>Number of multi-resolution levels.</description>
+      <label>Number of multi-resolution levels</label>
+      <default>3</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <integer>
+      <name>levels2use</name>
+      <longflag>levels2use</longflag>
+      <description>Number of multi-resolution levels to use (from the coarsest).</description>
+      <label>Number of levels to use</label>
+      <default>3</default>
+      <constraints>
+        <minimum>1</minimum>
+        <maximum>99</maximum>
+        <step>1</step>
+      </constraints>
+    </integer>
+
+    <float>
+      <name>movingImagePadValue</name>
+      <longflag>mip</longflag>
+      <description>The moving image pad intensity to use when pixels are outside the image.</description>
+      <label>Moving image pad value.</label>
+      <default>0</default>
+    </float>
+
+    <boolean>
+      <name>cog</name>
+      <longflag>cog</longflag>
+      <description>Use the center of mass of the images to initialise the translation.</description>
+      <label>Initialise translation with center of mass</label>
+      <default>false</default>
+    </boolean>
+
+  </parameters>
+
+</executable>

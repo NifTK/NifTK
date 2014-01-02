@@ -71,6 +71,7 @@ if(SlicerExecutionModel_FOUND)
   #-------------------------------------------------------------
   set(APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES
     niftkAdd
+    niftkAffine
     niftkAnonymiseDICOMMammograms
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
@@ -208,7 +209,6 @@ endforeach()
 ##############################################################
 set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkAbsImageFilter
-  niftkAffine
   niftkAnd
   niftkAtlasStatistics
   niftkAverage
