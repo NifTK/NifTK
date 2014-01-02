@@ -41,6 +41,7 @@
     <description><![CDATA[Parameters that specify the subsampling factors in x, y and z]]></description>
 
     <float>
+      <name>subx</name>
       <longflag>subx</longflag>
       <description>
 	The subsampling factor (greater than 1) in x
@@ -55,6 +56,7 @@
      </float>
 
     <float>
+      <name>suby</name>
       <longflag>suby</longflag>
       <description>
 	The subsampling factor (greater than 1) in y
@@ -69,6 +71,7 @@
      </float>
 
     <float>
+      <name>subz</name>
       <longflag>subz</longflag>
       <description>
 	The subsampling factor (greater than 1) in z
