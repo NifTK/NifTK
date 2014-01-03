@@ -1331,7 +1331,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   // If we're registering the images then expand the breast edge to use as a mask
-  // by thresholding a distance transform of the edge mask at 5mm
+  // by thresholding a distance transform of the edge mask at 10mm
 
   if ( m_FlgRegister )
   {
@@ -1359,7 +1359,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     
     typename BinaryThresholdFilterType::Pointer thresholdFilter = BinaryThresholdFilterType::New();
 
-    RealType threshold = 5;
+    RealType threshold = 10;
     
     thresholdFilter->SetInput( distanceTransform->GetOutput() );
     
