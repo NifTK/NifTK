@@ -573,7 +573,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   int currentNumberOfViewers = m_Viewers.size();
 
   // If we have the right number of viewers, there is nothing to do, so early exit.
-  if (requiredNumberOfViewers == currentNumberOfViewers)
+  if (viewerRows == m_MaxViewerRows && viewerColumns == m_MaxViewerColumns)
   {
     return;
   }
