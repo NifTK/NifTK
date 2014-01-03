@@ -25,6 +25,10 @@
 #include <itkLabelToRGBImageFilter.h>
 #include <itkRelabelComponentImageFilter.h>
 #include <itkScalarConnectedComponentImageFilter.h>
+#include <itkSignedMaurerDistanceMapImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+
 
 namespace fs = boost::filesystem;
 
@@ -81,6 +85,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   m_FlgDebug = false;
 
   m_Transform = 0;
+
+  UnloadImages();
 };
 
 
@@ -122,6 +128,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   m_ImDiagnosticMask = 0;
   m_ImPreDiagnosticMask = 0;   
+
+  m_ImDiagnosticRegnMask = 0;
+  m_ImPreDiagnosticRegnMask = 0;   
 };
 
 
@@ -349,76 +358,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     << std::endl;
 };
-
-
-// --------------------------------------------------------------------------
-// WriteToCSVFile()
-// --------------------------------------------------------------------------
-
-template <class InputPixelType, unsigned int InputDimension>
-void
-RegionalMammographicDensity< InputPixelType, InputDimension >
-::WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV,
-                      boost::random::mt19937 &gen )
-{
-  int i;
-  float nMaxPixelsInPatch = m_PreDiagTumourRegion.GetSize()[0]*m_PreDiagTumourRegion.GetSize()[1];
-  float nPixelsInPatch = 0;
-  float randomPreDiagDensity = 0;
-
-  if ( m_FlgDebug )
-    std::cout << "Max pixels in patch: " << nMaxPixelsInPatch << std::endl;
-
-  std::map< LabelPixelType, Patch >::iterator itPatches;
-
-  while ( nPixelsInPatch != nMaxPixelsInPatch )
-  {
-
-    boost::random::uniform_int_distribution<> dist(0, m_PreDiagPatches.size() - 1);
-    
-    i =  dist( gen );
-
-    itPatches = m_PreDiagPatches.begin();
-    std::advance( itPatches, i );
-  
-    nPixelsInPatch = itPatches->second.GetNumberOfPixels();
-    
-    randomPreDiagDensity = 
-      itPatches->second.GetNumberOfDensePixels()/
-      itPatches->second.GetNumberOfPixels();
-
-    if ( m_FlgDebug )
-      std::cout << setw(6) << itPatches->first << ": " << setprecision( 6 )
-                << setw(12) << itPatches->second.GetNumberOfDensePixels() << " / " 
-                << setw(12) << itPatches->second.GetNumberOfPixels() << " = " 
-                << setw(12) << randomPreDiagDensity 
-                << std::endl;
-  }
-
-  *foutOutputDensityCSV 
-    << setprecision( 6 )
-    << std::right << std::setw(10) << m_Id << ", "
-                                   
-    << std::right << std::setw(17) << m_IdDiagnosticImage << ", "
-    << std::right << std::setw(60) << m_FileDiagnostic << ", "
-    << std::right << std::setw(18) << m_ThresholdDiagnostic << ", "
-                                   
-    << std::right << std::setw(17) << m_IdPreDiagnosticImage << ", "
-    << std::right << std::setw(60) << m_FilePreDiagnostic << ", "
-    << std::right << std::setw(18) <<  m_ThresholdPreDiagnostic << ", "
-                                   
-    << std::right << std::setw( 9) << m_StrTumourID << ", "
-    << std::right << std::setw(17) << m_StrTumourImageID << ", "
-    << std::right << std::setw(17) << m_DiagTumourCenterIndex[0] << ", " 
-    << std::right << std::setw(17) << m_DiagTumourCenterIndex[1] << ", "
-                                   
-    << std::right << std::setw(11) << nPixelsInPatch << ", "
-
-    << std::right << std::setw(22) << itPatches->first << ", "
-    << std::right << std::setw(22) << randomPreDiagDensity
-
-    << std::endl;
-}
 
 
 // --------------------------------------------------------------------------
@@ -655,7 +594,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 void
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::Compute( void )
+::Compute( boost::random::mt19937 &gen )
 {
   std::string fileMask;
   std::string diagMaskSuffix( "_DiagMask.dcm" );
@@ -696,6 +635,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                               m_ImDiagnosticMask, 
                                               m_DiagDictionary );
   }
+
 
   // Generate the Pre-diagnostic Mask
 
@@ -740,6 +680,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     RegisterTheImages();
   }
 
+
   // Calculate the labels
 
   if ( m_FlgVerbose ) 
@@ -780,14 +721,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                 << m_PreDiagCenterIndex[0] << ", " 
                 << m_PreDiagCenterIndex[1] << std::endl;    
   }
-  else
+  else 
   {
-    m_PreDiagCenterIndex = m_DiagTumourCenterIndex;
+    GenerateRandomTumourPositionInPreDiagImage( gen );
   }
 
   m_ImPreDiagnosticLabels = GenerateRegionLabels( m_PreDiagCenterIndex,
                                                   m_PreDiagTumourRegion,
-                                                  m_PreDiagTumourRegionValue,                                                 
+                                                  m_PreDiagTumourRegionValue,
                                                   m_ImPreDiagnostic, 
                                                   m_ImPreDiagnosticMask, 
                                                   m_PreDiagPatches,
@@ -954,19 +895,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     if ( niftk::FileExists( fileModifiedOutput ) ) 
     {
-      if ( ! m_FlgOverwrite ) 
-      {
-        std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
-                  << std::endl << "         and can't be overwritten. Consider option: 'overwrite'."
-                  << std::endl << std::endl;
-        return;
-      }
-      else
-      {
-        std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
-                  << std::endl << "         and will be overwritten."
-                  << std::endl << std::endl;
-      }
+      std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
+                << std::endl << "         but will be overwritten."
+                << std::endl << std::endl;
     }
 
     typename FileWriterType::Pointer writer = FileWriterType::New();
@@ -1118,19 +1049,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     if ( niftk::FileExists( fileModifiedOutput ) ) 
     {
-      if ( ! m_FlgOverwrite ) 
-      {
-        std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
-                  << std::endl << "         and can't be overwritten. Consider option: 'overwrite'."
-                  << std::endl << std::endl;
-        return;
-      }
-      else
-      {
-        std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
-                  << std::endl << "         and will be overwritten."
-                  << std::endl << std::endl;
-      }
+      std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
+                << std::endl << "         but will be overwritten."
+                << std::endl << std::endl;
     }
 
     typename FileWriterType::Pointer writer = FileWriterType::New();
@@ -1147,7 +1068,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   
     catch (ExceptionObject &ex)
     {
-      std::cerr << "ERROR: Could notwrite file: " << fileModifiedOutput << std::endl 
+      std::cerr << "ERROR: Could not write file: " << fileModifiedOutput << std::endl 
                 << ex << std::endl;
       exit( EXIT_FAILURE );
     }
@@ -1409,6 +1330,97 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     }
   }
 
+  // If we're registering the images then expand the breast edge to use as a mask
+  // by thresholding a distance transform of the edge mask at 10mm
+
+  if ( m_FlgRegister )
+  {
+
+    typename DistanceTransformType::Pointer distanceTransform = DistanceTransformType::New();
+
+    distanceTransform->SetInput( imMask );
+    distanceTransform->SetInsideIsPositive( false );
+    distanceTransform->UseImageSpacingOn();
+    distanceTransform->SquaredDistanceOff();
+
+    try
+    {
+      std::cout << "Computing distance transform of breast edge mask for registration" << std::endl;
+      distanceTransform->UpdateLargestPossibleRegion();
+    }    
+    catch (ExceptionObject &ex)
+    {
+      std::cerr << ex << std::endl;
+      exit( EXIT_FAILURE );
+    }
+
+    typedef typename itk::BinaryThresholdImageFilter<RealImageType, ImageType> BinaryThresholdFilterType;
+  
+    
+    typename BinaryThresholdFilterType::Pointer thresholdFilter = BinaryThresholdFilterType::New();
+
+    RealType threshold = 10;
+    
+    thresholdFilter->SetInput( distanceTransform->GetOutput() );
+    
+    thresholdFilter->SetOutsideValue( 0 );
+    thresholdFilter->SetInsideValue( 255 );
+    thresholdFilter->SetLowerThreshold( threshold );
+    
+    try
+    {
+      std::cout << "Thresholding distance transform of breast edge mask at: "
+                << threshold << std::endl;
+      thresholdFilter->UpdateLargestPossibleRegion();
+    }    
+    catch (ExceptionObject &ex)
+    {
+      std::cerr << ex << std::endl;
+      exit( EXIT_FAILURE );
+    }
+
+    typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<ImageType> InvertFilterType;
+
+    typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
+    invertFilter->SetInput( thresholdFilter->GetOutput() );
+    
+    try
+    {
+      std::cout << "Inverting the registration mask" << std::endl;
+      invertFilter->UpdateLargestPossibleRegion();
+    }    
+    catch (ExceptionObject &ex)
+    {
+      std::cerr << ex << std::endl;
+      exit( EXIT_FAILURE );
+    }
+    
+    if ( m_FlgDebug )
+    {
+      if ( mammoType == DIAGNOSTIC_MAMMO )
+      {
+        m_ImDiagnosticRegnMask = invertFilter->GetOutput();
+        m_ImDiagnosticRegnMask->DisconnectPipeline();
+        
+        CastImageAndWriteToFile< unsigned char >( m_FileDiagnostic, 
+                                                  std::string( "_DiagRegnMask.dcm" ), 
+                                                  "diagnostic pectoral registration mask",
+                                                  m_ImDiagnosticRegnMask, m_DiagDictionary );
+      }
+      else
+      {
+        m_ImPreDiagnosticRegnMask = invertFilter->GetOutput();
+        m_ImPreDiagnosticRegnMask->DisconnectPipeline();
+        
+        CastImageAndWriteToFile< unsigned char >( m_FilePreDiagnostic, 
+                                                  std::string( "_PreDiagRegnMask.dcm" ), 
+                                                  "pre-diagnostic registration mask", 
+                                                  m_ImPreDiagnosticRegnMask, m_PreDiagDictionary );
+      }
+    }
+  }
+
+
   // Iterate over the masks to compute the combined mask
   
   IteratorType itMask( imMask, imMask->GetLargestPossibleRegion() );
@@ -1634,6 +1646,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   useWeighting = false; 
   useCogInitialisation = true; 
   
+  // Create a 
+
+
   // The factory.
 
   typename FactoryType::Pointer factory = FactoryType::New();
@@ -1952,17 +1967,11 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     std::cout << "Setting moving image"<< std::endl;
     filter->SetMovingImage(m_ImPreDiagnostic);
 
-    if (0)
-    {
-      std::cout << "Setting fixed mask"<< std::endl;
-      filter->SetFixedMask(m_ImDiagnosticMask);  
-    }
-      
-    if (0)
-    {
-      std::cout << "Setting moving mask"<< std::endl;
-      filter->SetMovingMask(m_ImPreDiagnosticMask);
-    }
+    std::cout << "Setting fixed mask"<< std::endl;
+    filter->SetFixedMask(m_ImDiagnosticRegnMask);  
+
+    std::cout << "Setting moving mask"<< std::endl;
+    filter->SetMovingMask(m_ImPreDiagnosticRegnMask);
 
     // If we havent asked for output, turn off reslicing.
     filter->SetDoReslicing(true);
@@ -1988,7 +1997,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     filter->Update();
     
     // And write the output.
-    WriteImageFile< OutputImageType >( m_FileDiagnostic, 
+    WriteImageFile< OutputImageType >( m_FilePreDiagnostic, 
                                        std::string( "_PreDiagReg2Diag.dcm" ), 
                                        "registered diagnostic image", 
                                        filter->GetOutput(), 
@@ -2060,6 +2069,124 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   return preDiagCenterIndex;
+};
+
+
+// --------------------------------------------------------------------------
+// GenerateRandomTumourPositionInPreDiagImage()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+RegionalMammographicDensity< InputPixelType, InputDimension >
+::GenerateRandomTumourPositionInPreDiagImage( boost::random::mt19937 &gen )
+{
+  // Create a distance transform of the pre-diagnostic mask
+
+  typename DistanceTransformType::Pointer distanceTransform = DistanceTransformType::New();
+
+  distanceTransform->SetInput( m_ImPreDiagnosticMask );
+  distanceTransform->SetInsideIsPositive( true );
+  distanceTransform->UseImageSpacingOn();
+  distanceTransform->SquaredDistanceOff();
+
+  try
+  {
+    std::cout << "Computing distance transform of pre-diagnostic mask" << std::endl;
+    distanceTransform->UpdateLargestPossibleRegion();
+  }    
+  catch (ExceptionObject &ex)
+  {
+    std::cerr << ex << std::endl;
+    exit( EXIT_FAILURE );
+  }
+
+  if ( m_FlgDebug )
+  {
+    WriteImageFile< RealImageType >( m_FilePreDiagnostic, 
+                                     std::string( "_PreDiagMaskDistance.nii.gz" ), 
+                                     "mask distance transform for pre-diagnostic image", 
+                                     distanceTransform->GetOutput(), 
+                                     m_PreDiagDictionary );
+  }
+
+  // Threshold the distance transform to generate a mask for the internal pre-diag patches
+  
+  typedef itk::Image< unsigned char, InputDimension > MaskImageType;
+  typedef typename itk::BinaryThresholdImageFilter<RealImageType, MaskImageType> BinaryThresholdFilterType;
+  
+
+  typename BinaryThresholdFilterType::Pointer thresholdFilter = BinaryThresholdFilterType::New();
+
+  RealType threshold = sqrt( 2.*m_RegionSizeInMM*m_RegionSizeInMM )/2.;
+
+  thresholdFilter->SetInput( distanceTransform->GetOutput() );
+
+  thresholdFilter->SetOutsideValue( 0 );
+  thresholdFilter->SetInsideValue( 255 );
+  thresholdFilter->SetLowerThreshold( threshold );
+
+  try
+  {
+    std::cout << "Thresholding distance transform of pre-diagnostic mask at: "
+              << threshold << std::endl;
+    thresholdFilter->UpdateLargestPossibleRegion();
+  }    
+  catch (ExceptionObject &ex)
+  {
+    std::cerr << ex << std::endl;
+    exit( EXIT_FAILURE );
+  }
+
+  typename MaskImageType::Pointer mask = thresholdFilter->GetOutput();
+  mask->DisconnectPipeline();
+
+  if ( m_FlgDebug )
+  {
+    WriteImageFile< MaskImageType >( m_FilePreDiagnostic, 
+                                     std::string( "_PreDiagPatchMask.nii.gz" ), 
+                                     "patch mask for pre-diagnostic image", 
+                                     mask, 
+                                     m_PreDiagDictionary );
+  }
+
+  // Select a random pixel inside this mask to use as the pre-diagnostic tumour position
+
+  bool found = false;
+  typename MaskImageType::SizeType  size;
+  typename MaskImageType::IndexType idx;
+
+  size = mask->GetLargestPossibleRegion().GetSize();
+
+  if ( m_FlgDebug )
+  {
+    std::cout << "Random pixel distributions, x: 0 to " << size[0] 
+              << " y: 0 to " << size[1] << std::endl;
+  }
+
+  boost::random::uniform_int_distribution<> xdist(0, size[0] - 1);
+  boost::random::uniform_int_distribution<> ydist(0, size[1] - 1);
+
+  while ( ! found ) 
+  {
+    idx[0] =  xdist( gen );
+    idx[1] =  ydist( gen );
+
+    if ( m_FlgDebug )
+    {
+      std::cout << "Random pixel coordinate: (" << idx[0] << ", " << idx[1] << ")" << std::endl;
+    }
+    
+    if ( mask->GetPixel( idx ) )
+    {
+      found = true;
+    }
+  }
+
+  m_PreDiagCenterIndex = idx;
+
+  std::cout << "Random region in pre-diagnostic image will be centered on pixel: "
+            << m_PreDiagCenterIndex << std::endl;
 };
 
 
@@ -2216,11 +2343,11 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
       if ( itImage.Get() > threshold ) 
       {
-        listOfPatches[ iPatch ].AddDensePixel();
+        listOfPatches[ iPatch ].AddDensePixel( index[0], index[1] );
       }
       else
       {
-        listOfPatches[ iPatch ].AddNonDensePixel();
+        listOfPatches[ iPatch ].AddNonDensePixel( index[0], index[1] );
       }
 
 #if 0
