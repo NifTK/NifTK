@@ -316,32 +316,26 @@ protected slots:
 
 private:
 
-  /// \brief Gets the cursor position normalised with the render window size.
+  /// \brief Updates the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  mitk::Vector2D GetPositionOfPoint(QmitkRenderWindow* renderWindow, const mitk::Point3D& point) const;
-
-  mitk::Point3D GetPointAtPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& position) const;
+  void UpdateCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition);
 
   /// \brief Sets the cursor position normalised with the render window size.
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  void MoveTo(QmitkRenderWindow* renderWindow, const mitk::Point3D& point, const mitk::Vector2D& position);
+  void MoveTo(MIDASOrientation orientation, const mitk::Point3D& point);
 
   /// \brief Gets the scale factor of the render window (mm/px).
   double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the focus point stays in the same position on the display.
-  void Zoom(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Point3D& focusPoint);
-
-  /// \brief Sets the scale factor of the render window to the given value (mm/px)
-  /// and moves the image so that the focus point stays in the same position on the display.
-  void Zoom(QmitkRenderWindow* renderWindow, double scaleFactor, const mitk::Vector2D& focusPosition);
+  void Zoom(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
