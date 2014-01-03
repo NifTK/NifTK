@@ -184,6 +184,14 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
   m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
   m_LastCentrePointTimes.push_back(QTime::currentTime());
 
+  if (m_LastCursorPositions.size() == 7)
+  {
+    m_LastCursorPositions.pop_front();
+    m_LastCursorPositionTimes.pop_front();
+  }
+  m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+  m_LastCursorPositionTimes.push_back(QTime::currentTime());
+
   emit CursorPositionChanged(this, orientation, cursorPosition);
 }
 
@@ -529,11 +537,15 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
       m_LastSelectedPositionTimes.clear();
       m_LastCentrePoints.clear();
       m_LastCentrePointTimes.clear();
+      m_LastCursorPositions.clear();
+      m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
       m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
       m_LastCentrePointTimes.push_back(QTime::currentTime());
+      m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+      m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
@@ -576,11 +588,15 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
       m_LastSelectedPositionTimes.clear();
       m_LastCentrePoints.clear();
       m_LastCentrePointTimes.clear();
+      m_LastCursorPositions.clear();
+      m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
       m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
       m_LastCentrePointTimes.push_back(QTime::currentTime());
+      m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+      m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
@@ -659,7 +675,7 @@ WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
+void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition, bool dontSetCursorPositions, bool dontSetScaleFactors)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
@@ -680,6 +696,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_SelectedPositions[Index(m_WindowLayout)] = m_LastSelectedPositions.back();
       m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
       m_CentrePoints[Index(m_WindowLayout)] = m_LastCentrePoints.back();
+      m_CursorPositions[Index(m_WindowLayout)] = m_LastCursorPositions.back();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
       m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->AreCursorPositionsBound();
@@ -706,29 +723,52 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     bool hasBeenInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
     if (m_RememberSettingsPerWindowLayout && hasBeenInitialised)
     {
-      m_MultiWidget->SetPointAtCursor(m_SelectedPositions[Index(windowLayout)]);
-      m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
+      if (!dontSetSelectedPosition)
+      {
+        m_MultiWidget->SetPointAtCursor(m_SelectedPositions[Index(windowLayout)]);
+        m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
+      }
 
-      m_MultiWidget->MovePointsToCentre(m_CentrePoints[Index(windowLayout)]);
-      m_MultiWidget->ZoomAroundCentre(m_ScaleFactors[Index(windowLayout)]);
+      if (!dontSetCursorPositions)
+      {
+//        m_MultiWidget->MovePointsToCentre(m_CentrePoints[Index(windowLayout)]);
+        m_MultiWidget->MoveCursorToPositions(m_CursorPositions[Index(windowLayout)]);
+        std::vector<mitk::Vector2D> cursorPositions = m_MultiWidget->GetPositionsAtCursor();
+      }
+
+      if (!dontSetScaleFactors)
+      {
+//        m_MultiWidget->ZoomAroundCentre(m_ScaleFactors[Index(windowLayout)]);
+        m_MultiWidget->ZoomAroundCursor(m_ScaleFactors[Index(windowLayout)]);
+      }
 
       if (wasSelected)
       {
         m_MultiWidget->SetSelectedRenderWindow(m_SelectedRenderWindow[Index(windowLayout)]);
       }
 
-      m_MultiWidget->SetCursorPositionsBound(m_CursorPositionBinding[Index(windowLayout)]);
-      m_MultiWidget->SetScaleFactorsBound(m_ScaleFactorBinding[Index(windowLayout)]);
+      if (!dontSetCursorPositions)
+      {
+        m_MultiWidget->SetCursorPositionsBound(m_CursorPositionBinding[Index(windowLayout)]);
+      }
+      if (!dontSetScaleFactors)
+      {
+        m_MultiWidget->SetScaleFactorsBound(m_ScaleFactorBinding[Index(windowLayout)]);
+      }
 
       m_LastSelectedPositions.clear();
       m_LastSelectedPositionTimes.clear();
       m_LastCentrePoints.clear();
       m_LastCentrePointTimes.clear();
+      m_LastCursorPositions.clear();
+      m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_SelectedPositions[Index(windowLayout)]);
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
       m_LastCentrePoints.push_back(m_CentrePoints[Index(windowLayout)]);
       m_LastCentrePointTimes.push_back(QTime::currentTime());
+      m_LastCursorPositions.push_back(m_CursorPositions[Index(windowLayout)]);
+      m_LastCursorPositionTimes.push_back(QTime::currentTime());
     }
     else
     {
@@ -739,19 +779,29 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
       if (!hasBeenInitialised)
       {
-        m_MultiWidget->SetPointAtCursor(geometry->GetCenterInWorld());
-        m_MultiWidget->SetTimeStep(0);
-        m_MultiWidget->FitToDisplay();
+        if (!dontSetSelectedPosition)
+        {
+          m_MultiWidget->SetPointAtCursor(geometry->GetCenterInWorld());
+          m_MultiWidget->SetTimeStep(0);
+        }
+        if (!dontSetCursorPositions || !dontSetScaleFactors)
+        {
+          m_MultiWidget->FitToDisplay();
+        }
 
         m_LastSelectedPositions.clear();
         m_LastSelectedPositionTimes.clear();
         m_LastCentrePoints.clear();
         m_LastCentrePointTimes.clear();
+        m_LastCursorPositions.clear();
+        m_LastCursorPositionTimes.clear();
 
         m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
         m_LastSelectedPositionTimes.push_back(QTime::currentTime());
         m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
         m_LastCentrePointTimes.push_back(QTime::currentTime());
+        m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+        m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
         m_MultiWidget->SetCursorPositionsBound(::IsMultiWindowLayout(windowLayout));
         m_MultiWidget->SetScaleFactorsBound(::IsMultiWindowLayout(windowLayout));
@@ -1079,6 +1129,13 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
   {
     m_LastCentrePoints.pop_back();
     m_LastCentrePointTimes.pop_back();
+  }
+
+  /// We also discard the cursor position changes since the double click.
+  while (m_LastCursorPositions.size() > 1 && m_LastCursorPositionTimes.back() >= doubleClickTime)
+  {
+    m_LastCursorPositions.pop_back();
+    m_LastCursorPositionTimes.pop_back();
   }
 
   this->SetWindowLayout(nextWindowLayout);

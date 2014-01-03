@@ -228,7 +228,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
-  void SetWindowLayout(WindowLayout windowLayout);
+  void SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition = false, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   mitk::Point3D GetSelectedPosition() const;
@@ -473,12 +473,16 @@ private:
   /// so that we can restore it next time when the user returns to the window layout.
   std::deque<std::vector<mitk::Point3D> > m_LastCentrePoints;
 
+  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
+
   /// \brief Stores the time of the last events in milliseconds when the points in the centre of the 2D windows have changed.
   ///
   /// This is used to distinguish between simple position selection events by a single click
   /// and single/multiple window layout switch by double click. If latter happens, we have to
   /// save the position from before the double clicking.
   std::deque<QTime> m_LastCentrePointTimes;
+
+  std::deque<QTime> m_LastCursorPositionTimes;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
