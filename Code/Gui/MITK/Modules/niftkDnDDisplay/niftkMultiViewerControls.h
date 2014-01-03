@@ -157,6 +157,7 @@ private slots:
 
   void OnViewerPositionBindingChanged(bool bound);
   void OnViewerCursorBindingChanged(bool bound);
+  void OnViewerWindowLayoutBindingChanged(bool bound);
 
   void OnDropSingleRadioButtonToggled(bool bound);
   void OnDropMultipleRadioButtonToggled(bool bound);
