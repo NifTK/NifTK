@@ -729,13 +729,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
       m_LastCentrePoints.push_back(m_CentrePoints[Index(windowLayout)]);
       m_LastCentrePointTimes.push_back(QTime::currentTime());
-
-      emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-      {
-        emit CursorPositionChanged(this, orientation, m_MultiWidget->GetPositionAtCursor(orientation));
-        emit ScaleFactorChanged(this, orientation, m_ScaleFactors[Index(windowLayout)][orientation]);
-      }
     }
     else
     {
