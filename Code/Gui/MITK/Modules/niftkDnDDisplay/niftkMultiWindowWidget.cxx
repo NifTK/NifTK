@@ -884,7 +884,8 @@ void niftkMultiWindowWidget::FitToDisplay()
     m_BlockDisplayGeometryEvents = true;
     displayGeometry->Fit();
     m_BlockDisplayGeometryEvents = false;
-    m_ScaleFactors[indexOfRenderWindowWithLargestScaleFactor] = this->GetScaleFactor(renderWindowWithLargestScaleFactor);
+    double largestScaleFactor = this->GetScaleFactor(renderWindowWithLargestScaleFactor);
+    m_ScaleFactors[indexOfRenderWindowWithLargestScaleFactor] = largestScaleFactor;
     const mitk::Point3D selectedPosition = this->GetSelectedPosition();
     m_CursorPositions[indexOfRenderWindowWithLargestScaleFactor] = this->GetPositionOfPoint(renderWindowWithLargestScaleFactor, selectedPosition);
 
@@ -893,10 +894,13 @@ void niftkMultiWindowWidget::FitToDisplay()
     {
       if (i != indexOfRenderWindowWithLargestScaleFactor && m_RenderWindows[i]->isVisible())
       {
+        MIDASOrientation otherOrientation = MIDASOrientation(i);
         mitk::Vector2D cursorPosition;
         cursorPosition.Fill(0.5);
         this->SetCursorPosition(MIDASOrientation(i), cursorPosition);
-        this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[indexOfRenderWindowWithLargestScaleFactor]);
+        this->Zoom(m_RenderWindows[otherOrientation], largestScaleFactor, m_CursorPositions[otherOrientation]);
+        m_ScaleFactors[otherOrientation] = largestScaleFactor;
+        m_Magnifications[otherOrientation] = this->GetMagnification(otherOrientation);
       }
     }
   }
