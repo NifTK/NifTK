@@ -907,6 +907,8 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 {
   if (geometry != NULL)
   {
+    m_BlockDisplayGeometryEvents = true;
+
     m_Geometry = geometry->GetGeometryForTimeStep(0);
     m_TimeGeometry = geometry;
 
@@ -1261,6 +1263,8 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
       } // if window < 3
     }
+
+    m_BlockDisplayGeometryEvents = false;
   }
   else
   {
