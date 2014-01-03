@@ -323,19 +323,13 @@ private:
   ///
   void UpdateCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition);
 
-  /// \brief Sets the cursor position normalised with the render window size.
-  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
-  ///
-  ///    pixel coordinate / render window size
-  ///
-  void MoveTo(MIDASOrientation orientation, const mitk::Point3D& point);
-
-  /// \brief Gets the scale factor of the render window (mm/px).
-  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+  /// \brief Moves the image (world) so that the given point gets to the currently stored position of the cursor.
+  /// The function expects the cursor position in m_CursorPositions[orientation].
+  void MoveToCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition);
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
-  /// and moves the image so that the focus point stays in the same position on the display.
-  void Zoom(MIDASOrientation orientation, double scaleFactor);
+  /// and moves the origin so that the cursor stays in the same position on the display.
+  void ZoomAroundCursorPosition(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -358,9 +352,6 @@ private:
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
-
-  // \brief Sets the origin of the display geometry of the render window.
-  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(MIDASOrientation orientation);
