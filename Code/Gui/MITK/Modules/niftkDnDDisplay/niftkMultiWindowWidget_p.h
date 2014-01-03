@@ -239,12 +239,6 @@ public:
   ///
   void MoveCursorToPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
-  /// \brief Gets the points in world space (mm) that are in the centre of the render windows.
-  std::vector<mitk::Point3D> GetPointsAtCentre() const;
-
-  /// \brief Moves the given points (given in mm world coordinates) to the centre of the render windows.
-  void MovePointsToCentre(const std::vector<mitk::Point3D>& centrePoints);
-
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(MIDASOrientation orientation) const;
 
@@ -259,9 +253,6 @@ public:
 
   /// \brief Sets the scale factor of the render windows to the given values.
   void ZoomAroundCursor(const std::vector<double>& scaleFactors);
-
-  /// \brief Sets the scale factor of the render windows to the given values.
-  void ZoomAroundCentre(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;

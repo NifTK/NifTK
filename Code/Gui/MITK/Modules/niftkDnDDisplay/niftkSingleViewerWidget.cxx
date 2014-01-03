@@ -175,15 +175,7 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
   /// A double click can result in up to six CursorPositionChanged events, depending on how many
   /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
   /// CursorPositionChanged events.)
-  /// Therefore, we need to keep the last seven centre point triads, including the current one.
-  if (m_LastCentrePoints.size() == 7)
-  {
-    m_LastCentrePoints.pop_front();
-    m_LastCentrePointTimes.pop_front();
-  }
-  m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
-  m_LastCentrePointTimes.push_back(QTime::currentTime());
-
+  /// Therefore, we need to keep the last seven cursor positions, including the current one.
   if (m_LastCursorPositions.size() == 7)
   {
     m_LastCursorPositions.pop_front();
@@ -535,15 +527,11 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
     {
       m_LastSelectedPositions.clear();
       m_LastSelectedPositionTimes.clear();
-      m_LastCentrePoints.clear();
-      m_LastCentrePointTimes.clear();
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
-      m_LastCentrePointTimes.push_back(QTime::currentTime());
       m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
@@ -586,15 +574,11 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
     {
       m_LastSelectedPositions.clear();
       m_LastSelectedPositionTimes.clear();
-      m_LastCentrePoints.clear();
-      m_LastCentrePointTimes.clear();
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
-      m_LastCentrePointTimes.push_back(QTime::currentTime());
       m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
@@ -695,7 +679,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
       m_SelectedPositions[Index(m_WindowLayout)] = m_LastSelectedPositions.back();
       m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
-      m_CentrePoints[Index(m_WindowLayout)] = m_LastCentrePoints.back();
       m_CursorPositions[Index(m_WindowLayout)] = m_LastCursorPositions.back();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
@@ -731,14 +714,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
       if (!dontSetCursorPositions)
       {
-//        m_MultiWidget->MovePointsToCentre(m_CentrePoints[Index(windowLayout)]);
         m_MultiWidget->MoveCursorToPositions(m_CursorPositions[Index(windowLayout)]);
-        std::vector<mitk::Vector2D> cursorPositions = m_MultiWidget->GetPositionsAtCursor();
       }
 
       if (!dontSetScaleFactors)
       {
-//        m_MultiWidget->ZoomAroundCentre(m_ScaleFactors[Index(windowLayout)]);
         m_MultiWidget->ZoomAroundCursor(m_ScaleFactors[Index(windowLayout)]);
       }
 
@@ -758,15 +738,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
       m_LastSelectedPositions.clear();
       m_LastSelectedPositionTimes.clear();
-      m_LastCentrePoints.clear();
-      m_LastCentrePointTimes.clear();
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
       m_LastSelectedPositions.push_back(m_SelectedPositions[Index(windowLayout)]);
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCentrePoints.push_back(m_CentrePoints[Index(windowLayout)]);
-      m_LastCentrePointTimes.push_back(QTime::currentTime());
       m_LastCursorPositions.push_back(m_CursorPositions[Index(windowLayout)]);
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
     }
@@ -791,15 +767,11 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
         m_LastSelectedPositions.clear();
         m_LastSelectedPositionTimes.clear();
-        m_LastCentrePoints.clear();
-        m_LastCentrePointTimes.clear();
         m_LastCursorPositions.clear();
         m_LastCursorPositionTimes.clear();
 
         m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
         m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-        m_LastCentrePoints.push_back(m_MultiWidget->GetPointsAtCentre());
-        m_LastCentrePointTimes.push_back(QTime::currentTime());
         m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
         m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
@@ -878,23 +850,6 @@ void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::Point3D> niftkSingleViewerWidget::GetPointsAtCentre() const
-{
-  return m_MultiWidget->GetPointsAtCentre();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::MovePointsToCentre(const std::vector<mitk::Point3D>& centrePoints)
-{
-  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
-  {
-    m_MultiWidget->MovePointsToCentre(centrePoints);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetMagnification(orientation);
@@ -941,16 +896,6 @@ void niftkSingleViewerWidget::ZoomAroundCursor(const std::vector<double>& scaleF
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
     m_MultiWidget->ZoomAroundCursor(scaleFactors);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ZoomAroundCentre(const std::vector<double>& scaleFactors)
-{
-  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
-  {
-    m_MultiWidget->ZoomAroundCentre(scaleFactors);
   }
 }
 
@@ -1122,13 +1067,6 @@ bool niftkSingleViewerWidget::ToggleMultiWindowLayout()
     doubleClickTime = m_LastSelectedPositionTimes.back();
     m_LastSelectedPositions.pop_back();
     m_LastSelectedPositionTimes.pop_back();
-  }
-
-  /// We also discard the cursor position changes since the double click.
-  while (m_LastCentrePoints.size() > 1 && m_LastCentrePointTimes.back() >= doubleClickTime)
-  {
-    m_LastCentrePoints.pop_back();
-    m_LastCentrePointTimes.pop_back();
   }
 
   /// We also discard the cursor position changes since the double click.

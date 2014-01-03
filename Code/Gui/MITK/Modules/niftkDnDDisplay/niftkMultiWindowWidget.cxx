@@ -2098,38 +2098,6 @@ void niftkMultiWindowWidget::MoveCursorToPositions(const std::vector<mitk::Vecto
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::Point3D> niftkMultiWindowWidget::GetPointsAtCentre() const
-{
-  mitk::Vector2D centrePosition;
-  centrePosition.Fill(0.5);
-
-  std::vector<mitk::Point3D> centrePoints(3);
-  for (unsigned i = 0; i < 3; ++i)
-  {
-    centrePoints[i] = this->GetPointAtPosition(m_RenderWindows[i], centrePosition);
-  }
-
-  return centrePoints;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MovePointsToCentre(const std::vector<mitk::Point3D>& centrePoints)
-{
-  mitk::Vector2D centrePosition;
-  centrePosition.Fill(0.5);
-
-  mitk::Point3D selectedPoint = this->GetPointAtCursor();
-
-  for (unsigned i = 0; i < 3; ++i)
-  {
-    this->MoveTo(m_RenderWindows[i], centrePoints[i], centrePosition);
-    m_CursorPositions[i] = this->GetPositionOfPoint(m_RenderWindows[i], selectedPoint);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::Vector2D niftkMultiWindowWidget::GetPositionOfPoint(QmitkRenderWindow* renderWindow, const mitk::Point3D& point) const
 {
   mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
@@ -2221,20 +2189,6 @@ void niftkMultiWindowWidget::ZoomAroundCursor(const std::vector<double>& scaleFa
   for (int i = 0; i < 3; ++i)
   {
     this->Zoom(m_RenderWindows[i], scaleFactors[i], m_CursorPositions[i]);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::ZoomAroundCentre(const std::vector<double>& scaleFactors)
-{
-  mitk::Vector2D centrePosition;
-  centrePosition.Fill(0.5);
-
-  m_ScaleFactors = scaleFactors;
-  for (int i = 0; i < 3; ++i)
-  {
-    this->Zoom(m_RenderWindows[i], scaleFactors[i], centrePosition);
   }
 }
 
