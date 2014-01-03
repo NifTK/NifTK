@@ -659,7 +659,7 @@ int main(int argc, char** argv)
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
 
-    (*itPatient)->Compute();
+    (*itPatient)->Compute( gen );
 
     progress = (iFile + 0.5)/nFiles;
     std::cout << "<filter-progress>" << std::endl
@@ -670,14 +670,7 @@ int main(int argc, char** argv)
 
     if ( foutOutputDensityCSV ) 
     {   
-      if ( flgRegister )
-      {
-        (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );  
-      }
-      else
-      {
-        (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV, gen );  
-      }
+      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );  
     }
 
     progress = (iFile + 0.75)/nFiles;

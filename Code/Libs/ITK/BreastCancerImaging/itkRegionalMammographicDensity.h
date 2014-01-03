@@ -110,22 +110,43 @@ public:
   Patch() {
     nPixels = 0;
     nDensePixels  = 0;
+    sumXindices = 0;
+    sumYindices = 0;
   }
 
-  void AddDensePixel( void ) {
+  void AddDensePixel( float xIndex, float yIndex ) {
     nDensePixels++;
     nPixels++;
+    sumXindices += xIndex;
+    sumYindices += yIndex;
   }
 
-  void AddNonDensePixel( void ) {
+  void AddNonDensePixel( float xIndex, float yIndex ) {
     nPixels++;
+    sumXindices += xIndex;
+    sumYindices += yIndex;
   }
 
   float GetNumberOfPixels( void ) { return nPixels; }
   float GetNumberOfDensePixels( void ) { return nDensePixels; }
 
+  void GetCenter( float &xIndex, float &yIndex ) { 
+    if (nPixels > 0) { 
+      xIndex = sumXindices/nPixels;
+      yIndex = sumYindices/nPixels;
+    }
+    else {
+      xIndex = 0;
+      yIndex = 0;
+    }
+  }
+
   void Print( const char *indent, float maxNumberOfPixels ) {
+    float xCenter, yCenter;
+    GetCenter(  xCenter, yCenter );
     std::cout << indent
+              << "center: (" << xCenter << ", " << yCenter << ") "
+              << indent
               << "no. of dense pixels: "
               << std::right << setprecision( 6 )<< std::setw(12) << nDensePixels << " ( "
               << std::fixed << setprecision( 2 )
@@ -146,7 +167,9 @@ public:
 protected:
 
   float nPixels;
-  float nDensePixels;  
+  float nDensePixels;
+  float sumXindices;
+  float sumYindices;
 
 };
 
@@ -192,6 +215,8 @@ public:
   typedef itk::Image<VectorType,    ParametricDimension>  VectorImageType;
   typedef itk::PointSet<VectorType, ParametricDimension>  PointSetType;
 
+  typedef itk::Image< RealType, InputDimension >          RealImageType;
+
   typedef typename PointSetType::PointsContainer          PointsContainer;
   typedef typename PointsContainer::Iterator              PointsIterator;
   typedef typename PointSetType::PointDataContainer       PointDataContainer;
@@ -213,6 +238,7 @@ public:
   typedef typename SingleResImageRegistrationMethodType::ParametersType ParametersType;
   typedef typename itk::SimilarityMeasure< ImageType, ImageType > SimilarityMeasureType;
   typedef typename itk::ImageMomentsCalculator< ImageType > ImageMomentCalculatorType;
+  typedef typename itk::SignedMaurerDistanceMapImageFilter< ImageType, RealImageType> DistanceTransformType;
 
 
 
@@ -300,10 +326,7 @@ public:
 
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
 
-  void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV,
-                           boost::random::mt19937 &gen );
-
-  void Compute( void );
+  void Compute( boost::random::mt19937 &gen );
 
 
 protected:
@@ -370,12 +393,14 @@ protected:
   typename ImageType::Pointer m_ImDiagnostic;
   typename ImageType::Pointer m_ImPreDiagnostic;
 
-
   typename ImageType::Pointer m_ImDiagnosticMask;
   typename ImageType::Pointer m_ImPreDiagnosticMask;
 
   typename LabelImageType::Pointer m_ImDiagnosticLabels;
   typename LabelImageType::Pointer m_ImPreDiagnosticLabels;
+
+  typename ImageType::Pointer m_ImDiagnosticRegnMask;
+  typename ImageType::Pointer m_ImPreDiagnosticRegnMask;
 
 
   std::vector< PointOnBoundary > m_DiagBreastEdgePoints;
@@ -436,8 +461,10 @@ protected:
 
   void RegisterTheImages();
 
-   typename LabelImageType::IndexType
+  typename LabelImageType::IndexType
     TransformTumourPositionIntoPreDiagImage( typename LabelImageType::IndexType &idxTumourCenter );
+
+  void GenerateRandomTumourPositionInPreDiagImage( boost::random::mt19937 &gen );
 
   typename LabelImageType::Pointer 
     GenerateRegionLabels( typename LabelImageType::IndexType &idxTumourCenter,
