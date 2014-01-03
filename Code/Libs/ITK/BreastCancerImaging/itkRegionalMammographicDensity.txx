@@ -698,10 +698,13 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                                m_DiagPatches, 
                                                m_ThresholdDiagnostic );
 
-  WriteImageFile<LabelImageType>( m_FileDiagnostic, 
-                                  std::string( "_DiagLabels.dcm" ), 
-                                  "diagnostic labels", 
-                                  m_ImDiagnosticLabels, m_DiagDictionary );
+  if ( m_FlgDebug )
+  {
+    WriteImageFile<LabelImageType>( m_FileDiagnostic, 
+                                    std::string( "_DiagLabels.dcm" ), 
+                                    "diagnostic labels", 
+                                    m_ImDiagnosticLabels, m_DiagDictionary );
+  }
 
   WriteLabelImageFile( m_FileDiagnostic, 
                        std::string( "_DiagLabels.jpg" ), 
@@ -734,11 +737,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                                   m_PreDiagPatches,
                                                   m_ThresholdPreDiagnostic );
 
-  WriteImageFile<LabelImageType>( m_FilePreDiagnostic, 
-                                  std::string( "_PreDiagLabels.dcm" ), 
-                                  "pre-diagnostic labels", 
-                                  m_ImPreDiagnosticLabels, m_PreDiagDictionary );
-  
+  if ( m_FlgDebug )
+  {
+    WriteImageFile<LabelImageType>( m_FilePreDiagnostic, 
+                                    std::string( "_PreDiagLabels.dcm" ), 
+                                    "pre-diagnostic labels", 
+                                    m_ImPreDiagnosticLabels, m_PreDiagDictionary );
+  }
+
   WriteLabelImageFile( m_FilePreDiagnostic, 
                        std::string( "_PreDiagLabels.jpg" ), 
                        "pre-diagnostic labels", 
