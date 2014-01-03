@@ -289,19 +289,19 @@ protected slots:
   void OnViewerNumberChanged(int rows, int columns);
 
   /// \brief Called when the viewer position binding has been changed through the control panel.
-  void OnViewerPositionBindingChanged();
+  void OnViewerPositionBindingChanged(bool bound);
 
   /// \brief Called when the viewer cursor binding has been changed through the control panel.
-  void OnViewerCursorBindingChanged();
+  void OnViewerCursorBindingChanged(bool bound);
 
   /// \brief Called when the window layout binding across the viewers has been changed through the control panel.
-  void OnViewerWindowLayoutBindingChanged();
+  void OnViewerWindowLayoutBindingChanged(bool bound);
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
-  void OnViewerMagnificationBindingChanged();
+  void OnViewerMagnificationBindingChanged(bool bound);
 
   /// \brief Called when the viewer geometry binding has been changed through the control panel.
-  void OnViewerGeometryBindingChanged();
+  void OnViewerGeometryBindingChanged(bool bound);
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(DnDDisplayDropType dropType);
