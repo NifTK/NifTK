@@ -580,13 +580,13 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   int numberOfSurvivingViewers = std::min(currentNumberOfViewers, requiredNumberOfViewers);
   std::vector<mitk::Point3D> selectedPositionInSurvivingViewers(numberOfSurvivingViewers);
-  std::vector<std::vector<mitk::Point3D> > pointsAtCentreInSurvivingViewers(numberOfSurvivingViewers);
+  std::vector<std::vector<mitk::Vector2D> > cursorPositionsInSurvivingViewers(numberOfSurvivingViewers);
   std::vector<std::vector<double> > scaleFactorsInSurvivingViewers(numberOfSurvivingViewers);
 
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
     selectedPositionInSurvivingViewers[i] = m_Viewers[i]->GetSelectedPosition();
-    pointsAtCentreInSurvivingViewers[i] = m_Viewers[i]->GetPointsAtCentre();
+    cursorPositionsInSurvivingViewers[i] = m_Viewers[i]->GetCursorPositions();
     scaleFactorsInSurvivingViewers[i] = m_Viewers[i]->GetScaleFactors();
   }
 
@@ -680,8 +680,8 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
     m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
-    m_Viewers[i]->MovePointsToCentre(pointsAtCentreInSurvivingViewers[i]);
-    m_Viewers[i]->ZoomAroundCentre(scaleFactorsInSurvivingViewers[i]);
+    m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
+    m_Viewers[i]->ZoomAroundCursor(scaleFactorsInSurvivingViewers[i]);
   }
 
   ////////////////////////////////////////
