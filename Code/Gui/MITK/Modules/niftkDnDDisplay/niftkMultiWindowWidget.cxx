@@ -712,6 +712,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
     this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
     this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
   }
+  m_RenderingManager->RequestUpdate(this->mitkWidget4->GetRenderWindow());
 }
 
 
