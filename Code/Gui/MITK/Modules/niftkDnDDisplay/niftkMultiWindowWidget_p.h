@@ -196,13 +196,13 @@ public:
   void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the selected point in the world coordinate system (mm).
-  const mitk::Point3D GetPointAtCursor() const;
+  const mitk::Point3D GetSelectedPosition() const;
 
   /// \brief Sets the selected position in the world coordinate system (mm).
   ///
   /// This function does not necessarily move the image on the display, but
   /// puts the cursor (aka. crosshair) to the selected world position.
-  void SetPointAtCursor(const mitk::Point3D& selectedPoint);
+  void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
   ///
@@ -210,7 +210,7 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D& GetPositionAtCursor(MIDASOrientation orientation) const;
+  const mitk::Vector2D& GetCursorPosition(MIDASOrientation orientation) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
   ///
@@ -221,7 +221,7 @@ public:
   /// This function does not change the selected point in world but moves the image
   /// in the given render window so that the cursor (aka. crosshair) gets to the specified
   /// position in the render window.
-  void MoveCursorToPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the positions of the cursor in the 2D render windows normalised with the render window size.
   ///
@@ -229,7 +229,7 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  const std::vector<mitk::Vector2D>& GetPositionsAtCursor() const;
+  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
   /// \brief Sets the positions of the cursor in the 2D render windows normalised with the render window size.
   ///
@@ -237,7 +237,7 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  void MoveCursorToPositions(const std::vector<mitk::Vector2D>& cursorPositions);
+  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
   double GetScaleFactor(MIDASOrientation orientation) const;
@@ -246,13 +246,13 @@ public:
   /// and moves the image so that the position of the focus remains the same.
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
-  void ZoomAroundCursor(MIDASOrientation orientation, double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Gets the scale factors of the 2D render windows.
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the scale factor of the render windows to the given values.
-  void ZoomAroundCursor(const std::vector<double>& scaleFactors);
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;

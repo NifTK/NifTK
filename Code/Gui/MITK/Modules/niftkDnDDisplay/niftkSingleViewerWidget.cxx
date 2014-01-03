@@ -181,7 +181,7 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
     m_LastCursorPositions.pop_front();
     m_LastCursorPositionTimes.pop_front();
   }
-  m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
   emit CursorPositionChanged(this, orientation, cursorPosition);
@@ -530,9 +530,9 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
-      m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
@@ -577,9 +577,9 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
       m_LastCursorPositions.clear();
       m_LastCursorPositionTimes.clear();
 
-      m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
+      m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
       m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-      m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+      m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
       m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
@@ -708,18 +708,18 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     {
       if (!dontSetSelectedPosition)
       {
-        m_MultiWidget->SetPointAtCursor(m_SelectedPositions[Index(windowLayout)]);
+        m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
         m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
       }
 
       if (!dontSetCursorPositions)
       {
-        m_MultiWidget->MoveCursorToPositions(m_CursorPositions[Index(windowLayout)]);
+        m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
       }
 
       if (!dontSetScaleFactors)
       {
-        m_MultiWidget->ZoomAroundCursor(m_ScaleFactors[Index(windowLayout)]);
+        m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
       }
 
       if (wasSelected)
@@ -757,7 +757,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       {
         if (!dontSetSelectedPosition)
         {
-          m_MultiWidget->SetPointAtCursor(geometry->GetCenterInWorld());
+          m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
           m_MultiWidget->SetTimeStep(0);
         }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
@@ -770,9 +770,9 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         m_LastCursorPositions.clear();
         m_LastCursorPositionTimes.clear();
 
-        m_LastSelectedPositions.push_back(m_MultiWidget->GetPointAtCursor());
+        m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
         m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-        m_LastCursorPositions.push_back(m_MultiWidget->GetPositionsAtCursor());
+        m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
         m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
         m_MultiWidget->SetCursorPositionsBound(::IsMultiWindowLayout(windowLayout));
@@ -801,7 +801,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 //-----------------------------------------------------------------------------
 mitk::Point3D niftkSingleViewerWidget::GetSelectedPosition() const
 {
-  return m_MultiWidget->GetPointAtCursor();
+  return m_MultiWidget->GetSelectedPosition();
 }
 
 
@@ -810,7 +810,7 @@ void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedP
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->SetPointAtCursor(selectedPosition);
+    m_MultiWidget->SetSelectedPosition(selectedPosition);
   }
 }
 
@@ -818,7 +818,7 @@ void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedP
 //-----------------------------------------------------------------------------
 mitk::Vector2D niftkSingleViewerWidget::GetCursorPosition(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetPositionAtCursor(orientation);
+  return m_MultiWidget->GetCursorPosition(orientation);
 }
 
 
@@ -827,7 +827,7 @@ void niftkSingleViewerWidget::SetCursorPosition(MIDASOrientation orientation, co
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->MoveCursorToPosition(orientation, cursorPosition);
+    m_MultiWidget->SetCursorPosition(orientation, cursorPosition);
   }
 }
 
@@ -835,7 +835,7 @@ void niftkSingleViewerWidget::SetCursorPosition(MIDASOrientation orientation, co
 //-----------------------------------------------------------------------------
 const std::vector<mitk::Vector2D>& niftkSingleViewerWidget::GetCursorPositions() const
 {
-  return m_MultiWidget->GetPositionsAtCursor();
+  return m_MultiWidget->GetCursorPositions();
 }
 
 
@@ -844,7 +844,7 @@ void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->MoveCursorToPositions(cursorPositions);
+    m_MultiWidget->SetCursorPositions(cursorPositions);
   }
 }
 
@@ -878,7 +878,7 @@ void niftkSingleViewerWidget::ZoomAroundCursor(MIDASOrientation orientation, dou
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->ZoomAroundCursor(orientation, scaleFactor);
+    m_MultiWidget->SetScaleFactor(orientation, scaleFactor);
   }
 }
 
@@ -895,7 +895,7 @@ void niftkSingleViewerWidget::ZoomAroundCursor(const std::vector<double>& scaleF
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
-    m_MultiWidget->ZoomAroundCursor(scaleFactors);
+    m_MultiWidget->SetScaleFactors(scaleFactors);
   }
 }
 
