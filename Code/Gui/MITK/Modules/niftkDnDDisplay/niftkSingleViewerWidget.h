@@ -113,7 +113,7 @@ public:
   std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
+  const std::vector<QmitkRenderWindow*>& GetRenderWindows() const;
 
   /// \brief Returns the Axial Window.
   QmitkRenderWindow* GetAxialWindow() const;
@@ -174,9 +174,6 @@ public:
 
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
-
-  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
-  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);

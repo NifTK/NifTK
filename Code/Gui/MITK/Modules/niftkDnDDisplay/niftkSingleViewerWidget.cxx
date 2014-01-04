@@ -231,7 +231,7 @@ std::vector<QmitkRenderWindow*> niftkSingleViewerWidget::GetVisibleRenderWindows
 
 
 //-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> niftkSingleViewerWidget::GetRenderWindows() const
+const std::vector<QmitkRenderWindow*>& niftkSingleViewerWidget::GetRenderWindows() const
 {
   return m_MultiWidget->GetRenderWindows();
 }
@@ -367,13 +367,6 @@ unsigned int niftkSingleViewerWidget::GetMaxTimeStep() const
 bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
   return m_MultiWidget->ContainsRenderWindow(renderWindow);
-}
-
-
-//-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const
-{
-  return m_MultiWidget->GetRenderWindow(aVtkRenderWindow);
 }
 
 

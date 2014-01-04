@@ -162,7 +162,7 @@ public:
   std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
+  const std::vector<QmitkRenderWindow*>& GetRenderWindows() const;
 
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
   QmitkRenderWindow* GetRenderWindow(MIDASOrientation orientation) const;
@@ -173,9 +173,6 @@ public:
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
-
-  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
-  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow* aVtkRenderWindow) const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
   unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
@@ -375,7 +372,7 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
 
-  QmitkRenderWindow* m_RenderWindows[4];
+  std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
   unsigned m_AxialSliceTag;

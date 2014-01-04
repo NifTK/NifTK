@@ -349,11 +349,22 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  QmitkRenderWindow* focusedRenderWindow = 0;
+
+  const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewer->GetRenderWindows();
+  for (int i = 0; i < viewerRenderWindows.size(); ++i)
+  {
+    if (focusedRenderer == viewerRenderWindows[i]->GetRenderer())
+    {
+      focusedRenderWindow = viewerRenderWindows[i];
+      break;
+    }
+  }
 
   // If the newly focused window is in this widget, nothing to update. Stop early.
-  if (QmitkRenderWindow* renderWindow = m_Viewer->GetRenderWindow(focusedRenderer->GetRenderWindow()))
+  if (focusedRenderWindow)
   {
-    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
 
     double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
     m_Magnification = magnification;

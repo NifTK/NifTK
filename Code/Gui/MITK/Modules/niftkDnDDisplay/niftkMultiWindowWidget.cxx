@@ -110,6 +110,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
     mitk::DataStorage* dataStorage
     )
 : QmitkStdMultiWidget(parent, flags, renderingManager)
+, m_RenderWindows(4)
 , m_GridLayout(NULL)
 , m_AxialSliceTag(0)
 , m_SagittalSliceTag(0)
@@ -760,33 +761,9 @@ bool niftkMultiWindowWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindo
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkMultiWindowWidget::GetRenderWindow(vtkRenderWindow* vtkRenderWindow) const
+const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows() const
 {
-  QmitkRenderWindow* renderWindow = 0;
-  if (mitkWidget1->GetVtkRenderWindow() == vtkRenderWindow)
-  {
-    renderWindow = mitkWidget1;
-  }
-  else if (mitkWidget2->GetVtkRenderWindow() == vtkRenderWindow)
-  {
-    renderWindow = mitkWidget2;
-  }
-  else if (mitkWidget3->GetVtkRenderWindow() == vtkRenderWindow)
-  {
-    renderWindow = mitkWidget3;
-  }
-  else if (mitkWidget4->GetVtkRenderWindow() == vtkRenderWindow)
-  {
-    renderWindow = mitkWidget4;
-  }
-  return renderWindow;
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> niftkMultiWindowWidget::GetRenderWindows() const
-{
-  return std::vector<QmitkRenderWindow*>(m_RenderWindows, m_RenderWindows + 4);
+  return m_RenderWindows;
 }
 
 

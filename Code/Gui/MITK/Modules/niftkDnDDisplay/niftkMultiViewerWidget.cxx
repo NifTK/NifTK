@@ -971,22 +971,27 @@ void niftkMultiViewerWidget::SetFocus()
 void niftkMultiViewerWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* renderer = focusManager->GetFocused();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
 
   int selectedViewerIndex = -1;
-  vtkRenderWindow* focusedVtkRenderWindow = NULL;
   QmitkRenderWindow* focusedRenderWindow = NULL;
 
-  if (renderer)
+  if (focusedRenderer)
   {
-    focusedVtkRenderWindow = renderer->GetRenderWindow();
     for (int i = 0; i < m_Viewers.size(); i++)
     {
-      QmitkRenderWindow* renderWindow = m_Viewers[i]->GetRenderWindow(focusedVtkRenderWindow);
-      if (renderWindow != NULL)
+      const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewers[i]->GetRenderWindows();
+      for (int j = 0; j < viewerRenderWindows.size(); ++j)
       {
-        selectedViewerIndex = i;
-        focusedRenderWindow = renderWindow;
+        if (focusedRenderer == viewerRenderWindows[j]->GetRenderer())
+        {
+          selectedViewerIndex = i;
+          focusedRenderWindow = viewerRenderWindows[j];
+          break;
+        }
+      }
+      if (focusedRenderWindow)
+      {
         break;
       }
     }
