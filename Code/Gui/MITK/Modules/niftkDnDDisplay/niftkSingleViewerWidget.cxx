@@ -145,9 +145,9 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
-  emit NodesDropped(window, nodes);
+  emit NodesDropped(this, renderWindow, nodes);
 }
 
 
@@ -850,23 +850,6 @@ void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
-{
-  return m_MultiWidget->GetMagnification(orientation);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetMagnification(MIDASOrientation orientation, double magnification)
-{
-  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
-  {
-    m_MultiWidget->SetMagnification(orientation, magnification);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 double niftkSingleViewerWidget::GetScaleFactor(MIDASOrientation orientation) const
 {
   return m_MultiWidget->GetScaleFactor(orientation);
@@ -874,7 +857,7 @@ double niftkSingleViewerWidget::GetScaleFactor(MIDASOrientation orientation) con
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ZoomAroundCursor(MIDASOrientation orientation, double scaleFactor)
+void niftkSingleViewerWidget::SetScaleFactor(MIDASOrientation orientation, double scaleFactor)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -891,11 +874,28 @@ const std::vector<double>& niftkSingleViewerWidget::GetScaleFactors() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ZoomAroundCursor(const std::vector<double>& scaleFactors)
+void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
     m_MultiWidget->SetScaleFactors(scaleFactors);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+double niftkSingleViewerWidget::GetMagnification(MIDASOrientation orientation) const
+{
+  return m_MultiWidget->GetMagnification(orientation);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetMagnification(MIDASOrientation orientation, double magnification)
+{
+  if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
+  {
+    m_MultiWidget->SetMagnification(orientation, magnification);
   }
 }
 

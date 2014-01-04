@@ -1535,32 +1535,13 @@ WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SliceNavigationController* niftkMultiWindowWidget::GetSliceNavigationController(MIDASOrientation orientation) const
-{
-  mitk::SliceNavigationController* result = NULL;
-  if (orientation == MIDAS_ORIENTATION_AXIAL)
-  {
-    result = mitkWidget1->GetSliceNavigationController();
-  }
-  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
-  {
-    result = mitkWidget2->GetSliceNavigationController();
-  }
-  else if (orientation == MIDAS_ORIENTATION_CORONAL)
-  {
-    result = mitkWidget3->GetSliceNavigationController();
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 unsigned int niftkMultiWindowWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
 {
+  assert(orientation != MIDAS_ORIENTATION_UNKNOWN);
+
   unsigned int result = 0;
 
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(orientation);
-  assert(snc);
+  mitk::SliceNavigationController* snc = m_RenderWindows[orientation]->GetSliceNavigationController();
 
   if (snc->GetSlice() != NULL && snc->GetSlice()->GetSteps() > 0)
   {
@@ -1576,7 +1557,7 @@ unsigned int niftkMultiWindowWidget::GetMaxTimeStep() const
 {
   unsigned int result = 0;
 
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   assert(snc);
 
   if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
@@ -2021,13 +2002,13 @@ unsigned int niftkMultiWindowWidget::GetSliceIndex(MIDASOrientation orientation)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
 {
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   snc->GetTime()->SetPos(timeStep);
 
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  snc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
   snc->GetTime()->SetPos(timeStep);
 
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+  snc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
   snc->GetTime()->SetPos(timeStep);
 }
 
@@ -2035,8 +2016,7 @@ void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
 //-----------------------------------------------------------------------------
 unsigned int niftkMultiWindowWidget::GetTimeStep() const
 {
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
-  assert(snc);
+  mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
 
   return snc->GetTime()->GetPos();
 }
@@ -2054,17 +2034,17 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 {
   m_BlockDisplayGeometryEvents = true;
 
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_AXIAL);
+  mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   if (snc->GetCreatedWorldGeometry())
   {
     snc->SelectSliceByPoint(selectedPosition);
   }
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_SAGITTAL);
+  snc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
   if (snc->GetCreatedWorldGeometry())
   {
     snc->SelectSliceByPoint(selectedPosition);
   }
-  snc = this->GetSliceNavigationController(MIDAS_ORIENTATION_CORONAL);
+  snc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
   if (snc->GetCreatedWorldGeometry())
   {
     snc->SelectSliceByPoint(selectedPosition);

@@ -253,8 +253,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
-  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*,std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
@@ -681,7 +681,7 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
   {
     m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
     m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
-    m_Viewers[i]->ZoomAroundCursor(scaleFactorsInSurvivingViewers[i]);
+    m_Viewers[i]->SetScaleFactors(scaleFactorsInSurvivingViewers[i]);
   }
 
   ////////////////////////////////////////
@@ -826,7 +826,7 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     {
       if (otherViewer != viewer)
       {
-        otherViewer->ZoomAroundCursor(orientation, scaleFactor);
+        otherViewer->SetScaleFactor(orientation, scaleFactor);
       }
     }
   }
@@ -835,7 +835,7 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   mitk::DataStorage::SetOfObjects::Pointer nodeSet = mitk::DataStorage::SetOfObjects::New();
   for (unsigned i = 0; i < nodes.size(); ++i)
@@ -855,48 +855,30 @@ void niftkMultiViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
 
-  niftkSingleViewerWidget* dropOntoViewer = 0;
-
-  foreach (niftkSingleViewerWidget* viewer, m_Viewers)
-  {
-    if (viewer->ContainsRenderWindow(renderWindow))
-    {
-      dropOntoViewer = viewer;
-      MIDASOrientation orientation = dropOntoViewer->GetOrientation();
-      switch (orientation)
-      {
-      case MIDAS_ORIENTATION_AXIAL:
-        renderWindow = dropOntoViewer->GetAxialWindow();
-        break;
-      case MIDAS_ORIENTATION_SAGITTAL:
-        renderWindow = dropOntoViewer->GetSagittalWindow();
-        break;
-      case MIDAS_ORIENTATION_CORONAL:
-        renderWindow = dropOntoViewer->GetCoronalWindow();
-        break;
-      case MIDAS_ORIENTATION_UNKNOWN:
-        renderWindow = dropOntoViewer->Get3DWindow();
-        break;
-      }
-      break;
-    }
-  }
-
   // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first viewer already has focus.
   mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
 
-  double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
-
-  WindowLayout windowLayout = selectedViewer->GetWindowLayout();
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
-    dropOntoViewer->SetWindowLayout(windowLayout);
+    dropOntoViewer->SetWindowLayout(selectedViewer->GetWindowLayout());
   }
 
-  //  double scaleFactor = selectedViewer->GetScaleFactor();
+  if (m_ControlPanel->AreViewerPositionsBound())
+  {
+    mitk::Point3D selectedPosition = selectedViewer->GetSelectedPosition();
+    dropOntoViewer->SetSelectedPosition(selectedPosition);
+  }
+
+  if (m_ControlPanel->AreViewerCursorsBound())
+  {
+    std::vector<mitk::Vector2D> cursorPositions = selectedViewer->GetCursorPositions();
+    dropOntoViewer->SetCursorPositions(cursorPositions);
+  }
+
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    dropOntoViewer->SetMagnification(dropOntoViewer->GetOrientation(), magnification);
+    double scaleFactor = selectedViewer->GetScaleFactor(selectedViewer->GetOrientation());
+    dropOntoViewer->SetScaleFactor(dropOntoViewer->GetOrientation(), scaleFactor);
   }
 
 //  m_ControlPanel->SetMagnification(magnification);
@@ -1194,7 +1176,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->ZoomAroundCursor(scaleFactors);
+        otherViewer->SetScaleFactors(scaleFactors);
       }
     }
   }
@@ -1272,7 +1254,7 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
         otherViewer->SetScaleFactorsBound(bound);
-        otherViewer->ZoomAroundCursor(scaleFactors);
+        otherViewer->SetScaleFactors(scaleFactors);
       }
     }
   }
@@ -1381,11 +1363,11 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowMagnificationsBound())
         {
-          otherViewer->ZoomAroundCursor(scaleFactors);
+          otherViewer->SetScaleFactors(scaleFactors);
         }
         else
         {
-          otherViewer->ZoomAroundCursor(orientation, scaleFactor);
+          otherViewer->SetScaleFactor(orientation, scaleFactor);
         }
       }
     }
@@ -1752,11 +1734,11 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
         otherViewer->SetScaleFactorsBound(windowScaleFactorsBound);
         if (windowScaleFactorsBound)
         {
-          otherViewer->ZoomAroundCursor(scaleFactors);
+          otherViewer->SetScaleFactors(scaleFactors);
         }
         else
         {
-          otherViewer->ZoomAroundCursor(orientation, scaleFactor);
+          otherViewer->SetScaleFactor(orientation, scaleFactor);
         }
       }
     }

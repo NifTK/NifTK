@@ -165,7 +165,7 @@ public:
   std::vector<QmitkRenderWindow*> GetRenderWindows() const;
 
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
-  QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
+  QmitkRenderWindow* GetRenderWindow(MIDASOrientation orientation) const;
 
   /// \brief Gets the orientation corresponding to the given render window.
   /// Returns MIDAS_ORIENTATION_UNKNOWN for the 3D window.
@@ -346,9 +346,6 @@ private:
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
-
-  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one render window (i.e. either axial, coronal, sagittal).
-  mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
 
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);

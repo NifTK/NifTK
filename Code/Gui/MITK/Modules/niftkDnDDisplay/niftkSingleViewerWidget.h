@@ -248,23 +248,23 @@ public:
   /// \brief Sets the current cursor position of each render window in pixels, normalised with the size of the render windows.
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
-  /// \brief Get the current magnification.
-  double GetMagnification(MIDASOrientation orientation) const;
-
-  /// \brief Set the current magnification.
-  void SetMagnification(MIDASOrientation orientation, double magnification);
-
   /// \brief Get the current scale factor.
   double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void ZoomAroundCursor(MIDASOrientation orientation, double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Gets the current scale factor of each render window.
   const std::vector<double>& GetScaleFactors() const;
 
   /// \brief Sets the current scale factor for each render window.
-  void ZoomAroundCursor(const std::vector<double>& scaleFactors);
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
+
+  /// \brief Get the current magnification.
+  double GetMagnification(MIDASOrientation orientation) const;
+
+  /// \brief Set the current magnification.
+  void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -345,7 +345,7 @@ protected:
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);

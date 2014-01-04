@@ -653,7 +653,7 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewerr, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
   int viewerIndex = this->GetViewerIndexFromWindow(window);
   WindowLayout windowLayout = this->GetWindowLayout(nodes);
