@@ -75,7 +75,7 @@ public:
 
       if (focusPoint != m_FocusPoint)
       {
-        m_MultiWindowWidget->OnFocusChanged(m_Orientation, focusPoint);
+        m_MultiWindowWidget->OnZoomFocusChanged(m_Orientation, focusPoint);
       }
       m_MultiWindowWidget->OnScaleFactorChanged(m_Orientation, scaleFactor);
       m_FocusPoint = focusPoint;
@@ -1732,7 +1732,7 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint)
+void niftkMultiWindowWidget::OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
