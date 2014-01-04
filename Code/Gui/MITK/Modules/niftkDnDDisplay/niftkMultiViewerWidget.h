@@ -310,7 +310,7 @@ protected slots:
   void OnDropAccumulateChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.

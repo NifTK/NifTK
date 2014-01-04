@@ -121,7 +121,7 @@ void niftkSingleViewerWidget::Initialize(QString windowName,
   m_GridLayout->addWidget(m_MultiWidget);
 
   // Connect to niftkMultiWindowWidget, so we can listen for signals.
-  this->connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(m_MultiWidget, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
@@ -145,9 +145,9 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkSingleViewerWidget::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
-  emit NodesDropped(this, renderWindow, nodes);
+  emit NodesDropped(this, nodes);
 }
 
 

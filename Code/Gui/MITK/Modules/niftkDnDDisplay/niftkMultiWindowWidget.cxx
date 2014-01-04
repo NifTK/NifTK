@@ -25,6 +25,7 @@
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
 #include <mitkVtkLayerController.h>
+#include <mitkGlobalInteraction.h>
 
 #include "vtkSideAnnotation_p.h"
 
@@ -343,6 +344,8 @@ void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(MIDASOrie
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
+  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
+
   // We have to block the display geometry events until the event is processed.
   // Therefore, it is important that the event is processed synchronuously, right after
   // emitting the signal. To achieve this, the signal has to be directly connected to the
@@ -351,7 +354,7 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // what we might not want.
   m_BlockDisplayGeometryEvents = true;
   this->SetSelectedRenderWindow(renderWindow);
-  emit NodesDropped(renderWindow, nodes);
+  emit NodesDropped(nodes);
   m_BlockDisplayGeometryEvents = false;
 }
 

@@ -253,8 +253,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
-  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
@@ -835,7 +835,7 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoViewer, std::vector<mitk::DataNode*> nodes)
 {
   mitk::DataStorage::SetOfObjects::Pointer nodeSet = mitk::DataStorage::SetOfObjects::New();
   for (unsigned i = 0; i < nodes.size(); ++i)
@@ -854,9 +854,6 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-
-  // This does not trigger OnFocusChanged() the very first time, as when creating the editor, the first viewer already has focus.
-  mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(renderWindow->GetRenderer());
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
