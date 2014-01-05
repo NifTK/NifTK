@@ -228,7 +228,7 @@ public:
   void SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition = false, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
 
   /// \brief Get the currently selected position in world coordinates (mm)
-  mitk::Point3D GetSelectedPosition() const;
+  const mitk::Point3D& GetSelectedPosition() const;
 
   /// \brief Set the currently selected position in world coordinates (mm)
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);

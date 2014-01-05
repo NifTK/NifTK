@@ -862,13 +862,13 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    mitk::Point3D selectedPosition = selectedViewer->GetSelectedPosition();
+    const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
     dropOntoViewer->SetSelectedPosition(selectedPosition);
   }
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    std::vector<mitk::Vector2D> cursorPositions = selectedViewer->GetCursorPositions();
+    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
     dropOntoViewer->SetCursorPositions(cursorPositions);
   }
 
@@ -1149,7 +1149,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    mitk::Point3D selectedPosition = selectedViewer->GetSelectedPosition();
+    const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
@@ -1161,7 +1161,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    std::vector<mitk::Vector2D> cursorPositions = selectedViewer->GetCursorPositions();
+    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
@@ -1674,7 +1674,7 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
 
   if (bound)
   {
-    mitk::Point3D selectedPosition = selectedViewer->GetSelectedPosition();
+    const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
       if (otherViewer != selectedViewer)
@@ -1696,7 +1696,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
   {
     MIDASOrientation orientation = selectedViewer->GetOrientation();
     mitk::Vector2D cursorPosition = selectedViewer->GetCursorPosition(orientation);
-    std::vector<mitk::Vector2D> cursorPositions = selectedViewer->GetCursorPositions();
+    const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
 
     foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {

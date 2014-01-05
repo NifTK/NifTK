@@ -275,7 +275,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
     /// the 'KeepDisplayedRegion' property to false would disable the behaviour of MITK,
     /// so we can apply the rescaling in our way. This line is commented out until
     /// this feature is added to our MITK fork.
-    m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
+//    m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
     this->AddDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
 
@@ -847,8 +847,7 @@ void niftkMultiWindowWidget::FitToDisplay()
         displayGeometry->Fit();
         m_BlockDisplayGeometryEvents = false;
         m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-        const mitk::Point3D selectedPosition = this->GetSelectedPosition();
-        this->UpdateCursorPosition(orientation, selectedPosition);
+        this->UpdateCursorPosition(orientation);
       }
       else
       {
@@ -878,8 +877,7 @@ void niftkMultiWindowWidget::FitToDisplay()
     m_BlockDisplayGeometryEvents = false;
     double largestScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
     m_ScaleFactors[orientationWithLargestScaleFactor] = largestScaleFactor;
-    const mitk::Point3D selectedPosition = this->GetSelectedPosition();
-    this->UpdateCursorPosition(orientationWithLargestScaleFactor, selectedPosition);
+    this->UpdateCursorPosition(orientationWithLargestScaleFactor);
 
     /// ... and finally, apply the same scale factor for the other render windows.
     for (int i = 0; i < 3; ++i)
@@ -1573,12 +1571,10 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
 {
   assert(orientation >= 0 && orientation < 3);
 
-  mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
   if (cursorPosition != m_CursorPositions[orientation])
   {
     m_CursorPositions[orientation] = cursorPosition;
-    this->MoveToCursorPosition(orientation, selectedPosition);
+    this->MoveToCursorPosition(orientation);
   }
 
   if (m_CursorPositionsAreBound)
@@ -1588,13 +1584,13 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
       if (m_CursorSagittalPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
       }
 
       if (m_CursorCoronalPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
       }
     }
     else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
@@ -1602,13 +1598,13 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
       if (m_CursorCoronalPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
       }
 
       if (m_CursorAxialPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
       }
     }
     else if (orientation == MIDAS_ORIENTATION_CORONAL)
@@ -1616,13 +1612,13 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
       if (m_CursorSagittalPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
       }
 
       if (m_CursorAxialPositionsAreBound)
       {
         m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
-        this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+        this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
       }
     }
   }
@@ -1630,7 +1626,7 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation, const mitk::Point3D& point)
+void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
 {
   QmitkRenderWindow* renderWindow = m_RenderWindows[orientation];
   if (renderWindow->isVisible())
@@ -1640,7 +1636,7 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation, 
     mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
     mitk::Point2D point2DInMm;
-    displayGeometry->Map(point, point2DInMm);
+    displayGeometry->Map(m_SelectedPosition, point2DInMm);
     double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
     mitk::Vector2D point2DInPx;
     point2DInPx[0] = point2DInMm[0] / scaleFactor;
@@ -1669,7 +1665,7 @@ void niftkMultiWindowWidget::OnWindowResized(MIDASOrientation orientation)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
   {
-    this->MoveToCursorPosition(orientation, this->GetSelectedPosition());
+    this->MoveToCursorPosition(orientation);
   }
 }
 
@@ -1681,8 +1677,7 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
   {
     bool cursorPositionChanged[3] = {false, false, false};
 
-    const mitk::Point3D selectedPosition = this->GetSelectedPosition();
-    this->UpdateCursorPosition(orientation, selectedPosition);
+    this->UpdateCursorPosition(orientation);
     m_RenderingManager->RequestUpdate(m_RenderWindows[orientation]->GetRenderWindow());
     cursorPositionChanged[orientation] = true;
 
@@ -1697,14 +1692,14 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
         if (m_CursorSagittalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
           cursorPositionChanged[MIDAS_ORIENTATION_CORONAL] = true;
         }
 
         if (m_CursorCoronalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
           cursorPositionChanged[MIDAS_ORIENTATION_SAGITTAL] = true;
         }
       }
@@ -1713,14 +1708,14 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
         if (m_CursorCoronalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
           cursorPositionChanged[MIDAS_ORIENTATION_AXIAL] = true;
         }
 
         if (m_CursorAxialPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
           cursorPositionChanged[MIDAS_ORIENTATION_CORONAL] = true;
         }
       }
@@ -1729,14 +1724,14 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
         if (m_CursorSagittalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
           cursorPositionChanged[MIDAS_ORIENTATION_AXIAL] = true;
         }
 
         if (m_CursorAxialPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
           cursorPositionChanged[MIDAS_ORIENTATION_SAGITTAL] = true;
         }
       }
@@ -1805,7 +1800,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 {
   if (m_Geometry != NULL && !m_BlockDisplayGeometryEvents && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    const mitk::Point3D selectedPosition = this->GetSelectedPosition();
+    m_SelectedPosition = this->GetCrossPosition();
 
     /// Note that this is the orientation of the selected render window, in which the
     /// the mouse click or scroll changed the selected position.
@@ -1822,43 +1817,43 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
       /// in the other two windows, therefore we have to update them.
       if (selectedWindowOrientation == MIDAS_ORIENTATION_AXIAL)
       {
-        this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+        this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
 
         if (m_CursorPositionsAreBound && m_CursorAxialPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_SAGITTAL)
       {
-        this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+        this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
 
         if (m_CursorPositionsAreBound && m_CursorSagittalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_CORONAL)
       {
-        this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
-        this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+        this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
+        this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
       }
     }
     else if (selectedWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
     {
       /// If the selected position has changed by clicking into the render window.
 
-      this->UpdateCursorPosition(selectedWindowOrientation, selectedPosition);
+      this->UpdateCursorPosition(selectedWindowOrientation);
 
       /// sagittal[1] <-> coronal[1]      (if m_CursorAxialPositionsAreBound is set)
       /// axial[0] <-> coronal[0]         (if m_CursorSagittalPositionsAreBound is set)
@@ -1869,11 +1864,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorSagittalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0] = m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_AXIAL && orientation == MIDAS_ORIENTATION_CORONAL)
@@ -1881,11 +1876,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorCoronalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_SAGITTAL && orientation == MIDAS_ORIENTATION_AXIAL)
@@ -1893,11 +1888,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorAxialPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1] = m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_CORONAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_SAGITTAL && orientation == MIDAS_ORIENTATION_CORONAL)
@@ -1905,11 +1900,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorCoronalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 1.0 - m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_CORONAL && orientation == MIDAS_ORIENTATION_AXIAL)
@@ -1917,11 +1912,11 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorAxialPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][1];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
         }
       }
       else if (selectedWindowOrientation == MIDAS_ORIENTATION_CORONAL && orientation == MIDAS_ORIENTATION_SAGITTAL)
@@ -1929,16 +1924,16 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
         if (m_CursorPositionsAreBound && m_CursorSagittalPositionsAreBound)
         {
           m_CursorPositions[MIDAS_ORIENTATION_AXIAL][0] = m_CursorPositions[MIDAS_ORIENTATION_CORONAL][0];
-          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->MoveToCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
         else
         {
-          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+          this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
         }
       }
     }
 
-    emit SelectedPositionChanged(this->GetSelectedPosition());
+    emit SelectedPositionChanged(m_SelectedPosition);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -1955,7 +1950,7 @@ void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigne
   if (geometry != NULL)
   {
     mitk::Index3D selectedPositionInVx;
-    mitk::Point3D selectedPosition = this->GetSelectedPosition();
+    mitk::Point3D selectedPosition = m_SelectedPosition;
 
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
@@ -1989,9 +1984,7 @@ unsigned int niftkMultiWindowWidget::GetSliceIndex(MIDASOrientation orientation)
   if (m_Geometry != NULL)
   {
     mitk::Index3D selectedPositionInVx;
-    const mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
-    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
     sliceIndex = selectedPositionInVx[axis];
@@ -2025,38 +2018,43 @@ unsigned int niftkMultiWindowWidget::GetTimeStep() const
 
 
 //-----------------------------------------------------------------------------
-const mitk::Point3D niftkMultiWindowWidget::GetSelectedPosition() const
+const mitk::Point3D& niftkMultiWindowWidget::GetSelectedPosition() const
 {
-  return this->GetCrossPosition();
+  return m_SelectedPosition;
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
-  m_BlockDisplayGeometryEvents = true;
-
-  mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
-  if (snc->GetCreatedWorldGeometry())
+  if (selectedPosition != m_SelectedPosition)
   {
-    snc->SelectSliceByPoint(selectedPosition);
-  }
-  snc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
-  if (snc->GetCreatedWorldGeometry())
-  {
-    snc->SelectSliceByPoint(selectedPosition);
-  }
-  snc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
-  if (snc->GetCreatedWorldGeometry())
-  {
-    snc->SelectSliceByPoint(selectedPosition);
-  }
+    m_SelectedPosition = selectedPosition;
 
-  this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
-  this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
-  this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
+    m_BlockDisplayGeometryEvents = true;
 
-  m_BlockDisplayGeometryEvents = false;
+    mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
+    if (snc->GetCreatedWorldGeometry())
+    {
+      snc->SelectSliceByPoint(selectedPosition);
+    }
+    snc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
+    if (snc->GetCreatedWorldGeometry())
+    {
+      snc->SelectSliceByPoint(selectedPosition);
+    }
+    snc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
+    if (snc->GetCreatedWorldGeometry())
+    {
+      snc->SelectSliceByPoint(selectedPosition);
+    }
+
+    m_BlockDisplayGeometryEvents = false;
+
+    this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
+    this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+    this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
+  }
 }
 
 
@@ -2071,23 +2069,22 @@ const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() 
 void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
   m_CursorPositions = cursorPositions;
-  mitk::Point3D selectedPosition = this->GetSelectedPosition();
   for (int i = 0; i < 3; ++i)
   {
-    this->MoveToCursorPosition(MIDASOrientation(i), selectedPosition);
+    this->MoveToCursorPosition(MIDASOrientation(i));
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::UpdateCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition)
+void niftkMultiWindowWidget::UpdateCursorPosition(MIDASOrientation orientation)
 {
   mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
 
   mitk::Point2D point2DInMm;
-  displayGeometry->Map(selectedPosition, point2DInMm);
+  displayGeometry->Map(m_SelectedPosition, point2DInMm);
 
   mitk::Point2D point2DInPx;
   displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);

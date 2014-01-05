@@ -193,7 +193,7 @@ public:
   void SetTimeStep(unsigned int timeStep);
 
   /// \brief Gets the selected point in the world coordinate system (mm).
-  const mitk::Point3D GetSelectedPosition() const;
+  const mitk::Point3D& GetSelectedPosition() const;
 
   /// \brief Sets the selected position in the world coordinate system (mm).
   ///
@@ -318,11 +318,11 @@ private:
   ///
   ///    pixel coordinate / render window size
   ///
-  void UpdateCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition);
+  void UpdateCursorPosition(MIDASOrientation orientation);
 
   /// \brief Moves the image (world) so that the given point gets to the currently stored position of the cursor.
   /// The function expects the cursor position in m_CursorPositions[orientation].
-  void MoveToCursorPosition(MIDASOrientation orientation, const mitk::Point3D& selectedPosition);
+  void MoveToCursorPosition(MIDASOrientation orientation);
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the origin so that the cursor stays in the same position on the display.

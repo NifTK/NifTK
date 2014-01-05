@@ -792,7 +792,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidget::GetSelectedPosition() const
+const mitk::Point3D& niftkSingleViewerWidget::GetSelectedPosition() const
 {
   return m_MultiWidget->GetSelectedPosition();
 }
