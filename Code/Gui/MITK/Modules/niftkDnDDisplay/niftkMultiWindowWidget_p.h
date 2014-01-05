@@ -295,7 +295,7 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);

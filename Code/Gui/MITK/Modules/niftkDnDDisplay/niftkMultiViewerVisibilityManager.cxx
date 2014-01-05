@@ -233,6 +233,24 @@ void niftkMultiViewerVisibilityManager::SetNodeVisibilityForViewer(mitk::DataNod
 
 
 //-----------------------------------------------------------------------------
+int niftkMultiViewerVisibilityManager::GetViewerIndexFromWindow(QmitkRenderWindow* renderWindow)
+{
+  int result = -1;
+
+  for (unsigned int i = 0; i < m_Viewers.size(); i++)
+  {
+    bool contains = m_Viewers[i]->ContainsRenderWindow(renderWindow);
+    if (contains)
+    {
+      result = i;
+      break;
+    }
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::NodeRemovedProxy( const mitk::DataNode* node )
 {
   // Guarantee no recursions when a new node event is thrown in NodeRemoved()
@@ -635,9 +653,9 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewerr, std::vector<mitk::DataNode*> nodes)
+void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* viewerr, QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes)
 {
-  int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewerr) - m_Viewers.begin();
+  int viewerIndex = this->GetViewerIndexFromWindow(window);
   WindowLayout windowLayout = this->GetWindowLayout(nodes);
 
   if (m_DataStorage.IsNotNull() && viewerIndex != -1)
