@@ -354,10 +354,13 @@ private:
   void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
+  void OnWindowResized(MIDASOrientation orientation);
+
+  /// \brief Called when the origin of the display geometry of the render window has changed.
   void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
+  void OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);

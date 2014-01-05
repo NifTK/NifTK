@@ -44,8 +44,10 @@ public:
   , m_MultiWindowWidget(multiWindowWidget)
   , m_Orientation(orientation)
   , m_DisplayGeometry(displayGeometry)
+  , m_SizeInPx(displayGeometry->GetSizeInDisplayUnits())
   , m_Origin(displayGeometry->GetOriginInMM())
   , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
+  , m_FocusPoint(displayGeometry->GetOriginInMM())
   {
   }
 
@@ -60,6 +62,15 @@ public:
   //-----------------------------------------------------------------------------
   void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/)
   {
+    mitk::Vector2D sizeInPx = m_DisplayGeometry->GetSizeInDisplayUnits();
+    if (sizeInPx != m_SizeInPx)
+    {
+      m_SizeInPx = sizeInPx;
+      m_Origin = m_DisplayGeometry->GetOriginInDisplayUnits();
+      m_MultiWindowWidget->OnWindowResized(m_Orientation);
+      return;
+    }
+
     // Note that the scaling changes the scale factor *and* the origin,
     // while the moving changes the origin only.
 
@@ -75,10 +86,10 @@ public:
 
       if (focusPoint != m_FocusPoint)
       {
-        m_MultiWindowWidget->OnZoomFocusChanged(m_Orientation, focusPoint);
+        m_FocusPoint = focusPoint;
+        m_MultiWindowWidget->OnZoomFocusChanged(m_Orientation, m_FocusPoint);
       }
       m_MultiWindowWidget->OnScaleFactorChanged(m_Orientation, scaleFactor);
-      m_FocusPoint = focusPoint;
       m_ScaleFactor = scaleFactor;
     }
 
@@ -97,9 +108,10 @@ private:
   niftkMultiWindowWidget* const m_MultiWindowWidget;
   MIDASOrientation m_Orientation;
   mitk::DisplayGeometry* const m_DisplayGeometry;
+  mitk::Vector2D m_SizeInPx;
   mitk::Vector2D m_Origin;
-  mitk::Vector2D m_FocusPoint;
   double m_ScaleFactor;
+  mitk::Vector2D m_FocusPoint;
 };
 
 
@@ -1653,6 +1665,16 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation, 
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::OnWindowResized(MIDASOrientation orientation)
+{
+  if (m_Geometry && !m_BlockDisplayGeometryEvents)
+  {
+    this->MoveToCursorPosition(orientation, this->GetSelectedPosition());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool beingPanned)
 {
   if (m_Geometry && !m_BlockDisplayGeometryEvents)
@@ -2029,6 +2051,10 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
   {
     snc->SelectSliceByPoint(selectedPosition);
   }
+
+  this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL, selectedPosition);
+  this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL, selectedPosition);
+  this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL, selectedPosition);
 
   m_BlockDisplayGeometryEvents = false;
 }
