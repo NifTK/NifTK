@@ -186,11 +186,11 @@ bool UltrasoundPinCalibration::Calibrate(
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->SetCostFunction(costFunction);
   optimizer->SetInitialPosition(parameters);
-  optimizer->SetNumberOfIterations(2000);
-  optimizer->UseCostFunctionGradientOff();
-  optimizer->SetGradientTolerance(0.5);
-  optimizer->SetEpsilonFunction(0.0500);
-  optimizer->SetValueTolerance(0.05);
+  optimizer->SetNumberOfIterations(20000000);
+  optimizer->UseCostFunctionGradientOn();
+  optimizer->SetGradientTolerance(0.000000005);
+  optimizer->SetEpsilonFunction(0.000000005);
+  optimizer->SetValueTolerance(0.000000005);
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
   
@@ -212,10 +212,10 @@ bool UltrasoundPinCalibration::Calibrate(
   if (optimiseScaling && optimiseInvariantPoint)
   {
     millimetresPerPixel.x = parameters[6];
-    millimetresPerPixel.y = parameters[7];;
-    invariantPoint.x = parameters[8];;
-    invariantPoint.y = parameters[9];;
-    invariantPoint.z = parameters[10];;
+    millimetresPerPixel.y = parameters[7];
+    invariantPoint.x = parameters[8];
+    invariantPoint.y = parameters[9];
+    invariantPoint.z = parameters[10];
   }
   
   isSuccessful = true;
