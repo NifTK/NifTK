@@ -243,8 +243,8 @@ void UltrasoundPinCalibrationCostFunction::GetDerivative(
 
   if (parameters.size() == 8 || parameters.size() == 11)
   {
-    scales[6] = 0.01;
-    scales[7] = 0.01;
+    scales[6] = 0.0001;
+    scales[7] = 0.0001;
   }
 
   for (unsigned int i = 0; i < m_NumberOfParameters; i++)
