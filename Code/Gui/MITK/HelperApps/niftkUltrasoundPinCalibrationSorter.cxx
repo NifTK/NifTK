@@ -44,7 +44,7 @@ int main(int argc, char** argv)
       QString::fromStdString(inputImageDirectory),
       QString::fromStdString(outputMatrixDirectory),
       QString::fromStdString(outputPointDirectory),
-      100
+      timingTolerance
     );
     cw.show();
     

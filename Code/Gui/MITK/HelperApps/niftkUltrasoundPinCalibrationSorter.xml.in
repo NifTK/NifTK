@@ -36,6 +36,14 @@
       <description>Directory to write selected 2D pin locations.</description>
       <label>Output Points Directory</label>
     </directory>
+    <integer>
+      <name>timingTolerance</name>
+      <longflag>timingTolerance</longflag>
+      <description>The maximum timing error in  milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>40</default>
+    </integer>
+
   </parameters>
 
 </executable>
