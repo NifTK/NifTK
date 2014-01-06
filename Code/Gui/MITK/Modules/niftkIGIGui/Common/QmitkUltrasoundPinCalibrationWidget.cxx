@@ -55,6 +55,7 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
 
   m_TrackingTimeStamps = mitk::FindTrackingTimeStamps(m_InputTrackerDirectory.toStdString());
   m_ImageFiles = niftk::FindFilesWithGivenExtension(m_InputImageDirectory.toStdString(), ".png");
+  std::sort(m_ImageFiles.begin(), m_ImageFiles.end());
 
   std::cout << "Found " << m_ImageFiles.size() << " image files..." << std::endl;
   std::cout << "Found " << m_TrackingTimeStamps.m_TimeStamps.size() << " tracking matrices..." << std::endl;
@@ -143,7 +144,7 @@ void QmitkUltrasoundPinCalibrationWidget::ShowImage(const unsigned long int& ima
 {
   m_PNGReader->SetFileName(m_ImageFiles[imageNumber].c_str());
   m_ImageViewer->Render();
-  std::cout << "Displaying image[" << imageNumber << "]=" << m_ImageFiles[imageNumber] << std::endl;
+  std::cout << "Displaying image[" << imageNumber << "/" << m_ImageFiles.size() << ", " << imageNumber*100/m_ImageFiles.size() << "%]=" << m_ImageFiles[imageNumber] << std::endl;
 }
 
 
@@ -206,18 +207,20 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
       // we find the closest tracking matrix within tolerance.
       // If such a tracking matrix exists, we output both
       // matrix and point in separate files, named after the timestamp.
-      QString timeStampString = imageFileName.mid(matchIndex,19);
+      QString imageTimeStampString = imageFileName.mid(matchIndex,19);
 
       long long delta = 0;
-      unsigned long long imageTimeStamp = timeStampString.toULongLong();
-      m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
+      unsigned long long imageTimeStamp = imageTimeStampString.toULongLong();
+      unsigned long long matrixTimeStamp = m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
+
+      delta /= 1000000; // convert nanoseconds to milliseconds.
 
       if (fabs(static_cast<double>(delta)) < m_TimingToleranceInMilliseconds)
       {
         // Output point.
         int xPixel = event->x();
         int yPixel = event->y();
-        QString baseNameForPoint = timeStampString + QString(".txt");
+        QString baseNameForPoint = imageTimeStampString + QString(".txt");
         std::string pointFileFullPath = niftk::ConvertToFullNativePath((m_OutputPointDirectory + QString("/") + baseNameForPoint).toStdString());
 
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
@@ -234,19 +237,19 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         }
 
         // Output matrix
-        QString baseNameForMatrix = timeStampString + QString(".4x4");
-        std::string matrixFileFullPath = niftk::ConvertToFullNativePath((m_OutputMatrixDirectory + QString("/") + baseNameForMatrix).toStdString());
+        QString baseNameForMatrix = QString::number(matrixTimeStamp) + QString(".txt");
+        QString baseNameForImage = imageTimeStampString + QString(".txt");
 
-        ofstream myfile2(matrixFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
-        if (myfile2.is_open())
-        {
-          myfile2 << "Put matrix" << std::endl;
-          myfile2.close();
-        }
-        else
+        std::string inputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_InputTrackerDirectory + QString("/") + baseNameForMatrix).toStdString());
+        std::string outputMatrixFileFullPath = niftk::ConvertToFullNativePath((m_OutputMatrixDirectory + QString("/") + baseNameForImage).toStdString());
+
+        vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkMatrix4x4::New();
+        trackingMatrix = mitk::LoadVtkMatrix4x4FromFile(inputMatrixFileFullPath);
+
+        if (!mitk::SaveVtkMatrix4x4ToFile(outputMatrixFileFullPath, *trackingMatrix))
         {
           QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
-                                      tr("Failed to write matrix to file\n%1").arg(QString::fromStdString(matrixFileFullPath)),
+                                      tr("Failed to write matrix to file\n%1").arg(QString::fromStdString(outputMatrixFileFullPath)),
                                       QMessageBox::Ok);
         }
       }
