@@ -20,6 +20,8 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkOpenCVMaths.h>
+#include <algorithm>
 
 namespace mitk {
 
@@ -49,7 +51,10 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     )
 {
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(matrixDirectory);
+  std::sort(matrixFiles.begin(), matrixFiles.end());
+
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDirectory);
+  std::sort(pointFiles.begin(), pointFiles.end());
 
   if (matrixFiles.size() != pointFiles.size())
   {
@@ -167,9 +172,16 @@ bool UltrasoundPinCalibration::Calibrate(
     parameters[9] = invariantPoint.y;
     parameters[10] = invariantPoint.z;
   }
-  parameters[0] = rigidBodyTransformation[0];
-  parameters[1] = rigidBodyTransformation[1];
-  parameters[2] = rigidBodyTransformation[2];
+
+  cv::Matx33d rotationMatrix;
+  cv::Matx31d rotationVector;
+
+  rotationMatrix = mitk::ConstructEulerRotationMatrix(rigidBodyTransformation[0], rigidBodyTransformation[1], rigidBodyTransformation[2]);
+  cv::Rodrigues(rotationMatrix, rotationVector);
+
+  parameters[0] = rotationVector(0,0);
+  parameters[1] = rotationVector(1,0);
+  parameters[2] = rotationVector(2,0);
   parameters[3] = rigidBodyTransformation[3];
   parameters[4] = rigidBodyTransformation[4];
   parameters[5] = rigidBodyTransformation[5];
@@ -187,17 +199,19 @@ bool UltrasoundPinCalibration::Calibrate(
   optimizer->SetCostFunction(costFunction);
   optimizer->SetInitialPosition(parameters);
   optimizer->SetNumberOfIterations(20000000);
-  optimizer->UseCostFunctionGradientOn();
-  optimizer->SetGradientTolerance(0.000000005);
-  optimizer->SetEpsilonFunction(0.000000005);
-  optimizer->SetValueTolerance(0.000000005);
+  optimizer->UseCostFunctionGradientOff();
+  optimizer->SetGradientTolerance(0.0000005);
+  optimizer->SetEpsilonFunction(0.0000005);
+  optimizer->SetValueTolerance(0.0000005);
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
   
   std::cerr << "Stop condition" << optimizer->GetStopConditionDescription();
+
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
   outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+
   if (!optimiseScaling && optimiseInvariantPoint)
   {
     invariantPoint.x = parameters[6];
