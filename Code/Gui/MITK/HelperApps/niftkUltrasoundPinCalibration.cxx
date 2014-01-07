@@ -62,14 +62,29 @@ int main(int argc, char** argv)
     }
 
     std::vector<double> initialTransformationParameters;
-    if(initialGuess.size() == 6)
+    if(initialGuess.size() != 0)
     {
-      initialTransformationParameters.push_back(initialGuess[0]);
-      initialTransformationParameters.push_back(initialGuess[1]);
-      initialTransformationParameters.push_back(initialGuess[2]);
-      initialTransformationParameters.push_back(initialGuess[3]);
-      initialTransformationParameters.push_back(initialGuess[4]);
-      initialTransformationParameters.push_back(initialGuess[5]);
+      vtkSmartPointer<vtkMatrix4x4> initialMatrix = vtkMatrix4x4::New();
+      initialMatrix = niftk::LoadMatrix4x4FromFile(initialGuess, false);
+
+      cv::Matx33d rotationMatrix;
+      for (int i = 0; i < 3; i++)
+      {
+        for (int j = 0; j < 3; j++)
+        {
+          rotationMatrix(i, j) = initialMatrix->GetElement(i, j);
+        }
+      }
+
+      cv::Matx31d rotationVector;
+      cv::Rodrigues(rotationMatrix, rotationVector);
+
+      initialTransformationParameters.push_back(rotationVector(0,0));
+      initialTransformationParameters.push_back(rotationVector(1,0));
+      initialTransformationParameters.push_back(rotationVector(2,0));
+      initialTransformationParameters.push_back(initialMatrix->GetElement(0, 3));
+      initialTransformationParameters.push_back(initialMatrix->GetElement(1, 3));
+      initialTransformationParameters.push_back(initialMatrix->GetElement(2, 3));
     }
     else
     {

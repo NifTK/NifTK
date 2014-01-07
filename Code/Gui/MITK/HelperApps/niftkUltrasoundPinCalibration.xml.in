@@ -58,14 +58,13 @@
       <default>0,0,0</default>
       <channel>input</channel>
     </point>
-    <float-vector>
+    <file fileExtensions="*.txt,*.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
-      <description>Guess of transformation, [rx,ry,rz,tx,ty,tz] using mm and degrees.</description>
+      <description>Guess of transformatio, stored as a 4x4 matrix.</description>
       <label>Initial Guess</label>
-      <default>0,0,0,0,0,0</default>
       <channel>input</channel>
-    </float-vector>
+    </file>
     <boolean>
       <name>optimiseScaling</name>
       <longflag>optimiseScaling</longflag>
