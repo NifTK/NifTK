@@ -161,8 +161,8 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 
   if (parameters.size() == 8 || parameters.size() == 11)
   {
-    scalingTransformation(0, 0) = parameters[6];
-    scalingTransformation(1, 1) = parameters[7];
+    scalingTransformation(0, 0) = m_MillimetresPerPixel.x * ((100 + parameters[6])/100.0);
+    scalingTransformation(1, 1) = m_MillimetresPerPixel.y * ((100 + parameters[7])/100.0);
   }
   else
   {
@@ -200,14 +200,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
   for (unsigned int i = 0; i < m_Matrices.size(); i++)
   {
     cv::Matx44d trackerTransformation(m_Matrices[i]);
-/*
-    cv::Matx44d trackerTransformationFlipped = trackerTransformation;
-    trackerTransformationFlipped(0,2) = trackerTransformation(0,2) * -1;
-    trackerTransformationFlipped(1,2) = trackerTransformation(1,2) * -1;
-    trackerTransformationFlipped(2,0) = trackerTransformation(2,0) * -1;
-    trackerTransformationFlipped(2,1) = trackerTransformation(2,1) * -1;
-    trackerTransformationFlipped(2,3) = trackerTransformation(2,3) * -1;
-*/
+    
     cv::Matx44d combinedTransformation = (trackerTransformation * (rigidTransformation * scalingTransformation));
     cv::Matx41d point, transformedPoint;
 
@@ -221,31 +214,10 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     value[i] = (transformedPoint(0,0) - invariantPointTranslation(0,3)) * (transformedPoint(0,0) - invariantPointTranslation(0,3))
              + (transformedPoint(1,0) - invariantPointTranslation(1,3)) * (transformedPoint(1,0) - invariantPointTranslation(1,3))
              + (transformedPoint(2,0) - invariantPointTranslation(2,3)) * (transformedPoint(2,0) - invariantPointTranslation(2,3));
-/*
-    if (i == 0)
-    {
-      std::cerr << "Matt, p=" << point(0,0) << ", " << point(1,0) << ", " << point(2,0) << ", " << point(3,0) << std::endl;
-      std::cerr << "Matt, tp=" << transformedPoint(0,0) << ", " << transformedPoint(1,0) << ", " << transformedPoint(2,0) << ", " << transformedPoint(3,0) << std::endl;
-      std::cerr << "Matt, s=" << scalingTransformation(0,0) << ", " << scalingTransformation(0,1) << ", " << scalingTransformation(0,2) << ", " << scalingTransformation(0,3) << std::endl;
-      std::cerr << "Matt, s=" << scalingTransformation(1,0) << ", " << scalingTransformation(1,1) << ", " << scalingTransformation(1,2) << ", " << scalingTransformation(1,3) << std::endl;
-      std::cerr << "Matt, s=" << scalingTransformation(2,0) << ", " << scalingTransformation(2,1) << ", " << scalingTransformation(2,2) << ", " << scalingTransformation(2,3) << std::endl;
-      std::cerr << "Matt, s=" << scalingTransformation(3,0) << ", " << scalingTransformation(3,1) << ", " << scalingTransformation(3,2) << ", " << scalingTransformation(3,3) << std::endl;
-      std::cerr << "Matt, t=" << trackerTransformation(0,0) << ", " << trackerTransformation(0,1) << ", " << trackerTransformation(0,2) << ", " << trackerTransformation(0,3) << std::endl;
-      std::cerr << "Matt, t=" << trackerTransformation(1,0) << ", " << trackerTransformation(1,1) << ", " << trackerTransformation(1,2) << ", " << trackerTransformation(1,3) << std::endl;
-      std::cerr << "Matt, t=" << trackerTransformation(2,0) << ", " << trackerTransformation(2,1) << ", " << trackerTransformation(2,2) << ", " << trackerTransformation(2,3) << std::endl;
-      std::cerr << "Matt, t=" << trackerTransformation(3,0) << ", " << trackerTransformation(3,1) << ", " << trackerTransformation(3,2) << ", " << trackerTransformation(3,3) << std::endl;
-      std::cerr << "Matt, r=" << rigidTransformation(0,0) << ", " << rigidTransformation(0,1) << ", " << rigidTransformation(0,2) << ", " << rigidTransformation(0,3) << std::endl;
-      std::cerr << "Matt, r=" << rigidTransformation(1,0) << ", " << rigidTransformation(1,1) << ", " << rigidTransformation(1,2) << ", " << rigidTransformation(1,3) << std::endl;
-      std::cerr << "Matt, r=" << rigidTransformation(2,0) << ", " << rigidTransformation(2,1) << ", " << rigidTransformation(2,2) << ", " << rigidTransformation(2,3) << std::endl;
-      std::cerr << "Matt, r=" << rigidTransformation(3,0) << ", " << rigidTransformation(3,1) << ", " << rigidTransformation(3,2) << ", " << rigidTransformation(3,3) << std::endl;
-
-      std::cerr << "Matt, ip=" << invariantPointTranslation(0,3) << ", " << invariantPointTranslation(1,3) << ", " << invariantPointTranslation(2,3) << std::endl;
-    }
-*/
   }
   double rmsError = this->GetResidual(value);
 
-  //std::cout << "UltrasoundPinCalibrationCostFunction::GetValue(" << parameters << ") = " << rmsError << std::endl;
+  std::cout << "UltrasoundPinCalibrationCostFunction::GetValue(" << parameters << ") = " << rmsError << std::endl;
   return value;
 }
 
