@@ -788,6 +788,42 @@ cv::Matx44d ConstructRigidTransformationMatrix(
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d ConstructRodriguesTransformationMatrix(
+    const double& r1,
+    const double& r2,
+    const double& r3,
+    const double& tx,
+    const double& ty,
+    const double& tz
+    )
+{
+  cv::Matx44d transformation;
+  mitk::MakeIdentity(transformation);
+
+  cv::Matx13d rotationVector;
+  rotationVector(0,0) = r1;
+  rotationVector(0,1) = r2;
+  rotationVector(0,2) = r3;
+
+  cv::Matx33d rotationMatrix;
+  cv::Rodrigues(rotationVector, rotationMatrix);
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      transformation(i, j) = rotationMatrix(i, j);
+    }
+  }
+  transformation(0, 3) = tx;
+  transformation(1, 3) = ty;
+  transformation(2, 3) = tz;
+
+  return transformation;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d ConstructScalingTransformation(const double& sx, const double& sy, const double& sz)
 {
   cv::Matx44d scaling;
