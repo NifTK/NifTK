@@ -23,16 +23,16 @@ namespace itk {
 /**
  * \class UltrasoundPinCalibrationCostFunction
  * \brief Multi-valued cost function adaptor, to plug into Levenberg-Marquardt,
- * minimising the squared distance error of a cloud of points from the origin.
+ * minimising the squared distance error of a cloud of points from the invariant point (normally 0,0,0).
  *
  * The parameters array should be set before optimisation with a reasonable starting estimate
  * using the this->SetInitialPosition(parameters) method in the base class. This class
  * can optimise different numbers of degrees of freedom as follows:
  * <pre>
  * 6DOF: 6 rigid (rx, ry, rz in radians, tx, ty, tz in millimetres).
- * 8DOF: 6 rigid + 2 scaling (sx, sy).
+ * 7DOF: 6 rigid + 1 scaling
  * 9DOF: 6 rigid + 3 invariant point (x, y, z location).
- * 11DOF: 6 rigid + 2 scaling + 3 invariant point.
+ * 10DOF: 6 rigid + 1 scaling + 3 invariant point.
  * </pre>
  * The order of parameters is important.
  */
@@ -68,25 +68,19 @@ public:
   void SetNumberOfParameters(const int& numberOfParameters);
 
   /**
-   * \brief The caller should set the invariant point statically if it is not being optimised in the parameters array.
-   * Additionally, there is no harm calling this method if the invariant point is not being optimised, it will be stored
-   * internally, but not used. In this case it is assumd that the caller will call the this->SetInitialPosition() and
-   * provide a reasonable starting guess.
+   * \brief Sets the initial invariant point.
    */
   void SetInvariantPoint(const cv::Point3d& invariantPoint);
 
   /**
-   * \brief The caller should set the millimetres per pixel statically if it is not being optimised in the parameters array.
-   * Additionally, there is no harm callig this method if the millimetres per pixel is not being optimised, it will be stored
-   * internally, but not used. In this case it is assumd that the caller will call the this->SetInitialPosition() and
-   * provide a reasonable starting guess.
+   * \brief Sets the initial millimetres per pixel.
    */
-  void SetMillimetresPerPixel(const cv::Point2d& mmPerPix);
+  void SetMillimetresPerPixel(const double& mmPerPix);
 
   /**
    * \brief Required by base class to return the number of parameters, where
-   * here we have 6 (rigid), 6 (rigid) +2 (scaling), 6 (rigid) +3 (invariant point)
-   * or 6 (rigid) + 2 (scaling) + 3 (invariant point).
+   * here we have 6 (rigid), 6 (rigid) +1 (scaling), 6 (rigid) +3 (invariant point)
+   * or 6 (rigid) + 1 (scaling) + 3 (invariant point).
    */
   virtual unsigned int GetNumberOfParameters() const;
 
@@ -98,7 +92,7 @@ public:
   /**
    * \brief The cost function is the residual error of the reconstructed point,
    * where this function returns an array of n (x,y,z) tuples where n is the number
-   * of points, and each x,y,z measure is the squared distance from zero in that axis.
+   * of points, and each x,y,z measure is the distance from zero in that axis.
    *
    * So the cost function is calculated by taking each point, transforming into phantom space,
    * and measuring the squared distance to the origin. i.e. its the size of the reconstructed point cloud.
@@ -111,14 +105,24 @@ public:
   virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
 
   /**
-   * \brief Calculates the combined RMS distance error from the supplied array of squared measurement values.
-   */
-  double GetResidual(const MeasureType & values) const;
-
-  /**
    * \brief Computes the 6DOF transformation from image to sensor, (i.e. without scaling parameters).
    */
   cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const;
+
+  /**
+   * \brief Returns the residual.
+   */
+  double GetResidual(const MeasureType& values) const;
+
+  /**
+   * \brief Used when calculating derivative using forward differences.
+   */
+  void SetScales(const ParametersType& scales);
+
+  /**
+   * \brief Sets the initial calibration matrix.
+   */
+  void SetInitialGuess(const cv::Matx44d& initialGuess);
 
 protected:
 
@@ -133,9 +137,11 @@ private:
   std::vector< cv::Mat >     m_Matrices;
   std::vector< cv::Point3d > m_Points;
   cv::Point3d                m_InvariantPoint;
-  cv::Point2d                m_MillimetresPerPixel;
+  double                     m_MillimetresPerPixel;
   unsigned int               m_NumberOfParameters;
   mutable unsigned int       m_NumberOfValues;
+  ParametersType             m_Scales;
+  cv::Matx44d                m_InitialGuess;
 };
 
 } // end namespace

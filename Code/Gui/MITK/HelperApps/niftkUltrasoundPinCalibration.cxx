@@ -49,57 +49,28 @@ int main(int argc, char** argv)
       invPoint[2] = 0;
     }
 
-    mitk::Point2D mmPerPix;
-    if (millimetresPerPixel.size() == 2)
+    vtkSmartPointer<vtkMatrix4x4> initialMatrix = vtkMatrix4x4::New();
+    initialMatrix->Identity();
+
+    if(initialGuess.size() != 0)
     {
-      mmPerPix[0] = millimetresPerPixel[0];
-      mmPerPix[1] = millimetresPerPixel[1];
-    }
-    else
-    {
-      mmPerPix[0] = 1;
-      mmPerPix[1] = 1;
+      initialMatrix = niftk::LoadMatrix4x4FromFile(initialGuess, false);
     }
 
     std::vector<double> initialTransformationParameters;
-    if(initialGuess.size() != 0)
-    {
-      vtkSmartPointer<vtkMatrix4x4> initialMatrix = vtkMatrix4x4::New();
-      initialMatrix = niftk::LoadMatrix4x4FromFile(initialGuess, false);
 
-      cv::Matx33d rotationMatrix;
-      for (int i = 0; i < 3; i++)
-      {
-        for (int j = 0; j < 3; j++)
-        {
-          rotationMatrix(i, j) = initialMatrix->GetElement(i, j);
-        }
-      }
+    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(0);
 
-      cv::Matx31d rotationVector;
-      cv::Rodrigues(rotationMatrix, rotationVector);
-
-      initialTransformationParameters.push_back(rotationVector(0,0));
-      initialTransformationParameters.push_back(rotationVector(1,0));
-      initialTransformationParameters.push_back(rotationVector(2,0));
-      initialTransformationParameters.push_back(initialMatrix->GetElement(0, 3));
-      initialTransformationParameters.push_back(initialMatrix->GetElement(1, 3));
-      initialTransformationParameters.push_back(initialMatrix->GetElement(2, 3));
-    }
-    else
-    {
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-      initialTransformationParameters.push_back(0);
-    }
     if (optimiseScaling)
     {
-      initialTransformationParameters.push_back(mmPerPix[0]);
-      initialTransformationParameters.push_back(mmPerPix[1]);
+      initialTransformationParameters.push_back(millimetresPerPixel);
     }
+
     if (optimiseInvariantPoint)
     {
       initialTransformationParameters.push_back(invPoint[0]);
@@ -111,7 +82,7 @@ int main(int argc, char** argv)
     std::cout << "niftkUltrasoundPinCalibration: points           = " << pointDirectory << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: output           = " << outputMatrixFile << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: invariant point  = " << invPoint << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: mm/pix           = " << mmPerPix << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: mm/pix           = " << millimetresPerPixel << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: optimising       = ";
     for (unsigned int i = 0; i < initialTransformationParameters.size(); i++)
     {
@@ -120,6 +91,7 @@ int main(int argc, char** argv)
     std::cout << std::endl;
 
     vtkSmartPointer<vtkMatrix4x4> transformationMatrix = vtkMatrix4x4::New();
+    double mmPerPix = millimetresPerPixel;
 
     // Do calibration
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
@@ -128,6 +100,7 @@ int main(int argc, char** argv)
         pointDirectory,
         optimiseScaling,
         optimiseInvariantPoint,
+        *initialMatrix,
         initialTransformationParameters,
         invPoint,
         mmPerPix,

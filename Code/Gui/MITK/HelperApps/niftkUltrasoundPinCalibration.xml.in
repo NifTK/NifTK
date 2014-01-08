@@ -37,14 +37,14 @@
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
-    <float-vector>
+    <float>
       <name>millimetresPerPixel</name>
       <longflag>millimetresPerPixel</longflag>
       <description>Initial millimetres per pixel</description>
       <label>Millimetres/Pixel</label>
-      <default>1,1</default>
+      <default>1</default>
       <channel>input</channel>
-    </float-vector>
+    </float>
   </parameters>
 
   <parameters>
