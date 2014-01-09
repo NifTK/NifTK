@@ -678,7 +678,7 @@ cv::Matx33d ConstructEulerRxMatrix(const double& rx)
   double cosRx = cos(rx);
   double sinRx = sin(rx);
 
-  result.eye();
+  result = result.eye();
   result(1, 1) = cosRx;
   result(1, 2) = sinRx;
   result(2, 1) = -sinRx;
@@ -697,7 +697,7 @@ cv::Matx33d ConstructEulerRyMatrix(const double& ry)
   double cosRy = cos(ry);
   double sinRy = sin(ry);
 
-  result.eye();
+  result = result.eye();
   result(0, 0) = cosRy;
   result(0, 2) = -sinRy;
   result(2, 0) = sinRy;
@@ -716,7 +716,7 @@ cv::Matx33d ConstructEulerRzMatrix(const double& rz)
   double cosRz = cos(rz);
   double sinRz = sin(rz);
 
-  result.eye();
+  result = result.eye();
   result(0, 0) = cosRz;
   result(0, 1) = sinRz;
   result(1, 0) = -sinRz;
@@ -771,6 +771,42 @@ cv::Matx44d ConstructRigidTransformationMatrix(
   mitk::MakeIdentity(transformation);
 
   cv::Matx33d rotationMatrix = ConstructEulerRotationMatrix(rx, ry, rz);
+
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      transformation(i, j) = rotationMatrix(i, j);
+    }
+  }
+  transformation(0, 3) = tx;
+  transformation(1, 3) = ty;
+  transformation(2, 3) = tz;
+
+  return transformation;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d ConstructRodriguesTransformationMatrix(
+    const double& r1,
+    const double& r2,
+    const double& r3,
+    const double& tx,
+    const double& ty,
+    const double& tz
+    )
+{
+  cv::Matx44d transformation;
+  mitk::MakeIdentity(transformation);
+
+  cv::Matx13d rotationVector;
+  rotationVector(0,0) = r1;
+  rotationVector(0,1) = r2;
+  rotationVector(0,2) = r3;
+
+  cv::Matx33d rotationMatrix;
+  cv::Rodrigues(rotationVector, rotationMatrix);
 
   for (int i = 0; i < 3; i++)
   {

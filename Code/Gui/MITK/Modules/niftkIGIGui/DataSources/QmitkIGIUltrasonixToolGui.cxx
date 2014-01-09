@@ -76,6 +76,9 @@ void QmitkIGIUltrasonixToolGui::Initialize(QWidget* /*parent*/, ClientDescriptor
 {
   setupUi(this);
 
+  connect(this->m_FlipHorizontallyCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnFlippingChanged()));
+  connect(this->m_FlipVerticallyCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnFlippingChanged()));
+
   if (this->GetSource() != NULL)
   {
     m_UltrasonixTool = dynamic_cast<QmitkIGIUltrasonixTool*>(this->GetSource());

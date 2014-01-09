@@ -223,6 +223,26 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRigidTransformationMatrix(
 
 
 /**
+ * \brief From Rodrigues rotation parameters and translations in millimetres, constructs a 4x4 transformation matrix.
+ * \param r1 Rodrigues rotation
+ * \param r2 Rodrigues rotation
+ * \param r3 Rodrigues rotation
+ * \param tx translation in millimetres along x-axis
+ * \param ty translation in millimetres along y-axis
+ * \param tz translation in millimetres along z-axis
+ * \return a new [4x4] matrix
+ */
+extern "C++" NIFTKOPENCV_EXPORT cv::Matx44d ConstructRodriguesTransformationMatrix(
+  const double& r1,
+  const double& r2,
+  const double& r3,
+  const double& tx,
+  const double& ty,
+  const double& tz
+  );
+
+
+/**
  * \brief Constructs a scaling matrix from sx, sy, sz where the scale factors simply appear on the diagonal.
  * \param sx scale factor in x direction
  * \param sy scale factor in y direction

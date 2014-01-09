@@ -20,6 +20,8 @@
 #include <mitkCameraCalibrationFacade.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <mitkOpenCVMaths.h>
+#include <algorithm>
 
 namespace mitk {
 
@@ -43,13 +45,16 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     const bool& optimiseInvariantPoint,
     std::vector<double>& rigidBodyTransformation,
     mitk::Point3D& invariantPoint,
-    mitk::Point2D& millimetresPerPixel,
-    double &residualError,
+    double& millimetresPerPixel,
+    double& residualError,
     vtkMatrix4x4& outputMatrix
     )
 {
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(matrixDirectory);
+  std::sort(matrixFiles.begin(), matrixFiles.end());
+
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDirectory);
+  std::sort(pointFiles.begin(), pointFiles.end());
 
   if (matrixFiles.size() != pointFiles.size())
   {
@@ -87,7 +92,6 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
 
   cv::Matx44d transformationMatrix;
   cv::Point3d invPoint(invariantPoint[0], invariantPoint[1], invariantPoint[2]);
-  cv::Point2d mmPerPix(millimetresPerPixel[0], millimetresPerPixel[1]);
 
   bool calibratedSuccessfully = this->Calibrate(
       matrices,
@@ -96,7 +100,7 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
       optimiseInvariantPoint,
       rigidBodyTransformation,
       invPoint,
-      mmPerPix,
+      millimetresPerPixel,
       transformationMatrix,
       residualError
       );
@@ -117,9 +121,6 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
   invariantPoint[0] = invPoint.x;
   invariantPoint[1] = invPoint.y;
   invariantPoint[2] = invPoint.z;
-  millimetresPerPixel[0] = mmPerPix.x;
-  millimetresPerPixel[1] = mmPerPix.y;
-
   return true;
 }
 
@@ -132,7 +133,7 @@ bool UltrasoundPinCalibration::Calibrate(
     const bool& optimiseInvariantPoint,
     std::vector<double>& rigidBodyTransformation,
     cv::Point3d& invariantPoint,
-    cv::Point2d& millimetresPerPixel,
+    double& millimetresPerPixel,
     cv::Matx44d& outputMatrix,
     double& residualError
     )
@@ -140,10 +141,12 @@ bool UltrasoundPinCalibration::Calibrate(
   bool isSuccessful = false;
 
   itk::UltrasoundPinCalibrationCostFunction::ParametersType parameters;
-
+  itk::UltrasoundPinCalibrationCostFunction::ParametersType scaleFactors;
+  
   if (!optimiseScaling && !optimiseInvariantPoint)
   {
     parameters.SetSize(6);
+    scaleFactors.SetSize(6);
   }
   else if (!optimiseScaling && optimiseInvariantPoint)
   {
@@ -151,22 +154,35 @@ bool UltrasoundPinCalibration::Calibrate(
     parameters[6] = invariantPoint.x;
     parameters[7] = invariantPoint.y;
     parameters[8] = invariantPoint.z;
+    
+    scaleFactors.SetSize(9);
+    scaleFactors[6] = 1;
+    scaleFactors[7] = 1;
+    scaleFactors[8] = 1;
   }
   else if (optimiseScaling && !optimiseInvariantPoint)
   {
-    parameters.SetSize(8);
-    parameters[6] = millimetresPerPixel.x;
-    parameters[7] = millimetresPerPixel.y;
+    parameters.SetSize(7);
+    parameters[6] = millimetresPerPixel;
+    
+    scaleFactors.SetSize(7);
+    scaleFactors[6] = 0.0001;
   }
   else if (optimiseScaling && optimiseInvariantPoint)
   {
-    parameters.SetSize(11);
-    parameters[6] = millimetresPerPixel.x;
-    parameters[7] = millimetresPerPixel.y;
-    parameters[8] = invariantPoint.x;
-    parameters[9] = invariantPoint.y;
-    parameters[10] = invariantPoint.z;
+    parameters.SetSize(10);
+    parameters[6] = millimetresPerPixel;
+    parameters[7] = invariantPoint.x;
+    parameters[8] = invariantPoint.y;
+    parameters[9] = invariantPoint.z;
+    
+    scaleFactors.SetSize(10);
+    scaleFactors[6] = 0.0001;
+    scaleFactors[7] = 1;
+    scaleFactors[8] = 1;
+    scaleFactors[9] = 1;
   }
+
   parameters[0] = rigidBodyTransformation[0];
   parameters[1] = rigidBodyTransformation[1];
   parameters[2] = rigidBodyTransformation[2];
@@ -174,59 +190,73 @@ bool UltrasoundPinCalibration::Calibrate(
   parameters[4] = rigidBodyTransformation[4];
   parameters[5] = rigidBodyTransformation[5];
 
+  scaleFactors[0] = 0.1;
+  scaleFactors[1] = 0.1;
+  scaleFactors[2] = 0.1;
+  scaleFactors[3] = 1;
+  scaleFactors[4] = 1;
+  scaleFactors[5] = 1;
+  
   std::cout << "UltrasoundPinCalibration:Start parameters = " << parameters << std::endl;
-
+  std::cout << "UltrasoundPinCalibration:Start scale factors = " << scaleFactors << std::endl;
+  
   itk::UltrasoundPinCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPinCalibrationCostFunction::New();
   costFunction->SetMatrices(matrices);
   costFunction->SetPoints(points);
   costFunction->SetNumberOfParameters(parameters.GetSize());
   costFunction->SetInvariantPoint(invariantPoint);
   costFunction->SetMillimetresPerPixel(millimetresPerPixel);
+  costFunction->SetScales(scaleFactors);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->SetCostFunction(costFunction);
   optimizer->SetInitialPosition(parameters);
-  optimizer->SetNumberOfIterations(2000);
+  optimizer->SetScales(scaleFactors);
+  optimizer->SetNumberOfIterations(20000000);
   optimizer->UseCostFunctionGradientOff();
-  optimizer->SetGradientTolerance(0.5);
-  optimizer->SetEpsilonFunction(0.0500);
-  optimizer->SetValueTolerance(0.05);
+  optimizer->SetGradientTolerance(0.0000005);
+  optimizer->SetEpsilonFunction(0.0000005);
+  optimizer->SetValueTolerance(0.0000005);
+
   optimizer->StartOptimization();
+
   parameters = optimizer->GetCurrentPosition();
-  
-  std::cerr << "Stop condition" << optimizer->GetStopConditionDescription();
+  outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
-  outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+
+  std::cerr << "Stop condition:" << optimizer->GetStopConditionDescription();
+
+  if (optimiseScaling)
+  {
+    millimetresPerPixel = parameters[6];
+  }
   if (!optimiseScaling && optimiseInvariantPoint)
   {
     invariantPoint.x = parameters[6];
     invariantPoint.y = parameters[7];
     invariantPoint.z = parameters[8];
   }
-  if (optimiseScaling && !optimiseInvariantPoint)
-  {
-    millimetresPerPixel.x = parameters[6];
-    millimetresPerPixel.y = parameters[7];
-  }
   if (optimiseScaling && optimiseInvariantPoint)
   {
-    millimetresPerPixel.x = parameters[6];
-    millimetresPerPixel.y = parameters[7];;
-    invariantPoint.x = parameters[8];;
-    invariantPoint.y = parameters[9];;
-    invariantPoint.z = parameters[10];;
+    invariantPoint.x = parameters[7];
+    invariantPoint.y = parameters[8];
+    invariantPoint.z = parameters[9];
   }
   
   isSuccessful = true;
 
   std::cout << "UltrasoundPinCalibration:Final parameters = " << parameters << std::endl;
-  std::cout << "UltrasoundPinCalibration:Residual error   = " << residualError << std::endl;
+  std::cout << "UltrasoundPinCalibration:Final mm/pix = " << millimetresPerPixel << std::endl;
+  std::cout << "UltrasoundPinCalibration:Final residual = " << residualError << std::endl;
   std::cout << "UltrasoundPinCalibration:Result:" << std::endl;
+
   for (int i = 0; i < 4; i++)
   {
-    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
+    std::cout << "Calibration =" << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
+    
   return isSuccessful;
 }
 

@@ -48,7 +48,7 @@ public:
     scaleFactors[1] = 1;
 
     mitk::StereoCameraCalibration::Pointer calib = mitk::StereoCameraCalibration::New();
-    float actualError = calib->Calibrate(inputLeft, inputRight, cornersX, cornersY, 0, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
+    float actualError = calib->Calibrate(inputLeft, inputRight, 0, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;

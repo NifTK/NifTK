@@ -51,9 +51,9 @@ public:
    * \param[In] pointDirectory directory containing 2D pixel location of a pin-head.
    * \param[In] optimiseScaling if true the scaling will be optimised along with the 6DOF calibration matrix.
    * \param[In] optimiseInvariantPoint if true the position of the invariant point will be optimised along with the 6DOF calibration matrix.
-   * \param[Out] rigidBodyTransformation rx, ry, rz, tx, ty, tz where rotations in radians and translations in millimetres.
+   * \param[In] rigidBodyTransformation rx, ry, rz, tx, ty, tz where rotations are Rodrigues parameters and translations in millimetres.
    * \param[Out] invariantPoint an initial guess at the invariant point, or equivalently the tracker to pin-head transformation. i.e. the pin-head in tracker coordinates.
-   * \param[Out] millimetresPerPixel scale factors for the ultrasound image in both x and y direction.
+   * \param[Out] millimetresPerPixel scale factors for the ultrasound image
    * \param[Out] residualError the root mean square distance of each re-constructed point from the theoretical pin position (0, 0, 0).
    * \param[Out] outputMatrix the output transformation.
    */
@@ -64,7 +64,7 @@ public:
       const bool& optimiseInvariantPoint,
       std::vector<double>& rigidBodyTransformation,
       mitk::Point3D& invariantPoint,
-      mitk::Point2D& millimetresPerPixel,
+      double& millimetresPerPixel,
       double &residualError,
       vtkMatrix4x4& outputMatrix
       );
@@ -75,9 +75,9 @@ public:
    * \param[In] points a vector of 3D pixel locations in the same order as the tracking transformations.
    * \param[In] optimiseScaling if true the scaling will be optimised along with the 6DOF calibration matrix.
    * \param[In] optimiseInvariantPoint if true the position of the invariant point will be optimised along with the 6DOF calibration matrix.
-   * \param[Out] rigidBodyTransformation rx, ry, rz, tx, ty, tz where rotations in radians and translations in millimetres.
+   * \param[In] rigidBodyTransformation rx, ry, rz, tx, ty, tz where rotations are Rodrigues parameters and translations in millimetres.
    * \param[Out] invariantPoint an initial guess at the invariant point, or equivalently the tracker to pin-head transformation. i.e. the pin-head in tracker coordinates.
-   * \param[Out] millimetresPerPixel scale factors for the ultrasound image in both x and y direction.
+   * \param[Out] millimetresPerPixel scale factors for the ultrasound image
    * \param[Out] outputMatrix the calibration matrix
    * \param[Out] residualError the root mean square distance of each re-constructed point from the theoretical pin position (0, 0, 0).
    */
@@ -88,7 +88,7 @@ public:
       const bool& optimiseInvariantPoint,
       std::vector<double>& rigidBodyTransformation,
       cv::Point3d& invariantPoint,
-      cv::Point2d& millimetresPerPixel,
+      double& millimetresPerPixel,
       cv::Matx44d& outputMatrix,
       double& residualError
       );
