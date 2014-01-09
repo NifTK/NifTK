@@ -47,6 +47,7 @@ public:
   , m_Origin(displayGeometry->GetOriginInMM())
   , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
   , m_FocusPoint(displayGeometry->GetOriginInMM())
+  , m_BlockEvents(false)
   {
   }
 
@@ -61,12 +62,36 @@ public:
   //-----------------------------------------------------------------------------
   void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/)
   {
+    if (m_BlockEvents)
+    {
+      return;
+    }
     mitk::Vector2D sizeInPx = m_DisplayGeometry->GetSizeInDisplayUnits();
     if (sizeInPx != m_SizeInPx)
     {
+      double horizontalSizeChange = m_SizeInPx[0] / sizeInPx[0];
+      double verticalSizeChange = m_SizeInPx[1] / sizeInPx[1];
+      double horizontalScaleFactor = m_ScaleFactor * horizontalSizeChange;
+      double verticalScaleFactor = m_ScaleFactor * verticalSizeChange;
+
+      /// Find the largest change, let it be zooming or unzooming.
+      if (horizontalSizeChange < 1.0)
+      {
+        horizontalSizeChange = 1.0 / horizontalSizeChange;
+      }
+      if (verticalSizeChange < 1.0)
+      {
+        verticalSizeChange = 1.0 / verticalSizeChange;
+      }
+      double scaleFactor = horizontalSizeChange > verticalSizeChange ? horizontalScaleFactor : verticalScaleFactor;
+
+      m_BlockEvents = true;
+      m_MultiWindowWidget->MoveToCursorPosition(m_Orientation);
+      m_MultiWindowWidget->ZoomAroundCursorPosition(m_Orientation, scaleFactor);
+      m_BlockEvents = false;
+      m_Origin = m_DisplayGeometry->GetOriginInMM();
+      m_ScaleFactor = scaleFactor;
       m_SizeInPx = sizeInPx;
-      m_Origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-      m_MultiWindowWidget->OnWindowResized(m_Orientation);
       return;
     }
 
@@ -111,6 +136,7 @@ private:
   mitk::Vector2D m_Origin;
   double m_ScaleFactor;
   mitk::Vector2D m_FocusPoint;
+  bool m_BlockEvents;
 };
 
 
@@ -274,7 +300,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
     /// the 'KeepDisplayedRegion' property to false would disable the behaviour of MITK,
     /// so we can apply the rescaling in our way. This line is commented out until
     /// this feature is added to our MITK fork.
-//    m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
+    m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
+    m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
     this->AddDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
 
@@ -1653,16 +1680,6 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
     m_BlockDisplayGeometryEvents = false;
 
     m_RenderingManager->RequestUpdate(renderWindow->GetRenderWindow());
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnWindowResized(MIDASOrientation orientation)
-{
-  if (m_Geometry && !m_BlockDisplayGeometryEvents)
-  {
-    this->MoveToCursorPosition(orientation);
   }
 }
 
