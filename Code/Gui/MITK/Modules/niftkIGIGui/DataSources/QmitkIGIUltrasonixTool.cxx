@@ -20,6 +20,8 @@
 #include <mitkImageWriteAccessor.h>
 #include <mitkIOUtil.h>
 #include <QCoreApplication>
+#include <Conversion/ImageConversion.h>
+#include <cv.h>
 
 #include <mitkImageWriter.h>
 
@@ -164,68 +166,79 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
         qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
       }
 
+      // wrap the qimage in an opencv image
+      int nchannels = 0;
+      switch (qImage.format())
+      {
+        case QImage::Format_ARGB32:
+          nchannels = 4;
+          break;
+        case QImage::Format_Indexed8:
+          // we totally ignore the (missing?) colour table here.
+          nchannels = 1;
+          break;
+        default:
+          MITK_ERROR << "QmitkIGIUltrasonixTool received an unsupported image format";
+      }
+      IplImage  ocvimg;
+      cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
+      cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
 
-      if (qImage.format() == QImage::Format_Indexed8)
+      if (!imageInNode.IsNull())
       {
-        if (imageInNode.IsNull())
-        {          
-          QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-          filter->SetQImage(&qImage);
-          filter->Update();
+        // check size of image that is already attached to data node!
+        bool haswrongsize = false;
+        haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
+        haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
+        haswrongsize |= imageInNode->GetDimension(2) != 1;
 
-          m_DataStorage->Remove(node);
-          node->SetData(filter->GetOutput());
-          m_DataStorage->Add(node);
-        }
-        else
+        if (haswrongsize)
         {
-          const void* cPointer = qImage.bits();
-
-          mitk::ImageWriteAccessor writeAccess(imageInNode);
-          void* vPointer = writeAccess.GetData();
-
-          memcpy(vPointer, cPointer, qImage.width() * qImage.height());
-          imageInNode->Modified();
+          imageInNode = mitk::Image::Pointer();
         }
+      }
+
+      if (imageInNode.IsNull())
+      {
+        mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
+        // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
+        m_DataStorage->Remove(node);
+        node->SetData(convertedImage);
+        m_DataStorage->Add(node);
       }
       else
       {
-        // NOT FINISHED or tested or anything.
-        assert(false);
+        try
+        {
+          mitk::ImageWriteAccessor writeAccess(imageInNode);
+          void* vPointer = writeAccess.GetData();
 
-        //QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-        //filter->SetQImage(&qImage);
-        //filter->Update();
+          // the mitk image is tightly packed
+          // but the opencv image might not
+          const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
+          if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
+          {
+            std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
+          }
+          else
+          {
+            // if that is not true then something is seriously borked
+            assert(ocvimg.widthStep >= numberOfBytesPerLine);
 
-        //mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-        //if (imageInNode.IsNull())
-        //{
-        //  // We remove and add to trigger the NodeAdded event,
-        //  // which is not emmitted if the node was added with no data.
-        //  m_DataStorage->Remove(node);
-        //  node->SetData(filter->GetOutput());
-
-        //  m_DataStorage->Add(node);
-        //}
-        //else
-        //{
-        //  try
-        //  {
-        //    mitk::ImageReadAccessor readAccess(filter->GetOutput(), filter->GetOutput()->GetVolumeData(0));
-        //    const void* cPointer = readAccess.GetData();
-
-        //    mitk::ImageWriteAccessor writeAccess(imageInNode);
-        //    void* vPointer = writeAccess.GetData();
-
-        //    memcpy(vPointer, cPointer, qImage.width() * qImage.height());
-        //    imageInNode->Modified();
-        //  }
-        //  catch(mitk::Exception& e)
-        //  {
-        //    MITK_ERROR << "Failed to copy Ultrasonix image to DataStorage due to " << e.what() << std::endl;
-        //  }
-        //}
+            // "slow" path: copy line by line
+            for (int y = 0; y < ocvimg.height; ++y)
+            {
+              // widthStep is in bytes while width is in pixels
+              std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine); 
+            }
+          }
+        }
+        catch(mitk::Exception& e)
+        {
+          MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+        }
       }
 
       imageMsg->GetMatrix(m_CurrentMatrix);

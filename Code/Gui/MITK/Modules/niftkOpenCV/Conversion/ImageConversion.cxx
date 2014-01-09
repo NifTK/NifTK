@@ -124,6 +124,8 @@ mitk::Image::Pointer CreateMitkImage(const IplImage* image)
   // FIXME: check for channel layout: rgb vs bgr
   switch (image->nChannels)
   {
+    case 1:
+      return CreateMitkImageInternal<unsigned char>(image);
     case 3:
       return CreateMitkImageInternal<UCRGBPixelType>(image);
     case 4:
