@@ -56,15 +56,25 @@ int main(int argc, char** argv)
     {
       initialMatrix = niftk::LoadMatrix4x4FromFile(initialGuess, false);
     }
+    cv::Matx33d rotationMatrix;
+    cv::Matx31d rotationVector;
+    for (int i = 0; i < 3; i++)
+    {
+      for (int j = 0; j < 3; j++)
+      {
+        rotationMatrix(i,j) = initialMatrix->GetElement(i,j);
+      }
+    }
+    cv::Rodrigues(rotationMatrix, rotationVector);
 
     std::vector<double> initialTransformationParameters;
 
-    initialTransformationParameters.push_back(0);
-    initialTransformationParameters.push_back(0);
-    initialTransformationParameters.push_back(0);
-    initialTransformationParameters.push_back(0);
-    initialTransformationParameters.push_back(0);
-    initialTransformationParameters.push_back(0);
+    initialTransformationParameters.push_back(rotationVector(0,0));
+    initialTransformationParameters.push_back(rotationVector(1,0));
+    initialTransformationParameters.push_back(rotationVector(2,0));
+    initialTransformationParameters.push_back(initialMatrix->GetElement(0,3));
+    initialTransformationParameters.push_back(initialMatrix->GetElement(1,3));
+    initialTransformationParameters.push_back(initialMatrix->GetElement(2,3));
 
     if (optimiseScaling)
     {
@@ -100,7 +110,6 @@ int main(int argc, char** argv)
         pointDirectory,
         optimiseScaling,
         optimiseInvariantPoint,
-        *initialMatrix,
         initialTransformationParameters,
         invPoint,
         mmPerPix,

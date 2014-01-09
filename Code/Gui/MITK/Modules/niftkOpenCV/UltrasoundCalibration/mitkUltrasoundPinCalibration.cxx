@@ -43,7 +43,6 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     const std::string& pointDirectory,
     const bool& optimiseScaling,
     const bool& optimiseInvariantPoint,
-    const vtkMatrix4x4& rigidBodyInitialGuess,
     std::vector<double>& rigidBodyTransformation,
     mitk::Point3D& invariantPoint,
     double& millimetresPerPixel,
@@ -91,15 +90,6 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
     return false;
   }
 
-  cv::Matx44d initialGuess;
-  for (int i = 0; i < 4; i++)
-  {
-    for (int j = 0; j < 4; j++)
-    {
-      initialGuess(i,j) = rigidBodyInitialGuess.GetElement(i, j);
-    }
-  }
-
   cv::Matx44d transformationMatrix;
   cv::Point3d invPoint(invariantPoint[0], invariantPoint[1], invariantPoint[2]);
 
@@ -108,7 +98,6 @@ bool UltrasoundPinCalibration::CalibrateUsingInvariantPointAndFilesInTwoDirector
       points,
       optimiseScaling,
       optimiseInvariantPoint,
-      initialGuess,
       rigidBodyTransformation,
       invPoint,
       millimetresPerPixel,
@@ -142,7 +131,6 @@ bool UltrasoundPinCalibration::Calibrate(
     const std::vector< cv::Point3d >& points,
     const bool& optimiseScaling,
     const bool& optimiseInvariantPoint,
-    const cv::Matx44d& rigidBodyInitialGuess,
     std::vector<double>& rigidBodyTransformation,
     cv::Point3d& invariantPoint,
     double& millimetresPerPixel,
@@ -219,14 +207,13 @@ bool UltrasoundPinCalibration::Calibrate(
   costFunction->SetInvariantPoint(invariantPoint);
   costFunction->SetMillimetresPerPixel(millimetresPerPixel);
   costFunction->SetScales(scaleFactors);
-  costFunction->SetInitialGuess(rigidBodyInitialGuess);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->SetCostFunction(costFunction);
   optimizer->SetInitialPosition(parameters);
   optimizer->SetScales(scaleFactors);
   optimizer->SetNumberOfIterations(20000000);
-  optimizer->UseCostFunctionGradientOn();
+  optimizer->UseCostFunctionGradientOff();
   optimizer->SetGradientTolerance(0.0000005);
   optimizer->SetEpsilonFunction(0.0000005);
   optimizer->SetValueTolerance(0.0000005);
@@ -264,9 +251,10 @@ bool UltrasoundPinCalibration::Calibrate(
   std::cout << "UltrasoundPinCalibration:Final mm/pix = " << millimetresPerPixel << std::endl;
   std::cout << "UltrasoundPinCalibration:Final residual = " << residualError << std::endl;
   std::cout << "UltrasoundPinCalibration:Result:" << std::endl;
+
   for (int i = 0; i < 4; i++)
   {
-    std::cout << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
+    std::cout << "Calibration =" << outputMatrix(i, 0) << " " << outputMatrix(i, 1) << " " << outputMatrix(i, 2) << " " << outputMatrix(i, 3) << std::endl;
   }
     
   return isSuccessful;

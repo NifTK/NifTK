@@ -119,11 +119,6 @@ public:
    */
   void SetScales(const ParametersType& scales);
 
-  /**
-   * \brief Sets the initial calibration matrix.
-   */
-  void SetInitialGuess(const cv::Matx44d& initialGuess);
-
 protected:
 
   UltrasoundPinCalibrationCostFunction();
@@ -141,7 +136,6 @@ private:
   unsigned int               m_NumberOfParameters;
   mutable unsigned int       m_NumberOfValues;
   ParametersType             m_Scales;
-  cv::Matx44d                m_InitialGuess;
 };
 
 } // end namespace
