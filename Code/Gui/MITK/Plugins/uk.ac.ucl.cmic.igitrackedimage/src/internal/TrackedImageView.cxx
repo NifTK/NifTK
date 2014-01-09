@@ -132,7 +132,15 @@ void TrackedImageView::RetrievePreferenceValues()
     m_ImageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
     m_ImageToTrackingSensorTransform = mitk::LoadVtkMatrix4x4FromFile(m_ImageToTrackingSensorFileName);
     m_ImageScaling[0] = prefs->GetDouble(TrackedImageViewPreferencePage::X_SCALING, 1);
+    if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
+    {
+      m_ImageScaling[0] *= -1;
+    }
     m_ImageScaling[1] = prefs->GetDouble(TrackedImageViewPreferencePage::Y_SCALING, 1);
+    if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_Y_SCALING, false))
+    {
+      m_ImageScaling[1] *= -1;
+    }
     if(m_PlaneNode.IsNotNull())
     {
       m_PlaneNode->Modified();  
