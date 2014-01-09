@@ -1,0 +1,52 @@
+Hi Tim,
+
+This should be self-explanatory:
+1. Unzip the TimCal file into a folder (this contains the original 
+calibration images, a track file, and a file containing the co-ordinates 
+of the pinhead in each image)
+2. Put all .m files in a folder and run Calibrate_MatlabOptimiser.m
+3. Select the .track file
+4. Select the pintpoints.mat file
+5. The calibration matrix should then be calculated
+
+In answer to your question on how the residual is defined, I think you 
+got the idea, but mathematically it is:
+
+residual = SQRT(SUM[(pv_n)^2]/N) = SQRT(SUM[(vMt * tMr_n * rMi * pi_n)^2]/N)
+
+where n is the index of the image, tMr is the tracking matrix (tracked 
+object to Optotrak reference), rMi is the estmated calibration matrix, 
+pi is the position vector of the pinhead in the image, pv is the 
+position vector of the pinhead in the reference space (which has an 
+origin placed at the pinhead), and N is the number of calibration 
+images. The matrix vMt is also estimated and related Optrak space to the 
+reference object attached to the calibration phantom. (The notation 
+arises from electromagnetic tracking: r = receiver, t = transmitter, v = 
+volume)
+
+Physically, this is a measure of size of the cloud of points obtained if 
+you reconstruct the pinhead position using the final calibration matrix 
+for each image (pv_n ~ [0 0 0 1]' for all n)
+
+Dean
+
+_______________________________________________________
+
+Dr. Dean Barratt, PhD
+ Royal Academy of Engineering/EPSRC Research Fellow
+ Honorary Lecturer in Medical Image Computing
+
+Centre for Medical Image Computing (CMIC)
+Dept. of Medical Physics & Bioengineering
+Floor 2, Malet Place Engineering Building
+University College London
+Gower Street
+London WC1E 6BT
+
+Email:  d.barratt@ucl.ac.uk 
+Tel:    (+44) (0)20 7679 0205
+Fax:    (+44) (0)20 7679 0255
+WWW:    http://cmic.cs.ucl.ac.uk/staff/dean_barratt/
+
+_______________________________________________________
+
