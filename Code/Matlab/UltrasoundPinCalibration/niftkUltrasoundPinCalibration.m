@@ -65,12 +65,12 @@ if pointFilename == 0  % Return if Cancel is pressed
    return;
 end
 
-file_id = fopen(matrixFilename, 'r');
+file_id = fopen(strcat(matrixPathname,'/',matrixFilename), 'r');
 [T,countT] = fscanf(file_id, '%f');
 fclose(file_id);
 fprintf('\n %d matrices read in...\n', countT/16);
 
-file_id = fopen(pointFilename, 'r');
+file_id = fopen(strcat(pointPathname,'/',pointFilename), 'r');
 [P,countP] = fscanf(file_id, '%f');
 fclose(file_id);
 fprintf('\n %d points read in...\n', countP/2);
