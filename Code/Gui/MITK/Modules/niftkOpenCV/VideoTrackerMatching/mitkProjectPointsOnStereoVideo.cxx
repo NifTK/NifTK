@@ -49,8 +49,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_RightWriter(NULL)
 , m_AllowablePointMatchingRatio (1.0) 
 , m_AllowableTimingError (20e6) // 20 milliseconds 
-, m_StartFrame(3500)
-, m_EndFrame(4500)
+, m_StartFrame(0)
+, m_EndFrame(0)
 {
 }
 
@@ -189,14 +189,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   IplImage *smallcorrectedimage = cvCreateImage (cvSize(960, 540), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
-    if ( framenumber < m_StartFrame || framenumber > m_EndFrame )
+    if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
-      framenumber ++;
       if ( m_Visualise || m_SaveVideo ) 
       {
         cv::Mat videoImage = cvQueryFrame ( m_Capture ) ;
         MITK_INFO << "Skipping frame " << framenumber;
       }
+      framenumber ++;
     }
     else
     {
