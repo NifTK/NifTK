@@ -193,6 +193,9 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
         haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
         haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
         haswrongsize |= imageInNode->GetDimension(2) != 1;
+        // check image type as well.
+        haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
+        haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
 
         if (haswrongsize)
         {
