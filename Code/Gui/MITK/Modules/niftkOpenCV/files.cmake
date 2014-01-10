@@ -23,6 +23,7 @@ set(CPP_FILES
   VideoProcessing/mitkStereoTwoTimePointVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoDistortionCorrectionVideoProcessor.cxx
   VideoProcessing/mitkCorrectVideoFileDistortion.cxx
+  VideoProcessing/mitkSplitVideo.cxx
   VideoTrackerMatching/mitkProjectPointsOnStereoVideo.cxx
   VideoTrackerMatching/mitkFindAndTriangulateCrossHair.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
