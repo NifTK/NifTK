@@ -167,9 +167,12 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
       }
 
       // wrap the qimage in an opencv image
+      IplImage  ocvimg;
       int nchannels = 0;
       switch (qImage.format())
       {
+        // this corresponds to BGRA channel order.
+        // we are flipping to RGBA below.
         case QImage::Format_ARGB32:
           nchannels = 4;
           break;
@@ -177,12 +180,20 @@ bool QmitkIGIUltrasonixTool::Update(mitk::IGIDataType* data)
           // we totally ignore the (missing?) colour table here.
           nchannels = 1;
           break;
+
         default:
           MITK_ERROR << "QmitkIGIUltrasonixTool received an unsupported image format";
       }
-      IplImage  ocvimg;
       cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
       cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+      // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+      // so should be fine to do this here...
+      if (ocvimg.nChannels == 4)
+      {
+        cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+        // mark layout as rgba instead of the opencv-default bgr
+        std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
+      }
 
       mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
 
