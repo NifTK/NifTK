@@ -79,6 +79,7 @@ if(SlicerExecutionModel_FOUND)
     niftkConvertRawDICOMMammogramsToPresentation
     niftkCreateMaskImage
     niftkCropImage
+    niftkDenoise
     niftkDilate
     niftkErode
     niftkExportDICOMTagsToCSVFile
