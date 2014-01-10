@@ -25,7 +25,7 @@ namespace niftk
 
 
 /**
- * Supports RGB and RGBA images.
+ * Supports RGB, RGBA and grayscale images, currently 8-bit per channel only!.
  * Known bug: does not take care of different channel layouts: BGR vs RGB!
  */
 mitk::Image::Pointer NIFTKOPENCV_EXPORT CreateMitkImage(const IplImage* image);
