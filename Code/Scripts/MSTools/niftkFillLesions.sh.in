@@ -392,7 +392,7 @@ For the installation and configuration of the different needed software in this 
    <parameters advanced="false">
       <label>Mandatory arguments</label>
       <description>Mandatory arguments: Input image, orientation, lesion mask and ouput image</description>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName</name>
           <longflag>in</longflag>
 	  <description>Input image name</description>
@@ -412,14 +412,14 @@ For the installation and configuration of the different needed software in this 
       <element>C</element>
       <element>S</element>
     </string-enumeration>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputMask</name>
           <longflag>mask</longflag>
 	  <description>Input lesion mask</description>
 	  <label>Input lesion mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="*.nii">
+      <image fileExtensions="nii">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>Output image name</description>
@@ -461,7 +461,7 @@ For the installation and configuration of the different needed software in this 
         <step>0.5</step>
       </constraints>
     </float>
-    <image fileExtensions="*.nii">
+    <image fileExtensions="nii">
           <name>brainMaskFile</name>
           <longflag>b</longflag>
 	  <description>Use existing brain mask file</description>
