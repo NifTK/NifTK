@@ -37,14 +37,14 @@ cat <<EOF
   <parameters advanced="false">
     <label>Images.</label>
     <description>Input and output images should be Nifti format.</description>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>inputImageName</name>
       <longflag>niftkBETInput</longflag>
       <description>Input image name</description>
       <label>Input image</label>
       <channel>input</channel>
     </image>    
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>outputImageName</name>
       <longflag>niftkBETOutput</longflag>
       <description>Output image name</description>
@@ -55,21 +55,21 @@ cat <<EOF
   <parameters advanced="true">
     <label>Main bet2 options</label>
     <description>Specify any of the following</description>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>BrainSurfaceOutline</name>
       <flag>o</flag>
       <description>Generate brain surface outline overlaid onto original image</description>
       <label>Brain Surface Outline</label>
       <channel>output</channel>
     </image>              
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>BinaryBrainMask</name>
       <flag>m</flag>
       <description>Generate binary brain mask</description>
       <label>Brain Binary Mask</label>
       <channel>output</channel>
     </image>
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>ApproximateSkullImage</name>
       <flag>s</flag>
       <description>Generate approximate skull image</description>
@@ -118,7 +118,7 @@ cat <<EOF
       <description>Apply thresholding to segmented brain image and mask</description>
       <label>Apply thresholding</label>
     </boolean>    
-    <file fileExtensions="*.vtk,*.vtk">
+    <file fileExtensions="vtk,vtk">
       <name>GenerateMesh</name>
       <flag>e</flag>
       <description>Generates brain surface as mesh in .vtk format</description>
@@ -165,7 +165,7 @@ cat <<EOF
       <description>Run bet2 and then betsurf to get additional skull and scalp surfaces (includes registrations)</description>
       <label>Additional skull/scalp</label>
     </boolean>   
-    <image fileExtensions="*.nii,*.nii.gz">      
+    <image fileExtensions="nii,nii.gz">      
       <name>AdditionalSkullScalpUsingT2</name>
       <longflag>A2</longflag>
       <description>as with -A, when also feeding in non-brain-extracted T2 (includes registrations)</description>
