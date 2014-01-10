@@ -1252,35 +1252,35 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
    <parameters advanced="false">
       <label>Mandatory arguments</label>
       <description>Mandatory arguments: input data, input brain masks and output filename</description>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName1</name>
           <longflag>in1</longflag>
 	  <description>Input baseline image name</description>
 	  <label>Baseline image</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputImageName2</name>
           <longflag>in2</longflag>
 	  <description>Input follow-up image name</description>
 	  <label>Follow-up image</label>
 	  <channel>input</channel>
       </image>      
-       <image fileExtensions="*.nii,*.nii.gz,*.img">
+       <image fileExtensions="nii,nii.gz,img">
           <name>inputMaskName1</name>
           <longflag>mask1</longflag>
 	  <description>Input baseline brain mask</description>
 	  <label>Baseline brain mask</label>
 	  <channel>input</channel>
       </image>
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>inputMaskName2</name>
           <longflag>mask2</longflag>
 	  <description>Input follow-up brain mask</description>
 	  <label>Follow-up brain mask</label>
 	  <channel>input</channel>
       </image>      
-      <image fileExtensions="*.nii,*.nii.gz,*.img">
+      <image fileExtensions="nii,nii.gz,img">
           <name>outputImageName</name>
           <longflag>out</longflag>
 	  <description>BSI output image name</description>
@@ -1324,14 +1324,14 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
     <parameters advanced="true">
 	<label>Optional extra arguments</label>
 	<description>Optional extra arguments</description>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputLesionName1</name>
 		<longflag>lesion1</longflag>
 		<description>Input baseline lesion mask</description>
 		<label>Baseline lesion mask</label>
 		<channel>input</channel>
 	</image>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputLesionName2</name>
 		<longflag>lesion2</longflag>
 		<description>Input follow-up lesion mask</description>
@@ -1374,21 +1374,21 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<element>3</element>
 		<element>4</element>
 	</integer-enumeration>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputROIName1</name>
 		<longflag>roi1</longflag>
 		<description>Input baseline roi mask</description>
 		<label>Baseline roi mask</label>
 		<channel>input</channel>
 	</image>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputROIName2</name>
 		<longflag>roi2</longflag>
 		<description>Input follow-up roi mask</description>
 		<label>Follow-up roi mask</label>
 		<channel>input</channel>
 	</image>   
-    	<image fileExtensions="*.nii,*.nii.gz,*.img">
+    	<image fileExtensions="nii,nii.gz,img">
 		<name>outputXORImageName</name>
 		<longflag>xor</longflag>
 		<description>XOR output image name</description>
@@ -1425,14 +1425,14 @@ xml="""<?xml version="1.0" encoding="utf-8"?>
 		<element>C</element>
 		<element>S</element>
 	</string-enumeration>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputAtlasMask</name>
 		<longflag>atlas_mask</longflag>
 		<description>Input atlas mask</description>
 		<label>Input atlas mask</label>
 		<channel>input</channel>
 	</image>
-	<image fileExtensions="*.nii,*.nii.gz,*.img">
+	<image fileExtensions="nii,nii.gz,img">
 		<name>inputAtlasHead</name>
 		<longflag>atlas_head</longflag>
 		<description>Input atlas head</description>
