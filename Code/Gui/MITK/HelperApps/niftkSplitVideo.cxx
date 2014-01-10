@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <limits>
 #include <mitkSplitVideo.h>
-#include <niftkSplitVideoVideoCLP.h>
+#include <niftkSplitVideoCLP.h>
 
 #include <fstream>
 int main(int argc, char** argv)
