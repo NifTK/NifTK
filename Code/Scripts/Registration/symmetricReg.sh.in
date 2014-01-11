@@ -200,13 +200,13 @@ if [ $just_reslice -eq 1 ]; then
     fi
 fi
 
-transformation_model=3
+transformation_model="Rigid and Scale"
 if [ $number_dof -eq 6 ]; then
-    transformation_model=2
+    transformation_model="Rigid"
 elif [ $number_dof -eq 9 ]; then
-    transformation_model=3
+    transformation_model="Rigid and Scale"
 elif [ $number_dof -eq 12 ]; then
-    transformation_model=4
+    transformation_model="Full Affine"
 else
     exitprog "The number of dof must be 6, 9 or 12" 1
 fi
@@ -290,23 +290,23 @@ if [ $just_reslice -eq 0 ]; then
   niftkAffineExecutable=`which niftkAffine`
   targetMaskArg=
   sourceMaskArg=
-  niftkAffineArguments="-tr $transformation_model -d $number_dilations -o 5 -rmax 1 -rmin 0.05 -ln 1 -stl 0 -stl 0 -sym -it $tmpdir/block.dof"
+  niftkAffineArguments="--tr \"$transformation_model\" -d $number_dilations -o \"Powell optimisation\" --rmax 1 --rmin 0.05 --nlevels 1 --sym --it $tmpdir/block.dof"
 
   if [ $use_troi -eq 1 ]; then
-      targetMaskArg="-tm ${target_mask}.img"
+      targetMaskArg="--tm ${target_mask}.img"
   fi
   if [ $use_sroi -eq 1 ]; then
-      sourceMaskArg="-sm ${source_mask}.img"
+      sourceMaskArg="--sm ${source_mask}.img"
   fi
 
-  execute_command "niftkAffine -ti $target_img -si $source_img -ot $tmpdir/affine_${number_dof}.dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
+  execute_command "niftkAffine --ti $target_img --si $source_img --ot $tmpdir/affine_${number_dof}.dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
 
   if [ ${number_dof} -gt 6 ]; then
     ################################################################
     message "Now symmetric registration, 6 DOF"
     ################################################################
-    niftkAffineArguments="-tr 2 -d 1 -o 5 -rmax 0.5 -rmin 0.05 -ln 1 -stl 0 -stl 0 -sym -it $tmpdir/affine_${number_dof}.dof"
-    execute_command "niftkAffine -ti $target_img -si $source_img -ot $rreg_dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
+    niftkAffineArguments="--tr Rigid -d 1 -o \"Powell Optimisation\" --rmax 0.5 --rmin 0.05 --nlevels 1 --sym -it $tmpdir/affine_${number_dof}.dof"
+    execute_command "niftkAffine --ti $target_img --si $source_img --ot $rreg_dof $targetMaskArg $sourceMaskArg $niftkAffineArguments"
   else
     execute_command "$COPY  $tmpdir/affine_${number_dof}.dof  $rreg_dof"
   fi

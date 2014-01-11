@@ -223,19 +223,23 @@ then
   dof_file="${output_dir}/100001-${output_study_id}.dof"
       
   niftkAffine \
-      -ti ${baseline_local_region_img} -si ${repeat_local_region_img} \
-      -tm ${baseline_local_region_img} \
-      -sm ${repeat_local_region_img} \
-      -ot ${dof_init_file} \
-      -ri 2 -fi 3 -s 1 -tr 2 -o 6 -ln 3 -rmax 0.5 -rmin 0.1 -sym -d ${reg_dil} -stl 0 -spl 0
+      --ti ${baseline_local_region_img} --si ${repeat_local_region_img} \
+      --tm ${baseline_local_region_img} \
+      --sm ${repeat_local_region_img} \
+      --ot ${dof_init_file} \
+      --ri "Linear" --fi "BSpline" -s "Sum Squared Difference" \
+      --tr "Rigid" -o "Regular Step Size" --rmax 0.5 --rmin 0.1 --sym \
+      -d ${reg_dil} --nlevels 3 --levels2use 1
       
   niftkAffine \
-      -ti ${baseline_image}.img -si ${repeat_image}.img \
-      -tm ${baseline_local_region_img} \
-      -sm ${repeat_local_region_img} \
-      -it ${dof_init_file} \
-      -ot ${dof_file} \
-      -ri 2 -fi 3 -s 4 -tr 2 -o 6 -ln 1 -rmax 0.5 -rmin 0.1 -sym -d ${reg_dil}
+      --ti ${baseline_image}.img --si ${repeat_image}.img \
+      --tm ${baseline_local_region_img} \
+      --sm ${repeat_local_region_img} \
+      --it ${dof_init_file} \
+      --ot ${dof_file} \
+      --ri "Linear" --fi "BSpline" -s "Normalized Cross Correlation" \
+      --tr "Rigid" -o "Regular Step Size"  --rmax 0.5 --rmin 0.1 --sym \
+      -d ${reg_dil} --nlevels 1
       
   # Transform the images to mid-point. 
   itkComputeInitialAffineAtlas \
