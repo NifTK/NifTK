@@ -39,6 +39,7 @@ set(UI_FILES
 )
 
 set(RESOURCE_FILES
+  Interactions/DnDDisplayConfig.xml
   Interactions/DnDDisplayInteraction.xml
 )
 

@@ -60,6 +60,8 @@ namespace mitk
 
     virtual void ConnectActionsAndFunctions();
 
+    virtual bool SelectPosition(StateMachineAction*, InteractionEvent*);
+
     virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
   private:
