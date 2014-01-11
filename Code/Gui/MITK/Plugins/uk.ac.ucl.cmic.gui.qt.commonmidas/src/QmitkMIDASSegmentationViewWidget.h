@@ -152,6 +152,10 @@ private:
   QmitkRenderWindow* m_MainSagittalWindow;
   QmitkRenderWindow* m_MainCoronalWindow;
 
+  mitk::SliceNavigationController* m_MainAxialSnc;
+  mitk::SliceNavigationController* m_MainSagittalSnc;
+  mitk::SliceNavigationController* m_MainCoronalSnc;
+
   /// \brief Renderer of the currently focused window of the main display.
   mitk::BaseRenderer* m_FocusedRenderer;
 
