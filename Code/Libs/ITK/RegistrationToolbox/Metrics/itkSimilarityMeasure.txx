@@ -158,7 +158,7 @@ void SimilarityMeasure<TFixedImage, TMovingImage>
             }
           ++fiIt;
         }
-      niftkitkInfoMacro("numberOfVoxels=" << numberOfVoxels); 
+      niftkitkDebugMacro("numberOfVoxels=" << numberOfVoxels); 
       
       // Calculate min and max image values in moving image.
       MovingImageConstPointer pMovingImage = this->m_MovingImage;
@@ -195,7 +195,7 @@ void SimilarityMeasure<TFixedImage, TMovingImage>
             }
           ++miIt;
         }
-      niftkitkInfoMacro("numberOfVoxels=" << numberOfVoxels); 
+      niftkitkDebugMacro("numberOfVoxels=" << numberOfVoxels); 
 
       // Initialize the upper and lower bounds of the histogram.
       m_FixedLowerBound = minFixed;
@@ -204,11 +204,11 @@ void SimilarityMeasure<TFixedImage, TMovingImage>
       m_MovingUpperBound = maxMoving;
 
       niftkitkDebugMacro("InitializeIntensityBounds():Automatically set bounds:"
-    		  << "fixedLower:" << niftk::ConvertToString((double)m_FixedLowerBound)
-        << ",fixedUpper:" << niftk::ConvertToString((double)m_FixedUpperBound)
-        << ",movingLower:" << niftk::ConvertToString((double)m_MovingLowerBound)
-        << ",movingUpper:" << niftk::ConvertToString((double)m_MovingUpperBound));
-
+                         << "fixedLower:" << niftk::ConvertToString((double)m_FixedLowerBound)
+                         << ",fixedUpper:" << niftk::ConvertToString((double)m_FixedUpperBound)
+                         << ",movingLower:" << niftk::ConvertToString((double)m_MovingLowerBound)
+                         << ",movingUpper:" << niftk::ConvertToString((double)m_MovingUpperBound));
+      
     }
   else
     {

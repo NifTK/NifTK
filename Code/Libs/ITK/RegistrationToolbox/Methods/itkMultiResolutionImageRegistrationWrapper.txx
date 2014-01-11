@@ -15,6 +15,8 @@
 #ifndef _itkMultiResolutionImageRegistrationWrapper_txx
 #define _itkMultiResolutionImageRegistrationWrapper_txx
 
+#include <iomanip>
+
 #include "itkMultiResolutionImageRegistrationWrapper.h"
 #include <itkRecursiveMultiResolutionPyramidImageFilter.h>
 #include <itkBinaryCrossStructuringElement.h>
@@ -113,14 +115,52 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
   
   m_FixedImagePyramid->SetInput( m_FixedImage );  
   m_FixedImagePyramid->UpdateLargestPossibleRegion();
+
+  // Set the moving image pyramid to match the fixed image pyramid.
+  // NB: If the moving image is already lower resolution that the fixed
+  // image then there is no reason to subsample it further.
+
+  ScheduleType movingSchedule = m_FixedImagePyramid->GetSchedule();
+
+  typename TInputImageType::SpacingType 
+    fixedSpacing = m_FixedImage->GetSpacing();
+  typename TInputImageType::SpacingType 
+    movingSpacing = m_MovingImage->GetSpacing();
+
+  typename TInputImageType::SpacingValueType fixedResolution;
+
+  std::cout << "Multi-resolution sampling schedule: " << std::endl;
+  for (unsigned int i=0; i<m_NumberOfLevels; i++)
+  {
+    for (unsigned int d=0; d<TInputImageType::ImageDimension; d++)
+    {
+      unsigned int sampling = 1;
+      fixedResolution = movingSchedule[i][d]*fixedSpacing[d];
+      std::cout << "  Level: " << std::setw( 3 ) << i 
+                << "  Dimension: " << std::setw( 3 ) << d 
+                << "  Fixed sampling: "
+                << std::setw( 3 ) << movingSchedule[i][d]
+                << "  Fixed resolution: "
+                << std::setw( 9 ) << fixedResolution;
+
+      while ( sampling*movingSpacing[d] < fixedResolution )
+      {
+        sampling++;
+      }
+      movingSchedule[i][d] = sampling;
+      std::cout << "  Moving sampling: " 
+                << std::setw( 3 ) << movingSchedule[i][d]
+                << "  Moving resolution: " 
+                << std::setw( 9 ) << movingSchedule[i][d]*movingSpacing[d] 
+                << std::endl;
+    }
+    std::cout << std::endl;
+  }
   
   m_MovingImagePyramid->SetNumberOfLevels( m_NumberOfLevels );
 
-  if (this->m_UserSpecifiedSchedule)
-    {
-      m_MovingImagePyramid->SetUseShrinkImageFilter(false); 
-      m_MovingImagePyramid->SetSchedule(*m_Schedule);	
-    }
+  m_MovingImagePyramid->SetUseShrinkImageFilter(false); 
+  m_MovingImagePyramid->SetSchedule( movingSchedule );	
     
   m_MovingImagePyramid->SetInput( m_MovingImage );
   m_MovingImagePyramid->UpdateLargestPossibleRegion();
@@ -182,11 +222,10 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
           m_MovingMaskPyramid->SetInput(m_MovingMask);    
         }
       m_MovingMaskPyramid->SetNumberOfLevels( m_NumberOfLevels );    
-      if (this->m_UserSpecifiedSchedule)
-        {
-          m_MovingMaskPyramid->SetUseShrinkImageFilter(false); 
-          m_MovingMaskPyramid->SetSchedule(*m_Schedule); 
-        }
+
+      m_MovingMaskPyramid->SetUseShrinkImageFilter(false); 
+      m_MovingMaskPyramid->SetSchedule(movingSchedule); 
+
       m_MovingMaskPyramid->UpdateLargestPossibleRegion();
       niftkitkDebugMacro(<<"PreparePyramids():Done fixed mask");
     }
@@ -364,6 +403,11 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
 
   this->PreparePyramids();
 
+  niftkitkDebugMacro(<<"StartRegistration(): " 
+                    << m_InitialTransformParametersOfNextLevel.GetSize() 
+                    << " parameters, m_StartLevel=" << m_StartLevel 
+                    << ", m_StopLevel=" << m_StopLevel);
+
   for ( m_CurrentLevel = 0; m_CurrentLevel < m_NumberOfLevels ; m_CurrentLevel++ )
     {
       this->InvokeEvent( IterationEvent() );
@@ -385,13 +429,17 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
       m_SingleResMethod->SetInitialTransformParameters(m_InitialTransformParametersOfNextLevel);
       
       // We have a mechanism to only do certain levels.
-      niftkitkInfoMacro(<<"StartRegistration():Starting level:" << m_CurrentLevel
-          << ", with " << m_InitialTransformParametersOfNextLevel.GetSize() 
-          << " parameters, m_StartLevel=" << m_StartLevel 
-          << ", m_StopLevel=" << m_StopLevel);
-
       if (m_CurrentLevel >= m_StartLevel && m_CurrentLevel <= m_StopLevel)            
         {
+          std::cout << std::endl << "Level: " << m_CurrentLevel 
+                    << std::endl << std::endl 
+                    << "  Fixed image size:  " << m_FixedImagePyramid->GetOutput(m_CurrentLevel)->GetLargestPossibleRegion().GetSize()
+                    << "  and spacing: " << m_FixedImagePyramid->GetOutput(m_CurrentLevel)->GetSpacing()
+                    << std::endl
+                    << "  Moving image size: " << m_MovingImagePyramid->GetOutput(m_CurrentLevel)->GetLargestPossibleRegion().GetSize()
+                    << "  and spacing: " << m_MovingImagePyramid->GetOutput(m_CurrentLevel)->GetSpacing()
+                     << std::endl << std::endl;
+          
           this->m_SingleResMethod->Update();    
         }
       

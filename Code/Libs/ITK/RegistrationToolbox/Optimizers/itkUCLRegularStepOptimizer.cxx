@@ -19,7 +19,7 @@
 #include <itkEventObject.h>
 #include <vnl/vnl_math.h>
 #include <itkUCLMacro.h>
-
+#include <iomanip>
 
 namespace itk
 {
@@ -153,8 +153,32 @@ UCLRegularStepOptimizer
           }
         }
       }
-      
-      niftkitkDebugMacro("isBetter:" << isBetter);
+
+      if ( ! ( this->GetDebug() && ::itk::Object::GetGlobalWarningDisplay() ) )
+      {
+        std::cout << "    " << std::setw( 4 ) << m_CurrentIteration 
+                  << "    step size: " << std::setw( 12 ) << this->m_CurrentStepLength 
+                  << "    parameters: [";
+        for (unsigned int parameterIndex = 0; 
+             parameterIndex < currentParameters.Size(); 
+             parameterIndex++)
+        {
+          std::cout << std::setw( 12 ) << m_BestSoFarParameters[ parameterIndex ];
+          if ( parameterIndex < currentParameters.Size() - 1 )
+          {
+            std::cout << ", ";
+          }
+        }
+        if ( isBetter )
+        {
+          std::cout << " ]    new metric: " << std::setw( 6 ) << m_BestSoFarValue << std::endl;
+        }
+        else
+        {
+          std::cout << " ]" << std::endl;
+        }
+      }
+
       if (!isBetter)
       {
         this->m_CurrentStepLength *= this->m_RelaxationFactor; 
