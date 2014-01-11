@@ -442,12 +442,10 @@ void niftkSingleViewerWidget::SetNavigationControllerEventListening(bool enabled
 {
   if (enabled)
   {
-    m_MultiWidget->EnableNavigationControllerEventListening();
     m_MultiWidget->SetWidgetPlanesLocked(false);
   }
   else
   {
-    m_MultiWidget->DisableNavigationControllerEventListening();
     m_MultiWidget->SetWidgetPlanesLocked(true);
   }
   m_NavigationControllerEventListening = enabled;

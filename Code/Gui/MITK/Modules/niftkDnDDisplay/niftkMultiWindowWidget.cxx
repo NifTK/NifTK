@@ -2167,7 +2167,7 @@ void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
 
     us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
-    m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
+    m_DisplayInteractor->SetEventConfig("DnDDisplayConfig.xml", niftkDnDDisplayModule);
 
     // ... and register it as listener via the micro services.
     us::ServiceProperties props;

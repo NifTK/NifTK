@@ -46,7 +46,35 @@ void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool
 void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 {
   mitk::DisplayInteractor::ConnectActionsAndFunctions();
+  CONNECT_FUNCTION("selectPosition", SelectPosition);
   CONNECT_FUNCTION("initZoom", InitZoom);
+}
+
+bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, InteractionEvent* interactionEvent)
+{
+  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent == NULL)
+  {
+    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
+    return false;
+  }
+
+  // First, check if the slice navigation controllers have a valid geometry,
+  // i.e. an image is loaded.
+  if (!m_SliceNavigationControllers[0]->GetCreatedWorldGeometry())
+  {
+    return false;
+  }
+
+  // Selects the point under the mouse pointer in the slice navigation controllers.
+  // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
+  // selects the slice in the two other render window.
+  const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
+  m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
+  m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
+  m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);
+
+  return true;
 }
 
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
