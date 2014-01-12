@@ -556,6 +556,8 @@ int main(int argc, char** argv)
   args.outputUCLTransformFile = outputUCLTransformFile;
   args.outputImage = outputImage;
 
+  args.outputMatrixTransformFile = outputMatrixTransformFile;
+
   args.inputTransformFile = inputTransformFile;
 
   args.fixedMask  = fixedMask;
