@@ -129,6 +129,8 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
 
   typename TInputImageType::SpacingValueType fixedResolution;
 
+  bool flgUseShrinkImageFilter = ! this->m_UserSpecifiedSchedule;
+
   std::cout << "Multi-resolution sampling schedule: " << std::endl;
   for (unsigned int i=0; i<m_NumberOfLevels; i++)
   {
@@ -136,6 +138,7 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
     {
       unsigned int sampling = 1;
       fixedResolution = movingSchedule[i][d]*fixedSpacing[d];
+
       std::cout << "  Level: " << std::setw( 3 ) << i 
                 << "  Dimension: " << std::setw( 3 ) << d 
                 << "  Fixed sampling: "
@@ -147,19 +150,26 @@ MultiResolutionImageRegistrationWrapper<TInputImageType, TPyramidFilter>
       {
         sampling++;
       }
+
+      if ( movingSchedule[i][d] != sampling )
+      {
+        flgUseShrinkImageFilter = false;
+      }
+
       movingSchedule[i][d] = sampling;
+
       std::cout << "  Moving sampling: " 
                 << std::setw( 3 ) << movingSchedule[i][d]
                 << "  Moving resolution: " 
                 << std::setw( 9 ) << movingSchedule[i][d]*movingSpacing[d] 
-                << std::endl;
+                << std::endl;        
     }
     std::cout << std::endl;
   }
   
   m_MovingImagePyramid->SetNumberOfLevels( m_NumberOfLevels );
 
-  m_MovingImagePyramid->SetUseShrinkImageFilter(false); 
+  m_MovingImagePyramid->SetUseShrinkImageFilter( flgUseShrinkImageFilter ); 
   m_MovingImagePyramid->SetSchedule( movingSchedule );	
     
   m_MovingImagePyramid->SetInput( m_MovingImage );
