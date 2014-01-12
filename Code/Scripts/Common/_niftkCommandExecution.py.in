@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+
+import os                               # Operating system
+import time                             # Time functions
+import sys                              # System functions
+import glob                             # Filename globbing
+import re                               # Regular expressions
+import subprocess                       # Module for scheduling subprocesses
+
+from time import gmtime, strftime
+
+# --------------------------------------------------------------------------------------------------
+# Return true if all of a list of files exist, false otherwise
+# --------------------------------------------------------------------------------------------------
+
+def FilesExist( namesOfDependencies ):
+    """Return true if all of a list of files exist, false otherwise"""
+
+    for dependency in namesOfDependencies:
+        if ( not os.path.exists(dependency) ):
+            print "WARNING: Dependency '" + dependency + "' doesn't exist."
+            return False
+
+    return True
+
+
+# --------------------------------------------------------------------------------------------------
+# Return if any of the list of targets don't exist or are older than the dependencies
+# --------------------------------------------------------------------------------------------------
+
+def OutOfDate( namesOfTargets, namesOfDependencies ):
+    """Return if any of the list of targets don't exist or are older than the dependencies"""
+
+    for target in namesOfTargets:
+
+        if ( not os.path.exists(target) ):
+            print "Target '" + target + "' is out of date because it doesn't exist."
+            return True
+
+        else:
+            for dependency in namesOfDependencies:
+                if ( cmp(time.localtime(os.path.getmtime(dependency)),
+                         time.localtime(os.path.getmtime(target))) > 0 ):
+                    print "Target '" + target + "' is out of date w.r.t. dependency '" + dependency + "'."
+                    return True
+
+
+    return False
+
+
+# --------------------------------------------------------------------------------------------------
+# Execute one or more commands if the list of targets don't exist or are older than the dependencies
+# Returns true if target was created or up-to-date, false otherwise
+# --------------------------------------------------------------------------------------------------
+
+def ExecuteCommand( namesOfTargets, namesOfDependencies, commands, message ):
+    """Execute one or more commands if the list of targets don't exist or are older than the dependencies"""
+
+    fileCommands = ""
+    fileOutput = ""
+
+    today = gmtime()
+
+    print "\nTarget: ", namesOfTargets
+
+    if ( not FilesExist( namesOfDependencies ) ):
+        return False, fileCommands, fileOutput
+
+    if ( OutOfDate( namesOfTargets, namesOfDependencies ) ):
+        print message
+
+        (fileTargetPath, fileFirstTarget) = os.path.split( namesOfTargets[0] )
+        commandComponents = commands[0].split()
+        (filecommandpath, filecommandname) = os.path.split(commandComponents[0])
+
+        fileStem = "{0:s}_{1:s}_{2:s}".format( fileFirstTarget, 
+                                               filecommandname,
+                                               strftime("%d-%m-%y_%H:%M", today) )
+
+        fileCommands = os.path.join( fileTargetPath, "{0:s}.sh".format( fileStem ) )
+        fileOutput   = os.path.join( fileTargetPath, "{0:s}.out".format( fileStem ) )
+
+        print "Writing commands to: " + fileCommands
+        print "Writing output to: " + fileOutput
+    
+        subprocess.call( "date | tee -a \"" + fileOutput + "\"", 
+                         stderr=subprocess.STDOUT, shell=True )
+
+        fout = open( fileCommands, 'w' )
+
+        for command in commands:
+            print "Executing: ", command
+            fout.write( command + "\n" )
+            try:
+                retcode = subprocess.call( command + " | tee -a \"" + fileOutput + "\"", 
+                                           stderr=subprocess.STDOUT, shell=True )
+                if retcode < 0:
+                    print >>sys.stderr, "Child was terminated by signal", -retcode
+                else:
+                    print >>sys.stderr, "Child returned", retcode
+            except OSError, e:
+                print >>sys.stderr, "Execution failed:", e
+
+        fout.close();
+
+    else:
+        print "Up to date: ", namesOfTargets
+
+    print "\n"
+
+    return True, fileCommands, fileOutput
+

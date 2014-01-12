@@ -1,0 +1,457 @@
+#!/usr/bin/env python
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+import os                               # Operating system
+import time                             # Time functions
+import sys                              # System functions
+import glob                             # Filename globbing
+import re                               # Regular expressions
+import csv                              # Easy way to parse files
+import argparse
+
+from _niftkCommandExecution import *    # Functions to execute commands
+
+# --------------------------------------------------------------------------------------------------
+# Generate XML command line argument description
+# --------------------------------------------------------------------------------------------------
+
+def CreateXML( ):
+   """Generate XML command line argument description"""
+
+   print "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+
+   # Executable description
+   # ~~~~~~~~~~~~~~~~~~~~~~
+
+   print "<executable>"
+
+   print "  <category>Registration</category>"
+   print "  <title>Registration of Phosphor and Immunofluorescent Images</title>"
+   print "  <description>Register a pair of 2D autoradiography phosphor gel and colour immunofluorescent images.</description>"
+   print "  <version>0.1</version>"
+   print "  <documentation-url>http://cmic.cs.ucl.ac.uk/home/software/</documentation-url>"
+   print "  <license>BSD</license>"
+   print "  <contributor>John H. Hipwell (UCL)</contributor>"
+
+
+   # The input source image
+   # ~~~~~~~~~~~~~~~~~~~~~~
+
+   print "  <parameters advanced=\"false\">"
+
+   print "    <label>Input Autoradiography Phosphor Gel (Moving Source) Image</label>"
+   print "    <description>The input autoradiography phosphor gel (source) image and pixel resolution.</description>"
+   
+   print "    <image>"
+   print "      <name>fileInputSource</name>"
+   print "      <longflag>source</longflag>"
+   print "      <description>The input autoradiography phosphor gel (moving source) image.</description>"
+   print "      <label>Input moving source image</label>"
+   print "      <default></default>"
+   print "      <channel>input</channel>"
+   print "    </image>"
+
+   print "     <float>"
+   print "       <name>sourceResolutionInX</name>"
+   print "       <longflag>rsx</longflag>"
+   print "       <description>"
+   print "         The autoradiography phosphor gel (source) image pixel resolution along the 'x' axis in mm. A value of zero indicates that the resolution will remain unchanged."
+   print "       </description>"
+   print "       <label>Source x resolution (mm)</label>"
+   print "       <default>0.05</default>"
+   print "     </float>"
+   
+   print "     <float>"
+   print "       <name>sourceResolutionInY</name>"
+   print "       <longflag>rsy</longflag>"
+   print "       <description>"
+   print "         The autoradiography phosphor gel (source) image pixel resolution along the 'y' axis in mm. A value of zero indicates that the resolution will remain unchanged."
+   print "       </description>"
+   print "       <label>Source y resolution (mm)</label>"
+   print "       <default>0.05</default>"
+   print "     </float>"
+
+   print "  </parameters>"
+ 
+
+   # The input target image
+   # ~~~~~~~~~~~~~~~~~~~~~~
+
+   print "  <parameters advanced=\"false\">"
+
+   print "    <label>Input Colour Immunofluorescent (Fixed Target) Image</label>"
+   print "    <description>The input colour immunofluorescent (target) image and pixel resolution.</description>"
+   
+   print "    <image>"
+   print "      <name>fileInputTarget</name>"
+   print "      <longflag>target</longflag>"
+   print "      <description>The colour immunofluorescent (fixed target) image.</description>"
+   print "      <label>Input fixed target image</label>"
+   print "      <default></default>"
+   print "      <channel>input</channel>"
+   print "    </image>"
+
+   print "     <float>"
+   print "       <name>targetResolutionInX</name>"
+   print "       <longflag>rtx</longflag>"
+   print "       <description>"
+   print "         The colour immunofluorescent (target) image pixel resolution along the 'x' axis in mm. A value of zero indicates that the resolution will remain unchanged."
+   print "       </description>"
+   print "       <label>Target x resolution (mm)</label>"
+   print "       <default>0.005</default>"
+   print "     </float>"
+   
+   print "     <float>"
+   print "       <name>targetResolutionInY</name>"
+   print "       <longflag>rty</longflag>"
+   print "       <description>"
+   print "         The colour immunofluorescent (target) image pixel resolution along the 'y' axis in mm. A value of zero indicates that the resolution will remain unchanged."
+   print "       </description>"
+   print "       <label>Target y resolution (mm)</label>"
+   print "       <default>0.005</default>"
+   print "     </float>"
+
+   print "  </parameters>"
+
+
+   # Output parameters
+   # ~~~~~~~~~~~~~~~~
+
+   print "  <parameters advanced=\"false\">"
+
+
+   print "    <label>Output Parameters</label>"
+   print "    <description>The output image filenames etc.</description>"
+   
+
+   # Filenames of the output registered images
+
+   print "    <image>"
+   print "      <name>fileOutputRigidRegnImage</name>"
+   print "      <longflag>origid</longflag>"
+   print "      <description>Filename of the output rigidly registered histology image.</description>"
+   print "      <label>Output rigidly registered histology image</label>"
+   print "      <default>RigidlyRegisteredImage.tif</default>"
+   print "      <channel>output</channel>"
+   print "    </image>"
+
+   print "    <image>"
+   print "      <name>fileOutputAffineRegnImage</name>"
+   print "      <longflag>oaffine</longflag>"
+   print "      <description>Filename of the output affinely registered histology image.</description>"
+   print "      <label>Output affinely registered histology image</label>"
+   print "      <default>AffinelyRegisteredImage.tif</default>"
+   print "      <channel>output</channel>"
+   print "    </image>"
+      
+   print "  </parameters>"
+
+
+   # Advanced parameters
+   # ~~~~~~~~~~~~~~~~~~~
+
+   print "  <parameters advanced=\"true\">"
+
+   print "    <label>Advanced Parameters</label>"
+   print "    <description>Debugging output etc.</description>"
+
+   print "    <boolean>"
+   print "      <name>flgDebug</name>"
+   print "      <longflag>dbg</longflag>"
+   print "      <description>Specify whether to generate debugging output or not.</description>"
+   print "      <label>Generate debugging output?</label>"
+   print "    </boolean>"
+      
+   print "  </parameters>"
+     
+
+   print "</executable>"
+
+   return
+
+
+# Parse the command line
+# ~~~~~~~~~~~~~~~~~~~~~~
+
+parser = argparse.ArgumentParser( description = 'Register Histology Images.' )
+
+parser.add_argument( '--xml', 
+                     dest = 'xml', 
+                     action = 'store_true', 
+                     help = 'Generate XML command line argument description' )
+
+parser.add_argument( '--source', 
+                     dest = 'fileInputSource', 
+                     metavar = 'image', 
+                     help = 'The autoradiography phosphor gel (source) image filename' )
+
+parser.add_argument( '--target', 
+                     dest = 'fileInputTarget', 
+                     metavar = 'image', 
+                     help = 'The colour immunofluorescent (target) image filename' )
+
+parser.add_argument( '--rsx', 
+                     dest = 'sourceResolutionInX', 
+                     metavar = 'resolution', 
+                     default = 0,
+                     help = 'Autoradiography phosphor gel (source) x resolution in mm' )
+
+parser.add_argument( '--rsy', 
+                     dest = 'sourceResolutionInY', 
+                     metavar = 'resolution', 
+                     default = 0,
+                     help = 'Autoradiography phosphor gel (source) y resolution in mm' )
+
+parser.add_argument( '--rtx', 
+                     dest = 'targetResolutionInX', 
+                     metavar = 'resolution', 
+                     default = 0,
+                     help = 'Colour immunofluorescent (target) x resolution in mm' )
+
+parser.add_argument( '--rty', 
+                     dest = 'targetResolutionInY', 
+                     metavar = 'resolution', 
+                     default = 0,
+                     help = 'Colour immunofluorescent (target) y resolution in mm' )
+
+parser.add_argument( '--origid', 
+                     dest = 'fileOutputRigidRegnImage', 
+                     metavar = 'image', 
+                     help = 'The output rigidly registered histology image filename' )
+
+parser.add_argument( '--oaffine', 
+                     dest = 'fileOutputAffineRegnImage', 
+                     metavar = 'image', 
+                     help = 'The output affinely registered histology image filename' )
+
+parser.add_argument( '--dbg', 
+                     dest = 'flgDebug', 
+                     action = 'store_true',
+                     help = 'Generate debugging output' )
+
+args = parser.parse_args()
+
+
+# Generate XML command line argument description
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if ( args.xml):
+    CreateXML()
+    sys.exit()
+
+
+# Print the input command line options
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if ( not ( args.fileInputSource or args.fileInputTarget ) ):
+    print "\nERROR: Immunofluorescent and phosphor images must both be specified\n"
+    sys.exit()
+
+print '\nSource autoradiography gel image:  {0:}'.format( args.fileInputSource )
+print 'Target immunofluorescent 3-channel colour image: {0:}\n'.format( args.fileInputTarget )
+
+if ( ( ( args.fileOutputRigidRegnImage == None ) or ( args.fileOutputRigidRegnImage == "" ) ) and
+     ( ( args.fileOutputAffineRegnImage == None ) or ( args.fileOutputAffineRegnImage == "" ) ) ):
+    args.fileOutputRigidRegnImage = 'RigidlyRegisteredImage.tif'
+    args.fileOutputAffineRegnImage = 'AffinelyRegisteredImage.tif'
+
+elif ( ( args.fileOutputRigidRegnImage == None ) or ( args.fileOutputRigidRegnImage == "" ) ):
+    args.fileOutputRigidRegnImage = 'RigidlyRegisteredImage.tif'
+
+print 'Output rigidly registered histology image: {0:}\n'.format( args.fileOutputRigidRegnImage )
+print 'Output affinely registered histology image: {0:}\n'.format( args.fileOutputAffineRegnImage )
+
+listOfIntermediateFiles = []    
+
+
+# Convert the source image to nifti
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+fileName, fileExtension = os.path.splitext( args.fileInputSource )
+
+fileSourceNifti = args.fileInputSource.replace( fileExtension, "_CorrectResolution.nii")
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ fileSourceNifti, "Update" ], 
+                             [ args.fileInputSource ],
+                             [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
+                                  .format( args.fileInputSource, 
+                                           args.sourceResolutionInX,
+                                           args.sourceResolutionInY,
+                                           fileSourceNifti ) ],
+                             "Converting source image to nifti" )
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+listOfIntermediateFiles.append( fileSourceNifti )
+    
+
+# Invert the source image
+
+fileInvertedSourceNifti = args.fileInputSource.replace( fileExtension, "_Inverted.nii")
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ fileInvertedSourceNifti, "Update" ], 
+                             [ fileSourceNifti ],
+                             [ "niftkInvertImage -i {0:} -o {1:}"\
+                                  .format( fileSourceNifti, 
+                                           fileInvertedSourceNifti ),
+                               "niftkRescale -i {0:} -o {1:} -min 0 -max 1000"\
+                                  .format( fileInvertedSourceNifti, 
+                                           fileInvertedSourceNifti )],
+                             "Inverting source image" )
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+listOfIntermediateFiles.append( fileInvertedSourceNifti )
+
+    
+# Create the brightness image to register to
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+fileName, fileExtension = os.path.splitext( args.fileInputTarget )
+
+fileTargetNifti = args.fileInputTarget.replace( fileExtension, "_GreyScale.nii")
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ fileTargetNifti, "Update" ], 
+                             [ args.fileInputTarget ],
+                             [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
+                                  .format( args.fileInputTarget, 
+                                           args.targetResolutionInX,
+                                           args.targetResolutionInY,
+                                           fileTargetNifti ),
+                               "niftkRescale -i {0:} -o {1:} -min 0 -max 1000"\
+                                  .format( fileTargetNifti, 
+                                           fileTargetNifti ) ],
+                             "Converting target image to grey-scale nifti" )
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+listOfIntermediateFiles.append( fileTargetNifti )
+
+fileTargetWithBorderNifti = args.fileInputTarget.replace( fileExtension, "_GreyScaleWithBorder.nii")
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ fileTargetWithBorderNifti, "Update" ], 
+                             [ fileTargetNifti ],
+                             [ "niftkAddBorderToImage -i {0:} -o {1:} --width 5"\
+                                  .format( fileTargetNifti, 
+                                           fileTargetWithBorderNifti ) ],
+                             "Adding border to target grey-scale image" )
+
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+listOfIntermediateFiles.append( fileTargetWithBorderNifti )
+
+
+# Run a rigid registration
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+
+fileName, fileExtension = os.path.splitext( args.fileOutputRigidRegnImage )
+
+fileRegisteredNifti = args.fileOutputRigidRegnImage.replace( fileExtension, ".nii")
+fileRigidTransform  = args.fileOutputRigidRegnImage.replace( fileExtension, ".txt")
+fileRigidMatrix     = args.fileOutputRigidRegnImage.replace( fileExtension, ".mtx")
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ fileRegisteredNifti, fileRigidTransform, fileRigidMatrix, "Update" ], 
+                             [ fileTargetWithBorderNifti, fileInvertedSourceNifti ],
+                             [ "niftkAffine --mi 300 --rcog --cog -s \"Normalized Cross Correlation\" --tr \"Rigid\" --nlevels 7 --levels2use 3 --rmin 1 --rmax 170 --wtrans 10 --wrot 1 --wscale 1000 --wskew 1000 --rrfac 0.9 --ti {0:} --si {1:} --oi {2:} --ot {3:} --om {4:}"\
+                                  .format( fileTargetWithBorderNifti,
+                                           fileInvertedSourceNifti,
+                                           fileRegisteredNifti,
+                                           fileRigidTransform,
+                                           fileRigidMatrix) ],
+                             "Rigidly registering the source to the target image" )
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+listOfIntermediateFiles.append( fileRegisteredNifti )
+listOfIntermediateFiles.append( fileRigidTransform )
+listOfIntermediateFiles.append( fileRigidMatrix )
+
+# Transform the original image
+
+( returnValue, fileCommands, fileOutputText ) = \
+    Commands.ExecuteCommand( [ args.fileOutputRigidRegnImage, "Update" ], 
+                             [ fileTargetNifti, fileSourceNifti, fileRigidMatrix ],
+                             [ "niftkTransformation -ti {0:} -si {1:} -g {2:} -o {3:}"\
+                                  .format( fileTargetNifti,
+                                           fileSourceNifti,
+                                           fileRigidTransform,
+                                           args.fileOutputRigidRegnImage ) ],
+                             "Rigidly transforming the source image" )
+
+listOfIntermediateFiles.append( fileCommands )
+listOfIntermediateFiles.append( fileOutputText )
+
+
+# Run an affine registration?
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if ( ( args.fileOutputAffineRegnImage != None ) and ( args.fileOutputAffineRegnImage != "" ) ):
+
+   fileName, fileExtension = os.path.splitext( args.fileOutputAffineRegnImage )
+
+   fileRegisteredNifti = args.fileOutputAffineRegnImage.replace( fileExtension, ".nii")
+   fileAffineTransform = args.fileOutputAffineRegnImage.replace( fileExtension, ".txt")
+   fileAffineMatrix    = args.fileOutputAffineRegnImage.replace( fileExtension, ".mtx")
+
+   ( returnValue, fileCommands, fileOutputText ) = \
+       Commands.ExecuteCommand( [ fileRegisteredNifti, fileAffineTransform, fileAffineMatrix, "Update" ], 
+                                [ fileTargetWithBorderNifti, fileInvertedSourceNifti ],
+                                [ "niftkAffine --mi 300 --rcog -s \"Normalized Cross Correlation\" --tr \"Full Affine\" --nlevels 7 --levels2use 3 --wtrans 1 --wrot 1 --wscale 1000 --wskew 1000 --rrfac 0.7 --ti {0:} --si {1:} --oi {2:} --ot {3:} --om {4:} --it {5:}"\
+                                     .format( fileTargetWithBorderNifti,
+                                              fileInvertedSourceNifti,
+                                              fileRegisteredNifti,
+                                              fileAffineTransform,
+                                              fileAffineMatrix,
+                                              fileRigidTransform ) ],
+                                "Affinely registering the source to the target image" )
+
+   listOfIntermediateFiles.append( fileCommands )
+   listOfIntermediateFiles.append( fileOutputText )
+   listOfIntermediateFiles.append( fileRegisteredNifti )
+   listOfIntermediateFiles.append( fileAffineTransform )
+   listOfIntermediateFiles.append( fileAffineMatrix )
+
+   # Transform the original image
+
+   ( returnValue, fileCommands, fileOutputText ) = \
+       Commands.ExecuteCommand( [ args.fileOutputAffineRegnImage, "Update" ], 
+                                [ fileTargetNifti, fileSourceNifti, fileAffineMatrix ],
+                                [ "niftkTransformation -ti {0:} -si {1:} -g {2:} -o {3:}"\
+                                     .format( fileTargetNifti,
+                                              fileSourceNifti,
+                                              fileAffineTransform,
+                                              args.fileOutputAffineRegnImage ) ],
+                                "Affinely transforming the source image" )
+    
+   listOfIntermediateFiles.append( fileCommands )
+   listOfIntermediateFiles.append( fileOutputText )
+
+
+# Delete all the intermediate files?
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+for filename in listOfIntermediateFiles:
+   if ( not args.flgDebug ):
+      print "Deleting: ", filename
+      os.remove( filename )
+   else:
+      print "Intermediate file: ", filename

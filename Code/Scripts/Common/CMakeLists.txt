@@ -28,6 +28,7 @@ endif()
 
 set(python_scripts
     _niftkCommon
+    _niftkCommandExecution
     ${python_scripts}
 )
 foreach(script ${python_scripts})
