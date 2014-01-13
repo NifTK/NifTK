@@ -42,6 +42,53 @@ StereoCameraCalibration::~StereoCameraCalibration()
 
 
 //-----------------------------------------------------------------------------
+bool StereoCameraCalibration::CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
+                                                            const int& numberCornersX,
+                                                            const int& numberCornersY,
+                                                            const double& sizeSquareMillimeters,
+                                                            const mitk::Point2D& pixelScaleFactor,
+                                                            std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
+                                                            )
+{
+  bool added = false;
+
+  if (leftFileName.length() > 0 && rightFileName.length() > 0)
+  {
+    IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
+    IplImage* imageRight = cvLoadImage(rightFileName.c_str());
+
+    if (imageLeft != NULL && imageRight != NULL)
+    {
+      cv::Mat leftImage(imageLeft);
+      cv::Mat rightImage(imageRight);
+
+      std::vector <cv::Point2d> corners;
+      std::vector <cv::Point3d> objectPoints;
+
+      bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      corners.clear();
+      objectPoints.clear();
+
+      bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      if (foundLeft && foundRight)
+      {
+        successfulLeftFiles.push_back(leftFileName);
+        successfulRightFiles.push_back(rightFileName);
+        added = true;
+      }
+    }
+
+    cvReleaseImage(&imageLeft);
+    cvReleaseImage(&imageRight);
+  }
+
+  return added;
+}
+
+
+//-----------------------------------------------------------------------------
 double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     const std::string& rightDirectoryName,
     const int& numberOfFrames,
@@ -86,18 +133,39 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   std::vector<std::string> fileNamesLeft;
   std::vector<IplImage*> imagesRight;
   std::vector<std::string> fileNamesRight;
+  std::vector<std::string> successfulLeftFiles;
+  std::vector<std::string> successfulRightFiles;
 
-  // Load Data.
-  // 2 options
+  // Load Data. There are two options.
   if (numberOfFrames == 0)
   {
     // Option a. Scan the whole directory. Directory assumed to contain ONLY chessboard images.
-    LoadImagesFromDirectory(leftDirectoryName, imagesLeft, fileNamesLeft);
-    LoadImagesFromDirectory(rightDirectoryName, imagesRight, fileNamesRight);
+    // We scan left and right directory working out successful PAIRS. Then we double back
+    // and only load the successful pairs.
+
+    std::vector<std::string> leftFiles = niftk::GetFilesInDirectory(leftDirectoryName);
+    std::sort(leftFiles.begin(), leftFiles.end());
+
+    std::vector<std::string> rightFiles = niftk::GetFilesInDirectory(rightDirectoryName);
+    std::sort(rightFiles.begin(), rightFiles.end());
+
+    if (leftFiles.size() != rightFiles.size())
+    {
+      std::cerr << "StereoCameraCalibration: Different number of files in:\n" << leftDirectoryName << "\nand\n" << rightDirectoryName << std::endl;
+      return 0;
+    }
+
+    for (int i = 0; i < leftFiles.size(); i++)
+    {
+      CheckAndAppendPairOfFileNames(leftFiles[i], rightFiles[i],
+                                    numberCornersX, numberCornersY, sizeSquareMillimeters, pixelScaleFactor,
+                                    successfulLeftFiles, successfulRightFiles);
+    }
   }
   else if (numberOfFrames != 0)
   {
-    // Option b. Get the whole list of files, randomly select pairs, test if successful, and aim for a certain number of successful items.
+    // Option b. Get the whole list of files, randomly select successive pairs,
+    // test if successful, and aim for a certain number of successful items.
 
     std::cout << "StereoCameraCalibration:Scanning for " << numberOfFrames << std::endl;
 
@@ -145,46 +213,22 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
         std::string leftFileName = files[indexOfLeft];
         std::string rightFileName = files[indexOfRight];
 
-        if (leftFileName.length() > 0 && rightFileName.length() > 0)
+        bool added = CheckAndAppendPairOfFileNames(leftFileName, rightFileName,
+                                                   numberCornersX, numberCornersY, sizeSquareMillimeters, pixelScaleFactor,
+                                                   successfulLeftFiles, successfulRightFiles);
+        if (added)
         {
-          IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
-          IplImage* imageRight = cvLoadImage(rightFileName.c_str());
-
-          if (imageLeft != NULL && imageRight != NULL)
-          {
-            cv::Mat leftImage(imageLeft);
-            cv::Mat rightImage(imageRight);
-
-            std::vector <cv::Point2d> corners;
-            std::vector <cv::Point3d> objectPoints;
-            bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
-            corners.clear();
-            objectPoints.clear();
-            bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
-
-            if (foundLeft && foundRight)
-            {
-              successfulLeftFiles.push_back(leftFileName);
-              successfulRightFiles.push_back(rightFileName);
-              setOfIndexes.insert(indexOfLeft);
-            }
-          }
+          setOfIndexes.insert(indexOfLeft);
         }
       }
     } // end while
-
-    // This is functional duplication. We have already loaded, and checked
-    // for chessboards above, but it keeps the rest of the function simple,
-    // and allows to easily distinguish between using 'numberOfFrames' and not.
-    //
-    // ToDo: refactor this containing if block to avoid re-doing work.
-
-    std::cout << "StereoCameraCalibration: Loading left" << std::endl;
-    LoadImages(successfulLeftFiles, imagesLeft, fileNamesLeft);
-
-    std::cout << "StereoCameraCalibration: Loading right" << std::endl;
-    LoadImages(successfulRightFiles, imagesRight, fileNamesRight);
   }
+
+  std::cout << "StereoCameraCalibration: Loading left" << std::endl;
+  LoadImages(successfulLeftFiles, imagesLeft, fileNamesLeft);
+
+  std::cout << "StereoCameraCalibration: Loading right" << std::endl;
+  LoadImages(successfulRightFiles, imagesRight, fileNamesRight);
 
   double reprojectionError = std::numeric_limits<double>::max();
   std::vector<double> leftMonoReprojectionErrors;

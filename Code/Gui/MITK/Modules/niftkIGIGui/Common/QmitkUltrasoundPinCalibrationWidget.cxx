@@ -153,7 +153,36 @@ void QmitkUltrasoundPinCalibrationWidget::NextImage()
 {
   if (m_ImageFileCounter < m_ImageFiles.size() - 1)
   {
-    m_ImageFileCounter++;
+    unsigned int offset = 1;
+    unsigned int testCounter = m_ImageFileCounter + offset;
+
+    while (testCounter < m_ImageFiles.size())
+    {
+      QString imageFileName = QString::fromStdString(m_ImageFiles[testCounter]);
+      QRegExp rx("([0-9]{19})");
+
+      int matchIndex = imageFileName.indexOf(rx);
+      if (matchIndex != -1)
+      {
+        QString imageTimeStampString = imageFileName.mid(matchIndex,19);
+
+        long long delta = 0;
+        unsigned long long imageTimeStamp = imageTimeStampString.toULongLong();
+        unsigned long long matrixTimeStamp = m_TrackingTimeStamps.GetNearestTimeStamp(imageTimeStamp, &delta);
+
+        delta /= 1000000; // convert nanoseconds to milliseconds.
+
+        if (fabs(static_cast<double>(delta)) < m_TimingToleranceInMilliseconds)
+        {
+          break;
+        }
+      }
+      std::cerr << "For image=" << m_ImageFileCounter << ", skipping offset=" << offset << std::endl;
+      offset++;
+      testCounter = m_ImageFileCounter + offset;
+    }
+
+    m_ImageFileCounter += offset;
     this->ShowImage(m_ImageFileCounter);
   }
 }
