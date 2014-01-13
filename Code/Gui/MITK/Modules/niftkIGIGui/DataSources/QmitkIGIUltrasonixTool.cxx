@@ -317,6 +317,8 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           outputFileName = fileName.toStdString();
 
           QImage qImage = imgMsg->GetQImage();
+          // there shouldnt be any sharing, but make sure we own the buffer exclusively.
+          qImage.detach();
 
           // go straight via itk, skipping all the mitk stuff.
           itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
@@ -331,10 +333,19 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           switch (qImage.format())
           {
             case QImage::Format_ARGB32:
-              // FIXME: swap channels?
+            {
+              // temporary opencv image, just for swapping bgr to rgb
+              IplImage  ocvimg;
+              cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
+              cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+              // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+              // so should be fine to do this here...
+              cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+
               io->SetPixelType(itk::ImageIOBase::RGBA);
               io->SetNumberOfComponents(4);
               break;
+            }
 
             case QImage::Format_Indexed8:
               io->SetPixelType(itk::ImageIOBase::SCALAR);
