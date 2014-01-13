@@ -16,6 +16,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <numeric>
 #include <algorithm>
+#include <functional>
 
 namespace mitk {
 
