@@ -22,6 +22,7 @@
 #include <QCoreApplication>
 #include <Conversion/ImageConversion.h>
 #include <cv.h>
+#include <itkNiftiImageIO.h>
 
 #include <mitkImageWriter.h>
 
@@ -312,26 +313,45 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
           }
           matrixFile.close();
 
-          QmitkQImageToMitkImageFilter::Pointer filter = QmitkQImageToMitkImageFilter::New();
-          mitk::Image::Pointer image = mitk::Image::New();
+          fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
+          outputFileName = fileName.toStdString();
 
           QImage qImage = imgMsg->GetQImage();
-          filter->SetQImage(&qImage);
-          filter->Update();
-          image = filter->GetOutput();
 
-          fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(data->GetTimeStampInNanoSeconds());
+          // go straight via itk, skipping all the mitk stuff.
+          itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+          io->SetFileName(outputFileName);
+          io->SetNumberOfDimensions(2);
+          io->SetDimensions(0, qImage.width());
+          io->SetDimensions(1, qImage.height());
+          io->SetComponentType(itk::ImageIOBase::UCHAR);
+          // FIXME: SetSpacing(unsigned int i, double spacing)
+          // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
 
-          if (image.IsNotNull())
+          switch (qImage.format())
           {
-            mitk::IOUtil::SaveImage( image, fileName.toStdString() );
-            outputFileName = fileName.toStdString();
-            success = true;
+            case QImage::Format_ARGB32:
+              // FIXME: swap channels?
+              io->SetPixelType(itk::ImageIOBase::RGBA);
+              io->SetNumberOfComponents(4);
+              break;
+
+            case QImage::Format_Indexed8:
+              io->SetPixelType(itk::ImageIOBase::SCALAR);
+              io->SetNumberOfComponents(1);
+              break;
+
+            default:
+              MITK_ERROR << "Trying to save ultrasound image with unsupported pixel type.";
+              // all the smartpointer goodness should take care of cleaning up.
+              return false;
           }
-          else
-          {
-            MITK_ERROR << "QmitkIGIUltrasonixTool: m_Image is NULL. This should not happen" << std::endl;
-          }
+
+          // i wonder how itk knows the buffer layout from just the few parameters up there.
+          // this is all a bit fishy...
+          io->Write(qImage.bits());
+          success = true;
+
         } // end if directory to write to ok
       } // end if (imgMsg != NULL)
     } // end if (pointerToMessage != NULL)
