@@ -874,11 +874,16 @@ std::vector<double> OutputCalibrationData(
 
       cvGEMM(extrinsicMatrix, modelPointInputHomogeneous, 1, NULL, 0, modelPointOutputHomogeneous);
 
+      double incurredDistanceError = sqrt(
+          (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))*(CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0))
+          + (CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))*(CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1)-CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1))
+          );
+
       os << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 1) << ", " << CV_MAT_ELEM(objectPoints, double, i*numberOfPoints + j, 2) \
           << " transforms to " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 0 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 1 ,0) << ", " << CV_MAT_ELEM(*modelPointOutputHomogeneous, double, 2 ,0) \
-          << " and then projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
-          << " compared with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
-          << " detected in image " \
+          << " projects to " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(*projectedImagePoints, double, i*numberOfPoints + j, 1) \
+          << " compares with " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 0) << ", " << CV_MAT_ELEM(imagePoints, double, i*numberOfPoints + j, 1) \
+          << " error = " << incurredDistanceError \
           << std::endl;
 
       rms += (
