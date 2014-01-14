@@ -73,17 +73,19 @@ bool SplitVideo::Split(
 
   cv::Size S = cv::Size((int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_WIDTH),
     (int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_HEIGHT)) ;
-  //FIX ME, out name should be some sort of suffixed version of the in name, and the same format
   double fps = (double)cvGetCaptureProperty (capturer, CV_CAP_PROP_FPS);
-
   int codec = (int)cvGetCaptureProperty (capturer,CV_CAP_PROP_FOURCC);
-  // Transform from int to char via Bitwise operators
+
   char EXT[] = {codec & 0XFF , (codec & 0XFF00) >> 8,(codec & 0XFF0000) >> 16,(codec & 0XFF000000) >> 24, 0};
   MITK_INFO << codec << " " << EXT[0] << ", " << EXT[1] << ", " << EXT[2] << ", " << EXT[3];
 
-//  CvVideoWriter*  writerer = cvCreateVideoWriter("out.avi",CV_FOURCC('D','I','V','X'),fps,S, true);
-  CvVideoWriter*  writerer = cvCreateVideoWriter("out.avi",codec,fps,S, true);
-  std::ofstream fout("out.framemap.log");
+
+  std::string outVideoName = videoIn + "." +  boost::lexical_cast<std::string>(startFrame)
+    + "-" +  boost::lexical_cast<std::string>(endFrame) + ".avi";
+  std::string outLogName = videoIn + "." +  boost::lexical_cast<std::string>(startFrame)
+    + "-" +  boost::lexical_cast<std::string>(endFrame) + ".framemap.log";
+  CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),codec,fps,S, true);
+  std::ofstream fout(outLogName.c_str());
 
   std::string line;
   unsigned int frameNumber = 0;
@@ -93,7 +95,6 @@ bool SplitVideo::Split(
   unsigned int videoFrameNumber = 0;
   unsigned int videoOutFrameNumber = 0;
 
-  cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE); 
   while ( getline(fin,line) && ( frameNumber <= endFrame ) )
   {
     if ( line[0] != '#' )
@@ -115,8 +116,6 @@ bool SplitVideo::Split(
         {
           MITK_INFO << "Writing input frame " << frameNumber << " to output Frame " << videoOutFrameNumber;
           IplImage image(videoImage);
-          cvShowImage("Left Channel" , &image);
-         // cvShowImage("Left Channel" , &videoImage);
           cvWriteFrame(writerer,&image);
           fout << videoOutFrameNumber << "\t" << sequenceNumber << "\t" << channel << "\t" << timeStamp << std::endl;
           videoOutFrameNumber ++;
@@ -131,8 +130,8 @@ bool SplitVideo::Split(
   }
 
  fout.close();
-  fin.close();
-  cvReleaseVideoWriter(&writerer);
+ fin.close();
+ cvReleaseVideoWriter(&writerer);
 
   return isSuccessful;
 }
