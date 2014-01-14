@@ -74,7 +74,8 @@ bool SplitVideo::Split(
   cv::Size S = cv::Size((int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_WIDTH),
     (int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_HEIGHT)) ;
   //FIX ME, out name should be some sort of suffixed version of the in name, and the same format
-  CvVideoWriter*  writerer = cvCreateVideoWriter("out.avi",CV_FOURCC('D','I','V','X'),60,S, true);
+  double fps = (double)cvGetCaptureProperty (capturer, CV_CAP_PROP_FPS);
+  CvVideoWriter*  writerer = cvCreateVideoWriter("out.avi",CV_FOURCC('D','I','V','X'),fps,S, true);
   std::ofstream fout("out.framemap.log");
 
   std::string line;
