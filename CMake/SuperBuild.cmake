@@ -19,7 +19,7 @@ set(EP_BUILD_TESTING OFF)
 set(EP_BUILD_EXAMPLES OFF)
 set(EP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
-if(MSVC90 OR MSVC10)
+if(MSVC)
   set(EP_COMMON_C_FLAGS "${CMAKE_C_FLAGS} /bigobj /MP /W0 /Zi")
   set(EP_COMMON_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /MP /W0 /Zi")
   # we want symbols, even for release builds!
