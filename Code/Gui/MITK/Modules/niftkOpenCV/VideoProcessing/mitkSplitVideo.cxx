@@ -55,10 +55,11 @@ bool SplitVideo::Split(
   }
   if ( videoFiles.size() != 1 || frameMapFiles.size() != 1 ) 
   {
-    MITK_ERROR << "found the wrong number of video or frame map files"; 
+    MITK_ERROR << "found the wrong number of video or frame map files, quitting";
+    return false;
   }
 
-  CvCapture*      capturer;
+  CvCapture*  capturer;
   std::string videoIn = videoFiles[0];
   MITK_INFO << "trying to open " << videoIn;
   capturer = cvCreateFileCapture(videoIn.c_str());
@@ -70,8 +71,8 @@ bool SplitVideo::Split(
     return false;
   }
 
-  //FIX ME, this should not be hard coded
-  cv::Size S = cv::Size((int) 1920, (int) 540 );
+  cv::Size S = cv::Size((int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_WIDTH),
+    (int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_HEIGHT)) ;
   //FIX ME, out name should be some sort of suffixed version of the in name, and the same format
   CvVideoWriter*  writerer = cvCreateVideoWriter("out.avi",CV_FOURCC('D','I','V','X'),60,S, true);
   std::ofstream fout("out.framemap.log");
