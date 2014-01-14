@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Image Operators</category>
+  <title>Add a Border to an Image</title>
+  <description><![CDATA[Adds a border (specified in millimetres) to an image. The border intensity can be specified explicitly but the default action is to use the intensity of the first voxel. Either a constant width border can be added to all dimensions or different widths for each dimension.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>fileInputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>PaddedImage.nii.gz</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>The Border</label>
+    <description><![CDATA[Parameters that control the border region added to the image.]]></description>
+
+    <double-vector>
+      <name>width</name>
+      <longflag>width</longflag>
+      <description>
+	The width (in mm) of the border region to add. If a single value is specified this will be added to all dimensions. Alternatively a comma separated list of values can be specified to vary the expansion in each dimension. If no value is specified then the default width of 10mm will be used.
+      </description>
+      <label>Border width (mm)</label>
+      <default></default>
+    </double-vector>
+
+    <double-vector>
+      <name>intensity</name>
+      <longflag>intensity</longflag>
+      <description>The image intensity to set the border region to. If not specified then the intensity of the first voxel in the image will be used.</description>
+      <label>Border intensity</label>
+      <default></default>
+    </double-vector>
+
+  </parameters>
+
+</executable>

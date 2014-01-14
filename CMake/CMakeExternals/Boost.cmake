@@ -75,10 +75,19 @@ if(MITK_USE_Boost)
         set(APPLE_CMAKE_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/${proj}-cmake/ChangeBoostLibsInstallNameForMac.cmake)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
         set(INSTALL_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
+
+        if(CMAKE_OSX_SYSROOT)
+          set(_boost_sysroot "--sysroot=${CMAKE_OSX_SYSROOT}")
+        endif()
+
+        if(${CMAKE_OSX_DEPLOYMENT_TARGET} STREQUAL "10.8")
+          set(_boost_cxxflags cxxflags="-stdlib=libstdc++")
+          set(_boost_linkflags linkflags="-stdlib=libstdc++")
+        endif()
       endif()
 
       set(_boost_cfg_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bootstrap${_shell_extension})
-      set(_boost_build_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bjam --build-dir=${CMAKE_CURRENT_BINARY_DIR}/${proj}-build --prefix=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
+      set(_boost_build_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bjam ${_boost_sysroot} --build-dir=${CMAKE_CURRENT_BINARY_DIR}/${proj}-build --prefix=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared ${_boost_cxxflags} ${_boost_linkflags} -q install)
     else()
       # If no libraries are specified set the boost root to the boost src directory
       set(BOOST_ROOT "${CMAKE_CURRENT_BINARY_DIR}/${proj}-src")

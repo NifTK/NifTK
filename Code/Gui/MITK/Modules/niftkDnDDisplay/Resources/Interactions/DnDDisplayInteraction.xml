@@ -17,6 +17,9 @@ TODO Std move to abort interaction of scroll/pan/zoom
 -->
 <statemachine>
     <state name="start" startstate="true" >
+        <transition event_class="InteractionPositionEvent" event_variant="StartSelectPosition" target="selectPosition">
+            <action name="selectPosition"/>
+        </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartMove" target="move">
             <action name="init"/>
         </transition>
@@ -31,16 +34,22 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="ScrollOneDown"/>
         </transition>
     </state>
+    <state name="selectPosition">
+        <transition event_class="InteractionPositionEvent" event_variant="SelectPosition" target="selectPosition">
+            <action name="selectPosition"/>
+        </transition>
+        <transition event_class="InteractionPositionEvent" event_variant="EndSelectPosition" target="start"/>
+    </state>
     <state name="move">
-      <transition event_class="InteractionPositionEvent" event_variant="Moving" target="move">
+        <transition event_class="InteractionPositionEvent" event_variant="Moving" target="move">
             <action name="move"/>
-      </transition>
-      <transition event_class="InteractionPositionEvent" event_variant="EndMoving" target="start"/>
+        </transition>
+        <transition event_class="InteractionPositionEvent" event_variant="EndMoving" target="start"/>
     </state>
     <state name="zoom">
-      <transition event_class="InteractionPositionEvent" event_variant="Zooming" target="zoom">
+        <transition event_class="InteractionPositionEvent" event_variant="Zooming" target="zoom">
             <action name="zoom"/>
-      </transition>
-      <transition event_class="InteractionPositionEvent" event_variant="EndZooming" target="start"/>
+        </transition>
+        <transition event_class="InteractionPositionEvent" event_variant="EndZooming" target="start"/>
     </state>
 </statemachine>
