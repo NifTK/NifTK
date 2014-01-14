@@ -165,6 +165,9 @@ private:
   bool                          m_ProjectOK;
   bool                          m_DrawAxes;
 
+  unsigned int                  m_StartFrame; //you can exclude some frames at the start
+  unsigned int                  m_EndFrame; // and at the end
+
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
   cv::Mat* m_LeftDistortionVector;
