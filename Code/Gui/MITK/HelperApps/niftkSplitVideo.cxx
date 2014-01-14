@@ -27,7 +27,7 @@ int main(int argc, char** argv)
   {
     mitk::SplitVideo::Pointer splitter = mitk::SplitVideo::New();
     
-    splitter->Split(directory,startFrame, endFrame);
+    splitter->Split(videoFileDirectory,startFrame, endFrame);
 
     returnStatus = EXIT_SUCCESS;
   }
