@@ -80,7 +80,7 @@ if(MITK_USE_Boost)
           set(_boost_sysroot "--sysroot=${CMAKE_OSX_SYSROOT}")
         endif()
 
-        if(${CMAKE_OSX_DEPLOYMENT_TARGET} STREQUAL "10.8")
+        if("${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "10.8")
           set(_boost_cxxflags cxxflags="-stdlib=libstdc++")
           set(_boost_linkflags linkflags="-stdlib=libstdc++")
         endif()
