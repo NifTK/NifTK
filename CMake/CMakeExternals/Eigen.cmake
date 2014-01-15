@@ -43,6 +43,8 @@ if(BUILD_IGI)
       UPDATE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""
+      CMAKE_ARGS
+        ${EP_COMMON_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
       )
 
