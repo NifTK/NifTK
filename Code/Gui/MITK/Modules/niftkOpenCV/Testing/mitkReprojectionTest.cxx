@@ -129,9 +129,9 @@ int mitkReprojectionTest ( int argc, char * argv[] )
        pow ( (reProjectedTopLeft.x - reProjectedBottomRight.x),2.0) +
        pow ( (reProjectedTopLeft.y - reProjectedBottomRight.y),2.0) );
 
-  MITK_INFO << "Top Left " << reProjectedTopLeft;
-  MITK_INFO << "Bottom Right " << reProjectedBottomRight;
-  MITK_INFO << "Length of Diagonal " << diagonalSize;
+  MITK_INFO << "Top Left = " << reProjectedTopLeft;
+  MITK_INFO << "Bottom Right = " << reProjectedBottomRight;
+  MITK_INFO << "Length of Diagonal = " << diagonalSize;
   // End of reprojected image size bit
   
 
