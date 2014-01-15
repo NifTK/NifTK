@@ -42,6 +42,7 @@ public:
     const QString& outputMatrixDirectory,
     const QString& outputPointDirectory,
     const unsigned long long timingToleranceInMilliseconds,
+    const bool& skipForward,
     QWidget *parent = 0
   );
   virtual ~QmitkUltrasoundPinCalibrationWidget();
@@ -80,6 +81,7 @@ private:
   const QString m_OutputMatrixDirectory;
   const QString m_OutputPointDirectory;
   const unsigned long long m_TimingToleranceInMilliseconds;
+  const bool m_SkipForward;
 
   vtkSmartPointer<vtkImageViewer> m_ImageViewer;
   vtkSmartPointer<vtkPNGReader> m_PNGReader;
@@ -88,6 +90,7 @@ private:
   int m_ImageWidth;
   int m_ImageHeight;
   unsigned long int m_ImageFileCounter;
+  unsigned long int m_PointsOutputCounter;
 
   void NextImage();
   void PreviousImage();
