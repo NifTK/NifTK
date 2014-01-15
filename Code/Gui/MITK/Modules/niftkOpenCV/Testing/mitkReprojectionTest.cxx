@@ -106,6 +106,35 @@ int mitkReprojectionTest ( int argc, char * argv[] )
      &rightCameraDistortion,&rightToLeftRotationMatrix,
      &rightToLeftTranslationVector,&leftCameraToTracker);
 
+  // Section to output reprojected image size
+  cv::Point2d topLeft = cv::Point2d (0,0);
+  cv::Point2d bottomRight = cv::Point2d (screenWidth, screenHeight);
+  cv::Point2d undistortedTopLeft;
+  cv::Point2d undistortedBottomRight;
+  mitk::UndistortPoint ( topLeft, leftCameraIntrinsic, leftCameraDistortion, undistortedTopLeft);
+  mitk::UndistortPoint ( bottomRight, leftCameraIntrinsic, leftCameraDistortion, undistortedBottomRight);
+
+  cv::Point3d reProjectedTopLeft = mitk::ReProjectPoint (undistortedTopLeft, leftCameraIntrinsic);
+  cv::Point3d reProjectedBottomRight = mitk::ReProjectPoint (undistortedBottomRight, leftCameraIntrinsic);
+
+  reProjectedTopLeft.x *= featureDepth;
+  reProjectedTopLeft.y *= featureDepth;
+  reProjectedTopLeft.z *= featureDepth;
+
+  reProjectedBottomRight.x *= featureDepth;
+  reProjectedBottomRight.y *= featureDepth;
+  reProjectedBottomRight.z *= featureDepth;
+
+  double diagonalSize = sqrt (
+       pow ( (reProjectedTopLeft.x - reProjectedBottomRight.x),2.0) +
+       pow ( (reProjectedTopLeft.y - reProjectedBottomRight.y),2.0) );
+
+  MITK_INFO << "Top Left = " << reProjectedTopLeft;
+  MITK_INFO << "Bottom Right = " << reProjectedBottomRight;
+  MITK_INFO << "Length of Diagonal = " << diagonalSize;
+  // End of reprojected image size bit
+  
+
   CvMat* outputLeftCameraWorldPointsIn3D = NULL;
   CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
   CvMat* output2DPointsLeft = NULL ;
