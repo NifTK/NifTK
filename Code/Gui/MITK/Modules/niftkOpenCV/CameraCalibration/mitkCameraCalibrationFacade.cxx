@@ -712,7 +712,8 @@ double CalibrateStereoCameraParameters(
 //-----------------------------------------------------------------------------
 std::vector<double> OutputCalibrationData(
     std::ostream& os,
-    const std::string intrinsicFlatFileName,
+    const std::string& outputDirectoryName,
+    const std::string& intrinsicFlatFileName,
     const CvMat& objectPoints,
     const CvMat& imagePoints,
     const CvMat& pointCounts,
@@ -825,9 +826,9 @@ std::vector<double> OutputCalibrationData(
         *extrinsicMatrix
         );
 
-    cvSave(std::string(fileNames[i] + ".extrinsic.xml").c_str(), extrinsicMatrix);
-    cvSave(std::string(fileNames[i] + ".extrinsic.rot.xml").c_str(), extrinsicRotationVector);
-    cvSave(std::string(fileNames[i] + ".extrinsic.trans.xml").c_str(), extrinsicTranslationVector);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.xml"))).c_str(), extrinsicMatrix);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.rot.xml"))).c_str(), extrinsicRotationVector);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.trans.xml"))).c_str(), extrinsicTranslationVector);
 
     os << "Extrinsic matrix" << std::endl;
 
@@ -837,7 +838,7 @@ std::vector<double> OutputCalibrationData(
     extrinsicFileOutput.precision(outputPrecision);
     extrinsicFileOutput.width(outputWidth);
 
-    extrinsicFileOutput.open((fileNames[i] + ".extrinsic.txt").c_str(), std::ios::out);
+    extrinsicFileOutput.open((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(fileNames[i]) + std::string(".extrinsic.xml"))).c_str(), std::ios::out);
     if (!extrinsicFileOutput.fail())
     {
       writeExtrinsicToFlatFile = true;

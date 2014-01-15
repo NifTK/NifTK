@@ -48,6 +48,11 @@ namespace niftk
   NIFTKCOMMON_WINEXPORT std::string ConvertToFullNativePath(const std::string& pathName);
 
   /**
+   * \brief Returns the basename. 
+   */
+  NIFTKCOMMON_WINEXPORT std::string Basename(const std::string& pathName);
+  
+  /**
    * Returns the file separator.
    * \return a / or a \ depending on OS
    */

@@ -25,14 +25,12 @@
       <description>The directory containing images of a planar chessboard calibration object for the right camera of a stereo pair</description>
       <label>Right camera input directory</label>
     </directory>    
-    <file fileExtensions="*.txt">
-      <name>outputCalibrationData</name>
-      <longflag>output</longflag>
-      <description>Output file for calibration data</description>
-      <label>Output calibration data filename</label>
-      <default>calib.txt</default>
-      <channel>output</channel>
-    </file>
+    <directory>
+      <name>outputDirectory</name>
+      <longflag>outputDirectory</longflag>
+      <description>Output directory for all files.</description>
+      <label>Output directory</label>
+    </directory>
   </parameters>
   
   <parameters>
