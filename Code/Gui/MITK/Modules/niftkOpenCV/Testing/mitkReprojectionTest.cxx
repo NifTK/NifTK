@@ -320,14 +320,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
     double error_m2 = (xError_m2 * xError_m2 + yError_m2 * yError_m2 + zError_m2 * zError_m2);
     
     if ( ! cropNonVisiblePoints || ! (
-        ( leftScreenPoints.at<double>(i,0) < 0.0) ||
-           ( leftScreenPoints.at<double>(i,0) > screenWidth )  || 
-           ( leftScreenPoints.at<double>(i,1) < 0.0 ) || 
-           ( leftScreenPoints.at<double>(i,1) > screenHeight ) || 
-           ( rightScreenPoints.at<double>(i,0) < 0.0) ||
-           ( rightScreenPoints.at<double>(i,0) > screenWidth )  || 
-           ( rightScreenPoints.at<double>(i,1) < 0.0 ) || 
-           ( rightScreenPoints.at<double>(i,1) > screenHeight ) ) )
+           ( CV_MAT_ELEM (*output2DPointsLeft,double,i,0) < 0.0 ) ||
+           ( CV_MAT_ELEM (*output2DPointsLeft,double,i,0) > screenWidth )  || 
+           ( CV_MAT_ELEM (*output2DPointsLeft,double,i,1) < 0.0 ) || 
+           ( CV_MAT_ELEM (*output2DPointsLeft,double,i,1) > screenHeight ) || 
+           ( CV_MAT_ELEM (*output2DPointsRight,double,i,0) < 0.0 ) ||
+           ( CV_MAT_ELEM (*output2DPointsRight,double,i,0) > screenWidth )  || 
+           ( CV_MAT_ELEM (*output2DPointsRight,double,i,1) < 0.0 ) || 
+           ( CV_MAT_ELEM (*output2DPointsRight,double,i,1) > screenHeight ) ) )
     {
       xErrorMean_m1 += xError_m1;
       yErrorMean_m1 += yError_m1;
