@@ -16,6 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 
+#include <niftkFileHelper.h>
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkStereoCameraCalibration.h>
@@ -32,54 +33,76 @@ class CameraCalibrationTest
 public:
 
   //-----------------------------------------------------------------------------
-  static void TestStereoReprojectionError(const std::string& inputLeft,
+  static int TestStereoReprojectionError(const std::string& inputLeft,
                                           const std::string& inputRight,
                                           const int& cornersX,
                                           const int& cornersY,
                                           const float& squareSize,
-                                          const std::string& outputFile,
+                                          const std::string& outputDir,
                                           const float& expectedError
                                           )
   {
     MITK_TEST_OUTPUT(<< "Starting TestStereoReprojectionError...");
 
+    std::string outputDirectory = outputDir + "-stereo";
+    if (!niftk::DirectoryExists(outputDirectory))
+    {
+      if (!niftk::CreateDirAndParents(outputDirectory))
+      {
+        std::cerr << "Failed to create directory:" << outputDirectory << std::endl;
+        return EXIT_FAILURE;
+      }
+    }
+    
     mitk::Point2D scaleFactors;
     scaleFactors[0] = 1;
     scaleFactors[1] = 1;
 
     mitk::StereoCameraCalibration::Pointer calib = mitk::StereoCameraCalibration::New();
-    float actualError = calib->Calibrate(inputLeft, inputRight, 0, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".stereo.txt", false);
+    float actualError = calib->Calibrate(inputLeft, inputRight, 0, cornersX, cornersY, squareSize, scaleFactors, outputDirectory, false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;
     MITK_TEST_CONDITION_REQUIRED(isOK,".. Testing stereo actualError=" << actualError << " against expectedError=" << expectedError << " with tolerance " << tolerance);
 
     MITK_TEST_OUTPUT(<< "Finished TestStereoReprojectionError...");
+    return EXIT_SUCCESS;
   }
 
   //-----------------------------------------------------------------------------
-  static void TestMonoReprojectionError(const std::string& inputLeft,
+  static int TestMonoReprojectionError(const std::string& inputLeft,
                                         const int& cornersX,
                                         const int& cornersY,
                                         const float& squareSize,
-                                        const std::string& outputFile,
+                                        const std::string& outputDir,
                                         const float& expectedError
                                         )
   {
     MITK_TEST_OUTPUT(<< "Starting TestMonoReprojectionError...");
 
+    std::string outputDirectory = outputDir + "-mono";
+    if (!niftk::DirectoryExists(outputDirectory))
+    {
+      if (!niftk::CreateDirAndParents(outputDirectory))
+      {
+        std::cerr << "Failed to create directory:" << outputDirectory << std::endl;
+        return EXIT_FAILURE;
+      }
+    }
+        
     mitk::Point2D scaleFactors;
     scaleFactors[0] = 1;
     scaleFactors[1] = 1;
 
     mitk::CameraCalibrationFromDirectory::Pointer calib = mitk::CameraCalibrationFromDirectory::New();
-    float actualError = calib->Calibrate(inputLeft, cornersX, cornersY, squareSize, scaleFactors, outputFile + ".mono.txt", false);
+    float actualError = calib->Calibrate(inputLeft, cornersX, cornersY, squareSize, scaleFactors, outputDirectory, false);
 
     double tolerance = 0.01;
     bool isOK = fabs(actualError - expectedError) < tolerance;
     MITK_TEST_CONDITION_REQUIRED(isOK,".. Testing mono actualError=" << actualError << " against expectedError=" << expectedError << " with tolerance " << tolerance);
 
     MITK_TEST_OUTPUT(<< "Finished TestMonoReprojectionError...");
+    return EXIT_SUCCESS;
   }
 
 }; // end class
@@ -95,16 +118,23 @@ int mitkCameraCalibrationTest(int argc, char * argv[])
 
   std::string inputLeft = argv[1];
   std::string inputRight = argv[2];
-  std::string outputFile = argv[3];
+  std::string outputDir = argv[3];
   int cornersX = atoi(argv[4]);
   int cornersY = atoi(argv[5]);
   float squareSize = atof(argv[6]);
   float monoError = atof(argv[7]);
   float stereoError = atof(argv[8]);
 
-  CameraCalibrationTest::TestMonoReprojectionError(inputLeft, cornersX, cornersY, squareSize, outputFile, monoError);
-  CameraCalibrationTest::TestStereoReprojectionError(inputLeft, inputRight, cornersX, cornersY, squareSize, outputFile, stereoError);
-
+  int returnStatus = CameraCalibrationTest::TestMonoReprojectionError(inputLeft, cornersX, cornersY, squareSize, outputDir, monoError);
+  if (returnStatus != EXIT_SUCCESS)
+  {
+    return returnStatus;
+  }
+  returnStatus = CameraCalibrationTest::TestStereoReprojectionError(inputLeft, inputRight, cornersX, cornersY, squareSize, outputDir, stereoError);
+  if (returnStatus != EXIT_SUCCESS)
+  {
+    return returnStatus;
+  }
   MITK_TEST_END();
 }
 
