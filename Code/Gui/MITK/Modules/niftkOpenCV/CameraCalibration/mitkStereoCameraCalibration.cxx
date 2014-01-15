@@ -96,10 +96,23 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     const int& numberCornersY,
     const double& sizeSquareMillimeters,
     const mitk::Point2D& pixelScaleFactor,
-    const std::string& outputFileName,
+    const std::string& outputDirectoryName,
     const bool& writeImages
     )
 {
+  std::string outputFileName = niftk::ConcatenatePath(outputDirectoryName, "stereo-calibration.log");
+  std::string r2lFileName = niftk::ConcatenatePath(outputDirectoryName, "calib.r2l.txt");
+  std::string r2lRotationFileName = niftk::ConcatenatePath(outputDirectoryName, "calib.r2l.rotation.xml");
+  std::string r2lTranslationFileName = niftk::ConcatenatePath(outputDirectoryName, "calib.r2l.translation.xml");
+  std::string leftIntrinsicTextFile = niftk::ConcatenatePath(outputDirectoryName, "calib.left.intrinsic.txt");
+  std::string leftIntrinsicXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.left.intrinsic.xml");
+  std::string leftDistortionXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.left.distortion.xml");
+  std::string rightIntrinsicTextFile = niftk::ConcatenatePath(outputDirectoryName, "calib.right.intrinsic.txt");
+  std::string rightIntrinsicXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.right.intrinsic.xml");
+  std::string rightDistortionXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.right.distortion.xml");
+  std::string essentialMatrixFile = niftk::ConcatenatePath(outputDirectoryName, "calib.essential.xml");
+  std::string fundamentalMatrixFile = niftk::ConcatenatePath(outputDirectoryName, "calib.fundamental.xml");
+  
   std::ofstream fs;
   fs.open(outputFileName.c_str(), std::ios::out);
   if (!fs.fail())
@@ -113,7 +126,6 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   }
 
   std::ofstream fsr2l;
-  std::string r2lFileName = outputFileName + ".r2l.txt";
   fsr2l.open((r2lFileName).c_str(), std::ios::out);
   if (!fsr2l.fail())
   {
@@ -319,7 +331,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   fs << "Left camera" << std::endl;
   leftMonoReprojectionErrors = OutputCalibrationData(
       fs,
-      outputFileName + ".left.intrinsic.txt",
+      outputDirectoryName,
+      leftIntrinsicTextFile,
       *objectPointsLeft,
       *imagePointsLeft,
       *pointCountsLeft,
@@ -336,13 +349,14 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       );
 
   // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-  cvSave(std::string(outputFileName + ".left.intrinsic.xml").c_str(), intrinsicMatrixLeft);
-  cvSave(std::string(outputFileName + ".left.distortion.xml").c_str(), distortionCoeffsLeft);
+  cvSave(leftIntrinsicXmlFile.c_str(), intrinsicMatrixLeft);
+  cvSave(leftDistortionXmlFile.c_str(), distortionCoeffsLeft);
 
   fs << "Right camera" << std::endl;
   rightMonoReprojectionErrors = OutputCalibrationData(
       fs,
-      outputFileName + ".right.intrinsic.txt",
+      outputDirectoryName,
+      rightIntrinsicTextFile,
       *objectPointsRight,
       *imagePointsRight,
       *pointCountsRight,
@@ -359,13 +373,13 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       );
 
   // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-  cvSave(std::string(outputFileName + ".right.intrinsic.xml").c_str(), intrinsicMatrixRight);
-  cvSave(std::string(outputFileName + ".right.distortion.xml").c_str(), distortionCoeffsRight);
+  cvSave(rightIntrinsicXmlFile.c_str(), intrinsicMatrixRight);
+  cvSave(rightDistortionXmlFile.c_str(), distortionCoeffsRight);
 
   // Output the right to left rotation and translation.
   // This is the MEDIAN of all the views.
-  cvSave(std::string(outputFileName + ".r2l.rotation.xml").c_str(), rightToLeftRotationMatrix);
-  cvSave(std::string(outputFileName + ".r2l.translation.xml").c_str(), rightToLeftTranslationVector);
+  cvSave(r2lRotationFileName.c_str(), rightToLeftRotationMatrix);
+  cvSave(r2lTranslationFileName.c_str(), rightToLeftTranslationVector);
 
   // Output right to left MEDIAN transformation as a rotation [3x3] then a translation [1x3]
   for (int i = 0; i < 3; i++)
@@ -391,12 +405,13 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       CV_MAT_ELEM(*r2LRot, double, 0, j) = CV_MAT_ELEM(*rightToLeftRotationVectors, double, i, j);
       CV_MAT_ELEM(*r2LTrans, double, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, double, i, j);
     }
-    cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.rotation.xml").c_str(), r2LRot);
-    cvSave(std::string(successfullFileNamesLeft[i] + ".r2l.translation.xml").c_str(), r2LTrans);
-
+    
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), r2LRot);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
+    
     // Also output in plain text format, which is a [3x3] rotation, AND THEN a [1x3] translation.
     std::ofstream tmpR2L;
-    std::string tmpR2LFileName = successfullFileNamesLeft[i] + ".r2l.txt";
+    std::string tmpR2LFileName = niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.txt"));
     tmpR2L.open((tmpR2LFileName).c_str(), std::ios::out);
     if (!tmpR2L.fail())
     {
@@ -419,8 +434,8 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
 
 
   // Might as well
-  cvSave(std::string(outputFileName + ".essential.xml").c_str(), essentialMatrix);
-  cvSave(std::string(outputFileName + ".fundamental.xml").c_str(), fundamentalMatrix);
+  cvSave(essentialMatrixFile.c_str(), essentialMatrix);
+  cvSave(fundamentalMatrixFile.c_str(), fundamentalMatrix);
 
   // Tidy up.
   if(fs.is_open())
