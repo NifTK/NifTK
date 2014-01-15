@@ -123,41 +123,61 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     const bool &isFullyConnected
     )
 {
-  if (this->GetOutput()->GetPixel(nextImgIdx) == m_BackgroundValue    /// i.e. not already set.
-      && this->GetInput()->GetPixel(nextImgIdx) >= m_LowerThreshold   /// i.e. between thresholds
-      && this->GetInput()->GetPixel(nextImgIdx) <= m_UpperThreshold)  /// i.e. between thresholds
+  /// I.e. not already set.
+  if (this->GetOutput()->GetPixel(nextImgIdx) != m_BackgroundValue)
   {
-    OutputPixelType segmentationContourImageCurrentPixel = this->GetSegmentationContourImage()->GetPixel(currentImgIdx);
-    OutputPixelType segmentationContourImageNextPixel = this->GetSegmentationContourImage()->GetPixel(nextImgIdx);
+    return;
+  }
 
-    if ((segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
-         && isFullyConnected)
-        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-            && !isFullyConnected)
-        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-            && isFullyConnected)
-        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
-        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
-            && isFullyConnected)
-        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-            && !isFullyConnected))
+  /// I.e. out of thresholds.
+  InputPixelType inputImageNextPixel = this->GetInput()->GetPixel(nextImgIdx);
+  if (inputImageNextPixel < m_LowerThreshold || inputImageNextPixel > m_UpperThreshold)
+  {
+    return;
+  }
+
+  const OutputImageType* segmentationContourImage = this->GetSegmentationContourImage();
+  if (segmentationContourImage)
+  {
+    OutputPixelType segmentationContourImageCurrentPixel = segmentationContourImage->GetPixel(currentImgIdx);
+    OutputPixelType segmentationContourImageNextPixel = segmentationContourImage->GetPixel(nextImgIdx);
+
+    if ((segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
+         || !isFullyConnected)
+        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
+            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
+            || isFullyConnected)
+        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
+            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
+            || !isFullyConnected)
+        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
+            || segmentationContourImageNextPixel != m_SegmentationContourImageInsideValue)
+        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
+            || !isFullyConnected)
+        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
+            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
+            || isFullyConnected))
     {
-      OutputPixelType manualContourCurrentPixel = this->GetManualContourImage()->GetPixel(currentImgIdx);
-
-      if ((manualContourCurrentPixel == m_ManualContourImageNonBorderValue)
-          || (manualContourCurrentPixel == m_ManualContourImageBorderValue
-              && isFullyConnected
-              && !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)))
-      {
-        r_stack.push(nextImgIdx);
-        this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
-      }
+      return;
     }
   }
+
+  const OutputImageType* manualContourImage = this->GetManualContourImage();
+  if (manualContourImage)
+  {
+    OutputPixelType manualContourCurrentPixel = manualContourImage->GetPixel(currentImgIdx);
+
+    if (manualContourCurrentPixel != m_ManualContourImageNonBorderValue
+        && (manualContourCurrentPixel != m_ManualContourImageBorderValue
+            || !isFullyConnected
+            || this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)))
+    {
+      return;
+    }
+  }
+
+  r_stack.push(nextImgIdx);
+  this->GetOutput()->SetPixel(nextImgIdx, m_ForegroundValue);
 }
 
 

@@ -220,7 +220,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   }
 
 
-  // Test 9. Blank contour image· Define region of interest. Then place seed outside region of interest, and check that
+  // Test 9. Blank contour image. Define region of interest. Then place seed outside region of interest, and check that
   // the seeds are NOT projected, and hence no region growing occurs. i.e. the seeds are outside region.
   contourImage->FillBuffer(0);
 
