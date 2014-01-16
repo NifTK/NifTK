@@ -20,4 +20,6 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   MODULE_DEPENDENCIES CTK niftkCoreGui
   )
 
-                      
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_gui_qt_common)
+endif()

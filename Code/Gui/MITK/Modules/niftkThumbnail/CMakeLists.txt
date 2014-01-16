@@ -17,3 +17,7 @@ MITK_CREATE_MODULE(niftkThumbnail
   DEPENDS MitkExt Qmitk niftkCoreGui
   QT_MODULE 
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkThumbnail)
+endif()
