@@ -1185,7 +1185,10 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
 void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    cv::Mat& outputIdealPointsNx2
+    cv::Mat& outputIdealPointsNx2,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   assert(inputObservedPointsNx2.rows == outputIdealPointsNx2.rows);
@@ -1205,7 +1208,8 @@ void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
     inputPoints[i].y = inputObservedPointsNx2.at<double>(i,1);
   }
 
-  UndistortPoints(inputPoints, cameraIntrinsics, cameraDistortionParams, outputPoints);
+  UndistortPoints(inputPoints, cameraIntrinsics, cameraDistortionParams, outputPoints,
+      cropPointsToScreen, xLow, xHigh, yLow, yHigh, cropValue);
 
   for (int i = 0; i < numberOfPoints; i++)
   {
@@ -1219,10 +1223,18 @@ void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
 void UndistortPoints(const std::vector<cv::Point2d>& inputPoints,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    std::vector<cv::Point2d>& outputPoints
+    std::vector<cv::Point2d>& outputPoints,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+
+  if ( cropPointsToScreen )
+  {
+    mitk::CropToScreen ( inputPoints, outputPoints, xLow, xHigh, yLow, yHigh, cropValue);
+  }
 }
 
 
@@ -1230,13 +1242,20 @@ void UndistortPoints(const std::vector<cv::Point2d>& inputPoints,
 void UndistortPoint(const cv::Point2d& inputPoint,
     const cv::Mat& cameraIntrinsics,
     const cv::Mat& cameraDistortionParams,
-    cv::Point2d& outputPoint
+    cv::Point2d& outputPoint,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   std::vector<cv::Point2d> inputPoints;
   std::vector<cv::Point2d> outputPoints;
   inputPoints.push_back (inputPoint);
   cv::undistortPoints(inputPoints, outputPoints, cameraIntrinsics, cameraDistortionParams, cv::noArray(), cameraIntrinsics);
+  if ( cropPointsToScreen )
+  {
+    mitk::CropToScreen ( inputPoints, outputPoints, xLow, xHigh, yLow, yHigh, cropValue);
+  }
   outputPoint = outputPoints[0];
 }
 
@@ -2406,6 +2425,7 @@ cv::Point3d ReProjectPoint ( const cv::Point2d& point , const cv::Mat& Intrinsic
   return cv::Point3d ( m1.at<double>(0,0), m1.at<double>(1,0), m1.at<double>(2,0));
 }
 
+//-----------------------------------------------------------------------------------------
 void CropToScreen ( const std::vector <cv::Point2d>& src, std::vector <cv::Point2d>& dst,
     const double& xLow, const double& xHigh, const double& yLow, const double& yHigh, 
     const double& cropValue )
