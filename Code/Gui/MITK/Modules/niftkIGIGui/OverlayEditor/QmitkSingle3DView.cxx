@@ -291,6 +291,13 @@ void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
+bool QmitkSingle3DView::GetCameraTrackingMode() const
+{
+  return m_IsCameraTracking;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::SetClipToImagePlane(const bool& clipToImagePlane)
 {
   m_ClipToImagePlane = clipToImagePlane;

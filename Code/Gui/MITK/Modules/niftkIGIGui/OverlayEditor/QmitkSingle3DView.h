@@ -149,6 +149,8 @@ public:
    */
   void SetCameraTrackingMode(const bool& isCameraTracking);
 
+  bool GetCameraTrackingMode() const;
+
   /**
    * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
    */  
