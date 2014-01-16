@@ -50,7 +50,7 @@ public:
       const int& numberCornersY,
       const double& sizeSquareMillimeters,
       const mitk::Point2D& pixelScaleFactor,
-      const std::string& outputFileName,
+      const std::string& outputDirectoryName,
       const bool& writeImages
       );
 

@@ -44,13 +44,15 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
     const int& numberCornersY,
     const double& sizeSquareMillimeters,
     const mitk::Point2D& pixelScaleFactor,
-    const std::string& outputFile,
+    const std::string& outputDirectoryName,
     const bool& writeImages
     )
 {
-  // Note: top level validation checks that outputFileName has length > 0.
-  assert(outputFile.size() > 0);
-
+  std::string outputFile = niftk::ConcatenatePath(outputDirectoryName, "mono-calibration.log");
+  std::string intrinsicTxtFile = niftk::ConcatenatePath(outputDirectoryName, "calib.intrinsic.txt");
+  std::string intrinsicXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.intrinsic.xml");
+  std::string distortionXmlFile = niftk::ConcatenatePath(outputDirectoryName, "calib.distortion.xml");
+  
   std::ofstream fs;
   fs.open(outputFile.c_str(), std::ios::out);
   if (!fs.fail())
@@ -105,7 +107,8 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
   fs << "Mono calibration" << std::endl;
   OutputCalibrationData(
       fs,
-      outputFile + ".intrinsic.txt",
+      outputDirectoryName,
+      intrinsicTxtFile,
       *objectPoints,
       *imagePoints,
       *pointCounts,
@@ -122,8 +125,8 @@ double CameraCalibrationFromDirectory::Calibrate(const std::string& fullDirector
       );
 
   // Also output these as XML, as they are used in niftkCorrectVideoDistortion
-  cvSave(std::string(outputFile + ".intrinsic.xml").c_str(), intrinsicMatrix);
-  cvSave(std::string(outputFile + ".distortion.xml").c_str(), distortionCoeffs);
+  cvSave(intrinsicXmlFile.c_str(), intrinsicMatrix);
+  cvSave(distortionXmlFile.c_str(), distortionCoeffs);
 
   // Tidy up.
   if(fs.is_open())

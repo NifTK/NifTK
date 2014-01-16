@@ -294,7 +294,8 @@ extern "C++" NIFTKOPENCV_EXPORT double CalibrateStereoCameraParameters(
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<double> OutputCalibrationData(
   std::ostream& outputStream,
-  const std::string intrinsicFlatFileName,
+  const std::string& outputDirectoryName,
+  const std::string& intrinsicFlatFileName,
   const CvMat& objectPoints,
   const CvMat& imagePoints,
   const CvMat& pointCounts,

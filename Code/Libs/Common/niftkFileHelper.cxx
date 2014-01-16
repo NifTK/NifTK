@@ -78,6 +78,15 @@ std::string ConvertToFullNativePath(const std::string& pathName)
 
 
 //-----------------------------------------------------------------------------
+std::string Basename(const std::string& pathName)
+{
+  fs::path full_path(fs::initial_path<fs::path>());
+  full_path = fs::system_complete(fs::path(pathName));
+  return fs::basename(full_path);
+}
+
+
+//-----------------------------------------------------------------------------
 fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix) throw (niftk::IOException) {
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
@@ -185,13 +194,11 @@ bool CreateDirAndParents(const std::string& directoryPath)
 	iterDirectoryTree < directoryTree.end(); 
 	++iterDirectoryTree )
   {
-    std::cout << (*iterDirectoryTree).string() << std::endl;
-
     if ( ! fs::exists( *iterDirectoryTree ) )
     {
       if ( ! fs::create_directory( *iterDirectoryTree ) )
       {
-	return false;
+        return false;
       }
     }
   }
@@ -338,17 +345,17 @@ void GetRecursiveFilesInDirectory( const std::string &directoryName,
       try
       {
         if ( fs::is_directory( dir_itr->status() ) )
-        {
-	  GetRecursiveFilesInDirectory( dir_itr->path().string(), fileNames );
+        { 
+          GetRecursiveFilesInDirectory( dir_itr->path().string(), fileNames );
         }
         else if ( fs::is_regular_file( dir_itr->status() ) )
         {
-	  fileNames.push_back( dir_itr->path().string() );
-	}
+          fileNames.push_back( dir_itr->path().string() );
+        }
       }
       catch ( const std::exception & ex )
       {
-        std::cout << dir_itr->path() << " " << ex.what() << std::endl;
+        std::cerr << dir_itr->path() << " " << ex.what() << std::endl;
       }
     }
   }

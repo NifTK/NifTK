@@ -46,7 +46,7 @@ public:
       const int& numberCornersY,
       const double& sizeSquareMillimeters,
       const mitk::Point2D& pixelScaleFactor,
-      const std::string& outputFile,
+      const std::string& outputDirectoryName,
       const bool& writeImages
       );
 
