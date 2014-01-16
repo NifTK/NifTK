@@ -734,6 +734,15 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f pointI
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f pointInWorldCS,
   cv::Mat& handeye, cv::Mat& tracker );
 
+/**
+ * \brief Iterates through a vector of points and checks whether they are within the bounds
+ * passed. If out of bounds the corresponding value in the destination vector is set to 
+ * the passed value
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CropToScreen ( const std::vector <cv::Point2d>& srcPoints,
+    std::vector <cv::Point2d>& dstPoints , 
+    const double& xLow, const double& xHigh, const double& yLow, const double& yHigh,
+    const double& cropValue );
 
 } // end namespace
 

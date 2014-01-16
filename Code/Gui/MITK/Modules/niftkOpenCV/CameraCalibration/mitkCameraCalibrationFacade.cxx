@@ -2404,5 +2404,10 @@ cv::Point3d ReProjectPoint ( const cv::Point2d& point , const cv::Mat& Intrinsic
   m1 = IntrinsicMatrix.inv() * m1;
   return cv::Point3d ( m1.at<double>(0,0), m1.at<double>(1,0), m1.at<double>(2,0));
 }
-  
+
+void CropToScreen ( const std::vector <cv::Point2d>& src, std::vector <cv::Point2d>& dst,
+    const double& xLow, const double& xHigh, const double& yLow, const double& yHigh, 
+    const double& cropValue )
+{
+}
 } // end namespace
