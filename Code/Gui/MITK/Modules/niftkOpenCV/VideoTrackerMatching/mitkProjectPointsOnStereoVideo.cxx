@@ -44,6 +44,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
+, m_VideoWidth(1920)
+, m_VideoHeight(540)
 , m_Capture(NULL)
 , m_LeftWriter(NULL)
 , m_RightWriter(NULL)
@@ -149,7 +151,7 @@ void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string pref
   m_SaveVideo = savevideo;
   if ( savevideo )
   {
-    cv::Size S = cv::Size((int) 960, (int) 540 );
+    cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
     m_LeftWriter =cvCreateVideoWriter(std::string(prefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
     m_RightWriter =cvCreateVideoWriter(std::string(prefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),15,S, true);
   }
@@ -185,8 +187,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   int framenumber = 0 ;
   int key = 0;
   bool drawProjection = true;
-  IplImage *smallimage = cvCreateImage (cvSize(960, 270), 8,3);
-  IplImage *smallcorrectedimage = cvCreateImage (cvSize(960, 540), 8,3);
+  IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
+  IplImage *smallcorrectedimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
@@ -528,11 +530,17 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       for ( unsigned int i = 0 ; i < matchedPairs.size() ; i ++ ) 
       {
         cv::Point2d leftUndistorted;
+        bool cropUndistortedPointsToScreen = true;
+        double cropValue = std::numeric_limits<double>::quiet_NaN();
         mitk::UndistortPoint(matchedPairs[i].second.first,
-               *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftUndistorted);
+               *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftUndistorted,
+               cropUndistortedPointsToScreen , 
+               0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
         cv::Point2d rightUndistorted;
         mitk::UndistortPoint(matchedPairs[i].second.second,
-               *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightUndistorted);    
+               *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightUndistorted,    
+               cropUndistortedPointsToScreen , 
+               0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
        
         cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
         cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);
@@ -791,18 +799,24 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
   }
   
   cv::Point3d reProjectionGS;
+  bool cropUndistortedPointsToScreen = true;
+  double cropValue = std::numeric_limits<double>::quiet_NaN();
   if ( left ) 
   {
     cv::Point2d undistortedPoint;
     mitk::UndistortPoint (GSPoint.second, *m_LeftIntrinsicMatrix, 
-        *m_LeftDistortionVector, undistortedPoint);
+        *m_LeftDistortionVector, undistortedPoint,
+        cropUndistortedPointsToScreen , 
+        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
     reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_LeftIntrinsicMatrix);
   }
   else
   {
     cv::Point2d undistortedPoint;
     mitk::UndistortPoint (GSPoint.second, *m_RightIntrinsicMatrix, 
-        *m_RightDistortionVector, undistortedPoint);
+        *m_RightDistortionVector, undistortedPoint,
+        cropUndistortedPointsToScreen , 
+        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
     reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_RightIntrinsicMatrix);
   }
   
@@ -945,11 +959,17 @@ void ProjectPointsOnStereoVideo::SetWorldPointsByTriangulation
   cv::Mat leftScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
   cv::Mat rightScreenPoints = cv::Mat (onScreenPointPairs.size(),2,CV_64FC1);
 
+  bool cropUndistortedPointsToScreen = true;
+  double cropValue = std::numeric_limits<double>::quiet_NaN();
   mitk::UndistortPoints(*twoDPointsLeft,
-             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints);
+             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints,
+             cropUndistortedPointsToScreen , 
+             0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
 
   mitk::UndistortPoints(*twoDPointsRight,
-             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints);
+             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints,
+             cropUndistortedPointsToScreen , 
+             0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
   
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);

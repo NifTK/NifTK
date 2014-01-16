@@ -177,6 +177,10 @@ private:
   cv::Mat* m_RightToLeftTranslationVector;
   cv::Mat* m_LeftCameraToTracker;
 
+  //the dimensions of the video screen in pixels
+  double   m_VideoWidth;
+  double   m_VideoHeight;
+
   /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
   std::vector < std::pair < long long , std::vector < std::pair<cv::Point2d, cv::Point2d> > > >
                                 m_ProjectedPoints; // the projected points
