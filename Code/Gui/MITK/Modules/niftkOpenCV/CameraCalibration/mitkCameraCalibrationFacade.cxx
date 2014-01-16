@@ -2410,5 +2410,15 @@ void CropToScreen ( const std::vector <cv::Point2d>& src, std::vector <cv::Point
     const double& xLow, const double& xHigh, const double& yLow, const double& yHigh, 
     const double& cropValue )
 {
+  assert ( src.size() == dst.size() );
+
+  for ( unsigned int i = 0 ; i < src.size() ; i++ )
+  {
+    if ( ( src[i].x < xLow ) || ( src[i].x > xHigh ) || ( src[i].y < yLow ) || src[i].y > yHigh )
+    {
+      dst[i].x = cropValue;
+      dst[i].y = cropValue;
+    }
+  }
 }
 } // end namespace
