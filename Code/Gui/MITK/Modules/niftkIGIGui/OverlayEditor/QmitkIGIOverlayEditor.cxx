@@ -168,7 +168,8 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
 {
   bool propValue = false;
-  if (node != NULL 
+  if (node != NULL
+    && !m_OverlayViewer->GetCameraTrackingMode()
     && node->GetBoolProperty(mitk::TrackedImageCommand::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, propValue) 
     && propValue)
   {
