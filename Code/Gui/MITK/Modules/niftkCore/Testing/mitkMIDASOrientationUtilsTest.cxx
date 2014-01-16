@@ -149,9 +149,9 @@ public:
     int imUpSa = mitk::GetUpDirection(m_Image, MIDAS_ORIENTATION_SAGITTAL);
     int imUpCo = mitk::GetUpDirection(m_Image, MIDAS_ORIENTATION_CORONAL);
 
-    int geomUpAx = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_AXIAL);
-    int geomUpSa = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_SAGITTAL);
-    int geomUpCo = mitk::GetUpDirection(m_Image->GetGeometry(), MIDAS_ORIENTATION_CORONAL);
+    int geomUpAx = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_AXIAL);
+    int geomUpSa = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_SAGITTAL);
+    int geomUpCo = mitk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_CORONAL);
 
     MITK_TEST_CONDITION_REQUIRED(imUpAx == geomUpAx,     ".. Testing axial==" << imUpAx << ", but got " << geomUpAx);
     MITK_TEST_CONDITION_REQUIRED(imUpSa == geomUpSa,     ".. Testing sagittal==" << imUpSa << ", but got " << geomUpSa);
