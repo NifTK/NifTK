@@ -449,6 +449,10 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToSt
  * \param cameraIntrinsics3x3 [3x3] matrix of camera intrisic parameters.
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPointsNx2 [Nx2] matrix of (x,y) points, as ideal locations in an undistorted image.
+ * \param cropPointsToScreen optionally you can crop the output points to only use points that 
+ * fit with set limits. This is useful if it possible to pass very large valued input points
+ * as in this situation the underlying cv::undistortPoints will return the image principal point.
+ * With this parameter set the cropValue will be returned instead.
  */
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
   const cv::Mat& cameraIntrinsics3x3,
@@ -466,6 +470,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObserve
  * \param cameraIntrinsics3x3 [3x3] matrix of camera intrisic parameters.
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
+ * \param cropPointsToScreen optionally you can crop the output points to only use points that 
+ * fit with set limits. This is useful if it possible to pass very large valued input points
+ * as in this situation the underlying cv::undistortPoints will return the image principal point.
+ * With this parameter set the cropValue will be returned instead.
  */
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point2d>& inputObservedPoints,
   const cv::Mat& cameraIntrinsics3x3,
@@ -483,6 +491,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point
  * \param cameraIntrinsics3x3 [3x3] matrix of camera intrisic parameters.
  * \param cameraDistortionParams5x1 [5x1] camera distortion params.
  * \param outputIdealPoints vector of (x,y) points, as ideal locations in an undistorted image
+ * \param cropPointsToScreen optionally you can crop the output points to only use points that 
+ * fit with set limits. This is useful if it possible to pass very large valued input points
+ * as in this situation the underlying cv::undistortPoints will return the image principal point.
+ * With this parameter set the cropValue will be returned instead.
  */
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObservedPoint,
   const cv::Mat& cameraIntrinsics3x3,
