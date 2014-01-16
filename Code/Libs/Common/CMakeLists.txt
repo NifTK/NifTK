@@ -40,4 +40,8 @@ target_link_libraries(niftkcommon
   ${Boost_LIBRARIES}
 )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkcommon)
+endif()
+
 MITK_INSTALL(TARGETS niftkcommon)

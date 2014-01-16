@@ -31,4 +31,8 @@ if(BUILD_SHARED_LIBS)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkVTK)
+endif()
+
 MITK_INSTALL(TARGETS niftkVTK)
