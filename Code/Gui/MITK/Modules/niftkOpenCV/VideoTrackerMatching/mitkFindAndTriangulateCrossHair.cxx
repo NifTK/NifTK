@@ -40,6 +40,8 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_RightDistortionVector (new cv::Mat(1,4,CV_64FC1))
 , m_RightToLeftRotationMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_RightToLeftTranslationVector (new cv::Mat(3,1,CV_64FC1))
+, m_VideoWidth (0.0)
+, m_VideoHeight (0.0)
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
 , m_Writer(NULL)
@@ -113,7 +115,10 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
     m_VideoIn = videoFiles[0];
    
     m_Capture = cvCreateFileCapture(m_VideoIn.c_str()); 
-  
+    m_VideoWidth = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_WIDTH);
+    m_VideoHeight = (double)cvGetCaptureProperty (m_Capture, CV_CAP_PROP_FRAME_HEIGHT);
+    
+    MITK_INFO << "Opened " << m_VideoIn << " ( " << m_VideoWidth << " x " << m_VideoHeight << " )";
     if ( ! m_Capture )
     {
       MITK_ERROR << "Failed to open " << m_VideoIn;
@@ -270,12 +275,18 @@ void FindAndTriangulateCrossHair::TriangulatePoints()
   }
   cv::Mat leftScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_64FC1);
   cv::Mat rightScreenPoints = cv::Mat (m_ScreenPoints.size(),2,CV_64FC1);
-
+  
+  bool cropUndistortedPoints = true;
+  double cropValue = std::numeric_limits<double>::quiet_NaN();
   mitk::UndistortPoints(*twoDPointsLeft,
-             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints);
+             *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftScreenPoints,
+             cropUndistortedPoints, 
+             0.0 , m_VideoWidth, 0.0, m_VideoHeight, cropValue);
 
   mitk::UndistortPoints(*twoDPointsRight,
-             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints);
+             *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightScreenPoints,
+             cropUndistortedPoints, 
+             0.0 , m_VideoWidth, 0.0, m_VideoHeight, cropValue);
   
   cv::Mat leftCameraTranslationVector = cv::Mat (3,1,CV_64FC1);
   cv::Mat leftCameraRotationVector = cv::Mat (3,1,CV_64FC1);

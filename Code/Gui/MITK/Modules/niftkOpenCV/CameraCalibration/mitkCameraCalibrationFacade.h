@@ -453,7 +453,10 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToSt
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObservedPointsNx2,
   const cv::Mat& cameraIntrinsics3x3,
   const cv::Mat& cameraDistortionParams5x1,
-  cv::Mat& outputIdealPointsNx2
+  cv::Mat& outputIdealPointsNx2,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
@@ -467,7 +470,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const cv::Mat& inputObserve
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point2d>& inputObservedPoints,
   const cv::Mat& cameraIntrinsics3x3,
   const cv::Mat& cameraDistortionParams5x1,
-  std::vector<cv::Point2d>& outputIdealPoints
+  std::vector<cv::Point2d>& outputIdealPoints,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
@@ -481,7 +487,10 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoints(const std::vector<cv::Point
 extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObservedPoint,
   const cv::Mat& cameraIntrinsics3x3,
   const cv::Mat& cameraDistortionParams,
-  cv::Point2d& outputIdealPoint
+  cv::Point2d& outputIdealPoint,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
@@ -735,6 +744,15 @@ extern "C++" NIFTKOPENCV_EXPORT cv::Point3f LeftLensToWorld ( cv::Point3f pointI
 extern "C++" NIFTKOPENCV_EXPORT cv::Point3f WorldToLeftLens ( cv::Point3f pointInWorldCS,
   cv::Mat& handeye, cv::Mat& tracker );
 
+/**
+ * \brief Iterates through a vector of points and checks whether they are within the bounds
+ * passed. If out of bounds the corresponding value in the destination vector is set to 
+ * the passed value
+ */
+extern "C++" NIFTKOPENCV_EXPORT void CropToScreen ( const std::vector <cv::Point2d>& srcPoints,
+    std::vector <cv::Point2d>& dstPoints , 
+    const double& xLow, const double& xHigh, const double& yLow, const double& yHigh,
+    const double& cropValue );
 
 } // end namespace
 
