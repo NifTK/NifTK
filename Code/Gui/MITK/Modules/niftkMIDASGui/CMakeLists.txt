@@ -23,3 +23,7 @@ MITK_CREATE_MODULE(niftkMIDASGui
 target_link_libraries(niftkMIDASGui
   niftkITK
   )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkMIDASGui)
+endif()

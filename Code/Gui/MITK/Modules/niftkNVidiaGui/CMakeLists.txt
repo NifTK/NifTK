@@ -43,6 +43,9 @@ if(MSVC)
     "/DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
 endif(MSVC)
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkNVidiaGui)
+endif()
 
 if(BUILD_TESTING)
   add_subdirectory(Testing)

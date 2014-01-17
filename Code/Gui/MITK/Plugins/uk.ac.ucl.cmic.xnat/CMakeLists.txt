@@ -23,3 +23,7 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDENCIES Mitk MitkExt Qmitk QmitkExt CTK
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_xnat)
+endif()

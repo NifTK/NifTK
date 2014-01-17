@@ -23,7 +23,11 @@ target_link_libraries(niftkMIDAS
   niftkcommon
   niftkITK
   )
-  
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkMIDAS)
+endif()
+
 if(BUILD_TESTING)
   add_subdirectory(Testing)
 endif()

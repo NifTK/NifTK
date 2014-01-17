@@ -23,3 +23,7 @@ MITK_CREATE_MODULE(niftkDnDDisplay
 target_link_libraries(niftkDnDDisplay
   niftkITK
   )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkDnDDisplay)
+endif()

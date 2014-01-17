@@ -69,5 +69,7 @@ if(MSVC)
     "/DELAYLOAD:nvcuvenc.dll /DELAYLOAD:nvcuvid.dll /DELAYLOAD:nvcuda.dll /DELAYLOAD:${CUDA_CUDART_DLL_NAME}")
 endif(MSVC)
 
+# don't cotire this one!
+# cmake will barf with some policy violation or whatever
 
 MITK_INSTALL(TARGETS niftknvapi)
