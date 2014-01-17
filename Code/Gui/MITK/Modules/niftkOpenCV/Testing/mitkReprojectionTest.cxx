@@ -22,6 +22,7 @@
 
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <boost/math/special_functions/fpclassify.hpp>
 
 /**
  * Test for stereo trianglulation and projection. Start with a realistic set
@@ -286,8 +287,8 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   std::vector < unsigned int > leftCameraTriangulatedWorldPoints_LookUpVector;
   for ( int i = 0 ; i < numberOfPoints ; i ++ )
   {
-    if ( ( ! std::isnan(inputUndistortedPoints[i].first.x) ) &&
-          ( ! std::isnan(inputUndistortedPoints[i].second.x) ) )
+    if ( ( ! boost::math::isnan(inputUndistortedPoints[i].first.x) ) &&
+          ( ! boost::math::isnan(inputUndistortedPoints[i].second.x) ) )
     {
       leftCameraTriangulatedWorldPoints_LookUpVector.push_back(leftCameraTriangulatedWorldPoints_Counter);
       leftCameraTriangulatedWorldPoints_Counter++;
@@ -349,7 +350,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
     double error_m1 = (xError_m1 * xError_m1 + yError_m1 * yError_m1 + zError_m1 * zError_m1);
     double error_m2 = (xError_m2 * xError_m2 + yError_m2 * yError_m2 + zError_m2 * zError_m2);
     
-    if ( ! std::isnan(error_m1) ) 
+    if ( ! boost::math::isnan(error_m1) ) 
     {
       xErrorMean_m1 += xError_m1;
       yErrorMean_m1 += yError_m1;
@@ -357,7 +358,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       errorRMS_m1 += error_m1;
       goodPoints_m1++;
     }
-    if ( ! std::isnan(error_m2 ))
+    if ( ! boost::math::isnan(error_m2 ))
     {
       xErrorMean_m2 += xError_m2;
       yErrorMean_m2 += yError_m2;
