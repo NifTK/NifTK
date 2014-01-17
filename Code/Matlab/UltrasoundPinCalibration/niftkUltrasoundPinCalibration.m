@@ -85,55 +85,66 @@ N = countP/2;
 % ----------------------------------------------------------------------------------------------------------------------
 % Setup matrices.
 % ----------------------------------------------------------------------------------------------------------------------
-
+tMr_matrices = {};
+pin_positions = {};
+i_index = [];
 i_outliers = [];
-tMr_matrices = {}; pin_positions = {}; i_index = [];
+
 for i = 1:N
   pin_positions{i,1} = transpose([P(i*2-1), P(i*2), 0, 1]);
   tMr_matrices{i,1}  = [[T(i*16-15),T(i*16-14),T(i*16-13),T(i*16-12)];[T(i*16-11),T(i*16-10),T(i*16-9),T(i*16-8)];[T(i*16-7),T(i*16-6),T(i*16-5),T(i*16-4)];[T(i*16-3),T(i*16-2),T(i*16-1),T(i*16-0)]];
   i_index(i) = i;
 end
 
+[final_params] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, tMr_matrices, pin_positions)
 
-% ----------------------------------------------------------------------------------------------------------------------
-% Now estimate calibration parameters using LSQNONLIN.
-% ----------------------------------------------------------------------------------------------------------------------
-
-opt_options = optimset('lsqnonlin') ; % Use a least-square non-linear optimisation
-opt_options.LargeScale = 'on';        % Set this as a Large scale problem
-opt_options.Display = 'iter';         % Display results after each iteration
-opt_options.MaxFunEvals = 100000;
-opt_options.MaxIter = 100000;
-
-start_params = [initialGuess(1), initialGuess(2), initialGuess(3), initialGuess(4), initialGuess(5), initialGuess(6), initialGuess(7), initialGuess(8), initialGuess(9), initialGuess(10)];
-H = ones(size(start_params));
-
-% Now run optimisation algorithm
-[final_params, sumsqs, residuals, exitflag, output, lambda, J] = lsqnonlin(@CompCalResidual,H.*start_params,[],[],opt_options, tMr_matrices, pin_positions);
-
-disp('Final residual (mm):');
-%%disp(rms(residuals));
 disp('Final calibration (image to tracker) matrix:');
 rMi = Comp_RigidBody_Matrix(final_params);
 disp(rMi);
 disp('Final image scaling parameter (mm/pixel):');
 disp(final_params(10));
-    
-% Find outliers
-S = diag([final_params(10) final_params(10) 1 1]);
-pts_r = [];
-for i = 1:size(pin_positions,1)
-    pts_r = [pts_r tMr_matrices{i,1}*rMi*S*pin_positions{i,1}];
-end
-  
-D = pts_r - repmat(median(pts_r,2),1,size(pts_r,2));
-D = magc(D(1:3,:));
-i_outliers = i_index(find(D>3))
 
-plot3d(pts_r,1,'.');
-
+[i_outliers] = niftkUltrasoundPinCalibrationOutliers(final_params, rMi, tMr_matrices, pin_positions, i_index)
        
- 
+tMr_matrices = {};
+pin_positions = {};
+i_index = [];
+
+M = size(i_outliers,2);
+disp('Number of outliers');
+disp(M);
+
+
+counter=1;
+for i = 1:N
+  isOutlier = 0;
+  for j = 1:M
+    if (i == i_outliers(j))
+      isOutlier = 1;
+    end
+  end
+  if (isOutlier == 0)
+    pin_positions{counter,1} = transpose([P(i*2-1), P(i*2), 0, 1]);
+    tMr_matrices{counter,1}  = [[T(i*16-15),T(i*16-14),T(i*16-13),T(i*16-12)];[T(i*16-11),T(i*16-10),T(i*16-9),T(i*16-8)];[T(i*16-7),T(i*16-6),T(i*16-5),T(i*16-4)];[T(i*16-3),T(i*16-2),T(i*16-1),T(i*16-0)]];
+    i_index(counter) = counter;
+    counter = counter + 1;
+  end
+end
+
+disp('Rerunning with');
+disp(counter);
+
+[final_params] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, tMr_matrices, pin_positions)
+
+disp('Previous calibration (image to tracker) matrix:');
+disp(rMi);
+disp('Final calibration (image to tracker) matrix:');
+rMi2 = Comp_RigidBody_Matrix(final_params);
+disp(rMi2);
+disp('Final image scaling parameter (mm/pixel):');
+disp(final_params(10));
+
+[i_outliers] = niftkUltrasoundPinCalibrationOutliers(final_params, rMi, tMr_matrices, pin_positions, i_index)
 
 
    
