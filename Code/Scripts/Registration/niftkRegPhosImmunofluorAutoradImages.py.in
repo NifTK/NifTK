@@ -287,7 +287,7 @@ fileSourceNifti = args.fileInputSource.replace( fileExtension, "_CorrectResoluti
 ( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileSourceNifti, "Update" ], 
                              [ args.fileInputSource ],
-                             [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
+                             [ "niftkConvertImage --ot ushort -i {0:} --rx {1:} --ry {2:} -o {3:}"\
                                   .format( args.fileInputSource, 
                                            args.sourceResolutionInX,
                                            args.sourceResolutionInY,
@@ -307,9 +307,6 @@ fileInvertedSourceNifti = args.fileInputSource.replace( fileExtension, "_Inverte
                              [ fileSourceNifti ],
                              [ "niftkInvertImage -i {0:} -o {1:}"\
                                   .format( fileSourceNifti, 
-                                           fileInvertedSourceNifti ),
-                               "niftkRescale -i {0:} -o {1:} -min 0 -max 1000"\
-                                  .format( fileInvertedSourceNifti, 
                                            fileInvertedSourceNifti )],
                              "Inverting source image" )
 
@@ -327,13 +324,10 @@ fileTargetNifti = args.fileInputTarget.replace( fileExtension, "_GreyScale.nii")
 ( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileTargetNifti, "Update" ], 
                              [ args.fileInputTarget ],
-                             [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
+                             [ "niftkConvertImage --ot ushort -i {0:} --rx {1:} --ry {2:} -o {3:}"\
                                   .format( args.fileInputTarget, 
                                            args.targetResolutionInX,
                                            args.targetResolutionInY,
-                                           fileTargetNifti ),
-                               "niftkRescale -i {0:} -o {1:} -min 0 -max 1000"\
-                                  .format( fileTargetNifti, 
                                            fileTargetNifti ) ],
                              "Converting target image to grey-scale nifti" )
 
