@@ -278,14 +278,12 @@ ImageRegistrationFactory<TInputImageType, Dimension, TScalarType>
       {
         transform = static_cast<TransformType*>((*it).GetPointer());
         niftkitkDebugMacro(<<"PerspectiveProjectionTransform found");
-        transform->Print(std::cout);
         break;
       }
       else if (strcmp((*it)->GetNameOfClass(),"EulerAffineTransform") == 0)
       {
         transform = static_cast<TransformType*>((*it).GetPointer());
         niftkitkDebugMacro(<<"EulerAffineTransform found");
-        transform->Print(std::cout);
         break;
       }
       else if (strcmp((*it)->GetNameOfClass(),"AffineTransform") == 0)
@@ -298,7 +296,7 @@ ImageRegistrationFactory<TInputImageType, Dimension, TScalarType>
         typename EulerAffineTransformType::Pointer tmpEulerTransform = EulerAffineTransformType::New();
         tmpEulerTransform->SetParametersFromTransform(tmpAffineTransform);
         transform = tmpEulerTransform;
-        transform->Print(std::cout);
+        niftkitkDebugMacro(<<"AffineTransform found");
         break;
       }
       else if (strcmp((*it)->GetNameOfClass(),"UCLBSplineTransform") == 0)

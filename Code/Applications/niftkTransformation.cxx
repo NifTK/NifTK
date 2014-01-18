@@ -48,6 +48,7 @@ void Usage(char *exec)
     std::cout << "    -ti   <filename>        Input Target/Fixed image " << std::endl;
     std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
     std::cout << "*** [options]   ***" << std::endl << std::endl;
+    std::cout << "    -v                      Print verbose output. " << std::endl;
     std::cout << "    -si    <filename>       Input Source/Moving image. If this isn't specified, we just read the targetImage twice. " << std::endl;
     std::cout << "    -j    [int] [3]         Choose reslicing interpolator" << std::endl;
     std::cout << "                              1. Nearest Neighbour"  << std::endl;
@@ -81,6 +82,7 @@ struct arguments
   std::string deformableTransformName;
   std::string deformationFieldName;
   int finalInterp;
+  bool verbose;
   bool halfAffineTransformation;  
   bool invertAffineTransformation; 
   bool halfNonLinearTransformation;  
@@ -168,20 +170,37 @@ int DoMain(arguments args)
     }
     
     itk::EulerAffineTransform<double, Dimension, Dimension>* affineTransform = dynamic_cast<itk::EulerAffineTransform<double, Dimension, Dimension>*>(globalTransform.GetPointer()); 
-    std::cout << affineTransform->GetFullAffineMatrix() << std::endl; 
+
+    if (args.verbose )
+    {
+      std::cout << affineTransform->GetFullAffineMatrix() << std::endl; 
+    }
     
     if (args.halfAffineTransformation)
     {
       affineTransform->HalfTransformationMatrix(); 
-      std::cout << "half:" << std::endl << affineTransform->GetFullAffineMatrix() << std::endl; 
+
+      if (args.verbose )
+      {
+        std::cout << "half:" << std::endl << affineTransform->GetFullAffineMatrix() << std::endl; 
+      }
     }
+
     if (args.invertAffineTransformation)
     {
       affineTransform->InvertTransformationMatrix(); 
-      std::cout << "inverted:" << std::endl << affineTransform->GetFullAffineMatrix() << std::endl; 
+
+      if (args.verbose )
+      {
+        std::cout << "inverted:" << std::endl << affineTransform->GetFullAffineMatrix() << std::endl; 
+      }
     }
+
     for (int i = 0; i < Dimension; i++)
+    {
       affineScalingFactor *= affineTransform->GetScale()[i]; 
+    }
+
     std::cout << "Scaling factor = " << affineScalingFactor << std::endl; 
   }
 
@@ -434,6 +453,7 @@ int main(int argc, char** argv)
   struct arguments args;
 
   // Set the defaults
+  args.verbose = false;
   args.finalInterp = 3;
   args.halfAffineTransformation = false;  
   args.invertAffineTransformation = false; 
@@ -453,6 +473,10 @@ int main(int argc, char** argv)
     if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
       Usage(argv[0]);
       return -1;
+    }
+    else if(strcmp(argv[i], "-v") == 0){
+      args.verbose=true;
+      std::cout << "Set -v=" << niftk::ConvertToString(args.verbose) << std::endl;
     }
     else if(strcmp(argv[i], "-ti") == 0){
       args.fixedImage=argv[++i];
@@ -614,6 +638,12 @@ int main(int argc, char** argv)
   
   switch (componentType)
     {
+    case itk::ImageIOBase::CHAR:
+      if (dims == 2)
+        result = DoMain<2, short>(args);
+      else
+        result = DoMain<3, short>(args);
+      break;    
     case itk::ImageIOBase::UCHAR:
       if (dims == 2)
         result = DoMain<2, short>(args);
@@ -626,11 +656,47 @@ int main(int argc, char** argv)
       else
         result = DoMain<3, short>(args);
       break;
+    case itk::ImageIOBase::USHORT:
+      if (dims == 2)
+        result = DoMain<2, unsigned short>(args);
+      else
+        result = DoMain<3, unsigned short>(args);
+      break;
+    case itk::ImageIOBase::INT:
+      if (dims == 2)
+        result = DoMain<2, int>(args);
+      else
+        result = DoMain<3, int>(args);
+      break;
+    case itk::ImageIOBase::UINT:
+      if (dims == 2)
+        result = DoMain<2, unsigned int>(args);
+      else
+        result = DoMain<3, unsigned int>(args);
+      break;
+    case itk::ImageIOBase::LONG:
+      if (dims == 2)
+        result = DoMain<2, long>(args);
+      else
+        result = DoMain<3, long>(args);
+      break;
+    case itk::ImageIOBase::ULONG:
+      if (dims == 2)
+        result = DoMain<2, unsigned long>(args);
+      else
+        result = DoMain<3, unsigned long>(args);
+      break;
     case itk::ImageIOBase::FLOAT:
       if (dims == 2)
         result = DoMain<2, float>(args);
       else
         result = DoMain<3, float>(args);
+      break;
+    case itk::ImageIOBase::DOUBLE:
+      if (dims == 2)
+        result = DoMain<2, double>(args);
+      else
+        result = DoMain<3, double>(args);
       break;
     default:
       std::cerr << "Unsupported pixel format" << std::endl;
