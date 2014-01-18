@@ -14,15 +14,15 @@
 #
 #============================================================================*/
 
-import os                               # Operating system
-import time                             # Time functions
-import sys                              # System functions
-import glob                             # Filename globbing
-import re                               # Regular expressions
-import csv                              # Easy way to parse files
+import os                       # Operating system
+import time                     # Time functions
+import sys                      # System functions
+import glob                     # Filename globbing
+import re                       # Regular expressions
+import csv                      # Easy way to parse command line arguments
 import argparse
 
-from _niftkCommandExecution import *    # Functions to execute commands
+from _niftkCommon import *      # Functions to execute commands
 
 # --------------------------------------------------------------------------------------------------
 # Generate XML command line argument description
@@ -284,7 +284,7 @@ fileName, fileExtension = os.path.splitext( args.fileInputSource )
 
 fileSourceNifti = args.fileInputSource.replace( fileExtension, "_CorrectResolution.nii")
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileSourceNifti, "Update" ], 
                              [ args.fileInputSource ],
                              [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
@@ -295,7 +295,6 @@ fileSourceNifti = args.fileInputSource.replace( fileExtension, "_CorrectResoluti
                              "Converting source image to nifti" )
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 listOfIntermediateFiles.append( fileSourceNifti )
     
 
@@ -303,7 +302,7 @@ listOfIntermediateFiles.append( fileSourceNifti )
 
 fileInvertedSourceNifti = args.fileInputSource.replace( fileExtension, "_Inverted.nii")
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileInvertedSourceNifti, "Update" ], 
                              [ fileSourceNifti ],
                              [ "niftkInvertImage -i {0:} -o {1:}"\
@@ -315,7 +314,6 @@ fileInvertedSourceNifti = args.fileInputSource.replace( fileExtension, "_Inverte
                              "Inverting source image" )
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 listOfIntermediateFiles.append( fileInvertedSourceNifti )
 
     
@@ -326,7 +324,7 @@ fileName, fileExtension = os.path.splitext( args.fileInputTarget )
 
 fileTargetNifti = args.fileInputTarget.replace( fileExtension, "_GreyScale.nii")
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileTargetNifti, "Update" ], 
                              [ args.fileInputTarget ],
                              [ "niftkConvertImage --ot short -i {0:} --rx {1:} --ry {2:} -o {3:}"\
@@ -340,12 +338,11 @@ fileTargetNifti = args.fileInputTarget.replace( fileExtension, "_GreyScale.nii")
                              "Converting target image to grey-scale nifti" )
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 listOfIntermediateFiles.append( fileTargetNifti )
 
 fileTargetWithBorderNifti = args.fileInputTarget.replace( fileExtension, "_GreyScaleWithBorder.nii")
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileTargetWithBorderNifti, "Update" ], 
                              [ fileTargetNifti ],
                              [ "niftkAddBorderToImage -i {0:} -o {1:} --width 5"\
@@ -355,7 +352,6 @@ fileTargetWithBorderNifti = args.fileInputTarget.replace( fileExtension, "_GreyS
 
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 listOfIntermediateFiles.append( fileTargetWithBorderNifti )
 
 
@@ -368,7 +364,7 @@ fileRegisteredNifti = args.fileOutputRigidRegnImage.replace( fileExtension, ".ni
 fileRigidTransform  = args.fileOutputRigidRegnImage.replace( fileExtension, ".txt")
 fileRigidMatrix     = args.fileOutputRigidRegnImage.replace( fileExtension, ".mtx")
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ fileRegisteredNifti, fileRigidTransform, fileRigidMatrix, "Update" ], 
                              [ fileTargetWithBorderNifti, fileInvertedSourceNifti ],
                              [ "niftkAffine --mi 300 --rcog --cog -s \"Normalized Cross Correlation\" --tr \"Rigid\" --nlevels 7 --levels2use 3 --rmin 1 --rmax 170 --wtrans 10 --wrot 1 --wscale 1000 --wskew 1000 --rrfac 0.9 --ti {0:} --si {1:} --oi {2:} --ot {3:} --om {4:}"\
@@ -380,14 +376,13 @@ fileRigidMatrix     = args.fileOutputRigidRegnImage.replace( fileExtension, ".mt
                              "Rigidly registering the source to the target image" )
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 listOfIntermediateFiles.append( fileRegisteredNifti )
 listOfIntermediateFiles.append( fileRigidTransform )
 listOfIntermediateFiles.append( fileRigidMatrix )
 
 # Transform the original image
 
-( returnValue, fileCommands, fileOutputText ) = \
+( returnValue, fileCommands ) = \
     ExecuteCommand( [ args.fileOutputRigidRegnImage, "Update" ], 
                              [ fileTargetNifti, fileSourceNifti, fileRigidMatrix ],
                              [ "niftkTransformation -ti {0:} -si {1:} -g {2:} -o {3:}"\
@@ -398,7 +393,6 @@ listOfIntermediateFiles.append( fileRigidMatrix )
                              "Rigidly transforming the source image" )
 
 listOfIntermediateFiles.append( fileCommands )
-listOfIntermediateFiles.append( fileOutputText )
 
 
 # Run an affine registration?
@@ -412,7 +406,7 @@ if ( ( args.fileOutputAffineRegnImage != None ) and ( args.fileOutputAffineRegnI
    fileAffineTransform = args.fileOutputAffineRegnImage.replace( fileExtension, ".txt")
    fileAffineMatrix    = args.fileOutputAffineRegnImage.replace( fileExtension, ".mtx")
 
-   ( returnValue, fileCommands, fileOutputText ) = \
+   ( returnValue, fileCommands ) = \
        ExecuteCommand( [ fileRegisteredNifti, fileAffineTransform, fileAffineMatrix, "Update" ], 
                                 [ fileTargetWithBorderNifti, fileInvertedSourceNifti ],
                                 [ "niftkAffine --mi 300 --rcog -s \"Normalized Cross Correlation\" --tr \"Full Affine\" --nlevels 7 --levels2use 3 --wtrans 1 --wrot 1 --wscale 1000 --wskew 1000 --rrfac 0.7 --ti {0:} --si {1:} --oi {2:} --ot {3:} --om {4:} --it {5:}"\
@@ -425,14 +419,13 @@ if ( ( args.fileOutputAffineRegnImage != None ) and ( args.fileOutputAffineRegnI
                                 "Affinely registering the source to the target image" )
 
    listOfIntermediateFiles.append( fileCommands )
-   listOfIntermediateFiles.append( fileOutputText )
    listOfIntermediateFiles.append( fileRegisteredNifti )
    listOfIntermediateFiles.append( fileAffineTransform )
    listOfIntermediateFiles.append( fileAffineMatrix )
 
    # Transform the original image
 
-   ( returnValue, fileCommands, fileOutputText ) = \
+   ( returnValue, fileCommands ) = \
        ExecuteCommand( [ args.fileOutputAffineRegnImage, "Update" ], 
                                 [ fileTargetNifti, fileSourceNifti, fileAffineMatrix ],
                                 [ "niftkTransformation -ti {0:} -si {1:} -g {2:} -o {3:}"\
@@ -443,7 +436,6 @@ if ( ( args.fileOutputAffineRegnImage != None ) and ( args.fileOutputAffineRegnI
                                 "Affinely transforming the source image" )
     
    listOfIntermediateFiles.append( fileCommands )
-   listOfIntermediateFiles.append( fileOutputText )
 
 
 # Delete all the intermediate files?
