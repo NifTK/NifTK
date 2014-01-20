@@ -67,6 +67,12 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     return false;
   }
 
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
