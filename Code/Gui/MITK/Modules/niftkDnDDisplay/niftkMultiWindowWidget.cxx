@@ -251,6 +251,13 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
   for (int i = 0; i < 3; ++i)
   {
+    /// This call requires MITK modification. Currently, the displayed region is rescaled
+    /// around the centre of the render window when the window is resized. This is not
+    /// good for us, because we want to rescale the region around the cursor. Setting
+    /// the 'KeepDisplayedRegion' property to false would disable the behaviour of MITK,
+    /// so we can apply the rescaling in our way. This line is commented out until
+    /// this feature is added to our MITK fork.
+    m_RenderWindows[i]->GetRenderer()->SetKeepDisplayedRegion(false);
     AddDisplayGeometryModificationObserver(renderWindows[i]);
   }
 
