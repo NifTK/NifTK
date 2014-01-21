@@ -1,4 +1,4 @@
-function [final_params, sumsqs, residuals, exitflag, output, lambda, J] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, tMr_matrices, pin_positions)
+function [finalParams, sumsqs, residuals, exitFlag, output, lambda, J] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, matrices, pinPositions)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Usage:
@@ -11,6 +11,9 @@ function [final_params, sumsqs, residuals, exitflag, output, lambda, J] = niftkU
 %                  s          = isotropic scale factor (mm/pix)
 %                  x,y,z      = location of invariant point in millimetres
 %
+% matrices       : cell array containing matrices
+% pinPositions   : cell array containing points
+%
 % NOTE: This function should only be called from niftkUltrasoundPinCalibration.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -20,8 +23,8 @@ opt_options.Display = 'iter';         % Display results after each iteration
 opt_options.MaxFunEvals = 100000;
 opt_options.MaxIter = 100000;
 
-start_params = [initialGuess(1), initialGuess(2), initialGuess(3), initialGuess(4), initialGuess(5), initialGuess(6), initialGuess(7), initialGuess(8), initialGuess(9), initialGuess(10)];
-H = ones(size(start_params));
+startParams = [initialGuess(1), initialGuess(2), initialGuess(3), initialGuess(4), initialGuess(5), initialGuess(6), initialGuess(7), initialGuess(8), initialGuess(9), initialGuess(10)];
+H = ones(size(startParams));
 
-[final_params, sumsqs, residuals, exitflag, output, lambda, J] = lsqnonlin(@CompCalResidual,H.*start_params,[],[],opt_options, tMr_matrices, pin_positions);
+[finalParams, sumsqs, residuals, exitFlag, output, lambda, J] = lsqnonlin(@CompCalResidual,H.*startParams,[],[],opt_options, matrices, pinPositions);
 
