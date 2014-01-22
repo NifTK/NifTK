@@ -1278,9 +1278,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
         // Now geometry is established, get the display geometry to fit the picture to the window.
         renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
-        renderer->GetDisplayGeometry()->Fit();
-
-      } // if window < 3
+      }
     }
 
     m_BlockDisplayGeometryEvents = false;
