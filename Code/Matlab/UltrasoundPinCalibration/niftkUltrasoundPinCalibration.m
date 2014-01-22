@@ -1,4 +1,4 @@
-function [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints)
+function [finalParams, sumsqs, residuals, iOutliers] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Usage:
@@ -66,61 +66,68 @@ end
 disp('Final calibration (image to tracker) matrix:');
 rMi = Comp_RigidBody_Matrix(finalParams);
 disp(rMi);
-disp('Final image scaling parameter (mm/pixel):');
-disp(finalParams(10));
 
-%%%%%%%%%%%%%%%%%%%%%%%
-% Work out the outliers
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Work out the outliers. Only re-run if removing the outliers leaves at least 40 points.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [iOutliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex)
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Throw away outliers. Sorry this is very poor Matlab.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-trackingMatrices2 = {};
-ultrasoundPoints2 = {};
-iIndex2 = [];
-
 M = size(iOutliers,2);
 disp('Number of outliers');
 disp(M);
 
-counter=1;
-for i = 1:N
-  isOutlier = 0;
-  for j = 1:M
-    if (i == iOutliers(j))
-      isOutlier = 1;
+if (N-M > 40)
+
+  %%%%%%%%%%%%%%%%%%%%%%
+  % Throw away outliers.
+  %%%%%%%%%%%%%%%%%%%%%%
+
+  trackingMatrices2 = {};
+  ultrasoundPoints2 = {};
+  iIndex2 = [];
+
+  counter=1;
+  for i = 1:N
+    isOutlier = 0;
+    for j = 1:M
+      if (i == iOutliers(j))
+        isOutlier = 1;
+      end
+    end
+    if (isOutlier == 0)
+      ultrasoundPoints2{counter,1} = ultrasoundPoints{i};
+      trackingMatrices2{counter,1} = trackingMatrices{i};
+      iIndex2(counter) = counter;
+      counter = counter + 1;
     end
   end
-  if (isOutlier == 0)
-    ultrasoundPoints2{counter,1} = ultrasoundPoints{i};
-    trackingMatrices2{counter,1} = trackingMatrices{i};
-    iIndex2(counter) = counter;
-    counter = counter + 1;
-  end
+
+  %%%%%%%%%%%%%%%%%%%%%
+  % Re-Run optimisation
+  %%%%%%%%%%%%%%%%%%%%%
+
+  disp('Rerunning with this many points:');
+  disp(counter);
+
+  [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, trackingMatrices2, ultrasoundPoints2)
+  rMi2 = Comp_RigidBody_Matrix(finalParams);
+
+  % Note: Deliberately assigning outliers to different array.
+  %       So the output of this whole method, is the COMPLETE list of outliers.
+  [iOutliers2] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi2, trackingMatrices2, ultrasoundPoints2, iIndex2)
+
+  disp('Previous calibration (image to tracker) matrix:');
+  disp(rMi);
+  disp('Final calibration (image to tracker) matrix:');
+  disp(rMi2);
 end
 
-%%%%%%%%%%%%%%%%%%%%%
-% Re-Run optimisation
-%%%%%%%%%%%%%%%%%%%%%
-
-disp('Rerunning with this many points:');
-disp(counter);
-
-[finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, trackingMatrices2, ultrasoundPoints2)
-
-disp('Previous calibration (image to tracker) matrix:');
-disp(rMi);
-disp('Final calibration (image to tracker) matrix:');
-rMi2 = Comp_RigidBody_Matrix(finalParams);
-disp(rMi2);
 disp('Final image scaling parameter (mm/pixel):');
 disp(finalParams(10));
+disp('Final offset');
+disp([finalParams(7) finalParams(8) finalParams(9)]);
 
-[iOutliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi2, trackingMatrices2, ultrasoundPoints2, iIndex2)
+
 
 
    
