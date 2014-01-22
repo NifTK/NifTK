@@ -103,6 +103,10 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
     m_Controls->m_LiveDistanceGroupBox->setCollapsed(true);
+    // disable it for now, we've never used it, and it seems to have bugs:
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2873
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2579
+    m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
 
     connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
