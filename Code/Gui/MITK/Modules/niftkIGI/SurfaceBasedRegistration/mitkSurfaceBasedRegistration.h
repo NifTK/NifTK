@@ -52,6 +52,8 @@ public:
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
+  itkSetMacro(CameraNode, mitk::DataNode::Pointer);
+  itkSetMacro(FlipNormals, bool);
 
   /**
    * \brief Write My Documentation
@@ -83,6 +85,9 @@ private:
   int m_MaximumIterations;
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
+
+  mitk::DataNode::Pointer     m_CameraNode;
+  bool                        m_FlipNormals;
 
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 

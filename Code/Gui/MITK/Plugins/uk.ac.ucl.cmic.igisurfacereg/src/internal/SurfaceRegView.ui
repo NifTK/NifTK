@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>713</width>
-    <height>560</height>
+    <height>641</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,9 @@
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="m_FixedSurfaceLabel">
+         <property name="toolTip">
+          <string>For example, an intra-op durface.</string>
+         </property>
          <property name="text">
           <string>Fixed surface:</string>
          </property>
@@ -33,6 +36,9 @@
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="m_MovingSurfaceLabel">
+         <property name="toolTip">
+          <string>For example, a pre-op surface.</string>
+         </property>
          <property name="text">
           <string>Moving surface:</string>
          </property>
@@ -114,6 +120,51 @@
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="m_HiddenSurfaceRemovalGroupBox">
+       <property name="toolTip">
+        <string>On &quot;moving surface&quot;.</string>
+       </property>
+       <property name="title">
+        <string>Hidden surface removal</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout_2">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Camera position:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QmitkDataStorageComboBox" name="m_CameraNodeComboBox"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="m_FlipNormalsCheckBox">
+          <property name="toolTip">
+           <string>If your &quot;moving surface&quot; is inside-out.</string>
+          </property>
+          <property name="text">
+           <string> </string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="toolTip">
+           <string>If your &quot;moving surface&quot; is inside-out.</string>
+          </property>
+          <property name="text">
+           <string>Flip normals:</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

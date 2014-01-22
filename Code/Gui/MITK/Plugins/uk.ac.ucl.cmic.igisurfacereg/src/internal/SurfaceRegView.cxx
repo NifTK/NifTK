@@ -99,6 +99,12 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MovingSurfaceComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
 
+    // i've decided against a node filter for now. any node can have the suitable
+    // matrix for representing the camera position.
+    // if we decide otherwise then mitk::CoordinateAxisData would be suitable, i think.
+    m_Controls->m_CameraNodeComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_CameraNodeComboBox->SetAutoSelectNewItems(false);
+
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
@@ -257,6 +263,11 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+  if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
+  {
+    registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());
+    registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
+  }
   registration->Update(fixednode, movingnode, *m_Matrix);
   
   for (int i = 0; i < 4; i++)
