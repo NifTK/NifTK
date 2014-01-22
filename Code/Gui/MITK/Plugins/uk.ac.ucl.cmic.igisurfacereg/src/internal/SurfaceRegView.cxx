@@ -108,10 +108,15 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2579
     m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
 
-    connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
-    connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
-    connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
-    connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    bool  ok = false;
+    ok = QObject::connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    assert(ok);
 
     dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
 
