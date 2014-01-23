@@ -163,7 +163,7 @@ void QmitkUltrasoundPinCalibrationWidget::NextImage()
     {
       unsigned int testCounter = m_ImageFileCounter + offset;
 
-      while (testCounter < m_ImageFiles.size())
+      while (testCounter < m_ImageFiles.size() - 1)
       {
         QString imageFileName = QString::fromStdString(m_ImageFiles[testCounter]);
         QRegExp rx("([0-9]{19})");

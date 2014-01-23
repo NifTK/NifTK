@@ -1,26 +1,18 @@
-function M = niftkUltrasoundPinCalibration(initialGuess)
+function [finalParams, sumsqs, residuals, iOutliers] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Usage:
-%   M = niftkUltrasoundPinCalibration(initialGuess)
+%   [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints)
 % where:
-%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
-%                  where:
-%                  tx, ty, tz = translation in millimetres
-%                  rx, ry, rz = rotations in radians
-%                  s          = isotropic scale factor (mm/pix)
-%                  x,y,z      = location of invariant point in millimetres
+%   initialGuess   : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%                    where:
+%                    tx, ty, tz = translation in millimetres
+%                    rx, ry, rz = rotations in radians
+%                    s          = isotropic scale factor (mm/pix)
+%                    x,y,z      = location of invariant point in millimetres
 %
-%
-% e.g. For the data in NifTKData/Input/UltrasoundPinCalibration/2014.01.07-matt-calib-4DC7
-%
-% niftkUltrasoundPinCalibration [200 -10   0   0   0   20  545 237 -1820 -0.2073]
-%
-% This functions will ask for:
-%
-%   matrixFile   : a single file containing N tracking matrices as 4x4 matrices, one after the other.
-%   pointFile    : a single file containing N points, with x and y on the same line and seperate
-%                  points on each line, and in same order as matrices.
+% trackingMatrices : Cell array of {n, 1} where each cell is a 4x4 tracking matrix.
+% ultrasoundPoints : Cell array of {n, 1} where each cell is a 1x4 homogeneous point matrix of [x y 0 1].
 %
 % This function computes the calibration matrix for the 3DUS system from data collected with a pin phantom.
 % The head of the pin forms an invariant point, and is imaged using ultrasound.
@@ -53,87 +45,89 @@ function M = niftkUltrasoundPinCalibration(initialGuess)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-file_selection = {'*.txt','Matrix files (*.txt)'};
-[matrixFilename, matrixPathname] = uigetfile(file_selection,'Select .txt file containing all matrices');
-if matrixFilename == 0  % Return if Cancel is pressed
-   return;
+iIndex = [];
+iOutliers = [];
+
+N = size(trackingMatrices,1);
+for i = 1:N;
+  iIndex(i) = i;
 end
 
-file_selection = {'*.txt','Point files (*.txt)'};
-[pointFilename, pointPathname] = uigetfile(file_selection,'Select .txt file containing all points');
-if pointFilename == 0  % Return if Cancel is pressed
-   return;
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Here we implement a basic trimmed least squares approach.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-file_id = fopen(strcat(matrixPathname,'/',matrixFilename), 'r');
-[T,countT] = fscanf(file_id, '%f');
-fclose(file_id);
-fprintf('\n %d matrices read in...\n', countT/16);
+%%%%%%%%%%%%%%%%%%
+% Run optimisation
+%%%%%%%%%%%%%%%%%%
 
-file_id = fopen(strcat(pointPathname,'/',pointFilename), 'r');
-[P,countP] = fscanf(file_id, '%f');
-fclose(file_id);
-fprintf('\n %d points read in...\n', countP/2);
+[finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, trackingMatrices, ultrasoundPoints)
 
-if (countP/2 ~= countT/16)
-  errordlg('Number of points does not equal number of matrices!');
-  return
-end
-
-N = countP/2;
-
-% ----------------------------------------------------------------------------------------------------------------------
-% Setup matrices.
-% ----------------------------------------------------------------------------------------------------------------------
-
-i_outliers = [];
-tMr_matrices = {}; pin_positions = {}; i_index = [];
-for i = 1:N
-  pin_positions{i,1} = transpose([P(i*2-1), P(i*2), 0, 1]);
-  tMr_matrices{i,1}  = [[T(i*16-15),T(i*16-14),T(i*16-13),T(i*16-12)];[T(i*16-11),T(i*16-10),T(i*16-9),T(i*16-8)];[T(i*16-7),T(i*16-6),T(i*16-5),T(i*16-4)];[T(i*16-3),T(i*16-2),T(i*16-1),T(i*16-0)]];
-  i_index(i) = i;
-end
-
-
-% ----------------------------------------------------------------------------------------------------------------------
-% Now estimate calibration parameters using LSQNONLIN.
-% ----------------------------------------------------------------------------------------------------------------------
-
-opt_options = optimset('lsqnonlin') ; % Use a least-square non-linear optimisation
-opt_options.LargeScale = 'on';        % Set this as a Large scale problem
-opt_options.Display = 'iter';         % Display results after each iteration
-opt_options.MaxFunEvals = 100000;
-opt_options.MaxIter = 100000;
-
-start_params = [initialGuess(1), initialGuess(2), initialGuess(3), initialGuess(4), initialGuess(5), initialGuess(6), initialGuess(7), initialGuess(8), initialGuess(9), initialGuess(10)];
-H = ones(size(start_params));
-
-% Now run optimisation algorithm
-[final_params, sumsqs, residuals, exitflag, output, lambda, J] = lsqnonlin(@CompCalResidual,H.*start_params,[],[],opt_options, tMr_matrices, pin_positions);
-
-disp('Final residual (mm):');
-%%disp(rms(residuals));
 disp('Final calibration (image to tracker) matrix:');
-rMi = Comp_RigidBody_Matrix(final_params);
+rMi = Comp_RigidBody_Matrix(finalParams);
 disp(rMi);
-disp('Final image scaling parameter (mm/pixel):');
-disp(final_params(10));
-    
-% Find outliers
-S = diag([final_params(10) final_params(10) 1 1]);
-pts_r = [];
-for i = 1:size(pin_positions,1)
-    pts_r = [pts_r tMr_matrices{i,1}*rMi*S*pin_positions{i,1}];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Work out the outliers. Only re-run if removing the outliers leaves at least 40 points.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[iOutliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex)
+M = size(iOutliers,2);
+disp('Number of outliers');
+disp(M);
+
+if (N-M > 40)
+
+  %%%%%%%%%%%%%%%%%%%%%%
+  % Throw away outliers.
+  %%%%%%%%%%%%%%%%%%%%%%
+
+  trackingMatrices2 = {};
+  ultrasoundPoints2 = {};
+  iIndex2 = [];
+
+  counter=1;
+  for i = 1:N
+    isOutlier = 0;
+    for j = 1:M
+      if (i == iOutliers(j))
+        isOutlier = 1;
+      end
+    end
+    if (isOutlier == 0)
+      ultrasoundPoints2{counter,1} = ultrasoundPoints{i};
+      trackingMatrices2{counter,1} = trackingMatrices{i};
+      iIndex2(counter) = counter;
+      counter = counter + 1;
+    end
+  end
+
+  %%%%%%%%%%%%%%%%%%%%%
+  % Re-Run optimisation
+  %%%%%%%%%%%%%%%%%%%%%
+
+  disp('Rerunning with this many points:');
+  disp(counter);
+
+  [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, trackingMatrices2, ultrasoundPoints2)
+  rMi2 = Comp_RigidBody_Matrix(finalParams);
+
+  % Note: Deliberately assigning outliers to different array.
+  %       So the output of this whole method, is the COMPLETE list of outliers.
+  [iOutliers2] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi2, trackingMatrices2, ultrasoundPoints2, iIndex2)
+
+  disp('Previous calibration (image to tracker) matrix:');
+  disp(rMi);
+  disp('Final calibration (image to tracker) matrix:');
+  disp(rMi2);
 end
-  
-D = pts_r - repmat(median(pts_r,2),1,size(pts_r,2));
-D = magc(D(1:3,:));
-i_outliers = i_index(find(D>3))
 
-plot3d(pts_r,1,'.');
+disp('Final image scaling parameter (mm/pixel):');
+disp(finalParams(10));
+disp('Final offset');
+disp([finalParams(7) finalParams(8) finalParams(9)]);
 
-       
- 
+
 
 
    
