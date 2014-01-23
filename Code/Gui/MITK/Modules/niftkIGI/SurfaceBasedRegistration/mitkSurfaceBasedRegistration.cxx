@@ -22,7 +22,9 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <niftkVTKFunctions.h>
+#include <niftkVTKBackfaceCullingFilter.h>
 #include <mitkDataStorageUtils.h>
+#include <vtkPolyDataNormals.h>
 
 namespace mitk
 {
@@ -36,6 +38,7 @@ SurfaceBasedRegistration::SurfaceBasedRegistration()
 : m_MaximumIterations(SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS)
 , m_MaximumNumberOfLandmarkPointsToUse(SurfaceBasedRegistration::DEFAULT_MAX_POINTS)
 , m_Method(VTK_ICP)
+, m_FlipNormals(false)
 , m_Matrix(NULL)
 {
   m_Matrix = vtkMatrix4x4::New();
@@ -101,7 +104,7 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
     }
 
     vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-    NodeToPolyData ( movingNode, *movingPoly, camgeom);
+    NodeToPolyData ( movingNode, *movingPoly, camgeom, m_FlipNormals);
 
     RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
   }
@@ -131,7 +134,7 @@ void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointe
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::Geometry3D::Pointer& cameranode)
+void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::Geometry3D::Pointer& cameranode, bool flipnormals)
 {
   if (node.IsNull())
   {
@@ -147,6 +150,8 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
   }
   else if (surface.IsNotNull())
   {
+    // no smartpointer for polytemp!
+    // mitk is handing us back a raw pointer, and uses raw pointers internally.
     vtkPolyData *polytemp = surface->GetVtkPolyData();
 
     vtkSmartPointer<vtkMatrix4x4> indexToWorld = vtkMatrix4x4::New();
@@ -155,11 +160,36 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
     vtkSmartPointer<vtkTransform> transform = vtkTransform::New();
     transform->SetMatrix(indexToWorld);
 
-    vtkTransformPolyDataFilter * transformFilter= vtkTransformPolyDataFilter::New();
-    transformFilter->SetInput(polytemp);
-    transformFilter->SetOutput(&polyOut);
-    transformFilter->SetTransform(transform);
-    transformFilter->Update();
+    if (cameranode.IsNull())
+    {
+      vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkTransformPolyDataFilter::New();
+      transformFilter->SetInput(polytemp);
+      transformFilter->SetOutput(&polyOut);
+      transformFilter->SetTransform(transform);
+      transformFilter->Update();
+    }
+    else
+    {
+      vtkSmartPointer<vtkPolyData> transformedpoly = vtkPolyData::New();
+      vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkTransformPolyDataFilter::New();
+      transformFilter->SetInput(polytemp);
+      transformFilter->SetOutput(transformedpoly);
+      transformFilter->SetTransform(transform);
+      transformFilter->Update();
+
+      vtkSmartPointer<vtkPolyData> normalspoly = vtkPolyData::New();
+      vtkSmartPointer<vtkPolyDataNormals>   normalfilter = vtkPolyDataNormals::New();
+      normalfilter->SetInput(transformedpoly);
+      normalfilter->SetOutput(normalspoly);
+      normalfilter->ComputeCellNormalsOn();
+      normalfilter->SetFlipNormals(flipnormals ? 1 : 0);
+      normalfilter->Update();
+
+      vtkSmartPointer<niftk::BackfaceCullingFilter>   backfacecullingfilter = niftk::BackfaceCullingFilter::New();
+      backfacecullingfilter->SetInput(normalspoly);
+      backfacecullingfilter->SetOutput(&polyOut);
+      backfacecullingfilter->Update();
+    }
   }
   else
   {
