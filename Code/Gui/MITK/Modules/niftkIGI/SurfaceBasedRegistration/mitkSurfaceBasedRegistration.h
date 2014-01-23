@@ -65,12 +65,12 @@ public:
   /**
    * \brief Generates a poly data from a mitk::DataNode.
    */
-  static void NodeToPolyData ( const mitk::DataNode::Pointer node , vtkPolyData& polyOut);
+  static void NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::Geometry3D::Pointer& cameranode = mitk::Geometry3D::Pointer());
 
   /**
    * \brief Generates a poly data from a mitk::PointSet.
    */
-  static void PointSetToPolyData ( const mitk::PointSet::Pointer pointsIn, vtkPolyData& polyOut);
+  static void PointSetToPolyData ( const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut);
 
 protected:
 

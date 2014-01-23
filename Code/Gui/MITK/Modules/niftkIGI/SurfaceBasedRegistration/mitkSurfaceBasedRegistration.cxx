@@ -90,8 +90,18 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
     vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
     NodeToPolyData ( fixedNode, *fixedPoly);
 
+    mitk::Geometry3D::Pointer   camgeom;
+    if (m_CameraNode.IsNotNull())
+    {
+      mitk::BaseData::Pointer   camnodebasedata = m_CameraNode->GetData();
+      if (camnodebasedata.IsNotNull())
+      {
+        camgeom = static_cast<mitk::Geometry3D*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
+      }
+    }
+
     vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-    NodeToPolyData ( movingNode, *movingPoly);
+    NodeToPolyData ( movingNode, *movingPoly, camgeom);
 
     RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
   }
@@ -104,29 +114,24 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointer pointsIn, vtkPolyData& polyOut)
+void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  int numberOfPoints = pointsIn->GetSize();
 
-  int i = 0 ;
-  int pointsFound = 0 ;
-  while ( pointsFound < numberOfPoints )
+  for (mitk::PointSet::PointsConstIterator i = pointsIn->Begin(); i != pointsIn->End(); ++i)
   {
-    mitk::Point3D point;
-    if ( pointsIn->GetPointIfExists(i, &point))
-    {
-      points->InsertNextPoint(point[0], point[1], point[2]);
-      pointsFound++;
-    }
-    i++;
+    const mitk::PointSet::PointType& p = i->Value();
+    points->InsertNextPoint(p[0], p[1], p[2]);
   }
+  // sanity check
+  assert(pointsIn->GetSize() == points->GetNumberOfPoints());
+
   polyOut.SetPoints(points);
 }
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer node , vtkPolyData& polyOut)
+void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::Geometry3D::Pointer& cameranode)
 {
   if (node.IsNull())
   {
