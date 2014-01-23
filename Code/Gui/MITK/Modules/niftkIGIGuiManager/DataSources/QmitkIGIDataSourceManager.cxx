@@ -17,6 +17,8 @@
 #include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
 #include <QDateTime>
+#include <mitkGlobalInteraction.h>
+#include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <QmitkIGINiftyLinkDataSource.h>
@@ -25,6 +27,9 @@
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
 #include <stdexcept>
+#include <vtkWindowToImageFilter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkSmartPointer.h>
 
 #ifdef _USE_NVAPI
 #include <QmitkIGINVidiaDataSource.h>
@@ -835,6 +840,45 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     // Try to encourage rest of event loop to process before the timer swamps it.
     //QCoreApplication::processEvents();
   }
+
+  // Dirty hack to dump screen.
+  if (this->m_GrabScreenCheckbox->isChecked())
+  {
+    QString directoryName = this->m_DirectoryChooser->currentPath();
+    if (directoryName.length() == 0)
+    {
+      directoryName = this->GetDirectoryName();
+      this->m_DirectoryChooser->setCurrentPath(directoryName);
+    }
+
+    QDir directory(directoryName);
+    if (directory.mkpath(directoryName))
+    {
+      QString fileName = directoryName + QDir::separator() + tr("screen-%1.jpg").arg(idNow);
+
+      mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+      if (focusManager != NULL)
+      {
+        mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+        if (focusedRenderer.IsNotNull())
+        {
+          vtkRenderer *renderer = focusedRenderer->GetVtkRenderer();
+          if (renderer != NULL)
+          {
+            vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkWindowToImageFilter::New();
+            windowToImageFilter->SetInput(renderer->GetRenderWindow());
+
+            vtkSmartPointer<vtkJPEGWriter> writer = vtkJPEGWriter::New();
+            writer->SetQuality(100);
+            writer->ProgressiveOff();
+            writer->SetInput(windowToImageFilter->GetOutput());
+            writer->SetFileName(fileName.toLatin1());
+            writer->Write();
+          }
+        }
+      }
+    }
+  }
   emit UpdateGuiEnd(idNow);
 }
 
@@ -857,9 +901,8 @@ void QmitkIGIDataSourceManager::OnCleanData()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceManager::OnRecordStart()
+QString QmitkIGIDataSourceManager::GetDirectoryName()
 {
-  // Generate a unique directory folder name.
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
@@ -875,8 +918,18 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   dateTime.setMSecsSinceEpoch(millis);
 
   QString formattedTime = dateTime.toString("yyyy-MM-dd-hh-mm-ss-zzz");
+  QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
-  QDir directory(baseDirectory + QDir::separator() + formattedTime);
+  return directoryName;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIDataSourceManager::OnRecordStart()
+{
+  QString directoryName = this->GetDirectoryName();
+  QDir directory(directoryName);
+
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
 
   foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
