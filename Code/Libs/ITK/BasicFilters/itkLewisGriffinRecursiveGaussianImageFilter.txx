@@ -377,20 +377,18 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   catch( std::bad_alloc & ) 
   {
     itkExceptionMacro("Problem allocating memory for internal computations");
+    return;
   }
-  
+
   try 
   {
     outs = new RealType[ ln ];
   }
   catch( std::bad_alloc & ) 
   {
-    if ( inps )
-    {
-      delete inps;
-      inps = 0;
-    }
+    delete [] inps;
     itkExceptionMacro("Problem allocating memory for internal computations");
+    return;
   }
 
   inputIterator.GoToBegin();
@@ -430,7 +428,7 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
       progress.CompletedPixel();  
     }
   }
-  
+
   catch( ProcessAborted  & )
   {
     // User aborted filter excecution Here we catch an exception thrown by the
@@ -440,16 +438,18 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
     // release locally allocated memory
     if ( outs ) 
     {
-      delete outs;
+      delete[] outs;
       outs = 0;
     }
+    
     if ( inps ) 
     {
-      delete inps;
+      delete[] inps;
       inps = 0;
     }
 
     // Throw the final exception.
+
     ProcessAborted e(__FILE__,__LINE__);
     e.SetDescription("Process aborted.");
     e.SetLocation(ITK_LOCATION);
@@ -458,12 +458,13 @@ LewisGriffinRecursiveGaussianImageFilter<TInputImage,TOutputImage>
   
   if ( outs ) 
   {
-    delete outs;
+    delete[] outs;
     outs = 0;
   }
+  
   if ( inps ) 
   {
-    delete inps;
+    delete[] inps;
     inps = 0;
   }
 }
