@@ -92,7 +92,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
 
   m_Viewer->SetCursorGloballyVisible(false);
   m_Viewer->SetCursorVisible(true);
-  m_Viewer->SetRememberSettingsPerWindowLayout(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
   m_Viewer->SetDisplayInteractionsEnabled(true);
   m_Viewer->SetCursorPositionsBound(false);
   m_Viewer->SetScaleFactorsBound(true);
