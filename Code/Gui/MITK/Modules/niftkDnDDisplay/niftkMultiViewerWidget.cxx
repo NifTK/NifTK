@@ -256,9 +256,12 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   m_VisibilityManager->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(viewer, SIGNAL(SelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(niftkSingleViewerWidget*, const mitk::Point3D&)));
+  this->connect(viewer, SIGNAL(SelectedTimeStepChanged(niftkSingleViewerWidget*, int)), SLOT(OnSelectedTimeStepChanged(niftkSingleViewerWidget*, int)));
   this->connect(viewer, SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&)));
   this->connect(viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
   this->connect(viewer, SIGNAL(WindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)), SLOT(OnWindowLayoutChanged(niftkSingleViewerWidget*, WindowLayout)));
+  this->connect(viewer, SIGNAL(CursorPositionBindingChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorPositionBindingChanged(niftkSingleViewerWidget*, bool)));
+  this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(niftkSingleViewerWidget*, bool)), SLOT(OnScaleFactorBindingChanged(niftkSingleViewerWidget*, bool)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(niftkSingleViewerWidget*, bool)), SLOT(OnCursorVisibilityChanged(niftkSingleViewerWidget*, bool)));
 
   return viewer;
@@ -799,6 +802,30 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int timeStep)
+{
+  // If the viewer is not found, we do not do anything.
+  if (std::find(m_Viewers.begin(), m_Viewers.end(), viewer) == m_Viewers.end())
+  {
+    return;
+  }
+
+  m_ControlPanel->SetTimeStep(timeStep);
+
+  if (m_ControlPanel->AreViewerPositionsBound())
+  {
+    for (int i = 0; i < m_Viewers.size(); i++)
+    {
+      if (m_Viewers[i] != viewer)
+      {
+        m_Viewers[i]->SetTimeStep(timeStep);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
   if (m_ControlPanel->AreViewerCursorsBound())
@@ -831,6 +858,38 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     }
   }
   m_Magnification = magnification;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound)
+{
+  if (m_ControlPanel->AreViewerCursorsBound())
+  {
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != viewer)
+      {
+        otherViewer->SetCursorPositionsBound(bound);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound)
+{
+  if (m_ControlPanel->AreViewerMagnificationsBound())
+  {
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != viewer)
+      {
+        otherViewer->SetScaleFactorsBound(bound);
+      }
+    }
+  }
 }
 
 

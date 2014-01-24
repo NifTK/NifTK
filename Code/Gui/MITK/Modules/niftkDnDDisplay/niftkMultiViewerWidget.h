@@ -316,6 +316,10 @@ protected slots:
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
   void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
 
+  /// \brief Called when the selected time step has changed in a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
+
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
   void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
@@ -327,6 +331,12 @@ protected slots:
 
   /// \brief Called when the geometry of a viewer has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
+
+  /// \brief Called when the cursor position binding has changed in a viewer.
+  void OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+
+  /// \brief Called when the scale factor binding has changed in a viewer.
+  void OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
