@@ -143,17 +143,11 @@ void BackfaceCullingFilter::Execute()
         ++outtrianglecount;
       }
     }
-    else
-    {
-      std::cerr << "burp! " << srctriangleindex << ' ';
-    }
 
     // remember: ptr[0] is the number of indices for the current cell.
     srctriangleindex += ptr[0] + 1;
     ++i;
   }
-  //output->GetPolys()->SetNumberOfCells(outtrianglecount);
-
 }
 
 

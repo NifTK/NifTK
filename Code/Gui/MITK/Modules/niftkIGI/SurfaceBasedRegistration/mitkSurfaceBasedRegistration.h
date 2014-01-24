@@ -55,8 +55,6 @@ public:
   itkSetMacro(CameraNode, mitk::DataNode::Pointer);
   itkSetMacro(FlipNormals, bool);
 
-  // debugging only! should go away eventually.
-  itkGetMacro(CulledPolyData, vtkSmartPointer<vtkPolyData>);
 
   /**
    * \brief Write My Documentation
@@ -68,7 +66,7 @@ public:
   /**
    * \brief Generates a poly data from a mitk::DataNode.
    */
-  static vtkSmartPointer<vtkPolyData> NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(), bool flipnormals = false);
+  static void NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(), bool flipnormals = false);
 
   /**
    * \brief Generates a poly data from a mitk::PointSet.
@@ -93,9 +91,6 @@ private:
   bool                        m_FlipNormals;
 
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
-
-  // debugging only! should go away.
-  vtkSmartPointer<vtkPolyData>    m_CulledPolyData;
 
   void RunVTKICP(vtkPolyData* fixedPoly,
            vtkPolyData* movingPoly,

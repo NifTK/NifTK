@@ -95,10 +95,9 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
     NodeToPolyData ( fixedNode, *fixedPoly);
 
     vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-    m_CulledPolyData = NodeToPolyData ( movingNode, *movingPoly, m_CameraNode, m_FlipNormals);
+    NodeToPolyData ( movingNode, *movingPoly, m_CameraNode, m_FlipNormals);
 
-    //m_CulledPolyData = movingPoly;
-    //RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
+    RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
   }
   if ( m_Method == DEFORM )
   {
@@ -126,10 +125,8 @@ void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointe
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode, bool flipnormals)
+void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode, bool flipnormals)
 {
-  vtkSmartPointer<vtkPolyData>    result;
-
   if (node.IsNull())
   {
     mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, node is NULL";
@@ -190,16 +187,12 @@ vtkSmartPointer<vtkPolyData> SurfaceBasedRegistration::NodeToPolyData ( const mi
       backfacecullingfilter->SetOutput(&polyOut);
       backfacecullingfilter->SetCameraPosition(camtxf);
       backfacecullingfilter->Update();
-
-      result = &polyOut;
     }
   }
   else
   {
     mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, node is neither mitk::PointSet or mitk::Surface";
   }
-
-  return result;
 }
 
 //-----------------------------------------------------------------------------

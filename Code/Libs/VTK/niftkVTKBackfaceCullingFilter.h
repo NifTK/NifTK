@@ -24,7 +24,7 @@ namespace niftk
 
 
 /**
- *
+ * Requires face/cell normals. See vtkPolyDataNormals::ComputeCellNormalsOn().
  * @warning Copies over vertex position only (along with indices for each triangle)! All other attributes are lost.
  */
 class NIFTKVTK_WINEXPORT BackfaceCullingFilter : public vtkPolyDataAlgorithm
