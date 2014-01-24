@@ -39,14 +39,12 @@ StereoPointProjectionIntoTwoImages::~StereoPointProjectionIntoTwoImages()
 
 
 //-----------------------------------------------------------------------------
-double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, const CvMat* points)
+double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, const CvMat* points, IplImage* outputImage)
 {
   if (goldStandardFileName.size() == 0)
   {
     return 0;
   }
-
-  double rmsError = 0;
 
   std::ifstream reader(goldStandardFileName.c_str());
   if (!reader)
@@ -59,7 +57,7 @@ double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, co
     std::cout << "Opened " << goldStandardFileName << std::endl;
   }
 
-  std::vector<CvPoint2D32f> pointsIn2D;
+  std::vector<CvPoint2D64f> pointsIn2D;
   double numbersOnLine[2];
 
   while(!reader.eof())
@@ -73,7 +71,7 @@ double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, co
     {
       break;
     }
-    CvPoint2D32f point;
+    CvPoint2D64f point;
     point.x = numbersOnLine[0];
     point.y = numbersOnLine[1];
     pointsIn2D.push_back(point);
@@ -84,25 +82,27 @@ double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, co
     throw std::logic_error("Gold standard file does not have the right number of points");
   }
 
-  int numberOfPoints = pointsIn2D.size();
-  for (int i = 0; i < numberOfPoints; i++)
+  CvMat *goldStandardPoints = cvCreateMat(points->rows, 2, CV_64FC1);
+  for (int i = 0; i < points->rows; i++)
   {
-    CvPoint2D32f goldPoint = pointsIn2D[i];
-    CvPoint2D32f testPoint;
-    testPoint.x = CV_MAT_ELEM(*points, float, i, 0);
-    testPoint.y = CV_MAT_ELEM(*points, float, i, 1);
+    CvPoint2D64f goldPoint = pointsIn2D[i];
+    CV_MAT_ELEM(*goldStandardPoints, double, i, 0) = goldPoint.x;
+    CV_MAT_ELEM(*goldStandardPoints, double, i, 1) = goldPoint.y;
 
-    double distanceError = (goldPoint.x-testPoint.x)*(goldPoint.x-testPoint.x)
-        + (goldPoint.y-testPoint.y)*(goldPoint.y-testPoint.y);
-    rmsError += distanceError;
+    CvPoint2D64f testPoint;
+    testPoint.x = CV_MAT_ELEM(*points, double, i, 0);
+    testPoint.y = CV_MAT_ELEM(*points, double, i, 1);
 
+    double distanceError = (goldPoint.x-testPoint.x)*(goldPoint.x-testPoint.x) + (goldPoint.y-testPoint.y)*(goldPoint.y-testPoint.y);
     std::cout << "Point " << i << ", g=(" << goldPoint.x << ", " << goldPoint.y << "), t=(" << testPoint.x << ", " << testPoint.y << "), squaredError=" << distanceError << std::endl;
-  }
-  rmsError /= (double)(numberOfPoints);
-  rmsError = sqrt(rmsError);
 
+    cvCircle(outputImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 1))), 1, CV_RGB(0,255,255), 3, 8);
+  }
+
+  double rmsError = CalculateRPE(*points, *goldStandardPoints);
   std::cout << "RMS error=" << rmsError << ", compared against " << goldStandardFileName << std::endl;
-  return sqrt(rmsError);
+
+  return rmsError;
 }
 
 
@@ -201,7 +201,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
       std::cout << "Opened " << input3DFileName << std::endl;
     }
 
-    std::vector<CvPoint3D32f> pointsIn3D;
+    std::vector<CvPoint3D64f> pointsIn3D;
     double numbersOnLine[3];
 
     while(!reader.eof())
@@ -215,7 +215,7 @@ bool StereoPointProjectionIntoTwoImages::Project(
       {
         break;
       }
-      CvPoint3D32f point;
+      CvPoint3D64f point;
       point.x = numbersOnLine[0];
       point.y = numbersOnLine[1];
       point.z = numbersOnLine[2];
@@ -229,22 +229,22 @@ bool StereoPointProjectionIntoTwoImages::Project(
     {
       throw std::logic_error("Failed to read 3D points");
     }
-    std::cout << "Read " << numberOfPoints << " points" << std::endl;
+    std::cout << "Read " << numberOfPoints << " 3D points" << std::endl;
 
-    CvMat *points = cvCreateMat(numberOfPoints, 3, CV_32FC1);
+    CvMat *points = cvCreateMat(numberOfPoints, 3, CV_64FC1);
     for (unsigned int i = 0; i < numberOfPoints; i++)
     {
-      CV_MAT_ELEM(*points, float, i, 0) = pointsIn3D[i].x;
-      CV_MAT_ELEM(*points, float, i, 1) = pointsIn3D[i].y;
-      CV_MAT_ELEM(*points, float, i, 2) = pointsIn3D[i].z;
+      CV_MAT_ELEM(*points, double, i, 0) = pointsIn3D[i].x;
+      CV_MAT_ELEM(*points, double, i, 1) = pointsIn3D[i].y;
+      CV_MAT_ELEM(*points, double, i, 2) = pointsIn3D[i].z;
     }
 
     // Save a little memory here.
     pointsIn3D.clear();
 
     // Allocate output points.
-    CvMat *output2DPointsLeft = cvCreateMat(numberOfPoints, 2, CV_32FC1);
-    CvMat *output2DPointsRight = cvCreateMat(numberOfPoints, 2, CV_32FC1);
+    CvMat *output2DPointsLeft = cvCreateMat(numberOfPoints, 2, CV_64FC1);
+    CvMat *output2DPointsRight = cvCreateMat(numberOfPoints, 2, CV_64FC1);
 
     // Main method to project points to both left and right images.
     Project3DModelPositionsToStereo2D
@@ -264,13 +264,13 @@ bool StereoPointProjectionIntoTwoImages::Project(
 
     for (unsigned int i = 0; i < numberOfPoints; i++)
     {
-      std::cout << "[" << i << "], 3D=(" << CV_MAT_ELEM(*points, float, i, 0) \
-          << ", " << CV_MAT_ELEM(*points, float, i, 1) \
-          << ", " << CV_MAT_ELEM(*points, float, i, 2) \
-          << "), 2Dl=(" << CV_MAT_ELEM(*output2DPointsLeft, float, i, 0) \
-          << ", " << CV_MAT_ELEM(*output2DPointsLeft, float, i, 1) \
-          << "), 2Dr=(" << CV_MAT_ELEM(*output2DPointsRight, float, i, 0) \
-          << ", " << CV_MAT_ELEM(*output2DPointsRight, float, i, 1) \
+      std::cout << "[" << i << "], 3D=(" << CV_MAT_ELEM(*points, double, i, 0) \
+          << ", " << CV_MAT_ELEM(*points, double, i, 1) \
+          << ", " << CV_MAT_ELEM(*points, double, i, 2) \
+          << "), 2Dl=(" << CV_MAT_ELEM(*output2DPointsLeft, double, i, 0) \
+          << ", " << CV_MAT_ELEM(*output2DPointsLeft, double, i, 1) \
+          << "), 2Dr=(" << CV_MAT_ELEM(*output2DPointsRight, double, i, 0) \
+          << ", " << CV_MAT_ELEM(*output2DPointsRight, double, i, 1) \
           << ")" << std::endl;
     }
 
@@ -281,18 +281,16 @@ bool StereoPointProjectionIntoTwoImages::Project(
 
     for (unsigned int i = 0; i < numberOfPoints; i++)
     {
-      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
-      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, float, i, 1))), 10, CV_RGB(0,255,0), 3, 8);
-      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 1))), 1, CV_RGB(255,0,0), 1, 8);
-      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, float, i, 1))), 10, CV_RGB(0,255,0), 3, 8);
+      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 1))), 1, CV_RGB(255,0,0), 3, 8);
+      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 1))), 1, CV_RGB(255,0,0), 3, 8);
     }
+
+    // Also, if filenames are specified, compare against lists of points
+    ComparePointsWithGoldStandard(inputLeft2DGoldStandardFileName, output2DPointsLeft, outputLeftImage);
+    ComparePointsWithGoldStandard(inputRight2DGoldStandardFileName, output2DPointsRight, outputRightImage);
 
     cvSaveImage(outputLeftImageName.c_str(), outputLeftImage);
     cvSaveImage(outputRightImageName.c_str(), outputRightImage);
-
-    // Also, if filenames are specified, compare against lists of points
-    ComparePointsWithGoldStandard(inputLeft2DGoldStandardFileName, output2DPointsLeft);
-    ComparePointsWithGoldStandard(inputRight2DGoldStandardFileName, output2DPointsRight);
 
     // Tidy up.
     cvReleaseMat(&points);
