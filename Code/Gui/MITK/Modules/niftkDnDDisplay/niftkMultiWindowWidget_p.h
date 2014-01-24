@@ -15,8 +15,6 @@
 #ifndef niftkMultiWindowWidget_h
 #define niftkMultiWindowWidget_h
 
-//#include <itkConversionUtils.h>
-
 #include <QColor>
 
 #include <mitkDataNode.h>
@@ -136,7 +134,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Works out the orientation of the current window layout.
-  MIDASOrientation GetOrientation();
+  MIDASOrientation GetOrientation() const;
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   void SetBackgroundColor(QColor color);
@@ -164,10 +162,10 @@ public:
   std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
+  const std::vector<QmitkRenderWindow*>& GetRenderWindows() const;
 
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
-  QmitkRenderWindow* GetRenderWindow(const MIDASOrientation& orientation) const;
+  QmitkRenderWindow* GetRenderWindow(MIDASOrientation orientation) const;
 
   /// \brief Gets the orientation corresponding to the given render window.
   /// Returns MIDAS_ORIENTATION_UNKNOWN for the 3D window.
@@ -175,9 +173,6 @@ public:
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
-
-  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
-  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow* aVtkRenderWindow) const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
   unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
@@ -197,79 +192,73 @@ public:
   /// \brief Set the current time step.
   void SetTimeStep(unsigned int timeStep);
 
-  /// \brief Gets the selected position in the world coordinate system (mm).
-  const mitk::Point3D GetSelectedPosition() const;
+  /// \brief Gets the selected point in the world coordinate system (mm).
+  const mitk::Point3D& GetSelectedPosition() const;
 
   /// \brief Sets the selected position in the world coordinate system (mm).
+  ///
+  /// This function does not necessarily move the image on the display, but
+  /// puts the cursor (aka. crosshair) to the selected world position.
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
   /// \brief Gets the cursor position normalised with the render window size.
+  ///
   /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D GetCursorPosition(QmitkRenderWindow* renderWindow) const;
+  const mitk::Vector2D& GetCursorPosition(MIDASOrientation orientation) const;
 
-  /// \brief Gets the cursor position normalised with the size of the render windows.
+  /// \brief Sets the cursor position normalised with the render window size.
+  ///
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  /// This function does not change the selected point in world but moves the image
+  /// in the given render window so that the cursor (aka. crosshair) gets to the specified
+  /// position in the render window.
+  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+
+  /// \brief Gets the positions of the cursor in the 2D render windows normalised with the render window size.
+  ///
   /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
   ///
   ///    pixel coordinate / render window size
   ///
-  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-  /// coordinate corresponds to the second coordinate in the sagittal render window.
-  /// The correspondence of the orientation axes is the following:
-  ///
-  ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> 1.0 - sagittal[0]
-  ///     sagittal[1] <-> coronal[1]
-  ///
-  const mitk::Vector3D& GetCursorPosition() const;
+  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
-  /// \brief Moves the image (world) in the render windows so that the selected position gets to the
-  /// specified position in the render windows. The function does not change the selected position.
+  /// \brief Sets the positions of the cursor in the 2D render windows normalised with the render window size.
+  ///
   /// The values are in the [0.0, 1.0] range and represent the position inside the render windows:
   ///
   ///    pixel coordinate / render window size
   ///
-  /// The first two coordinates correspond to the coordinates in the axial render window. The third
-  /// coordinate corresponds to the second coordinate in the sagittal render window.
-  /// The correspondence of the orientation axes is the following:
-  ///
-  ///     axial[0] <-> coronal[0]
-  ///     axial[1] <-> 1.0 - sagittal[0]
-  ///     sagittal[1] <-> coronal[1]
-  ///
-  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
+  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
-  double GetScaleFactor(QmitkRenderWindow* renderWindow) const;
+  double GetScaleFactor(MIDASOrientation orientation) const;
 
-  /// \brief Sets the scale factor of the render window to the given value. (mm/px)
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor) const;
-
-  /// \brief Gets the scale factor of the selected render window or 0.0 if no
-  /// window is selected.
-  double GetScaleFactor() const;
-
-  /// \brief Sets the scale factor of the selected window to the given value.
+  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// and moves the image so that the position of the focus remains the same.
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
-  void SetScaleFactor(double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Gets the scale factors of the 2D render windows.
+  const std::vector<double>& GetScaleFactors() const;
+
+  /// \brief Sets the scale factor of the render windows to the given values.
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
 
   /// \brief Gets the voxel size (mm/vx).
   const mitk::Vector3D& GetVoxelSize() const;
 
-  /// \brief Gets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
-  double GetMagnification() const;
-
-  /// \brief Sets the "Magnification Factor", which is a MIDAS term describing how many screen pixels per image voxel (px/vx).
-  void SetMagnification(double magnification);
-
   /// \brief Computes the magnification of a render window.
-  double GetMagnification(QmitkRenderWindow* renderWindow) const;
+  double GetMagnification(MIDASOrientation orientation) const;
 
   /// \brief Sets the magnification of a render window to the given value.
-  void SetMagnification(QmitkRenderWindow* renderWindow, double magnification);
+  void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -283,7 +272,7 @@ public:
   /// \brief According to the currently set geometry will return +1, or -1 for the direction to increment the slice number to move "up".
   ///
   /// \see mitkMIDASOrientationUtils.
-  int GetSliceUpDirection(MIDASOrientation orientation) const;
+  int GetSliceUpDirection(int orientation) const;
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
@@ -306,16 +295,16 @@ public:
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(niftkMultiWindowWidget* widget, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window.
-  void SelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+  void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
-  /// \brief Emitted when the cursor position has changed.
-  void CursorPositionChanged(const mitk::Vector3D& cursorPosition);
+  /// \brief Emitted when the cursor position has changed in a render window.
+  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed.
-  void ScaleFactorChanged(double scaleFactor);
+  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 protected slots:
 
@@ -323,6 +312,21 @@ protected slots:
   void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
 private:
+
+  /// \brief Updates the cursor position normalised with the render window size.
+  /// The values are in the [0.0, 1.0] range and represent the position inside the render window:
+  ///
+  ///    pixel coordinate / render window size
+  ///
+  void UpdateCursorPosition(MIDASOrientation orientation);
+
+  /// \brief Moves the image (world) so that the given point gets to the currently stored position of the cursor.
+  /// The function expects the cursor position in m_CursorPositions[orientation].
+  void MoveToCursorPosition(MIDASOrientation orientation);
+
+  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// and moves the origin so that the cursor stays in the same position on the display.
+  void ZoomAroundCursorPosition(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -333,70 +337,30 @@ private:
   /// \brief Callback from internal Coronal SliceNavigatorController
   void OnCoronalSliceChanged(const itk::EventObject& geometrySliceEvent);
 
-  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged
+  /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged.
+  /// The parameter describes which coordinate of the selected position has changed.
   void OnSelectedPositionChanged(MIDASOrientation orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
-  /// \brief Returns the current slice navigation controller, and calling it is only valid if the widget is displaying one render window (i.e. either axial, coronal, sagittal).
-  mitk::SliceNavigationController* GetSliceNavigationController(MIDASOrientation orientation) const;
-
   /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
-  // \brief Sets the origin of the display geometry of the render window
-  void SetOrigin(QmitkRenderWindow* renderWindow, const mitk::Vector2D& originInMm);
-
-  /// \brief Scales a specific render window about the cursor. The zoom factor is the ratio of the required
-  /// and the current scale factor.
-  /// \deprecated
-  /// {
-  ///   This function is deprecated because it requires the 'relative' scale factor.
-  ///   Use the SetScaleFactor functions instead.
-  /// }
-  void ZoomDisplayAboutCursor(QmitkRenderWindow* renderWindow, double zoomFactor);
-
-  /// \brief Returns a scale factor describing how many pixels on screen correspond to a single voxel or millimetre.
-  /// \deprecated
-  /// {
-  ///   This should be calculated from the world geometry dimensions, display geometry dimensions
-  ///   and the scale factor of the display geometry.
-  /// }
-  void GetScaleFactors(QmitkRenderWindow* renderWindow, mitk::Vector2D& scaleFactorPxPerVx, mitk::Vector2D& scaleFactorPxPerMm);
-
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
-  void AddDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void AddDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
-  void RemoveDisplayGeometryModificationObserver(QmitkRenderWindow* renderWindow);
+  void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(QmitkRenderWindow* renderWindow, bool beingPanned);
+  void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnFocusChanged(QmitkRenderWindow* renderWindow, const mitk::Vector2D& focusPoint);
+  void OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(QmitkRenderWindow* renderWindow, double scaleFactor);
-
-  /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector3D& cursorPosition);
-
-  /// \brief Computes the origin for a render window from the cursor position.
-  mitk::Vector2D ComputeOriginFromCursorPosition(QmitkRenderWindow* renderWindow, const mitk::Vector2D& cursorPosition);
-
-  /// \brief Computes the zoom factor for a render window from a magnification factor.
-  /// The zoom factor is the ratio of the required and the current scale factor.
-  /// \deprecated
-  /// {
-  ///   This function is deprecated because it needs to know the current scaling in the render window.
-  ///   The function was used to compute the zoom factor for the ZoomDisplayAboutCursor function that
-  ///   has been deprecated as well. Use the ComputeScaleFactors function to calculate the absolute
-  ///   scale factors from the magnification and the SetScaleFactor function to set the required
-  ///   scale factor for a render window.
-  /// }
-  double ComputeZoomFactor(QmitkRenderWindow* renderWindow, double magnification);
+  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Computes the scale factors from the magnification for each axes in mm/px.
   /// Since the magnification is in linear relation with the px/vx ratio but not the
@@ -404,14 +368,11 @@ private:
   /// The voxel sizes are calculated when the geometry is set.
   mitk::Vector3D ComputeScaleFactors(double magnification);
 
-  /// \brief Sets the scale factor to the given value and moves the image so that the position of the focus remains the same.
-  void SetScaleFactor(QmitkRenderWindow* renderWindow, double scaleFactor);
-
   /// \brief The magnification is calculated with the longer voxel side of an orientation.
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
 
-  QmitkRenderWindow* m_RenderWindows[4];
+  std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
   unsigned m_AxialSliceTag;
@@ -423,11 +384,15 @@ private:
   bool m_CursorVisibility;
   bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
+  MIDASOrientation m_Orientation;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
-  mitk::Vector3D m_CursorPosition;
-  double m_Magnification;
-  double m_ScaleFactor;
+  std::vector<mitk::Vector2D> m_CursorPositions;
+
+  /// \brief Scale factors for each render window in mm/px.
+  std::vector<double> m_ScaleFactors;
+  std::vector<double> m_Magnifications;
+
   mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
   mitk::TimeGeometry* m_TimeGeometry;
@@ -438,10 +403,30 @@ private:
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
 
-  std::map<QmitkRenderWindow*, unsigned long> m_DisplayGeometryModificationObservers;
-  bool m_BlockDisplayGeometryEvents;
+  unsigned long m_DisplayGeometryModificationObservers[3];
+  bool m_BlockDisplayEvents;
 
+  /// \brief Controls if the cursor positions are synchronised across the render windows.
+  /// The binding of the individual coordinates of the cursors can be controlled independently by
+  /// @a m_CursorAxialPositionsAreBound, @a m_CursorSagittalPositionsAreBound and @a m_CursorCoronalPositionsAreBound.
   bool m_CursorPositionsAreBound;
+
+  /// \brief Controls if the axial coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image vertically in the sagittal window will move the image in the coronal window
+  /// in the same direction, and vice versa.
+  bool m_CursorAxialPositionsAreBound;
+
+  /// \brief Controls if the sagittal coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image horizontally in the coronal window will move the image in the axial window
+  /// in the same direction, and vice versa.
+  bool m_CursorSagittalPositionsAreBound;
+
+  /// \brief Controls if the coronal coordinate of the cursor positions are synchronised when the cursor positions are bound.
+  /// If true then panning the image horizontally in the sagittal window will move the image in vertically in the axial window
+  /// in the opposite direction, and vice versa. (Panning left in the sagittal window results in lifting up the image in the
+  /// axial window.)
+  bool m_CursorCoronalPositionsAreBound;
+
   bool m_ScaleFactorsAreBound;
 
   friend class DisplayGeometryModificationCommand;

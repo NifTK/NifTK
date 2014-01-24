@@ -20,6 +20,7 @@
 #include <mitkInteractionPositionEvent.h>
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
+#include <mitkGlobalInteraction.h>
 
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers)
 : mitk::DisplayInteractor()
@@ -66,6 +67,12 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     return false;
   }
 
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
@@ -77,9 +84,37 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   return true;
 }
 
+
+bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+  return Superclass::ScrollOneUp(action, interactionEvent);
+}
+
+
+bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+  return Superclass::ScrollOneDown(action, interactionEvent);
+}
+
+
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+  }
+
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
   {

@@ -114,8 +114,8 @@ protected slots:
   /// \brief Called when the magnification is changed by the spin box.
   void OnMagnificationChanged(double magnification);
 
-  /// \brief Called when the magnification is changed by zooming in a renderer window.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* view, double magnification);
+  /// \brief Called when the scale factor is changed by zooming in a renderer window.
+  void OnScaleFactorChanged(niftkSingleViewerWidget* view, MIDASOrientation orientation, double scaleFactor);
 
 protected:
 

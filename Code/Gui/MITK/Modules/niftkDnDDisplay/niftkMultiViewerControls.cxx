@@ -50,7 +50,7 @@ niftkMultiViewerControls::niftkMultiViewerControls(QWidget *parent)
   this->connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
   this->connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
   this->connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerMagnificationBindingChanged(bool)));
-  this->connect(m_BindViewerWindowLayoutsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerWindowLayoutBindingChanged(bool)));
+  this->connect(m_BindViewerWindowLayoutsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerWindowLayoutBindingChanged(bool)));
   this->connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerGeometryBindingChanged(bool)));
 
   this->connect(m_DropSingleRadioButton, SIGNAL(toggled(bool)), SLOT(OnDropSingleRadioButtonToggled(bool)));
@@ -441,12 +441,29 @@ void niftkMultiViewerControls::OnViewerPositionBindingChanged(bool bound)
 //-----------------------------------------------------------------------------
 void niftkMultiViewerControls::OnViewerCursorBindingChanged(bool bound)
 {
+  if (bound && !this->AreViewerWindowLayoutsBound())
+  {
+    // Note that this will trigger emitting the ViewerWindowLayoutBindingChanged(true) signal.
+    m_BindViewerWindowLayoutsCheckBox->setChecked(true);
+  }
   if (bound && !this->AreViewerPositionsBound())
   {
-    // Note that this will trigger emitting the ViewPositionBindingChanged(true) signal.
+    // Note that this will trigger emitting the ViewerPositionBindingChanged(true) signal.
     m_BindViewerPositionsCheckBox->setChecked(true);
   }
   emit ViewerCursorBindingChanged(bound);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerControls::OnViewerWindowLayoutBindingChanged(bool bound)
+{
+  if (!bound && this->AreViewerCursorsBound())
+  {
+    // Note that this will trigger emitting the ViewCursorBindingChanged(false) signal.
+    m_BindViewerCursorsCheckBox->setChecked(false);
+  }
+  emit ViewerWindowLayoutBindingChanged(bound);
 }
 
 

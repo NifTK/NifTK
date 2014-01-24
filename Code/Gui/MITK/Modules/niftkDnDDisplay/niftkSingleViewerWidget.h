@@ -26,6 +26,7 @@
 #include <QmitkRenderWindow.h>
 
 #include <QColor>
+#include <QTime>
 #include <QWidget>
 
 #include <mitkMIDASEnums.h>
@@ -112,7 +113,7 @@ public:
   std::vector<QmitkRenderWindow*> GetVisibleRenderWindows() const;
 
   /// \brief Returns the list of all QmitkRenderWindow contained herein.
-  std::vector<QmitkRenderWindow*> GetRenderWindows() const;
+  const std::vector<QmitkRenderWindow*>& GetRenderWindows() const;
 
   /// \brief Returns the Axial Window.
   QmitkRenderWindow* GetAxialWindow() const;
@@ -174,9 +175,6 @@ public:
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
-  /// \brief Returns the render window that has the given VTK render window, or NULL if there is not any.
-  QmitkRenderWindow* GetRenderWindow(vtkRenderWindow *aVtkRenderWindow) const;
-
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
 
@@ -227,31 +225,43 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
-  void SetWindowLayout(WindowLayout windowLayout);
+  void SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition = false, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
 
   /// \brief Get the currently selected position in world coordinates (mm)
-  mitk::Point3D GetSelectedPosition() const;
+  const mitk::Point3D& GetSelectedPosition() const;
 
   /// \brief Set the currently selected position in world coordinates (mm)
   void SetSelectedPosition(const mitk::Point3D& selectedPosition);
 
-  /// \brief Get the current cursor position on the render window in pixels, normalised with the size of the render windows.
-  const mitk::Vector3D& GetCursorPosition() const;
+  /// \brief Get the current cursor position of the render window in pixels, normalised with the size of the render windows.
+  mitk::Vector2D GetCursorPosition(MIDASOrientation orientation) const;
 
-  /// \brief Set the current cursor position on the render window in pixels, normalised with the size of the render windows.
-  void SetCursorPosition(const mitk::Vector3D& cursorPosition);
+  /// \brief Set the current cursor position of the render window in pixels, normalised with the size of the render windows.
+  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
-  /// \brief Get the current magnification.
-  double GetMagnification() const;
+  /// \brief Gets the current cursor position of each render window in pixels, normalised with the size of the render windows.
+  const std::vector<mitk::Vector2D>& GetCursorPositions() const;
 
-  /// \brief Set the current magnification.
-  void SetMagnification(double magnification);
+  /// \brief Sets the current cursor position of each render window in pixels, normalised with the size of the render windows.
+  void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Get the current scale factor.
-  double GetScaleFactor() const;
+  double GetScaleFactor(MIDASOrientation orientation) const;
 
   /// \brief Set the current scale factor.
-  void SetScaleFactor(double scaleFactor);
+  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Gets the current scale factor of each render window.
+  const std::vector<double>& GetScaleFactors() const;
+
+  /// \brief Sets the current scale factor for each render window.
+  void SetScaleFactors(const std::vector<double>& scaleFactors);
+
+  /// \brief Get the current magnification.
+  double GetMagnification(MIDASOrientation orientation) const;
+
+  /// \brief Set the current magnification.
+  void SetMagnification(MIDASOrientation orientation, double magnification);
 
   /// \brief Sets the flag that controls whether we are listening to the navigation controller events.
   void SetNavigationControllerEventListening(bool enabled);
@@ -332,16 +342,25 @@ protected:
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(QmitkRenderWindow *window, std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
-  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow* renderWindow, int sliceIndex);
+  void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
+
+  /// \brief Emitted when the selected time step has changed in this viewer.
+  void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);
 
   /// \brief Emitted when the cursor position has changed in this viewer.
-  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Vector3D& cursorPosition);
+  void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
-  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, double scaleFactor);
+  void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Emitted when the cursor position binding has changed in this viewer.
+  void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+
+  /// \brief Emitted when the scale factor binding has changed in this viewer.
+  void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);
@@ -355,16 +374,16 @@ signals:
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(niftkMultiWindowWidget *widget, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+  virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
-  /// \brief Called when the selected slice has changed in a render window.
-  virtual void OnSelectedPositionChanged(QmitkRenderWindow* renderWindow, int sliceIndex);
+  /// \brief Called when the selected position has changed.
+  virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
-  virtual void OnCursorPositionChanged(const mitk::Vector3D& cursorPosition);
+  virtual void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor has changed.
-  virtual void OnScaleFactorChanged(double scaleFactor);
+  virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 private:
 
@@ -378,7 +397,6 @@ private:
   {
     return (index << 1) + m_IsBoundGeometryActive;
   }
-  void ResetRememberedPositions();
 
   /// \brief Used to move either anterior/posterior by a certain number of slices.
   bool MoveAnteriorPosterior(int slices);
@@ -399,25 +417,67 @@ private:
   WindowLayout m_WindowLayout;
   MIDASOrientation m_Orientation;
 
-  int m_SliceIndexes[MIDAS_ORIENTATION_NUMBER * 2];            // Two for each orientation. Unbound, then bound, alternatingly.
-  int m_TimeSteps[MIDAS_ORIENTATION_NUMBER * 2];               // Two for each orientation. Unbound, then bound, alternatingly.
-//  mitk::Vector3D m_CursorPositions[MIDAS_LAYOUT_NUMBER * 2]; // Two for each window layout. Unbound, then bound, alternatingly.
-  double m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];             // Two for each window layout. Unbound, then bound, alternatingly.
-  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];    // Two for each window layout. Unbound, then bound, alternatingly.
+  /// \brief Stores the selected point per window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the selected time step. One for unbound, one for bound.
+  int m_TimeSteps[2];                                             // Two, one for unbound, one for bound.
+
+  /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// The vectors store the cursor positions for the render windows of the layout.
+  std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  /// The vectors store the scale factors of the render windows of the layout.
+  std::vector<double> m_ScaleFactors[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the selected render window for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  QmitkRenderWindow* m_SelectedRenderWindow[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the cursor position binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_CursorPositionBinding[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the scale factor binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_ScaleFactorBinding[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
+  bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores the last three selected positions.
+  ///
+  /// The aim with storing these positions is that if the window layout is switched
+  /// between single and multi by double clicking, we can can discard the position changes
+  /// because of the double clicking itself, and remember the previously selected position,
+  /// so that we can restore it next time when the user returns to the window layout.
+  std::deque<mitk::Point3D> m_LastSelectedPositions;
+
+  /// \brief Stores the time of the last position selection events in milliseconds.
+  ///
+  /// This is used to distinguish between simple position selection events by a single click
+  /// and single/multiple window layout switch by double click. If latter happens, we have to
+  /// save the position from before the double clicking.
+  std::deque<QTime> m_LastSelectedPositionTimes;
+
+  /// \brief Stores the position of the cursor in the 2D render windows a the last seven times.
+  ///
+  /// The aim with storing these positions is that if the window layout is switched
+  /// between single and multi by double clicking, we can can discard the position changes
+  /// because of the double clicking itself, and remember the previously selected position,
+  /// so that we can restore it next time when the user returns to the window layout.
+  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
+
+  /// \brief Stores the time of the last events in milliseconds when the position of the cursor has changed in the 2D windows.
+  ///
+  /// This is used to distinguish between simple position selection events by a single click
+  /// and single/multiple window layout switch by double click. If latter happens, we have to
+  /// save the position from before the double clicking.
+  std::deque<QTime> m_LastCursorPositionTimes;
 
   bool m_NavigationControllerEventListening;
   bool m_RememberSettingsPerWindowLayout;
 
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
-
-  mitk::Vector3D m_CursorPosition;
-  mitk::Vector3D m_LastCursorPosition;
-//  mitk::Vector3D m_SecondLastCursorPosition;
-  mitk::Point3D m_SelectedPosition;
-  mitk::Point3D m_LastSelectedPosition;
-  mitk::Point3D m_SecondLastSelectedPosition;
-//  std::deque<mitk::Point3D> m_LastSelectedPositions;
 
   mitk::DnDDisplayStateMachine::Pointer m_DnDDisplayStateMachine;
 };

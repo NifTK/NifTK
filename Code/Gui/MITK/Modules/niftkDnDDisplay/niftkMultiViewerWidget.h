@@ -289,19 +289,19 @@ protected slots:
   void OnViewerNumberChanged(int rows, int columns);
 
   /// \brief Called when the viewer position binding has been changed through the control panel.
-  void OnViewerPositionBindingChanged();
+  void OnViewerPositionBindingChanged(bool bound);
 
   /// \brief Called when the viewer cursor binding has been changed through the control panel.
-  void OnViewerCursorBindingChanged();
+  void OnViewerCursorBindingChanged(bool bound);
 
   /// \brief Called when the window layout binding across the viewers has been changed through the control panel.
-  void OnViewerWindowLayoutBindingChanged();
+  void OnViewerWindowLayoutBindingChanged(bool bound);
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
-  void OnViewerMagnificationBindingChanged();
+  void OnViewerMagnificationBindingChanged(bool bound);
 
   /// \brief Called when the viewer geometry binding has been changed through the control panel.
-  void OnViewerGeometryBindingChanged();
+  void OnViewerGeometryBindingChanged(bool bound);
 
   /// \brief Called when the drop type has been changed through the control panel.
   void OnDropTypeChanged(DnDDisplayDropType dropType);
@@ -310,23 +310,33 @@ protected slots:
   void OnDropAccumulateChanged(bool checked);
 
   /// \brief When nodes are dropped on one of the contained 25 QmitkRenderWindows, the niftkMultiViewerVisibilityManager sorts out visibility, so here we just set the focus.
-  void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.
-  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, QmitkRenderWindow* renderWindow, int sliceIndex);
+  void OnSelectedPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Point3D& selectedPosition);
+
+  /// \brief Called when the selected time step has changed in a viewer.
+  /// Each of the contained viewers will signal when its slice navigation controllers have changed.
+  void OnSelectedTimeStepChanged(niftkSingleViewerWidget* viewer, int selectedTimeStep);
 
   /// \brief Called when the cursor position has changed in a render window because of panning or point selection.
-  void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, const mitk::Vector3D& cursorPosition);
+  void OnCursorPositionChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, double scaleFactor);
+  void OnScaleFactorChanged(niftkSingleViewerWidget* viewer, MIDASOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
   void OnWindowLayoutChanged(niftkSingleViewerWidget* viewer, WindowLayout windowLayout);
 
   /// \brief Called when the geometry of a viewer has changed.
   void OnGeometryChanged(niftkSingleViewerWidget* viewer, mitk::TimeGeometry* geometry);
+
+  /// \brief Called when the cursor position binding has changed in a viewer.
+  void OnCursorPositionBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
+
+  /// \brief Called when the scale factor binding has changed in a viewer.
+  void OnScaleFactorBindingChanged(niftkSingleViewerWidget* viewer, bool bound);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(niftkSingleViewerWidget* viewer, bool visible);
@@ -360,7 +370,7 @@ private:
   void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
 
   // Called from the QRadioButtons to set the layout.
-  void SetLayout(WindowLayout windowLayout);
+  void SetWindowLayout(WindowLayout windowLayout);
 
   /// \brief If a particular viewer is selected, we need to iterate through all viewers, and make the rest unselected.
   void SetSelectedViewerByIndex(int index);

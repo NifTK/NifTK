@@ -92,7 +92,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
 
   m_Viewer->SetCursorGloballyVisible(false);
   m_Viewer->SetCursorVisible(true);
-  m_Viewer->SetRememberSettingsPerWindowLayout(true);
+  m_Viewer->SetRememberSettingsPerWindowLayout(false);
   m_Viewer->SetDisplayInteractionsEnabled(true);
   m_Viewer->SetCursorPositionsBound(false);
   m_Viewer->SetScaleFactorsBound(true);
@@ -104,7 +104,7 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
   this->connect(m_MultiWindowComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnMultiWindowComboBoxIndexChanged()));
 
   this->connect(m_MagnificationSpinBox, SIGNAL(valueChanged(double)), SLOT(OnMagnificationChanged(double)));
-  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, double)));
+  this->connect(m_Viewer, SIGNAL(ScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)), SLOT(OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation, double)));
 
   // Register focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -333,7 +333,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
     m_WindowLayout = nextLayout;
     m_Viewer->SetWindowLayout(m_WindowLayout);
 
-    double magnification = m_Viewer->GetMagnification();
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(magnification);
@@ -349,13 +349,24 @@ void QmitkMIDASSegmentationViewWidget::OnFocusChanged()
 {
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+  QmitkRenderWindow* focusedRenderWindow = 0;
+
+  const std::vector<QmitkRenderWindow*>& viewerRenderWindows = m_Viewer->GetRenderWindows();
+  for (int i = 0; i < viewerRenderWindows.size(); ++i)
+  {
+    if (focusedRenderer == viewerRenderWindows[i]->GetRenderer())
+    {
+      focusedRenderWindow = viewerRenderWindows[i];
+      break;
+    }
+  }
 
   // If the newly focused window is in this widget, nothing to update. Stop early.
-  if (QmitkRenderWindow* renderWindow = m_Viewer->GetRenderWindow(focusedRenderer->GetRenderWindow()))
+  if (focusedRenderWindow)
   {
-    m_Viewer->SetSelectedRenderWindow(renderWindow);
+    m_Viewer->SetSelectedRenderWindow(focusedRenderWindow);
 
-    double magnification = m_Viewer->GetMagnification();
+    double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
     m_Magnification = magnification;
 
     bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
@@ -447,7 +458,6 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   if (geometry && geometry != m_Geometry)
   {
     m_Viewer->SetGeometry(geometry);
-
     m_Viewer->FitToDisplay();
 
     std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
@@ -463,6 +473,14 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
 
   m_Geometry = geometry;
   m_Viewer->SetEnabled(geometry != 0);
+
+  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
+
+  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    m_MainWindowOrientation = mainWindowOrientation;
+    this->ChangeLayout();
+  }
 
   mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
@@ -494,14 +512,6 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   m_MainAxialSnc = mainAxialSnc;
   m_MainSagittalSnc = mainSagittalSnc;
   m_MainCoronalSnc = mainCoronalSnc;
-
-  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
-
-  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    m_MainWindowOrientation = mainWindowOrientation;
-    this->ChangeLayout();
-  }
 
   /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
   /// Therefore, we resend the main window position here.
@@ -547,9 +557,9 @@ MIDASOrientation QmitkMIDASSegmentationViewWidget::GetMainWindowOrientation()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, double scaleFactor)
+void QmitkMIDASSegmentationViewWidget::OnScaleFactorChanged(niftkSingleViewerWidget*, MIDASOrientation orientation, double scaleFactor)
 {
-  double magnification = m_Viewer->GetMagnification();
+  double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
   bool wasBlocked = m_MagnificationSpinBox->blockSignals(true);
   m_MagnificationSpinBox->setValue(magnification);
@@ -578,7 +588,7 @@ void QmitkMIDASSegmentationViewWidget::OnMagnificationChanged(double magnificati
   }
   else
   {
-    m_Viewer->SetMagnification(magnification);
+    m_Viewer->SetMagnification(m_Viewer->GetOrientation(), magnification);
     m_Magnification = magnification;
   }
 }

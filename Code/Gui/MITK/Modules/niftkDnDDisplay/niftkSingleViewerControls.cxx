@@ -358,10 +358,6 @@ void niftkSingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
   m_WindowLayout = windowLayout;
 
   ui->m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
-
-  emit WindowLayoutChanged(windowLayout);
-
-  ui->m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
 }
 
 
@@ -451,6 +447,7 @@ void niftkSingleViewerControls::OnAxialWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     this->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+    emit WindowLayoutChanged(WINDOW_LAYOUT_AXIAL);
   }
 }
 
@@ -461,6 +458,7 @@ void niftkSingleViewerControls::OnSagittalWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     this->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+    emit WindowLayoutChanged(WINDOW_LAYOUT_SAGITTAL);
   }
 }
 
@@ -471,6 +469,7 @@ void niftkSingleViewerControls::OnCoronalWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     this->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+    emit WindowLayoutChanged(WINDOW_LAYOUT_CORONAL);
   }
 }
 
@@ -481,6 +480,7 @@ void niftkSingleViewerControls::On3DWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     this->SetWindowLayout(WINDOW_LAYOUT_3D);
+    emit WindowLayoutChanged(WINDOW_LAYOUT_3D);
   }
 }
 
@@ -491,6 +491,7 @@ void niftkSingleViewerControls::OnMultiWindowRadioButtonToggled(bool checked)
   if (checked)
   {
     this->SetWindowLayout(s_MultiWindowLayouts[ui->m_MultiWindowComboBox->currentIndex()]);
+    emit WindowLayoutChanged(s_MultiWindowLayouts[ui->m_MultiWindowComboBox->currentIndex()]);
   }
 }
 
@@ -500,4 +501,5 @@ void niftkSingleViewerControls::OnMultiWindowComboBoxIndexChanged(int index)
 {
   ui->m_MultiWindowRadioButton->setChecked(true);
   this->SetWindowLayout(s_MultiWindowLayouts[index]);
+  emit WindowLayoutChanged(s_MultiWindowLayouts[index]);
 }
