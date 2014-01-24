@@ -404,7 +404,7 @@ private:
   vtkRenderer* m_DirectionAnnotationRenderers[3];
 
   unsigned long m_DisplayGeometryModificationObservers[3];
-  bool m_BlockDisplayGeometryEvents;
+  bool m_BlockDisplayEvents;
 
   /// \brief Controls if the cursor positions are synchronised across the render windows.
   /// The binding of the individual coordinates of the cursors can be controlled independently by
