@@ -514,7 +514,6 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
   if (!m_IsBoundGeometryActive)
   {
     m_MultiWidget->SetGeometry(timeGeometry);
-    m_MultiWidget->FitToDisplay();
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -561,7 +560,6 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geome
   if (m_IsBoundGeometryActive)
   {
     m_MultiWidget->SetGeometry(geometry);
-    m_MultiWidget->FitToDisplay();
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -680,7 +678,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     }
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
-    m_MultiWidget->SetGeometry(geometry);
     m_MultiWidget->SetWindowLayout(windowLayout);
     // Call Qt update to try and make sure we are painted at the right size.
     m_MultiWidget->update();
