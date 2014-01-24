@@ -96,7 +96,7 @@ double ComparePointsWithGoldStandard(const std::string& goldStandardFileName, co
     double distanceError = (goldPoint.x-testPoint.x)*(goldPoint.x-testPoint.x) + (goldPoint.y-testPoint.y)*(goldPoint.y-testPoint.y);
     std::cout << "Point " << i << ", g=(" << goldPoint.x << ", " << goldPoint.y << "), t=(" << testPoint.x << ", " << testPoint.y << "), squaredError=" << distanceError << std::endl;
 
-    cvCircle(outputImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 1))), 1, CV_RGB(0,255,255), 3, 8);
+    cvCircle(outputImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*goldStandardPoints, double, i, 1))), 5, CV_RGB(0,255,255), 1, 8);
   }
 
   double rmsError = CalculateRPE(*points, *goldStandardPoints);
@@ -281,8 +281,8 @@ bool StereoPointProjectionIntoTwoImages::Project(
 
     for (unsigned int i = 0; i < numberOfPoints; i++)
     {
-      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 1))), 1, CV_RGB(255,0,0), 3, 8);
-      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 1))), 1, CV_RGB(255,0,0), 3, 8);
+      cvCircle(outputLeftImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsLeft, double, i, 1))), 10, CV_RGB(255,0,0), 1, 8);
+      cvCircle(outputRightImage, cvPoint(static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 0)), static_cast<int>(CV_MAT_ELEM(*output2DPointsRight, double, i, 1))), 10, CV_RGB(255,0,0), 1, 8);
     }
 
     // Also, if filenames are specified, compare against lists of points
