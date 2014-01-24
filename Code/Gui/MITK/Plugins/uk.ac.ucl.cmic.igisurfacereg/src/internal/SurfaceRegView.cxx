@@ -114,6 +114,9 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2579
     m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
 
+    // disabled by default, for now.
+    m_Controls->m_HiddenSurfaceRemovalGroupBox->setCollapsed(true);
+
     bool  ok = false;
     ok = QObject::connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
     assert(ok);
