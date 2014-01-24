@@ -269,7 +269,20 @@ void SurfaceRegView::OnCalculateButtonPressed()
     registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
   }
   registration->Update(fixednode, movingnode, *m_Matrix);
-  
+
+  // debugging only!
+  mitk::Surface::Pointer    s = mitk::Surface::New();
+  s->SetVtkPolyData(registration->GetCulledPolyData());
+  mitk::DataNode::Pointer n = GetDataStorage()->GetNamedNode("debug");
+  if (n.IsNotNull())
+  {
+    GetDataStorage()->Remove(n);
+  }
+  n = mitk::DataNode::New();
+  n->SetName("debug");
+  n->SetData(s);
+  GetDataStorage()->Add(n);
+
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)

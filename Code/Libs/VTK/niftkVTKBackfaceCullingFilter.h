@@ -23,12 +23,18 @@ namespace niftk
 {
 
 
+/**
+ *
+ * @warning Copies over vertex position only (along with indices for each triangle)! All other attributes are lost.
+ */
 class NIFTKVTK_WINEXPORT BackfaceCullingFilter : public vtkPolyDataAlgorithm
 {
 
 public:
   static BackfaceCullingFilter* New();
   vtkTypeMacro(BackfaceCullingFilter, vtkPolyDataAlgorithm);
+
+  void SetCameraPosition(const vtkSmartPointer<vtkMatrix4x4>& campos);
 
 protected:
   BackfaceCullingFilter();
@@ -37,6 +43,8 @@ protected:
 protected:
   virtual void Execute();
 
+
+  vtkSmartPointer<vtkMatrix4x4>     m_CameraPosition;
 
 private:
   BackfaceCullingFilter(const BackfaceCullingFilter&);  // Not implemented.

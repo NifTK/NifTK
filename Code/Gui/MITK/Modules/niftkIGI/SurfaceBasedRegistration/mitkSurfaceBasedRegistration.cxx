@@ -26,6 +26,7 @@
 #include <mitkDataStorageUtils.h>
 #include <vtkPolyDataNormals.h>
 
+
 namespace mitk
 {
  
@@ -93,20 +94,11 @@ void SurfaceBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
     vtkSmartPointer<vtkPolyData> fixedPoly = vtkPolyData::New();
     NodeToPolyData ( fixedNode, *fixedPoly);
 
-    mitk::Geometry3D::Pointer   camgeom;
-    if (m_CameraNode.IsNotNull())
-    {
-      mitk::BaseData::Pointer   camnodebasedata = m_CameraNode->GetData();
-      if (camnodebasedata.IsNotNull())
-      {
-        camgeom = static_cast<mitk::Geometry3D*>(camnodebasedata->GetGeometry()->Clone().GetPointer());
-      }
-    }
-
     vtkSmartPointer<vtkPolyData> movingPoly = vtkPolyData::New();
-    NodeToPolyData ( movingNode, *movingPoly, camgeom, m_FlipNormals);
+    m_CulledPolyData = NodeToPolyData ( movingNode, *movingPoly, m_CameraNode, m_FlipNormals);
 
-    RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
+    //m_CulledPolyData = movingPoly;
+    //RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
   }
   if ( m_Method == DEFORM )
   {
@@ -134,8 +126,10 @@ void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointe
 
 
 //-----------------------------------------------------------------------------
-void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::Geometry3D::Pointer& cameranode, bool flipnormals)
+vtkSmartPointer<vtkPolyData> SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode, bool flipnormals)
 {
+  vtkSmartPointer<vtkPolyData>    result;
+
   if (node.IsNull())
   {
     mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, node is NULL";
@@ -182,19 +176,30 @@ void SurfaceBasedRegistration::NodeToPolyData ( const mitk::DataNode::Pointer& n
       normalfilter->SetInput(transformedpoly);
       normalfilter->SetOutput(normalspoly);
       normalfilter->ComputeCellNormalsOn();
+      normalfilter->ComputePointNormalsOn();
+      normalfilter->AutoOrientNormalsOn();
+      normalfilter->ConsistencyOn();
       normalfilter->SetFlipNormals(flipnormals ? 1 : 0);
       normalfilter->Update();
+
+      vtkSmartPointer<vtkMatrix4x4> camtxf = vtkMatrix4x4::New();
+      mitk::GetCurrentTransformFromNode(cameranode, *camtxf);
 
       vtkSmartPointer<niftk::BackfaceCullingFilter>   backfacecullingfilter = niftk::BackfaceCullingFilter::New();
       backfacecullingfilter->SetInput(normalspoly);
       backfacecullingfilter->SetOutput(&polyOut);
+      backfacecullingfilter->SetCameraPosition(camtxf);
       backfacecullingfilter->Update();
+
+      result = &polyOut;
     }
   }
   else
   {
     mitkThrow() << "In SurfaceBasedRegistration::NodeToPolyData, node is neither mitk::PointSet or mitk::Surface";
   }
+
+  return result;
 }
 
 //-----------------------------------------------------------------------------
