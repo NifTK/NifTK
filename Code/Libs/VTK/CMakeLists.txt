@@ -17,6 +17,7 @@ set(niftkVTK_SRCS
   niftkVTKIterativeClosestPoint.cxx
   niftkVTK4PointsReader.cxx
   niftkVTKIGIGeometry.cxx
+  niftkVTKBackfaceCullingFilter.cxx
 )
 
 add_library(niftkVTK ${niftkVTK_SRCS})

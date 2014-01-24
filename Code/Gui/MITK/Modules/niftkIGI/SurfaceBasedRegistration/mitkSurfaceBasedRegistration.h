@@ -52,6 +52,9 @@ public:
   itkSetMacro (MaximumIterations, int);
   itkSetMacro (MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro (Method, Method);
+  itkSetMacro(CameraNode, mitk::DataNode::Pointer);
+  itkSetMacro(FlipNormals, bool);
+
 
   /**
    * \brief Write My Documentation
@@ -63,12 +66,12 @@ public:
   /**
    * \brief Generates a poly data from a mitk::DataNode.
    */
-  static void NodeToPolyData ( const mitk::DataNode::Pointer node , vtkPolyData& polyOut);
+  static void NodeToPolyData ( const mitk::DataNode::Pointer& node , vtkPolyData& polyOut, const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(), bool flipnormals = false);
 
   /**
    * \brief Generates a poly data from a mitk::PointSet.
    */
-  static void PointSetToPolyData ( const mitk::PointSet::Pointer pointsIn, vtkPolyData& polyOut);
+  static void PointSetToPolyData ( const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut);
 
 protected:
 
@@ -83,6 +86,9 @@ private:
   int m_MaximumIterations;
   int m_MaximumNumberOfLandmarkPointsToUse;
   Method m_Method;
+
+  mitk::DataNode::Pointer     m_CameraNode;
+  bool                        m_FlipNormals;
 
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;
 

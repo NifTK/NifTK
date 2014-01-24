@@ -99,15 +99,33 @@ void SurfaceRegView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_MovingSurfaceComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ComposeWithDataNode->SetDataStorage(dataStorage);
 
+    // i've decided against a node filter for now. any node can have the suitable
+    // matrix for representing the camera position.
+    // if we decide otherwise then mitk::CoordinateAxisData would be suitable, i think.
+    m_Controls->m_CameraNodeComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_CameraNodeComboBox->SetAutoSelectNewItems(false);
+
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
 
     m_Controls->m_LiveDistanceGroupBox->setCollapsed(true);
+    // disable it for now, we've never used it, and it seems to have bugs:
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2873
+    //  https://cmicdev.cs.ucl.ac.uk/trac/ticket/2579
+    m_Controls->m_LiveDistanceGroupBox->setEnabled(false);
 
-    connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
-    connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
-    connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
-    connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    // disabled by default, for now.
+    m_Controls->m_HiddenSurfaceRemovalGroupBox->setCollapsed(true);
+
+    bool  ok = false;
+    ok = QObject::connect(m_Controls->m_SurfaceBasedRegistrationButton, SIGNAL(pressed()), this, SLOT(OnCalculateButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_ComposeWithDataButton, SIGNAL(pressed()), this, SLOT(OnComposeWithDataButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_SaveToFileButton, SIGNAL(pressed()), this, SLOT(OnSaveToFileButtonPressed()));
+    assert(ok);
+    ok = QObject::connect(m_Controls->m_LiveDistanceUpdateButton, SIGNAL(clicked()), this, SLOT(OnComputeDistance()));
+    assert(ok);
 
     dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<SurfaceRegView, const mitk::DataNode*>(this, &SurfaceRegView::DataStorageEventListener));
 
@@ -248,8 +266,13 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
   mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+  if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
+  {
+    registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());
+    registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
+  }
   registration->Update(fixednode, movingnode, *m_Matrix);
-  
+
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
