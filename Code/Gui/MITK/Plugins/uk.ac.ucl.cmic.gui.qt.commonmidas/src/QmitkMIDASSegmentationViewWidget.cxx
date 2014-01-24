@@ -331,7 +331,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
   if (nextLayout != WINDOW_LAYOUT_UNKNOWN && nextLayout != m_WindowLayout)
   {
     m_WindowLayout = nextLayout;
-    m_Viewer->SetWindowLayout(m_WindowLayout);
+    m_Viewer->SetWindowLayout(m_WindowLayout, true, true, true);
 
     double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
@@ -458,7 +458,6 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   if (geometry && geometry != m_Geometry)
   {
     m_Viewer->SetGeometry(geometry);
-
     m_Viewer->FitToDisplay();
 
     std::vector<mitk::DataNode*> crossHairs = m_Viewer->GetWidgetPlanes();
