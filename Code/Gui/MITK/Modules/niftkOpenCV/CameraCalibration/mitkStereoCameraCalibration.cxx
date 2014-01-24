@@ -400,9 +400,6 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
       CV_MAT_ELEM(*r2LTrans, double, 0, j) = CV_MAT_ELEM(*rightToLeftTranslationVectors, double, i, j);
     }
     
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), r2LRot);
-    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
-    
     // Also output in plain text format, which is a [3x3] rotation, AND THEN a [1x3] translation.
     std::ofstream tmpR2L;
     std::string tmpR2LFileName = niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.txt"));
@@ -423,6 +420,10 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     {
       tmpR2L.close();
     }
+
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.rotation.xml"))).c_str(), rightToLeftRotationMatrix);
+    cvSave((niftk::ConcatenatePath(outputDirectoryName, niftk::Basename(successfullFileNamesLeft[i]) + std::string(".r2l.translation.xml"))).c_str(), r2LTrans);
+
     fs << "Projecting error to individual camera[" << successfullFileNamesLeft[i] << "]: left=" << leftMonoReprojectionErrors[i] << ", right=" << rightMonoReprojectionErrors[i] << ", mean=" << (leftMonoReprojectionErrors[i]+rightMonoReprojectionErrors[i])/2.0 << std::endl;
   }  // end for each file
 
