@@ -573,6 +573,33 @@ void ComputeRightToLeftTransformations(
 
 
 //-----------------------------------------------------------------------------
+double CalculateRPE(
+    const CvMat& projectedPoints,
+    const CvMat& goldStandardPoints
+    )
+{
+  double rmsError = 0;
+  double diff = 0;
+
+  for (unsigned int i = 0; i < projectedPoints.rows; i++)
+  {
+    for (unsigned int j = 0; j < 2; j++)
+    {
+      diff = CV_MAT_ELEM(projectedPoints, double, i, j) - CV_MAT_ELEM(goldStandardPoints, double, i, j);
+      rmsError += (diff*diff);
+    }
+  }
+  if (projectedPoints.rows > 0)
+  {
+    rmsError /= static_cast<double>(projectedPoints.rows);
+  }
+  rmsError = sqrt(rmsError);
+
+  return rmsError;
+}
+
+
+//-----------------------------------------------------------------------------
 void ProjectAllPoints(
     const int& numberSuccessfulViews,
     const int& pointCount,
@@ -1090,6 +1117,7 @@ void Project3DModelPositionsToStereo2D(
 
   CvMat *leftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
   cvInv(&rightToLeftRotationMatrix, leftToRightRotationMatrix);
+
   CvMat *modelPointsIn3DInRightCameraSpace = cvCreateMat(modelPointsIn3D.cols, modelPointsIn3D.rows, CV_64FC1);        // So, [3xN] matrix.
   cvGEMM(leftToRightRotationMatrix, modelPointsIn3DInLeftCameraSpace, 1, NULL, 0, modelPointsIn3DInRightCameraSpace); // ie. [3x3][3xN] = [3xN]
 
