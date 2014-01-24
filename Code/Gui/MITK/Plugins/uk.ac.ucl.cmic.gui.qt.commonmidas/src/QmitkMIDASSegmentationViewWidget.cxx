@@ -331,7 +331,7 @@ void QmitkMIDASSegmentationViewWidget::ChangeLayout()
   if (nextLayout != WINDOW_LAYOUT_UNKNOWN && nextLayout != m_WindowLayout)
   {
     m_WindowLayout = nextLayout;
-    m_Viewer->SetWindowLayout(m_WindowLayout, true, true, true);
+    m_Viewer->SetWindowLayout(m_WindowLayout);
 
     double magnification = m_Viewer->GetMagnification(m_Viewer->GetOrientation());
 
@@ -474,6 +474,14 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   m_Geometry = geometry;
   m_Viewer->SetEnabled(geometry != 0);
 
+  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
+
+  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    m_MainWindowOrientation = mainWindowOrientation;
+    this->ChangeLayout();
+  }
+
   mitk::SliceNavigationController* mainAxialSnc = mainAxialWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
@@ -504,14 +512,6 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   m_MainAxialSnc = mainAxialSnc;
   m_MainSagittalSnc = mainSagittalSnc;
   m_MainCoronalSnc = mainCoronalSnc;
-
-  MIDASOrientation mainWindowOrientation = this->GetWindowOrientation(mainWindow->GetRenderer());
-
-  if (mainWindowOrientation != m_MainWindowOrientation && mainWindowOrientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    m_MainWindowOrientation = mainWindowOrientation;
-    this->ChangeLayout();
-  }
 
   /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
   /// Therefore, we resend the main window position here.
