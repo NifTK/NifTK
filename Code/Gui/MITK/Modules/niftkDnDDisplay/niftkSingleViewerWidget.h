@@ -347,11 +347,20 @@ signals:
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
+  /// \brief Emitted when the selected time step has changed in this viewer.
+  void SelectedTimeStepChanged(niftkSingleViewerWidget* thisViewer, int timeStep);
+
   /// \brief Emitted when the cursor position has changed in this viewer.
   void CursorPositionChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed in this viewer.
   void ScaleFactorChanged(niftkSingleViewerWidget* thisViewer, MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Emitted when the cursor position binding has changed in this viewer.
+  void CursorPositionBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
+
+  /// \brief Emitted when the scale factor binding has changed in this viewer.
+  void ScaleFactorBindingChanged(niftkSingleViewerWidget* thisViewer, bool bound);
 
   /// \brief Emitted when the window layout has changed in this viewer.
   void WindowLayoutChanged(niftkSingleViewerWidget* thisViewer, WindowLayout windowLayout);

@@ -700,16 +700,26 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       {
         m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
         m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
+        emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
+        emit SelectedTimeStepChanged(this, m_TimeSteps[Index(0)]);
       }
 
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
+        for (int i = 0; i < 3; ++i)
+        {
+          emit CursorPositionChanged(this, MIDASOrientation(i), m_MultiWidget->GetCursorPosition(MIDASOrientation(i)));
+        }
       }
 
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
+        for (int i = 0; i < 3; ++i)
+        {
+          emit ScaleFactorChanged(this, MIDASOrientation(i), m_MultiWidget->GetScaleFactor(MIDASOrientation(i)));
+        }
       }
 
       if (wasSelected)
@@ -720,10 +730,12 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositionsBound(m_CursorPositionBinding[Index(windowLayout)]);
+        emit CursorPositionBindingChanged(this, m_CursorPositionBinding[Index(windowLayout)]);
       }
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactorsBound(m_ScaleFactorBinding[Index(windowLayout)]);
+        emit ScaleFactorBindingChanged(this, m_ScaleFactorBinding[Index(windowLayout)]);
       }
 
       m_LastSelectedPositions.clear();
@@ -749,10 +761,17 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         {
           m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
           m_MultiWidget->SetTimeStep(0);
+          emit SelectedPositionChanged(this, m_MultiWidget->GetSelectedPosition());
+          emit SelectedTimeStepChanged(this, 0);
         }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
         {
           m_MultiWidget->FitToDisplay();
+          for (int i = 0; i < 3; ++i)
+          {
+            emit CursorPositionChanged(this, MIDASOrientation(i), m_MultiWidget->GetCursorPosition(MIDASOrientation(i)));
+            emit ScaleFactorChanged(this, MIDASOrientation(i), m_MultiWidget->GetScaleFactor(MIDASOrientation(i)));
+          }
         }
 
         m_LastSelectedPositions.clear();
