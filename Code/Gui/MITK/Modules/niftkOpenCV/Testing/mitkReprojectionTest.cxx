@@ -534,14 +534,14 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   MITK_INFO << "Mean y error c++ wrapper = " <<  yErrorMean_m2; 
   MITK_INFO << "Mean z error c++ wrapper = " <<  zErrorMean_m2; 
   MITK_INFO << "RMS error c++ wrapper = " <<  errorRMS_m2; 
-  MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 1e-3 , "Testing x error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 1e-3 , "Testing y error mean value for c wrapper method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 1e-3 , "Testing z error mean value for c wrapper method");
-  MITK_TEST_CONDITION (errorRMS_m1 < 2e-3 , "Testing RMS error value for c method");
-  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 0.5 , "Testing x error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 0.5 , "Testing y error mean value for c++ method");
-  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 0.5 , "Testing z error mean value for c++ method");
-  MITK_TEST_CONDITION (errorRMS_m2 < 2.0 , "Testing RMS error value for c++ method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_m1) < 0.5 , "Testing x error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_m1) < 0.5 , "Testing y error mean value for c wrapper method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_m1) < 0.5 , "Testing z error mean value for c wrapper method");
+  MITK_TEST_CONDITION (errorRMS_m1 < 2.0 , "Testing RMS error value for c method");
+  MITK_TEST_CONDITION (fabs(xErrorMean_m2) < 1e-3 , "Testing x error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(yErrorMean_m2) < 1e-3 , "Testing y error mean value for c++ method");
+  MITK_TEST_CONDITION (fabs(zErrorMean_m2) < 1e-3 , "Testing z error mean value for c++ method");
+  MITK_TEST_CONDITION (errorRMS_m2 < 2e-3 , "Testing RMS error value for c++ method");
 
   MITK_INFO << "Method 1 Trimmed Dumped " << numberOfPoints - goodPoints_trimmed_m1 << " off screen points";
   MITK_INFO << "Method 2 Trimmed Dumped " << numberOfPoints - goodPoints_trimmed_m2 << " off screen points";
