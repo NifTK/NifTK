@@ -44,9 +44,9 @@ public:
   , m_Orientation(orientation)
   , m_DisplayGeometry(displayGeometry)
   , m_SizeInPx(displayGeometry->GetSizeInDisplayUnits())
-  , m_Origin(displayGeometry->GetOriginInMM())
+  , m_Origin(displayGeometry->GetOriginInDisplayUnits())
   , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
-  , m_FocusPoint(displayGeometry->GetOriginInMM())
+  , m_FocusPoint(displayGeometry->GetOriginInDisplayUnits())
   , m_BlockEvents(false)
   {
   }
@@ -89,9 +89,12 @@ public:
       m_MultiWindowWidget->MoveToCursorPosition(m_Orientation);
       m_MultiWindowWidget->ZoomAroundCursorPosition(m_Orientation, scaleFactor);
       m_BlockEvents = false;
-      m_Origin = m_DisplayGeometry->GetOriginInMM();
+      m_Origin = m_DisplayGeometry->GetOriginInDisplayUnits();
       m_ScaleFactor = scaleFactor;
       m_SizeInPx = sizeInPx;
+      m_FocusPoint = m_MultiWindowWidget->GetCursorPosition(m_Orientation);
+      m_FocusPoint[0] *= m_DisplayGeometry->GetDisplayWidth();
+      m_FocusPoint[1] *= m_DisplayGeometry->GetDisplayHeight();
       return;
     }
 
