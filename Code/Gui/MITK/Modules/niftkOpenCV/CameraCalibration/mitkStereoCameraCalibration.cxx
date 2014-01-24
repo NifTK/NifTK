@@ -271,9 +271,9 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
   if (m_OptimiseIntrinsics)
   {
     intrinsicMatrixLeft = cvCreateMat(3,3,CV_64FC1);
-    distortionCoeffsLeft = cvCreateMat(4, 1, CV_64FC1);
+    distortionCoeffsLeft = cvCreateMat(1, 4, CV_64FC1);
     intrinsicMatrixRight = cvCreateMat(3,3,CV_64FC1);
-    distortionCoeffsRight = cvCreateMat(4, 1, CV_64FC1);
+    distortionCoeffsRight = cvCreateMat(1, 4, CV_64FC1);
   }
   else
   {
