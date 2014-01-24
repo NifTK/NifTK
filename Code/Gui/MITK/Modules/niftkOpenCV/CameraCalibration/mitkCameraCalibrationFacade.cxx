@@ -856,10 +856,10 @@ std::vector<double> OutputCalibrationData(
   }
 
   os << "Distortion vector (k1, k2, p1, p2)" << std::endl;
-  os << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 1, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 2, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 3, 0) << std::endl;
+  os << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 0, 1) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 0, 2) << ", " << CV_MAT_ELEM(distortionCoeffs, double, 0, 3) << std::endl;
   if (writeIntrinsicToFlatFile)
   {
-    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 1, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 2, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 3, 0) << std::endl;
+    intrinsicFileOutput << CV_MAT_ELEM(distortionCoeffs, double, 0, 0) << " " << CV_MAT_ELEM(distortionCoeffs, double, 0, 1) << " " << CV_MAT_ELEM(distortionCoeffs, double, 0, 2) << " " << CV_MAT_ELEM(distortionCoeffs, double, 0, 3) << std::endl;
   }
   if(intrinsicFileOutput.is_open())
   {
@@ -1218,6 +1218,7 @@ void Project3DModelPositionsToStereo2D(
   }   
 
   cvReleaseMat(&leftCameraRotationMatrix);
+  cvReleaseMat(&leftToRightRotationMatrix);
   cvReleaseMat(&modelPointsIn3DInLeftCameraSpace);
   cvReleaseMat(&modelPointsIn3DInRightCameraSpace);
   cvReleaseMat(&rightCameraRotationMatrix);
