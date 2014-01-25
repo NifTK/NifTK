@@ -518,16 +518,9 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetCurrentlyFocusedRenderer()
+mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetFocusedRenderer()
 {
-  return QmitkBaseView::GetCurrentlyFocusedRenderer();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetPreviouslyFocusedRenderer()
-{
-  return QmitkBaseView::GetPreviouslyFocusedRenderer();
+  return QmitkBaseView::GetFocusedRenderer();
 }
 
 

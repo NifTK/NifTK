@@ -35,6 +35,11 @@ public:
   mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>* addNodeEventListener;
   mitk::MessageDelegate1<QmitkBaseView, const mitk::DataNode*>* removeNodeEventListener;
 
+  void OnFocusedWindowDeleted()
+  {
+    m_Focused2DRenderer = 0;
+  }
+
   /// \brief Used to store the parent of this view, and should normally be set from within CreateQtPartControl().
   QWidget *m_Parent;
 
@@ -50,8 +55,8 @@ public:
   /// \brief Used to track the currently focused renderer.
   mitk::BaseRenderer* m_Focused2DRenderer;
 
-  /// \brief Used to track the previously focused renderer.
-  mitk::BaseRenderer* m_PreviouslyFocused2DRenderer;
+  /// \brief Observer to get notified of the deletion of the focused renderer.
+  unsigned long m_FocusedWindowDeletedObserverTag;
 };
 
 
@@ -63,7 +68,7 @@ QmitkBaseViewPrivate::QmitkBaseViewPrivate()
   m_IsVisible = false;
   m_FocusManagerObserverTag = 0;
   m_Focused2DRenderer = NULL;
-  m_PreviouslyFocused2DRenderer = NULL;
+  m_FocusedWindowDeletedObserverTag = 0;
 }
 
 
@@ -206,35 +211,33 @@ void QmitkBaseView::OnFocusChanged()
 {
   Q_D(QmitkBaseView);
 
+  if (d->m_Focused2DRenderer)
+  {
+    d->m_Focused2DRenderer->RemoveObserver(d->m_FocusedWindowDeletedObserverTag);
+    d->m_Focused2DRenderer = 0;
+  }
+
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager != NULL)
   {
-    mitk::BaseRenderer* base = focusManager->GetFocused();
-    if (base != NULL && base->GetMapperID() == mitk::BaseRenderer::Standard2D)
+    mitk::BaseRenderer* renderer = focusManager->GetFocused();
+    if (renderer != NULL && renderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
     {
-      if (d->m_Focused2DRenderer != NULL)
-      {
-        d->m_PreviouslyFocused2DRenderer = d->m_Focused2DRenderer;
-      }
-      d->m_Focused2DRenderer = base;
+      itk::SimpleMemberCommand<QmitkBaseViewPrivate>::Pointer command = itk::SimpleMemberCommand<QmitkBaseViewPrivate>::New();
+      command->SetCallbackFunction(d, &QmitkBaseViewPrivate::OnFocusedWindowDeleted);
+      d->m_FocusedWindowDeletedObserverTag = renderer->AddObserver(itk::DeleteEvent(), command);
+
+      d->m_Focused2DRenderer = renderer;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetCurrentlyFocusedRenderer()
+mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer()
 {
   Q_D(QmitkBaseView);
   return d->m_Focused2DRenderer;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetPreviouslyFocusedRenderer()
-{
-  Q_D(QmitkBaseView);
-  return d->m_PreviouslyFocused2DRenderer;
 }
 
 
