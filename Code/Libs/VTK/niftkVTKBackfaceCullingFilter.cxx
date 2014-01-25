@@ -16,7 +16,9 @@
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
 #include <vtkCellData.h>
+#include <vtkCellArray.h>
 #include <vtkVector.h>
+#include <vtkObjectFactory.h>
 #include <map>
 #include <cassert>
 

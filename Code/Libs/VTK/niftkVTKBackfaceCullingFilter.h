@@ -17,6 +17,9 @@
 
 #include <niftkVTKWin32ExportHeader.h>
 #include <vtkPolyDataAlgorithm.h>
+#include <vtkSmartPointer.h>
+#include <vtkSetGet.h>
+#include <vtkMatrix4x4.h>
 
 
 namespace niftk
