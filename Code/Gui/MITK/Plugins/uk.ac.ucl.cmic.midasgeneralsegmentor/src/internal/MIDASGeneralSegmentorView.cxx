@@ -978,10 +978,9 @@ void MIDASGeneralSegmentorView::OnOKButtonClicked()
   workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
   workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
 
-  if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
-  {
-    this->OnThresholdApplyButtonClicked();
-  }
+  /// Apply the thresholds if we are thresholding, and chunk out the contour segments that
+  /// do not close any region with seed.
+  this->OnCleanButtonClicked();
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
