@@ -114,7 +114,10 @@ void SurfaceBasedRegistration::PointSetToPolyData ( const mitk::PointSet::Pointe
 
   for (mitk::PointSet::PointsConstIterator i = pointsIn->Begin(); i != pointsIn->End(); ++i)
   {
-    const mitk::PointSet::PointType& p = i->Value();
+    // we need the point in world-coordinates! i.e. take its index-to-world transformation into account.
+    // so instead of i->Value() we go via GetPointIfExists(i->Id(), ...)
+    mitk::PointSet::PointType p = i->Value();
+    pointsIn->GetPointIfExists(i->Index(), &p);
     points->InsertNextPoint(p[0], p[1], p[2]);
   }
   // sanity check
