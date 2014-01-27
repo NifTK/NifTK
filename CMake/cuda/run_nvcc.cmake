@@ -94,10 +94,18 @@ string(TOUPPER "${build_configuration}" build_configuration)
 #message("CUDA_NVCC_HOST_COMPILER_FLAGS = ${CUDA_NVCC_HOST_COMPILER_FLAGS}")
 foreach(flag ${CMAKE_HOST_FLAGS} ${CMAKE_HOST_FLAGS_${build_configuration}})
   # Extra quotes are added around each flag to help nvcc parse out flags with spaces.
-  set(nvcc_host_compiler_flags "${nvcc_host_compiler_flags},\"${flag}\"")
+  # but only if actually necessary! otherwise it will go completely wrong.
+  if(flag MATCHES " ")
+    # escaped quotes
+    set(nvcc_host_compiler_flags "${nvcc_host_compiler_flags},\\\"${flag}\\\"")
+  else()
+    set(nvcc_host_compiler_flags "${nvcc_host_compiler_flags},${flag}")
+  endif()
 endforeach()
 if (nvcc_host_compiler_flags)
-  set(nvcc_host_compiler_flags "-Xcompiler" ${nvcc_host_compiler_flags})
+  # BEWARE: the extra space in front of nvcc_host_compiler_flags makes the 
+  # cuda_execute_process macro quote it properly.
+  set(nvcc_host_compiler_flags "-Xcompiler" " ${nvcc_host_compiler_flags}")
 endif()
 #message("nvcc_host_compiler_flags = \"${nvcc_host_compiler_flags}\"")
 # Add the build specific configuration flags
