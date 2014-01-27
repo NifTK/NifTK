@@ -319,6 +319,11 @@ private:
    */
   void DeleteCurrentGuiWidget();
 
+  /**
+   * \brief Gets a suitable directory name from a prefix determined by preferences, and a date-time stamp.
+   */
+  QString GetDirectoryName();
+
 }; // end class
 
 #endif
