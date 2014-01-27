@@ -184,7 +184,6 @@ cuda_execute_process(
   COMMAND "${CUDA_NVCC_EXECUTABLE}"
   -M
   ${CUDACC_DEFINE}
-  "${source_file}"
   -o "${NVCC_generated_dependency_file}"
   ${CCBIN}
   ${nvcc_flags}
@@ -192,6 +191,7 @@ cuda_execute_process(
   ${depends_CUDA_NVCC_FLAGS}
   -DNVCC
   ${CUDA_NVCC_INCLUDE_ARGS}
+  "${source_file}"
   )
 
 if(CUDA_result)
@@ -237,7 +237,6 @@ endif()
 cuda_execute_process(
   "Generating ${generated_file}"
   COMMAND "${CUDA_NVCC_EXECUTABLE}"
-  "${source_file}"
   ${format_flag} -o "${generated_file}"
   ${CCBIN}
   ${nvcc_flags}
@@ -245,6 +244,7 @@ cuda_execute_process(
   ${CUDA_NVCC_FLAGS}
   -DNVCC
   ${CUDA_NVCC_INCLUDE_ARGS}
+  "${source_file}"
   )
 
 if(CUDA_result)
@@ -266,7 +266,6 @@ if( build_cubin )
   cuda_execute_process(
     "Generating ${generated_cubin_file}"
     COMMAND "${CUDA_NVCC_EXECUTABLE}"
-    "${source_file}"
     ${CUDA_NVCC_FLAGS}
     ${nvcc_flags}
     ${CCBIN}
@@ -275,6 +274,7 @@ if( build_cubin )
     -cubin
     -o "${generated_cubin_file}"
     ${CUDA_NVCC_INCLUDE_ARGS}
+    "${source_file}"
     )
 
   # Execute the parser script.
