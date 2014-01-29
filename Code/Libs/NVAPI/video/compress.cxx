@@ -69,8 +69,8 @@ CompressorFailedException::CompressorFailedException(const std::string& msg, int
 {
 }
 
-InteropFailedException::InteropFailedException(const std::string& msg)
-    : std::runtime_error(msg)
+InteropFailedException::InteropFailedException(const std::string& msg, int errorcode)
+    : std::runtime_error(format_error_msg(msg, errorcode))
 {
 }
 
@@ -327,7 +327,7 @@ public:
             formatconversion_started(0), formatconversion_finished(0)
     {
         if (!cuda_delay_load_check())
-            throw InteropFailedException("CUDA delay-load check failed");
+            throw InteropFailedException("CUDA delay-load check failed", 0);
 
         // FIXME: validate dimensions! has to be at least even!
 
@@ -335,14 +335,20 @@ public:
         std::memset(&outputqueue, 0, sizeof(outputqueue));
         std::memset(&nalsizehistogram, 0, sizeof(nalsizehistogram));
 
-        if (cuCtxGetCurrent(&cudacontext) != CUDA_SUCCESS)
-            throw InteropFailedException("Cannot retrieve CUDA context for compression");
+        // one for driver, one for runtime api.
+        CUresult    errcode = CUDA_SUCCESS;
+        cudaError_t errcode2 = cudaSuccess;
+
+        errcode = cuCtxGetCurrent(&cudacontext);
+        if (errcode != CUDA_SUCCESS)
+            throw InteropFailedException("Cannot retrieve CUDA context for compression", errcode);
         if (cudacontext == 0)
             throw std::logic_error("No current CUDA context");
 
         CUdevice    dev = -1;
-        if (cuCtxGetDevice(&dev) != CUDA_SUCCESS)
-            throw InteropFailedException("Cannot retrieve CUDA context information for compression");
+        errcode = cuCtxGetDevice(&dev);
+        if (errcode != CUDA_SUCCESS)
+            throw InteropFailedException("Cannot retrieve CUDA context information for compression", errcode);
 
         oglrc = wglGetCurrentContext();
         if (oglrc == 0)
@@ -351,8 +357,9 @@ public:
         // note that zero is a valid device index
         std::vector<int>    cudadevices(10, -1);
         unsigned int        actualcudadevices = 0;
-        if (cudaGLGetDevices(&actualcudadevices, &cudadevices[0], cudadevices.size(), cudaGLDeviceListAll) != cudaSuccess)
-            throw InteropFailedException("Cannot retrieve OpenGL-CUDA interop information for compression");
+        errcode2 = cudaGLGetDevices(&actualcudadevices, &cudadevices[0], cudadevices.size(), cudaGLDeviceListAll);
+        if (errcode2 != cudaSuccess)
+            throw InteropFailedException("Cannot retrieve OpenGL-CUDA interop information for compression", errcode2);
         
         bool foundcudadevice = false;
         for (int i = 0; i < actualcudadevices; ++i)
@@ -508,8 +515,9 @@ public:
             if (NVGetHWEncodeCaps() == S_OK)
             {
                 // mem copies have to be locked
-                if (cuvidCtxLockCreate(&ctxlock, cudacontext) != CUDA_SUCCESS)
-                    throw CompressorFailedException("Cannot create compressor lock");
+                errcode = cuvidCtxLockCreate(&ctxlock, cudacontext);
+                if (errcode != CUDA_SUCCESS)
+                    throw CompressorFailedException("Cannot create compressor lock", errcode);
                 hr = NVSetParamValue(encoder, NVVE_DEVICE_CTX_LOCK, &ctxlock);
                 if (hr != S_OK)
                     throw CompressorFailedException("Cannot set compressor lock", hr);
@@ -536,8 +544,9 @@ public:
                 //  hence: 1920 pixels per row * 1 byte per pixel * 1080 rows + 1920 / 2 halfres * 2 components * 1 byte each * 1080 / 2 halfres
                 //  equals: 2.073.600 + 1.036.800
                 std::size_t     framebufferpitch = 0;
-                if (cuMemAllocPitch(&framebuffer, &framebufferpitch, width, paddedheight + paddedheight / 2, 16) != CUDA_SUCCESS)
-                    throw InteropFailedException("Cannot alloc encoder buffer");
+                errcode = cuMemAllocPitch(&framebuffer, &framebufferpitch, width, paddedheight + paddedheight / 2, 16);
+                if (errcode != CUDA_SUCCESS)
+                    throw InteropFailedException("Cannot alloc encoder buffer", errcode);
                 cuMemsetD2D8(framebuffer, framebufferpitch, 0, width, paddedheight + paddedheight / 2);
 
                 std::memset(&frameparams, 0, sizeof(frameparams));
@@ -663,16 +672,18 @@ public:
         // FIXME: check format! needs to be compatible with cuda
         
         glBindTexture(GL_TEXTURE_2D, cur_tex);
-        if (glGetError() != GL_NO_ERROR)
-            throw InteropFailedException("Querying OpenGL texture attributes failed");
+        GLenum  glerr = glGetError();
+        if (glerr != GL_NO_ERROR)
+            throw InteropFailedException("Querying OpenGL texture attributes failed", glerr);
 
         std::map<int, cudaGraphicsResource*>::iterator i = gl2cudamap.find(gltexture);
         if (i == gl2cudamap.end())
         {
             cudaGraphicsResource*   r = 0;
             // note: this function is very picky about format! it will simply crash if it's RGB instead of RGBA, for example
-            if (cudaGraphicsGLRegisterImage(&r, gltexture, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsReadOnly) != cudaSuccess)
-                throw CompressorFailedException("Cannot register OpenGL texture into CUDA for compression");
+            cudaError_t err = cudaGraphicsGLRegisterImage(&r, gltexture, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsReadOnly);
+            if (err != cudaSuccess)
+                throw CompressorFailedException("Cannot register OpenGL texture into CUDA for compression", err);
 
             gl2cudamap.insert(std::make_pair(gltexture, r));
         }
@@ -720,8 +731,9 @@ public:
         // to mitigate: lock before mapping and converting the texture. this works
         //  because graphics-interop synchronises on both ogl and cuda
         // FIXME: maybe this is bad for perf?
-        if (cuvidCtxLock(ctxlock, 0) != CUDA_SUCCESS)
-            throw CompressorFailedException("Cannot lock compressor buffer");
+        CUresult cuerr = cuvidCtxLock(ctxlock, 0);
+        if (cuerr != CUDA_SUCCESS)
+            throw CompressorFailedException("Cannot lock compressor buffer", cuerr);
 
         frameperstats.back().gotlock_tsc = __rdtsc();
 
@@ -731,17 +743,18 @@ public:
 
         try
         {
-            if (cudaGraphicsMapResources(1, &(i->second)) != cudaSuccess)
-                throw InteropFailedException("Cannot map OpenGL texture into CUDA for compression");
+            cudaError_t err = cudaGraphicsMapResources(1, &(i->second));
+            if (err != cudaSuccess)
+                throw InteropFailedException("Cannot map OpenGL texture into CUDA for compression", err);
 
             try
             {
             //	cudaMipmappedArray_t	mipmaparray;
             //	cudaError_t error = cudaGraphicsResourceGetMappedMipmappedArray(&mipmaparray, i->second);
                 cudaArray_t     array;
-                cudaError_t error = cudaGraphicsSubResourceGetMappedArray(&array, i->second, 0, 0);
-                if (error != cudaSuccess)
-                    throw InteropFailedException("Cannot map OpenGL texture into CUDA for compression");
+                err = cudaGraphicsSubResourceGetMappedArray(&array, i->second, 0, 0);
+                if (err != cudaSuccess)
+                    throw InteropFailedException("Cannot map OpenGL texture into CUDA for compression", err);
 
                 if (formatconversion_started)
                     cudaEventRecord(formatconversion_started);
@@ -767,8 +780,9 @@ public:
                 throw;
             }
 
-            if (cudaGraphicsUnmapResources(1, &(i->second)) != cudaSuccess)
-                throw InteropFailedException("Cannot unmap OpenGL texture from compressor");
+            err = cudaGraphicsUnmapResources(1, &(i->second));
+            if (err != cudaSuccess)
+                throw InteropFailedException("Cannot unmap OpenGL texture from compressor", err);
         }
         catch (...)
         {
@@ -778,8 +792,9 @@ public:
         }
 
         // can this fail?
-        if (cuvidCtxUnlock(ctxlock, 0) != CUDA_SUCCESS)
-            throw CompressorFailedException("Cannot unlock compressor buffer");
+        cuerr = cuvidCtxUnlock(ctxlock, 0);
+        if (cuerr != CUDA_SUCCESS)
+            throw CompressorFailedException("Cannot unlock compressor buffer", cuerr);
 
         HRESULT hr = NVEncodeFrame(encoder, &frameparams, 0, (void*) framebuffer);
         if (hr != S_OK)

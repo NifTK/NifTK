@@ -33,14 +33,14 @@ namespace video
 class LIBVIDEO_DLL_EXPORTS CompressorFailedException : public std::runtime_error
 {
 public:
-    CompressorFailedException(const std::string& msg, int errorcode = 1);
+    CompressorFailedException(const std::string& msg, int errorcode);
 };
 
 // functionality required to map buffers/textures/etc for compression failed
 class LIBVIDEO_DLL_EXPORTS InteropFailedException : public std::runtime_error
 {
 public:
-    InteropFailedException(const std::string& msg);
+    InteropFailedException(const std::string& msg, int errorcode);
 };
 
 #pragma warning(pop)
