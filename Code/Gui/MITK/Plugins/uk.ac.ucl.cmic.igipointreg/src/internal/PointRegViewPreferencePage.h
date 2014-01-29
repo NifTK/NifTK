@@ -45,6 +45,11 @@ public:
    */
   static const std::string USE_ICP_INITIALISATION;
 
+  /**
+   * \brief Stores the name of the preference node that contains whether we use point ID for matching points.
+   */
+  static const std::string USE_POINT_ID_FOR_MATCHING;
+
   PointRegViewPreferencePage();
   PointRegViewPreferencePage(const PointRegViewPreferencePage& other);
   ~PointRegViewPreferencePage();
@@ -76,6 +81,7 @@ private:
 
   QWidget        *m_MainControl;
   QCheckBox      *m_UseICPInitialisation;
+  QCheckBox      *m_UsePointIDForMatching;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_PointRegViewPreferencesNode;
