@@ -615,13 +615,19 @@ public:
                 CloseHandle(outputqueue[i].overlapped.hEvent);
             outputqueue[i].overlapped.hEvent = 0;
         }
+
+        for (std::map<int, cudaGraphicsResource*>::iterator i = gl2cudamap.begin(); i != gl2cudamap.end(); ++i)
+        {
+            cudaError_t err = cudaGraphicsUnregisterResource(i->second);
+            if (err != cudaSuccess)
+                std::cerr << "Cannot unregister texture. Leaking memory, I guess." << std::endl;
+        }
+        gl2cudamap.clear();
     }
 
     ~CompressorImpl()
     {
         try_cleanup();
-
-        // FIXME: unregister textures??
 
         // FIXME: this should go somewhere else, really
         std::ofstream   logfile((filename + ".compressorperformance.log").c_str());
