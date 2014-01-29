@@ -12,22 +12,14 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkDnDDisplay
-  EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
-  INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS Mitk Qmitk niftkCore
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
+set(MOC_H_FILES
+  niftkSingleViewerWidgetTest.h
 )
 
-target_link_libraries(niftkDnDDisplay
-  niftkITK
-  )
+# tests with no extra command line parameter
+set(MODULE_TESTS
+)
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkDnDDisplay)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+set(MODULE_CUSTOM_TESTS
+  niftkSingleViewerWidgetTest.cxx
+)
