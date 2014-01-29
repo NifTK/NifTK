@@ -31,6 +31,7 @@ PointRegView::PointRegView()
 : m_Controls(NULL)
 , m_Matrix(NULL)
 , m_UseICPInitialisation(false)
+, m_UsePointIDToMatch(false)
 {
   m_Matrix = vtkMatrix4x4::New();
   m_Matrix->Identity();
@@ -105,6 +106,7 @@ void PointRegView::RetrievePreferenceValues()
   if (prefs.IsNotNull())
   {
     m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION);
+    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH);
   }
 }
 
@@ -175,7 +177,7 @@ void PointRegView::OnCalculateButtonPressed()
       msgBox.exec();
       return;
     }
-    if (fixedPoints->GetSize() != movingPoints->GetSize())
+    if (!m_UsePointIDToMatch && fixedPoints->GetSize() != movingPoints->GetSize())
     {
       QMessageBox msgBox;
       msgBox.setText("The point sets must have the same number of points.");
@@ -189,7 +191,7 @@ void PointRegView::OnCalculateButtonPressed()
 
   mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
   registration->SetUseICPInitialisation(m_UseICPInitialisation);
-  registration->SetUsePointIDToMatchPoints(false);
+  registration->SetUsePointIDToMatchPoints(m_UsePointIDToMatch);
 
   double fiducialRegistrationError = std::numeric_limits<double>::max();
   bool isSuccessful = registration->Update(fixedPoints, movingPoints, *m_Matrix, fiducialRegistrationError);

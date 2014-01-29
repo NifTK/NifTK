@@ -27,13 +27,15 @@
 
 const std::string PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
 const std::string PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
+const std::string PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING("use point ID for matching");
 
 //-----------------------------------------------------------------------------
 PointRegViewPreferencePage::PointRegViewPreferencePage()
-: m_MainControl(0)
-, m_UseICPInitialisation(0)
+: m_MainControl(NULL)
+, m_UseICPInitialisation(NULL)
+, m_UsePointIDForMatching(NULL)
 , m_Initializing(false)
-, m_PointRegViewPreferencesNode(0)
+, m_PointRegViewPreferencesNode(NULL)
 {
 }
 
@@ -77,6 +79,9 @@ void PointRegViewPreferencePage::CreateQtControl(QWidget* parent)
   m_UseICPInitialisation = new QCheckBox();
   formLayout->addRow("use ICP initialisation", m_UseICPInitialisation);
 
+  m_UsePointIDForMatching = new QCheckBox();
+  formLayout->addRow("use point ID for matching", m_UsePointIDForMatching);
+
   m_MainControl->setLayout(formLayout);
   this->Update();
 
@@ -95,6 +100,7 @@ QWidget* PointRegViewPreferencePage::GetQtControl() const
 bool PointRegViewPreferencePage::PerformOk()
 {
   m_PointRegViewPreferencesNode->PutBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, m_UseICPInitialisation->isChecked());
+  m_PointRegViewPreferencesNode->PutBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, m_UsePointIDForMatching->isChecked());
   return true;
 }
 
@@ -110,4 +116,5 @@ void PointRegViewPreferencePage::PerformCancel()
 void PointRegViewPreferencePage::Update()
 {
   m_UseICPInitialisation->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION));
+  m_UseICPInitialisation->setChecked(m_PointRegViewPreferencesNode->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH));
 }
