@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Calibrate Camera</title>
-  <description><![CDATA[Calibrates a video camera from a directory containing images of a planar chess board style of calibration object.]]></description>
+  <title>Average Stationary Chessboards</title>
+  <description><![CDATA[Takes a two directories of images, extracts chessboards, averages corners and triangulates to 3D.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -12,32 +12,60 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-    
+
     <directory>
       <name>leftCameraInputDirectory</name>
       <longflag>left</longflag>
-      <description>The directory containing images of a planar chessboard calibration object for a single camera, or the left camera of a stereo pair</description>
-      <label>Left camera input directory</label>
+      <description>Directory containing images of a chessboard, from left camera.</description>
+      <label>Left Camera Input Directory</label>
     </directory>
+
     <directory>
       <name>rightCameraInputDirectory</name>
       <longflag>right</longflag>
-      <description>The directory containing images of a planar chessboard calibration object for the right camera of a stereo pair</description>
-      <label>Right camera input directory</label>
-    </directory>    
-    <directory>
-      <name>outputDirectory</name>
-      <longflag>outputDirectory</longflag>
-      <description>Output directory for all files.</description>
-      <label>Output directory</label>
+      <description>Directory containing images of a chessboard, from right camera.</description>
+      <label>Right Camera Input Directory</label>
     </directory>
 
+    <file fileExtensions="*.txt">
+      <name>intrinsicLeft</name>
+      <longflag>intrinsicLeft</longflag>
+      <description>Left camera intrinsic parameters file as plain text file.</description>
+      <label>Left Camera Intrinsic Parameters</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.txt">
+      <name>intrinsicRight</name>
+      <longflag>intrinsicRight</longflag>
+      <description>Right camera intrinsic parameters file as plain text file.</description>
+      <label>Right Camera Intrinsic Parameters</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.txt">
+      <name>rightToLeftExtrinsics</name>
+      <longflag>rightToLeftExtrinsics</longflag>
+      <description>Right to left camera transformation as plain text file.</description>
+      <label>Right To Left Transformation</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions="*.mps,*.txt">
+      <name>outputPoints</name>
+      <longflag>outputPoints</longflag>
+      <description>Output point set.</description>
+      <label>Output points</label>
+      <default>output.mps</default>
+      <channel>output</channel>
+    </file>
+
   </parameters>
-  
+
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
-    
+
     <integer>
       <name>xCorners</name>
       <longflag>xcorners</longflag>
@@ -64,32 +92,11 @@
       </constraints>
     </integer>
 
-    <float>
-      <name>size</name>
-      <longflag>squaresize</longflag>
-      <description>The size of each square edge in millimetres.</description>
-      <label>Square size (mm)</label>
-      <default>3</default>
-      <constraints>
-        <minimum>0.1</minimum>
-        <maximum>100</maximum>
-        <step>0.1</step>
-      </constraints>
-    </float>
-    
   </parameters>
 
   <parameters>
     <label>Optional Parameters</label>
     <description><![CDATA[Optional Parameters]]></description>
-
-    <boolean>
-      <name>writeImages</name>
-      <longflag>writeImages</longflag>
-      <description>Write chessboard images containing the detected corners</description>
-      <label>Write images</label>
-      <default>0</default>
-    </boolean>
 
     <integer-vector>
       <name>pixelScaleFactors</name>
@@ -99,13 +106,6 @@
       <default>1,1</default>
     </integer-vector>
 
-    <integer>
-      <name>numberOfFrames</name>
-      <longflag>numberOfFrames</longflag>
-      <description>If specified, will scan through extracting chessboards, and try to extract a target number of image pairs.</description>
-      <label>Number of Frames</label>
-      <default>0</default>
-    </integer>
-
   </parameters>
+
 </executable>
