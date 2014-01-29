@@ -47,9 +47,9 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<std::string> FindVideoFrameMapFiles(
 /**
  * \brief Extracted from mitkVideoTrackerMatching, reads a 4x4 matrix into a cv::Mat, and if the matrix can't
  * be read, will return a new matrix thats initialised according to the default OpenCV macros (i.e. unitinitialised).
- * @return 
+ * @return true if successful and false otherwise
  */
-cv::Mat ReadTrackerMatrix(const std::string& filename);
+bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
 } // end namespace
 

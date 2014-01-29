@@ -18,6 +18,7 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <mitkLogMacros.h>
+#include <mitkExceptionMacro.h>
 
 namespace mitk {
 
@@ -113,23 +114,34 @@ std::vector<std::string> FindVideoFrameMapFiles(const std::string directory)
 
 
 //---------------------------------------------------------------------------
-cv::Mat ReadTrackerMatrix(const std::string& filename)
+bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 {
-  cv::Mat trackerMatrix = cv::Mat(4,4, CV_64FC1);
+  bool isSuccessful = false;
+  if (outputMatrix.rows != 4)
+  {
+    mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 rows" << std::endl;
+  }
+  if (outputMatrix.cols != 4)
+  {
+    mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 columns" << std::endl;
+  }
+
   std::ifstream fin(filename.c_str());
   if ( !fin )
   {
-    MITK_WARN << "Failed to open matrix file " << filename;
-    return trackerMatrix;
+    MITK_WARN << "ReadTrackerMatrix: Failed to open matrix file " << filename;
+    return isSuccessful;
   }
+
   for ( int row = 0 ; row < 4 ; row ++ )
   {
     for ( int col = 0 ; col < 4 ; col ++ ) 
     {
-      fin >> trackerMatrix.at<double>(row,col);
+      fin >> outputMatrix.at<double>(row,col);
     }
   }
-  return trackerMatrix;
+  isSuccessful = true;
+  return isSuccessful;
 }
 
 } // end namespace
