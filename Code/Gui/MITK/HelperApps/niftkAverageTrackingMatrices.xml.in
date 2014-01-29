@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Average Tracking Matrices</title>
+  <description><![CDATA[Takes a directory, tries to load all files as 4x4 tracking matrices, decomposes and computes the median of the parameters, and forms an average matrix.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>inputDirectory</name>
+      <longflag>inputDirectory</longflag>
+      <description>Directory containing tracking matrices.</description>
+      <label>Input Directory</label>
+    </directory>
+    <file fileExtensions="*.4x4,*.mat,*.txt">
+      <name>outputMatrixFile</name>
+      <longflag>outputMatrixFile</longflag>
+      <description>Output tracking matrix.</description>
+      <label>Output Matrix</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+</executable>
