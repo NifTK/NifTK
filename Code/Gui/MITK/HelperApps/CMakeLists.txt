@@ -135,6 +135,7 @@ if(SlicerExecutionModel_FOUND)
       # this one does not depend on pcl!
       niftkMergePointClouds
       niftkAverageTrackingMatrices
+      niftkAverageStationaryChessboards
     )
     
     if(BUILD_PCL)
