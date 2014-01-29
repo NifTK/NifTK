@@ -55,18 +55,18 @@ bool CheckTrackerMatrix (cv::Mat matrix)
 //-----------------------------------------------------------------------------
 int mitkVideoTrackerMatchingTest(int argc, char * argv[])
 {
-  mitk::VideoTrackerMatching::Pointer Matcher = mitk::VideoTrackerMatching::New();
-  Matcher->Initialise(argv[1]);
+  mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
+  matcher->Initialise(argv[1]);
 
   //check it initialised, check it gets the right matrix with the right time error
-  MITK_TEST_CONDITION_REQUIRED (Matcher->IsReady() , "Testing that VideoTrackerMatcherInitialised OK"); 
+  MITK_TEST_CONDITION_REQUIRED (matcher->IsReady() , "Testing that VideoTrackerMatcherInitialised OK");
   
-  long long *TimingError = new long long;
-  cv::Mat TrackingMatrix = Matcher->GetTrackerMatrix(20, TimingError, 1);
+  long long *timingError = new long long;
+  cv::Mat trackingMatrix = matcher->GetTrackerMatrix(20, timingError, 1);
 
   //1374066239681720400-1374066239683720400 = -2000000
   //1374854436963960800-1374854436966961200 = -3000400
-  MITK_TEST_CONDITION_REQUIRED(*TimingError == -3000400, "Testing Timing error");
-  MITK_TEST_CONDITION_REQUIRED(CheckTrackerMatrix(TrackingMatrix), "Testing Tracker Matrix");
+  MITK_TEST_CONDITION_REQUIRED(*timingError == -3000400, "Testing Timing error");
+  MITK_TEST_CONDITION_REQUIRED(CheckTrackerMatrix(trackingMatrix), "Testing Tracker Matrix");
   return EXIT_SUCCESS;
 }
