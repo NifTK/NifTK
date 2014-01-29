@@ -38,6 +38,8 @@ const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointe
 TrackedPointerView::TrackedPointerView()
 : m_Controls(NULL)
 , m_UpdateViewCoordinate(false)
+, m_NumberOfPointsToAverageOver(1)
+, m_RemainingPointsCounter(0)
 {
   m_TrackedPointerManager = mitk::TrackedPointerManager::New();
 }
@@ -109,7 +111,7 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
     }
 
-    connect(this->m_Controls->m_GrabPointsButton, SIGNAL(pressed()), this, SLOT(OnGrabPoints()));
+    connect(this->m_Controls->m_GrabPointsButton, SIGNAL(pressed()), this, SLOT(OnStartGrabPoints()));
     connect(this->m_Controls->m_ClearPointsButton, SIGNAL(pressed()), this, SLOT(OnClearPoints()));
   }
 }
@@ -132,6 +134,7 @@ void TrackedPointerView::RetrievePreferenceValues()
     m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
     m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointerManager::UPDATE_VIEW_COORDINATE_DEFAULT);
+    m_NumberOfPointsToAverageOver = prefs->GetInt(TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE, 1);
   }
 }
 
@@ -144,16 +147,14 @@ void TrackedPointerView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TrackedPointerView::OnGrabPoints()
+void TrackedPointerView::OnStartGrabPoints()
 {
-  const double *currentTipCoordinate = m_Controls->m_MapsToSpinBoxes->coordinates();
-  mitk::Point3D tipCoordinate;
-
-  tipCoordinate[0] = currentTipCoordinate[0];
-  tipCoordinate[1] = currentTipCoordinate[1];
-  tipCoordinate[2] = currentTipCoordinate[2];
-
-  m_TrackedPointerManager->OnGrabPoint(tipCoordinate);
+  m_RemainingPointsCounter = m_NumberOfPointsToAverageOver;
+  m_TipCoordinate[0] = 0;
+  m_TipCoordinate[1] = 0;
+  m_TipCoordinate[2] = 0;
+  QString text = QString("grab %1").arg(m_RemainingPointsCounter);
+  m_Controls->m_GrabPointsButton->setText(text);
 }
 
 
@@ -188,6 +189,30 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
                                     probeModel,              // The Geometry on this gets updated, so we surface model moving
                                     tipCoordinate            // This gets updated.
                                    );
+
+
+    if (m_RemainingPointsCounter > 0)
+    {
+      m_TipCoordinate[0] += tipCoordinate[0];
+      m_TipCoordinate[1] += tipCoordinate[1];
+      m_TipCoordinate[2] += tipCoordinate[2];
+      m_RemainingPointsCounter--;
+
+      QString text = QString("grab %1").arg(m_RemainingPointsCounter);
+      m_Controls->m_GrabPointsButton->setText(text);
+
+      if (m_RemainingPointsCounter == 0)
+      {
+        double divisor = static_cast<double>(m_NumberOfPointsToAverageOver);
+        m_TipCoordinate[0] /= divisor;
+        m_TipCoordinate[1] /= divisor;
+        m_TipCoordinate[2] /= divisor;
+
+        m_TrackedPointerManager->OnGrabPoint(m_TipCoordinate);
+
+        m_Controls->m_GrabPointsButton->setText("grab");
+      }
+    }
 
     m_Controls->m_MapsToSpinBoxes->setCoordinates(tipCoordinate[0], tipCoordinate[1], tipCoordinate[2]);
     if (m_UpdateViewCoordinate)
