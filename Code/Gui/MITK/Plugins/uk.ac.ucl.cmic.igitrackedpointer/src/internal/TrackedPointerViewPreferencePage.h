@@ -22,6 +22,7 @@
 class QWidget;
 class QCheckBox;
 class ctkPathLineEdit;
+class QSpinBox;
 
 /**
  * \class TrackedPointerViewPreferencePage
@@ -50,6 +51,11 @@ public:
    * \brief Stores the name of the preference node that stores the boolean of whether to update the ortho-view focus point.
    */
   static const std::string UPDATE_VIEW_COORDINATE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that stores how many samples to average over.
+   */
+  static const std::string NUMBER_OF_SAMPLES_TO_AVERAGE;
 
   TrackedPointerViewPreferencePage();
   TrackedPointerViewPreferencePage(const TrackedPointerViewPreferencePage& other);
@@ -83,6 +89,7 @@ private:
   QWidget         *m_MainControl;
   ctkPathLineEdit *m_CalibrationFileName;
   QCheckBox       *m_UpdateViewCoordinate;
+  QSpinBox        *m_NumberOfSamplesToAverage;
   bool             m_Initializing;
 
   berry::IPreferences::Pointer m_TrackedPointerViewPreferencesNode;
