@@ -163,6 +163,11 @@ protected:
         // FIXME: necessary?
         glFinish();
 
+        std::ostringstream  filename;
+        filename << "testcompressor-original-f=" << compressedframes << ".png";
+        boost::gil::png_write_view(filename.str().c_str(), boost::gil::const_view(testimg));
+
+
         compressor->compresstexture(testinput);
         ++compressedframes;
         std::cerr << '.';
