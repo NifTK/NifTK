@@ -134,6 +134,7 @@ if(SlicerExecutionModel_FOUND)
       niftkIterativeClosestPointRegister
       # this one does not depend on pcl!
       niftkMergePointClouds
+      niftkAverageTrackingMatrices
     )
     
     if(BUILD_PCL)
