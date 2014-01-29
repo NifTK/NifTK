@@ -55,8 +55,9 @@ int main(int argc, char** argv)
     }
     
     if (numberOfFrames == 0
-        && (leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
-        || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
+        && ((leftCameraInputDirectory.length() != 0 && rightCameraInputDirectory.length()  == 0)
+            || (rightCameraInputDirectory.length() != 0 && leftCameraInputDirectory.length() == 0)
+           )
         )
     {
       mitk::CameraCalibrationFromDirectory::Pointer calibrationObject = mitk::CameraCalibrationFromDirectory::New();
