@@ -142,6 +142,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   unsigned int channel;
   unsigned long long TimeStamp;
   unsigned int linenumber = 0;
+  cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
 
   m_FrameNumbers.clear();
   for ( unsigned int i = 0 ; i < m_TrackingMatrixTimeStamps.size() ; i ++ )
@@ -149,6 +150,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     m_TrackingMatrices[i].m_TimingErrors.clear();
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
   }
+
   while ( getline(fin,line) )
   {
     if ( line[0] != '#' )
@@ -179,8 +181,13 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
           MatrixFileNameFull /= MatrixFileName;
 
-          m_TrackingMatrices[i].m_TrackingMatrices.push_back(ReadTrackerMatrix(MatrixFileNameFull.string()));
+          mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
 
+          // This is because because OpenCV overrides the copy constructor.
+          cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
+          trackingMatrix.copyTo(tmpMatrix);
+
+          m_TrackingMatrices[i].m_TrackingMatrices.push_back(tmpMatrix);
         }
         if ( frameNumber != linenumber++ )
         {
