@@ -42,53 +42,6 @@ StereoCameraCalibration::~StereoCameraCalibration()
 
 
 //-----------------------------------------------------------------------------
-bool StereoCameraCalibration::CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
-                                                            const int& numberCornersX,
-                                                            const int& numberCornersY,
-                                                            const double& sizeSquareMillimeters,
-                                                            const mitk::Point2D& pixelScaleFactor,
-                                                            std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
-                                                            )
-{
-  bool added = false;
-
-  if (leftFileName.length() > 0 && rightFileName.length() > 0)
-  {
-    IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
-    IplImage* imageRight = cvLoadImage(rightFileName.c_str());
-
-    if (imageLeft != NULL && imageRight != NULL)
-    {
-      cv::Mat leftImage(imageLeft);
-      cv::Mat rightImage(imageRight);
-
-      std::vector <cv::Point2d> corners;
-      std::vector <cv::Point3d> objectPoints;
-
-      bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
-
-      corners.clear();
-      objectPoints.clear();
-
-      bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
-
-      if (foundLeft && foundRight)
-      {
-        successfulLeftFiles.push_back(leftFileName);
-        successfulRightFiles.push_back(rightFileName);
-        added = true;
-      }
-    }
-
-    cvReleaseImage(&imageLeft);
-    cvReleaseImage(&imageRight);
-  }
-
-  return added;
-}
-
-
-//-----------------------------------------------------------------------------
 double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
     const std::string& rightDirectoryName,
     const int& numberOfFrames,
@@ -169,9 +122,9 @@ double StereoCameraCalibration::Calibrate(const std::string& leftDirectoryName,
 
     for (int i = 0; i < leftFiles.size(); i++)
     {
-      CheckAndAppendPairOfFileNames(leftFiles[i], rightFiles[i],
-                                    numberCornersX, numberCornersY, sizeSquareMillimeters, pixelScaleFactor,
-                                    successfulLeftFiles, successfulRightFiles);
+      mitk::CheckAndAppendPairOfFileNames(leftFiles[i], rightFiles[i],
+                                          numberCornersX, numberCornersY, sizeSquareMillimeters, pixelScaleFactor,
+                                          successfulLeftFiles, successfulRightFiles);
     }
   }
   else if (numberOfFrames != 0)

@@ -66,6 +66,53 @@ void LoadImagesFromDirectory(const std::string& fullDirectoryName,
 
 
 //-----------------------------------------------------------------------------
+bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
+                                   const int& numberCornersX,
+                                   const int& numberCornersY,
+                                   const double& sizeSquareMillimeters,
+                                   const mitk::Point2D& pixelScaleFactor,
+                                   std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
+                                   )
+{
+  bool added = false;
+
+  if (leftFileName.length() > 0 && rightFileName.length() > 0)
+  {
+    IplImage* imageLeft = cvLoadImage(leftFileName.c_str());
+    IplImage* imageRight = cvLoadImage(rightFileName.c_str());
+
+    if (imageLeft != NULL && imageRight != NULL)
+    {
+      cv::Mat leftImage(imageLeft);
+      cv::Mat rightImage(imageRight);
+
+      std::vector <cv::Point2d> corners;
+      std::vector <cv::Point3d> objectPoints;
+
+      bool foundLeft = mitk::ExtractChessBoardPoints(leftImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      corners.clear();
+      objectPoints.clear();
+
+      bool foundRight = mitk::ExtractChessBoardPoints(rightImage, numberCornersX, numberCornersY, false, sizeSquareMillimeters, pixelScaleFactor, corners, objectPoints);
+
+      if (foundLeft && foundRight)
+      {
+        successfulLeftFiles.push_back(leftFileName);
+        successfulRightFiles.push_back(rightFileName);
+        added = true;
+      }
+    }
+
+    cvReleaseImage(&imageLeft);
+    cvReleaseImage(&imageRight);
+  }
+
+  return added;
+}
+
+
+//-----------------------------------------------------------------------------
 void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& height)
 {
   width = 0;

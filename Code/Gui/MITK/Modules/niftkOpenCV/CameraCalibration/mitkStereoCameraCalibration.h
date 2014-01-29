@@ -62,15 +62,6 @@ protected:
   StereoCameraCalibration(const StereoCameraCalibration&); // Purposefully not implemented.
   StereoCameraCalibration& operator=(const StereoCameraCalibration&); // Purposefully not implemented.
 
-private:
-
-  bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
-                                     const int& numberCornersX,
-                                     const int& numberCornersY,
-                                     const double& sizeSquareMillimeters,
-                                     const mitk::Point2D& pixelScaleFactor,
-                                     std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
-                                     );
 }; // end class
 
 } // end namespace

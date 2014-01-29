@@ -51,6 +51,25 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadImagesFromDirectory(
   std::vector<std::string>& fileNames
   );
 
+/**
+ * \brief Utility method to check and load stereo pairs of chessboards.
+ * \param leftFileName
+ * \param rightFileName
+ * \param numberCornersX
+ * \param numberCornersY
+ * \param sizeSquareMillimeters
+ * \param pixelScaleFactor
+ * \param successfulLeftFiles
+ * \param successfulRightFiles
+ * \return true if the pair was loaded.
+ */
+bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
+                                   const int& numberCornersX,
+                                   const int& numberCornersY,
+                                   const double& sizeSquareMillimeters,
+                                   const mitk::Point2D& pixelScaleFactor,
+                                   std::vector<std::string>& successfulLeftFiles, std::vector<std::string>& successfulRightFiles
+                                   );
 
 /**
  * \brief Iterates through the list of images, checking that the width and height are consistent.
