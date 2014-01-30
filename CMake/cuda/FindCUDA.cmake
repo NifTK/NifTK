@@ -893,8 +893,8 @@ if(MSVC AND CUDA_TOOLKIT_ROOT_DIR)
   file(GLOB CUDA_CUDART_DLL ${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart${CUDA_DLL_SUFFIX})
 
   get_filename_component(CUDA_CUDART_DLL_NAME ${CUDA_CUDART_DLL} NAME)
-  message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
-  message("CUDA_CUDART_DLL_NAME=${CUDA_CUDART_DLL_NAME}")
+  # message("CUDA_CUDART_DLL=${CUDA_CUDART_DLL}")
+  # message("CUDA_CUDART_DLL_NAME=${CUDA_CUDART_DLL_NAME}")
 endif()
   
 #######################
