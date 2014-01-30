@@ -14,6 +14,7 @@
 
 set(MOC_H_FILES
   niftkMultiViewerWidgetTest.h
+  niftkSingleViewerWidgetTest.h
 )
 
 # tests with no extra command line parameter
@@ -22,4 +23,5 @@ set(MODULE_TESTS
 
 set(MODULE_CUSTOM_TESTS
   niftkMultiViewerWidgetTest.cxx
+  niftkSingleViewerWidgetTest.cxx
 )
