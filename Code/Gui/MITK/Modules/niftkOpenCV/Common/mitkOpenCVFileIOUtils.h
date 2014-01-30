@@ -49,7 +49,7 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<std::string> FindVideoFrameMapFiles(
  * be read, will return a new matrix thats initialised according to the default OpenCV macros (i.e. unitinitialised).
  * @return true if successful and false otherwise
  */
-bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+extern "C++" NIFTKOPENCV_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
 } // end namespace
 
