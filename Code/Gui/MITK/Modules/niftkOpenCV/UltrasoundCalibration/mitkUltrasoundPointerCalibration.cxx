@@ -12,50 +12,76 @@
 
 =============================================================================*/
 
-#include "mitkUltrasoundPinCalibration.h"
-#include "itkUltrasoundPinCalibrationCostFunction.h"
+#include "mitkUltrasoundPointerCalibration.h"
+#include <itkUltrasoundPointerCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <mitkExceptionMacro.h>
+#include <niftkVTKFunctions.h>
 
 namespace mitk {
 
 //-----------------------------------------------------------------------------
-UltrasoundPinCalibration::UltrasoundPinCalibration()
-: m_OptimiseInvariantPoint(false)
+UltrasoundPointerCalibration::UltrasoundPointerCalibration()
+: m_PointerTrackerToProbeTrackerTransform(NULL)
+, m_ProbeToProbeTrackerTransform(NULL)
 {
-  m_InvariantPoint[0] = 0;
-  m_InvariantPoint[1] = 0;
-  m_InvariantPoint[2] = 0;
+  m_PointerOffset[0] = 0;
+  m_PointerOffset[1] = 0;
+  m_PointerOffset[2] = 0;
+  m_PointerTrackerToProbeTrackerTransform = vtkMatrix4x4::New();
+  m_PointerTrackerToProbeTrackerTransform->Identity();
+  m_ProbeToProbeTrackerTransform = vtkMatrix4x4::New();
+  m_ProbeToProbeTrackerTransform->Identity();
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasoundPinCalibration::~UltrasoundPinCalibration()
+UltrasoundPointerCalibration::~UltrasoundPointerCalibration()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundPinCalibration::InitialiseInvariantPoint(const std::vector<float>& commandLineArgs)
+void UltrasoundPointerCalibration::InitialisePointerOffset(const std::vector<float>& commandLineArgs)
 {
   if (commandLineArgs.size() == 3)
   {
-    m_InvariantPoint[0] = commandLineArgs[0];
-    m_InvariantPoint[1] = commandLineArgs[1];
-    m_InvariantPoint[2] = commandLineArgs[2];
+    m_PointerOffset[0] = commandLineArgs[0];
+    m_PointerOffset[1] = commandLineArgs[1];
+    m_PointerOffset[2] = commandLineArgs[2];
   }
   else
   {
-    m_InvariantPoint[0] = 0;
-    m_InvariantPoint[1] = 0;
-    m_InvariantPoint[2] = 0;
+    m_PointerOffset[0] = 0;
+    m_PointerOffset[1] = 0;
+    m_PointerOffset[2] = 0;
   }
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-double UltrasoundPinCalibration::Calibrate(
+void UltrasoundPointerCalibration::InitialisePointerTrackerToProbeTrackerTransform(const std::string& fileName)
+{
+  if(fileName.size() != 0)
+  {
+    m_PointerTrackerToProbeTrackerTransform = niftk::LoadMatrix4x4FromFile(fileName, false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPointerCalibration::InitialiseProbeToProbeTrackerTransform(const std::string& fileName)
+{
+  if(fileName.size() != 0)
+  {
+    m_ProbeToProbeTrackerTransform = niftk::LoadMatrix4x4FromFile(fileName, false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+double UltrasoundPointerCalibration::Calibrate(
     const std::vector< cv::Mat >& matrices,
     const std::vector<cv::Point2d> &points,
     cv::Matx44d& outputMatrix
@@ -63,29 +89,15 @@ double UltrasoundPinCalibration::Calibrate(
 {
   double residualError = 0;
 
-  itk::UltrasoundPinCalibrationCostFunction::ParametersType parameters;
-  itk::UltrasoundPinCalibrationCostFunction::ParametersType scaleFactors;
+  itk::UltrasoundPointerCalibrationCostFunction::ParametersType parameters;
+  itk::UltrasoundPointerCalibrationCostFunction::ParametersType scaleFactors;
   
-  if (!this->m_OptimiseScaling && !m_OptimiseInvariantPoint)
+  if (!this->m_OptimiseScaling)
   {
     parameters.SetSize(6);
     scaleFactors.SetSize(6);
   }
-  else if (!this->m_OptimiseScaling
-           && m_OptimiseInvariantPoint
-          )
-  {
-    parameters.SetSize(9);
-    parameters[6] = m_InvariantPoint[0];
-    parameters[7] = m_InvariantPoint[1];
-    parameters[8] = m_InvariantPoint[2];
-    
-    scaleFactors.SetSize(9);
-    scaleFactors[6] = 1;
-    scaleFactors[7] = 1;
-    scaleFactors[8] = 1;
-  }
-  else if (this->m_OptimiseScaling && !m_OptimiseInvariantPoint)
+  else if (this->m_OptimiseScaling)
   {
     parameters.SetSize(8);
     parameters[6] = this->m_MillimetresPerPixel[0];
@@ -94,24 +106,6 @@ double UltrasoundPinCalibration::Calibrate(
     scaleFactors.SetSize(8);
     scaleFactors[6] = 0.0001;
     scaleFactors[7] = 0.0001;
-  }
-  else if (this->m_OptimiseScaling
-           && m_OptimiseInvariantPoint
-          )
-  {
-    parameters.SetSize(11);
-    parameters[6] = this->m_MillimetresPerPixel[0];
-    parameters[7] = this->m_MillimetresPerPixel[1];
-    parameters[7] = m_InvariantPoint[0];
-    parameters[8] = m_InvariantPoint[1];
-    parameters[9] = m_InvariantPoint[2];
-    
-    scaleFactors.SetSize(11);
-    scaleFactors[6] = 0.0001;
-    scaleFactors[7] = 0.0001;
-    scaleFactors[8] = 1;
-    scaleFactors[9] = 1;
-    scaleFactors[10] = 1;
   }
 
   parameters[0] = this->m_InitialGuess[0];
@@ -128,16 +122,18 @@ double UltrasoundPinCalibration::Calibrate(
   scaleFactors[4] = 1;
   scaleFactors[5] = 1;
   
-  std::cout << "UltrasoundPinCalibration:Start parameters = " << parameters << std::endl;
-  std::cout << "UltrasoundPinCalibration:Start scale factors = " << scaleFactors << std::endl;
+  std::cout << "UltrasoundPointerCalibration:Start parameters = " << parameters << std::endl;
+  std::cout << "UltrasoundPointerCalibration:Start scale factors = " << scaleFactors << std::endl;
   
-  itk::UltrasoundPinCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPinCalibrationCostFunction::New();
+  itk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPointerCalibrationCostFunction::New();
   costFunction->SetMatrices(matrices);
   costFunction->SetPoints(points);
   costFunction->SetScales(scaleFactors);
   costFunction->SetNumberOfParameters(parameters.GetSize());
-  costFunction->SetInvariantPoint(m_InvariantPoint);
+  costFunction->SetPointerOffset(m_PointerOffset);
   costFunction->SetMillimetresPerPixel(this->m_MillimetresPerPixel);
+  costFunction->SetPointerTrackerToProbeTrackerTransform(*m_PointerTrackerToProbeTrackerTransform);
+  costFunction->SetProbeToProbeTrackerTransform(*m_ProbeToProbeTrackerTransform);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
   optimizer->UseCostFunctionGradientOff();
@@ -158,25 +154,11 @@ double UltrasoundPinCalibration::Calibrate(
 
   if (this->m_OptimiseScaling)
   {
-    this->m_MillimetresPerPixel[0] = parameters[6];
-    this->m_MillimetresPerPixel[1] = parameters[7];
-  }
-  if (!this->m_OptimiseScaling
-      && m_OptimiseInvariantPoint
-      )
-  {
-    m_InvariantPoint[0] = parameters[6];
-    m_InvariantPoint[1] = parameters[7];
-    m_InvariantPoint[2] = parameters[8];
-  }
-  if (this->m_OptimiseScaling && m_OptimiseInvariantPoint)
-  {
-    m_InvariantPoint[0] = parameters[8];
-    m_InvariantPoint[1] = parameters[9];
-    m_InvariantPoint[2] = parameters[10];
+    m_MillimetresPerPixel[0] = parameters[6];
+    m_MillimetresPerPixel[1] = parameters[7];
   }
 
-  itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
+  itk::UltrasoundPointerCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
 
   return residualError;

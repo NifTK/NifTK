@@ -14,8 +14,8 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkUltrasoundPinCalibration.h>
-#include <niftkUltrasoundPinCalibrationCLP.h>
+#include <mitkUltrasoundPointerCalibration.h>
+#include <niftkUltrasoundPointerCalibrationCLP.h>
 #include <niftkVTKFunctions.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
@@ -35,16 +35,17 @@ int main(int argc, char** argv)
 
   try
   {
-    std::cout << "niftkUltrasoundPinCalibration: matrices = " << matrixDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: points   = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output   = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPointerCalibration: matrices = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPointerCalibration: points   = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPointerCalibration: output   = " << outputMatrixFile << std::endl;
 
     // Setup.
-    mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
+    mitk::UltrasoundPointerCalibration::Pointer calibration = mitk::UltrasoundPointerCalibration::New();
+    calibration->InitialisePointerOffset(pointerOffset);
     calibration->SetOptimiseScaling(optimiseScaling);
     calibration->InitialiseMillimetresPerPixel(millimetresPerPixel);
-    calibration->SetOptimiseInvariantPoint(optimiseInvariantPoint);
-    calibration->InitialiseInvariantPoint(invariantPoint);
+    calibration->InitialisePointerTrackerToProbeTrackerTransform(pointerTrackerToProbeTrackerTransform);
+    calibration->InitialiseProbeToProbeTrackerTransform(probeToProbeTrackerTransform);
     calibration->InitialiseInitialGuess(initialGuess);
 
     // Do calibration.
@@ -65,8 +66,8 @@ int main(int argc, char** argv)
       mitkThrow() << oss.str();
     }
 
-    std::cout << "niftkUltrasoundPinCalibration: residual = " << residualError << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: scaling  = " << calibration->GetMillimetresPerPixel() << std::endl;
+    std::cout << "niftkUltrasoundPointerCalibration: residual = " << residualError << std::endl;
+    std::cout << "niftkUltrasoundPointerCalibration: scaling  = " << calibration->GetMillimetresPerPixel() << std::endl;
 
     returnStatus = EXIT_SUCCESS;
   }
