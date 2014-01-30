@@ -63,7 +63,7 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadImagesFromDirectory(
  * \param successfulRightFiles
  * \return true if the pair was loaded.
  */
-bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
+extern "C++" NIFTKOPENCV_EXPORT bool CheckAndAppendPairOfFileNames(const std::string& leftFileName, const std::string& rightFileName,
                                    const int& numberCornersX,
                                    const int& numberCornersY,
                                    const double& sizeSquareMillimeters,
