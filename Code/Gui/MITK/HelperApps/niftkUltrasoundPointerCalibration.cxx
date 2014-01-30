@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   catch (...)
   {
     MITK_ERROR << "Caught unknown exception:";
-    returnStatus = EXIT_FAILURE + 3;
+    returnStatus = EXIT_FAILURE + 2;
   }
 
   return returnStatus;
