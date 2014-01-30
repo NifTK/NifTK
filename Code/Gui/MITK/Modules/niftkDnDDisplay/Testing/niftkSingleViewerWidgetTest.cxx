@@ -24,6 +24,9 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkTestingMacros.h>
 
+#include <QmitkRenderingManagerFactory.h>
+#include <QmitkApplicationCursor.h>
+
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerWidget.h>
@@ -73,11 +76,23 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
   // Need to load images, specifically using MIDAS/DRC object factory.
   ::RegisterNifTKCoreObjectFactory();
+
   mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
   globalInteraction->Initialize("global");
   globalInteraction->GetStateMachineFactory()->LoadBehaviorString(mitk::DnDDisplayStateMachine::STATE_MACHINE_XML);
 
+  /// Create and register RenderingManagerFactory for this platform.
+  static QmitkRenderingManagerFactory qmitkRenderingManagerFactory;
+  Q_UNUSED(qmitkRenderingManagerFactory);
+
+  /// Create one instance
+  static QmitkApplicationCursor globalQmitkApplicationCursor;
+  Q_UNUSED(globalQmitkApplicationCursor);
+
   d->DataStorage = mitk::StandaloneDataStorage::New();
+
+  d->RenderingManager = mitk::RenderingManager::GetInstance();
+  d->RenderingManager->SetDataStorage(d->DataStorage);
 
   // We load the same file 4 times, then rename volumes.
   std::vector<std::string> files;
@@ -88,9 +103,6 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Testing 4 images loaded.");
 
   d->ImageNode = (*allImages)[0];
-
-  d->RenderingManager = mitk::RenderingManager::GetInstance();
-  d->RenderingManager->SetDataStorage(d->DataStorage);
 
   d->VisibilityManager = new niftkMultiViewerVisibilityManager(d->DataStorage);
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
@@ -183,7 +195,11 @@ void niftkSingleViewerWidgetTestClass::testViewer()
   Q_D(niftkSingleViewerWidgetTestClass);
 
   QTest::qWaitForWindowShown(d->MultiViewer);
-  QTest::qWait(30000);
+
+  /// Remove the comment signs while you are doing interactive testing.
+//  QEventLoop loop;
+//  loop.connect(d->MultiViewer, SIGNAL(destroyed()), SLOT(quit()));
+//  loop.exec();
 
   QVERIFY(true);
 }
@@ -193,6 +209,7 @@ void niftkSingleViewerWidgetTestClass::testViewer()
 int niftkSingleViewerWidgetTest(int argc, char* argv[])
 {
   QApplication app(argc, argv);
+  Q_UNUSED(app);
 
   niftkSingleViewerWidgetTestClass test;
 
