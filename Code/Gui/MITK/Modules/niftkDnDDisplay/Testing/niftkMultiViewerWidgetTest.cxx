@@ -94,13 +94,12 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
   d->RenderingManager = mitk::RenderingManager::GetInstance();
   d->RenderingManager->SetDataStorage(d->DataStorage);
 
-  // We load the same file 4 times, then rename volumes.
   std::vector<std::string> files;
   files.push_back(d->FileName);
 
   mitk::IOUtil::LoadFiles(files, *(d->DataStorage.GetPointer()));
   mitk::DataStorage::SetOfObjects::ConstPointer allImages = d->DataStorage->GetAll();
-  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Testing 4 images loaded.");
+  MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Test image loaded.");
 
   d->ImageNode = (*allImages)[0];
 
