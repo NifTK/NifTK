@@ -21,7 +21,7 @@
     <directory>
       <name>pointDirectory</name>
       <longflag>pointDirectory</longflag>
-      <description>Directory containing 2D+3D point locations in plain text files.</description>
+      <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
     <file fileExtensions="*.txt,*.4x4">
