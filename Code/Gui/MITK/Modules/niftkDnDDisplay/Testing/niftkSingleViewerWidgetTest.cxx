@@ -44,6 +44,8 @@ public:
 
   niftkSingleViewerWidget* Viewer;
   niftkMultiViewerVisibilityManager* VisibilityManager;
+
+  bool InteractiveMode;
 };
 
 
@@ -52,6 +54,12 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
 : QObject()
 , d_ptr(new niftkSingleViewerWidgetTestClassPrivate())
 {
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->ImageNode = 0;
+  d->Viewer = 0;
+  d->VisibilityManager = 0;
+  d->InteractiveMode = false;
 }
 
 
@@ -62,10 +70,34 @@ niftkSingleViewerWidgetTestClass::~niftkSingleViewerWidgetTestClass()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::setFileName(const std::string& fileName)
+std::string niftkSingleViewerWidgetTestClass::GetFileName() const
+{
+  Q_D(const niftkSingleViewerWidgetTestClass);
+  return d->FileName;
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::SetFileName(const std::string& fileName)
 {
   Q_D(niftkSingleViewerWidgetTestClass);
   d->FileName = fileName;
+}
+
+
+// --------------------------------------------------------------------------
+bool niftkSingleViewerWidgetTestClass::GetInteractiveMode() const
+{
+  Q_D(const niftkSingleViewerWidgetTestClass);
+  return d->InteractiveMode;
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+  d->InteractiveMode = interactiveMode;
 }
 
 
@@ -202,12 +234,30 @@ void niftkSingleViewerWidgetTestClass::testViewer()
 
   QTest::qWaitForWindowShown(d->Viewer);
 
-  /// Remove the comment signs while you are doing interactive testing.
-//  QEventLoop loop;
-//  loop.connect(d->Viewer, SIGNAL(destroyed()), SLOT(quit()));
-//  loop.exec();
+  if (d->InteractiveMode)
+  {
+    QEventLoop loop;
+    loop.connect(d->Viewer, SIGNAL(destroyed()), SLOT(quit()));
+    loop.exec();
+  }
 
   QVERIFY(true);
+}
+
+
+// --------------------------------------------------------------------------
+static void ShiftArgs(int& argc, char* argv[], int steps = 1)
+{
+  /// We exploit that there must be a NULL pointer after the arguments.
+  /// (Guaranteed by the standard.)
+  int i = 1;
+  do
+  {
+    argv[i] = argv[i + steps];
+    ++i;
+  }
+  while (argv[i - 1]);
+  argc -= steps;
 }
 
 
@@ -219,13 +269,24 @@ int niftkSingleViewerWidgetTest(int argc, char* argv[])
 
   niftkSingleViewerWidgetTestClass test;
 
+  std::string interactiveModeOption("-i");
+  for (int i = 1; i < argc; ++i)
+  {
+    if (std::string(argv[i]) == interactiveModeOption)
+    {
+      test.SetInteractiveMode(true);
+      ::ShiftArgs(argc, argv);
+      break;
+    }
+  }
+
   if (argc < 2)
   {
     MITK_INFO << "Missing argument. No image file given.";
     return 1;
   }
 
-  test.setFileName(argv[1]);
+  test.SetFileName(argv[1]);
 
   /// We used the arguments to initialise the test. No arguments is passed
   /// to the Qt test, so that all the test functions are executed.

@@ -44,6 +44,8 @@ public:
 
   niftkMultiViewerWidget* MultiViewer;
   niftkMultiViewerVisibilityManager* VisibilityManager;
+
+  bool InteractiveMode;
 };
 
 
@@ -62,10 +64,34 @@ niftkMultiViewerWidgetTestClass::~niftkMultiViewerWidgetTestClass()
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::setFileName(const std::string& fileName)
+std::string niftkMultiViewerWidgetTestClass::GetFileName() const
+{
+  Q_D(const niftkMultiViewerWidgetTestClass);
+  return d->FileName;
+}
+
+
+// --------------------------------------------------------------------------
+void niftkMultiViewerWidgetTestClass::SetFileName(const std::string& fileName)
 {
   Q_D(niftkMultiViewerWidgetTestClass);
   d->FileName = fileName;
+}
+
+
+// --------------------------------------------------------------------------
+bool niftkMultiViewerWidgetTestClass::GetInteractiveMode() const
+{
+  Q_D(const niftkMultiViewerWidgetTestClass);
+  return d->InteractiveMode;
+}
+
+
+// --------------------------------------------------------------------------
+void niftkMultiViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
+{
+  Q_D(niftkMultiViewerWidgetTestClass);
+  d->InteractiveMode = interactiveMode;
 }
 
 
@@ -154,6 +180,15 @@ void niftkMultiViewerWidgetTestClass::init()
 
 
 // --------------------------------------------------------------------------
+void niftkMultiViewerWidgetTestClass::cleanup()
+{
+  Q_D(niftkMultiViewerWidgetTestClass);
+  delete d->MultiViewer;
+  d->MultiViewer = 0;
+}
+
+
+// --------------------------------------------------------------------------
 void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
 {
   Q_D(niftkMultiViewerWidgetTestClass);
@@ -180,15 +215,6 @@ void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vect
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::cleanup()
-{
-  Q_D(niftkMultiViewerWidgetTestClass);
-  delete d->MultiViewer;
-  d->MultiViewer = 0;
-}
-
-
-// --------------------------------------------------------------------------
 void niftkMultiViewerWidgetTestClass::testViewer()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
@@ -196,11 +222,30 @@ void niftkMultiViewerWidgetTestClass::testViewer()
   QTest::qWaitForWindowShown(d->MultiViewer);
 
   /// Remove the comment signs while you are doing interactive testing.
-//  QEventLoop loop;
-//  loop.connect(d->MultiViewer, SIGNAL(destroyed()), SLOT(quit()));
-//  loop.exec();
+  if (d->InteractiveMode)
+  {
+    QEventLoop loop;
+    loop.connect(d->MultiViewer, SIGNAL(destroyed()), SLOT(quit()));
+    loop.exec();
+  }
 
   QVERIFY(true);
+}
+
+
+// --------------------------------------------------------------------------
+static void ShiftArgs(int& argc, char* argv[], int steps = 1)
+{
+  /// We exploit that there must be a NULL pointer after the arguments.
+  /// (Guaranteed by the standard.)
+  int i = 1;
+  do
+  {
+    argv[i] = argv[i + steps];
+    ++i;
+  }
+  while (argv[i - 1]);
+  argc -= steps;
 }
 
 
@@ -212,13 +257,24 @@ int niftkMultiViewerWidgetTest(int argc, char* argv[])
 
   niftkMultiViewerWidgetTestClass test;
 
+  std::string interactiveModeOption("-i");
+  for (int i = 1; i < argc; ++i)
+  {
+    if (std::string(argv[i]) == interactiveModeOption)
+    {
+      test.SetInteractiveMode(true);
+      ::ShiftArgs(argc, argv);
+      break;
+    }
+  }
+
   if (argc < 2)
   {
     MITK_INFO << "Missing argument. No image file given.";
     return 1;
   }
 
-  test.setFileName(argv[1]);
+  test.SetFileName(argv[1]);
 
   /// We used the arguments to initialise the test. No arguments is passed
   /// to the Qt test, so that all the test functions are executed.

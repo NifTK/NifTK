@@ -32,10 +32,25 @@ class niftkSingleViewerWidgetTestClass: public QObject
 
 public:
 
+  /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
   explicit niftkSingleViewerWidgetTestClass();
+
+  /// \brief Destructs the niftkSingleViewerWidgetTestClass object.
   virtual ~niftkSingleViewerWidgetTestClass();
 
-  void setFileName(const std::string& fileName);
+  /// \brief Gets the name of the image file to load into the viewer.
+  std::string GetFileName() const;
+
+  /// \brief Sets the name of the image file to load into the viewer.
+  void SetFileName(const std::string& fileName);
+
+  /// \brief Gets the interactive mode.
+  /// In interactive mode the windows are not closed when the test is finished.
+  bool GetInteractiveMode() const;
+
+  /// \brief Sets the interactive mode.
+  /// In interactive mode the windows are not closed when the test is finished.
+  void SetInteractiveMode(bool interactiveMode);
 
 private slots:
 
