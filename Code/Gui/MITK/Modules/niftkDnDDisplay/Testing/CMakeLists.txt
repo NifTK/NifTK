@@ -12,22 +12,13 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkDnDDisplay
-  EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
-  INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS Mitk Qmitk niftkCore
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
-)
+set(QT_USE_QTTEST 1)
+include(${QT_USE_FILE})
 
-target_link_libraries(niftkDnDDisplay
-  niftkITK
-  )
+MITK_CREATE_MODULE_TESTS(LABELS niftkDnDDisplay)
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkDnDDisplay)
-endif()
+# Trac 3146
+mitkAddCustomModuleTest(DnDDisplay-SingleViewerWidgetTest niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
+mitkAddCustomModuleTest(DnDDisplay-MultiViewerWidgetTest niftkMultiViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+target_link_libraries(niftkDnDDisplayTestDriver ${QT_QTTEST_LIBRARY})
