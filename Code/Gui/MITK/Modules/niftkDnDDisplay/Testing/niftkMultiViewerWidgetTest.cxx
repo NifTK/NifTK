@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkSingleViewerWidgetTest.h"
+#include "niftkMultiViewerWidgetTest.h"
 
 #include <QApplication>
 #include <QSignalSpy>
@@ -33,7 +33,7 @@
 #include <niftkMultiViewerVisibilityManager.h>
 
 
-class niftkSingleViewerWidgetTestClassPrivate
+class niftkMultiViewerWidgetTestClassPrivate
 {
 public:
   std::string FileName;
@@ -48,31 +48,31 @@ public:
 
 
 // --------------------------------------------------------------------------
-niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
+niftkMultiViewerWidgetTestClass::niftkMultiViewerWidgetTestClass()
 : QObject()
-, d_ptr(new niftkSingleViewerWidgetTestClassPrivate())
+, d_ptr(new niftkMultiViewerWidgetTestClassPrivate())
 {
 }
 
 
 // --------------------------------------------------------------------------
-niftkSingleViewerWidgetTestClass::~niftkSingleViewerWidgetTestClass()
+niftkMultiViewerWidgetTestClass::~niftkMultiViewerWidgetTestClass()
 {
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::setFileName(const std::string& fileName)
+void niftkMultiViewerWidgetTestClass::setFileName(const std::string& fileName)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
   d->FileName = fileName;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::initTestCase()
+void niftkMultiViewerWidgetTestClass::initTestCase()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
 
   // Need to load images, specifically using MIDAS/DRC object factory.
   ::RegisterNifTKCoreObjectFactory();
@@ -112,17 +112,17 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::cleanupTestCase()
+void niftkMultiViewerWidgetTestClass::cleanupTestCase()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
   delete d->VisibilityManager;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::init()
+void niftkMultiViewerWidgetTestClass::init()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
 
   // Create the niftkMultiViewerWidget
   d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, d->DataStorage, 1, 1);
@@ -155,9 +155,9 @@ void niftkSingleViewerWidgetTestClass::init()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
+void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
 
   QMimeData* mimeData = new QMimeData;
   QString dataNodeAddresses("");
@@ -181,18 +181,18 @@ void niftkSingleViewerWidgetTestClass::dropNodes(QWidget* window, const std::vec
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::cleanup()
+void niftkMultiViewerWidgetTestClass::cleanup()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
   delete d->MultiViewer;
   d->MultiViewer = 0;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testViewer()
+void niftkMultiViewerWidgetTestClass::testViewer()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(niftkMultiViewerWidgetTestClass);
 
   QTest::qWaitForWindowShown(d->MultiViewer);
 
@@ -206,12 +206,12 @@ void niftkSingleViewerWidgetTestClass::testViewer()
 
 
 // --------------------------------------------------------------------------
-int niftkSingleViewerWidgetTest(int argc, char* argv[])
+int niftkMultiViewerWidgetTest(int argc, char* argv[])
 {
   QApplication app(argc, argv);
   Q_UNUSED(app);
 
-  niftkSingleViewerWidgetTestClass test;
+  niftkMultiViewerWidgetTestClass test;
 
   if (argc < 2)
   {

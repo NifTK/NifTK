@@ -12,28 +12,28 @@
 
 =============================================================================*/
 
-#ifndef __niftkSingleViewerWidgetTest_h
-#define __niftkSingleViewerWidgetTest_h
+#ifndef __niftkMultiViewerWidgetTest_h
+#define __niftkMultiViewerWidgetTest_h
 
 #include <QObject>
 
 #include <vector>
 
-class niftkSingleViewerWidgetTestClassPrivate;
+class niftkMultiViewerWidgetTestClassPrivate;
 
 namespace mitk
 {
 class DataNode;
 }
 
-class niftkSingleViewerWidgetTestClass: public QObject
+class niftkMultiViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 
 public:
 
-  explicit niftkSingleViewerWidgetTestClass();
-  virtual ~niftkSingleViewerWidgetTestClass();
+  explicit niftkMultiViewerWidgetTestClass();
+  virtual ~niftkMultiViewerWidgetTestClass();
 
   void setFileName(const std::string& fileName);
 
@@ -58,13 +58,13 @@ private:
 
   void dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes);
 
-  QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
+  QScopedPointer<niftkMultiViewerWidgetTestClassPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(niftkSingleViewerWidgetTestClass)
-  Q_DISABLE_COPY(niftkSingleViewerWidgetTestClass)
+  Q_DECLARE_PRIVATE(niftkMultiViewerWidgetTestClass)
+  Q_DISABLE_COPY(niftkMultiViewerWidgetTestClass)
 };
 
 
-int niftkSingleViewerWidgetTest(int argc, char* argv[]);
+int niftkMultiViewerWidgetTest(int argc, char* argv[]);
 
 #endif
