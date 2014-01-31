@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QtConcurrentRun>
 #include <QmitkIGIUtils.h>
+#include <QFileDialog>
 #include <niftkVTKFunctions.h>
 #include <vtkDoubleArray.h>
 
@@ -297,7 +298,14 @@ void SurfaceRegView::OnComposeWithDataButtonPressed()
 //-----------------------------------------------------------------------------
 void SurfaceRegView::OnSaveToFileButtonPressed()
 {
-  SaveMatrixToFile(*m_Matrix, m_Controls->m_SaveToFilePathEdit->currentPath());
+  QString fileName = QFileDialog::getSaveFileName( NULL,
+                                                   tr("Save Transform As ..."),
+                                                   QDir::currentPath(),
+                                                   "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
+  if (fileName.size() > 0)
+  {
+    SaveMatrixToFile(*m_Matrix, fileName);
+  }
 }
 
 
