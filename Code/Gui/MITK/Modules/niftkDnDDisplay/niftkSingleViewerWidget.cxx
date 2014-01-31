@@ -371,7 +371,7 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftkSingleViewerWidget::GetOrientation()
+MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
   return m_MultiWidget->GetOrientation();
 }
@@ -471,30 +471,30 @@ bool niftkSingleViewerWidget::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::AreCursorPositionsBound() const
+bool niftkSingleViewerWidget::GetCursorPositionBinding() const
 {
-  return m_MultiWidget->AreCursorPositionsBound();
+  return m_MultiWidget->GetCursorPositionBinding();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPositionsBound(bool bound)
+void niftkSingleViewerWidget::SetCursorPositionBinding(bool bound)
 {
-  m_MultiWidget->SetCursorPositionsBound(bound);
+  m_MultiWidget->SetCursorPositionBinding(bound);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::AreScaleFactorsBound() const
+bool niftkSingleViewerWidget::GetScaleFactorBinding() const
 {
-  return m_MultiWidget->AreScaleFactorsBound();
+  return m_MultiWidget->GetScaleFactorBinding();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactorsBound(bool bound)
+void niftkSingleViewerWidget::SetScaleFactorBinding(bool bound)
 {
-  m_MultiWidget->SetScaleFactorsBound(bound);
+  m_MultiWidget->SetScaleFactorBinding(bound);
 }
 
 
@@ -673,8 +673,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       m_CursorPositions[Index(m_WindowLayout)] = m_LastCursorPositions.back();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
-      m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->AreCursorPositionsBound();
-      m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->AreScaleFactorsBound();
+      m_CursorPositionBinding[Index(m_WindowLayout)] = m_MultiWidget->GetCursorPositionBinding();
+      m_ScaleFactorBinding[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactorBinding();
     }
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
@@ -729,12 +729,12 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
       if (!dontSetCursorPositions)
       {
-        m_MultiWidget->SetCursorPositionsBound(m_CursorPositionBinding[Index(windowLayout)]);
+        m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
         emit CursorPositionBindingChanged(this, m_CursorPositionBinding[Index(windowLayout)]);
       }
       if (!dontSetScaleFactors)
       {
-        m_MultiWidget->SetScaleFactorsBound(m_ScaleFactorBinding[Index(windowLayout)]);
+        m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
         emit ScaleFactorBindingChanged(this, m_ScaleFactorBinding[Index(windowLayout)]);
       }
 
@@ -784,8 +784,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
         m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-        m_MultiWidget->SetCursorPositionsBound(::IsMultiWindowLayout(windowLayout));
-        m_MultiWidget->SetScaleFactorsBound(::IsMultiWindowLayout(windowLayout));
+        m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
+        m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
 
         m_WindowLayoutInitialised[Index(windowLayout)] = true;
       }

@@ -128,7 +128,7 @@ public:
   QmitkRenderWindow* Get3DWindow() const;
 
   /// \brief Returns the orientation for the selected window, returning MIDAS_ORIENTATION_UNKNOWN if not axial, sagittal or coronal.
-  MIDASOrientation GetOrientation();
+  MIDASOrientation GetOrientation() const;
 
   /// \brief Turn the 2D cursors on/off locally.
   void SetCursorVisible(bool visible);
@@ -276,16 +276,16 @@ public:
   bool AreDisplayInteractionsEnabled() const;
 
   /// \brief Gets the flag that controls whether the cursor position is bound across the render windows.
-  bool AreCursorPositionsBound() const;
+  bool GetCursorPositionBinding() const;
 
   /// \brief Sets the flag that controls whether the cursor position is bound across the render windows.
-  void SetCursorPositionsBound(bool bound);
+  void SetCursorPositionBinding(bool bound);
 
   /// \brief Gets the flag that controls whether the scale factors are bound across the render windows.
-  bool AreScaleFactorsBound() const;
+  bool GetScaleFactorBinding() const;
 
   /// \brief Sets the flag that controls whether the scale factors are bound across the render windows.
-  void SetScaleFactorsBound(bool bound);
+  void SetScaleFactorBinding(bool bound);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();

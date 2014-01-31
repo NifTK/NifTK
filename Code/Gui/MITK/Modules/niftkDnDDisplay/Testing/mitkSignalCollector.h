@@ -18,7 +18,7 @@
 #include <itkCommand.h>
 #include <itkEventObject.h>
 
-#include <deque>
+#include <vector>
 
 namespace mitk
 {
@@ -30,13 +30,7 @@ public:
   itkNewMacro(SignalCollector);
 
   typedef std::pair<const itk::Object*, itk::EventObject*> Signal;
-  typedef std::deque<Signal> Signals;
-
-  /// \brief Constructs an SignalCollector object.
-  SignalCollector();
-
-  /// \brief Destructs an SignalCollector object.
-  virtual ~SignalCollector();
+  typedef std::vector<Signal> Signals;
 
   /// \brief Called when the event happens to the caller.
   void Execute(itk::Object* caller, const itk::EventObject& event);
@@ -49,6 +43,14 @@ public:
 
   /// \brief Clears all the signals collected by now.
   void Clear();
+
+protected:
+
+  /// \brief Constructs an SignalCollector object.
+  SignalCollector();
+
+  /// \brief Destructs an SignalCollector object.
+  virtual ~SignalCollector();
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const;

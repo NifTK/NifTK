@@ -94,8 +94,8 @@ QmitkMIDASSegmentationViewWidget::QmitkMIDASSegmentationViewWidget(QmitkMIDASBas
   m_Viewer->SetCursorVisible(true);
   m_Viewer->SetRememberSettingsPerWindowLayout(false);
   m_Viewer->SetDisplayInteractionsEnabled(true);
-  m_Viewer->SetCursorPositionsBound(false);
-  m_Viewer->SetScaleFactorsBound(true);
+  m_Viewer->SetCursorPositionBinding(false);
+  m_Viewer->SetScaleFactorBinding(true);
 
   this->connect(m_AxialWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnAxialWindowRadioButtonToggled(bool)));
   this->connect(m_SagittalWindowRadioButton, SIGNAL(toggled(bool)), SLOT(OnSagittalWindowRadioButtonToggled(bool)));

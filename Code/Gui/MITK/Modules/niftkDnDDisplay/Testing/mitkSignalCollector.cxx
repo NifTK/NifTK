@@ -75,8 +75,8 @@ void SignalCollector::Clear()
 //-----------------------------------------------------------------------------
 void SignalCollector::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
-  std::deque<Signal>::const_iterator it = m_Signals.begin();
-  std::deque<Signal>::const_iterator signalsEnd = m_Signals.end();
+  Signals::const_iterator it = m_Signals.begin();
+  Signals::const_iterator signalsEnd = m_Signals.end();
   for ( ; it != signalsEnd; ++it)
   {
     os << indent << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
