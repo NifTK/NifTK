@@ -37,15 +37,22 @@ SignalCollector::~SignalCollector()
 //-----------------------------------------------------------------------------
 void SignalCollector::Execute(itk::Object* caller, const itk::EventObject& event)
 {
-  this->Execute((const itk::Object*) caller, event);
+  this->ProcessEvent(caller, event);
 }
 
 
 //-----------------------------------------------------------------------------
-void SignalCollector::Execute(const itk::Object* object, const itk::EventObject& event)
+void SignalCollector::Execute(const itk::Object* caller, const itk::EventObject& event)
+{
+  this->ProcessEvent(caller, event);
+}
+
+
+//-----------------------------------------------------------------------------
+void SignalCollector::ProcessEvent(const itk::Object* caller, const itk::EventObject& event)
 {
   /// Create a copy of the event as a newly allocated object.
-  m_Signals.push_back(Signal(object, event.MakeObject()));
+  m_Signals.push_back(Signal(caller, event.MakeObject()));
 }
 
 
@@ -77,9 +84,10 @@ void SignalCollector::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Signals::const_iterator it = m_Signals.begin();
   Signals::const_iterator signalsEnd = m_Signals.end();
-  for ( ; it != signalsEnd; ++it)
+  int i = 0;
+  for ( ; it != signalsEnd; ++it, ++i)
   {
-    os << indent << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
+    os << indent << i << ": " << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
   }
 }
 

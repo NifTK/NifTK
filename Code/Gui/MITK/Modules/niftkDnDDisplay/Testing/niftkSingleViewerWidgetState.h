@@ -24,7 +24,7 @@ public:
 
   mitkClassMacro(niftkSingleViewerWidgetState, itk::Object);
   mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::ConstPointer);
+  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
 
   /// \brief Gets the orientation of the viewer.
   itkGetConstMacro(Orientation, MIDASOrientation);
@@ -123,7 +123,7 @@ protected:
   }
 
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
-  niftkSingleViewerWidgetState(Self::ConstPointer otherState)
+  niftkSingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
   , m_Orientation(otherState->GetOrientation())
   , m_WindowLayout(otherState->GetWindowLayout())

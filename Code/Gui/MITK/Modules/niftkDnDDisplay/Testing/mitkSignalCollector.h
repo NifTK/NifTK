@@ -18,6 +18,8 @@
 #include <itkCommand.h>
 #include <itkEventObject.h>
 
+#include <mitkCommon.h>
+
 #include <vector>
 
 namespace mitk
@@ -32,17 +34,11 @@ public:
   typedef std::pair<const itk::Object*, itk::EventObject*> Signal;
   typedef std::vector<Signal> Signals;
 
-  /// \brief Called when the event happens to the caller.
-  void Execute(itk::Object* caller, const itk::EventObject& event);
-
-  /// \brief Called when the event happens to the caller.
-  void Execute(const itk::Object* object, const itk::EventObject& event);
-
   /// \brief Gets the signals collected by this object.
   const Signals& GetSignals() const;
 
   /// \brief Clears all the signals collected by now.
-  void Clear();
+  virtual void Clear();
 
 protected:
 
@@ -52,10 +48,19 @@ protected:
   /// \brief Destructs an SignalCollector object.
   virtual ~SignalCollector();
 
+  /// \brief Called when the event happens to the caller.
+  virtual void ProcessEvent(const itk::Object* object, const itk::EventObject& event);
+
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
   virtual void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
 private:
+
+  /// \brief Called when the event happens to the caller.
+  virtual void Execute(itk::Object* caller, const itk::EventObject& event);
+
+  /// \brief Called when the event happens to the caller.
+  virtual void Execute(const itk::Object* object, const itk::EventObject& event);
 
   /// \brief The signals collected by this object.
   Signals m_Signals;

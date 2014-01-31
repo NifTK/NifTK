@@ -448,8 +448,6 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  mitk::Image* image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
-
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
@@ -539,6 +537,12 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
+
+  /// Note that we store a reference for the collected signals, so we do not retrieve
+  /// them repeatedly, but it will always contain the actual list of collected signals.
+  const mitk::SignalCollector::Signals& viewerSignals = viewerStateTester->GetSignals();
+
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
@@ -546,51 +550,48 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  /// Register to listen to SliceNavigators, slice changed events.
-  mitk::SignalCollector::Pointer signalCollector = mitk::SignalCollector::New();
-
-  /// Note that we store a reference for the collected signals, so we do not retrieve
-  /// them repeatedly, but it will always contain the actual list of collected signals.
-  const mitk::SignalCollector::Signals& sncAndFocusSignals = signalCollector->GetSignals();
-
-  mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  unsigned long axialSncObserverTag = axialSnc->AddObserver(geometrySliceEvent, signalCollector);
-  unsigned long sagittalSncObserverTag = sagittalSnc->AddObserver(geometrySliceEvent, signalCollector);
-  unsigned long coronalSncObserverTag = coronalSnc->AddObserver(geometrySliceEvent, signalCollector);
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
   /// TODO The focus should be on the coronal window already.
   focusManager->SetFocused(coronalWindow->GetRenderer());
 
-  unsigned long focusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), signalCollector);
+  viewerStateTester->Clear();
 
-  niftkSingleViewerWidgetState::Pointer initialState = niftkSingleViewerWidgetState::New(d->Viewer);
+  mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
+  unsigned long axialSncObserverTag = axialSnc->AddObserver(geometrySliceEvent, viewerStateTester);
+  unsigned long sagittalSncObserverTag = sagittalSnc->AddObserver(geometrySliceEvent, viewerStateTester);
+  unsigned long coronalSncObserverTag = coronalSnc->AddObserver(geometrySliceEvent, viewerStateTester);
 
-  MITK_INFO << "Viewer state before changing layout:";
-  MITK_INFO << initialState;
+  unsigned long focusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), viewerStateTester);
+
+  niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
+  expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
+  expectedState->SetSelectedRenderWindow(d->Viewer->GetSagittalWindow());
+  expectedState->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+
+  viewerStateTester->SetExpectedState(expectedState);
 
   /// The default layout was set to coronal in the init() function.
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
 
-  MITK_INFO << "Signals during changing layout:";
-  MITK_INFO << signalCollector;
+//  mitk::SignalCollector::Signals::size_type signalNumber = viewerSignals.size();
+//  QVERIFY(signalNumber > 0);
+//  QVERIFY(signalNumber <= 4);
+//  QCOMPARE(std::string(viewerSignals[0].second->GetEventName()), std::string("FocusEvent"));
+//  for (mitk::SignalCollector::Signals::size_type i = 1; i < signalNumber; ++i)
+//  {
+//    QCOMPARE(std::string(viewerSignals[i].second->GetEventName()), std::string("GeometrySliceEvent"));
+//  }
 
-  niftkSingleViewerWidgetState::Pointer newState = niftkSingleViewerWidgetState::New(d->Viewer);
-  MITK_INFO << "Viewer state after changing layout:";
-  MITK_INFO << newState;
+//  viewerStateTester->Clear();
 
-  signalCollector->Clear();
+//  QRect rect = sagittalWindow->rect();
+//  QPoint centre = rect.center();
+//  QPoint bottomLeftCorner = rect.bottomLeft();
+//  QPoint aPosition((bottomLeftCorner.x() + centre.x()) / 2, (bottomLeftCorner.y() + centre.y()) / 2);
+//  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, aPosition);
 
-  QRect rect = sagittalWindow->rect();
-  QPoint centre = rect.center();
-  QPoint bottomLeftCorner = rect.bottomLeft();
-  QPoint aPosition((bottomLeftCorner.x() + centre.x()) / 2, (bottomLeftCorner.y() + centre.y()) / 2);
-  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, aPosition);
-
-  MITK_INFO << signalCollector;
-
-  QVERIFY(sncAndFocusSignals.size() <= 3);
+//  QVERIFY(sncAndFocusSignals.size() <= 3);
 
   axialSnc->RemoveObserver(axialSncObserverTag);
   sagittalSnc->RemoveObserver(sagittalSncObserverTag);

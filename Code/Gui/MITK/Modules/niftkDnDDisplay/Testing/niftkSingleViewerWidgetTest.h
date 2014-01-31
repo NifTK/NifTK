@@ -17,9 +17,15 @@
 
 #include <QObject>
 
+#include <mitkAtomicStateTransitionTester.cxx>
+
+#include <niftkSingleViewerWidgetState.h>
+
 #include <vector>
 
 class niftkSingleViewerWidgetTestClassPrivate;
+
+class niftkSingleViewerWidget;
 
 namespace mitk
 {
@@ -31,6 +37,8 @@ class niftkSingleViewerWidgetTestClass: public QObject
   Q_OBJECT
 
 public:
+
+  typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
   explicit niftkSingleViewerWidgetTestClass();
