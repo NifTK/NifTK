@@ -281,16 +281,16 @@ public:
   bool AreDisplayInteractionsEnabled() const;
 
   /// \brief Gets the flag that controls whether the cursor position is bound between the 2D render windows.
-  bool AreCursorPositionsBound() const;
+  bool GetCursorPositionBinding() const;
 
   /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
-  void SetCursorPositionsBound(bool bound);
+  void SetCursorPositionBinding(bool bound);
 
   /// \brief Gets the flag controls whether the scale factors are bound across the 2D render windows.
-  bool AreScaleFactorsBound() const;
+  bool GetScaleFactorBinding() const;
 
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
-  void SetScaleFactorsBound(bool bound);
+  void SetScaleFactorBinding(bool bound);
 
 signals:
 
@@ -409,7 +409,7 @@ private:
   /// \brief Controls if the cursor positions are synchronised across the render windows.
   /// The binding of the individual coordinates of the cursors can be controlled independently by
   /// @a m_CursorAxialPositionsAreBound, @a m_CursorSagittalPositionsAreBound and @a m_CursorCoronalPositionsAreBound.
-  bool m_CursorPositionsAreBound;
+  bool m_CursorPositionBinding;
 
   /// \brief Controls if the axial coordinate of the cursor positions are synchronised when the cursor positions are bound.
   /// If true then panning the image vertically in the sagittal window will move the image in the coronal window
@@ -427,7 +427,7 @@ private:
   /// axial window.)
   bool m_CursorCoronalPositionsAreBound;
 
-  bool m_ScaleFactorsAreBound;
+  bool m_ScaleFactorBinding;
 
   friend class DisplayGeometryModificationCommand;
 

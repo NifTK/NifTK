@@ -17,9 +17,15 @@
 
 #include <QObject>
 
+#include <mitkAtomicStateTransitionTester.cxx>
+
+#include <niftkSingleViewerWidgetState.h>
+
 #include <vector>
 
 class niftkSingleViewerWidgetTestClassPrivate;
+
+class niftkSingleViewerWidget;
 
 namespace mitk
 {
@@ -31,6 +37,8 @@ class niftkSingleViewerWidgetTestClass: public QObject
   Q_OBJECT
 
 public:
+
+  typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
   explicit niftkSingleViewerWidgetTestClass();
@@ -68,6 +76,30 @@ private slots:
 
   /// \brief Creates a viewer and and loads an image.
   void testViewer();
+
+  /// \brief Tests if the selected orientation is correct after the image is loaded.
+  void testGetOrientation();
+
+  /// \brief Tests if the selected position is correct after the image is loaded.
+  void testGetWindowLayout();
+
+  /// \brief Tests if the correct render window is selected after the image is loaded.
+  void testGetSelectedRenderWindow();
+
+  /// \brief Tests if the correct renderer is focused after the image is loaded.
+  void testFocusedRenderer();
+
+  /// \brief Tests if the selected position is in the centre after the image is loaded.
+  void testGetSelectedPosition();
+
+  /// \brief Tests the SetSelectedPosition function.
+  void testSetSelectedPosition();
+
+  /// \brief Tests selecting a position by interaction (left mouse button click).
+  void testSelectPositionByInteraction();
+
+  /// \brief Tests the window layout change.
+  void testSetWindowLayout();
 
 private:
 

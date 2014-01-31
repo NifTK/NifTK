@@ -248,8 +248,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
   viewer->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
   viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
-  viewer->SetCursorPositionsBound(true);
-  viewer->SetScaleFactorsBound(true);
+  viewer->SetCursorPositionBinding(true);
+  viewer->SetScaleFactorBinding(true);
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
@@ -870,7 +870,7 @@ void niftkMultiViewerWidget::OnCursorPositionBindingChanged(niftkSingleViewerWid
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetCursorPositionsBound(bound);
+        otherViewer->SetCursorPositionBinding(bound);
       }
     }
   }
@@ -886,7 +886,7 @@ void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget
     {
       if (otherViewer != viewer)
       {
-        otherViewer->SetScaleFactorsBound(bound);
+        otherViewer->SetScaleFactorBinding(bound);
       }
     }
   }
@@ -1184,8 +1184,8 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* selectedViewer, WindowLayout windowLayout)
 {
   m_ControlPanel->SetWindowLayout(windowLayout);
-  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
   this->UpdateFocusManagerToSelectedViewer();
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
@@ -1280,13 +1280,13 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
     {
       if (viewer->isVisible())
       {
-        viewer->SetCursorPositionsBound(bound);
+        viewer->SetCursorPositionBinding(bound);
       }
     }
   }
   else
   {
-    this->GetSelectedViewer()->SetCursorPositionsBound(bound);
+    this->GetSelectedViewer()->SetCursorPositionBinding(bound);
   }
 }
 
@@ -1295,7 +1295,7 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  selectedViewer->SetScaleFactorsBound(bound);
+  selectedViewer->SetScaleFactorBinding(bound);
 
   /// If the scale factors are bound across the viewers then the binding property
   /// across the windows of the viewers can be controlled just together. That is, it
@@ -1307,7 +1307,7 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
       const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
-        otherViewer->SetScaleFactorsBound(bound);
+        otherViewer->SetScaleFactorBinding(bound);
         otherViewer->SetScaleFactors(scaleFactors);
       }
     }
@@ -1369,8 +1369,8 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
   selectedViewer->SetWindowLayout(windowLayout);
 
   m_ControlPanel->SetWindowLayout(windowLayout);
-  m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
@@ -1706,8 +1706,8 @@ void niftkMultiViewerWidget::SetSelectedViewerByIndex(int selectedViewerIndex)
       }
     }
 
-    m_ControlPanel->SetWindowCursorsBound(selectedViewer->AreCursorPositionsBound());
-    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->AreScaleFactorsBound());
+    m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
     this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
     this->RequestUpdateAll();
@@ -1742,7 +1742,7 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  bool windowCursorPositionsBound = selectedViewer->AreCursorPositionsBound();
+  bool windowCursorPositionsBound = selectedViewer->GetCursorPositionBinding();
 
   if (bound)
   {
@@ -1754,7 +1754,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetCursorPositionsBound(windowCursorPositionsBound);
+        otherViewer->SetCursorPositionBinding(windowCursorPositionsBound);
         if (windowCursorPositionsBound)
         {
           otherViewer->SetCursorPositions(cursorPositions);
@@ -1773,7 +1773,7 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  bool windowScaleFactorsBound = selectedViewer->AreScaleFactorsBound();
+  bool windowScaleFactorsBound = selectedViewer->GetScaleFactorBinding();
 
   if (bound)
   {
@@ -1785,7 +1785,7 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
-        otherViewer->SetScaleFactorsBound(windowScaleFactorsBound);
+        otherViewer->SetScaleFactorBinding(windowScaleFactorsBound);
         if (windowScaleFactorsBound)
         {
           otherViewer->SetScaleFactors(scaleFactors);
