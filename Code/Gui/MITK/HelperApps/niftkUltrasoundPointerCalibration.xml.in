@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Ultrasound Invariant Point Calibration</title>
-  <description><![CDATA[Calibrates an US probe using a Single Pin method.]]></description>
+  <title>Ultrasound Pointer (phantom-less) Calibration</title>
+  <description><![CDATA[Calibrates an US probe using http://dx.doi.org/10.1016/S0301-5629(01)00469-0.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
@@ -37,6 +37,14 @@
   <parameters>
     <label>Optional Parameters</label>
     <description><![CDATA[Additional parameters]]></description>
+    <float-vector>
+      <name>pointerOffset</name>
+      <longflag>pointerOffset</longflag>
+      <description>Pointer offset (from pivot calibration)</description>
+      <label>Pointer Offset</label>
+      <default>0,0,0</default>
+      <channel>input</channel>
+    </float-vector>
     <boolean>
       <name>optimiseScaling</name>
       <longflag>optimiseScaling</longflag>
@@ -53,22 +61,20 @@
       <default>1,1</default>
       <channel>input</channel>
     </float-vector>
-    <boolean>
-      <name>optimiseInvariantPoint</name>
-      <longflag>optimiseInvariantPoint</longflag>
-      <description>Optimise the position of the invariant point.</description>
-      <label>Optimise Invariant Point</label>
-      <default>false</default>
+    <file fileExtensions="*.txt,*.mat,*.4x4">
+      <name>pointerTrackerToProbeTrackerTransform</name>
+      <longflag>pointerTrackerToProbeTrackerTransform</longflag>
+      <description>Matrix to register the coordinate system of the tracker that tracks the pointer to the tracker that tracks the ultrasound probe.</description>
+      <label>Tracker to Pointer</label>
       <channel>input</channel>
-    </boolean>
-    <point>
-      <name>invariantPoint</name>
-      <longflag>invariantPoint</longflag>
-      <description>Location of the point in tracker coordinates.</description>
-      <label>Invariant Point</label>
-      <default>0,0,0</default>
+    </file>
+    <file fileExtensions="*.txt,*.mat,*.4x4">
+      <name>probeToProbeTrackerTransform</name>
+      <longflag>probeToProbeTrackerTransform</longflag>
+      <description>Matrix to transform from probe coordinates to the coordinate system of the tracker that tracks the probe.</description>
+      <label>Tracker to Pointer</label>
       <channel>input</channel>
-    </point>
+    </file>
     <file fileExtensions="*.txt,*.mat,*.4x4">
       <name>initialGuess</name>
       <longflag>initialGuess</longflag>
