@@ -66,7 +66,10 @@ public:
 
     // Run Calibration.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
-    bool successfullyCalibrated = calibration->CalibrateUsingInvariantPointAndFilesInTwoDirectories(
+    bool successfullyCalibrated = false;
+
+    /* NOT READY YET
+    calibration->Calibrate(
         directoryOfMatrices,
         directoryOfPoints,
         false,
@@ -77,6 +80,7 @@ public:
         residualError,
         *calibrationMatrix
         );
+    */
 
     MITK_TEST_CONDITION_REQUIRED(successfullyCalibrated == true, "Checking calibration was successful, i.e. it ran, it doesn't mean that it is 'good'.");
 
