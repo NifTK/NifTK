@@ -539,10 +539,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
 
-  /// Note that we store a reference for the collected signals, so we do not retrieve
-  /// them repeatedly, but it will always contain the actual list of collected signals.
-  const mitk::SignalCollector::Signals& viewerSignals = viewerStateTester->GetSignals();
-
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
@@ -558,11 +554,10 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   viewerStateTester->Clear();
 
   mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  unsigned long axialSncObserverTag = axialSnc->AddObserver(geometrySliceEvent, viewerStateTester);
-  unsigned long sagittalSncObserverTag = sagittalSnc->AddObserver(geometrySliceEvent, viewerStateTester);
-  unsigned long coronalSncObserverTag = coronalSnc->AddObserver(geometrySliceEvent, viewerStateTester);
-
-  unsigned long focusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), viewerStateTester);
+  viewerStateTester->Connect(axialSnc, geometrySliceEvent);
+  viewerStateTester->Connect(sagittalSnc, geometrySliceEvent);
+  viewerStateTester->Connect(coronalSnc, geometrySliceEvent);
+  viewerStateTester->Connect(focusManager, mitk::FocusEvent());
 
   niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
   expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
@@ -592,12 +587,6 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 //  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, aPosition);
 
 //  QVERIFY(sncAndFocusSignals.size() <= 3);
-
-  axialSnc->RemoveObserver(axialSncObserverTag);
-  sagittalSnc->RemoveObserver(sagittalSncObserverTag);
-  coronalSnc->RemoveObserver(coronalSncObserverTag);
-
-  focusManager->RemoveObserver(focusManagerObserverTag);
 }
 
 

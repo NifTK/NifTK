@@ -19,6 +19,8 @@
 
 #include <mitkCommon.h>
 
+#include <map>
+
 namespace mitk
 {
 
@@ -60,8 +62,8 @@ public:
   /// \brief Gets the initial state of the test object.
   itkGetConstMacro(InitialState, typename TestObjectState::Pointer);
 
-  /// \brief Gets the new state of the test object.
-  itkGetConstMacro(NewState, typename TestObjectState::Pointer);
+  /// \brief Gets the next state of the test object.
+  itkGetConstMacro(NextState, typename TestObjectState::Pointer);
 
   /// \brief Gets the expected state of the test object.
   itkGetConstMacro(ExpectedState, typename TestObjectState::Pointer);
@@ -71,6 +73,21 @@ public:
 
   /// \brief Clears the collected signals and resets the states.
   virtual void Clear();
+
+  void Connect(itk::Object::Pointer itkObject, const itk::EventObject& event);
+  void Connect(const itk::EventObject& event);
+
+public slots:
+
+  /// \brief Called when a signal is received and checks if the state of the object is legal.
+  /// The state is illegal in any of the following cases:
+  ///
+  ///   <li>The state is equal to the initial state. Signals should not be sent out when the
+  ///       visible state of the object does not change.
+  ///   <li>The new state is not equal to the expected state when the expected state is set.
+  ///   <li>The state of the object has changed twice. Signals should be withhold until the
+  ///       object has reached its final state, and should be sent out only at that point.
+  void OnSignalReceived();
 
 protected:
 
@@ -94,14 +111,14 @@ private:
   /// \brief The initial state of the test object.
   typename TestObjectState::Pointer m_InitialState;
 
-  /// \brief The new state of the test object.
-  typename TestObjectState::Pointer m_NewState;
+  /// \brief The next state of the test object.
+  typename TestObjectState::Pointer m_NextState;
 
   /// \brief The expected state of the test object.
   typename TestObjectState::Pointer m_ExpectedState;
 
-  /// \brief Number of collected signals when the state transition happened.
-  Signals::size_type m_SignalNumberAtFirstTransition;
+  typedef std::multimap<itk::Object::Pointer, unsigned long> ObserverMap;
+  ObserverMap m_ObserverTags;
 
 };
 

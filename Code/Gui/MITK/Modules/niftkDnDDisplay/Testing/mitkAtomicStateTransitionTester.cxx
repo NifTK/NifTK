@@ -25,9 +25,8 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 : Superclass()
 , m_TestObject(testObject)
 , m_InitialState(TestObjectState::New(testObject))
-, m_NewState(0)
+, m_NextState(0)
 , m_ExpectedState(0)
-, m_SignalNumberAtFirstTransition(-1)
 {
 }
 
@@ -36,6 +35,14 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 template <class TestObject, class TestObjectState>
 AtomicStateTransitionTester<TestObject, TestObjectState>::~AtomicStateTransitionTester()
 {
+  ObserverMap::const_iterator it = m_ObserverTags.begin();
+  ObserverMap::const_iterator observerTagsEnd = m_ObserverTags.end();
+  for ( ; it != observerTagsEnd; ++it)
+  {
+    itk::Object::Pointer object = it->first;
+    unsigned long observerTag = it->second;
+    object->RemoveObserver(observerTag);
+  }
 }
 
 
@@ -44,9 +51,8 @@ template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::Clear()
 {
   m_InitialState = TestObjectState::New(m_TestObject);
-  m_NewState = 0;
+  m_NextState = 0;
   m_ExpectedState = 0;
-  m_SignalNumberAtFirstTransition = -1;
   Superclass::Clear();
 }
 
@@ -55,52 +61,42 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::Clear()
 template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::ProcessEvent(const itk::Object* caller, const itk::EventObject& event)
 {
-  if (m_InitialState.IsNotNull())
+  Superclass::ProcessEvent(caller, event);
+  this->OnSignalReceived();
+}
+
+
+//-----------------------------------------------------------------------------
+template <class TestObject, class TestObjectState>
+void AtomicStateTransitionTester<TestObject, TestObjectState>::OnSignalReceived()
+{
+  typename TestObjectState::Pointer newState = TestObjectState::New(m_TestObject);
+
+  if (m_NextState.IsNull())
   {
-    typename TestObjectState::Pointer newState = TestObjectState::New(m_TestObject);
-
-    if (m_NewState.IsNull())
+    if (newState == m_InitialState)
     {
-      if (newState != m_InitialState)
-      {
-        if (m_ExpectedState.IsNotNull() && newState != m_ExpectedState)
-        {
-          MITK_INFO << "Illegal state transition happened. Unexpected state.";
-          MITK_INFO << "History of events:";
-          MITK_INFO << this;
-          MITK_INFO << "";
-          MITK_INFO << "Current signal:";
-          MITK_INFO << this->GetSignals().size() << ": " << ((void*) caller) << ": " << event.GetEventName() << std::endl;
-          MITK_INFO << "";
-          MITK_INFO << "State after the current (illegal) state transition:";
-          MITK_INFO << newState;
-          MITK_INFO << "";
-          MITK_INFO << "Expected state:";
-          MITK_INFO << m_ExpectedState;
-          QFAIL("Illegal state transition happened. Unexpected state.");
-        }
-        m_NewState = newState;
-        m_SignalNumberAtFirstTransition = this->GetSignals().size();
-      }
+      MITK_INFO << "ERROR: Illegal state. Signal received but the state of the object has not changed.";
+      MITK_INFO << this;
+      QFAIL("Illegal state. Signal received but the state of the object has not changed.");
     }
-    else
+    else if (m_ExpectedState.IsNotNull() && newState != m_ExpectedState)
     {
-      if (newState != m_NewState)
-      {
-        MITK_INFO << "Illegal state transition happened. Unexpected state transition.";
-        MITK_INFO << "History of events:";
-        MITK_INFO << this;
-        MITK_INFO << "";
-        MITK_INFO << "Current signal:";
-        MITK_INFO << this->GetSignals().size() << ": " << ((void*) caller) << ": " << event.GetEventName() << std::endl;
-        MITK_INFO << "";
-        MITK_INFO << "State after the current (illegal) state transition:";
-        MITK_INFO << newState;
-        QFAIL("Illegal state transition happened.");
-      }
+      MITK_INFO << "ERROR: Illegal state. The new state of the object is not equal to the expected state.";
+      MITK_INFO << this;
+      MITK_INFO << "New, illegal state:";
+      MITK_INFO << newState;
+      QFAIL("Illegal state. The new state of the object is not equal to the expected state.");
     }
-
-    Superclass::ProcessEvent(caller, event);
+    m_NextState = newState;
+  }
+  else if (newState != m_NextState)
+  {
+    MITK_INFO << "ERROR: Illegal state. The state of the object has already changed once.";
+    MITK_INFO << this;
+    MITK_INFO << "New, illegal state:";
+    MITK_INFO << newState;
+    QFAIL("Illegal state. The state of the object has already changed once.");
   }
 }
 
@@ -112,30 +108,34 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::PrintSelf(std::os
   os << indent << "Initial state: " << std::endl;
   os << indent << m_InitialState;
 
-  const Signals& signals_ = this->GetSignals();
-
-  Signals::const_iterator it = signals_.begin();
-  Signals::const_iterator signalsEnd = signals_.end();
-  int i = 0;
-  for ( ; it != signalsEnd && i != m_SignalNumberAtFirstTransition; ++it, ++i)
+  if (m_ExpectedState.IsNotNull())
   {
-    os << indent << i << ": " << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
+    os << indent << "Expected state: " << std::endl;
+    os << indent << m_ExpectedState;
   }
 
-  if (it != signalsEnd)
+  if (m_NextState.IsNotNull())
   {
-    os << indent << i << ": " << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
-    os << indent << "New state: " << std::endl;
-    os << indent << m_NewState;
-
-    for (++it, ++i; it != signalsEnd; ++it, ++i)
-    {
-      os << indent << i << ": " << ((void*) it->first) << ": " << it->second->GetEventName() << std::endl;
-    }
+    os << indent << "Next state: " << std::endl;
+    os << indent << m_NextState;
+    os << indent << "Signals:" << std::endl;
+    Superclass::PrintSelf(os, indent);
   }
+}
 
-  os << indent << "Expected state: " << std::endl;
-  os << indent << m_ExpectedState;
+
+//-----------------------------------------------------------------------------
+template <class TestObject, class TestObjectState>
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(itk::Object::Pointer object, const itk::EventObject& event)
+{
+  unsigned long observerTag = object->AddObserver(event, this);
+  m_ObserverTags.insert(ObserverMap::value_type(object, observerTag));
+}
+
+template <class TestObject, class TestObjectState>
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const itk::EventObject& event)
+{
+  this->Connect(m_TestObject, event);
 }
 
 }
