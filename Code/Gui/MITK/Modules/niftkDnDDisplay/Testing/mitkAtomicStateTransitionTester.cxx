@@ -76,13 +76,6 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 template <class TestObject, class TestObjectState>
 AtomicStateTransitionTester<TestObject, TestObjectState>::~AtomicStateTransitionTester()
 {
-  std::vector<ItkSignalNotifier*>::const_iterator itkSignalNotifiersIt = m_ItkSignalNotifiers.begin();
-  std::vector<ItkSignalNotifier*>::const_iterator itkSignalNotifiersEnd = m_ItkSignalNotifiers.end();
-  for ( ; itkSignalNotifiersIt != itkSignalNotifiersEnd; ++itkSignalNotifiersIt)
-  {
-    delete *itkSignalNotifiersIt;
-  }
-
   std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersIt = m_QtSignalNotifiers.begin();
   std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersEnd = m_QtSignalNotifiers.end();
   for ( ; qtSignalNotifiersIt != qtSignalNotifiersEnd; ++qtSignalNotifiersIt)
@@ -166,8 +159,9 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::PrintSelf(std::os
 template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(itk::Object* object, const itk::EventObject& event)
 {
-  ItkSignalNotifier* itkSignalNotifier = new ItkSignalNotifier(this, object, event);
+  ItkSignalNotifier::Pointer itkSignalNotifier = ItkSignalNotifier::New(this, object, event);
   m_ItkSignalNotifiers.push_back(itkSignalNotifier);
+  itkSignalNotifier->Register();
 //  m_ItkSignalCollector->Connect(object, event);
 }
 

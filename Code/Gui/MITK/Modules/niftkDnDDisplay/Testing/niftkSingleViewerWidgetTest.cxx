@@ -347,100 +347,96 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   mitk::Vector3D spacingInWorldCoordinateOrder;
   mitk::GetSpacingInWorldCoordinateOrder(image, spacingInWorldCoordinateOrder);
 
+  ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
+
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
-  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
-  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
   /// Register to listen to SliceNavigators, slice changed events.
-  mitk::ItkSignalCollector::Pointer axialSncItkSignalCollector = mitk::ItkSignalCollector::New();
-  mitk::ItkSignalCollector::Pointer sagittalSncItkSignalCollector = mitk::ItkSignalCollector::New();
-  mitk::ItkSignalCollector::Pointer coronalSncItkSignalCollector = mitk::ItkSignalCollector::New();
-
   mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  unsigned long axialSncObserverTag = axialSnc->AddObserver(geometrySliceEvent, axialSncItkSignalCollector);
-  unsigned long sagittalSncObserverTag = sagittalSnc->AddObserver(geometrySliceEvent, sagittalSncItkSignalCollector);
-  unsigned long coronalSncObserverTag = coronalSnc->AddObserver(geometrySliceEvent, coronalSncItkSignalCollector);
+  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  /// Note that we store a reference to these objects so that we do not need to get them
-  /// repeatedly after setting the selected position.
-  const mitk::ItkSignalCollector::Signals& axialSncSignals = axialSncItkSignalCollector->GetSignals();
-  const mitk::ItkSignalCollector::Signals& sagittalSncSignals = sagittalSncItkSignalCollector->GetSignals();
-  const mitk::ItkSignalCollector::Signals& coronalSncSignals = coronalSncItkSignalCollector->GetSignals();
+  viewerStateTester->Connect(axialSnc, geometrySliceEvent);
+  viewerStateTester->Connect(sagittalSnc, geometrySliceEvent);
+  viewerStateTester->Connect(coronalSnc, geometrySliceEvent);
+
+  mitk::FocusEvent focusEvent;
+  viewerStateTester->Connect(axialWindow->GetRenderer(), focusEvent);
+  viewerStateTester->Connect(sagittalWindow->GetRenderer(), focusEvent);
+  viewerStateTester->Connect(coronalWindow->GetRenderer(), focusEvent);
 
   mitk::Point3D initialPosition = d->Viewer->GetSelectedPosition();
   mitk::Point3D newPosition = initialPosition;
   newPosition[0] += 2 * spacingInWorldCoordinateOrder[0];
+
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(0));
-  QCOMPARE(sagittalSncSignals.size(), size_t(1));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
 
-  sagittalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   newPosition[1] += 2 * spacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(0));
-  QCOMPARE(sagittalSncSignals.size(), size_t(0));
-  QCOMPARE(coronalSncSignals.size(), size_t(1));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
 
-  coronalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   newPosition[2] += 2 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(1));
-  QCOMPARE(sagittalSncSignals.size(), size_t(0));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
 
-  axialSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   newPosition[0] -= 3 * spacingInWorldCoordinateOrder[0];
   newPosition[1] -= 3 * spacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(0));
-  QCOMPARE(sagittalSncSignals.size(), size_t(1));
-  QCOMPARE(coronalSncSignals.size(), size_t(1));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
 
-  sagittalSncItkSignalCollector->Clear();
-  coronalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   newPosition[0] -= 4 * spacingInWorldCoordinateOrder[0];
   newPosition[2] -= 4 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(1));
-  QCOMPARE(sagittalSncSignals.size(), size_t(1));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
 
-  axialSncItkSignalCollector->Clear();
-  sagittalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   newPosition[1] += 5 * spacingInWorldCoordinateOrder[1];
   newPosition[2] += 5 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), size_t(1));
-  QCOMPARE(sagittalSncSignals.size(), size_t(0));
-  QCOMPARE(coronalSncSignals.size(), size_t(1));
-
-  axialSncItkSignalCollector->Clear();
-  coronalSncItkSignalCollector->Clear();
-
-  axialSnc->RemoveObserver(axialSncObserverTag);
-  sagittalSnc->RemoveObserver(sagittalSncObserverTag);
-  coronalSnc->RemoveObserver(coronalSncObserverTag);
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
 }
 
 
@@ -457,27 +453,17 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
   /// Register to listen to SliceNavigators, slice changed events.
-  mitk::ItkSignalCollector::Pointer axialSncItkSignalCollector = mitk::ItkSignalCollector::New();
-  mitk::ItkSignalCollector::Pointer sagittalSncItkSignalCollector = mitk::ItkSignalCollector::New();
-  mitk::ItkSignalCollector::Pointer coronalSncItkSignalCollector = mitk::ItkSignalCollector::New();
+  ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
 
   mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  unsigned long axialSncObserverTag = axialSnc->AddObserver(geometrySliceEvent, axialSncItkSignalCollector);
-  unsigned long sagittalSncObserverTag = sagittalSnc->AddObserver(geometrySliceEvent, sagittalSncItkSignalCollector);
-  unsigned long coronalSncObserverTag = coronalSnc->AddObserver(geometrySliceEvent, coronalSncItkSignalCollector);
-
-  /// Note that we store a reference to these objects so that we do not need to get them
-  /// repeatedly after setting the selected position.
-  const mitk::ItkSignalCollector::Signals& axialSncSignals = axialSncItkSignalCollector->GetSignals();
-  const mitk::ItkSignalCollector::Signals& sagittalSncSignals = sagittalSncItkSignalCollector->GetSignals();
-  const mitk::ItkSignalCollector::Signals& coronalSncSignals = coronalSncItkSignalCollector->GetSignals();
+  viewerStateTester->Connect(axialSnc, geometrySliceEvent);
+  viewerStateTester->Connect(sagittalSnc, geometrySliceEvent);
+  viewerStateTester->Connect(coronalSnc, geometrySliceEvent);
 
   QPoint centre = coronalWindow->rect().center();
   QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, centre);
 
-  axialSncItkSignalCollector->Clear();
-  sagittalSncItkSignalCollector->Clear();
-  coronalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   mitk::Point3D lastPosition = d->Viewer->GetSelectedPosition();
 
@@ -489,11 +475,11 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QCOMPARE(newPosition[2], lastPosition[2]);
-  QCOMPARE(axialSncSignals.size(), size_t(0));
-  QCOMPARE(sagittalSncSignals.size(), size_t(1));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
 
-  sagittalSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   lastPosition = newPosition;
 
@@ -504,11 +490,11 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(newPosition[0], lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[1]);
-  QCOMPARE(axialSncSignals.size(), size_t(1));
-  QCOMPARE(sagittalSncSignals.size(), size_t(0));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
 
-  axialSncItkSignalCollector->Clear();
+  viewerStateTester->Clear();
 
   lastPosition = d->Viewer->GetSelectedPosition();
 
@@ -520,16 +506,11 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[2]);
-  QCOMPARE(axialSncSignals.size(), size_t(1));
-  QCOMPARE(sagittalSncSignals.size(), size_t(1));
-  QCOMPARE(coronalSncSignals.size(), size_t(0));
+  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
 
-  axialSncItkSignalCollector->Clear();
-  sagittalSncItkSignalCollector->Clear();
-
-  axialSnc->RemoveObserver(axialSncObserverTag);
-  sagittalSnc->RemoveObserver(sagittalSncObserverTag);
-  coronalSnc->RemoveObserver(coronalSncObserverTag);
+  viewerStateTester->Clear();
 }
 
 

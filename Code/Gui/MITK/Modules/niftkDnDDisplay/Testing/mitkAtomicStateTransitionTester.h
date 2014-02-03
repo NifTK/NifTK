@@ -19,6 +19,8 @@
 #include <mitkQtSignalCollector.h>
 
 #include <QObject>
+#include <QByteArray>
+#include <QMetaObject>
 
 #include <mitkCommon.h>
 
@@ -46,7 +48,7 @@ public:
   {
     m_QtSignalListener = signalListener;
     m_Object = object;
-    m_Signal = signal;
+    m_Signal = QMetaObject::normalizedSignature(signal);
     this->connect(object, signal, SLOT(OnQtSignalReceived));
   }
 
@@ -56,6 +58,7 @@ public:
   }
 
 private slots:
+
   virtual void OnQtSignalReceived()
   {
     m_QtSignalListener->OnQtSignalReceived(m_Object, m_Signal);
@@ -64,7 +67,7 @@ private slots:
 private:
   QtSignalListener* m_QtSignalListener;
   const QObject* m_Object;
-  const char* m_Signal;
+  QByteArray m_Signal;
 };
 
 
@@ -80,6 +83,10 @@ public:
 class ItkSignalNotifier : public itk::Command
 {
 public:
+  mitkClassMacro(ItkSignalNotifier, itk::Command);
+  mitkNewMacro3Param(ItkSignalNotifier, ItkSignalListener*, itk::Object*, const itk::EventObject&);
+
+protected:
   ItkSignalNotifier(ItkSignalListener* signalListener, itk::Object* object, const itk::EventObject& event)
   {
     m_ItkSignalListener = signalListener;
@@ -152,7 +159,7 @@ public:
   typedef mitk::ItkSignalCollector::Signal ItkSignal;
   typedef mitk::ItkSignalCollector::Signals ItkSignals;
 
-  typedef std::pair<QObject*, const char*> QtSignal;
+  typedef std::pair<QObject*, QByteArray> QtSignal;
   typedef std::vector<QtSignal> QtSignals;
 
   /// \brief Gets the object whose state consistency is being tested.
@@ -194,9 +201,52 @@ public:
     return m_ItkSignalCollector->GetSignals();
   }
 
+  ItkSignals GetItkSignals(const itk::EventObject& event) const
+  {
+    return this->GetItkSignals(0, event);
+  }
+
+  ItkSignals GetItkSignals(const itk::Object* itkObject, const itk::EventObject& event = itk::AnyEvent()) const
+  {
+    ItkSignals selectedItkSignals;
+    const ItkSignals& itkSignals = m_ItkSignalCollector->GetSignals();
+    ItkSignals::const_iterator itkSignalsIt = itkSignals.begin();
+    ItkSignals::const_iterator itkSignalsEnd = itkSignals.end();
+    for ( ; itkSignalsIt != itkSignalsEnd; ++itkSignalsIt)
+    {
+      ItkSignal itkSignal = *itkSignalsIt;
+      if ((itkObject == 0 || itkObject == itkSignal.first)
+          && event.CheckEvent(itkSignal.second))
+      {
+        selectedItkSignals.push_back(itkSignal);
+      }
+    }
+    return selectedItkSignals;
+  }
+
   const QtSignals& GetQtSignals() const
   {
     return m_ItkSignalCollector->GetSignals();
+  }
+
+  QtSignals GetQtSignals(const QtSignal& qtSignal) const
+  {
+    QObject* qObject = qtSignal.first;
+    QByteArray qSignal = QMetaObject::normalizedSignature(qtSignal.second);
+
+    QtSignals selectedQtSignals;
+    const QtSignals& qtSignals = m_QtSignalCollector->GetSignals();
+    QtSignals::const_iterator it = qtSignals.begin();
+    QtSignals::const_iterator qtSignalsEnd = qtSignals.end();
+    for ( ; it != qtSignalsEnd; ++it)
+    {
+      if ((it->first == 0 || it->first == qObject)
+          && it->second == qSignal)
+      {
+        selectedQtSignals.push_back(*it);
+      }
+    }
+    return selectedQtSignals;
   }
 
 protected:
@@ -248,7 +298,7 @@ private:
   /// \brief The expected state of the test object.
   typename TestObjectState::Pointer m_ExpectedState;
 
-  std::vector<ItkSignalNotifier*> m_ItkSignalNotifiers;
+  std::vector<ItkSignalNotifier::Pointer> m_ItkSignalNotifiers;
 
   std::vector<QtSignalNotifier*> m_QtSignalNotifiers;
 
