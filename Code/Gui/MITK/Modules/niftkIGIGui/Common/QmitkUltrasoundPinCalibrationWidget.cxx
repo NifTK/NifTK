@@ -277,7 +277,7 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          myfile << pinNumber << xPixel << " " << yPixel << std::endl;
+          myfile << pinNumber << " " << xPixel << " " << yPixel << std::endl;
           myfile.close();
         }
         else
