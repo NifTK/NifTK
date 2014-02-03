@@ -29,124 +29,31 @@
 namespace mitk
 {
 
-
-//-----------------------------------------------------------------------------
-class QtSignalListener
-{
-public:
-  virtual void OnQtSignalReceived(const QObject* object, const char* signal) = 0;
-};
-
-
-//-----------------------------------------------------------------------------
-class QtSignalNotifier : public QObject
-{
-  Q_OBJECT
-
-public:
-  QtSignalNotifier(QtSignalListener* signalListener, const QObject* object, const char* signal)
-  {
-    m_QtSignalListener = signalListener;
-    m_Object = object;
-    m_Signal = QMetaObject::normalizedSignature(signal);
-    this->connect(object, signal, SLOT(OnQtSignalReceived));
-  }
-
-  virtual ~QtSignalNotifier()
-  {
-    QObject::disconnect(m_Object, m_Signal, this, SLOT(OnQtSignalReceived));
-  }
-
-private slots:
-
-  virtual void OnQtSignalReceived()
-  {
-    m_QtSignalListener->OnQtSignalReceived(m_Object, m_Signal);
-  }
-
-private:
-  QtSignalListener* m_QtSignalListener;
-  const QObject* m_Object;
-  QByteArray m_Signal;
-};
-
-
-//-----------------------------------------------------------------------------
-class ItkSignalListener
-{
-public:
-  virtual void OnItkSignalReceived(const itk::Object* object, const itk::EventObject& event) = 0;
-};
-
-
-//-----------------------------------------------------------------------------
-class ItkSignalNotifier : public itk::Command
-{
-public:
-  mitkClassMacro(ItkSignalNotifier, itk::Command);
-  mitkNewMacro3Param(ItkSignalNotifier, ItkSignalListener*, itk::Object*, const itk::EventObject&);
-
-protected:
-  ItkSignalNotifier(ItkSignalListener* signalListener, itk::Object* object, const itk::EventObject& event)
-  {
-    m_ItkSignalListener = signalListener;
-    m_Object = object;
-//    m_Event = event.MakeObject();
-    m_ObserverTag = object->AddObserver(event, this);
-  }
-
-  virtual ~ItkSignalNotifier()
-  {
-    m_Object->RemoveObserver(m_ObserverTag);
-//    delete m_Event;
-  }
-
-private:
-
-  /// \brief Called when the event happens to the caller.
-  virtual void Execute(itk::Object* object, const itk::EventObject& event)
-  {
-    m_ItkSignalListener->OnItkSignalReceived(object, event);
-  }
-
-  /// \brief Called when the event happens to the caller.
-  virtual void Execute(const itk::Object* object, const itk::EventObject& event)
-  {
-    m_ItkSignalListener->OnItkSignalReceived(object, event);
-  }
-
-private:
-  ItkSignalListener* m_ItkSignalListener;
-  itk::Object* m_Object;
-//  itk::EventObject* m_Event;
-  unsigned long m_ObserverTag;
-};
-
-
 /// \class AtomicStateTransitionTester
 ///
-/// Test class to ensure the atomic transition from one object state to another.
+/// \brief Test class to ensure the atomic transition from one object state to another.
 ///
 /// The state of the tested object must change at most once during the execution
 /// of a public function.
 ///
 /// Pattern of use:
 ///
-///   typedef mitk::AtomicStateTransitionTester<Viewer, ViewerState> ViewerStateTester;
-///   ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(viewer);
-///   const mitk::SignalCollector::Signals& viewerSignals = viewerStateTester->GetSignals();
+///     typedef mitk::AtomicStateTransitionTester<Viewer, ViewerState> ViewerStateTester;
+///     ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(viewer);
 ///
-///   ... add viewerStateTester to the observers of ITK events sent out from this object.
+///   Connect the object to the ITK or Qt events sent out from this object or some of its aggregated objects:
 ///
-///   viewer->SomePublicFunction(...);
+///     viewer->Connect(viewer->GetAxialWindow(), mitk::FocusEvent());
+///     ...
+///     viewer->SomePublicFunction(...);
 ///
-///   ... check the contents of viewerSignals if needed.
+///   Check the received signals if needed:
+///
+///     QVERIFY( viewerStateTester->GetItkSignals( mitk::FocusEvent() ).size() == 1 );
 ///
 ///   viewerStateTester->Clear();
 ///   viewer->AnotherPublicFunction(...);
 ///   ...
-///
-///   ... remove viewerStateTester from the observers of ITK events sent out from this object.
 ///
 template <class TestObject, class TestObjectState>
 class AtomicStateTransitionTester : public itk::Object, private mitk::ItkSignalListener, private mitk::QtSignalListener
@@ -189,64 +96,52 @@ public:
   /// The function assumes that the test object is an itk::Object.
   void Connect(const itk::EventObject& event);
 
-  void Connect(const QObject* qObject, const char* signal);
+  /// \brief Connects this object to the specified signals of the given object.
+  /// The consistency of the test object will be checked after these Qt signals.
+  /// The function assumes that the test object is a QObject.
+  void Connect(const QObject* qObject, const char* signal = 0);
 
   /// \brief Connects this object to the specified signals of the test object.
   /// The consistency of the test object will be checked after these Qt signals.
   /// The function assumes that the test object is a QObject.
   void Connect(const char* signal);
 
+  /// \brief Returns the collected ITK signals.
   const ItkSignals& GetItkSignals() const
   {
     return m_ItkSignalCollector->GetSignals();
   }
 
-  ItkSignals GetItkSignals(const itk::EventObject& event) const
-  {
-    return this->GetItkSignals(0, event);
-  }
-
+  /// \brief Returns a set of the collected ITK signals that are sent from the given object,
+  /// and are of the given type or its subtype.
   ItkSignals GetItkSignals(const itk::Object* itkObject, const itk::EventObject& event = itk::AnyEvent()) const
   {
-    ItkSignals selectedItkSignals;
-    const ItkSignals& itkSignals = m_ItkSignalCollector->GetSignals();
-    ItkSignals::const_iterator itkSignalsIt = itkSignals.begin();
-    ItkSignals::const_iterator itkSignalsEnd = itkSignals.end();
-    for ( ; itkSignalsIt != itkSignalsEnd; ++itkSignalsIt)
-    {
-      ItkSignal itkSignal = *itkSignalsIt;
-      if ((itkObject == 0 || itkObject == itkSignal.first)
-          && event.CheckEvent(itkSignal.second))
-      {
-        selectedItkSignals.push_back(itkSignal);
-      }
-    }
-    return selectedItkSignals;
+    return m_ItkSignalCollector->GetSignals(itkObject, event);
   }
 
+  /// \brief Returns a set of the collected ITK signals that are of the given type or its subtype.
+  ItkSignals GetItkSignals(const itk::EventObject& event) const
+  {
+    return m_ItkSignalCollector->GetSignals(event);
+  }
+
+  /// \brief Gets the Qt signals collected by this object.
   const QtSignals& GetQtSignals() const
   {
     return m_ItkSignalCollector->GetSignals();
   }
 
-  QtSignals GetQtSignals(const QtSignal& qtSignal) const
+  /// \brief Returns a set of the collected Qt signals that are of the given type.
+  QtSignals GetQtSignals(const QObject* object, const char* signal = 0)
   {
-    QObject* qObject = qtSignal.first;
-    QByteArray qSignal = QMetaObject::normalizedSignature(qtSignal.second);
+    return m_QtSignalCollector->GetSignals(object, signal);
+  }
 
-    QtSignals selectedQtSignals;
-    const QtSignals& qtSignals = m_QtSignalCollector->GetSignals();
-    QtSignals::const_iterator it = qtSignals.begin();
-    QtSignals::const_iterator qtSignalsEnd = qtSignals.end();
-    for ( ; it != qtSignalsEnd; ++it)
-    {
-      if ((it->first == 0 || it->first == qObject)
-          && it->second == qSignal)
-      {
-        selectedQtSignals.push_back(*it);
-      }
-    }
-    return selectedQtSignals;
+  /// \brief Returns a set of the collected Qt signals that are sent from the given object,
+  /// and are of the given type.
+  QtSignals GetQtSignals(const char* signal)
+  {
+    return m_QtSignalCollector->GetSignals(signal);
   }
 
 protected:
@@ -260,14 +155,12 @@ protected:
   /// \brief Handler for the ITK signals. Checks the consistency of the test object.
   virtual void OnItkSignalReceived(const itk::Object* object, const itk::EventObject& event)
   {
-    m_ItkSignalCollector->ProcessEvent(object, event);
     this->CheckState();
   }
 
   /// \brief Handler for the Qt signals. Checks the consistency of the test object.
   virtual void OnQtSignalReceived(const QObject* object, const char* signal)
   {
-    m_QtSignalCollector->OnSignalEmitted(object, signal);
     this->CheckState();
   }
 
@@ -298,12 +191,10 @@ private:
   /// \brief The expected state of the test object.
   typename TestObjectState::Pointer m_ExpectedState;
 
-  std::vector<ItkSignalNotifier::Pointer> m_ItkSignalNotifiers;
-
-  std::vector<QtSignalNotifier*> m_QtSignalNotifiers;
-
+  /// \brief ITK signal collector.
   mitk::ItkSignalCollector::Pointer m_ItkSignalCollector;
 
+  /// \brief Qt signal collector.
   mitk::QtSignalCollector::Pointer m_QtSignalCollector;
 
 };

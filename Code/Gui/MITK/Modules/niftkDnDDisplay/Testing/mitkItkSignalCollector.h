@@ -25,6 +25,19 @@
 namespace mitk
 {
 
+/// \class ItkSignalListener
+///
+/// \brief Abstract class to be implemented by ITK signal listeners.
+class ItkSignalListener
+{
+public:
+  virtual void OnItkSignalReceived(const itk::Object* object, const itk::EventObject& event) = 0;
+};
+
+
+/// \class ItkSignalCollector
+///
+/// \brief Class for collecting ITK signals and sending notifications of them to registered listeners.
 class ItkSignalCollector : public itk::Command
 {
 public:
@@ -34,15 +47,31 @@ public:
   typedef std::pair<const itk::Object*, itk::EventObject*> Signal;
   typedef std::vector<Signal> Signals;
 
+  /// \brief Connects this object to the events of the given object.
+  /// The current object will collect the given type of signals of that object.
   void Connect(itk::Object* object, const itk::EventObject& event);
+
+  /// \brief Adds a listener that will get notified of the ITK signals that this object is connected to.
+  void AddListener(ItkSignalListener* listener);
+
+  /// \brief Removes a listener. The listener will not get notified about the ITK signals observed by
+  /// the current object, any more.
+  void RemoveListener(ItkSignalListener* listener);
 
   /// \brief Gets the signals collected by this object.
   const Signals& GetSignals() const;
 
+  /// \brief Returns a set of the collected ITK signals that are of the given type or its subtype.
+  Signals GetSignals(const itk::EventObject& event) const;
+
+  /// \brief Returns a set of the collected ITK signals that are sent from the given object,
+  /// and are of the given type or its subtype.
+  Signals GetSignals(const itk::Object* object, const itk::EventObject& event = itk::AnyEvent()) const;
+
   /// \brief Clears all the signals collected by now.
   virtual void Clear();
 
-  /// \brief Called when the event happens to the caller.
+  /// \brief Adds the object-event pair to the list of collected signals.
   virtual void ProcessEvent(const itk::Object* object, const itk::EventObject& event);
 
 protected:
@@ -69,6 +98,10 @@ private:
 
   /// \brief The signals collected by this object.
   Signals m_Signals;
+
+  /// \brief The listeners of the ITK signals.
+  std::vector<ItkSignalListener*> m_Listeners;
+
 };
 
 }

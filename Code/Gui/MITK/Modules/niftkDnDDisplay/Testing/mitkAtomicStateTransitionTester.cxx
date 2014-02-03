@@ -69,6 +69,10 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 
   /// We collect the ITK signals using an ItkSignalCollector object.
   m_ItkSignalCollector = mitk::ItkSignalCollector::New();
+  m_ItkSignalCollector->AddListener(this);
+
+  m_QtSignalCollector = mitk::QtSignalCollector::New();
+  m_QtSignalCollector->AddListener(this);
 }
 
 
@@ -76,12 +80,8 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 template <class TestObject, class TestObjectState>
 AtomicStateTransitionTester<TestObject, TestObjectState>::~AtomicStateTransitionTester()
 {
-  std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersIt = m_QtSignalNotifiers.begin();
-  std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersEnd = m_QtSignalNotifiers.end();
-  for ( ; qtSignalNotifiersIt != qtSignalNotifiersEnd; ++qtSignalNotifiersIt)
-  {
-    delete *qtSignalNotifiersIt;
-  }
+  m_ItkSignalCollector->RemoveListener(this);
+  m_QtSignalCollector->RemoveListener(this);
 }
 
 
@@ -94,6 +94,7 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::Clear()
   m_ExpectedState = 0;
 
   m_ItkSignalCollector->Clear();
+  m_QtSignalCollector->Clear();
 }
 
 
@@ -151,6 +152,8 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::PrintSelf(std::os
     os << indent << m_NextState;
     os << indent << "ITK signals:" << std::endl;
     os << indent << m_ItkSignalCollector;
+    os << indent << "Qt signals:" << std::endl;
+    os << indent << m_QtSignalCollector;
   }
 }
 
@@ -159,10 +162,7 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::PrintSelf(std::os
 template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(itk::Object* object, const itk::EventObject& event)
 {
-  ItkSignalNotifier::Pointer itkSignalNotifier = ItkSignalNotifier::New(this, object, event);
-  m_ItkSignalNotifiers.push_back(itkSignalNotifier);
-  itkSignalNotifier->Register();
-//  m_ItkSignalCollector->Connect(object, event);
+  m_ItkSignalCollector->Connect(object, event);
 }
 
 
@@ -178,14 +178,13 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const itk
 template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const QObject* object, const char* signal)
 {
-  QtSignalNotifier* qtSignalNotifier = new QtSignalNotifier(this, object, signal);
-  m_QtSignalNotifiers.push_back(qtSignalNotifier);
+  m_QtSignalCollector->Connect(object, signal);
 }
 
 
 //-----------------------------------------------------------------------------
 template <class TestObject, class TestObjectState>
-void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const char* signal)
+void AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const char* signal)
 {
   if (::is_pointer<TestObject>::value)
   {
