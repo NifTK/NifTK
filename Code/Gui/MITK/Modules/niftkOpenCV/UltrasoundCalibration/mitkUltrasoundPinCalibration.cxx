@@ -55,9 +55,8 @@ void UltrasoundPinCalibration::InitialiseInvariantPoint(const std::vector<float>
 
 
 //-----------------------------------------------------------------------------
-double UltrasoundPinCalibration::Calibrate(
-    const std::vector< cv::Mat >& matrices,
-    const std::vector<cv::Point2d> &points,
+double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrices,
+    const std::vector<std::pair<int, cv::Point2d> > &points,
     cv::Matx44d& outputMatrix
     )
 {

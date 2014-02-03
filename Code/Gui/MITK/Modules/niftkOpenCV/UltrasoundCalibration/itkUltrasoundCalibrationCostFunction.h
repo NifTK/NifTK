@@ -69,7 +69,7 @@ public:
   /**
    * \brief Sets (copies) the 2D ultrasound point data into this object.
    */
-  void SetPoints(const std::vector< cv::Point2d > points);
+  void SetPoints(const std::vector< std::pair<int, cv::Point2d> >& points);
 
   /**
    * \brief Sets the scale factors for the ultrasound image in millimetres per pixel.
@@ -107,14 +107,14 @@ protected:
   void ValidateSizeOfParametersArray(const ParametersType & parameters) const;
   void ValidateSizeOfScalesArray(const ParametersType & parameters) const;
 
-  std::vector<double>        m_InitialGuess;
-  std::vector< cv::Mat >     m_Matrices;
-  std::vector< cv::Point2d > m_Points;
-  bool                       m_OptimiseScaling;
-  mitk::Point2D              m_MillimetresPerPixel;
-  ParametersType             m_Scales;
-  mutable unsigned int       m_NumberOfValues;
-  unsigned int               m_NumberOfParameters;
+  std::vector<double>                        m_InitialGuess;
+  std::vector< cv::Mat >                     m_Matrices;
+  std::vector< std::pair<int, cv::Point2d> > m_Points;
+  bool                                       m_OptimiseScaling;
+  mitk::Point2D                              m_MillimetresPerPixel;
+  ParametersType                             m_Scales;
+  mutable unsigned int                       m_NumberOfValues;
+  unsigned int                               m_NumberOfParameters;
 };
 
 } // end namespace

@@ -123,8 +123,8 @@ UltrasoundPointerCalibrationCostFunction::MeasureType UltrasoundPointerCalibrati
     tipPositionInProbeTrackerCoordinates = tipToProbeTrackerTransformation * point;
 
     // Then calculate the ultrasound point.
-    point(0,0) = this->m_Points[i].x;
-    point(1,0) = this->m_Points[i].y;
+    point(0,0) = this->m_Points[i].second.x;
+    point(1,0) = this->m_Points[i].second.y;
     point(2,0) = 0;
     point(3,0) = 1;
     ultrasoundToProbeTrackerTransformation = m_ProbeToProbeTrackerTransform * (rigidTransformation * scalingTransformation);

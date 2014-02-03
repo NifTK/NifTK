@@ -21,6 +21,7 @@
 #include <vtkMatrix4x4.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkExceptionMacro.h>
+#include <iostream>
 
 namespace mitk {
 
@@ -123,17 +124,32 @@ double UltrasoundCalibration::CalibrateFromDirectories(
 
   std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
 
-  std::vector<cv::Point2d> points;
+  std::vector< std::pair<int, cv::Point2d> > points;
   for (unsigned int i = 0; i < pointFiles.size(); i++)
   {
-    mitk::Point2D point;
-    if (mitk::Load2DPointFromFile(pointFiles[i], point))
+    int pointIdentifier;
+    cv::Point2d point;
+    std::string fileName = pointFiles[i];
+
+    if(fileName.size() > 0)
     {
-      cv::Point2d cvPoint;
-      cvPoint.x = point[0];
-      cvPoint.y = point[1];
-      points.push_back(cvPoint);
+      ifstream myfile(fileName.c_str());
+      if (myfile.is_open())
+      {
+        myfile >> pointIdentifier;
+        myfile >> point.x;
+        myfile >> point.y;
+
+        if (myfile.bad() || myfile.eof() || myfile.fail())
+        {
+          std::ostringstream errorMessage;
+          errorMessage << "Could not load point file:" << fileName << std::endl;
+          mitkThrow() << errorMessage.str();
+        }
+        myfile.close();
+      }
     }
+    points.push_back(std::pair<int, cv::Point2d>(pointIdentifier, point));
   }
 
   if (matrices.size() != matrixFiles.size())

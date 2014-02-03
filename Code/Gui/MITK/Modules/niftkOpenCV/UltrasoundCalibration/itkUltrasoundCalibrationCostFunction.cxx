@@ -77,7 +77,7 @@ void UltrasoundCalibrationCostFunction::SetMatrices(const std::vector< cv::Mat >
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundCalibrationCostFunction::SetPoints(const std::vector<cv::Point2d> points)
+void UltrasoundCalibrationCostFunction::SetPoints(const std::vector<std::pair<int, cv::Point2d> > &points)
 {
   m_Points = points;
   this->Modified();

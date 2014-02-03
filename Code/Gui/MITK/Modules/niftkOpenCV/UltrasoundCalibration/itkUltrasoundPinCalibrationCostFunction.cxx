@@ -113,8 +113,8 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     cv::Matx44d combinedTransformation = invariantPointTranslation * (trackerTransformation * (rigidTransformation * scalingTransformation));
     cv::Matx41d point, transformedPoint;
 
-    point(0,0) = m_Points[i].x;
-    point(1,0) = m_Points[i].y;
+    point(0,0) = m_Points[i].second.x;
+    point(1,0) = m_Points[i].second.y;
     point(2,0) = 0;
     point(3,0) = 1;
 
