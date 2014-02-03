@@ -20,32 +20,72 @@
 namespace itk {
 
 //-----------------------------------------------------------------------------
-UltrasoundPinCalibrationCostFunction::UltrasoundPinCalibrationCostFunction() 
-{
-  m_InvariantPoint[0] = 0;
-  m_InvariantPoint[1] = 0;
-  m_InvariantPoint[2] = 0;
-}
-
-
-//-----------------------------------------------------------------------------
 UltrasoundPinCalibrationCostFunction::~UltrasoundPinCalibrationCostFunction()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundPinCalibrationCostFunction::SetInvariantPoint(const mitk::Point3D &invariantPoint)
+UltrasoundPinCalibrationCostFunction::UltrasoundPinCalibrationCostFunction() 
 {
-  m_InvariantPoint = invariantPoint;
+  this->SetNumberOfInvariantPoints(1);
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPinCalibrationCostFunction::SetNumberOfInvariantPoints(const unsigned int &numberOfInvariantPoints)
+{
+  if (numberOfInvariantPoints < 1)
+  {
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibrationCostFunction::SetNumberOfInvariantPoints numberOfInvariantPoints=" << numberOfInvariantPoints << ", which should be >= 1." << std::endl;
+    mitkThrow() << oss.str();
+  }
+
+  m_InvariantPoints.resize(numberOfInvariantPoints);
+  for (unsigned int i = 0; i < m_InvariantPoints.size(); i++)
+  {
+    m_InvariantPoints[i][0] = 0;
+    m_InvariantPoints[i][1] = 0;
+    m_InvariantPoints[i][2] = 0;
+  }
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D UltrasoundPinCalibrationCostFunction::GetInvariantPoint() const
+unsigned int UltrasoundPinCalibrationCostFunction::GetNumberOfInvariantPoints() const
 {
-  return m_InvariantPoint;
+  return m_InvariantPoints.size();
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPinCalibrationCostFunction::SetInvariantPoint(const unsigned int &pointNumber, const mitk::Point3D &invariantPoint)
+{
+  if (pointNumber >= m_InvariantPoints.size())
+  {
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibrationCostFunction::SetInvariantPoint pointNumber=" << pointNumber << ", which is out of range [0.." << m_InvariantPoints.size()-1 << "]." << std::endl;
+    mitkThrow() << oss.str();
+  }
+
+  m_InvariantPoints[pointNumber] = invariantPoint;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Point3D UltrasoundPinCalibrationCostFunction::GetInvariantPoint(const unsigned int &pointNumber) const
+{
+  if (pointNumber >= m_InvariantPoints.size())
+  {
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibrationCostFunction::GetInvariantPoint pointNumber=" << pointNumber << ", which is out of range [0.." << m_InvariantPoints.size()-1 << "]." << std::endl;
+    mitkThrow() << oss.str();
+  }
+
+  return m_InvariantPoints[pointNumber];
 }
 
 
@@ -62,13 +102,12 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
   cv::Matx44d scalingTransformation;
   mitk::MakeIdentity(scalingTransformation);
 
-  cv::Matx44d invariantPointTranslation;
-  mitk::MakeIdentity(invariantPointTranslation);
-
-  if (parameters.size() == 8 || parameters.size() == 11)
+  int invariantPointOffset = 6;
+  if ((parameters.size() - 6)%3 == 2) // 6 for calibration, 3 for each invariant point, 2 remainder must be for scaling.
   {
     scalingTransformation(0, 0) = parameters[6];
     scalingTransformation(1, 1) = parameters[7];
+    invariantPointOffset = 8;
   }
   else
   {
@@ -77,40 +116,33 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     scalingTransformation(1, 1) = this->m_MillimetresPerPixel[1]; // in base class
   }
 
-  if (parameters.size() == 9 || parameters.size() == 11)
+  // Check if we have the right number of invariant points.
+  int parametersForInvariantPoints = parameters.size() - invariantPointOffset;
+  if (parametersForInvariantPoints < 0)
   {
-    if (parameters.size() == 9)
-    {
-      invariantPointTranslation(0, 3) = -parameters[6];
-      invariantPointTranslation(1, 3) = -parameters[7];
-      invariantPointTranslation(2, 3) = -parameters[8];
-    }
-    else
-    {
-      invariantPointTranslation(0, 3) = -parameters[8];
-      invariantPointTranslation(1, 3) = -parameters[9];
-      invariantPointTranslation(2, 3) = -parameters[10];
-    }
-
-    m_InvariantPoint[0] = invariantPointTranslation(0, 3);
-    m_InvariantPoint[1] = invariantPointTranslation(1, 3);
-    m_InvariantPoint[2] = invariantPointTranslation(2, 3);
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibrationCostFunction::GetValue parametersForInvariantPoints=" << parametersForInvariantPoints << ", which implies the size of the parameters array is wrong." << std::endl;
+    mitkThrow() << oss.str();
   }
-  else
+
+  if (   parametersForInvariantPoints != 0
+      && parametersForInvariantPoints%3 != 0
+     )
   {
-    // i.e. its not being optimised.
-    invariantPointTranslation(0, 3) = -m_InvariantPoint[0];
-    invariantPointTranslation(1, 3) = -m_InvariantPoint[1];
-    invariantPointTranslation(2, 3) = -m_InvariantPoint[2];
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibrationCostFunction::GetValue parametersForInvariantPoints=" << parametersForInvariantPoints << ", which is not a multiple of 3." << std::endl;
+    mitkThrow() << oss.str();
   }
 
   MeasureType value;
   value.SetSize(m_NumberOfValues);
+  mitk::Point3D invariantPoint;
+  unsigned int invariantPointIndex = 0;
 
   for (unsigned int i = 0; i < this->m_Matrices.size(); i++)
   {
     cv::Matx44d trackerTransformation(this->m_Matrices[i]);
-    cv::Matx44d combinedTransformation = invariantPointTranslation * (trackerTransformation * (rigidTransformation * scalingTransformation));
+    cv::Matx44d combinedTransformation = trackerTransformation * (rigidTransformation * scalingTransformation);
     cv::Matx41d point, transformedPoint;
 
     point(0,0) = m_Points[i].second.x;
@@ -120,9 +152,29 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 
     transformedPoint = combinedTransformation * point;
 
-    value[i*3 + 0] = transformedPoint(0, 0);
-    value[i*3 + 1] = transformedPoint(1, 0);
-    value[i*3 + 2] = transformedPoint(2, 0);
+    // Sort out invariant point
+    invariantPointIndex = m_Points[i].first;
+    if (invariantPointIndex >= m_NumberOfInvariantPoints)
+    {
+      std::ostringstream oss;
+      oss << "UltrasoundPinCalibrationCostFunction::GetValue invariantPointIndex=" << invariantPointIndex << ", which is out of range [0.." << m_NumberOfInvariantPoints-1 << "]." << std::endl;
+      mitkThrow() << oss.str();
+    }
+    if (parametersForInvariantPoints != 0)
+    {
+      invariantPoint[0] = parameters[invariantPointOffset + invariantPointIndex*3 + 0];
+      invariantPoint[1] = parameters[invariantPointOffset + invariantPointIndex*3 + 1];
+      invariantPoint[2] = parameters[invariantPointOffset + invariantPointIndex*3 + 2];
+    }
+    else
+    {
+      // i.e. its not being optimised.
+      // There may still be multiple points, all of which are not optimised.
+      invariantPoint = this->m_InvariantPoints[m_Points[i].first];
+    }
+    value[i*3 + 0] = transformedPoint(0, 0) - invariantPoint[0];
+    value[i*3 + 1] = transformedPoint(1, 0) - invariantPoint[1];
+    value[i*3 + 2] = transformedPoint(2, 0) - invariantPoint[2];
   }
 
   double residual = this->GetResidual(value);

@@ -13,21 +13,11 @@
 =============================================================================*/
 
 #include "mitkUltrasoundPinCalibration.h"
-#include "itkUltrasoundPinCalibrationCostFunction.h"
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <mitkExceptionMacro.h>
+#include <set>
 
 namespace mitk {
-
-//-----------------------------------------------------------------------------
-UltrasoundPinCalibration::UltrasoundPinCalibration()
-: m_OptimiseInvariantPoint(false)
-{
-  m_InvariantPoint[0] = 0;
-  m_InvariantPoint[1] = 0;
-  m_InvariantPoint[2] = 0;
-}
-
 
 //-----------------------------------------------------------------------------
 UltrasoundPinCalibration::~UltrasoundPinCalibration()
@@ -36,20 +26,63 @@ UltrasoundPinCalibration::~UltrasoundPinCalibration()
 
 
 //-----------------------------------------------------------------------------
+UltrasoundPinCalibration::UltrasoundPinCalibration()
+: m_OptimiseInvariantPoints(false)
+{
+  m_CostFunction = itk::UltrasoundPinCalibrationCostFunction::New();
+  this->SetNumberOfInvariantPoints(1);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPinCalibration::SetNumberOfInvariantPoints(const unsigned int& numberOfPoints)
+{
+  m_CostFunction->SetNumberOfInvariantPoints(numberOfPoints);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void UltrasoundPinCalibration::InitialiseInvariantPoint(const std::vector<float>& commandLineArgs)
 {
   if (commandLineArgs.size() == 3)
   {
-    m_InvariantPoint[0] = commandLineArgs[0];
-    m_InvariantPoint[1] = commandLineArgs[1];
-    m_InvariantPoint[2] = commandLineArgs[2];
+    this->InitialiseInvariantPoint(0, commandLineArgs);
+  }
+  else if (commandLineArgs.size() == 4)
+  {
+    std::vector<float> tmp;
+    tmp.push_back(commandLineArgs[1]);
+    tmp.push_back(commandLineArgs[2]);
+    tmp.push_back(commandLineArgs[3]);
+    this->InitialiseInvariantPoint(static_cast<int>(commandLineArgs[0]), tmp);
   }
   else
   {
-    m_InvariantPoint[0] = 0;
-    m_InvariantPoint[1] = 0;
-    m_InvariantPoint[2] = 0;
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibration::InitialiseInvariantPoint given a commandLineArgs with the wrong number of elements, it should be 3 or 4." << std::endl;
+    mitkThrow() << oss.str();
   }
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPinCalibration::InitialiseInvariantPoint(const int &pointNumber, const std::vector<float>& commandLineArgs)
+{
+  if (commandLineArgs.size() != 3)
+  {
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibration::InitialiseInvariantPoint given a commandLineArgs with the wrong number of elements, it should be 3." << std::endl;
+    mitkThrow() << oss.str();
+  }
+
+  mitk::Point3D point;
+  point[0] = commandLineArgs[0];
+  point[1] = commandLineArgs[1];
+  point[2] = commandLineArgs[2];
+  this->m_CostFunction->SetInvariantPoint(pointNumber, point);
   this->Modified();
 }
 
@@ -65,52 +98,59 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
   itk::UltrasoundPinCalibrationCostFunction::ParametersType parameters;
   itk::UltrasoundPinCalibrationCostFunction::ParametersType scaleFactors;
   
-  if (!this->m_OptimiseScaling && !m_OptimiseInvariantPoint)
+  // Check number of invariant points.
+  int numberOfInvariantPoints = 0;
+  std::set<int> invariantPointIdentifiers;
+  for (unsigned int i = 0; i < points.size(); i++)
   {
-    parameters.SetSize(6);
-    scaleFactors.SetSize(6);
+    invariantPointIdentifiers.insert(points[i].first);
   }
-  else if (!this->m_OptimiseScaling
-           && m_OptimiseInvariantPoint
-          )
+  numberOfInvariantPoints = invariantPointIdentifiers.size();
+  if (numberOfInvariantPoints != m_CostFunction->GetNumberOfInvariantPoints())
   {
-    parameters.SetSize(9);
-    parameters[6] = m_InvariantPoint[0];
-    parameters[7] = m_InvariantPoint[1];
-    parameters[8] = m_InvariantPoint[2];
-    
-    scaleFactors.SetSize(9);
-    scaleFactors[6] = 1;
-    scaleFactors[7] = 1;
-    scaleFactors[8] = 1;
+    std::ostringstream oss;
+    oss << "UltrasoundPinCalibration::Calibrate calculated numberOfInvariantPoints=" << numberOfInvariantPoints << ", but cost function says it should be=" << m_CostFunction->GetNumberOfInvariantPoints() << std::endl;
+    mitkThrow() << oss.str();
   }
-  else if (this->m_OptimiseScaling && !m_OptimiseInvariantPoint)
-  {
-    parameters.SetSize(8);
-    parameters[6] = this->m_MillimetresPerPixel[0];
-    parameters[7] = this->m_MillimetresPerPixel[1];
 
-    scaleFactors.SetSize(8);
+  // Setup size of parameters array.
+  int numberOfParameters = 6;
+  if (this->m_OptimiseScaling)
+  {
+    numberOfParameters += 2;
+  }
+  if (m_OptimiseInvariantPoints)
+  {
+    numberOfParameters += (numberOfInvariantPoints*3);
+  }
+  parameters.SetSize(numberOfParameters);
+  scaleFactors.SetSize(numberOfParameters);
+
+  if (this->m_OptimiseScaling)
+  {
+    parameters[6] = this->m_MillimetresPerPixel[0];
+    parameters[7] = this->m_MillimetresPerPixel[1];
     scaleFactors[6] = 0.0001;
     scaleFactors[7] = 0.0001;
   }
-  else if (this->m_OptimiseScaling
-           && m_OptimiseInvariantPoint
-          )
+
+  if (m_OptimiseInvariantPoints)
   {
-    parameters.SetSize(11);
-    parameters[6] = this->m_MillimetresPerPixel[0];
-    parameters[7] = this->m_MillimetresPerPixel[1];
-    parameters[7] = m_InvariantPoint[0];
-    parameters[8] = m_InvariantPoint[1];
-    parameters[9] = m_InvariantPoint[2];
-    
-    scaleFactors.SetSize(11);
-    scaleFactors[6] = 0.0001;
-    scaleFactors[7] = 0.0001;
-    scaleFactors[8] = 1;
-    scaleFactors[9] = 1;
-    scaleFactors[10] = 1;
+    int offset = 6;
+    if (this->m_OptimiseScaling)
+    {
+      offset = 8;
+    }
+    // For now, initialise all invariant points to the same initial guess.
+    for (int i = 0; i < numberOfInvariantPoints; i++)
+    {
+      parameters[offset + 3*i + 0] = m_CostFunction->GetInvariantPoint(i)[0];
+      parameters[offset + 3*i + 1] = m_CostFunction->GetInvariantPoint(i)[1];
+      parameters[offset + 3*i + 2] = m_CostFunction->GetInvariantPoint(i)[2];
+      scaleFactors[offset + 3*i + 0] = 1;
+      scaleFactors[offset + 3*i + 1] = 1;
+      scaleFactors[offset + 3*i + 2] = 1;
+    }
   }
 
   parameters[0] = this->m_InitialGuess[0];
@@ -135,7 +175,6 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
   costFunction->SetPoints(points);
   costFunction->SetScales(scaleFactors);
   costFunction->SetNumberOfParameters(parameters.GetSize());
-  costFunction->SetInvariantPoint(m_InvariantPoint);
   costFunction->SetMillimetresPerPixel(this->m_MillimetresPerPixel);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
@@ -153,26 +192,13 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
   parameters = optimizer->GetCurrentPosition();
   outputMatrix = costFunction->GetCalibrationTransformation(parameters);
 
-  std::cerr << "Stop condition:" << optimizer->GetStopConditionDescription();
+  std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
+  std::cout << "UltrasoundPinCalibration:End parameters = " << parameters << std::endl;
 
   if (this->m_OptimiseScaling)
   {
     this->m_MillimetresPerPixel[0] = parameters[6];
     this->m_MillimetresPerPixel[1] = parameters[7];
-  }
-  if (!this->m_OptimiseScaling
-      && m_OptimiseInvariantPoint
-      )
-  {
-    m_InvariantPoint[0] = parameters[6];
-    m_InvariantPoint[1] = parameters[7];
-    m_InvariantPoint[2] = parameters[8];
-  }
-  if (this->m_OptimiseScaling && m_OptimiseInvariantPoint)
-  {
-    m_InvariantPoint[0] = parameters[8];
-    m_InvariantPoint[1] = parameters[9];
-    m_InvariantPoint[2] = parameters[10];
   }
 
   itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);

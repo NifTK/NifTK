@@ -17,6 +17,7 @@
 
 #include "niftkOpenCVExports.h"
 #include "mitkUltrasoundCalibration.h"
+#include "itkUltrasoundPinCalibrationCostFunction.h"
 
 namespace mitk {
 
@@ -33,13 +34,14 @@ public:
   mitkClassMacro(UltrasoundPinCalibration, mitk::UltrasoundCalibration);
   itkNewMacro(UltrasoundPinCalibration);
 
-  itkSetMacro(InvariantPoint, mitk::Point3D);
-  itkGetMacro(InvariantPoint, mitk::Point3D);
+  itkSetMacro(OptimiseInvariantPoints, bool);
+  itkGetMacro(OptimiseInvariantPoints, bool);
 
-  itkSetMacro(OptimiseInvariantPoint, bool);
-  itkGetMacro(OptimiseInvariantPoint, bool);
+  void SetNumberOfInvariantPoints(const unsigned int& numberOfPoints);
 
   void InitialiseInvariantPoint(const std::vector<float>& commandLineArgs);
+
+  void InitialiseInvariantPoint(const int& pointNumber, const std::vector<float>& commandLineArgs);
 
   /**
    * \brief Performs pin-head (invariant-point) calibration.
@@ -61,8 +63,8 @@ protected:
 
 private:
 
-  mitk::Point3D m_InvariantPoint;
-  bool          m_OptimiseInvariantPoint;
+  bool                                                       m_OptimiseInvariantPoints;
+  mutable itk::UltrasoundPinCalibrationCostFunction::Pointer m_CostFunction;
 
 }; // end class
 

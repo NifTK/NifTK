@@ -54,19 +54,35 @@
       <channel>input</channel>
     </float-vector>
     <boolean>
-      <name>optimiseInvariantPoint</name>
-      <longflag>optimiseInvariantPoint</longflag>
-      <description>Optimise the position of the invariant point.</description>
-      <label>Optimise Invariant Point</label>
+      <name>optimiseInvariantPoints</name>
+      <longflag>optimiseInvariantPoints</longflag>
+      <description>Optimise the position of the invariant points.</description>
+      <label>Optimise Invariant Points</label>
       <default>false</default>
       <channel>input</channel>
     </boolean>
     <point>
-      <name>invariantPoint</name>
-      <longflag>invariantPoint</longflag>
-      <description>Location of the point in tracker coordinates.</description>
-      <label>Invariant Point</label>
+      <name>invariantPoint1</name>
+      <longflag>invariantPoint1</longflag>
+      <description>Location of the first invariant point in tracker coordinates.</description>
+      <label>Invariant Point 1</label>
       <default>0,0,0</default>
+      <channel>input</channel>
+    </point>
+    <point>
+      <name>invariantPoint2</name>
+      <longflag>invariantPoint2</longflag>
+      <description>Location of the second invariant point in tracker coordinates.</description>
+      <label>Invariant Point 2</label>
+      <default>-32767,-32767,-32767</default>
+      <channel>input</channel>
+    </point>
+    <point>
+      <name>invariantPoint3</name>
+      <longflag>invariantPoint3</longflag>
+      <description>Location of the third invariant point in tracker coordinates.</description>
+      <label>Invariant Point 3</label>
+      <default>-32767,-32767,-32767</default>
       <channel>input</channel>
     </point>
     <file fileExtensions="*.txt,*.mat,*.4x4">

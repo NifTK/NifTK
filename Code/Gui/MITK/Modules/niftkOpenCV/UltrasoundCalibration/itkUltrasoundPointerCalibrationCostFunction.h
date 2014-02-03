@@ -25,14 +25,20 @@ namespace itk {
  * \brief Cost function to minimise the squared distance error of
  * transformed ultrasound points to points from a tracked pointer.
  *
+ * See: http://dx.doi.org/10.1016/S0301-5629(01)00469-0
+ *
  * The parameters array should be set before optimisation with a reasonable starting estimate
  * using the this->SetInitialPosition(parameters) method in the base class. This class
  * can optimise different numbers of degrees of freedom as follows:
  * <pre>
  * 6DOF: 6 rigid (rx, ry, rz in Rodrigues formulation, tx, ty, tz in millimetres).
- * 8DOF: 6 rigid + 2 scaling
+ * 8DOF: 6 rigid + 2 scaling (mm/pix).
  * </pre>
  * The order of parameters is important.
+ *
+ * NOTE: This is currently unfinished and hence untested. However, given
+ * that 75% of the code is in a base class that is tested, then this class
+ * should be worth keeping, just incase anyone needs it. They can finish testing.
  */
 class UltrasoundPointerCalibrationCostFunction : public itk::UltrasoundCalibrationCostFunction
 {
