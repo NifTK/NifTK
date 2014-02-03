@@ -12,12 +12,10 @@
 
 =============================================================================*/
 
-#ifndef itkMammogramMaskSegmentationImageFilter_h
-#define itkMammogramMaskSegmentationImageFilter_h
+#ifndef __itkMammogramMaskSegmentationImageFilter_h
+#define __itkMammogramMaskSegmentationImageFilter_h
 
 #include <itkImageToImageFilter.h>
-
-#include <vnl/vnl_double_2.h>
 
 namespace itk {
   
@@ -55,6 +53,7 @@ public:
   typedef typename InputImageType::PixelType    InputImagePixelType;
   typedef typename InputImageType::SpacingType  InputImageSpacingType;
   typedef typename InputImageType::PointType    InputImagePointType;
+  typedef typename InputImageType::IndexType    InputImageIndexType;
 
   typedef typename NumericTraits<InputImagePixelType>::RealType    RealType;
 
@@ -85,70 +84,35 @@ public:
 		  (Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),2>));
   itkConceptMacro(InputHasNumericTraitsCheck,
                   (Concept::HasNumericTraits<InputImagePixelType>));
-  itkConceptMacro(InputHasFloatingPointPixelType,
-                  (Concept::IsFloatingPoint<InputImagePixelType>));
   itkConceptMacro(OutputHasPixelTraitsCheck,
                   (Concept::HasPixelTraits<OutputImagePixelType>));
   /** End concept checking */
 #endif
 
-  /// For debugging purposes, set single threaded execution
-  void SetSingleThreadedExecution(void) {m_FlagMultiThreadedExecution = false;}
+  bool GetVerbose( void ) { return flgVerbose; }
+  void SetVerbose( bool flag ) { flgVerbose = flag; }
+
+  void SetVerboseOn( void ) { flgVerbose = true; }
+  void SetVerboseOff( void ) { flgVerbose = false; }
+
 
 protected:
+
+  bool flgVerbose;
+
   MammogramMaskSegmentationImageFilter();
   virtual ~MammogramMaskSegmentationImageFilter();
   void PrintSelf(std::ostream& os, Indent indent) const;
   
-  /** If an imaging filter needs to perform processing after the buffer
-   * has been allocated but before threads are spawned, the filter can
-   * can provide an implementation for BeforeThreadedGenerateData(). The
-   * execution flow in the default GenerateData() method will be:
-   *      1) Allocate the output buffer
-   *      2) Call BeforeThreadedGenerateData()
-   *      3) Spawn threads, calling ThreadedGenerateData() in each thread.
-   *      4) Call AfterThreadedGenerateData()
-   * Note that this flow of control is only available if a filter provides
-   * a ThreadedGenerateData() method and NOT a GenerateData() method. */
-  virtual void BeforeThreadedGenerateData(void);
-  
-  /** If an imaging filter needs to perform processing after all
-   * processing threads have completed, the filter can can provide an
-   * implementation for AfterThreadedGenerateData(). The execution
-   * flow in the default GenerateData() method will be:
-   *      1) Allocate the output buffer
-   *      2) Call BeforeThreadedGenerateData()
-   *      3) Spawn threads, calling ThreadedGenerateData() in each thread.
-   *      4) Call AfterThreadedGenerateData()
-   * Note that this flow of control is only available if a filter provides
-   * a ThreadedGenerateData() method and NOT a GenerateData() method. */
-  virtual void AfterThreadedGenerateData(void);
-  
-  /** Single threaded execution, for debugging purposes ( call
-  SetSingleThreadedExecution() ) */
+  /** Single threaded execution */
   void GenerateData();
-  
-  /** MammogramMaskSegmentationImageFilter can be implemented as a multithreaded filter.
-   * Therefore, this implementation provides a ThreadedGenerateData()
-   * routine which is called for each processing thread. The output
-   * image data is allocated automatically by the superclass prior to
-   * calling ThreadedGenerateData().  ThreadedGenerateData can only
-   * write to the portion of the output image specified by the
-   * parameter "outputRegionForThread"
-   *
-   * \sa ImageToImageFilter::ThreadedGenerateData(),
-   *     ImageToImageFilter::GenerateData() */
-  void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            ThreadIdType threadId );
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);
 
-  /// Flag to turn multithreading on or off
-  bool m_FlagMultiThreadedExecution;
-
 
 private:
+
   MammogramMaskSegmentationImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 };

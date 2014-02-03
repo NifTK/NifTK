@@ -15,24 +15,37 @@
 #ifndef __itkMammogramMaskSegmentationImageFilter_txx
 #define __itkMammogramMaskSegmentationImageFilter_txx
 
-#include "itkMammogramMaskSegmentationImageFilter.h"
+#include <itkMinimumMaximumImageCalculator.h>
+#include <itkImageToHistogramFilter.h>
+#include <itkImageMomentsCalculator.h>
+#include <itkConnectedThresholdImageFilter.h>
+#include <itkShrinkImageFilter.h>
+#include <itkExpandImageFilter.h>
+#include <itkNearestNeighborInterpolateImageFunction.h>
+#include <itkIdentityTransform.h>
+#include <itkResampleImageFilter.h>
+#include <itkSubsampleImageFilter.h>
+#include <itkDiscreteGaussianImageFilter.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkCastImageFilter.h>
+#include <itkWriteImage.h>
+#include <itkImageLinearIteratorWithIndex.h>
+#include <itkMammogramLeftOrRightSideCalculator.h>
 
-#include <itkBasicImageFeaturesImageFilter.h>
-#include <itkImageRegionIteratorWithIndex.h>
-#include <itkImageRegionConstIteratorWithIndex.h>
-#include <itkImageFileWriter.h>
-#include <itkImageDuplicator.h>
-#include <itkProgressReporter.h>
+#include <itkForegroundFromBackgroundImageThresholdCalculator.h>
 
 #include <niftkConversionUtils.h>
-
-#include <vnl/vnl_double_2x2.h>
 
 #include <itkUCLMacro.h>
 
 
+#include "itkMammogramMaskSegmentationImageFilter.h"
+
+
 namespace itk
 {
+
+
 /* -----------------------------------------------------------------------
    Constructor
    ----------------------------------------------------------------------- */
@@ -41,9 +54,7 @@ template<class TInputImage, class TOutputImage>
 MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::MammogramMaskSegmentationImageFilter()
 {
-
-  // Multi-threaded execution is enabled by default
-  m_FlagMultiThreadedExecution = true;
+  flgVerbose = false;
 
   this->SetNumberOfRequiredInputs( 1 );
   this->SetNumberOfRequiredOutputs( 1 );
@@ -78,54 +89,6 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 /* -----------------------------------------------------------------------
-   BeforeThreadedGenerateData()
-   ----------------------------------------------------------------------- */
-
-template <typename TInputImage, typename TOutputImage>
-void 
-MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
-::BeforeThreadedGenerateData(void)
-{
-  typedef itk::BasicImageFeaturesImageFilter< TInputImage, 
-                                              TOutputImage > BasicImageFeaturesFilterType;
-
- 
-  // Create the basic image features filter
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typename BasicImageFeaturesFilterType::Pointer BIFsFilter = BasicImageFeaturesFilterType::New();
-
-  BIFsFilter->SetEpsilon( 1e-3 );
-
-  BIFsFilter->SetInput( this->GetInput() );     
-  BIFsFilter->SetSigma( 2. );
-  BIFsFilter->SetSingleThreadedExecution();
-
-  std::cout << "Computing Basic Image Features" << std::endl;
-  BIFsFilter->Update();
-        
-  this->GraftOutput( BIFsFilter->GetOutput() );
-
-  typedef itk::ImageFileWriter< TOutputImage > WriterType;
-  typename WriterType::Pointer writer = WriterType::New();
-
-  writer->SetFileName( "BIFS.nii" );
-  writer->SetInput( BIFsFilter->GetOutput() );
-  
-  try
-  {
-    writer->Update(); 
-  }
-  catch( itk::ExceptionObject & err ) 
-  { 
-    std::cerr << "Failed: " << err << std::endl; 
-  }                
-
-  
-}
-
-
-/* -----------------------------------------------------------------------
    GenerateData()
    ----------------------------------------------------------------------- */
 
@@ -134,65 +97,549 @@ void
 MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::GenerateData(void)
 {
-  // Perform multi-threaded execution by default
+  unsigned int i;
 
-  if (m_FlagMultiThreadedExecution) {
-    
-    niftkitkDebugMacro( "Multi-threaded mammogram mask segmentation");
-
-    Superclass::GenerateData();
-  }
+  typename InputImageType::Pointer imPipelineConnector;
 
   // Single-threaded execution
 
-  else {
-  
-    niftkitkDebugMacro( "Single-threaded mammogram mask segmentation");
+  this->AllocateOutputs();
 
-    this->AllocateOutputs();
-    this->BeforeThreadedGenerateData();
-  
-    // Set up the multithreaded processing
-    typename ImageSource<TOutputImage>::ThreadStruct str;
-    str.Filter = this;
-    
-    this->GetMultiThreader()->SetNumberOfThreads( 1 );
-    this->GetMultiThreader()->SetSingleMethod(this->ThreaderCallback, &str);
-    
-    // multithread the execution
-    this->GetMultiThreader()->SingleMethodExecute();
-    
-    // Call a method that can be overridden by a subclass to perform
-    // some calculations after all the threads have completed
-    this->AfterThreadedGenerateData();
+  InputImageConstPointer image = this->GetInput();
+
+
+  // Find threshold , t, that maximises:
+  // ( MaxIntensity - t )*( CDF( t ) - Variance( t )/Max_Variance ) 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::ForegroundFromBackgroundImageThresholdCalculator< InputImageType > ThresholdCalculatorType;
+
+  typename ThresholdCalculatorType::Pointer 
+    thresholdCalculator = ThresholdCalculatorType::New();
+
+  thresholdCalculator->SetImage( image );
+
+  // thresholdCalculator->SetDebug( this->GetDebug() );
+  thresholdCalculator->SetVerbose( this->GetVerbose() );
+
+  thresholdCalculator->Compute();
+
+  double intThreshold = thresholdCalculator->GetThreshold();
+
+  if ( flgVerbose )
+  {
+    std::cout << "Threshold: " << intThreshold << std::endl;
   }
-}
 
 
-/* -----------------------------------------------------------------------
-   ThreadedGenerateData(const OutputImageRegionType&, int)
-   ----------------------------------------------------------------------- */
+  // Determine if this is the left or right breast
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-template <typename TInputImage, typename TOutputImage>
-void 
-MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                       ThreadIdType threadId)
-{
+  typedef itk::MammogramLeftOrRightSideCalculator< InputImageType > LeftOrRightSideCalculatorType;
 
-}
+  typename LeftOrRightSideCalculatorType::Pointer 
+    sideCalculator = LeftOrRightSideCalculatorType::New();
+
+  sideCalculator->SetImage( image );
+
+  sideCalculator->SetVerbose( this->GetVerbose() );
+
+  sideCalculator->Compute();
+
+  typename LeftOrRightSideCalculatorType::BreastSideType
+    breastSide = sideCalculator->GetBreastSide();
+
+  if ( flgVerbose )
+  {
+    std::cout << "Breast side: " << breastSide << std::endl;
+  }
+
+  
+  // Shrink the image
+  // ~~~~~~~~~~~~~~~~
+
+  typedef typename InputImageType::SizeType SizeType;
+  typedef typename InputImageType::RegionType RegionType;
+
+  SizeType inSize = image->GetLargestPossibleRegion().GetSize();
+  InputImageSpacingType inSpacing = image->GetSpacing();
+
+  typename SizeType::SizeValueType maxDimension;
+
+  maxDimension = inSize[0];
+  for ( i=1; i<ImageDimension; i++ )
+  {
+    if ( inSize[i] > maxDimension )
+    {
+      maxDimension = inSize[i];
+    }
+  }
+
+  double shrinkFactor = 1;
+  while ( maxDimension/(shrinkFactor + 1) > 500 )
+  {
+    shrinkFactor++;
+  }
 
 
-/* -----------------------------------------------------------------------
-   AfterThreadedGenerateData()
-   ----------------------------------------------------------------------- */
+  SizeType outSize;
+  InputImageSpacingType outSpacing;
+  double *sampling = new double[ImageDimension];
+  
+  for ( i=0; i<ImageDimension; i++ )
+  {
+    outSize[i] = inSize[i]/shrinkFactor;
+    outSpacing[i] = static_cast<double>(inSize[i]*inSpacing[i])/static_cast<double>(outSize[i]);
+    sampling[i] = shrinkFactor;
+  }
 
-template<class TInputImage, class TOutputImage>
-void
-MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
-::AfterThreadedGenerateData(void)
-{
+  if ( flgVerbose )
+  {
+    std::cout << "Input size: " << inSize << ", spacing: " << inSpacing << std::endl
+              << "Shrink factor: " << shrinkFactor << std::endl
+              << "Output size: " << outSize << ", spacing: " << outSpacing << std::endl;
+  }
 
+  typedef itk::SubsampleImageFilter< TInputImage, TInputImage > SubsampleImageFilterType;
+
+  typename SubsampleImageFilterType::Pointer shrinkFilter = SubsampleImageFilterType::New();
+
+
+  shrinkFilter->SetInput( image );
+  shrinkFilter->SetSubsamplingFactors( sampling );
+
+  shrinkFilter->Update();
+  imPipelineConnector = shrinkFilter->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "ShrunkImage.nii", "shrunk image", imPipelineConnector ); 
+  }
+
+
+  // Find the center of mass of the image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::ImageMomentsCalculator<TInputImage> ImageMomentCalculatorType;
+
+  typename ImageMomentCalculatorType::VectorType com; 
+
+  com.Fill(0.); 
+
+  typename ImageMomentCalculatorType::Pointer momentCalculator = ImageMomentCalculatorType::New(); 
+
+  momentCalculator->SetImage( imPipelineConnector ); 
+
+  momentCalculator->Compute(); 
+
+  com = momentCalculator->GetCenterOfGravity(); 
+
+  InputImagePointType comPoint;
+
+  for ( i=0; i<ImageDimension; i++ )
+  {
+    comPoint[i] = com[i];
+  }
+
+  InputImageIndexType  comIndex;
+
+  imPipelineConnector->TransformPhysicalPointToIndex( comPoint, comIndex );
+  
+  if ( flgVerbose )
+  {
+    std::cout << "Image center of mass is: " << comIndex << std::endl;
+  }
+
+
+  // Find the top and bottom borders of the image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef typename itk::ImageLinearIteratorWithIndex< TInputImage > LineIteratorType;
+
+  InputImageIndexType index, prevIndex;
+  bool flgFirstRow;
+  int xDiff;
+
+  RegionType lowerRegion;
+  SizeType lowerRegionSize;
+  InputImageIndexType lowerStart;
+
+  lowerStart[0] = 0;
+  lowerStart[1] = 0;
+
+  lowerRegionSize[0] = outSize[0];
+  lowerRegionSize[1] = comIndex[1];
+
+  lowerRegion.SetSize( lowerRegionSize );
+  lowerRegion.SetIndex( lowerStart );
+
+  LineIteratorType itLowerRegion( imPipelineConnector, lowerRegion );
+
+  itLowerRegion.SetDirection( 0 );
+
+  if ( this->GetDebug() )
+  {
+    std::cout << "Scanning lower region: " << lowerRegion << std::endl;
+  }
+
+  flgFirstRow = true;
+  xDiff = 0;
+
+  for ( itLowerRegion.GoToReverseBegin(); 
+        ! itLowerRegion.IsAtReverseEnd(); 
+        itLowerRegion.PreviousLine() )
+  {
+    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+    {
+      itLowerRegion.GoToBeginOfLine();
+      
+      while ( ( ! itLowerRegion.IsAtEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
+      {
+        ++itLowerRegion;
+      }
+    }
+    else
+    {
+      itLowerRegion.GoToReverseBeginOfLine();
+      
+      while ( ( ! itLowerRegion.IsAtReverseEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
+      {
+        --itLowerRegion;
+      } 
+    }
+
+    index = itLowerRegion.GetIndex();
+    
+    if ( flgFirstRow )
+    {
+      flgFirstRow = false;
+    }
+    else 
+    {
+      if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+      {
+        xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
+      }
+      else
+      {
+        xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
+      }
+
+      if ( this->GetDebug() )
+      {
+        std::cout << "Current: " << index << " Previous: " 
+                  << prevIndex << ", x diff: " << xDiff << std::endl;    
+      }
+    }
+
+    if ( xDiff > 10 )
+    {
+      lowerStart = prevIndex;
+      break;
+    }
+
+    prevIndex = index;
+  }
+
+  // Set this border region to zero
+
+  for ( ; 
+        ! itLowerRegion.IsAtReverseEnd(); 
+        itLowerRegion.PreviousLine() )
+  {
+    itLowerRegion.GoToBeginOfLine();
+      
+    while ( ! itLowerRegion.IsAtEndOfLine() )
+    {
+      itLowerRegion.Set( 0 );
+      ++itLowerRegion;
+    }
+  }
+
+  // The region above the center of mass
+
+  RegionType upperRegion;
+  SizeType upperRegionSize;
+  InputImageIndexType upperStart;
+
+  upperStart[0] = 0;
+  upperStart[1] = comIndex[1];
+
+  upperRegionSize[0] = outSize[0];
+  upperRegionSize[1] = outSize[1] - comIndex[1];
+
+  upperRegion.SetSize( upperRegionSize );
+  upperRegion.SetIndex( upperStart );
+
+  LineIteratorType itUpperRegion( imPipelineConnector, upperRegion );
+
+  itUpperRegion.SetDirection( 0 );
+
+
+  if ( this->GetDebug() )
+  {
+    std::cout << "Scanning upper region: " << upperRegion << std::endl;
+  }
+
+  flgFirstRow = true;
+  xDiff = 0;
+
+  for ( itUpperRegion.GoToBegin(); 
+        ! itUpperRegion.IsAtEnd(); 
+        itUpperRegion.NextLine() )
+  {
+    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+    {
+      itUpperRegion.GoToBeginOfLine();
+      
+      while ( ( ! itUpperRegion.IsAtEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
+      {
+        ++itUpperRegion;
+      }
+    }
+    else
+    {
+      itUpperRegion.GoToReverseBeginOfLine();
+      
+      while ( ( ! itUpperRegion.IsAtReverseEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
+      {
+        --itUpperRegion;
+      }
+    }
+    
+    index = itUpperRegion.GetIndex();
+    
+    if ( flgFirstRow )
+    {
+      flgFirstRow = false;
+    }
+    else 
+    {
+      if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+      {
+        xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
+      }
+      else
+      {
+        xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
+      }
+
+      if ( this->GetDebug() )
+      {
+        std::cout << "Current: " << index << " Previous: " 
+                  << prevIndex << ", x diff: " << xDiff << std::endl;
+      }
+    }
+
+    if ( xDiff > 10 )
+    {
+      upperStart = prevIndex;
+      break;
+    }
+
+    prevIndex = index;
+  }
+
+  // Set this border region to zero
+
+  for ( ; 
+        ! itUpperRegion.IsAtEnd(); 
+        itUpperRegion.NextLine() )
+  {
+    itUpperRegion.GoToBeginOfLine();
+      
+    while ( ! itUpperRegion.IsAtEndOfLine() )
+    {
+      itUpperRegion.Set( 0 );
+      ++itUpperRegion;
+    }
+  }
+
+
+  // Calculate the image range (for an ROI centered on the C-of-M in x)
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::MinimumMaximumImageCalculator<TInputImage> MinMaxCalculatorType;
+  
+  typename MinMaxCalculatorType::Pointer minMaxCalculator = MinMaxCalculatorType::New();
+
+  minMaxCalculator->SetImage( imPipelineConnector );
+
+  RegionType region;
+  SizeType size;
+
+  InputImageIndexType start;
+
+  if ( comIndex[0] < outSize[0] - comIndex[0] )
+  {
+    size[0] = 8*comIndex[0]/5;
+  }
+  else 
+  {
+    size[0] = 8*(outSize[0] - comIndex[0])/5;
+  }
+
+  start[0] = comIndex[0] - size[0]/2;
+
+  start[1] = lowerStart[1];
+  size[1] = upperStart[1] - lowerStart[1];
+  
+  if ( this->GetDebug() )
+  {
+    std::cout << "comIndex: " << comIndex << std::endl
+              << "outSize: " << outSize << std::endl
+              << "size: " << size << std::endl
+              << "start: " << start << std::endl;
+  }
+
+  region.SetSize( size );
+  region.SetIndex( start );
+  
+  if ( flgVerbose )
+  {
+    std::cout << "Computing image range in region: " <<  region << std::endl;
+  }
+
+  minMaxCalculator->SetRegion( region );
+
+  minMaxCalculator->Compute();
+  
+  InputImagePixelType min = minMaxCalculator->GetMinimum();
+  InputImagePixelType max = minMaxCalculator->GetMaximum();
+
+
+  // Region grow from the center of mass
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::ConnectedThresholdImageFilter< TInputImage, TInputImage > ConnectedFilterType;
+
+  typename ConnectedFilterType::Pointer connectedThreshold = ConnectedFilterType::New();
+
+  connectedThreshold->SetInput( imPipelineConnector );
+
+  connectedThreshold->SetLower( intThreshold  );
+  connectedThreshold->SetUpper( max + 1 );
+
+  connectedThreshold->SetReplaceValue( 100 );
+
+  if ( flgVerbose )
+  {
+    std::cout << "Region-growing the image background from position: " << comIndex;
+  }
+
+  connectedThreshold->SetSeed( comIndex );
+
+  if ( flgVerbose )
+  {
+    std::cout << " between: "
+              << niftk::ConvertToString(intThreshold) << " and "
+              << niftk::ConvertToString(max + 1) << "..."<< std::endl;
+  }
+
+  connectedThreshold->Update();
+  imPipelineConnector = connectedThreshold->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "RegionGrown.nii", "region grown image", 
+                                     imPipelineConnector ); 
+  }
+
+
+  // Smooth the image
+  // ~~~~~~~~~~~~~~~~
+
+  typedef DiscreteGaussianImageFilter<TInputImage, TInputImage> SmootherType;
+  
+  typename SmootherType::Pointer smoother = SmootherType::New();
+
+  smoother->SetUseImageSpacing( false );
+  smoother->SetInput( imPipelineConnector );
+  smoother->SetMaximumError( 0.1 );
+  smoother->SetVariance( 5 );
+
+  if ( flgVerbose )
+  {
+    std::cout << "Smoothing the image" << std::endl;
+  }
+
+  smoother->Update();
+  imPipelineConnector = smoother->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "SmoothedImage.nii", "smoothed image", 
+                                     imPipelineConnector ); 
+  }
+
+
+  // Expand the mask back up to the original size
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::IdentityTransform< double, ImageDimension > IdentityTransformType;
+
+  typedef itk::ResampleImageFilter< TInputImage, TInputImage > ResampleFilterType;
+
+  typename ResampleFilterType::Pointer expandFilter = ResampleFilterType::New();
+
+  expandFilter->SetInput( imPipelineConnector );
+  expandFilter->SetSize( inSize );
+  expandFilter->SetOutputSpacing( inSpacing );
+  expandFilter->SetTransform( IdentityTransformType::New() );
+
+  if ( flgVerbose )
+  {
+    std::cout << "Expanding the image by a factor of " 
+              << shrinkFactor << std::endl;
+  }
+
+  expandFilter->UpdateLargestPossibleRegion();  
+  imPipelineConnector = expandFilter->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "ExpandedImage.nii", "expanded image", 
+                                     imPipelineConnector ); 
+  }
+
+
+  // And threshold it
+  // ~~~~~~~~~~~~~~~~
+
+  typedef typename itk::BinaryThresholdImageFilter< TInputImage, TInputImage > BinaryThresholdFilterType;
+
+  typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
+
+  thresholder->SetInput( imPipelineConnector );
+
+  thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue( 100 );
+
+  thresholder->SetLowerThreshold( 50 );
+  
+  
+  if ( flgVerbose )
+  {
+    std::cout << "Thresholding the mask" << std::endl;
+  }
+
+  thresholder->Update();
+  imPipelineConnector = thresholder->GetOutput();
+
+
+  // Cast to the output image type
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::CastImageFilter<  TInputImage, TOutputImage > CastingFilterType;
+
+  typename CastingFilterType::Pointer caster = CastingFilterType::New();
+
+  caster->SetInput( imPipelineConnector );
+
+  caster->UpdateLargestPossibleRegion();
+
+
+  this->GraftOutput( caster->GetOutput() );
 }
 
 
@@ -206,12 +653,6 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os,indent);
-
-  if (m_FlagMultiThreadedExecution)
-    os << indent << "MultiThreadedExecution: ON" << std::endl;
-  else
-    os << indent << "MultiThreadedExecution: OFF" << std::endl;
-
 }
 
 } // end namespace itk
