@@ -31,6 +31,7 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   const QString& outputPointDirectory,  
   const unsigned long long timingToleranceInMilliseconds,
   const bool& skipForward,
+  const bool& multiPointMode,
   QWidget *parent)
 : QVTKWidget(parent)
 , m_InputTrackerDirectory(inputTrackerDirectory)
@@ -39,6 +40,7 @@ QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
 , m_OutputPointDirectory(outputPointDirectory)
 , m_TimingToleranceInMilliseconds(timingToleranceInMilliseconds)
 , m_SkipForward(skipForward)
+, m_MultiPointMode(multiPointMode)
 {
   m_ImageViewer = vtkImageViewer::New();
   this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
@@ -277,7 +279,14 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          myfile << pinNumber << " " << xPixel << " " << yPixel << std::endl;
+          if (m_MultiPointMode)
+          {
+            myfile << pinNumber << " " << xPixel << " " << yPixel << std::endl;
+          }
+          else
+          {
+            myfile << xPixel << " " << yPixel << std::endl;
+          }
           myfile.close();
         }
         else
