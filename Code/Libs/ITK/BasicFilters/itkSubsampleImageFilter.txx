@@ -53,7 +53,7 @@ SubsampleImageFilter<TInputImage, TOutputImage>
 }
  
 /* ---------------------------------------------------------------------
-   GenerateData()
+   SetSubsamplingFactors()
    --------------------------------------------------------------------- */
 
 template <class TInputImage, class TOutputImage>
