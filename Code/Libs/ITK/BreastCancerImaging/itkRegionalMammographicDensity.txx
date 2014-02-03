@@ -467,8 +467,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   if ( ! fileImage.length() ) {
-    std::cerr << "ERROR: Cannot read image, filename not set" << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: Cannot read image, filename not set" );
   }
 
   fileInput = niftk::ConcatenatePath( m_DirInput, fileImage );
@@ -492,7 +491,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   {
     std::cerr << "ERROR: Could not read file: " << fileInput << std::endl 
               << ex << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 
   if ( m_FlgDebug )
@@ -546,9 +545,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
   else 
   {
-    std::cerr << "ERROR: This patient doesn't have and image with id: " 
-              << strBreastEdgeImageID << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: This patient doesn't have and image with id: " 
+                       << strBreastEdgeImageID );
   }
 }
 
@@ -580,9 +578,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
   else 
   {
-    std::cerr << "ERROR: This patient doesn't have and image with id: " 
-              << strPectoralImageID << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: This patient doesn't have and image with id: " 
+                       << strPectoralImageID );
   }
 }
 
@@ -619,7 +616,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       std::cerr << "ERROR: Could not read file: " 
                 << fileMask << std::endl << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     m_ImDiagnosticMask = reader->GetOutput();
@@ -656,7 +653,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       std::cerr << "ERROR: Could not read file: " 
                 << fileMask << std::endl << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     m_ImPreDiagnosticMask = reader->GetOutput();
@@ -836,7 +833,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     typename FileWriterType::Pointer writer = FileWriterType::New();
@@ -867,14 +864,14 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       std::cerr << "ERROR: Could not write file: " << fileModifiedOutput << std::endl 
                 << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
   }
   else
   {
     std::cerr << "Failed to write " << description 
               << " to file - filename is empty " << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 }
 
@@ -932,14 +929,13 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       std::cerr << "ERROR: Could notwrite file: " << fileModifiedOutput << std::endl 
                 << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
   }
   else
   {
-    std::cerr << "Failed to write " << description 
-              << " to file - filename is empty " << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "Failed to write " << description 
+                       << " to file - filename is empty " );
   }
 }
 
@@ -992,7 +988,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 #endif
 
@@ -1020,7 +1016,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     typename RGBImageType::Pointer rgbImage = rgbFilter->GetOutput();
@@ -1076,14 +1072,13 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       std::cerr << "ERROR: Could not write file: " << fileModifiedOutput << std::endl 
                 << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
   }
   else
   {
-    std::cerr << "Failed to write " << description 
-              << " to file - filename is empty " << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "Failed to write " << description 
+                       << " to file - filename is empty " );
   }
 }
 
@@ -1272,7 +1267,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   catch (ExceptionObject &ex)
   {
     std::cerr << ex << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 
   imMask = polyMaskFilter->GetOutput();
@@ -1357,7 +1352,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     typedef typename itk::BinaryThresholdImageFilter<RealImageType, ImageType> BinaryThresholdFilterType;
@@ -1382,7 +1377,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
 
     typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<ImageType> InvertFilterType;
@@ -1398,7 +1393,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     catch (ExceptionObject &ex)
     {
       std::cerr << ex << std::endl;
-      exit( EXIT_FAILURE );
+      throw( ex );
     }
     
     if ( m_FlgDebug )
@@ -1468,8 +1463,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   {
     if ( nParameters != InputDimension )
     {
-      std::cerr << "ERROR: Number of registration parameters does not equal dimension" << std::endl;
-      exit( EXIT_FAILURE );
+      itkExceptionMacro( << "ERROR: Number of registration parameters does not equal dimension" );
     }
     break;
   }
@@ -1479,13 +1473,11 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   {
     if (( InputDimension == 2) && (nParameters != 3) )
     {
-      std::cerr << "ERROR: Rigid transformation should have 3 parameters in 2D" << std::endl;
-      exit( EXIT_FAILURE );
+      itkExceptionMacro( << "ERROR: Rigid transformation should have 3 parameters in 2D" );
     }
     else if (( InputDimension == 3) && (nParameters != 6) )
     {
-      std::cerr << "ERROR: Rigid transformation should have 6 parameters in 3D" << std::endl;
-      exit( EXIT_FAILURE );
+      itkExceptionMacro( << "ERROR: Rigid transformation should have 6 parameters in 3D" );
     }
     break;
   }
@@ -1497,8 +1489,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       if ( nParameters != 5 )
       {
-        std::cerr << "ERROR: Rigid plus scaletransformation should have 5 parameters in 2D" << std::endl;
-        exit( EXIT_FAILURE );
+        itkExceptionMacro( << "ERROR: Rigid plus scaletransformation should have 5 parameters in 2D" );
       }
 
       for ( i=3; i<5; i++ )
@@ -1510,8 +1501,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       if ( nParameters != 9 )
       {
-        std::cerr << "ERROR: Rigid plus scale transformation should have 9 parameters in 3D" << std::endl;
-        exit( EXIT_FAILURE );
+        itkExceptionMacro( << "ERROR: Rigid plus scale transformation should have 9 parameters in 3D" );
       }
       for ( i=6; i<9; i++ )
       {
@@ -1529,8 +1519,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       if ( nParameters != 6 )
       {
-        std::cerr << "ERROR: Affine transformation should have 6 parameters in 2D" << std::endl;
-        exit( EXIT_FAILURE );
+        itkExceptionMacro( << "ERROR: Affine transformation should have 6 parameters in 2D" );
       }
 
       for ( i=3; i<6; i++ )
@@ -1542,8 +1531,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     {
       if ( nParameters != 12 )
       {
-        std::cerr << "ERROR: Affine transformation should have 12 parameters in 3D" << std::endl;
-        exit( EXIT_FAILURE );
+        itkExceptionMacro( << "ERROR: Affine transformation should have 12 parameters in 3D" );
       }
       for ( i=6; i<12; i++ )
       {
@@ -1554,8 +1542,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
 
   default: {
-    std::cerr << "ERROR: Unrecognised transformation type: " << transformType << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: Unrecognised transformation type: " 
+                       << transformType );
   }
   }
 
@@ -2031,9 +2019,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   }
   catch( itk::ExceptionObject & excp )
   {
-    std::cerr << "Exception caught:" << std::endl;
-    std::cerr << excp << std::endl;
-    exit( EXIT_FAILURE );
+    throw( excp );
   }
 };
 
@@ -2049,8 +2035,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 {
   if ( ! m_Transform )
   {
-    std::cerr << "ERROR: Cannot transform tumour position - no transform available" << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: Cannot transform tumour position - no transform available" );
   }
 
   typename LabelImageType::IndexType preDiagCenterIndex;
@@ -2104,7 +2089,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   catch (ExceptionObject &ex)
   {
     std::cerr << ex << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 
   if ( m_FlgDebug )
@@ -2141,7 +2126,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   catch (ExceptionObject &ex)
   {
     std::cerr << ex << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 
   typename MaskImageType::Pointer mask = thresholdFilter->GetOutput();
@@ -2242,7 +2227,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   catch (ExceptionObject &ex)
   {
     std::cerr << ex << std::endl;
-    exit( EXIT_FAILURE );
+    throw( ex );
   }
 
   imLabels = caster->GetOutput();
@@ -2259,12 +2244,12 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   if ( (regionSizeInPixels[0] > imSizeInPixels[0]) ||
        (regionSizeInPixels[1] > imSizeInPixels[1]) )
   {
-    std::cerr << "ERROR: Region size in pixels (" 
-              << regionSizeInPixels[0] << "x"<< regionSizeInPixels[1]
-              << " is larger than the image (" 
-              << imSizeInPixels[0] << "x"<< imSizeInPixels[1] << ")"
-              << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: Region size in pixels (" 
+                       << regionSizeInPixels[0] << "x"
+                       << regionSizeInPixels[1]
+                       << " is larger than the image (" 
+                       << imSizeInPixels[0] << "x"
+                       << imSizeInPixels[1] << ")" );
   }
 
   regionRadiusInPixels[0] = regionSizeInPixels[0]/2;
@@ -2286,10 +2271,9 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if ( (tumourRegionIndex[0] < 0) || (tumourRegionIndex[1] < 0) )
   {
-    std::cerr << "ERROR: The corner of tumour region falls outside the image."
-              << std::endl << "       The region size is probably too big."
-              << std::endl;
-    exit( EXIT_FAILURE );
+    itkExceptionMacro( << "ERROR: The corner of tumour region falls outside the image."
+                       << std::endl 
+                       << "       The region size is probably too big." );
   }
 
   // Hence the origin of the label grid
