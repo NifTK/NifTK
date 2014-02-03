@@ -871,7 +871,6 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
   {
     std::cerr << "Failed to write " << description 
               << " to file - filename is empty " << std::endl;
-    throw( ex );
   }
 }
 
