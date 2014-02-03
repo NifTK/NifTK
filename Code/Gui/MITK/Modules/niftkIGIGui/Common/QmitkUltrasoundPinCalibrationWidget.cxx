@@ -257,13 +257,27 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         // Output point.
         int xPixel = event->x();
         int yPixel = event->y();
+        Qt::MouseButton button = event->button();
+        int pinNumber = 0;
+        if (button == Qt::LeftButton)
+        {
+          pinNumber = 0;
+        }
+        else if (button == Qt::MidButton)
+        {
+          pinNumber = 1;
+        }
+        else if (button == Qt::RightButton)
+        {
+          pinNumber = 2;
+        }
         QString baseNameForPoint = imageTimeStampString + QString(".txt");
         std::string pointFileFullPath = niftk::ConvertToFullNativePath((m_OutputPointDirectory + QString("/") + baseNameForPoint).toStdString());
 
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          myfile << xPixel << " " << yPixel << std::endl;
+          myfile << pinNumber << xPixel << " " << yPixel << std::endl;
           myfile.close();
         }
         else
