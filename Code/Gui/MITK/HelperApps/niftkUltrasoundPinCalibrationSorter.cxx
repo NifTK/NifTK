@@ -45,7 +45,8 @@ int main(int argc, char** argv)
       QString::fromStdString(outputMatrixDirectory),
       QString::fromStdString(outputPointDirectory),
       timingTolerance,
-      skipForward
+      skipForward,
+      multiPointMode
     );
     cw.show();
     

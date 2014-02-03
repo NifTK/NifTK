@@ -24,7 +24,7 @@ namespace itk {
 /**
  * \class UltrasoundCalibrationCostFunction
  * \brief Base class for itk::UltrasoundPinCalibrationCostFunction and itk::UltrasoundPointerCalibrationCostFunction,
- * creating a multi-value cost function to plug into a Levenberg-Marquardt optimiser.
+ * creating a multi-value cost function to plug into the ITK Levenberg-Marquardt optimiser.
  */
 class UltrasoundCalibrationCostFunction : public itk::MultipleValuedCostFunction
 {
@@ -68,18 +68,20 @@ public:
 
   /**
    * \brief Sets (copies) the 2D ultrasound point data into this object.
+   *
+   * Here we pass in a std::pair, where the int is an index [0..n] denoting
+   * which invariant point the point corresponds to. So, each of
+   * the 2D pixel locations should contain 3 numbers in the file. The
+   * first one being an index, followed by the x and y coordinates.
+   * So, if you have 1 dataset, and you are optimising one invariant point,
+   * the int should be zero for all your input data.
    */
-  void SetPoints(const std::vector< cv::Point2d > points);
+  void SetPoints(const std::vector< std::pair<int, cv::Point2d> >& points);
 
   /**
-   * \brief Sets the scale factors for the ultrasound image in millimetres per pixel.
+   * \brief Sets the initial guess for the scale factors for the ultrasound image in millimetres per pixel.
    */
   void SetMillimetresPerPixel(const mitk::Point2D& mmPerPix);
-
-  /**
-   * \brief Used when calculating derivative using forward differences.
-   */
-  void SetScales(const ParametersType& scales);
 
   /**
    * \brief Computes the 6DOF transformation from image to sensor, (i.e. without scaling parameters).
@@ -87,7 +89,7 @@ public:
   cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const;
 
   /**
-   * \brief Returns the RMS residual.
+   * \brief Returns the RMS residual of all the values stored in the values array.
    */
   double GetResidual(const MeasureType& values) const;
 
@@ -95,6 +97,11 @@ public:
    * \brief Simply uses forward differences to approximate the derivative for each of the parameters.
    */
   virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
+
+  /**
+   * \brief Used when calculating derivative using forward differences.
+   */
+  void SetScales(const ParametersType& scales);
 
 protected:
 
@@ -107,14 +114,14 @@ protected:
   void ValidateSizeOfParametersArray(const ParametersType & parameters) const;
   void ValidateSizeOfScalesArray(const ParametersType & parameters) const;
 
-  std::vector<double>        m_InitialGuess;
-  std::vector< cv::Mat >     m_Matrices;
-  std::vector< cv::Point2d > m_Points;
-  bool                       m_OptimiseScaling;
-  mitk::Point2D              m_MillimetresPerPixel;
-  ParametersType             m_Scales;
-  mutable unsigned int       m_NumberOfValues;
-  unsigned int               m_NumberOfParameters;
+  std::vector<double>                        m_InitialGuess;
+  std::vector< cv::Mat >                     m_Matrices;
+  std::vector< std::pair<int, cv::Point2d> > m_Points;
+  bool                                       m_OptimiseScaling;
+  mitk::Point2D                              m_MillimetresPerPixel;
+  ParametersType                             m_Scales;
+  mutable unsigned int                       m_NumberOfValues;
+  unsigned int                               m_NumberOfParameters;
 };
 
 } // end namespace

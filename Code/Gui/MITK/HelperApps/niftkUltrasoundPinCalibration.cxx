@@ -35,16 +35,27 @@ int main(int argc, char** argv)
 
   try
   {
-    std::cout << "niftkUltrasoundPinCalibration: matrices = " << matrixDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: points   = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output   = " << outputMatrixFile << std::endl;
+    int numberOfInvariantPoints = 0;
+    if (invariantPoint1[0] != -32767) numberOfInvariantPoints++;
+    if (invariantPoint2[0] != -32767) numberOfInvariantPoints++;
+    if (invariantPoint3[0] != -32767) numberOfInvariantPoints++;
+
+    std::cout << "niftkUltrasoundPinCalibration: matrices       = " << matrixDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: points         = " << pointDirectory << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output         = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt scaling    = " <<  optimiseScaling << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: opt inv points = " <<  optimiseInvariantPoints << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: num inv points = " <<  numberOfInvariantPoints << std::endl;
 
     // Setup.
     mitk::UltrasoundPinCalibration::Pointer calibration = mitk::UltrasoundPinCalibration::New();
     calibration->SetOptimiseScaling(optimiseScaling);
     calibration->InitialiseMillimetresPerPixel(millimetresPerPixel);
-    calibration->SetOptimiseInvariantPoint(optimiseInvariantPoint);
-    calibration->InitialiseInvariantPoint(invariantPoint);
+    calibration->SetOptimiseInvariantPoints(optimiseInvariantPoints);
+    calibration->SetNumberOfInvariantPoints(numberOfInvariantPoints);
+    calibration->InitialiseInvariantPoint(0, invariantPoint1);
+    calibration->InitialiseInvariantPoint(1, invariantPoint2);
+    calibration->InitialiseInvariantPoint(2, invariantPoint3);
     calibration->InitialiseInitialGuess(initialGuess);
 
     // Do calibration.

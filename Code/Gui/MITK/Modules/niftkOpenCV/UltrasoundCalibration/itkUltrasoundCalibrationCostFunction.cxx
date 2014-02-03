@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "itkUltrasoundCalibrationCostFunction.h"
-#include <sstream>
 #include <mitkOpenCVMaths.h>
+#include <sstream>
 #include <mitkExceptionMacro.h>
 
 namespace itk {
@@ -77,7 +77,7 @@ void UltrasoundCalibrationCostFunction::SetMatrices(const std::vector< cv::Mat >
 
 
 //-----------------------------------------------------------------------------
-void UltrasoundCalibrationCostFunction::SetPoints(const std::vector<cv::Point2d> points)
+void UltrasoundCalibrationCostFunction::SetPoints(const std::vector<std::pair<int, cv::Point2d> > &points)
 {
   m_Points = points;
   this->Modified();
@@ -143,24 +143,24 @@ void UltrasoundCalibrationCostFunction::ValidateSizeOfParametersArray(const Para
   if (parameters.GetSize() != m_NumberOfParameters)
   {
     std::ostringstream oss;
-    oss << "UltrasoundCalibrationCostFunction::GetValue given " << parameters.GetSize() << ", but was expecting " << this->m_NumberOfParameters << " parameters" << std::endl;
+    oss << "UltrasoundCalibrationCostFunction::GetValue given " << parameters.GetSize() << ", but was expecting " << this->m_NumberOfParameters << " parameters." << std::endl;
     mitkThrow() << oss.str();
   }
 
   if (m_Matrices.size() == 0)
   {
-    mitkThrow() << "UltrasoundCalibrationCostFunction::GetValue(): No matrices available" << std::endl;
+    mitkThrow() << "UltrasoundCalibrationCostFunction::GetValue(): No matrices available." << std::endl;
   }
 
   if (m_Points.size() == 0)
   {
-    mitkThrow() << "UltrasoundCalibrationCostFunction::GetValue(): No points available" << std::endl;
+    mitkThrow() << "UltrasoundCalibrationCostFunction::GetValue(): No points available." << std::endl;
   }
 
   if (m_Matrices.size() != m_Points.size())
   {
     std::ostringstream oss;
-    oss << "UltrasoundCalibrationCostFunction::GetValue(): The number of matrices (" << this->m_Matrices.size() << ") differs from the number of points (" << m_Points.size() << ")" << std::endl;
+    oss << "UltrasoundCalibrationCostFunction::GetValue(): The number of matrices (" << this->m_Matrices.size() << ") differs from the number of points (" << m_Points.size() << ")." << std::endl;
     mitkThrow() << oss.str();
   }
 }
@@ -172,7 +172,7 @@ void UltrasoundCalibrationCostFunction::ValidateSizeOfScalesArray(const Paramete
   if (parameters.GetSize() != m_Scales.GetSize())
   {
     std::ostringstream oss;
-    oss << "UltrasoundCalibrationCostFunction::GetDerivative given " << parameters.GetSize() << " parameters, but the scale factors array has " << m_Scales.GetSize() << " parameters" << std::endl;
+    oss << "UltrasoundCalibrationCostFunction::ValidateSizeOfScalesArray given " << parameters.GetSize() << " parameters, but the scale factors array has " << m_Scales.GetSize() << " parameters." << std::endl;
     mitkThrow() << oss.str();
   }
 }

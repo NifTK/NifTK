@@ -81,9 +81,8 @@ void UltrasoundPointerCalibration::InitialiseProbeToProbeTrackerTransform(const 
 
 
 //-----------------------------------------------------------------------------
-double UltrasoundPointerCalibration::Calibrate(
-    const std::vector< cv::Mat >& matrices,
-    const std::vector<cv::Point2d> &points,
+double UltrasoundPointerCalibration::Calibrate(const std::vector< cv::Mat >& matrices,
+    const std::vector<std::pair<int, cv::Point2d> > &points,
     cv::Matx44d& outputMatrix
     )
 {
