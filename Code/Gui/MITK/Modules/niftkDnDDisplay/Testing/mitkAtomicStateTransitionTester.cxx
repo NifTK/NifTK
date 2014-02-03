@@ -15,6 +15,23 @@
 #include "mitkAtomicStateTransitionTester.h"
 
 #include <QTest>
+#include <QMetaObject>
+#include <QMetaMethod>
+
+/// Note that the is_pointer struct is part of the Cxx11 standard.
+
+template<typename T>
+struct is_pointer
+{
+  static const bool value = false;
+};
+
+template<typename T>
+struct is_pointer<T*>
+{
+  static const bool value = true;
+};
+
 
 namespace mitk
 {
@@ -28,6 +45,30 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 , m_NextState(0)
 , m_ExpectedState(0)
 {
+  /// If the tested object is a QObject then let us discover its public signals and connect this object to them.
+  if (::is_pointer<TestObject>::value)
+  {
+    const QObject* qTestObject = dynamic_cast<const QObject*>(testObject);
+
+    if (qTestObject)
+    {
+      const QMetaObject* metaObject = qTestObject->metaObject();
+      int methodCount = metaObject->methodCount();
+      for (int i = 0; i < methodCount; ++i)
+      {
+        QMetaMethod metaMethod = metaObject->method(i);
+        if (metaMethod.methodType() == QMetaMethod::Signal
+            && metaMethod.access() == QMetaMethod::Public)
+        {
+//          QMetaObject::connect(qTestObject, methodCount, this, callbackSlotIndex);
+          this->Connect(qTestObject, metaMethod.signature());
+        }
+      }
+    }
+  }
+
+  /// We collect the ITK signals using an ItkSignalCollector object.
+  m_ItkSignalCollector = mitk::ItkSignalCollector::New();
 }
 
 
@@ -35,13 +76,18 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 template <class TestObject, class TestObjectState>
 AtomicStateTransitionTester<TestObject, TestObjectState>::~AtomicStateTransitionTester()
 {
-  ObserverMap::const_iterator it = m_ObserverTags.begin();
-  ObserverMap::const_iterator observerTagsEnd = m_ObserverTags.end();
-  for ( ; it != observerTagsEnd; ++it)
+  std::vector<ItkSignalNotifier*>::const_iterator itkSignalNotifiersIt = m_ItkSignalNotifiers.begin();
+  std::vector<ItkSignalNotifier*>::const_iterator itkSignalNotifiersEnd = m_ItkSignalNotifiers.end();
+  for ( ; itkSignalNotifiersIt != itkSignalNotifiersEnd; ++itkSignalNotifiersIt)
   {
-    itk::Object::Pointer object = it->first;
-    unsigned long observerTag = it->second;
-    object->RemoveObserver(observerTag);
+    delete *itkSignalNotifiersIt;
+  }
+
+  std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersIt = m_QtSignalNotifiers.begin();
+  std::vector<QtSignalNotifier*>::const_iterator qtSignalNotifiersEnd = m_QtSignalNotifiers.end();
+  for ( ; qtSignalNotifiersIt != qtSignalNotifiersEnd; ++qtSignalNotifiersIt)
+  {
+    delete *qtSignalNotifiersIt;
   }
 }
 
@@ -53,22 +99,14 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::Clear()
   m_InitialState = TestObjectState::New(m_TestObject);
   m_NextState = 0;
   m_ExpectedState = 0;
-  Superclass::Clear();
+
+  m_ItkSignalCollector->Clear();
 }
 
 
 //-----------------------------------------------------------------------------
 template <class TestObject, class TestObjectState>
-void AtomicStateTransitionTester<TestObject, TestObjectState>::ProcessEvent(const itk::Object* caller, const itk::EventObject& event)
-{
-  Superclass::ProcessEvent(caller, event);
-  this->OnSignalReceived();
-}
-
-
-//-----------------------------------------------------------------------------
-template <class TestObject, class TestObjectState>
-void AtomicStateTransitionTester<TestObject, TestObjectState>::OnSignalReceived()
+void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
 {
   typename TestObjectState::Pointer newState = TestObjectState::New(m_TestObject);
 
@@ -118,24 +156,51 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::PrintSelf(std::os
   {
     os << indent << "Next state: " << std::endl;
     os << indent << m_NextState;
-    os << indent << "Signals:" << std::endl;
-    Superclass::PrintSelf(os, indent);
+    os << indent << "ITK signals:" << std::endl;
+    os << indent << m_ItkSignalCollector;
   }
 }
 
 
 //-----------------------------------------------------------------------------
 template <class TestObject, class TestObjectState>
-void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(itk::Object::Pointer object, const itk::EventObject& event)
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(itk::Object* object, const itk::EventObject& event)
 {
-  unsigned long observerTag = object->AddObserver(event, this);
-  m_ObserverTags.insert(ObserverMap::value_type(object, observerTag));
+  ItkSignalNotifier* itkSignalNotifier = new ItkSignalNotifier(this, object, event);
+  m_ItkSignalNotifiers.push_back(itkSignalNotifier);
+//  m_ItkSignalCollector->Connect(object, event);
 }
 
+
+//-----------------------------------------------------------------------------
 template <class TestObject, class TestObjectState>
 void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const itk::EventObject& event)
 {
   this->Connect(m_TestObject, event);
+}
+
+
+//-----------------------------------------------------------------------------
+template <class TestObject, class TestObjectState>
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const QObject* object, const char* signal)
+{
+  QtSignalNotifier* qtSignalNotifier = new QtSignalNotifier(this, object, signal);
+  m_QtSignalNotifiers.push_back(qtSignalNotifier);
+}
+
+
+//-----------------------------------------------------------------------------
+template <class TestObject, class TestObjectState>
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const char* signal)
+{
+  if (::is_pointer<TestObject>::value)
+  {
+    const QObject* qTestObject = dynamic_cast<const QObject*>(m_TestObject);
+    if (qTestObject)
+    {
+      this->Connect(qTestObject, signal);
+    }
+  }
 }
 
 }
