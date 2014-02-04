@@ -2092,6 +2092,8 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     coronalSnc->BlockSignals(coronalSncSignalsWereBlocked);
 
     this->BlockSignals(sncSignalsWereBlocked);
+
+    emit SelectedPositionChanged(m_SelectedPosition);
   }
 }
 
