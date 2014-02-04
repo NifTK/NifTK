@@ -97,6 +97,11 @@ protected:
   bool                m_OptimiseScaling;
   std::vector<double> m_InitialGuess;
 
+  itkSetMacro(RetrievePointIdentifier, bool);
+  itkGetMacro(RetrievePointIdentifier, bool);
+
+private:
+  bool                m_RetrievePointIdentifier;
 }; // end class
 
 } // end namespace

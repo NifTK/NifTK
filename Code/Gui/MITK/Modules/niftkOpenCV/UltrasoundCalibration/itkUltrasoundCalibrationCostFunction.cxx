@@ -186,24 +186,42 @@ void UltrasoundCalibrationCostFunction::GetDerivative(
 {
   this->ValidateSizeOfScalesArray(parameters);
 
-  MeasureType currentValue = this->GetValue(parameters);
-
-  // Do forward differencing.
   MeasureType forwardValue;
+  MeasureType backwardValue;
 
-  ParametersType forwardParameters;
+  ParametersType offsetParameters;
   derivative.SetSize(m_NumberOfParameters, m_NumberOfValues);
 
   for (unsigned int i = 0; i < m_NumberOfParameters; i++)
   {
-    forwardParameters = parameters;
-    forwardParameters[i] += m_Scales[i];
+    offsetParameters = parameters;
+    offsetParameters[i] += m_Scales[i];
+    forwardValue = this->GetValue(offsetParameters);
 
-    forwardValue = this->GetValue(forwardParameters);
+    offsetParameters = parameters;
+    offsetParameters[i] -= m_Scales[i];
+    backwardValue = this->GetValue(offsetParameters);
 
     for (unsigned int j = 0; j < m_NumberOfValues; j++)
     {
-      derivative[i][j] = forwardValue[j] - currentValue[j];
+      derivative[i][j] = (forwardValue[j] - backwardValue[j])/2.0;
+    }
+  }
+
+  // Normalise
+  double norm = 0;
+  for (unsigned int j = 0; j < m_NumberOfValues; j++)
+  {
+    norm = 0;
+    for (unsigned int i = 0; i < m_NumberOfParameters; i++)
+    {
+      norm += (derivative[i][j]*derivative[i][j]);
+    }
+    norm = sqrt(norm);
+
+    for (unsigned int i = 0; i < m_NumberOfParameters; i++)
+    {
+      derivative[i][j] = derivative[i][j]*m_Scales[i]/norm;
     }
   }
 }

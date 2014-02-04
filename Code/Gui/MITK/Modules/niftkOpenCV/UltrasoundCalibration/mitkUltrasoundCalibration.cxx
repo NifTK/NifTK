@@ -28,6 +28,7 @@ namespace mitk {
 //-----------------------------------------------------------------------------
 UltrasoundCalibration::UltrasoundCalibration()
 : m_OptimiseScaling(false)
+, m_RetrievePointIdentifier(false)
 {
   m_MillimetresPerPixel[0] = 1;
   m_MillimetresPerPixel[1] = 1;
@@ -136,7 +137,10 @@ double UltrasoundCalibration::CalibrateFromDirectories(
       ifstream myfile(fileName.c_str());
       if (myfile.is_open())
       {
-        myfile >> pointIdentifier;
+        if (m_RetrievePointIdentifier)
+        {
+          myfile >> pointIdentifier;
+        }
         myfile >> point.x;
         myfile >> point.y;
 
