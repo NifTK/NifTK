@@ -24,6 +24,7 @@
 
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkVtkLayerController.h>
 
 #include "vtkSideAnnotation_p.h"
@@ -531,6 +532,12 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   else
   {
     this->SetSelected(false);
+  }
+
+  if (m_IsSelected)
+  {
+    renderWindow->setFocus();
+    mitk::GlobalInteraction::GetInstance()->SetFocus(renderWindow->GetRenderer());
   }
 
   this->ForceImmediateUpdate();
@@ -1330,11 +1337,6 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
-  bool hasFocus = mitkWidget1->hasFocus()
-      || mitkWidget2->hasFocus()
-      || mitkWidget3->hasFocus()
-      || mitkWidget4->hasFocus();
-
   bool displayEventsWereBlocked = m_BlockDisplayEvents;
   m_BlockDisplayEvents = true;
 
@@ -1449,8 +1451,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  QmitkRenderWindow* windowToFocus = 0;
-
   bool showAxial = false;
   bool showSagittal = false;
   bool showCoronal = false;
@@ -1459,76 +1459,42 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   {
   case WINDOW_LAYOUT_AXIAL:
     showAxial = true;
-    if (hasFocus && !mitkWidget1->hasFocus())
-    {
-      windowToFocus = mitkWidget1;
-    }
     break;
   case WINDOW_LAYOUT_SAGITTAL:
     showSagittal = true;
-    if (hasFocus && !mitkWidget2->hasFocus())
-    {
-      windowToFocus = mitkWidget2;
-    }
     break;
   case WINDOW_LAYOUT_CORONAL:
     showCoronal = true;
-    if (hasFocus && !mitkWidget3->hasFocus())
-    {
-      windowToFocus = mitkWidget3;
-    }
     break;
   case WINDOW_LAYOUT_ORTHO:
     showAxial = true;
     showSagittal = true;
     showCoronal = true;
     show3D = true;
-    // If we have the focus, it will stay there, otherwise we do not steel it
-    // from another window.
     break;
   case WINDOW_LAYOUT_3H:
   case WINDOW_LAYOUT_3V:
     showAxial = true;
     showSagittal = true;
     showCoronal = true;
-    if (hasFocus && mitkWidget4->hasFocus())
-    {
-      windowToFocus = mitkWidget1;
-    }
     break;
   case WINDOW_LAYOUT_3D:
     show3D = true;
-    if (hasFocus && !mitkWidget4->hasFocus())
-    {
-      windowToFocus = mitkWidget4;
-    }
     break;
   case WINDOW_LAYOUT_COR_SAG_H:
   case WINDOW_LAYOUT_COR_SAG_V:
     showSagittal = true;
     showCoronal = true;
-    if (hasFocus && (mitkWidget1->hasFocus() || mitkWidget4->hasFocus()))
-    {
-      windowToFocus = mitkWidget2;
-    }
     break;
   case WINDOW_LAYOUT_COR_AX_H:
   case WINDOW_LAYOUT_COR_AX_V:
     showAxial = true;
     showCoronal = true;
-    if (hasFocus && (mitkWidget2->hasFocus() || mitkWidget4->hasFocus()))
-    {
-      windowToFocus = mitkWidget1;
-    }
     break;
   case WINDOW_LAYOUT_SAG_AX_H:
   case WINDOW_LAYOUT_SAG_AX_V:
     showAxial = true;
     showSagittal = true;
-    if (hasFocus && (mitkWidget3->hasFocus() || mitkWidget4->hasFocus()))
-    {
-      windowToFocus = mitkWidget1;
-    }
     break;
   default:
     // die, this should never happen
@@ -1556,11 +1522,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->mitkWidget2Container->setVisible(showSagittal);
   this->mitkWidget3Container->setVisible(showCoronal);
   this->mitkWidget4Container->setVisible(show3D);
-
-  if (windowToFocus)
-  {
-    windowToFocus->setFocus();
-  }
 
   m_CursorPositionBinding = ::IsMultiWindowLayout(windowLayout);
   m_ScaleFactorBinding = ::IsMultiWindowLayout(windowLayout);
