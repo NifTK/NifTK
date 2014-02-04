@@ -4,17 +4,17 @@ function [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFil
 % Usage:
 %   [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFile(initialGuess)
 % where:
-%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
 %                  where:
 %                  tx, ty, tz = translation in millimetres
 %                  rx, ry, rz = rotations in radians
-%                  s          = isotropic scale factor (mm/pix)
 %                  x,y,z      = location of invariant point in millimetres
+%                  sx, sy     = scale factor (mm/pix)
 %
 %
 % e.g. For the data in NifTKData/Input/UltrasoundPinCalibration/2014.01.07-matt-calib-4DC7
 %
-% niftkUltrasoundPinCalibrationFromFile [200 -10   0   0   0   20  545 237 -1820 -0.2073]
+% niftkUltrasoundPinCalibrationFromFile [200 -10   0   0   0   20  545 237 -1820 -0.2073 -0.2073]
 %
 % This functions will ask for:
 %

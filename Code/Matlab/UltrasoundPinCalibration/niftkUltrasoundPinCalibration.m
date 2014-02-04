@@ -9,7 +9,7 @@ function [finalParams, sumsqs, residuals, iOutliers] = niftkUltrasoundPinCalibra
 %                    tx, ty, tz = translation in millimetres
 %                    rx, ry, rz = rotations in radians
 %                    x,y,z      = location of invariant point in millimetres
-%                    sx, sy     = isotropic scale factor (mm/pix)
+%                    sx, sy     = scale factor (mm/pix)
 %
 % trackingMatrices : Cell array of {n, 1} where each cell is a 4x4 tracking matrix.
 % ultrasoundPoints : Cell array of {n, 1} where each cell is a 1x4 homogeneous point matrix of [x y 0 1].
