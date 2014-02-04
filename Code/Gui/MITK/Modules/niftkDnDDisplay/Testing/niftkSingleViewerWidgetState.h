@@ -125,39 +125,23 @@ public:
     }
     if (this->GetSelectedPosition() != otherState->GetSelectedPosition())
     {
-      os << indent << "Selected position: " << this->GetSelectedPosition() << " ; " << otherState->GetSelectedPosition() << std::endl;
+      os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
     if (this->GetCursorPositions() != otherState->GetCursorPositions())
     {
+      std::vector<mitk::Vector2D> otherStateCursorPositions = otherState->GetCursorPositions();
       os << indent << "Cursor positions:" << std::endl;
-      std::vector<mitk::Vector2D>::const_iterator cursorPositionsIt = m_CursorPositions.begin();
-      std::vector<mitk::Vector2D>::const_iterator cursorPositionsEnd = m_CursorPositions.end();
-      for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
-      {
-        os << indent << "    " << *cursorPositionsIt << std::endl;
-      }
-      cursorPositionsIt = otherState->GetCursorPositions().begin();
-      cursorPositionsEnd = otherState->GetCursorPositions().end();
-      for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
-      {
-        os << indent << "    " << *cursorPositionsIt << std::endl;
-      }
+      os << indent << "    " << m_CursorPositions[0] << ", " << otherStateCursorPositions[0] << std::endl;
+      os << indent << "    " << m_CursorPositions[1] << ", " << otherStateCursorPositions[1] << std::endl;
+      os << indent << "    " << m_CursorPositions[2] << ", " << otherStateCursorPositions[2] << std::endl;
     }
     if (this->GetScaleFactors() != otherState->GetScaleFactors())
     {
+      std::vector<double> otherStateScaleFactors = otherState->GetScaleFactors();
       os << indent << "Scale factors:" << std::endl;
-      std::vector<double>::const_iterator scaleFactorsIt = m_ScaleFactors.begin();
-      std::vector<double>::const_iterator scaleFactorsEnd = m_ScaleFactors.end();
-      for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
-      {
-        os << indent << "    " << *scaleFactorsIt << std::endl;
-      }
-      scaleFactorsIt = otherState->GetScaleFactors().begin();
-      scaleFactorsEnd = otherState->GetScaleFactors().end();
-      for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
-      {
-        os << indent << "    " << *scaleFactorsIt << std::endl;
-      }
+      os << indent << "    " << m_ScaleFactors[0] << ", " << otherStateScaleFactors[0] << std::endl;
+      os << indent << "    " << m_ScaleFactors[1] << ", " << otherStateScaleFactors[1] << std::endl;
+      os << indent << "    " << m_ScaleFactors[2] << ", " << otherStateScaleFactors[2] << std::endl;
     }
     if (this->GetCursorPositionBinding() != otherState->GetCursorPositionBinding())
     {
