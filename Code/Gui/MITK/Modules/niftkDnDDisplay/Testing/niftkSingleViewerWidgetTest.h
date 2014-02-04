@@ -87,9 +87,6 @@ private slots:
   /// \brief Tests the SetSelectedPosition function.
   void testSetSelectedPosition();
 
-  /// \brief Tests selecting a position by interaction (left mouse button click).
-  void testSelectPositionByInteraction();
-
   /// \brief Tests if the selected position is correct after the image is loaded.
   void testGetWindowLayout();
 
@@ -104,6 +101,12 @@ private slots:
 
   /// \brief Tests the window layout change.
   void testSetWindowLayout();
+
+  /// \brief Tests selecting a position by interaction (left mouse button click).
+  void testSelectPositionByInteraction();
+
+  /// \brief Tests selecting a position by interaction (left mouse button click).
+  void testSelectRenderWindowByInteraction();
 
 private:
 

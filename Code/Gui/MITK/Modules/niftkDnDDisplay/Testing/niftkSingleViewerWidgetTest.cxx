@@ -430,6 +430,108 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  /// The default window layout was set to coronal in the init() function.
+  QCOMPARE(d->Viewer->GetWindowLayout(), WINDOW_LAYOUT_CORONAL);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+
+  /// The default window layout was set to coronal in the init() function.
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+  QVERIFY(coronalWindow->hasFocus());
+  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
+
+  QCOMPARE(d->Viewer->IsSelected(), true);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testFocusedRenderer()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+  QVERIFY(coronalWindow->hasFocus());
+  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+
+  QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
+  QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
+
+  /// Disabled because the cursor state of the sagittal window will be different,
+  /// since it will be initialised just now.
+//  niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
+//  expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
+//  expectedState->SetSelectedRenderWindow(sagittalWindow);
+//  expectedState->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+//  d->StateTester->SetExpectedState(expectedState);
+
+  /// The default layout was set to coronal in the init() function.
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+
+  QVERIFY(sagittalWindow->hasFocus());
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), sagittalWindow);
+  QVERIFY(focusManager->GetFocused() == sagittalWindow->GetRenderer());
+
+  mitk::FocusEvent focusEvent;
+  mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
+  QCOMPARE(d->StateTester->GetItkSignals(focusManager, focusEvent).size(), 1ul);
+  QVERIFY(d->StateTester->GetItkSignals(axialSnc, geometrySliceEvent).size() <= 1);
+  QVERIFY(d->StateTester->GetItkSignals(sagittalSnc, geometrySliceEvent).size() <= 1);
+  QVERIFY(d->StateTester->GetItkSignals(coronalSnc, geometrySliceEvent).size() <= 1);
+
+//  d->StateTester->Clear();
+
+//  QRect rect = sagittalWindow->rect();
+//  QPoint centre = rect.center();
+//  QPoint bottomLeftCorner = rect.bottomLeft();
+//  QPoint aPosition((bottomLeftCorner.x() + centre.x()) / 2, (bottomLeftCorner.y() + centre.y()) / 2);
+//  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, aPosition);
+
+//  QVERIFY(sncAndFocusSignals.size() <= 3);
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
@@ -496,102 +598,29 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  /// The default window layout was set to coronal in the init() function.
-  QCOMPARE(d->Viewer->GetWindowLayout(), WINDOW_LAYOUT_CORONAL);
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
+void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  /// The default window layout was set to coronal in the init() function.
-  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  QVERIFY(coronalWindow->hasFocus());
-  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testFocusedRenderer()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  QVERIFY(coronalWindow->hasFocus());
-  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-
-  QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
-  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
-  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  /// Disabled because the cursor state of the sagittal window will be different,
-  /// since it will be initialised just now.
-//  niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
-//  expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
-//  expectedState->SetSelectedRenderWindow(sagittalWindow);
-//  expectedState->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
-//  d->StateTester->SetExpectedState(expectedState);
+  QCOMPARE(d->Viewer->IsSelected(), true);
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
 
-  /// The default layout was set to coronal in the init() function.
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-  QVERIFY(sagittalWindow->hasFocus());
+  QCOMPARE(d->Viewer->IsSelected(), true);
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
+
+  d->StateTester->Clear();
+
+  QPoint centre = sagittalWindow->rect().center();
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, centre);
+
+  MITK_INFO << "selected renderer: " << d->Viewer->GetSelectedRenderWindow()->GetRenderer()->GetName();
+  QCOMPARE(d->Viewer->IsSelected(), true);
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), sagittalWindow);
-  QVERIFY(focusManager->GetFocused() == sagittalWindow->GetRenderer());
-
-  mitk::FocusEvent focusEvent;
-  mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  QCOMPARE(d->StateTester->GetItkSignals(focusManager, focusEvent).size(), 1ul);
-  QVERIFY(d->StateTester->GetItkSignals(axialSnc, geometrySliceEvent).size() <= 1);
-  QVERIFY(d->StateTester->GetItkSignals(sagittalSnc, geometrySliceEvent).size() <= 1);
-  QVERIFY(d->StateTester->GetItkSignals(coronalSnc, geometrySliceEvent).size() <= 1);
-
-//  d->StateTester->Clear();
-
-//  QRect rect = sagittalWindow->rect();
-//  QPoint centre = rect.center();
-//  QPoint bottomLeftCorner = rect.bottomLeft();
-//  QPoint aPosition((bottomLeftCorner.x() + centre.x()) / 2, (bottomLeftCorner.y() + centre.y()) / 2);
-//  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, aPosition);
-
-//  QVERIFY(sncAndFocusSignals.size() <= 3);
 }
 
 
