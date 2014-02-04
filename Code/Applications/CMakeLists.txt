@@ -97,6 +97,7 @@ if(SlicerExecutionModel_FOUND)
     niftkOtsuThresholdImage
     niftkRegionalMammographicDensity
     niftkScalarConnectedComponentImageFilter
+    niftkSegmentForegroundFromBackground
     niftkSubsampleImage
     niftkSubtract
     niftkUnaryImageOperatorsOnDirectoryTree

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+
+  <category>Segmentation</category>
+  <title>Segment foreground from background</title>
+
+  <description><![CDATA[Segments the foreground of an image from a dark approximately constant background.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <image>
+      <name>inputImage</name>
+      <flag>i</flag>
+      <longflag>inputImage</longflag>
+      <description>Input image</description>
+      <label>Input image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image</description>      
+      <label>Output image</label>
+      <default>outputMask.nii</default>
+      <channel>output</channel>
+    </image>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Parameters</label>
+    <description><![CDATA[Parameters that specify out to generate and apply the mask]]></description>
+
+    <boolean>
+      <name>flgLabel</name>
+      <longflag>label</longflag>
+      <description>Assign a different label to each object extracted (in order of size).</description>
+      <label>Assign unique labels to objects?</label>
+    </boolean>
+
+    <integer>
+      <name>nObjects</name>
+      <flag>n</flag>
+      <description>Number of objects to keep (ranked by size) [default is zero which means keep all objects].</description>
+      <label>Number of objects to keep</label>
+      <default>0</default>
+    </integer>
+    
+    <float>
+      <name>minSizeInMM</name>
+      <longflag>minSize</longflag>
+      <description>The minimum object size in millmeters squared (2D images) or cubed (for 3D images) to be labelled [default is zero which means keep all objects].</description>
+      <label>Minimum object size (mm^2 or mm^3)</label>
+      <default>0</default>
+    </float>
+ 
+    <boolean>
+      <name>flgApplyMaskToImage</name>
+      <longflag>apply2image</longflag>
+      <description>Apply the mask to the image, setting pixels in the background to zero.</description>
+      <label>Apply mask to image?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Verbose output?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debugging output?</label>
+    </boolean>
+
+  </parameters>
+</executable>
