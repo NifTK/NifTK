@@ -537,46 +537,45 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
-
-  QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
-  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
-  QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
-  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
+  mitk::SliceNavigationController* axialSnc = d->Viewer->GetAxialWindow()->GetSliceNavigationController();
+  mitk::SliceNavigationController* sagittalSnc = d->Viewer->GetSagittalWindow()->GetSliceNavigationController();
+  mitk::SliceNavigationController* coronalSnc = d->Viewer->GetCoronalWindow()->GetSliceNavigationController();
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-
   /// TODO The focus should be on the coronal window already.
-  focusManager->SetFocused(coronalWindow->GetRenderer());
+  focusManager->SetFocused(d->Viewer->GetCoronalWindow()->GetRenderer());
 
-  viewerStateTester->Clear();
+  ViewerStateTester::Pointer stateTester = ViewerStateTester::New(d->Viewer);
 
   mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  viewerStateTester->Connect(axialSnc, geometrySliceEvent);
-  viewerStateTester->Connect(sagittalSnc, geometrySliceEvent);
-  viewerStateTester->Connect(coronalSnc, geometrySliceEvent);
-  viewerStateTester->Connect(focusManager, mitk::FocusEvent());
+  stateTester->Connect(axialSnc, geometrySliceEvent);
+  stateTester->Connect(sagittalSnc, geometrySliceEvent);
+  stateTester->Connect(coronalSnc, geometrySliceEvent);
 
-  niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
-  expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
-  expectedState->SetSelectedRenderWindow(d->Viewer->GetSagittalWindow());
-  expectedState->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  mitk::FocusEvent focusEvent;
+  stateTester->Connect(focusManager, focusEvent);
 
-  viewerStateTester->SetExpectedState(expectedState);
+  QVERIFY(d->Viewer->GetCoronalWindow()->hasFocus());
+  QVERIFY(focusManager->GetFocused() == d->Viewer->GetCoronalWindow()->GetRenderer());
+
+  /// Disabled because the cursor state of the sagittal window will be different,
+  /// since it will be initialised just now.
+//  niftkSingleViewerWidgetState::Pointer expectedState = niftkSingleViewerWidgetState::New(d->Viewer);
+//  expectedState->SetOrientation(MIDAS_ORIENTATION_SAGITTAL);
+//  expectedState->SetSelectedRenderWindow(d->Viewer->GetSagittalWindow());
+//  expectedState->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+//  stateTester->SetExpectedState(expectedState);
 
   /// The default layout was set to coronal in the init() function.
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
 
-  const ViewerStateTester::ItkSignals& itkSignals = viewerStateTester->GetItkSignals();
-  QVERIFY(itkSignals.size() > 0);
-  QVERIFY(itkSignals.size() <= 4);
-//  QCOMPARE(std::string(viewerSignals[0].second->GetEventName()), std::string("FocusEvent"));
-//  for (mitk::ItkSignalCollector::Signals::size_type i = 1; i < signalNumber; ++i)
-//  {
-//    QCOMPARE(std::string(viewerSignals[i].second->GetEventName()), std::string("GeometrySliceEvent"));
-//  }
+  QVERIFY(d->Viewer->GetSagittalWindow()->hasFocus());
+  QVERIFY(focusManager->GetFocused() == d->Viewer->GetSagittalWindow()->GetRenderer());
+
+  QCOMPARE(stateTester->GetItkSignals(focusManager, focusEvent).size(), 1ul);
+  QVERIFY(stateTester->GetItkSignals(axialSnc, geometrySliceEvent).size() <= 1);
+  QVERIFY(stateTester->GetItkSignals(sagittalSnc, geometrySliceEvent).size() <= 1);
+  QVERIFY(stateTester->GetItkSignals(sagittalSnc, geometrySliceEvent).size() <= 1);
 
 //  viewerStateTester->Clear();
 
