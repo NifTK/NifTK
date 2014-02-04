@@ -66,8 +66,8 @@ public:
   typedef mitk::ItkSignalCollector::Signal ItkSignal;
   typedef mitk::ItkSignalCollector::Signals ItkSignals;
 
-  typedef std::pair<QObject*, QByteArray> QtSignal;
-  typedef std::vector<QtSignal> QtSignals;
+  typedef mitk::QtSignalCollector::Signal QtSignal;
+  typedef mitk::QtSignalCollector::Signals QtSignals;
 
   /// \brief Gets the object whose state consistency is being tested.
   itkGetConstMacro(TestObject, TestObject);
@@ -128,7 +128,7 @@ public:
   /// \brief Gets the Qt signals collected by this object.
   const QtSignals& GetQtSignals() const
   {
-    return m_ItkSignalCollector->GetSignals();
+    return m_QtSignalCollector->GetSignals();
   }
 
   /// \brief Returns a set of the collected Qt signals that are of the given type.

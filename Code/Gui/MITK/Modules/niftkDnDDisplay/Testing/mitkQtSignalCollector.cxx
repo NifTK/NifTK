@@ -170,7 +170,7 @@ void QtSignalCollector::PrintSelf(std::ostream & os, itk::Indent indent) const
   int i = 0;
   for ( ; it != signalsEnd; ++it, ++i)
   {
-    os << indent << i << ": " << ((void*) it->first) << ": " << it->second << std::endl;
+    os << indent << i << ": " << ((void*) it->first) << ": " << it->second.data() << std::endl;
   }
 }
 

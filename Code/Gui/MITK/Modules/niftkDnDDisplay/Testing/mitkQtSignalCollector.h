@@ -72,7 +72,7 @@ public:
   mitkClassMacro(QtSignalCollector, QObject);
   itkNewMacro(QtSignalCollector);
 
-  typedef std::pair<const QObject*, const char*> Signal;
+  typedef std::pair<const QObject*, QByteArray> Signal;
   typedef std::vector<Signal> Signals;
 
   /// \brief Connects this object to the signals of the given object.
