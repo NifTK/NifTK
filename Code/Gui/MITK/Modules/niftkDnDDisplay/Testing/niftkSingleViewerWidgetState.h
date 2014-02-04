@@ -214,20 +214,8 @@ protected:
     os << indent << "selected render window: " << m_SelectedRenderWindow << ", " << m_SelectedRenderWindow->GetRenderer()->GetName() << std::endl;
     os << indent << "time step: " << m_TimeStep << std::endl;
     os << indent << "selected position: " << m_SelectedPosition << std::endl;
-    os << indent << "cursor positions: " << std::endl;
-    std::vector<mitk::Vector2D>::const_iterator cursorPositionsIt = m_CursorPositions.begin();
-    std::vector<mitk::Vector2D>::const_iterator cursorPositionsEnd = m_CursorPositions.end();
-    for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
-    {
-      os << indent << "    " << *cursorPositionsIt << std::endl;
-    }
-    os << indent << "scale factors: " << std::endl;
-    std::vector<mitk::Vector2D>::const_iterator scaleFactorsIt = m_CursorPositions.begin();
-    std::vector<mitk::Vector2D>::const_iterator scaleFactorsEnd = m_CursorPositions.end();
-    for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
-    {
-      os << indent << "    " << *scaleFactorsIt << std::endl;
-    }
+    os << indent << "cursor positions: " << m_CursorPositions[0] << ", " << m_CursorPositions[1] << ", " << m_CursorPositions[2] << std::endl;
+    os << indent << "scale factors: " << m_ScaleFactors[0] << ", " << m_ScaleFactors[1] << ", " << m_ScaleFactors[2] << std::endl;
     os << indent << "cursor position binding: " << m_CursorPositionBinding << std::endl;
     os << indent << "scale factor binding: " << m_ScaleFactorBinding << std::endl;
   }
