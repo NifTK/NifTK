@@ -403,9 +403,6 @@ private:
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
 
-  unsigned long m_DisplayGeometryModificationObservers[3];
-  bool m_BlockDisplayEvents;
-
   /// \brief Controls if the cursor positions are synchronised across the render windows.
   /// The binding of the individual coordinates of the cursors can be controlled independently by
   /// @a m_CursorAxialPositionsAreBound, @a m_CursorSagittalPositionsAreBound and @a m_CursorCoronalPositionsAreBound.
@@ -428,6 +425,11 @@ private:
   bool m_CursorCoronalPositionsAreBound;
 
   bool m_ScaleFactorBinding;
+
+  unsigned long m_DisplayGeometryModificationObservers[3];
+  bool m_BlockDisplayEvents;
+
+  bool m_BlockSncSignals;
 
   friend class DisplayGeometryModificationCommand;
 

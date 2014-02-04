@@ -170,6 +170,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
+, m_BlockSncSignals(false)
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
@@ -402,21 +403,30 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_AXIAL);
+  if (!m_BlockSncSignals)
+  {
+    this->OnSelectedPositionChanged(MIDAS_ORIENTATION_AXIAL);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
+  if (!m_BlockSncSignals)
+  {
+    this->OnSelectedPositionChanged(MIDAS_ORIENTATION_SAGITTAL);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  this->OnSelectedPositionChanged(MIDAS_ORIENTATION_CORONAL);
+  if (!m_BlockSncSignals)
+  {
+    this->OnSelectedPositionChanged(MIDAS_ORIENTATION_CORONAL);
+  }
 }
 
 
@@ -2080,20 +2090,38 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     bool displayEventsWereBlocked = m_BlockDisplayEvents;
     m_BlockDisplayEvents = true;
 
-    mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
-    if (snc->GetCreatedWorldGeometry())
+    mitk::SliceNavigationController* axialSnc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
+    mitk::SliceNavigationController* sagittalSnc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
+    mitk::SliceNavigationController* coronalSnc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
+
+    bool sncSignalsWereBlocked = m_BlockSncSignals;
+    m_BlockSncSignals = true;
+
+    bool axialSliceHasChanged = false;
+    bool sagittalSliceHasChanged = false;
+    bool coronalSliceHasChanged = false;
+
+    bool axialSncSignalsWereBlocked = axialSnc->BlockSignals(true);
+    bool sagittalSncSignalsWereBlocked = sagittalSnc->BlockSignals(true);
+    bool coronalSncSignalsWereBlocked = coronalSnc->BlockSignals(true);
+
+    if (axialSnc->GetCreatedWorldGeometry())
     {
-      snc->SelectSliceByPoint(selectedPosition);
+      unsigned pos = axialSnc->GetSlice()->GetPos();
+      axialSnc->SelectSliceByPoint(selectedPosition);
+      axialSliceHasChanged = pos != axialSnc->GetSlice()->GetPos();
     }
-    snc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
-    if (snc->GetCreatedWorldGeometry())
+    if (sagittalSnc->GetCreatedWorldGeometry())
     {
-      snc->SelectSliceByPoint(selectedPosition);
+      unsigned pos = sagittalSnc->GetSlice()->GetPos();
+      sagittalSnc->SelectSliceByPoint(selectedPosition);
+      sagittalSliceHasChanged = pos != sagittalSnc->GetSlice()->GetPos();
     }
-    snc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
-    if (snc->GetCreatedWorldGeometry())
+    if (coronalSnc->GetCreatedWorldGeometry())
     {
-      snc->SelectSliceByPoint(selectedPosition);
+      unsigned pos = coronalSnc->GetSlice()->GetPos();
+      coronalSnc->SelectSliceByPoint(selectedPosition);
+      coronalSliceHasChanged = pos != coronalSnc->GetSlice()->GetPos();
     }
 
     m_BlockDisplayEvents = displayEventsWereBlocked;
@@ -2101,6 +2129,25 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     this->UpdateCursorPosition(MIDAS_ORIENTATION_AXIAL);
     this->UpdateCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
     this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+    axialSnc->BlockSignals(axialSncSignalsWereBlocked);
+    sagittalSnc->BlockSignals(sagittalSncSignalsWereBlocked);
+    coronalSnc->BlockSignals(coronalSncSignalsWereBlocked);
+
+    if (axialSliceHasChanged)
+    {
+      axialSnc->SendSlice();
+    }
+    if (sagittalSliceHasChanged)
+    {
+      sagittalSnc->SendSlice();
+    }
+    if (coronalSliceHasChanged)
+    {
+      coronalSnc->SendSlice();
+    }
+
+    m_BlockSncSignals = sncSignalsWereBlocked;
   }
 }
 
@@ -2366,14 +2413,8 @@ void niftkMultiWindowWidget::SetDisplayInteractionsEnabled(bool enabled)
 
   if (enabled)
   {
-    std::vector<mitk::BaseRenderer*> renderers(3);
-    for (unsigned i = 0; i < 3; ++i)
-    {
-      renderers[i] = m_RenderWindows[i]->GetRenderer();
-    }
-
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(renderers);
+    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(this);
 
     us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);

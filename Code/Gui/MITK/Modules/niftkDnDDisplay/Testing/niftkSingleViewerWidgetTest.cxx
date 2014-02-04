@@ -256,46 +256,16 @@ void niftkSingleViewerWidgetTestClass::testGetOrientation()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  /// The default window layout was set to coronal in the init() function.
-  QCOMPARE(d->Viewer->GetOrientation(), MIDAS_ORIENTATION_CORONAL);
-}
+  ViewerStateTester::Pointer stateTester = ViewerStateTester::New(d->Viewer);
+  ViewerState::Pointer state = ViewerState::New(d->Viewer);
+  stateTester->SetExpectedState(state);
 
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
+  MIDASOrientation orientation = d->Viewer->GetOrientation();
 
   /// The default window layout was set to coronal in the init() function.
-  QCOMPARE(d->Viewer->GetWindowLayout(), WINDOW_LAYOUT_CORONAL);
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  /// The default window layout was set to coronal in the init() function.
-  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
-}
-
-
-// --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testFocusedRenderer()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  /// The default window layout was set to coronal in the init() function.
-  /// TODO The focus should be on the selected window.
-//  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
+  QCOMPARE(orientation, MIDAS_ORIENTATION_CORONAL);
+  QCOMPARE(stateTester->GetItkSignals().size(), 0ul);
+  QCOMPARE(stateTester->GetQtSignals().size(), 0ul);
 }
 
 
@@ -304,7 +274,15 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  /// Make sure that the state does not change and no signal is sent out.
+  ViewerStateTester::Pointer stateTester = ViewerStateTester::New(d->Viewer);
+  ViewerState::Pointer state = ViewerState::New(d->Viewer);
+  stateTester->SetExpectedState(state);
+
   mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
+
+  QCOMPARE(stateTester->GetItkSignals().size(), 0ul);
+  QCOMPARE(stateTester->GetQtSignals().size(), 0ul);
 
   mitk::Image* image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
   mitk::Geometry3D::Pointer geometry = image->GetGeometry();
@@ -347,7 +325,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   mitk::Vector3D spacingInWorldCoordinateOrder;
   mitk::GetSpacingInWorldCoordinateOrder(image, spacingInWorldCoordinateOrder);
 
-  ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(d->Viewer);
+  ViewerStateTester::Pointer stateTester = ViewerStateTester::New(d->Viewer);
 
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
@@ -359,14 +337,14 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  viewerStateTester->Connect(axialSnc, geometrySliceEvent);
-  viewerStateTester->Connect(sagittalSnc, geometrySliceEvent);
-  viewerStateTester->Connect(coronalSnc, geometrySliceEvent);
+  stateTester->Connect(axialSnc, geometrySliceEvent);
+  stateTester->Connect(sagittalSnc, geometrySliceEvent);
+  stateTester->Connect(coronalSnc, geometrySliceEvent);
 
   mitk::FocusEvent focusEvent;
-  viewerStateTester->Connect(axialWindow->GetRenderer(), focusEvent);
-  viewerStateTester->Connect(sagittalWindow->GetRenderer(), focusEvent);
-  viewerStateTester->Connect(coronalWindow->GetRenderer(), focusEvent);
+  stateTester->Connect(axialWindow->GetRenderer(), focusEvent);
+  stateTester->Connect(sagittalWindow->GetRenderer(), focusEvent);
+  stateTester->Connect(coronalWindow->GetRenderer(), focusEvent);
 
   mitk::Point3D initialPosition = d->Viewer->GetSelectedPosition();
   mitk::Point3D newPosition = initialPosition;
@@ -375,68 +353,70 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 1ul);
 
-  viewerStateTester->Clear();
+  stateTester->Clear();
 
   newPosition[1] += 2 * spacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 1ul);
 
-  viewerStateTester->Clear();
+  stateTester->Clear();
 
   newPosition[2] += 2 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 1ul);
 
-  viewerStateTester->Clear();
+  stateTester->Clear();
 
   newPosition[0] -= 3 * spacingInWorldCoordinateOrder[0];
   newPosition[1] -= 3 * spacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 2ul);
 
-  viewerStateTester->Clear();
+  stateTester->Clear();
 
   newPosition[0] -= 4 * spacingInWorldCoordinateOrder[0];
   newPosition[2] -= 4 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 2ul);
 
-  viewerStateTester->Clear();
+  stateTester->Clear();
 
   newPosition[1] += 5 * spacingInWorldCoordinateOrder[1];
   newPosition[2] += 5 * spacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(viewerStateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(viewerStateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(stateTester->GetItkSignals(axialSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals(sagittalSnc).size(), 0ul);
+  QCOMPARE(stateTester->GetItkSignals(coronalSnc).size(), 1ul);
+  QCOMPARE(stateTester->GetItkSignals().size(), 2ul);
+
+  stateTester->Clear();
 }
 
 
@@ -511,6 +491,44 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(viewerStateTester->GetItkSignals(coronalSnc).size(), 0ul);
 
   viewerStateTester->Clear();
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  /// The default window layout was set to coronal in the init() function.
+  QCOMPARE(d->Viewer->GetWindowLayout(), WINDOW_LAYOUT_CORONAL);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+
+  /// The default window layout was set to coronal in the init() function.
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), coronalWindow);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testFocusedRenderer()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
+
+  /// The default window layout was set to coronal in the init() function.
+  /// TODO The focus should be on the selected window.
+//  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
 }
 
 
@@ -614,10 +632,11 @@ int niftkSingleViewerWidgetTest(int argc, char* argv[])
   }
 
   test.SetFileName(argv[1]);
+  ::ShiftArgs(argc, argv);
 
   /// We used the arguments to initialise the test. No arguments is passed
   /// to the Qt test, so that all the test functions are executed.
-  argc = 1;
-  argv[1] = NULL;
+//  argc = 1;
+//  argv[1] = NULL;
   return QTest::qExec(&test, argc, argv);
 }

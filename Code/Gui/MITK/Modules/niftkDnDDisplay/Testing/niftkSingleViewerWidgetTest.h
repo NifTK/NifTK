@@ -39,6 +39,7 @@ class niftkSingleViewerWidgetTestClass: public QObject
 public:
 
   typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
+  typedef niftkSingleViewerWidgetState ViewerState;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
   explicit niftkSingleViewerWidgetTestClass();
@@ -80,15 +81,6 @@ private slots:
   /// \brief Tests if the selected orientation is correct after the image is loaded.
   void testGetOrientation();
 
-  /// \brief Tests if the selected position is correct after the image is loaded.
-  void testGetWindowLayout();
-
-  /// \brief Tests if the correct render window is selected after the image is loaded.
-  void testGetSelectedRenderWindow();
-
-  /// \brief Tests if the correct renderer is focused after the image is loaded.
-  void testFocusedRenderer();
-
   /// \brief Tests if the selected position is in the centre after the image is loaded.
   void testGetSelectedPosition();
 
@@ -97,6 +89,15 @@ private slots:
 
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectPositionByInteraction();
+
+  /// \brief Tests if the selected position is correct after the image is loaded.
+  void testGetWindowLayout();
+
+  /// \brief Tests if the correct render window is selected after the image is loaded.
+  void testGetSelectedRenderWindow();
+
+  /// \brief Tests if the correct renderer is focused after the image is loaded.
+  void testFocusedRenderer();
 
   /// \brief Tests the window layout change.
   void testSetWindowLayout();

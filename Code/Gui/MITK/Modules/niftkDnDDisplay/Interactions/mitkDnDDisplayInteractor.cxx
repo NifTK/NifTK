@@ -16,19 +16,23 @@
 
 #include <string.h>
 
+#include "../niftkMultiWindowWidget_p.h"
+
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionPositionEvent.h>
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
 #include <mitkGlobalInteraction.h>
 
-mitk::DnDDisplayInteractor::DnDDisplayInteractor(const std::vector<mitk::BaseRenderer*>& renderers)
+mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget)
 : mitk::DisplayInteractor()
-, m_Renderers(renderers)
+, m_MultiWindowWidget(multiWindowWidget)
+, m_Renderers(4)
 {
-  m_SliceNavigationControllers[0] = renderers[0]->GetSliceNavigationController();
-  m_SliceNavigationControllers[1] = renderers[1]->GetSliceNavigationController();
-  m_SliceNavigationControllers[2] = renderers[2]->GetSliceNavigationController();
+  m_Renderers[0] = m_MultiWindowWidget->GetRenderWindow1()->GetRenderer();
+  m_Renderers[1] = m_MultiWindowWidget->GetRenderWindow2()->GetRenderer();
+  m_Renderers[2] = m_MultiWindowWidget->GetRenderWindow3()->GetRenderer();
+  m_Renderers[3] = m_MultiWindowWidget->GetRenderWindow4()->GetRenderer();
 }
 
 mitk::DnDDisplayInteractor::~DnDDisplayInteractor()
@@ -62,7 +66,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
   // First, check if the slice navigation controllers have a valid geometry,
   // i.e. an image is loaded.
-  if (!m_SliceNavigationControllers[0]->GetCreatedWorldGeometry())
+  if (!m_Renderers[0]->GetSliceNavigationController()->GetCreatedWorldGeometry())
   {
     return false;
   }
@@ -77,9 +81,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
-  m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
-  m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
-  m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);
+  m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
 
   return true;
 }
@@ -124,7 +126,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
 
   // First, check if the slice navigation controllers have a valid geometry,
   // i.e. an image is loaded.
-  if (!m_SliceNavigationControllers[0]->GetCreatedWorldGeometry())
+  if (!m_Renderers[0]->GetSliceNavigationController()->GetCreatedWorldGeometry())
   {
     return false;
   }
@@ -133,9 +135,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
-  m_SliceNavigationControllers[0]->SelectSliceByPoint(positionInWorld);
-  m_SliceNavigationControllers[1]->SelectSliceByPoint(positionInWorld);
-  m_SliceNavigationControllers[2]->SelectSliceByPoint(positionInWorld);
+  m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
 
   // Although the code above puts the crosshair to the mouse pointer position,
   // the two positions are not completely equal because the crosshair is always in
@@ -144,9 +144,9 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   // So that we zoom around the crosshair, we have to calculate the crosshair position
   // (in world coordinates) and then its projection to the displayed region (in pixels).
   // This will be the focus point during the zooming.
-  const mitk::PlaneGeometry* plane1 = m_SliceNavigationControllers[0]->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry* plane2 = m_SliceNavigationControllers[1]->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry* plane3 = m_SliceNavigationControllers[2]->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane1 = m_Renderers[0]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane2 = m_Renderers[1]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
+  const mitk::PlaneGeometry* plane3 = m_Renderers[2]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
 
   mitk::Line3D intersectionLine;
   mitk::Point3D focusPoint3DInMm;
