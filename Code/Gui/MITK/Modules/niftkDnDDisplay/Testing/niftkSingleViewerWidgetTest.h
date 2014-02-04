@@ -96,6 +96,9 @@ private slots:
   /// \brief Tests if the correct render window is selected after the image is loaded.
   void testGetSelectedRenderWindow();
 
+  /// \brief Tests the SetSelectedRenderWindow function.
+  void testSetSelectedRenderWindow();
+
   /// \brief Tests if the correct renderer is focused after the image is loaded.
   void testFocusedRenderer();
 
