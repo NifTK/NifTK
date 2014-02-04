@@ -109,13 +109,13 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
     if (*newState == *m_InitialState)
     {
       MITK_INFO << "ERROR: Illegal state. Signal received but the state of the object has not changed.";
-      MITK_INFO << this;
+      MITK_INFO << typename Self::Pointer(this);
       QFAIL("Illegal state. Signal received but the state of the object has not changed.");
     }
     else if (m_ExpectedState.IsNotNull() && *newState != *m_ExpectedState)
     {
       MITK_INFO << "ERROR: Illegal state. The new state of the object is not equal to the expected state.";
-      MITK_INFO << this;
+      MITK_INFO << typename Self::Pointer(this);
       MITK_INFO << "New, illegal state:";
       MITK_INFO << newState;
       QFAIL("Illegal state. The new state of the object is not equal to the expected state.");
@@ -125,25 +125,7 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
   else if (*newState != *m_NextState)
   {
     MITK_INFO << "ERROR: Illegal state. The state of the object has already changed once.";
-//    MITK_INFO << this;
-    MITK_INFO << "Initial state: " << std::endl;
-    MITK_INFO << m_InitialState;
-
-    if (m_ExpectedState.IsNotNull())
-    {
-      MITK_INFO << "Expected state: " << std::endl;
-      MITK_INFO << m_ExpectedState;
-    }
-
-    if (m_NextState.IsNotNull())
-    {
-      MITK_INFO << "Next state: " << std::endl;
-      MITK_INFO << m_NextState;
-      MITK_INFO << "ITK signals:" << std::endl;
-      MITK_INFO << m_ItkSignalCollector;
-      MITK_INFO << "Qt signals:" << std::endl;
-      MITK_INFO << m_QtSignalCollector;
-    }
+    MITK_INFO << typename Self::Pointer(this);
     MITK_INFO << "New, illegal state:";
     MITK_INFO << newState;
     MITK_INFO << "Difference between initial state and next state:";
