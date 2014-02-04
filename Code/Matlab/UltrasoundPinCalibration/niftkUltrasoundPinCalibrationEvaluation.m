@@ -5,12 +5,12 @@ function [meanAccuracy, stdDevAccuracy, meanPrecision, stdDevPrecision] = niftkU
 %   [meanAccuracy, stdDevAccuracy, meanPrecision, stdDevPrecision]
 %     = niftkUltrasoundPinCalibrationEvaluation(initialGuess, goldStandardPoint, numberOfPoints, numberOfRepetitions, residualThreshold)
 % where:
-%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
 %                  where:
 %                  tx, ty, tz = translation in millimetres
 %                  rx, ry, rz = rotations in radians
-%                  s          = isotropic scale factor (mm/pix)
-%                  x,y,z      = location of invariant point in millimetres
+%                  x, y, z    = location of invariant point in millimetres
+%                  sx, sy     = scale factor (mm/pix)
 %
 %   goldStandardPoint   : [x y z] = location of invariant point in millimetres.
 %   numberOfPoints      : the number of randomly selected points to use to calibrate.
@@ -61,7 +61,7 @@ while(true)
   if (sumsqs < sumSquaresThreshold)
 
     rMi = Comp_RigidBody_Matrix(finalParams(1:6));
-    S = diag([finalParams(10) finalParams(10) 1 1]);
+    S = diag([finalParams(10) finalParams(11) 1 1]);
 
     % -----------------------------------------------------------------------------------
     % Work out median reconstructed point using all data, that is not an obvious outlier.
