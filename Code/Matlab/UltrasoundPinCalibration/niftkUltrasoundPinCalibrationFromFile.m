@@ -35,6 +35,21 @@ function [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFil
 % ----------------------------------------------------------------------------------------------------------------------
 % Call calibration routine.
 % ----------------------------------------------------------------------------------------------------------------------
-[finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints);
-   
+[finalParams, sumsqs, residuals, outliers] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints);
+
+% ----------------------------------------------------------------------------------------------------------------------
+% Assess data.
+% ----------------------------------------------------------------------------------------------------------------------
+iIndex = [];
+N = size(trackingMatrices,1);
+for i = 1:N;
+  iIndex(i) = i;
+end
+rMi = Comp_RigidBody_Matrix(finalParams);
+outliers = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex);
+
+disp('Outliers are:');
+disp(outliers);
+
+
    

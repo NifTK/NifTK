@@ -68,7 +68,7 @@ rMi = Comp_RigidBody_Matrix(finalParams);
 disp(rMi);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Work out the outliers. Only re-run if removing the outliers leaves at least 40 points.
+% Work out the outliers. Only re-run if removing the outliers leaves at least 20 points.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [iOutliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex)
@@ -76,7 +76,7 @@ M = size(iOutliers,2);
 disp('Number of outliers');
 disp(M);
 
-if (N-M > 40)
+if (N-M > 20)
 
   %%%%%%%%%%%%%%%%%%%%%%
   % Throw away outliers.

@@ -19,7 +19,7 @@ function [finalParams, sumsqs, residuals, exitFlag, output, lambda, J] = niftkUl
 
 opt_options = optimset('lsqnonlin') ; % Use a least-square non-linear optimisation
 opt_options.LargeScale = 'on';        % Set this as a large scale problem
-opt_options.Display = 'iter';         % Display results after each iteration
+opt_options.Display = 'iter-detailed';         % Display results after each iteration
 opt_options.MaxFunEvals = 100000;
 opt_options.MaxIter = 100000;
 
