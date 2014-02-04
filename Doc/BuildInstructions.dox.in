@@ -61,20 +61,25 @@ Do check your system path, if it has Boost, old Qt, random installation of ITK o
 
 \section BuildInstructionsDownloadCMake 2. Install CMake 2.8.4 or greater
 
-<ul>
-<li> On Windows you can use CMake 2.8.11.2 that seem to work reliably. You can build it from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
+
+You can build CMake from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
 \verbatim
 http://www.cmake.org/files/v2.8/
 \endverbatim
 
-Once you have obtained a binary version of CMake or built your own CMake please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" )<br>
+Please note that different versions of CMake are known to work on different platforms.
 
-</li>
-<li> On Mac machines, download and install the latest binary. The ccmake binary must be visible on your PATH. </li>
-<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. The ccmake binary must be visible on your PATH. </li>
-<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. The ccmake binary must be visible on your PATH. </li>
-<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. Make sure the compiled ccmake is on your PATH. </li>
+<ul>
+<li> On Windows you can use CMake 2.8.11.2.</li>
+<li> On Mac Mountain Lion (10.8) machines you can use CMake 2.8.9. </li>
+<li> On Mac Mavericks (10.9) machines you can use CMake 2.8.12.1. </li>
+<li> On CMIC managed Centos machines, you will need to download and build your own version, as the default version is 2.4-patch 6. </li>
+<li> On CMIC managed Scientific Linux machines, you will need to download and build your own version, as the default version is 2.8.3. </li>
+<li> On Ubuntu: Natty comes with 2.8.3. Install libncurses-dev, then download cmake and compile your own. </li>
 </ul>
+
+Once you have obtained a binary version of CMake or built your own CMake, please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" or "/opt/cmake-2.8.12.1/bin").
+If you have built your own CMake on Linux or Mac, make sure that you have built the 'ccmake' command and it is visible on your PATH.
 
 \section BuildInstructionsDownloadQt 3. Install Qt 4.8.3 or greater
 
@@ -89,6 +94,15 @@ then make sure it really is the version you are using. i.e. run qmake --version 
 On Linux/Mac try
 \verbatim
 ./configure -prefix /somewhere/to/install/qt-4.8.5 -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+\endverbatim
+</li>
+
+<li> On Mac Mavericks you have to build the latest sources from their git repositiory and build it with the Mountain Lion (10.8) system libraries.
+<br>
+\verbatim
+git clone git://gitorious.org/qt/qt.git qt
+cd qt
+./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-multimedia -no-audio-backend -no-phonon -no-phonon-backend -nomake examples -nomake demos 
 \endverbatim
 </li>
 
@@ -233,6 +247,17 @@ matter what you call it, so it could be /Users/mattclarkson/install/foo-version-
 subdirectories will be created below foo-version-bar. For release builds, the version number 
 to use can be found in the top of the CMakeLists.txt file, but the core development team will 
 know this anyway.
+</li>
+<li>On Mac Mavericks (10.9) you need to set the following CMake variables:
+  <ul>
+    <li>CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"</li>
+    <li>CMAKE_OSX_DEPLOYMENT_TARGET: "10.8"</li>
+    <li>CMAKE_OSX_ARCHITECTURES: "x86_64"</li>
+  </ul>
+  You can pass these options to the cmake or ccmake commands in the command line like this:
+  <verbatim>
+    ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
+  </verbatim>
 </li>
 <li> Select which options you want building. These variables start with BUILD_
 
