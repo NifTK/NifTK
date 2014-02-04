@@ -100,9 +100,73 @@ public:
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
 
-  bool operator!=(const niftkSingleViewerWidgetState& otherState) const
+  inline bool operator!=(const niftkSingleViewerWidgetState& otherState) const
   {
     return !(*this == otherState);
+  }
+
+  void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
+  {
+    if (this->GetOrientation() != otherState->GetOrientation())
+    {
+      os << indent << "Orientation: " << this->GetOrientation() << " ; " << otherState->GetOrientation() << std::endl;
+    }
+    if (this->GetWindowLayout() != otherState->GetWindowLayout())
+    {
+      os << indent << "Window layout: " << this->GetWindowLayout() << " ; " << otherState->GetWindowLayout() << std::endl;
+    }
+    if (this->GetSelectedRenderWindow() != otherState->GetSelectedRenderWindow())
+    {
+      os << indent << "Selected render window: " << this->GetSelectedRenderWindow() << " ; " << otherState->GetOrientation() << std::endl;
+    }
+    if (this->GetTimeStep() != otherState->GetTimeStep())
+    {
+      os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
+    }
+    if (this->GetSelectedPosition() != otherState->GetSelectedPosition())
+    {
+      os << indent << "Selected position: " << this->GetSelectedPosition() << " ; " << otherState->GetSelectedPosition() << std::endl;
+    }
+    if (this->GetCursorPositions() != otherState->GetCursorPositions())
+    {
+      os << indent << "Cursor positions:" << std::endl;
+      std::vector<mitk::Vector2D>::const_iterator cursorPositionsIt = m_CursorPositions.begin();
+      std::vector<mitk::Vector2D>::const_iterator cursorPositionsEnd = m_CursorPositions.end();
+      for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
+      {
+        os << indent << "    " << *cursorPositionsIt << std::endl;
+      }
+      cursorPositionsIt = otherState->GetCursorPositions().begin();
+      cursorPositionsEnd = otherState->GetCursorPositions().end();
+      for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
+      {
+        os << indent << "    " << *cursorPositionsIt << std::endl;
+      }
+    }
+    if (this->GetScaleFactors() != otherState->GetScaleFactors())
+    {
+      os << indent << "Scale factors:" << std::endl;
+      std::vector<double>::const_iterator scaleFactorsIt = m_ScaleFactors.begin();
+      std::vector<double>::const_iterator scaleFactorsEnd = m_ScaleFactors.end();
+      for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
+      {
+        os << indent << "    " << *scaleFactorsIt << std::endl;
+      }
+      scaleFactorsIt = otherState->GetScaleFactors().begin();
+      scaleFactorsEnd = otherState->GetScaleFactors().end();
+      for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
+      {
+        os << indent << "    " << *scaleFactorsIt << std::endl;
+      }
+    }
+    if (this->GetCursorPositionBinding() != otherState->GetCursorPositionBinding())
+    {
+      os << indent << "Cursor position binding: " << this->GetCursorPositionBinding() << " ; " << otherState->GetCursorPositionBinding() << std::endl;
+    }
+    if (this->GetScaleFactorBinding() != otherState->GetScaleFactorBinding())
+    {
+      os << indent << "Scale factor binding: " << this->GetScaleFactorBinding() << " ; " << otherState->GetScaleFactorBinding() << std::endl;
+    }
   }
 
 protected:
