@@ -22,6 +22,7 @@
 #include <vector>
 
 class niftkMultiWindowWidget;
+class QmitkRenderWindow;
 
 namespace mitk
 {
@@ -72,6 +73,7 @@ protected:
   virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
 private:
+  QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
 
   niftkMultiWindowWidget* m_MultiWindowWidget;
 

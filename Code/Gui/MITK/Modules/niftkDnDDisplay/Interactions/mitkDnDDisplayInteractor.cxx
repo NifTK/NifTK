@@ -55,6 +55,29 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("initZoom", InitZoom);
 }
 
+
+QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRenderer* renderer)
+{
+  QmitkRenderWindow* renderWindow = 0;
+  if (renderer == m_Renderers[0])
+  {
+    renderWindow = m_MultiWindowWidget->GetRenderWindow1();
+  }
+  else if (renderer == m_Renderers[1])
+  {
+    renderWindow = m_MultiWindowWidget->GetRenderWindow2();
+  }
+  else if (renderer == m_Renderers[2])
+  {
+    renderWindow = m_MultiWindowWidget->GetRenderWindow3();
+  }
+  else if (renderer == m_Renderers[3])
+  {
+    renderWindow = m_MultiWindowWidget->GetRenderWindow4();
+  }
+  return renderWindow;
+}
+
 bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, InteractionEvent* interactionEvent)
 {
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
@@ -72,16 +95,26 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   }
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  QmitkRenderWindow* renderWindow = 0;
   if (!renderer->GetFocused())
   {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+    renderWindow = this->GetRenderWindow(renderer);
   }
+
+  bool signalsWereBlocked = m_MultiWindowWidget->BlockSignals(true);
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
   // selects the slice in the two other render window.
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
   m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
+
+  if (renderWindow)
+  {
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+  }
+
+  m_MultiWindowWidget->BlockSignals(signalsWereBlocked);
 
   return true;
 }

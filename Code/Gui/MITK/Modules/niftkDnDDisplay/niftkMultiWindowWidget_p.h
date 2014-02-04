@@ -292,6 +292,12 @@ public:
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
   void SetScaleFactorBinding(bool bound);
 
+  /// \brief Blocks the signals from the slice navigation controller.
+  /// Returns true if the signals were already blocked, otherwise false.
+  /// While blocked, the signals are "pending". Pending signals are sent out
+  /// when the signals are unblocked.
+  bool BlockSignals(bool blocked);
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
@@ -429,7 +435,15 @@ private:
   unsigned long m_DisplayGeometryModificationObservers[3];
   bool m_BlockDisplayEvents;
 
-  bool m_BlockSncSignals;
+  /// \brief Blocks updating this object when the selected slice changed in a slice navigation controller.
+  /// This should be set to true if an SNC has been changed internally from this viewer. This does not
+  /// block the signals  the SNCs, only hinders processing them (and falling into an infinite recursion,
+  /// eventually).
+  bool m_BlockProcessingSncSignals;
+
+  /// \brief Blocks sending signals by the slice navigation controller.
+  bool m_BlockSignals;
+  std::vector<bool> m_PendingSncSignals;
 
   friend class DisplayGeometryModificationCommand;
 
