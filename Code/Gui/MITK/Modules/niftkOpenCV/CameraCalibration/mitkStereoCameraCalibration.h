@@ -21,6 +21,7 @@
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <mitkVector.h>
+#include <cv.h>
 
 namespace mitk {
 
@@ -35,6 +36,11 @@ public:
 
   mitkClassMacro(StereoCameraCalibration, itk::Object);
   itkNewMacro(StereoCameraCalibration);
+
+  /**
+   * \brief Tries to load existing intrinsic params from a previous calibration.
+   */
+  void LoadExistingIntrinsics(const std::string& directoryName);
 
   /**
    * \brief Calibration function that returns the reprojection error (squared error).
@@ -61,6 +67,14 @@ protected:
 
   StereoCameraCalibration(const StereoCameraCalibration&); // Purposefully not implemented.
   StereoCameraCalibration& operator=(const StereoCameraCalibration&); // Purposefully not implemented.
+
+private:
+
+  CvMat*                              m_IntrinsicMatrixLeft;
+  CvMat*                              m_IntrinsicMatrixRight;
+  CvMat*                              m_DistortionCoefficientsLeft;
+  CvMat*                              m_DistortionCoefficientsRight;
+  bool                                m_OptimiseIntrinsics;
 
 }; // end class
 
