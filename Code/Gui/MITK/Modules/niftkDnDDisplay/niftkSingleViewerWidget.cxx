@@ -662,6 +662,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       return;
     }
 
+    bool signalsWereBlocked = m_MultiWidget->BlockSignals(true);
+
     bool wasSelected = this->IsSelected();
     QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
 
@@ -803,6 +805,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         }
       }
     }
+
+    m_MultiWidget->BlockSignals(signalsWereBlocked);
   }
 }
 
