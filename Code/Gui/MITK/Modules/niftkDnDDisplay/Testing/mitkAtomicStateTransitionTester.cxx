@@ -110,6 +110,10 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
     {
       MITK_INFO << "ERROR: Illegal state. Signal received but the state of the object has not changed.";
       MITK_INFO << typename Self::Pointer(this);
+      MITK_INFO << "ITK signals:" << std::endl;
+      MITK_INFO << m_ItkSignalCollector;
+      MITK_INFO << "Qt signals:" << std::endl;
+      MITK_INFO << m_QtSignalCollector;
       QFAIL("Illegal state. Signal received but the state of the object has not changed.");
     }
     else if (m_ExpectedState.IsNotNull() && *newState != *m_ExpectedState)
