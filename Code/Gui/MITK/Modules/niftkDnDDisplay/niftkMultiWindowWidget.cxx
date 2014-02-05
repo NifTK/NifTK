@@ -280,16 +280,20 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   onCoronalSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnCoronalSliceChanged);
   m_CoronalSliceTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
-  // The cursor is at the middle of the display at the beginning.
-  m_CursorPositions[MIDAS_ORIENTATION_AXIAL].Fill(0.5);
-  m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL].Fill(0.5);
-  m_CursorPositions[MIDAS_ORIENTATION_CORONAL].Fill(0.5);
-
   // The world position is unknown until the geometry is set. These values are invalid,
   // but still better then having undefined values.
   m_SelectedPosition[0] = 0.0;
   m_SelectedPosition[1] = 0.0;
   m_SelectedPosition[2] = 0.0;
+
+  // The cursor is at the middle of the display at the beginning.
+  m_CursorPositions[MIDAS_ORIENTATION_AXIAL].Fill(0.5);
+  m_CursorPositions[MIDAS_ORIENTATION_SAGITTAL].Fill(0.5);
+  m_CursorPositions[MIDAS_ORIENTATION_CORONAL].Fill(0.5);
+
+  m_ScaleFactors[MIDAS_ORIENTATION_AXIAL] = 1.0;
+  m_ScaleFactors[MIDAS_ORIENTATION_SAGITTAL] = 1.0;
+  m_ScaleFactors[MIDAS_ORIENTATION_CORONAL] = 1.0;
 
   // Set the default voxel size to 1.0mm for each axes.
   m_MmPerVx[0] = 1.0;
