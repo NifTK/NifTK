@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
 #include <niftkFileHelper.h>
 #include <iostream>
@@ -32,7 +33,7 @@ void LoadImages(const std::vector<std::string>& files,
 {
   if (files.size() == 0)
   {
-    throw std::logic_error("LoadImages: Empty list supplied!");
+    mitkThrow() << "LoadImages: Empty list supplied!" << std::endl;
   }
 
   for(unsigned int i = 0; i < files.size();i++)
@@ -47,7 +48,7 @@ void LoadImages(const std::vector<std::string>& files,
 
   if (images.size() == 0)
   {
-    throw std::logic_error("LoadImages: Failed to load images!");
+    mitkThrow() << "LoadImages: Failed to load images!" << std::endl;
   }
 
   std::cout << "Loaded " << fileNames.size() << " chess boards" << std::endl;
@@ -120,7 +121,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
 
   if (images.size() == 0)
   {
-    throw std::logic_error("Vector of images is empty!");
+    mitkThrow() << "Vector of images is empty!" << std::endl;
   }
 
   width = images[0]->width;
@@ -130,7 +131,7 @@ void CheckConstImageSize(const std::vector<IplImage*>& images, int& width, int& 
   {
     if (images[i]->width != width || images[i]->height != height)
     {
-      throw std::logic_error("Images are of inconsistent sizes!");
+      mitkThrow() << "Images are of inconsistent sizes!" << std::endl;
     }
   }
 
@@ -222,7 +223,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   if (images.size() != fileNames.size())
   {
-    throw std::logic_error("The list of images and list of filenames have different lengths!");
+    mitkThrow() << "The list of images and list of filenames have different lengths!" << std::endl;
   }
 
   outputImages.clear();
@@ -301,7 +302,7 @@ void ExtractChessBoardPoints(const std::vector<IplImage*>& images,
 
   if (successes == 0)
   {
-    throw std::logic_error("The chessboard feature detection failed");
+    mitkThrow() << "The chessboard feature detection failed" << std::endl;
   }
 
   // Now re-allocate points based on what we found.
@@ -525,7 +526,7 @@ void ComputeRightToLeftTransformations(
       || translationVectorsRightToLeft.rows != numberOfMatrices
       )
   {
-    throw std::logic_error("Inconsistent number of rows in supplied matrices!");
+    mitkThrow() << "Inconsistent number of rows in supplied matrices!" << std::endl;
   }
 
   CvMat *leftCameraTransform = cvCreateMat(4, 4, CV_64FC1);
@@ -969,7 +970,7 @@ void CorrectDistortionInImageFile(
   IplImage *image = cvLoadImage(inputFileName.c_str());
   if (image == NULL)
   {
-    throw std::logic_error("Failed to load image");
+    mitkThrow() << "Failed to load image";
   }
   CorrectDistortionInSingleImage(intrinsicParams, distortionCoefficients, *image);
   cvSaveImage(outputFileName.c_str(), image);
@@ -988,13 +989,13 @@ void CorrectDistortionInImageFile(
   CvMat *intrinsic = (CvMat*)cvLoad(inputIntrinsicsFileName.c_str());
   if (intrinsic == NULL)
   {
-    throw std::logic_error("Failed to load camera intrinsic params");
+    mitkThrow() << "Failed to load camera intrinsic params" << std::endl;
   }
 
   CvMat *distortion = (CvMat*)cvLoad(inputDistortionCoefficientsFileName.c_str());
   if (distortion == NULL)
   {
-    throw std::logic_error("Failed to load camera distortion params");
+    mitkThrow() << "Failed to load camera distortion params" << std::endl;
   }
 
   CorrectDistortionInImageFile(inputImageFileName, *intrinsic, *distortion, outputImageFileName);
@@ -1152,7 +1153,7 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
       || output2DPointsRight != NULL
       )
   {
-    throw std::logic_error("Output pointers should be NULL, as this method creates new matrices");
+    mitkThrow() << "Output pointers should be NULL, as this method creates new matrices";
   }
 
   int numberOfInputPoints = leftCameraWorldPointsIn3D.rows;
@@ -1803,12 +1804,12 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
   }
   else
   {
-    throw std::logic_error("No files found in directory!");
+    mitkThrow() << "No files found in directory!" << std::endl;
   }
 
   if (myMatrices.size() == 0)
   {
-    throw std::logic_error("No Matrices found in directory!");
+    mitkThrow() << "No Matrices found in directory!" << std::endl;
   }
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
@@ -1831,7 +1832,7 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
         cv::Mat Extrinsic = (cv::Mat)cvLoadImage(files[i].c_str());
         if (Extrinsic.rows != 4 )
         {
-          throw std::logic_error("Failed to load camera intrinsic params");
+          mitkThrow() << "Failed to load camera intrinsic params" << std::endl;
         }
         else
         {
@@ -1843,12 +1844,12 @@ std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDir
   }
   else
   {
-    throw std::logic_error("No files found in directory!");
+    mitkThrow() << "No files found in directory!";
   }
 
   if (myMatrices.size() == 0)
   {
-    throw std::logic_error("No Matrices found in directory!");
+    mitkThrow() << "No Matrices found in directory!";
   }
   std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
   return myMatrices;
@@ -2283,22 +2284,22 @@ void LoadStereoCameraParametersFromDirectory (const std::string& directory,
 
   if ( leftIntrinsicFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of left intrinsic files");
+    mitkThrow() << "Found the wrong number of left intrinsic files";
   }
 
   if ( rightIntrinsicFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of right intrinsic files");
+    mitkThrow() << "Found the wrong number of right intrinsic files";
   }
 
   if ( r2lFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of right to left files");
+    mitkThrow() << "Found the wrong number of right to left files" << std::endl;
   }
   
   if ( handeyeFiles.size() != 1 )
   {
-    throw std::logic_error("Found the wrong number of handeye files");
+    mitkThrow() << "Found the wrong number of handeye files" << std::endl;
   }
 
   std::cout << "Loading left intrinsics from  " << leftIntrinsicFiles[0] << std::endl;

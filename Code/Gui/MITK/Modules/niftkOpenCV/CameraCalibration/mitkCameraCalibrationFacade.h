@@ -29,7 +29,7 @@ namespace mitk {
 
 /**
  * \brief Uses OpenCV to load images.
- * \throw Throws logic_error if files is empty, or no images found.
+ * \throw Throws exception if files is empty, or no images found.
  * \param[In] files list of files
  * \param[Out] images which the caller must take responsibility for and de-allocate appropriately.
  * \param[Out] fileNames list of filenames
@@ -76,7 +76,7 @@ extern "C++" NIFTKOPENCV_EXPORT bool CheckAndAppendPairOfFileNames(const std::st
 
 /**
  * \brief Iterates through the list of images, checking that the width and height are consistent.
- * \throw Throws logic_error if any images are of different size to the first, or the list is empty.
+ * \throw Throws exception if any images are of different size to the first, or the list is empty.
  * \param width output parameter containing the image width for all the images.
  * \param height output parameter containing the image height for all the images.
  */
@@ -707,7 +707,7 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadStereoCameraParametersFromDirectory (co
  * cv::Mat
  * \param cameraIntrinsic 3x3 matrix (double!)
  * \param cameraDistortion is optional, number of components needs to match the file! (double!)
- * \throws something if parsing fails for any reason.
+ * \throws exception if parsing fails for any reason.
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
   cv::Mat* cameraIntrinsic, cv::Mat* cameraDistortion);
@@ -716,7 +716,7 @@ extern "C++" NIFTKOPENCV_EXPORT void LoadCameraIntrinsicsFromPlainText ( const s
 /**
  * \brief Load stereo camera parameters from a plain text file
  * cv::Mat
- * \throws something if parsing fails for any reason.
+ * \throws exception if parsing fails for any reason.
  */
 extern "C++" NIFTKOPENCV_EXPORT void LoadStereoTransformsFromPlainText ( const std::string& filename,
   cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
