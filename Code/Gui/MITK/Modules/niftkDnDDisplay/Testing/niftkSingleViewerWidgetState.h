@@ -17,6 +17,23 @@
 
 #include <niftkSingleViewerWidget.h>
 
+static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001)
+{
+  return std::abs(cursorPosition1[0] - cursorPosition2[0]) < tolerance
+      && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
+}
+
+static bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    if (!::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+    {
+      return false;
+    }
+  }
+  return true;
+}
 
 class niftkSingleViewerWidgetState : public itk::Object
 {
@@ -94,7 +111,7 @@ public:
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
         && this->GetSelectedPosition() == otherState.GetSelectedPosition()
-        && this->GetCursorPositions() == otherState.GetCursorPositions()
+        && ::EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
         && this->GetScaleFactors() == otherState.GetScaleFactors()
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
