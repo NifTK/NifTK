@@ -434,6 +434,77 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  /// Note that the cursor positions of a render window are first initialised
+  /// when the render window gets visible.
+
+  mitk::Vector2D centrePosition;
+  centrePosition.Fill(0.5);
+
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), centrePosition, 0.01));
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QVERIFY(d->StateTester->GetQtSignals().empty());
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  d->StateTester->Clear();
+
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL), centrePosition, 0.01));
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QVERIFY(d->StateTester->GetQtSignals().empty());
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  d->StateTester->Clear();
+
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL), centrePosition, 0.01));
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QVERIFY(d->StateTester->GetQtSignals().empty());
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetCursorPosition()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+  /// TODO
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetCursorPositions()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  /// Note that the cursor positions of a render window are first initialised
+  /// when the render window gets visible.
+
+  mitk::Vector2D centrePosition;
+  centrePosition.Fill(0.5);
+  std::vector<mitk::Vector2D> centrePositions(3);
+  std::fill(centrePositions.begin(), centrePositions.end(), centrePosition);
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  d->StateTester->Clear();
+
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPositions(), centrePositions, 0.01));
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QVERIFY(d->StateTester->GetQtSignals().empty());
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+  /// TODO
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
@@ -649,7 +720,6 @@ void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
   QPoint centre = sagittalWindow->rect().center();
   QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, centre);
 
-  MITK_INFO << "selected renderer: " << d->Viewer->GetSelectedRenderWindow()->GetRenderer()->GetName();
   QCOMPARE(d->Viewer->IsSelected(), true);
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), sagittalWindow);
 }

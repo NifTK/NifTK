@@ -87,6 +87,18 @@ private slots:
   /// \brief Tests the SetSelectedPosition function.
   void testSetSelectedPosition();
 
+  /// \brief Tests if the cursor position is in the centre of the windoow after the image is loaded.
+  void testGetCursorPosition();
+
+  /// \brief Tests the SetCursorPosition function.
+  void testSetCursorPosition();
+
+  /// \brief Tests if the cursor position is in the centre of the windoow after the image is loaded.
+  void testGetCursorPositions();
+
+  /// \brief Tests the SetCursorPosition function.
+  void testSetCursorPositions();
+
   /// \brief Tests if the selected position is correct after the image is loaded.
   void testGetWindowLayout();
 
