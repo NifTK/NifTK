@@ -79,14 +79,8 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
-  niftkSingleViewerWidget(QWidget* parent);
-
-  niftkSingleViewerWidget(QString windowName,
-                             QWidget* parent = 0,
-                             mitk::RenderingManager* renderingManager = 0,
-                             mitk::DataStorage* dataStorage = 0
-                             );
-  ~niftkSingleViewerWidget();
+  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, mitk::DataStorage* dataStorage = 0);
+  virtual ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -386,10 +380,7 @@ protected slots:
 private:
 
   /// \brief This method is called from both constructors to do the construction.
-  void Initialize(QString windowName,
-                  mitk::RenderingManager* renderingManager = 0,
-                  mitk::DataStorage* dataStorage = 0
-                 );
+  void Initialize(mitk::RenderingManager* renderingManager = 0, mitk::DataStorage* dataStorage = 0);
 
   inline int Index(int index) const
   {

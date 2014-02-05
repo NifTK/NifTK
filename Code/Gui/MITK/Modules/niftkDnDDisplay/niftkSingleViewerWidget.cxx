@@ -27,35 +27,7 @@
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent)
-: QWidget(parent)
-, m_DataStorage(NULL)
-, m_RenderingManager(NULL)
-, m_GridLayout(NULL)
-, m_MultiWidget(NULL)
-, m_IsBoundGeometryActive(false)
-, m_Geometry(NULL)
-, m_BoundGeometry(NULL)
-, m_MinimumMagnification(-5.0)
-, m_MaximumMagnification(20.0)
-, m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
-, m_NavigationControllerEventListening(false)
-, m_RememberSettingsPerWindowLayout(false)
-, m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
-, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
-, m_DnDDisplayStateMachine(0)
-{
-  mitk::RenderingManager::Pointer renderingManager = mitk::RenderingManager::GetInstance();
-
-  QString name("niftkSingleViewerWidget");
-  this->Initialize(name, renderingManager, NULL);
-}
-
-
-//-----------------------------------------------------------------------------
 niftkSingleViewerWidget::niftkSingleViewerWidget(
-    QString windowName,
     QWidget *parent,
     mitk::RenderingManager* renderingManager,
     mitk::DataStorage* dataStorage)
@@ -77,15 +49,12 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_DnDDisplayStateMachine(0)
 {
-  this->Initialize(windowName, renderingManager, dataStorage);
+  this->Initialize(renderingManager, dataStorage);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::Initialize(QString windowName,
-                mitk::RenderingManager* renderingManager,
-                mitk::DataStorage* dataStorage
-               )
+void niftkSingleViewerWidget::Initialize(mitk::RenderingManager* renderingManager, mitk::DataStorage* dataStorage)
 {
   if (renderingManager == NULL)
   {
