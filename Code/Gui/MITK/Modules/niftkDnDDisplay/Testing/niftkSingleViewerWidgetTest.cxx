@@ -133,6 +133,10 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   d->RenderingManager = mitk::RenderingManager::GetInstance();
   d->RenderingManager->SetDataStorage(d->DataStorage);
 
+  /// Disable VTK warnings. For some reason, they appear using these tests, but
+  /// not with the real application. We simply suppress them here.
+  vtkObject::GlobalWarningDisplayOff();
+
   std::vector<std::string> files;
   files.push_back(d->FileName);
 
