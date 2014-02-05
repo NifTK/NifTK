@@ -15,6 +15,8 @@
 #ifndef __niftkSingleViewerWidgetTest_h
 #define __niftkSingleViewerWidgetTest_h
 
+#include <niftkDnDDisplayExports.h>
+
 #include <QObject>
 
 #include <mitkAtomicStateTransitionTester.cxx>
@@ -32,7 +34,7 @@ namespace mitk
 class DataNode;
 }
 
-class niftkSingleViewerWidgetTestClass: public QObject
+class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 
