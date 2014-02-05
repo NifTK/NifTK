@@ -15,8 +15,6 @@
 #ifndef __niftkMultiViewerWidgetTest_h
 #define __niftkMultiViewerWidgetTest_h
 
-#include <niftkDnDDisplayExports.h>
-
 #include <QObject>
 
 #include <vector>
@@ -28,7 +26,7 @@ namespace mitk
 class DataNode;
 }
 
-class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidgetTestClass: public QObject
+class niftkMultiViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 

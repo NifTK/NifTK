@@ -375,9 +375,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 0ul);
-  QCOMPARE(sagittalSncSignals.size(), 1ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(0));
+  QCOMPARE(sagittalSncSignals.size(), size_t(1));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   sagittalSncSignalCollector->Clear();
 
@@ -385,9 +385,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 0ul);
-  QCOMPARE(sagittalSncSignals.size(), 0ul);
-  QCOMPARE(coronalSncSignals.size(), 1ul);
+  QCOMPARE(axialSncSignals.size(), size_t(0));
+  QCOMPARE(sagittalSncSignals.size(), size_t(0));
+  QCOMPARE(coronalSncSignals.size(), size_t(1));
 
   coronalSncSignalCollector->Clear();
 
@@ -395,9 +395,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 1ul);
-  QCOMPARE(sagittalSncSignals.size(), 0ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(1));
+  QCOMPARE(sagittalSncSignals.size(), size_t(0));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   axialSncSignalCollector->Clear();
 
@@ -406,9 +406,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 0ul);
-  QCOMPARE(sagittalSncSignals.size(), 1ul);
-  QCOMPARE(coronalSncSignals.size(), 1ul);
+  QCOMPARE(axialSncSignals.size(), size_t(0));
+  QCOMPARE(sagittalSncSignals.size(), size_t(1));
+  QCOMPARE(coronalSncSignals.size(), size_t(1));
 
   sagittalSncSignalCollector->Clear();
   coronalSncSignalCollector->Clear();
@@ -418,9 +418,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 1ul);
-  QCOMPARE(sagittalSncSignals.size(), 1ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(1));
+  QCOMPARE(sagittalSncSignals.size(), size_t(1));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   axialSncSignalCollector->Clear();
   sagittalSncSignalCollector->Clear();
@@ -430,9 +430,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(axialSncSignals.size(), 1ul);
-  QCOMPARE(sagittalSncSignals.size(), 0ul);
-  QCOMPARE(coronalSncSignals.size(), 1ul);
+  QCOMPARE(axialSncSignals.size(), size_t(1));
+  QCOMPARE(sagittalSncSignals.size(), size_t(0));
+  QCOMPARE(coronalSncSignals.size(), size_t(1));
 
   axialSncSignalCollector->Clear();
   coronalSncSignalCollector->Clear();
@@ -488,9 +488,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QCOMPARE(newPosition[2], lastPosition[2]);
-  QCOMPARE(axialSncSignals.size(), 0ul);
-  QCOMPARE(sagittalSncSignals.size(), 1ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(0));
+  QCOMPARE(sagittalSncSignals.size(), size_t(1));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   sagittalSncSignalCollector->Clear();
 
@@ -503,9 +503,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(newPosition[0], lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[1]);
-  QCOMPARE(axialSncSignals.size(), 1ul);
-  QCOMPARE(sagittalSncSignals.size(), 0ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(1));
+  QCOMPARE(sagittalSncSignals.size(), size_t(0));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   axialSncSignalCollector->Clear();
 
@@ -519,9 +519,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[2]);
-  QCOMPARE(axialSncSignals.size(), 1ul);
-  QCOMPARE(sagittalSncSignals.size(), 1ul);
-  QCOMPARE(coronalSncSignals.size(), 0ul);
+  QCOMPARE(axialSncSignals.size(), size_t(1));
+  QCOMPARE(sagittalSncSignals.size(), size_t(1));
+  QCOMPARE(coronalSncSignals.size(), size_t(0));
 
   axialSncSignalCollector->Clear();
   sagittalSncSignalCollector->Clear();
