@@ -63,7 +63,7 @@ end
 
 [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationOptimisation(initialGuess, trackingMatrices, ultrasoundPoints)
 
-disp('Final calibration (image to tracker) matrix:');
+disp('First pass calibration (image to tracker) matrix:');
 rMi = Comp_RigidBody_Matrix(finalParams);
 disp(rMi);
 
