@@ -64,10 +64,8 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
       for (int i = 0; i < methodCount; ++i)
       {
         QMetaMethod metaMethod = metaObject->method(i);
-        if (metaMethod.methodType() == QMetaMethod::Signal
-            && metaMethod.access() == QMetaMethod::Public)
+        if (metaMethod.methodType() == QMetaMethod::Signal)
         {
-//          QMetaObject::connect(qTestObject, methodCount, this, callbackSlotIndex);
           this->Connect(qTestObject, metaMethod.signature());
         }
       }
