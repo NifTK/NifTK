@@ -87,7 +87,7 @@ QmitkUltrasoundPinCalibrationWidget::~QmitkUltrasoundPinCalibrationWidget()
 //-----------------------------------------------------------------------------
 void QmitkUltrasoundPinCalibrationWidget::enterEvent(QEvent* event)
 {
-  m_ImageViewer->GetRenderWindow()->SetSize(m_ImageWidth, m_ImageHeight);
+  this->resize(m_ImageWidth, m_ImageHeight);
   QVTKWidget::enterEvent(event);
 }
 
