@@ -4,12 +4,12 @@ function [finalParams, sumsqs, residuals, iOutliers] = niftkUltrasoundPinCalibra
 % Usage:
 %   [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints)
 % where:
-%   initialGuess   : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%   initialGuess   : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
 %                    where:
 %                    tx, ty, tz = translation in millimetres
 %                    rx, ry, rz = rotations in radians
-%                    s          = isotropic scale factor (mm/pix)
 %                    x,y,z      = location of invariant point in millimetres
+%                    sx, sy     = scale factor (mm/pix)
 %
 % trackingMatrices : Cell array of {n, 1} where each cell is a 4x4 tracking matrix.
 % ultrasoundPoints : Cell array of {n, 1} where each cell is a 1x4 homogeneous point matrix of [x y 0 1].
@@ -37,7 +37,7 @@ function [finalParams, sumsqs, residuals, iOutliers] = niftkUltrasoundPinCalibra
 %
 % Using this equation, we can generate a system of 3N (3 rows of the left-hand-side are useful; the 4th just says 1=1)
 % non-linear equations and estimate the parameters of vMt and rMi using a least-squares optimization and 
-% the Levenberg-Marquardt algorithm. 10 parameters are estimated: the x,y, and z components of the translation vector
+% the Levenberg-Marquardt algorithm. 11 parameters are estimated: the x,y, and z components of the translation vector
 % of vMt, and 3 rotation angles and the x,y, and z components of the translation of rMi.
 %
 % 2014-01-09 Steve Thompson, Matt Clarkson
@@ -68,7 +68,7 @@ rMi = Comp_RigidBody_Matrix(finalParams);
 disp(rMi);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Work out the outliers. Only re-run if removing the outliers leaves at least 40 points.
+% Work out the outliers. Only re-run if removing the outliers leaves at least 20 points.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [iOutliers] = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex)
@@ -76,7 +76,7 @@ M = size(iOutliers,2);
 disp('Number of outliers');
 disp(M);
 
-if (N-M > 40)
+if (N-M > 20)
 
   %%%%%%%%%%%%%%%%%%%%%%
   % Throw away outliers.
@@ -122,10 +122,8 @@ if (N-M > 40)
   disp(rMi2);
 end
 
-disp('Final image scaling parameter (mm/pixel):');
-disp(finalParams(10));
-disp('Final offset');
-disp([finalParams(7) finalParams(8) finalParams(9)]);
+disp('Final parameters');
+disp(finalParams);
 
 
 

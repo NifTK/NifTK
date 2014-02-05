@@ -39,6 +39,14 @@ UltrasoundPinCalibration::UltrasoundPinCalibration()
 void UltrasoundPinCalibration::SetNumberOfInvariantPoints(const unsigned int& numberOfPoints)
 {
   m_CostFunction->SetNumberOfInvariantPoints(numberOfPoints);
+  if (numberOfPoints > 1)
+  {
+    this->SetRetrievePointIdentifier(true);
+  }
+  else
+  {
+    this->SetRetrievePointIdentifier(false);
+  }
   this->Modified();
 }
 
@@ -147,9 +155,9 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
       parameters[offset + 3*i + 0] = m_CostFunction->GetInvariantPoint(i)[0];
       parameters[offset + 3*i + 1] = m_CostFunction->GetInvariantPoint(i)[1];
       parameters[offset + 3*i + 2] = m_CostFunction->GetInvariantPoint(i)[2];
-      scaleFactors[offset + 3*i + 0] = 1;
-      scaleFactors[offset + 3*i + 1] = 1;
-      scaleFactors[offset + 3*i + 2] = 1;
+      scaleFactors[offset + 3*i + 0] = 0.001;
+      scaleFactors[offset + 3*i + 1] = 0.001;
+      scaleFactors[offset + 3*i + 2] = 0.001;
     }
   }
 
@@ -160,26 +168,25 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
   parameters[4] = this->m_InitialGuess[4];
   parameters[5] = this->m_InitialGuess[5];
 
-  scaleFactors[0] = 0.1;
-  scaleFactors[1] = 0.1;
-  scaleFactors[2] = 0.1;
-  scaleFactors[3] = 1;
-  scaleFactors[4] = 1;
-  scaleFactors[5] = 1;
+  scaleFactors[0] = 0.01;
+  scaleFactors[1] = 0.01;
+  scaleFactors[2] = 0.01;
+  scaleFactors[3] = 0.001;
+  scaleFactors[4] = 0.001;
+  scaleFactors[5] = 0.001;
   
   std::cout << "UltrasoundPinCalibration:Start parameters = " << parameters << std::endl;
   std::cout << "UltrasoundPinCalibration:Start scale factors = " << scaleFactors << std::endl;
   
-  itk::UltrasoundPinCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPinCalibrationCostFunction::New();
-  costFunction->SetMatrices(matrices);
-  costFunction->SetPoints(points);
-  costFunction->SetScales(scaleFactors);
-  costFunction->SetNumberOfParameters(parameters.GetSize());
-  costFunction->SetMillimetresPerPixel(this->m_MillimetresPerPixel);
+  m_CostFunction->SetMatrices(matrices);
+  m_CostFunction->SetPoints(points);
+  m_CostFunction->SetScales(scaleFactors);
+  m_CostFunction->SetNumberOfParameters(parameters.GetSize());
+  m_CostFunction->SetMillimetresPerPixel(this->m_MillimetresPerPixel);
 
   itk::LevenbergMarquardtOptimizer::Pointer optimizer = itk::LevenbergMarquardtOptimizer::New();
-  optimizer->UseCostFunctionGradientOff();
-  optimizer->SetCostFunction(costFunction);
+  optimizer->UseCostFunctionGradientOn();
+  optimizer->SetCostFunction(m_CostFunction);
   optimizer->SetInitialPosition(parameters);
   optimizer->SetScales(scaleFactors);
   optimizer->SetNumberOfIterations(20000000);
@@ -190,7 +197,7 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
   optimizer->StartOptimization();
 
   parameters = optimizer->GetCurrentPosition();
-  outputMatrix = costFunction->GetCalibrationTransformation(parameters);
+  outputMatrix = m_CostFunction->GetCalibrationTransformation(parameters);
 
   std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
   std::cout << "UltrasoundPinCalibration:End parameters = " << parameters << std::endl;
@@ -201,8 +208,8 @@ double UltrasoundPinCalibration::Calibrate(const std::vector< cv::Mat >& matrice
     this->m_MillimetresPerPixel[1] = parameters[7];
   }
 
-  itk::UltrasoundPinCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
-  residualError = costFunction->GetResidual(values);
+  itk::UltrasoundPinCalibrationCostFunction::MeasureType values = m_CostFunction->GetValue(parameters);
+  residualError = m_CostFunction->GetResidual(values);
 
   return residualError;
 }

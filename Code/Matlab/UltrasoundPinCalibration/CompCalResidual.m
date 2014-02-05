@@ -4,7 +4,7 @@ function  D = CompCalResidual(params, tMrs, pIs)
 
    vMt = Comp_RigidBody_Matrix([params(7:9) 0 0 0]);
    rMi = Comp_RigidBody_Matrix(params(1:6));
-   S = diag([params(10) params(10) 1 1]);
+   S = diag([params(10) params(11) 1 1]);
 
    D = [];
    

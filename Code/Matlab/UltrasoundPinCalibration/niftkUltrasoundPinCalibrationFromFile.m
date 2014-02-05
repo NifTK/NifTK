@@ -4,17 +4,17 @@ function [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFil
 % Usage:
 %   [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFile(initialGuess)
 % where:
-%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, s]
+%   initialGuess : parameters array [tx, ty, tz, rx, ry, rz, x, y, z, sx, sy]
 %                  where:
 %                  tx, ty, tz = translation in millimetres
 %                  rx, ry, rz = rotations in radians
-%                  s          = isotropic scale factor (mm/pix)
 %                  x,y,z      = location of invariant point in millimetres
+%                  sx, sy     = scale factor (mm/pix)
 %
 %
 % e.g. For the data in NifTKData/Input/UltrasoundPinCalibration/2014.01.07-matt-calib-4DC7
 %
-% niftkUltrasoundPinCalibrationFromFile [200 -10   0   0   0   20  545 237 -1820 -0.2073]
+% niftkUltrasoundPinCalibrationFromFile [200 -10   0   0   0   20  545 237 -1820 -0.2073 -0.2073]
 %
 % This functions will ask for:
 %
@@ -35,6 +35,21 @@ function [finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibrationFromFil
 % ----------------------------------------------------------------------------------------------------------------------
 % Call calibration routine.
 % ----------------------------------------------------------------------------------------------------------------------
-[finalParams, sumsqs, residuals] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints);
-   
+[finalParams, sumsqs, residuals, outliers] = niftkUltrasoundPinCalibration(initialGuess, trackingMatrices, ultrasoundPoints);
+
+% ----------------------------------------------------------------------------------------------------------------------
+% Assess data.
+% ----------------------------------------------------------------------------------------------------------------------
+iIndex = [];
+N = size(trackingMatrices,1);
+for i = 1:N;
+  iIndex(i) = i;
+end
+rMi = Comp_RigidBody_Matrix(finalParams);
+outliers = niftkUltrasoundPinCalibrationOutliers(finalParams, rMi, trackingMatrices, ultrasoundPoints, iIndex);
+
+disp('Outliers are:');
+disp(outliers);
+
+
    

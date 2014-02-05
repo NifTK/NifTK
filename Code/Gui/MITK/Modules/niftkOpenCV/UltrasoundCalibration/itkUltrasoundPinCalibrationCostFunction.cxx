@@ -69,7 +69,6 @@ void UltrasoundPinCalibrationCostFunction::SetInvariantPoint(const unsigned int 
     oss << "UltrasoundPinCalibrationCostFunction::SetInvariantPoint pointNumber=" << pointNumber << ", which is out of range [0.." << m_InvariantPoints.size()-1 << "]." << std::endl;
     mitkThrow() << oss.str();
   }
-
   m_InvariantPoints[pointNumber] = invariantPoint;
   this->Modified();
 }
@@ -96,6 +95,11 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
 {
 
   this->ValidateSizeOfParametersArray(parameters);
+
+  MeasureType value;
+  value.SetSize(m_NumberOfValues);
+  mitk::Point3D invariantPoint;
+  unsigned int invariantPointIndex = 0;
 
   cv::Matx44d rigidTransformation = GetCalibrationTransformation(parameters);
 
@@ -134,11 +138,6 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     mitkThrow() << oss.str();
   }
 
-  MeasureType value;
-  value.SetSize(m_NumberOfValues);
-  mitk::Point3D invariantPoint;
-  unsigned int invariantPointIndex = 0;
-
   for (unsigned int i = 0; i < this->m_Matrices.size(); i++)
   {
     cv::Matx44d trackerTransformation(this->m_Matrices[i]);
@@ -153,12 +152,15 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     transformedPoint = combinedTransformation * point;
 
     // Sort out invariant point
-    invariantPointIndex = m_Points[i].first;
-    if (invariantPointIndex >= m_NumberOfInvariantPoints)
+    if (this->GetNumberOfInvariantPoints() > 1)
     {
-      std::ostringstream oss;
-      oss << "UltrasoundPinCalibrationCostFunction::GetValue invariantPointIndex=" << invariantPointIndex << ", which is out of range [0.." << m_NumberOfInvariantPoints-1 << "]." << std::endl;
-      mitkThrow() << oss.str();
+      invariantPointIndex = m_Points[i].first;
+      if (invariantPointIndex >= this->GetNumberOfInvariantPoints())
+      {
+        std::ostringstream oss;
+        oss << "UltrasoundPinCalibrationCostFunction::GetValue invariantPointIndex=" << invariantPointIndex << ", which is out of range [0.." << m_NumberOfInvariantPoints-1 << "]." << std::endl;
+        mitkThrow() << oss.str();
+      }
     }
     if (parametersForInvariantPoints != 0)
     {
@@ -170,7 +172,7 @@ UltrasoundPinCalibrationCostFunction::MeasureType UltrasoundPinCalibrationCostFu
     {
       // i.e. its not being optimised.
       // There may still be multiple points, all of which are not optimised.
-      invariantPoint = this->m_InvariantPoints[m_Points[i].first];
+      invariantPoint = this->m_InvariantPoints[invariantPointIndex];
     }
     value[i*3 + 0] = transformedPoint(0, 0) - invariantPoint[0];
     value[i*3 + 1] = transformedPoint(1, 0) - invariantPoint[1];
