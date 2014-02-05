@@ -237,7 +237,6 @@ niftkMultiViewerWidget::~niftkMultiViewerWidget()
 niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 {
   niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(tr("QmitkRenderWindow"),
-                                                                      -5, 20,
                                                                       this,
                                                                       m_RenderingManager,
                                                                       m_DataStorage);

@@ -82,8 +82,6 @@ public:
   niftkSingleViewerWidget(QWidget* parent);
 
   niftkSingleViewerWidget(QString windowName,
-                             double minimumMagnification,
-                             double maximumMagnification,
                              QWidget* parent = 0,
                              mitk::RenderingManager* renderingManager = 0,
                              mitk::DataStorage* dataStorage = 0

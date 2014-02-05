@@ -56,8 +56,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent)
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::niftkSingleViewerWidget(
     QString windowName,
-    double minimumMagnification,
-    double maximumMagnification,
     QWidget *parent,
     mitk::RenderingManager* renderingManager,
     mitk::DataStorage* dataStorage)
@@ -69,8 +67,8 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(
 , m_IsBoundGeometryActive(false)
 , m_Geometry(NULL)
 , m_BoundGeometry(NULL)
-, m_MinimumMagnification(minimumMagnification)
-, m_MaximumMagnification(maximumMagnification)
+, m_MinimumMagnification(-5.0)
+, m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_NavigationControllerEventListening(false)
