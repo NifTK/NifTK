@@ -79,7 +79,7 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
-  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, mitk::DataStorage* dataStorage = 0);
+  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0);
   virtual ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
@@ -378,9 +378,6 @@ protected slots:
   virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 private:
-
-  /// \brief This method is called from both constructors to do the construction.
-  void Initialize(mitk::RenderingManager* renderingManager = 0, mitk::DataStorage* dataStorage = 0);
 
   inline int Index(int index) const
   {

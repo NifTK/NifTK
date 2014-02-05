@@ -27,13 +27,9 @@
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::niftkSingleViewerWidget(
-    QWidget *parent,
-    mitk::RenderingManager* renderingManager,
-    mitk::DataStorage* dataStorage)
+niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::RenderingManager* renderingManager)
 : QWidget(parent)
 , m_DataStorage(NULL)
-, m_RenderingManager(NULL)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
 , m_IsBoundGeometryActive(false)
@@ -49,13 +45,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_DnDDisplayStateMachine(0)
 {
-  this->Initialize(renderingManager, dataStorage);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::Initialize(mitk::RenderingManager* renderingManager, mitk::DataStorage* dataStorage)
-{
   if (renderingManager == NULL)
   {
     m_RenderingManager = mitk::RenderingManager::GetInstance();
@@ -64,8 +53,6 @@ void niftkSingleViewerWidget::Initialize(mitk::RenderingManager* renderingManage
   {
     m_RenderingManager = renderingManager;
   }
-
-  m_DataStorage = dataStorage;
 
   this->setAcceptDrops(true);
 
