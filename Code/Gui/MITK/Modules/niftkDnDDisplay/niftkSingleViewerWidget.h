@@ -326,11 +326,6 @@ public:
    */
   virtual void SetFocus();
 
-protected:
-
-  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
-  virtual void paintEvent(QPaintEvent* event);
-
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
@@ -362,6 +357,11 @@ signals:
 
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
+
+protected:
+
+  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
+  virtual void paintEvent(QPaintEvent* event);
 
 protected slots:
 
