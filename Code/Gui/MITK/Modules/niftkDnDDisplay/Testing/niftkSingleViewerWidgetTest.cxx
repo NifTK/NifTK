@@ -532,6 +532,33 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testRememberSelectedPosition()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->StateTester->Clear();
+
+  mitk::Point3D selectedPosition;
+  selectedPosition[0] = 100.0;
+  selectedPosition[1] = -50.0;
+  selectedPosition[2] = -100.0;
+  d->Viewer->SetSelectedPosition(selectedPosition);
+
+  d->StateTester->Clear();
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+
+  d->StateTester->Clear();
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+
+  mitk::Point3D newPosition = d->Viewer->GetSelectedPosition();
+
+  QCOMPARE(newPosition, selectedPosition);
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
