@@ -286,8 +286,8 @@ void niftkSingleViewerWidgetTestClass::testGetOrientation()
 
   /// The default window layout was set to coronal in the init() function.
   QCOMPARE(orientation, MIDAS_ORIENTATION_CORONAL);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 0ul);
-  QCOMPARE(d->StateTester->GetQtSignals().size(), 0ul);
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(0));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), size_t(0));
 }
 
 
@@ -302,8 +302,8 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
 
   mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
 
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 0ul);
-  QCOMPARE(d->StateTester->GetQtSignals().size(), 0ul);
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(0));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), size_t(0));
 
   mitk::Image* image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
   mitk::Geometry3D::Pointer geometry = image->GetGeometry();
@@ -362,10 +362,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(1));
 
   d->StateTester->Clear();
 
@@ -373,10 +373,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(1));
 
   d->StateTester->Clear();
 
@@ -384,10 +384,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 1ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(1));
 
   d->StateTester->Clear();
 
@@ -396,10 +396,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(2));
 
   d->StateTester->Clear();
 
@@ -408,10 +408,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(2));
 
   d->StateTester->Clear();
 
@@ -420,10 +420,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals().size(), 2ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(2));
 
   d->StateTester->Clear();
 }
@@ -514,7 +514,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   mitk::FocusEvent focusEvent;
   mitk::SliceNavigationController::GeometrySliceEvent geometrySliceEvent(NULL, 0);
-  QCOMPARE(d->StateTester->GetItkSignals(focusManager, focusEvent).size(), 1ul);
+  QCOMPARE(d->StateTester->GetItkSignals(focusManager, focusEvent).size(), size_t(1));
   QVERIFY(d->StateTester->GetItkSignals(axialSnc, geometrySliceEvent).size() <= 1);
   QVERIFY(d->StateTester->GetItkSignals(sagittalSnc, geometrySliceEvent).size() <= 1);
   QVERIFY(d->StateTester->GetItkSignals(coronalSnc, geometrySliceEvent).size() <= 1);
@@ -585,9 +585,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QCOMPARE(newPosition[2], lastPosition[2]);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
 
   d->StateTester->Clear();
 
@@ -600,9 +600,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(newPosition[0], lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[1]);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 0ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
 
   d->StateTester->Clear();
 
@@ -616,9 +616,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QVERIFY(newPosition[2] != lastPosition[2]);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), 1ul);
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), 0ul);
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
 
   d->StateTester->Clear();
 }
