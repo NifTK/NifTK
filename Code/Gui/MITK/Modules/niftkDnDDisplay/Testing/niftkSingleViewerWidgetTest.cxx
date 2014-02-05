@@ -468,7 +468,23 @@ void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
 void niftkSingleViewerWidgetTestClass::testSetCursorPosition()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-  /// TODO
+
+  const char* cursorPositionChangedSignal = SIGNAL(CursorPositionChanged(niftkSingleViewerWidget*, MIDASOrientation, const mitk::Vector2D&));
+
+  mitk::Vector2D axialCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+  mitk::Vector2D sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+  mitk::Vector2D coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  coronalCursorPosition[0] = 0.4;
+  coronalCursorPosition[1] = 0.6;
+
+  d->Viewer->SetCursorPosition(MIDAS_ORIENTATION_CORONAL, coronalCursorPosition);
+
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL), axialCursorPosition, 0.01));
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL), sagittalCursorPosition, 0.01));
+  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), coronalCursorPosition, 0.01));
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QVERIFY(d->StateTester->GetQtSignals(cursorPositionChangedSignal).size() == 1);
 }
 
 
