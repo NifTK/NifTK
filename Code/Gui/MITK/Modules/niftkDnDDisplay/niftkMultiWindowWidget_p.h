@@ -444,6 +444,7 @@ private:
   /// \brief Blocks sending signals by the slice navigation controller.
   bool m_BlockSignals;
 
+  bool m_SelectedRenderWindowHasChanged;
   std::vector<bool> m_SncSliceHasChanged;
   bool m_SelectedPositionHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
