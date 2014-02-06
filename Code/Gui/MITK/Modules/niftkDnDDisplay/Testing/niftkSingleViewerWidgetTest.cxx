@@ -46,6 +46,9 @@ public:
   mitk::RenderingManager::Pointer RenderingManager;
 
   mitk::DataNode::Pointer ImageNode;
+  mitk::Image* Image;
+  mitk::Vector3D ExtentsInVxInWorldCoordinateOrder;
+  mitk::Vector3D SpacingInWorldCoordinateOrder;
 
   niftkSingleViewerWidget* Viewer;
   niftkMultiViewerVisibilityManager* VisibilityManager;
@@ -64,6 +67,9 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
   Q_D(niftkSingleViewerWidgetTestClass);
 
   d->ImageNode = 0;
+  d->Image = 0;
+  d->ExtentsInVxInWorldCoordinateOrder.Fill(0.0);
+  d->SpacingInWorldCoordinateOrder.Fill(1.0);
   d->Viewer = 0;
   d->VisibilityManager = 0;
   d->InteractiveMode = false;
@@ -109,6 +115,44 @@ void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 
 
 // --------------------------------------------------------------------------
+QPoint niftkSingleViewerWidgetTestClass::GetPointAtCursorPosition(QmitkRenderWindow *renderWindow, const mitk::Vector2D& cursorPosition)
+{
+  QRect rect = renderWindow->rect();
+  double x = cursorPosition[0] * rect.width();
+  double y = (1.0 - cursorPosition[1]) * rect.height();
+  return QPoint(x, y);
+}
+
+
+// --------------------------------------------------------------------------
+mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCursorPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point)
+{
+  QRect rect = renderWindow->rect();
+  mitk::Vector2D cursorPosition;
+  cursorPosition[0] = double(point.x()) / rect.width();
+  cursorPosition[1] = 1.0 - double(point.y()) / rect.height();
+  return cursorPosition;
+}
+
+
+// --------------------------------------------------------------------------
+bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2)
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  for (int i = 0; i < 3; ++i)
+  {
+    if (std::abs(selectedPosition1[i] - selectedPosition2[i]) > d->SpacingInWorldCoordinateOrder[i] / 2.0)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::initTestCase()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
@@ -150,6 +194,10 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
   d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
+
+  d->Image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
+  mitk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->ExtentsInVxInWorldCoordinateOrder);
+  mitk::GetSpacingInWorldCoordinateOrder(d->Image, d->SpacingInWorldCoordinateOrder);
 }
 
 
@@ -187,7 +235,7 @@ void niftkSingleViewerWidgetTestClass::init()
   d->VisibilityManager->RegisterViewer(d->Viewer);
   d->VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
 
-  d->Viewer->resize(1024, 768);
+  d->Viewer->resize(1024, 1024);
   d->Viewer->show();
 
   QTest::qWaitForWindowShown(d->Viewer);
@@ -309,25 +357,17 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
   QCOMPARE(d->StateTester->GetItkSignals().size(), size_t(0));
   QCOMPARE(d->StateTester->GetQtSignals().size(), size_t(0));
 
-  mitk::Image* image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
-  mitk::Geometry3D::Pointer geometry = image->GetGeometry();
-  mitk::Point3D centre = geometry->GetCenter();
-
-  mitk::Vector3D extentsInWorldCoordinateOrder;
-  mitk::GetExtentsInVxInWorldCoordinateOrder(image, extentsInWorldCoordinateOrder);
-
-  mitk::Vector3D spacingInWorldCoordinateOrder;
-  mitk::GetSpacingInWorldCoordinateOrder(image, spacingInWorldCoordinateOrder);
+  mitk::Point3D centre = d->Image->GetGeometry()->GetCenter();
 
   for (int i = 0; i < 3; ++i)
   {
     double distanceFromCentre = std::abs(selectedPosition[i] - centre[i]);
-    if (static_cast<int>(extentsInWorldCoordinateOrder[i]) % 2 == 0)
+    if (static_cast<int>(d->ExtentsInVxInWorldCoordinateOrder[i]) % 2 == 0)
     {
       /// If the number of slices is an even number then the selected position
       /// must be a half voxel far from the centre, either way.
       /// Tolerance is 0.001 millimetre because of float precision.
-      QVERIFY(std::abs(distanceFromCentre - spacingInWorldCoordinateOrder[i] / 2.0) < 0.001);
+      QVERIFY(std::abs(distanceFromCentre - d->SpacingInWorldCoordinateOrder[i] / 2.0) < 0.001);
     }
     else
     {
@@ -345,11 +385,6 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  mitk::Image* image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
-
-  mitk::Vector3D spacingInWorldCoordinateOrder;
-  mitk::GetSpacingInWorldCoordinateOrder(image, spacingInWorldCoordinateOrder);
-
   QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
@@ -361,7 +396,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   mitk::Point3D initialPosition = d->Viewer->GetSelectedPosition();
   mitk::Point3D newPosition = initialPosition;
-  newPosition[0] += 2 * spacingInWorldCoordinateOrder[0];
+  newPosition[0] += 2 * d->SpacingInWorldCoordinateOrder[0];
 
   d->Viewer->SetSelectedPosition(newPosition);
 
@@ -373,7 +408,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  newPosition[1] += 2 * spacingInWorldCoordinateOrder[1];
+  newPosition[1] += 2 * d->SpacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
@@ -384,7 +419,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  newPosition[2] += 2 * spacingInWorldCoordinateOrder[2];
+  newPosition[2] += 2 * d->SpacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
@@ -395,8 +430,8 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  newPosition[0] -= 3 * spacingInWorldCoordinateOrder[0];
-  newPosition[1] -= 3 * spacingInWorldCoordinateOrder[1];
+  newPosition[0] -= 3 * d->SpacingInWorldCoordinateOrder[0];
+  newPosition[1] -= 3 * d->SpacingInWorldCoordinateOrder[1];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
@@ -407,8 +442,8 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  newPosition[0] -= 4 * spacingInWorldCoordinateOrder[0];
-  newPosition[2] -= 4 * spacingInWorldCoordinateOrder[2];
+  newPosition[0] -= 4 * d->SpacingInWorldCoordinateOrder[0];
+  newPosition[2] -= 4 * d->SpacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);
@@ -419,8 +454,8 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  newPosition[1] += 5 * spacingInWorldCoordinateOrder[1];
-  newPosition[2] += 5 * spacingInWorldCoordinateOrder[2];
+  newPosition[1] += 5 * d->SpacingInWorldCoordinateOrder[1];
+  newPosition[2] += 5 * d->SpacingInWorldCoordinateOrder[2];
   d->Viewer->SetSelectedPosition(newPosition);
 
   QCOMPARE(d->Viewer->GetSelectedPosition(), newPosition);

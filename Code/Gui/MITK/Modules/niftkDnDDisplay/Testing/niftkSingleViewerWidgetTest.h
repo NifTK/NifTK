@@ -40,6 +40,7 @@ public:
 
   typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
   typedef niftkSingleViewerWidgetState ViewerState;
+  typedef niftkSingleViewerWidgetTestClass Self;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
   explicit niftkSingleViewerWidgetTestClass();
@@ -60,6 +61,20 @@ public:
   /// \brief Sets the interactive mode.
   /// In interactive mode the windows are not closed when the test is finished.
   void SetInteractiveMode(bool interactiveMode);
+
+  /// \brief Converts a cursor position in a render window to a point on the screen.
+  /// The cursor position is a relative position within the render window normalised to the render window size.
+  /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
+  static QPoint GetPointAtCursorPosition(QmitkRenderWindow *renderWindow, const mitk::Vector2D& cursorPosition);
+
+  /// \brief Converts a point on the screen to a cursor position in a render window.
+  /// The cursor position is a relative position within the render window normalised to the render window size.
+  /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
+  static mitk::Vector2D GetCursorPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
+
+  /// \brief Determines if two world positions are equal with the tolerance of half spacing.
+  /// Converting the positions to voxel space should result equal coordinates.
+  bool Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2);
 
 private slots:
 
