@@ -101,7 +101,8 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     renderWindow = this->GetRenderWindow(renderer);
   }
 
-  bool signalsWereBlocked = m_MultiWindowWidget->BlockSignals(true);
+  bool itkSignalsWereBlocked = m_MultiWindowWidget->BlockSignals(true);
+  bool qtSignalsWereBlocked = m_MultiWindowWidget->blockSignals(true);
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
@@ -114,7 +115,8 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  m_MultiWindowWidget->BlockSignals(signalsWereBlocked);
+  m_MultiWindowWidget->blockSignals(qtSignalsWereBlocked);
+  m_MultiWindowWidget->BlockSignals(itkSignalsWereBlocked);
 
   return true;
 }

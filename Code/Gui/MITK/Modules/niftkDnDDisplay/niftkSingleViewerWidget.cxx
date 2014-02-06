@@ -616,7 +616,16 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       return;
     }
 
-    bool signalsWereBlocked = m_MultiWidget->BlockSignals(true);
+    bool itkSignalsWereBlocked = m_MultiWidget->BlockSignals(true);
+    bool qtSignalsWereBlocked = m_MultiWidget->blockSignals(true);
+
+    bool timeStepHasChanged = false;
+    bool selectedPositionHasChanged = false;
+    bool cursorPositionsHaveChanged = false;
+    bool scaleFactorsHaveChanged = false;
+    bool selectedRenderWindowHasChanged = false;
+    bool cursorPositionBindingHasChanged = false;
+    bool scaleFactorBindingHasChanged = false;
 
     bool wasSelected = this->IsSelected();
     QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
@@ -654,28 +663,22 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     {
       if (!dontSetSelectedPosition)
       {
-        m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
         m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
-        emit SelectedPositionChanged(this, m_SelectedPositions[Index(windowLayout)]);
-        emit SelectedTimeStepChanged(this, m_TimeSteps[Index(0)]);
+        m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
+        timeStepHasChanged = true;
+        selectedPositionHasChanged = true;
       }
 
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-        for (int i = 0; i < 3; ++i)
-        {
-          emit CursorPositionChanged(this, MIDASOrientation(i), m_MultiWidget->GetCursorPosition(MIDASOrientation(i)));
-        }
+        cursorPositionsHaveChanged = true;
       }
 
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-        for (int i = 0; i < 3; ++i)
-        {
-          emit ScaleFactorChanged(this, MIDASOrientation(i), m_MultiWidget->GetScaleFactor(MIDASOrientation(i)));
-        }
+        scaleFactorsHaveChanged = true;
       }
 
       if (wasSelected)
@@ -686,12 +689,12 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
-        emit CursorPositionBindingChanged(this, m_CursorPositionBinding[Index(windowLayout)]);
+        cursorPositionBindingHasChanged = true;
       }
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
-        emit ScaleFactorBindingChanged(this, m_ScaleFactorBinding[Index(windowLayout)]);
+        scaleFactorBindingHasChanged = true;
       }
 
       m_LastSelectedPositions.clear();
@@ -715,19 +718,16 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       {
         if (!dontSetSelectedPosition)
         {
-          m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
           m_MultiWidget->SetTimeStep(0);
-          emit SelectedPositionChanged(this, m_MultiWidget->GetSelectedPosition());
-          emit SelectedTimeStepChanged(this, 0);
+          m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
+          timeStepHasChanged = true;
+          selectedPositionHasChanged = true;
         }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
         {
           m_MultiWidget->FitToDisplay();
-          for (int i = 0; i < 3; ++i)
-          {
-            emit CursorPositionChanged(this, MIDASOrientation(i), m_MultiWidget->GetCursorPosition(MIDASOrientation(i)));
-            emit ScaleFactorChanged(this, MIDASOrientation(i), m_MultiWidget->GetScaleFactor(MIDASOrientation(i)));
-          }
+          cursorPositionsHaveChanged = true;
+          scaleFactorsHaveChanged = true;
         }
 
         m_LastSelectedPositions.clear();
@@ -760,7 +760,43 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       }
     }
 
-    m_MultiWidget->BlockSignals(signalsWereBlocked);
+    m_MultiWidget->blockSignals(qtSignalsWereBlocked);
+    m_MultiWidget->BlockSignals(itkSignalsWereBlocked);
+
+    if (timeStepHasChanged)
+    {
+      emit SelectedTimeStepChanged(this, this->GetTimeStep());
+    }
+    if (selectedPositionHasChanged)
+    {
+      emit SelectedPositionChanged(this, this->GetSelectedPosition());
+    }
+    if (cursorPositionsHaveChanged)
+    {
+      for (int i = 0; i < 3; ++i)
+      {
+        emit CursorPositionChanged(this, MIDASOrientation(i), this->GetCursorPosition(MIDASOrientation(i)));
+      }
+    }
+    if (scaleFactorsHaveChanged)
+    {
+      for (int i = 0; i < 3; ++i)
+      {
+        emit ScaleFactorChanged(this, MIDASOrientation(i), this->GetScaleFactor(MIDASOrientation(i)));
+      }
+    }
+    if (timeStepHasChanged)
+    {
+      emit SelectedTimeStepChanged(this, this->GetTimeStep());
+    }
+    if (cursorPositionBindingHasChanged)
+    {
+      emit CursorPositionBindingChanged(this, this->GetCursorPositionBinding());
+    }
+    if (scaleFactorBindingHasChanged)
+    {
+      emit ScaleFactorBindingChanged(this, this->GetScaleFactorBinding());
+    }
   }
 }
 
