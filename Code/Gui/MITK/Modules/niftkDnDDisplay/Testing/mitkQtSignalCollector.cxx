@@ -20,41 +20,21 @@
 namespace mitk
 {
 
-
 //-----------------------------------------------------------------------------
 QtSignalNotifier::QtSignalNotifier(QtSignalListener* signalListener, const QObject* object, const char* signal)
 {
   m_QtSignalListener = signalListener;
   m_Object = object;
+  m_Signal = QMetaObject::normalizedSignature(signal);
 
-  /// Note:
-  /// The SIGNAL macro preprends a '2' before the signals and '1' before slots.
-  /// If this function is called using the SIGNAL macro, all is fine. However,
-  /// if the signal was discovered through reflection via the QMetaobject,
-  /// the signature will not contain the starting '2' character.
-  /// Therefore, we insert it here.
-  QByteArray ba;
-  if (signal[0] == '2')
-  {
-    m_Signal = QByteArray(signal + 1);
-    ba = QByteArray(signal);
-  }
-  else
-  {
-    m_Signal = signal;
-    ba = QByteArray(m_Signal).prepend('2');
-  }
-
-  QObject::connect(m_Object, ba, this, SLOT(OnQtSignalReceived()), Qt::DirectConnection);
+  QObject::connect(m_Object, m_Signal, this, SLOT(OnQtSignalReceived()), Qt::DirectConnection);
 }
 
 
 //-----------------------------------------------------------------------------
 QtSignalNotifier::~QtSignalNotifier()
 {
-  QByteArray ba = m_Signal;
-  ba.prepend('2');
-  QObject::disconnect(m_Object, ba, this, SLOT(OnQtSignalReceived()));
+  QObject::disconnect(m_Object, m_Signal, this, SLOT(OnQtSignalReceived()));
 }
 
 
@@ -127,13 +107,14 @@ QtSignalCollector::Signals QtSignalCollector::GetSignals(const char* signal) con
 //-----------------------------------------------------------------------------
 QtSignalCollector::Signals QtSignalCollector::GetSignals(QObject* object, const char* signal) const
 {
+  QByteArray normalisedSignal = QMetaObject::normalizedSignature(signal);
   Signals selectedSignals;
   Signals::const_iterator it = m_Signals.begin();
   Signals::const_iterator signalsEnd = m_Signals.end();
   for ( ; it != signalsEnd; ++it)
   {
-    if ((it->first == 0 || it->first == object)
-        && signal == 0 || QMetaObject::normalizedSignature(it->second) == QMetaObject::normalizedSignature(signal))
+    if ((object == 0 || it->first == object)
+        && (signal == 0 || it->second == normalisedSignal))
     {
       selectedSignals.push_back(*it);
     }
@@ -169,15 +150,6 @@ const QtSignalCollector::Signals& QtSignalCollector::GetSignals() const
 //-----------------------------------------------------------------------------
 void QtSignalCollector::Clear()
 {
-  /// Destruct the copies of the original events.
-  Signals::iterator it = m_Signals.begin();
-  Signals::iterator signalsEnd = m_Signals.end();
-  for ( ; it != signalsEnd; ++it)
-  {
-//    delete it->second;
-  }
-
-  /// Remove the elements.
   m_Signals.clear();
 }
 
@@ -185,12 +157,15 @@ void QtSignalCollector::Clear()
 //-----------------------------------------------------------------------------
 void QtSignalCollector::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
+  /// Note that the SIGNAL macro inserted a '2' character before the
+  /// signature of the signal. We do not want to print that, that is
+  /// why we step the pointer by 1 (constData() + 1).
   Signals::const_iterator it = m_Signals.begin();
   Signals::const_iterator signalsEnd = m_Signals.end();
   int i = 0;
   for ( ; it != signalsEnd; ++it, ++i)
   {
-    os << indent << i << ": " << ((void*) it->first) << ": " << it->second.data() << std::endl;
+    os << indent << i << ": " << ((void*) it->first) << ": " << (it->second.constData() + 1) << std::endl;
   }
 }
 

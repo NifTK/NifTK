@@ -66,7 +66,12 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
         QMetaMethod metaMethod = metaObject->method(i);
         if (metaMethod.methodType() == QMetaMethod::Signal)
         {
-          this->Connect(qTestObject, metaMethod.signature());
+          /// Note:
+          /// The SIGNAL macro preprends a '2' before the signals and '1' before slots.
+          /// So that the connect mechanism works, we have to imitate this behaviour here.
+          QByteArray signal(metaMethod.signature());
+          signal.prepend('2');
+          this->Connect(qTestObject, signal);
         }
       }
     }
