@@ -443,7 +443,11 @@ private:
 
   /// \brief Blocks sending signals by the slice navigation controller.
   bool m_BlockSignals;
-  std::vector<bool> m_PendingSncSignals;
+
+  std::vector<bool> m_SncSliceHasChanged;
+  bool m_SelectedPositionHasChanged;
+  std::vector<bool> m_CursorPositionHasChanged;
+  std::vector<bool> m_ScaleFactorHasChanged;
 
   friend class DisplayGeometryModificationCommand;
 
