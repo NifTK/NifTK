@@ -18,6 +18,7 @@
 #include <mitkImageWriteAccessor.h>
 #include <mitkProperties.h>
 #include <Conversion/ImageConversion.h>
+#include <stdexcept>
 
 
 namespace niftk
@@ -29,16 +30,26 @@ const char* Undistortion::s_ImageIsRectifiedPropertyName        = "niftk.ImageIs
 const char* Undistortion::s_StereoRigTransformationPropertyName = "niftk.StereoRigTransformation";
 
 //-----------------------------------------------------------------------------
-Undistortion::Undistortion(mitk::DataNode::Pointer node)
-  : m_Node(node), m_MapX(0), m_MapY(0)
+Undistortion::Undistortion(const mitk::DataNode::Pointer& node)
+  : m_Node(node), m_MapX(0), m_MapY(0), m_RecomputeCache(true)
 {
+  // does not make sense to initialise this will a null input object.
+  if (node.IsNull())
+  {
+    throw std::runtime_error("node parameter is null; not allowed.");
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-Undistortion::Undistortion(mitk::Image::Pointer image)
-  : m_Image(image), m_MapX(0), m_MapY(0)
+Undistortion::Undistortion(const mitk::Image::Pointer& image)
+  : m_Image(image), m_MapX(0), m_MapY(0), m_RecomputeCache(true)
 {
+  // does not make sense to initialise this will a null input object.
+  if (image.IsNull())
+  {
+    throw std::runtime_error("image parameter is null; not allowed.");
+  }
 }
 
 
@@ -66,7 +77,7 @@ void Undistortion::LoadIntrinsicCalibration(const std::string& filename, mitk::D
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::LoadIntrinsicCalibration(const std::string& filename, mitk::Image::Pointer img)
+void Undistortion::LoadIntrinsicCalibration(const std::string& filename, const mitk::Image::Pointer& img)
 {
   assert(img.IsNotNull());
 
@@ -307,7 +318,7 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::ValidateInput(bool& recomputeCache)
+void Undistortion::ValidateInput()
 {
   mitk::CameraIntrinsics::Pointer   nodeIntrinsic;
 
@@ -353,6 +364,15 @@ void Undistortion::ValidateInput(bool& recomputeCache)
   if (m_Image.IsNull())
   {
     throw std::runtime_error("No image data to work on");
+  }
+
+  // mitk does not behave well if the image is not properly initialised.
+  // we simply use a size check for that.
+  if ((m_Image->GetDimension()  != 2) ||
+      (m_Image->GetDimension(0) == 0) ||
+      (m_Image->GetDimension(1) == 0))
+  {
+    throw std::runtime_error("Input image has invalid/zero dimensions");
   }
 
   int numComponents     = m_Image->GetPixelType().GetNumberOfComponents();
@@ -404,8 +424,8 @@ void Undistortion::ValidateInput(bool& recomputeCache)
 
   if (m_Intrinsics.IsNotNull())
   {
-    recomputeCache = !m_Intrinsics->Equals(nodeIntrinsic.GetPointer());
-    if (recomputeCache)
+    m_RecomputeCache |= !m_Intrinsics->Equals(nodeIntrinsic.GetPointer());
+    if (m_RecomputeCache)
     {
       // we need to copy it because somebody could modify that instance of CameraIntrinsics
       m_Intrinsics = nodeIntrinsic->Clone();
@@ -426,7 +446,7 @@ void Undistortion::ValidateInput(bool& recomputeCache)
     if ((m_Image->GetDimension(0) != (unsigned int) m_MapX->width) ||
         (m_Image->GetDimension(1) != (unsigned int) m_MapX->height))
     {
-      recomputeCache = true;
+      m_RecomputeCache = true;
     }
   }
   // FIXME: check that calibration data is in some meaningful range for our input image
@@ -436,6 +456,10 @@ void Undistortion::ValidateInput(bool& recomputeCache)
 //-----------------------------------------------------------------------------
 void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
 {
+  // we may have been initialised with a DataNode, so check whether there's
+  // an input image somewhere that we can process.
+  ValidateInput();
+
   if (!outputImage.IsNull())
   {
     bool haswrongsize = false;
@@ -445,6 +469,7 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
 
     if (haswrongsize)
     {
+      // this resets the smart-pointer to null.
       outputImage = mitk::Image::Pointer();
     }
   }
@@ -465,10 +490,16 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::Run(mitk::DataNode::Pointer output)
+void Undistortion::Run(const mitk::DataNode::Pointer& output)
 {
+  if (output.IsNull())
+  {
+    throw std::runtime_error("output parameter is null. no can do.");
+  }
+
   mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
   PrepareOutput(outputImage);
+  // we may have reallocated a new image so make sure we set it on the node.
   output->SetData(outputImage);
 
   Run(outputImage);
@@ -481,10 +512,22 @@ void Undistortion::Run(mitk::DataNode::Pointer output)
 
 
 //-----------------------------------------------------------------------------
-void Undistortion::Run(mitk::Image::Pointer outputImage)
+void Undistortion::Run(const mitk::Image::Pointer& outputImage)
 {
-  bool  recomputeCache = true;
-  ValidateInput(recomputeCache);
+  if (outputImage.IsNull())
+  {
+    throw std::runtime_error("outputImage parameter is null. no can do.");
+  }
+
+  ValidateInput();
+
+  // both images have to have the same size.
+  // (ValidateInput() will throw if m_Image ends up being null.)
+  if ((m_Image->GetDimension(0) != outputImage->GetDimension(0)) ||
+      (m_Image->GetDimension(1) != outputImage->GetDimension(1)))
+  {
+    throw std::runtime_error("Input and output image have different size! Forgot to call PrepareOutput()?");
+  }
 
   // always lock output first! so that we are not blocking previous stages if
   // our subsequent one is slow.
@@ -501,7 +544,9 @@ void Undistortion::Run(mitk::Image::Pointer outputImage)
   cvInitImageHeader(&inipl, cvSize((int) m_Image->GetDimension(0), (int) m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
   cvSetData(&inipl, const_cast<void*>(inputPointer), m_Image->GetDimension(0) * (m_Image->GetPixelType().GetBitsPerComponent() / 8) * m_Image->GetPixelType().GetNumberOfComponents());
 
-  Process(&inipl, &outipl, recomputeCache);
+  Process(&inipl, &outipl, m_RecomputeCache);
+  // presumably, Process() will have updated the cache if necessary.
+  m_RecomputeCache = false;
 
   // copy relevant props to output image
   outputImage->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
