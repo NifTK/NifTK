@@ -532,7 +532,7 @@ static void TestErrorConditions()
 
 
 //-----------------------------------------------------------------------------
-void TestOutput()
+static void TestOutput()
 {
   // FIXME: check that output has input calib
   // FIXME: check that output has same size of input(-node)
