@@ -681,25 +681,44 @@ void niftkSingleViewerWidgetTestClass::testRememberSelectedPosition()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  d->StateTester->Clear();
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
 
   mitk::Point3D selectedPosition;
   selectedPosition[0] = 100.0;
   selectedPosition[1] = -50.0;
   selectedPosition[2] = -100.0;
+
   d->Viewer->SetSelectedPosition(selectedPosition);
 
   d->StateTester->Clear();
-
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-
   d->StateTester->Clear();
-
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
 
   mitk::Point3D newPosition = d->Viewer->GetSelectedPosition();
 
-  QCOMPARE(newPosition, selectedPosition);
+  QVERIFY(this->Equals(newPosition, selectedPosition));
+
+  mitk::Vector2D coronalCursorPosition;
+  coronalCursorPosition[0] = 0.4;
+  coronalCursorPosition[1] = 0.6;
+  QPoint pointAtCoronalCursorPosition = this->GetPointAtCursorPosition(coronalWindow, coronalCursorPosition);
+
+  d->StateTester->Clear();
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, pointAtCoronalCursorPosition);
+
+  mitk::Point3D newPosition2 = d->Viewer->GetSelectedPosition();
+  mitk::Vector2D newCoronalCursorPosition2 = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  QVERIFY(this->Equals(coronalCursorPosition, newCoronalCursorPosition2));
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+
+  mitk::Point3D newPosition3 = d->Viewer->GetSelectedPosition();
+  QVERIFY(this->Equals(newPosition3, newPosition2));
 }
 
 

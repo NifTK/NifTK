@@ -77,11 +77,11 @@ public:
   bool Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2);
 
   /// \brief Determines if two cursor positions are equal with the given tolerance.
-  static bool Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.0001);
+  static bool Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001);
 
   /// \brief Determines if two vectors of cursor positions are equal with the given tolerance.
   /// The function assumes that the vectors contain three elements.
-  static bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.0001);
+  static bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001);
 
 private slots:
 
