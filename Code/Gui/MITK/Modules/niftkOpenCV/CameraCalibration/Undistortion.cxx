@@ -497,6 +497,17 @@ void Undistortion::Run(const mitk::DataNode::Pointer& output)
     throw std::runtime_error("output parameter is null. no can do.");
   }
 
+  // if we do have an input node then check that it's not the same
+  // as the output node.
+  if (m_Node.IsNotNull())
+  {
+    // null-check not necessary but lets make it explicit.
+    if (m_Node.GetPointer() == output.GetPointer())
+    {
+      throw std::runtime_error("Input and output nodes are the same instance. In-place updates are not supported.");
+    }
+  }
+
   mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
   PrepareOutput(outputImage);
   // we may have reallocated a new image so make sure we set it on the node.
@@ -520,6 +531,14 @@ void Undistortion::Run(const mitk::Image::Pointer& outputImage)
   }
 
   ValidateInput();
+
+  // in-place update is not supported (i think).
+  // i dont think we need to check whether the internal buffers are overlapping.
+  // that would be far beyong accidental parameter swapping, or similar errors.
+  if (m_Image.GetPointer() == outputImage.GetPointer())
+  {
+    throw std::runtime_error("Input and output image are the same instance. In-place updates are not supported.");
+  }
 
   // both images have to have the same size.
   // (ValidateInput() will throw if m_Image ends up being null.)

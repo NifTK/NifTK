@@ -15,6 +15,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkProperties.h>
+#include <mitkPointSet.h>
 #include <CameraCalibration/Undistortion.h>
 #include <Conversion/ImageConversion.h>
 
@@ -164,7 +165,30 @@ static void TestErrorConditions()
     delete undist;
   }
 
-  // FIXME: input node with non-image data attached --> exception on Run()
+  // input node with non-image data attached --> exception on Run()
+  {
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    mitk::DataNode::Pointer   input = mitk::DataNode::New();
+    input->SetData(mitk::PointSet::New());
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(input);
+
+    try
+    {
+      undist->Run(output);
+      MITK_TEST_CONDITION(!"No exception thrown", "Undistortion(node) Run: Exception on non-image input");
+    }
+    catch (const std::exception& e)
+    {
+      MITK_TEST_CONDITION("Threw and caught correct exception", "Undistortion(node) Run: Exception on non-image input");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw wrong exception", "Undistortion(node) Run: Exception on non-image input");
+    }
+
+    delete undist;
+  }
 
   // input node with with zero-sized image during Run() --> exception on Run()
   {
@@ -273,7 +297,34 @@ static void TestErrorConditions()
     delete undist;
   }
 
-  // FIXME: input node without calib properties but with image (without calib props as well) --> exception
+  // input node without calib properties but with image (without calib props as well) --> exception
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer img = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    mitk::DataNode::Pointer   input = mitk::DataNode::New();
+    input->SetData(img);
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(input);
+
+    try
+    {
+      undist->Run(input);
+      MITK_TEST_CONDITION(!"No exception thrown", "Undistortion(node) Run: Exception on missing calibration property");
+    }
+    catch (const std::exception& e)
+    {
+      MITK_TEST_CONDITION("Threw and caught correct exception", "Undistortion(node) Run: Exception on missing calibration property");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw wrong exception", "Undistortion(node) Run: Exception on missing calibration property");
+    }
+
+    delete undist;
+  }
 
   // input node with calib, but attached image without --> no exception
   {
@@ -307,9 +358,70 @@ static void TestErrorConditions()
     delete undist;
   }
 
+  // input node without calib, but attached image with props --> no exception
+  {
+    mitk::CameraIntrinsics::Pointer   cam = mitk::CameraIntrinsics::New();
+    cam->SetFocalLength(1, 2);
+    cam->SetPrincipalPoint(3, 4);
+    cam->SetDistorsionCoeffs(5, 6, 7, 8);
 
-  // FIXME: input node without calib, but attached image with props --> no exception
-  // FIXME: input node with calib, attached image with same calib. --> no exception
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer img = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+    img->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(cam));
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    mitk::DataNode::Pointer   input = mitk::DataNode::New();
+    input->SetData(img);
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(input);
+
+    try
+    {
+      undist->Run(output);
+      MITK_TEST_CONDITION("No exception thrown", "Undistortion(node) Run: No exception for correct calibration property on image");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw exception", "Undistortion(node) Run: No exception for correct calibration property on image");
+    }
+
+    delete undist;
+  }
+
+  // input node with calib, attached image with same calib. --> no exception
+  {
+    mitk::CameraIntrinsics::Pointer   cam = mitk::CameraIntrinsics::New();
+    cam->SetFocalLength(1, 2);
+    cam->SetPrincipalPoint(3, 4);
+    cam->SetDistorsionCoeffs(5, 6, 7, 8);
+
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer img = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+    img->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(cam));
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    mitk::DataNode::Pointer   input = mitk::DataNode::New();
+    input->SetData(img);
+    input->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(cam));
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(input);
+
+    try
+    {
+      undist->Run(output);
+      MITK_TEST_CONDITION("No exception thrown", "Undistortion(node) Run: No exception for correct calibration property on both node and image");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw exception", "Undistortion(node) Run: No exception for correct calibration property on both node and image");
+    }
+
+    delete undist;
+  }
+
+
   // FIXME: input node with calib, attached image with different calib. --> exception
 
   // input image and output image have different size.
@@ -351,8 +463,71 @@ static void TestErrorConditions()
   // FIXME: input image and output node with image of different size
   // FIXME: data-node with a non-zero-sized image attached, node ouput without image --> no exception
   // FIXME: data-node with a non-zero-sized image attached, node ouput with wrong-sized image --> no exception
-  // FIXME: input and output image are the same instance --> exception
-  // FIXME: input and output node are the same instance --> exception
+  
+  // input and output image are the same instance --> exception
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer inputImage = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::CameraIntrinsics::Pointer   cam = mitk::CameraIntrinsics::New();
+    cam->SetFocalLength(1, 2);
+    cam->SetPrincipalPoint(3, 4);
+    cam->SetDistorsionCoeffs(5, 6, 7, 8);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(cam));
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+
+    try
+    {
+      undist->Run(inputImage);
+      MITK_TEST_CONDITION(!"No exception thrown", "Undistortion(image) Run(image): Exception if input and output is same instance");
+    }
+    catch (const std::runtime_error& e)
+    {
+      MITK_TEST_CONDITION("Threw and caught correct exception", "Undistortion(image) Run(image): Exception if input and output is same instance");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw wrong exception", "Undistortion(image) Run(image): Exception if input and output is same instance");
+    }
+
+    delete undist;
+  }
+
+  // input and output node are the same instance --> exception
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer inputImage = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::CameraIntrinsics::Pointer   cam = mitk::CameraIntrinsics::New();
+    cam->SetFocalLength(1, 2);
+    cam->SetPrincipalPoint(3, 4);
+    cam->SetDistorsionCoeffs(5, 6, 7, 8);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(cam));
+
+    mitk::DataNode::Pointer   input = mitk::DataNode::New();
+    input->SetData(inputImage);
+
+    niftk::Undistortion*  undist = new niftk::Undistortion(input);
+
+    try
+    {
+      undist->Run(input);
+      MITK_TEST_CONDITION(!"No exception thrown", "Undistortion(node) Run(node): Exception if input and output is same instance");
+    }
+    catch (const std::runtime_error& e)
+    {
+      MITK_TEST_CONDITION("Threw and caught correct exception", "Undistortion(node) Run(node): Exception if input and output is same instance");
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION(!"Threw wrong exception", "Undistortion(node) Run(node): Exception if input and output is same instance");
+    }
+
+    delete undist;
+  }
 }
 
 
