@@ -142,13 +142,32 @@ bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosit
 
   for (int i = 0; i < 3; ++i)
   {
-    if (std::abs(selectedPosition1[i] - selectedPosition2[i]) > d->SpacingInWorldCoordinateOrder[i] / 2.0)
+    double tolerance = d->SpacingInWorldCoordinateOrder[i] / 2.0;
+    if (std::abs(selectedPosition1[i] - selectedPosition2[i]) > tolerance)
     {
       return false;
     }
   }
 
   return true;
+}
+
+
+// --------------------------------------------------------------------------
+bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance)
+{
+  return std::abs(cursorPosition1[0] - cursorPosition2[0]) <= tolerance && std::abs(cursorPosition1[1] - cursorPosition2[1]) <= tolerance;
+}
+
+
+// --------------------------------------------------------------------------
+bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance)
+{
+  return cursorPositions1.size() == size_t(3)
+      && cursorPositions2.size() == size_t(3)
+      && Self::Equals(cursorPositions1[0], cursorPositions2[0], tolerance)
+      && Self::Equals(cursorPositions1[1], cursorPositions2[1], tolerance)
+      && Self::Equals(cursorPositions1[2], cursorPositions2[2], tolerance);
 }
 
 
@@ -705,12 +724,17 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 
   QPoint newPoint = centre;
   newPoint.rx() += 30;
+  std::vector<mitk::Vector2D> expectedCursorPositions = d->Viewer->GetCursorPositions();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL] = Self::GetCursorPositionAtPoint(coronalWindow, newPoint);
+
   QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
   mitk::Point3D newPosition = d->Viewer->GetSelectedPosition();
+  std::vector<mitk::Vector2D> newCursorPositions = d->Viewer->GetCursorPositions();
   QVERIFY(newPosition[0] != lastPosition[0]);
   QCOMPARE(newPosition[1], lastPosition[1]);
   QCOMPARE(newPosition[2], lastPosition[2]);
+  QVERIFY(Self::Equals(newCursorPositions, expectedCursorPositions));
   QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), size_t(0));
   QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), size_t(0));
