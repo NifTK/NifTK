@@ -90,6 +90,9 @@ int main(int argc, char** argv)
   args.inputImage  = inputImage.c_str();
   args.outputImage = outputImage.c_str();
 
+  args.flgVerbose = flgVerbose;
+  args.flgDebug = flgDebug;
+
   std::cout << "Input image:  " << args.inputImage << std::endl
             << "Output image: " << args.outputImage << std::endl;
 
@@ -143,8 +146,20 @@ int main(int argc, char** argv)
   MammogramPectoralisSegmentationImageFilterType::Pointer 
     filter = MammogramPectoralisSegmentationImageFilterType::New();
 
-  filter->SetInput(imageReader->GetOutput());
-  filter->SetDebug(true);
+  filter->SetInput( imageReader->GetOutput() );
+
+  filter->SetVerbose( args.flgVerbose );
+  filter->SetDebug( args.flgDebug );
+  
+  try
+  {
+    filter->Update(); 
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "Failed to segment the pectoral muscle: " << err << std::endl; 
+    return EXIT_FAILURE;
+  }                
 
 
   // Create the image writer and execute the pipeline
@@ -161,7 +176,8 @@ int main(int argc, char** argv)
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << "Failed: " << err << std::endl; 
+    std::cerr << "Failed write image to file: " << args.outputImage << std::endl
+              << err << std::endl; 
     return EXIT_FAILURE;
   }                
 

@@ -12,12 +12,10 @@
 
 =============================================================================*/
 
-#ifndef itkMammogramPectoralisSegmentationImageFilter_h
-#define itkMammogramPectoralisSegmentationImageFilter_h
+#ifndef __itkMammogramPectoralisSegmentationImageFilter_h
+#define __itkMammogramPectoralisSegmentationImageFilter_h
 
 #include <itkImageToImageFilter.h>
-
-#include <vnl/vnl_double_2.h>
 
 namespace itk {
   
@@ -32,7 +30,7 @@ class ITK_EXPORT MammogramPectoralisSegmentationImageFilter:
 {
 public:
   /** Standard class typedefs. */
-  typedef MammogramPectoralisSegmentationImageFilter           Self;
+  typedef MammogramPectoralisSegmentationImageFilter     Self;
   typedef ImageToImageFilter< TInputImage,TOutputImage > Superclass;
   typedef SmartPointer< Self >                           Pointer;
   typedef SmartPointer< const Self >                     ConstPointer;
@@ -56,6 +54,7 @@ public:
   typedef typename InputImageType::SpacingType  InputImageSpacingType;
   typedef typename InputImageType::PointType    InputImagePointType;
   typedef typename InputImageType::IndexType    InputImageIndexType;
+  typedef typename InputImageType::SizeType     InputImageSizeType;
 
   typedef typename NumericTraits<InputImagePixelType>::RealType    RealType;
 
@@ -91,8 +90,16 @@ public:
   /** End concept checking */
 #endif
 
+  bool GetVerbose( void ) { return m_flgVerbose; }
+  void SetVerbose( bool flag ) { m_flgVerbose = flag; }
+
+  void SetVerboseOn( void ) { m_flgVerbose = true; }
+  void SetVerboseOff( void ) { m_flgVerbose = false; }
+
 
 protected:
+
+  bool m_flgVerbose;
 
   MammogramPectoralisSegmentationImageFilter();
   virtual ~MammogramPectoralisSegmentationImageFilter();
@@ -103,10 +110,6 @@ protected:
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);
-
-  // Write an image to a file
-  void WriteImageToFile( const char *fileOutput, const char *description,
-                         typename TInputImage::Pointer image );
 
 private:
 
