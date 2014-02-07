@@ -97,9 +97,9 @@ std::string GetText( itk::DOMNode::ChildrenListType::iterator &itNode, std::stri
 
 void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 {
+  //                                   123456789012345678901234567890
 
   *foutOutputDensityCSV 
-    //                                 123456789012345678901234567890
     << std::right << std::setw(10) << "Patient id" << ", "
 
     << std::right << std::setw(17) << "Diagnostic ID"   << ", "
@@ -172,10 +172,18 @@ int main(int argc, char** argv)
   PARSE_ARGS;
 
   std::cout << std::endl
-            << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
+            << "Input directory: " << dirInput << std::endl
             << "Input image info XML file: " << fileImageXML << std::endl
             << "Input tumour mask info XML file: " << fileTumourXML << std::endl
             << "Input breast edge points XML file: " << fileBreastEdgeXML << std::endl
+            << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
+            << "Region size in mm: " << regionSizeInMM << std::endl
+            << "Register? " << flgRegister << std::endl
+            << "Ouput directory: " << dirOutput << std::endl
+            << "Output CSV file: " << fileOutputDensityCSV << std::endl
+            << "Verbose? " << flgVerbose << std::endl
+            << "Overwrite? " << flgOverwrite << std::endl
+            << "Debug? " << flgDebug << std::endl
             << std::endl;
 
   // Validate command line args
@@ -194,9 +202,9 @@ int main(int argc, char** argv)
 
   if ( fileOutputDensityCSV.length() != 0 ) {
     foutOutputDensityCSV 
-      = new std::ofstream( niftk::ConcatenatePath( dirOutput, fileOutputDensityCSV ).c_str() );
+      = new std::ofstream( fileOutputDensityCSV.c_str(), ios::binary );
 
-    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad()) {
+    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad() || foutOutputDensityCSV->fail()) {
       std::cerr << "ERROR: Could not open CSV output file: " << fileOutputDensityCSV << std::endl;
       return EXIT_FAILURE;
     }
