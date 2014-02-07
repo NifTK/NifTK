@@ -13,11 +13,11 @@
   =============================================================================*/
 
 /*!
- * \file niftkAnonymiseDICOMMammograms.cxx 
- * \page niftkAnonymiseDICOMMammograms
- * \section niftkAnonymiseDICOMMammogramsSummary niftkAnonymiseDICOMMammograms
+ * \file niftkMaskDICOMMammograms.cxx 
+ * \page niftkMaskDICOMMammograms
+ * \section niftkMaskDICOMMammogramsSummary niftkMaskDICOMMammograms
  * 
- * Search for DICOM mammograms in a directory and anonymise them by removing patient information from the DICOM header and/or applying a rectangular mask to remove the label.
+ * Search for DICOM mammograms in a directory and mask them by removing any image regions in the (assumed dark) background that do not correspond to the breast region.
  *
  */
 
@@ -37,6 +37,7 @@
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkRescaleIntensityImageFilter.h>
+#include <itkMammogramMaskSegmentationImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 
 #include <boost/filesystem/operations.hpp>
@@ -45,7 +46,7 @@
 
 #include <vector>
 
-#include <niftkAnonymiseDICOMMammogramsCLP.h>
+#include <niftkMaskDICOMMammogramsCLP.h>
 
 
 namespace fs = boost::filesystem;
@@ -61,39 +62,8 @@ struct arguments
   std::string strAdd2Suffix;  
 
   bool flgOverwrite;
-  bool flgAnonymiseDICOMHeader;
-  bool flgAnonymiseImageLabel;
   bool flgRescaleIntensitiesToMaxRange;
-  bool flgInvert;
   bool flgVerbose;
-
-  float labelWidth;
-  float labelHeight;
-
-  std::string labelPosition;
-  std::string labelSide;
-  
-  bool flgDontAnonPatientsName;
-  std::string strPatientsName;
-
-  bool flgDontAnonPatientsBirthDate;
-  std::string strPatientsBirthDate;
-
-  bool flgDontAnonOtherPatientNames;
-  std::string strOtherPatientNames;
-
-  bool flgDontAnonPatientsBirthName;
-  std::string strPatientsBirthName;
-
-  bool flgDontAnonPatientsAddress;
-  std::string strPatientsAddress;
-
-  bool flgDontAnonPatientsMothersBirthName;
-  std::string strPatientsMothersBirthName;
-
-  bool flgDontAnonPatientsTelephoneNumbers;
-  std::string strPatientsTelephoneNumbers;
-
 
   std::string iterFilename;
 };
@@ -126,43 +96,6 @@ void PrintDictionary( DictionaryType &dictionary )
 
     ++tagItr;
   }
-};
-
-
-// -------------------------------------------------------------------------
-// AnonymiseTag()
-// -------------------------------------------------------------------------
-
-void AnonymiseTag( bool flgDontAnonymise, 
-		   DictionaryType &dictionary,
-		   std::string tagID,
-		   std::string newTagValue )
-{
-  if ( flgDontAnonymise )
-    return;
-
-  // Search for the tag
-  
-  DictionaryType::ConstIterator tagItr = dictionary.Find( tagID );
-  DictionaryType::ConstIterator end = dictionary.End();
-   
-  if ( tagItr != end )
-  {
-    MetaDataStringType::ConstPointer entryvalue = 
-      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
-    
-    if ( entryvalue )
-    {
-      std::string tagValue = entryvalue->GetMetaDataObjectValue();
-      
-      std::cout << "Anonymising tag (" << tagID <<  ") "
-		<< " from: " << tagValue 
-		<< " to: " << newTagValue << std::endl;
-      
-      itk::EncapsulateMetaData<std::string>( dictionary, tagID, newTagValue );
-    }
-  }
-
 };
 
 
@@ -213,6 +146,8 @@ void SetTag( DictionaryType &dictionary,
 template <class InputPixelType>
 int DoMain(arguments args, InputPixelType min, InputPixelType max)
 {
+  bool flgInvert = false;
+
   enum BreastSideType { 
     UNKNOWN_BREAST_SIDE,
     LEFT_BREAST_SIDE,
@@ -222,8 +157,8 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
   BreastSideType breastSide = UNKNOWN_BREAST_SIDE;
 
 
-  // Iterate through each file and anonymise it
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Iterate through each file and mask it
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   std::string fileInputFullPath;
   std::string fileInputRelativePath;
@@ -351,12 +286,12 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
   if ( ( tagModalityValue == std::string( "CR" ) ) || // Computed Radiography
        ( tagModalityValue == std::string( "MG" ) ) )  // Mammography
   {
-    std::cout << "Image is definitely mammography - anonymising"
+    std::cout << "Image is definitely mammography - masking"
 	      << std::endl;
   }
   else if ( tagModalityValue == std::string( "RG" ) )  // Radiography?
   {
-    std::cout << "Image could be mammography - anonymising"
+    std::cout << "Image could be mammography - masking"
 	      << std::endl;
   }
   else if ( ( tagModalityValue == std::string( "CT" ) ) || //  Computed Tomography
@@ -385,7 +320,7 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
   }
   else
   {
-    std::cout << "WARNING: Unsure if this ia a mammogram but anonymising anyway" 
+    std::cout << "WARNING: Unsure if this ia a mammogram but masking anyway" 
 	      << std::endl;
   }
 
@@ -413,7 +348,7 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
       std::size_t foundInverse = tagInverseValue.find( strInverse );
       if (foundInverse != std::string::npos)
       {
-	args.flgInvert = true;
+	flgInvert = true;
 	std::cout << "Image is INVERSE - inverting" << std::endl;
 	SetTag( dictionary, tagInverse, "IDENTITY" );
       }
@@ -444,17 +379,16 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
       std::size_t foundMonochrome1 = tagPhotoInterpValue.find( strMonochrome1 );
       if (foundMonochrome1 != std::string::npos)
       {
-	args.flgInvert = true;
+	flgInvert = true;
 	std::cout << "Image is MONOCHROME1 - inverting" << std::endl;
 	SetTag( dictionary, tagPhotoInterpID, "MONOCHROME2" );
       }
     }
   }
 
-
   // Invert the image
 
-  if ( args.flgInvert )
+  if ( flgInvert )
   {
     typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
     
@@ -467,164 +401,51 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
     image->DisconnectPipeline();
   }
 
-  // Anonymise the image label
 
-  if ( args.flgAnonymiseImageLabel )
+  // Create the segmentation filter
+
+  typedef unsigned char MaskPixelType;
+  typedef typename itk::Image< MaskPixelType, InputDimension > MaskImageType;   
+
+  typedef typename itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> MammogramMaskSegmentationImageFilterType;
+
+  typename MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+
+  filter->SetInput( image );
+
+  filter->SetVerbose( args.flgVerbose );
+
+  try {
+    filter->Update();
+  }
+  catch( itk::ExceptionObject & err ) 
+  { 
+    std::cerr << "ERROR: Failed to segment image" << std::endl
+              << err << std::endl; 
+    return EXIT_FAILURE;
+  }                
+
+  typename MaskImageType::Pointer mask = filter->GetOutput();
+
+  mask->DisconnectPipeline();
+
+
+  // Apply the mask to the image
+
+  typename itk::ImageRegionConstIterator< MaskImageType > 
+    inputIterator( mask, mask->GetLargestPossibleRegion());
+
+  typename itk::ImageRegionIterator< InputImageType > 
+    outputIterator(image, image->GetLargestPossibleRegion());
+        
+  for ( inputIterator.GoToBegin(), outputIterator.GoToBegin();
+        ! inputIterator.IsAtEnd();
+        ++inputIterator, ++outputIterator )
   {
-
-    typename InputImageType::RegionType region;
-    typename InputImageType::SizeType   size;
-    typename InputImageType::SizeType   scanSize;
-    typename InputImageType::IndexType  start;
-    typename InputImageType::IndexType  idx;
-
-    region = image->GetLargestPossibleRegion();      
-
-    size = region.GetSize();
-
-
-    if ( args.labelSide == std::string( "Automatic" ) )
-    {
-
-      // Determine if this is a left or right breast by calculating the CoM
-
-      start[0] = size[0]/10;
-      start[1] = 0;
-
-      scanSize[0] = size[0]*8/10;
-      scanSize[1] = size[1];
-
-      region.SetSize(  scanSize  );
-      region.SetIndex( start );
-
-      std::cout << "Image size: " << size << std::endl;
-      std::cout << "Region: " << region << std::endl;
-
-      unsigned int iRow = 0;
-      unsigned int nRows = 5;
-      unsigned int rowSpacing = size[1]/( nRows + 1 );
-
-      float xMoment = 0.;
-      float xMomentSum = 0.;
-      float intensitySum = 0.;
-
-      typedef typename itk::ImageLinearIteratorWithIndex< InputImageType > LineIteratorType;
-
-      LineIteratorType itLinear( image, region );
-
-      itLinear.SetDirection( 0 );
-
-      while ( ! itLinear.IsAtEnd() )
-      {
-	// Skip initial set of rows
-
-	iRow = 0;
-	while ( ( ! itLinear.IsAtEnd() ) && ( iRow < rowSpacing ) )
-	{
-	  iRow++;
-	  itLinear.NextLine();
-	}
-
-	// Add next row to moment calculation
-
-	while ( ! itLinear.IsAtEndOfLine() )
-	{
-	  idx = itLinear.GetIndex();
-
-	  intensitySum += itLinear.Get();
-
-	  xMoment = idx[0]*itLinear.Get();
-	  xMomentSum += xMoment;
-
-	  ++itLinear;
-	}
-      }
-
-      xMoment = xMomentSum/intensitySum;
-
-      std::cout << "Center of mass in x: " << xMoment << std::endl;
-
-
-      if ( xMoment > static_cast<float>(size[0])/2. )
-      {
-	breastSide = RIGHT_BREAST_SIDE;
-	std::cout << "RIGHT breast (label on left-hand side)" << std::endl;
-      }
-      else 
-      {
-	breastSide = LEFT_BREAST_SIDE;
-	std::cout << "LEFT breast (label on right-hand side)" << std::endl;
-      }
-    }
-    
-    else if ( args.labelSide == std::string( "Right" ) )
-    {
-      breastSide = LEFT_BREAST_SIDE;
-      std::cout << "Label on RIGHT-hand side (left breast)" << std::endl;
-    }
-
-    else if ( args.labelSide == std::string( "Left" ) )
-    {
-      breastSide = RIGHT_BREAST_SIDE;
-      std::cout << "Label on left-hand side (right breast)" << std::endl;
-    }
-
-
-    // Set the label region to zero
-
-    start[0] = size[0];
-    start[1] = size[1];
-
-    size[0] = static_cast<unsigned int>( static_cast<float>(size[0]) * args.labelWidth/100. );
-    size[1] = static_cast<unsigned int>( static_cast<float>(size[1]) * args.labelHeight/100. );
-
-    if ( args.labelPosition == std::string( "Upper" ) )
-    {
-      start[1] = 0;
-    }
-    else 
-    {
-      start[1] -= size[1];
-    }
-
-    if ( breastSide == LEFT_BREAST_SIDE )
-    {
-      start[0] -= size[0];
-    }
-    else 
-    {
-      start[0] = 0;
-    }
-
-    region.SetSize( size );
-    region.SetIndex( start );
-
-    std::cout << "Removing label from region: " << region << std::endl;
-
-    IteratorType itLabel( image, region );
-  
-    for ( itLabel.GoToBegin(); 
-	  ! itLabel.IsAtEnd() ; 
-	  ++itLabel )
-    {
-      itLabel.Set( 0 );
-    }
+    if ( ! inputIterator.Get() )
+      outputIterator.Set( 0 );
   }
 
-
-  // Anonymise the DICOM header?
-
-  if ( args.flgAnonymiseDICOMHeader )
-  {
-    AnonymiseTag( args.flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-    AnonymiseTag( args.flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
-    AnonymiseTag( args.flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
-    AnonymiseTag( args.flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
-    AnonymiseTag( args.flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           
-    AnonymiseTag( args.flgDontAnonPatientsMothersBirthName, 		      dictionary, "0010|1060", "Anonymous"    ); // Patient's Mother's Birth Name               
-    AnonymiseTag( args.flgDontAnonPatientsTelephoneNumbers, 		      dictionary, "0010|2154", "None"         ); // Patient's Telephone Numbers                 
-  }
-      
 
   // Create the output image filename
 
@@ -721,11 +542,6 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
-  if ( ! ( flgAnonymiseDICOMHeader || flgAnonymiseImageLabel ) )
-  {
-    std::cerr << "WARNING: Neither 'anonHeader' or 'anonLabel' specified" << std::endl;
-  }
-
   if ( dcmDirectoryOut.length() == 0 )
   {
     dcmDirectoryOut = dcmDirectoryIn;
@@ -737,39 +553,9 @@ int main( int argc, char *argv[] )
   args.strAdd2Suffix = strAdd2Suffix;                      
 				   	                                                 
   args.flgOverwrite            = flgOverwrite;                       
-  args.flgAnonymiseDICOMHeader = flgAnonymiseDICOMHeader;            
-  args.flgAnonymiseImageLabel  = flgAnonymiseImageLabel;    
   args.flgVerbose              = flgVerbose;    
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
-  args.flgInvert = flgInvert;
-				   	                                                 
-  args.labelWidth  = labelWidth;                         
-  args.labelHeight = labelHeight;                        
-					                                                 
-  args.labelPosition = labelPosition;                      
-  args.labelSide     = labelSide;                          
-
-  args.flgDontAnonPatientsName = flgDontAnonPatientsName;            
-  args.strPatientsName         = strPatientsName;                    
-					                                                 
-  args.flgDontAnonPatientsBirthDate = flgDontAnonPatientsBirthDate;       
-  args.strPatientsBirthDate	    = strPatientsBirthDate;               
-					                                                 
-  args.flgDontAnonOtherPatientNames = flgDontAnonOtherPatientNames;       
-  args.strOtherPatientNames	    = strOtherPatientNames;               
-					                                                 
-  args.flgDontAnonPatientsBirthName = flgDontAnonPatientsBirthName;       
-  args.strPatientsBirthName	    = strPatientsBirthName;               
-					                                                 
-  args.flgDontAnonPatientsAddress = flgDontAnonPatientsAddress;         
-  args.strPatientsAddress	  = strPatientsAddress;                 
-					                                                 
-  args.flgDontAnonPatientsMothersBirthName = flgDontAnonPatientsMothersBirthName;
-  args.strPatientsMothersBirthName         = strPatientsMothersBirthName;        
-					                                                 
-  args.flgDontAnonPatientsTelephoneNumbers = flgDontAnonPatientsTelephoneNumbers;
-  args.strPatientsTelephoneNumbers         = strPatientsTelephoneNumbers;        
 
 
   std::cout << std::endl << "Examining directory: " 

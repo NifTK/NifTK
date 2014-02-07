@@ -54,7 +54,7 @@ template<class TInputImage, class TOutputImage>
 MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::MammogramMaskSegmentationImageFilter()
 {
-  flgVerbose = false;
+  m_flgVerbose = false;
 
   this->SetNumberOfRequiredInputs( 1 );
   this->SetNumberOfRequiredOutputs( 1 );
@@ -126,7 +126,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   double intThreshold = thresholdCalculator->GetThreshold();
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Threshold: " << intThreshold << std::endl;
   }
@@ -149,7 +149,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   typename LeftOrRightSideCalculatorType::BreastSideType
     breastSide = sideCalculator->GetBreastSide();
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Breast side: " << breastSide << std::endl;
   }
@@ -193,7 +193,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
     sampling[i] = shrinkFactor;
   }
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Input size: " << inSize << ", spacing: " << inSpacing << std::endl
               << "Shrink factor: " << shrinkFactor << std::endl
@@ -245,7 +245,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   imPipelineConnector->TransformPhysicalPointToIndex( comPoint, comIndex );
   
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Image center of mass is: " << comIndex << std::endl;
   }
@@ -332,7 +332,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
       }
     }
 
-    if ( xDiff > 10 )
+    if ( (xDiff > 10 ) && ( index[1] < outSize[1]/10 ) )
     {
       lowerStart = prevIndex;
       break;
@@ -431,7 +431,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
       }
     }
 
-    if ( xDiff > 10 )
+    if ( (xDiff > 10 ) && ( index[1] > 9*outSize[1]/10 ) )
     {
       upperStart = prevIndex;
       break;
@@ -495,7 +495,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   region.SetSize( size );
   region.SetIndex( start );
   
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Computing image range in region: " <<  region << std::endl;
   }
@@ -522,14 +522,14 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   connectedThreshold->SetReplaceValue( 100 );
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Region-growing the image background from position: " << comIndex;
   }
 
   connectedThreshold->SetSeed( comIndex );
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << " between: "
               << niftk::ConvertToString(intThreshold) << " and "
@@ -558,7 +558,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   smoother->SetMaximumError( 0.1 );
   smoother->SetVariance( 5 );
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Smoothing the image" << std::endl;
   }
@@ -587,7 +587,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   expandFilter->SetOutputSpacing( inSpacing );
   expandFilter->SetTransform( IdentityTransformType::New() );
 
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Expanding the image by a factor of " 
               << shrinkFactor << std::endl;
@@ -618,7 +618,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   thresholder->SetLowerThreshold( 50 );
   
   
-  if ( flgVerbose )
+  if ( m_flgVerbose )
   {
     std::cout << "Thresholding the mask" << std::endl;
   }

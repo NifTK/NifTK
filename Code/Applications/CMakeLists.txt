@@ -91,6 +91,7 @@ if(SlicerExecutionModel_FOUND)
     niftkInvertImage
     niftkLogInvertImage
     niftkMammogramMaskSegmentation
+    niftkMaskDICOMMammograms
     niftkMultiply
     niftkN4BiasFieldCorrection
     niftkNegateImage
