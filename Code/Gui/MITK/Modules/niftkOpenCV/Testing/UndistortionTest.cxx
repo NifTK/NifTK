@@ -422,7 +422,7 @@ static void TestErrorConditions()
   }
 
 
-  // FIXME: input node with calib, attached image with different calib. --> exception
+  // MAYBE: input node with calib, attached image with different calib. --> exception
 
   // input image and output image have different size.
   {
@@ -460,9 +460,9 @@ static void TestErrorConditions()
     delete undist;
   }
 
-  // FIXME: input image and output node with image of different size
-  // FIXME: data-node with a non-zero-sized image attached, node ouput without image --> no exception
-  // FIXME: data-node with a non-zero-sized image attached, node ouput with wrong-sized image --> no exception
+  // MAYBE: input image and output node with image of different size --> no exception
+  // MAYBE: data-node with a non-zero-sized image attached, node ouput without image --> no exception
+  // MAYBE: data-node with a non-zero-sized image attached, node ouput with wrong-sized image --> no exception
   
   // input and output image are the same instance --> exception
   {
@@ -534,9 +534,129 @@ static void TestErrorConditions()
 //-----------------------------------------------------------------------------
 static void TestOutput()
 {
-  // FIXME: check that output has input calib
-  // FIXME: check that output has same size of input(-node)
-  // FIXME: init with calib 1, run, change calib to 2, run again(), check that output has calib 2.
+  // check that output has input calib
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer inputImage = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::CameraIntrinsics::Pointer   inputCalib = mitk::CameraIntrinsics::New();
+    inputCalib->SetFocalLength(1, 2);
+    inputCalib->SetPrincipalPoint(3, 4);
+    inputCalib->SetDistorsionCoeffs(5, 6, 7, 8);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(inputCalib));
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+    undist->Run(output);
+
+    // check node first
+    mitk::BaseProperty::Pointer outputProp = output->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    MITK_TEST_CONDITION_REQUIRED(outputProp.IsNotNull(), "Undistortion: output node has non-null calibration property");
+
+    mitk::CameraIntrinsicsProperty::Pointer outputCalibProp = dynamic_cast<mitk::CameraIntrinsicsProperty*>(outputProp.GetPointer());
+    MITK_TEST_CONDITION_REQUIRED(outputCalibProp.IsNotNull(), "Undistortion: output node has calibration property of correct type");
+
+    mitk::CameraIntrinsics::Pointer   outputCalibData = outputCalibProp->GetValue();
+    MITK_TEST_CONDITION_REQUIRED(outputCalibData.IsNotNull(), "Undistortion: output node has non-null calibration data");
+
+    MITK_TEST_CONDITION(outputCalibData->Equals(inputCalib), "Undistortion: output node calibration data matches input calibration data");
+
+    // now image attached to node
+    mitk::Image::Pointer  outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+    MITK_TEST_CONDITION_REQUIRED(outputImage.IsNotNull(), "Undistortion: output node has an image attached");
+
+    outputProp = outputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    MITK_TEST_CONDITION_REQUIRED(outputProp.IsNotNull(), "Undistortion: output image has non-null calibration property");
+
+    outputCalibProp = dynamic_cast<mitk::CameraIntrinsicsProperty*>(outputProp.GetPointer());
+    MITK_TEST_CONDITION_REQUIRED(outputCalibProp.IsNotNull(), "Undistortion: output image has calibration property of correct type");
+
+    outputCalibData = outputCalibProp->GetValue();
+    MITK_TEST_CONDITION_REQUIRED(outputCalibData.IsNotNull(), "Undistortion: output image has non-null calibration data");
+
+    MITK_TEST_CONDITION(outputCalibData->Equals(inputCalib), "Undistortion: output image calibration data matches input calibration data");
+
+    delete undist;
+  }
+
+  // check that output has same size of input(-node)
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer inputImage = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::CameraIntrinsics::Pointer   inputCalib1 = mitk::CameraIntrinsics::New();
+    inputCalib1->SetFocalLength(1, 2);
+    inputCalib1->SetPrincipalPoint(3, 4);
+    inputCalib1->SetDistorsionCoeffs(5, 6, 7, 8);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(inputCalib1));
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+    undist->Run(output);
+
+    mitk::Image::Pointer  outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+    assert(outputImage.IsNotNull());
+
+    MITK_TEST_CONDITION(
+      (outputImage->GetDimension()  == inputImage->GetDimension())  &&
+      (outputImage->GetDimension(0) == inputImage->GetDimension(0)) &&
+      (outputImage->GetDimension(1) == inputImage->GetDimension(1)),
+      "Undistortion: output node has an image with correct dimensions");
+
+    delete undist;
+  }
+
+  // init with calib 1, run, change calib to 2, run again(), check that output has calib 2.
+  {
+    IplImage* temp = cvCreateImage(cvSize(10, 10), IPL_DEPTH_8U, 4);
+    mitk::Image::Pointer inputImage = niftk::CreateMitkImage(temp);
+    cvReleaseImage(&temp);
+
+    mitk::CameraIntrinsics::Pointer   inputCalib1 = mitk::CameraIntrinsics::New();
+    inputCalib1->SetFocalLength(1, 2);
+    inputCalib1->SetPrincipalPoint(3, 4);
+    inputCalib1->SetDistorsionCoeffs(5, 6, 7, 8);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(inputCalib1));
+
+    mitk::DataNode::Pointer   output = mitk::DataNode::New();
+    niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
+    undist->Run(output);
+
+    // we know output now has inputCalib1, see the test above.
+
+    mitk::CameraIntrinsics::Pointer   inputCalib2 = mitk::CameraIntrinsics::New();
+    inputCalib2->SetFocalLength(10, 20);
+    inputCalib2->SetPrincipalPoint(30, 40);
+    inputCalib2->SetDistorsionCoeffs(50, 60, 70, 80);
+    inputImage->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(inputCalib2));
+    undist->Run(output);
+
+    // check node first
+    mitk::BaseProperty::Pointer outputProp = output->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    assert(outputProp.IsNotNull());
+    mitk::CameraIntrinsicsProperty::Pointer outputCalibProp = dynamic_cast<mitk::CameraIntrinsicsProperty*>(outputProp.GetPointer());
+    assert(outputCalibProp.IsNotNull());
+    mitk::CameraIntrinsics::Pointer   outputCalibData = outputCalibProp->GetValue();
+    assert(outputCalibData.IsNotNull());
+
+    MITK_TEST_CONDITION(outputCalibData->Equals(inputCalib2), "Undistortion: output node calibration data matches updated input calibration data");
+
+    // now image attached to node
+    mitk::Image::Pointer  outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+    assert(outputImage.IsNotNull());
+    outputProp = outputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    assert(outputProp.IsNotNull());
+    outputCalibProp = dynamic_cast<mitk::CameraIntrinsicsProperty*>(outputProp.GetPointer());
+    assert(outputCalibProp.IsNotNull());
+    outputCalibData = outputCalibProp->GetValue();
+    assert(outputCalibData.IsNotNull());
+
+    MITK_TEST_CONDITION(outputCalibData->Equals(inputCalib2), "Undistortion: output image calibration data matches updated input calibration data");
+
+    delete undist;
+  }
 }
 
 

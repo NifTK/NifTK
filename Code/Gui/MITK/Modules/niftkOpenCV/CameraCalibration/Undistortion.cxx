@@ -463,9 +463,11 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
   if (!outputImage.IsNull())
   {
     bool haswrongsize = false;
+    // 2d or 3d or something else?
+    haswrongsize |= outputImage->GetDimension()  != m_Image->GetDimension();
+    // size of the image
     haswrongsize |= outputImage->GetDimension(0) != m_Image->GetDimension(0);
     haswrongsize |= outputImage->GetDimension(1) != m_Image->GetDimension(1);
-    haswrongsize |= outputImage->GetDimension(2) != 1;
 
     if (haswrongsize)
     {

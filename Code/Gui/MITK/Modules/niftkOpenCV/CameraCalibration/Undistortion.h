@@ -59,6 +59,9 @@ namespace niftk
  *
  * When I wrote this originally, I decided for a non-mitk-smartypants class here, i.e. bare-bones
  * c++ class. Now I can't remember why. Feel free to change it to mitk.
+ *
+ * @warning Only 2D images are tested and supported! Anything else might or might not work, crash,
+ * trigger the apocolypse. For 3D what probably happens is that only the very first slice is processed.
  */
 class NIFTKOPENCV_EXPORT Undistortion
 {
@@ -112,6 +115,7 @@ public:
    * @throws stuff from ValidateInput().
    * @throws std::runtime_error if output is null.
    * @throws std::runtime_error if the attached image is zero-size.
+   * @post If successful, output node will have an image attached of the correct size.
    */
   virtual void Run(const mitk::DataNode::Pointer& output);
 
