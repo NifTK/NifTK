@@ -402,8 +402,10 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // what we might not want.
   bool displayEventsWereBlocked = m_BlockDisplayEvents;
   m_BlockDisplayEvents = true;
+  bool signalsWereBlocked = this->BlockSignals(true);
   this->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(renderWindow, nodes);
+  this->BlockSignals(signalsWereBlocked);
   m_BlockDisplayEvents = displayEventsWereBlocked;
 }
 
