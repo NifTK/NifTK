@@ -75,7 +75,6 @@ public:
   static const char* s_StereoRigTransformationPropertyName;  // niftk::MatrixProperty
 
   // used for stereo-rig transformation, i.e. between left and right camera
-  // FIXME: sticking in an opencv matrix would be prefered
  typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
 public:
