@@ -15,6 +15,8 @@
 #ifndef ITKFOREGROUNDFROMBACKGROUNDIMAGETHRESHOLDCALCULATOR_TXX
 #define ITKFOREGROUNDFROMBACKGROUNDIMAGETHRESHOLDCALCULATOR_TXX
 
+#include <iomanip> 
+
 #include "itkForegroundFromBackgroundImageThresholdCalculator.h"
 
 #include <itkNumericTraits.h>
