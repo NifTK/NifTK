@@ -147,7 +147,7 @@ private slots:
 
 private:
 
-  void dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes);
+  void DropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes);
 
   QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
 

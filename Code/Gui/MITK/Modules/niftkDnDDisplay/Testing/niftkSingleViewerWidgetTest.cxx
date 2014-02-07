@@ -30,7 +30,6 @@
 #include <mitkMIDASOrientationUtils.h>
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
-#include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
 
 #include <mitkItkSignalCollector.cxx>
@@ -266,7 +265,7 @@ void niftkSingleViewerWidgetTestClass::init()
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
 
-  this->dropNodes(axialWindow, nodes);
+  this->DropNodes(axialWindow, nodes);
 
   d->Viewer->SetCursorVisible(true);
 
@@ -310,7 +309,7 @@ void niftkSingleViewerWidgetTestClass::cleanup()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
+void niftkSingleViewerWidgetTestClass::DropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
