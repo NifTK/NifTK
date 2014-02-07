@@ -89,16 +89,16 @@ public:
   /** End concept checking */
 #endif
 
-  bool GetVerbose( void ) { return flgVerbose; }
-  void SetVerbose( bool flag ) { flgVerbose = flag; }
+  bool GetVerbose( void ) { return m_flgVerbose; }
+  void SetVerbose( bool flag ) { m_flgVerbose = flag; }
 
-  void SetVerboseOn( void ) { flgVerbose = true; }
-  void SetVerboseOff( void ) { flgVerbose = false; }
+  void SetVerboseOn( void ) { m_flgVerbose = true; }
+  void SetVerboseOff( void ) { m_flgVerbose = false; }
 
 
 protected:
 
-  bool flgVerbose;
+  bool m_flgVerbose;
 
   MammogramMaskSegmentationImageFilter();
   virtual ~MammogramMaskSegmentationImageFilter();
