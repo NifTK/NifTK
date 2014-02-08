@@ -170,7 +170,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
-, m_BlockSignals(false)
+, m_BlockUpdate(false)
 , m_SelectedRenderWindowHasChanged(false)
 , m_SncSliceHasChanged(3)
 , m_SelectedPositionHasChanged(false)
@@ -401,10 +401,10 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // what we might not want.
   bool displayEventsWereBlocked = m_BlockDisplayEvents;
   m_BlockDisplayEvents = true;
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
   this->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(renderWindow, nodes);
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
   m_BlockDisplayEvents = displayEventsWereBlocked;
 }
 
@@ -502,7 +502,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
 
   /// TODO This function does not follow the usual pattern.
 
@@ -551,7 +551,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
     m_SelectedRenderWindowHasChanged = true;
   }
 
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -886,7 +886,7 @@ MIDASOrientation niftkMultiWindowWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::FitToDisplay()
 {
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
 
   double largestScaleFactor = -1.0;
   MIDASOrientation orientationWithLargestScaleFactor = MIDAS_ORIENTATION_UNKNOWN;
@@ -959,7 +959,7 @@ void niftkMultiWindowWidget::FitToDisplay()
     }
   }
 
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -971,10 +971,10 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
     bool displayEventsWereBlocked = m_BlockDisplayEvents;
     m_BlockDisplayEvents = true;
 
-    bool sncSignalsWereBlocked[4];
+    bool sncupdateWasBlocked[4];
     for (int i = 0; i < 4; ++i)
     {
-      sncSignalsWereBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(true);
+      sncupdateWasBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(true);
     }
 
     m_Geometry = geometry->GetGeometryForTimeStep(0);
@@ -1332,7 +1332,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
     for (int i = 0; i < 4; ++i)
     {
-      sncSignalsWereBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(sncSignalsWereBlocked[i]);
+      sncupdateWasBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(sncupdateWasBlocked[i]);
     }
     m_BlockDisplayEvents = displayEventsWereBlocked;
 
@@ -1606,7 +1606,7 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
 {
   assert(orientation >= 0 && orientation < 3);
 
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
 
   if (cursorPosition != m_CursorPositions[orientation])
   {
@@ -1660,7 +1660,7 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
     }
   }
 
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -1703,7 +1703,7 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
 {
   if (m_Geometry && !m_BlockDisplayEvents)
   {
-    bool signalsWereBlocked = this->BlockSignals(true);
+    bool updateWasBlocked = this->BlockUpdate(true);
 
     this->UpdateCursorPosition(orientation);
 
@@ -1757,7 +1757,7 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
       }
     }
 
-    this->BlockSignals(signalsWereBlocked);
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -1787,7 +1787,7 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, 
   {
     if (scaleFactor != m_ScaleFactors[orientation])
     {
-      bool signalsWereBlocked = this->BlockSignals(true);
+      bool updateWasBlocked = this->BlockUpdate(true);
       m_ScaleFactors[orientation] = scaleFactor;
       m_ScaleFactorHasChanged[orientation] = true;
       m_Magnifications[orientation] = this->GetMagnification(orientation);
@@ -1803,7 +1803,7 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, 
           }
         }
       }
-      this->BlockSignals(signalsWereBlocked);
+      this->BlockUpdate(updateWasBlocked);
     }
   }
 }
@@ -1812,13 +1812,13 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnRenderWindowResized(MIDASOrientation orientation, double scaleFactor)
 {
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
   m_CursorPositionHasChanged[orientation] = true;
   m_ScaleFactors[orientation] = scaleFactor;
   m_ScaleFactorHasChanged[orientation] = true;
   m_Magnifications[orientation] = this->GetMagnification(orientation);
   this->ZoomAroundCursorPosition(orientation);
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -1827,7 +1827,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 {
   if (m_Geometry != NULL && !m_BlockDisplayEvents && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    bool signalsWereBlocked = this->BlockSignals(true);
+    bool updateWasBlocked = this->BlockUpdate(true);
 
     m_SelectedPosition = this->GetCrossPosition();
     m_SelectedPositionHasChanged = true;
@@ -1963,7 +1963,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
       }
     }
 
-    this->BlockSignals(signalsWereBlocked);
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2052,7 +2052,7 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 {
   if (selectedPosition != m_SelectedPosition)
   {
-    bool signalsWereBlocked = this->BlockSignals(true);
+    bool updateWasBlocked = this->BlockUpdate(true);
 
     m_SelectedPosition = selectedPosition;
     m_SelectedPositionHasChanged = true;
@@ -2064,9 +2064,9 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     mitk::SliceNavigationController* sagittalSnc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
     mitk::SliceNavigationController* coronalSnc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
 
-    bool axialSncSignalsWereBlocked = axialSnc->BlockSignals(true);
-    bool sagittalSncSignalsWereBlocked = sagittalSnc->BlockSignals(true);
-    bool coronalSncSignalsWereBlocked = coronalSnc->BlockSignals(true);
+    bool axialSncupdateWasBlocked = axialSnc->BlockSignals(true);
+    bool sagittalSncupdateWasBlocked = sagittalSnc->BlockSignals(true);
+    bool coronalSncupdateWasBlocked = coronalSnc->BlockSignals(true);
 
     if (axialSnc->GetCreatedWorldGeometry())
     {
@@ -2102,11 +2102,11 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
       this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
     }
 
-    axialSnc->BlockSignals(axialSncSignalsWereBlocked);
-    sagittalSnc->BlockSignals(sagittalSncSignalsWereBlocked);
-    coronalSnc->BlockSignals(coronalSncSignalsWereBlocked);
+    axialSnc->BlockSignals(axialSncupdateWasBlocked);
+    sagittalSnc->BlockSignals(sagittalSncupdateWasBlocked);
+    coronalSnc->BlockSignals(coronalSncupdateWasBlocked);
 
-    this->BlockSignals(signalsWereBlocked);
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2121,20 +2121,20 @@ const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
   m_CursorPositions = cursorPositions;
   for (int i = 0; i < 3; ++i)
   {
     m_CursorPositionHasChanged[i] = true;
   }
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::UpdateCursorPosition(MIDASOrientation orientation)
 {
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -2150,7 +2150,7 @@ void niftkMultiWindowWidget::UpdateCursorPosition(MIDASOrientation orientation)
   m_CursorPositions[orientation][1] = point2DInPx[1] / displaySize[1];
   m_CursorPositionHasChanged[orientation] = true;
 
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -2166,7 +2166,7 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
 {
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    bool signalsWereBlocked = this->BlockSignals(true);
+    bool updateWasBlocked = this->BlockUpdate(true);
 
     if (scaleFactor != m_ScaleFactors[orientation])
     {
@@ -2190,7 +2190,7 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
       }
     }
 
-    this->BlockSignals(signalsWereBlocked);
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2205,7 +2205,7 @@ const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
-  bool signalsWereBlocked = this->BlockSignals(true);
+  bool updateWasBlocked = this->BlockUpdate(true);
 
   m_ScaleFactors = scaleFactors;
   for (int i = 0; i < 3; ++i)
@@ -2215,7 +2215,7 @@ void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFac
     m_Magnifications[orientation] = this->GetMagnification(orientation);
   }
 
-  this->BlockSignals(signalsWereBlocked);
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -2489,13 +2489,13 @@ void niftkMultiWindowWidget::SetScaleFactorBinding(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::BlockSignals(bool blocked)
+bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 {
-  bool signalsWereBlocked = m_BlockSignals;
+  bool updateWasBlocked = m_BlockUpdate;
 
-  if (blocked != m_BlockSignals)
+  if (blocked != m_BlockUpdate)
   {
-    m_BlockSignals = blocked;
+    m_BlockUpdate = blocked;
 
     if (!blocked)
     {
@@ -2570,5 +2570,5 @@ bool niftkMultiWindowWidget::BlockSignals(bool blocked)
     }
   }
 
-  return signalsWereBlocked;
+  return updateWasBlocked;
 }

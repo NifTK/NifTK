@@ -292,11 +292,11 @@ public:
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
   void SetScaleFactorBinding(bool bound);
 
-  /// \brief Blocks the signals from the slice navigation controller.
-  /// Returns true if the signals were already blocked, otherwise false.
-  /// While blocked, the signals are "pending". Pending signals are sent out
-  /// when the signals are unblocked.
-  bool BlockSignals(bool blocked);
+  /// \brief Blocks the update of the widget.
+  /// Returns true if the update was already blocked, otherwise false.
+  /// This render windows are updated and the "pending" signals are sent out
+  /// when the update is unblocked.
+  bool BlockUpdate(bool blocked);
 
 signals:
 
@@ -445,7 +445,7 @@ private:
   bool m_BlockProcessingSncSignals;
 
   /// \brief Blocks sending signals by the slice navigation controller.
-  bool m_BlockSignals;
+  bool m_BlockUpdate;
 
   bool m_SelectedRenderWindowHasChanged;
   std::vector<bool> m_SncSliceHasChanged;

@@ -101,7 +101,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     renderWindow = this->GetRenderWindow(renderer);
   }
 
-  bool itkSignalsWereBlocked = m_MultiWindowWidget->BlockSignals(true);
+  bool itkSignalsWereBlocked = m_MultiWindowWidget->BlockUpdate(true);
   bool qtSignalsWereBlocked = m_MultiWindowWidget->blockSignals(true);
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
@@ -116,7 +116,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   }
 
   m_MultiWindowWidget->blockSignals(qtSignalsWereBlocked);
-  m_MultiWindowWidget->BlockSignals(itkSignalsWereBlocked);
+  m_MultiWindowWidget->BlockUpdate(itkSignalsWereBlocked);
 
   return true;
 }
