@@ -16,6 +16,11 @@
 #define __itkMammogramPectoralisSegmentationImageFilter_h
 
 #include <itkImageToImageFilter.h>
+#include <itkImageRegionIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
+#include <itkImageRegionConstIterator.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkMammogramLeftOrRightSideCalculator.h>
 
 namespace itk {
   
@@ -79,6 +84,18 @@ public:
 
   typedef typename RealImageType::Pointer RealImagePointer;
 
+
+  typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
+  typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;
+
+  typedef typename itk::ImageRegionConstIterator< TInputImage > IteratorConstType;
+  typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
+
+  typedef typename itk::MammogramLeftOrRightSideCalculator< InputImageType > LeftOrRightSideCalculatorType;
+
+  typedef typename LeftOrRightSideCalculatorType::BreastSideType BreastSideType;
+
+
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
   itkConceptMacro(DimensionShouldBe2,
@@ -107,6 +124,11 @@ protected:
   
   /** Single threaded execution */
   void GenerateData();
+
+  void GenerateTemplate( typename TInputImage::Pointer &imTemplate,
+                         typename TInputImage::RegionType region,
+                         double &tMean, double &tStdDev, double &nPixels,
+                         BreastSideType breastSide );
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);

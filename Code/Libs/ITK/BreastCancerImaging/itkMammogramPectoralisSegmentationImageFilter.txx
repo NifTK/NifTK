@@ -33,11 +33,6 @@
 #include <itkIdentityTransform.h>
 #include <itkResampleImageFilter.h>
 #include <itkSubsampleImageFilter.h>
-#include <itkMammogramLeftOrRightSideCalculator.h>
-#include <itkImageRegionIterator.h>
-#include <itkImageRegionIteratorWithIndex.h>
-#include <itkImageRegionConstIterator.h>
-#include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkWriteImage.h>
 
 
@@ -89,6 +84,76 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 /* -----------------------------------------------------------------------
+   GenerateTemplate()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage, typename TOutputImage>
+void 
+MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
+::GenerateTemplate( typename TInputImage::Pointer &imTemplate,
+                    typename TInputImage::RegionType region,
+                    double &tMean, double &tStdDev, double &nPixels,
+                    BreastSideType breastSide )
+{
+  unsigned int nInside = 0, nOutside = 0;
+
+  double x, y;
+  
+  double w = region.GetSize()[0];
+  double h = region.GetSize()[1];
+
+  double a = 1.;
+  double b = -4.;
+  double c = -3.7/w;
+
+  InputImageIndexType  index;
+  InputImageIndexType  start = region.GetIndex();
+
+  IteratorWithIndexType itTemplateWithIndex( imTemplate, region );
+   
+  nPixels = 0;
+
+  for ( itTemplateWithIndex.GoToBegin();
+        ! itTemplateWithIndex.IsAtEnd();
+        ++itTemplateWithIndex )
+  {
+    index = itTemplateWithIndex.GetIndex();
+    
+    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+    {
+      x = static_cast<double>( index[0] );
+    }
+    else 
+    {
+      x = w - static_cast<double>( index[0] - start[0] );
+    }
+
+    y = static_cast<double>( index[1] );        
+
+    if ( (0.9*h - y) > 1.1*a*h*exp( b*exp( c*x ) ) )
+    {
+      itTemplateWithIndex.Set( 1. );
+      nInside++;
+    }
+    else if ( (1.05*h - y) > 1.1*a*h*exp( b*exp( c*(x-0.1*w) ) ) )
+    {
+      itTemplateWithIndex.Set( -1. );
+      nOutside++;
+    }
+    else
+    {
+      itTemplateWithIndex.Set( 0. );
+    }
+  }
+
+  nPixels = nInside + nOutside;
+  tMean = ( nInside - nOutside )/nPixels;
+  tStdDev = sqrt(   ( nInside*( 1 - tMean))*( nInside*( 1 - tMean))
+                  + (nOutside*(-1 - tMean))*(nOutside*(-1 - tMean)) )/nPixels;
+}
+
+
+/* -----------------------------------------------------------------------
    GenerateData()
    ----------------------------------------------------------------------- */
 
@@ -114,8 +179,6 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Determine if this is the left or right breast
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef itk::MammogramLeftOrRightSideCalculator< InputImageType > LeftOrRightSideCalculatorType;
-
   typename LeftOrRightSideCalculatorType::Pointer 
     sideCalculator = LeftOrRightSideCalculatorType::New();
 
@@ -125,8 +188,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   sideCalculator->Compute();
 
-  typename LeftOrRightSideCalculatorType::BreastSideType
-    breastSide = sideCalculator->GetBreastSide();
+  BreastSideType breastSide = sideCalculator->GetBreastSide();
 
   if ( m_flgVerbose )
   {
@@ -159,7 +221,6 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   {
     shrinkFactor++;
   }
-
 
   SizeType outSize;
   InputImageSpacingType outSpacing;
@@ -205,20 +266,27 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   InputImageSizeType    imSize    = imRegion.GetSize();
 
-  typename RealImageType::Pointer imNumberOfRegions = InputImageType::New();
-  typename RealImageType::Pointer imCorrelation     = InputImageType::New();
+  typename RealImageType::Pointer imTemplate         = InputImageType::New();
+  typename RealImageType::Pointer imNonPectoralScore = InputImageType::New();
+  typename RealImageType::Pointer imPectoralScore    = InputImageType::New();
 
-  imNumberOfRegions->SetRegions( imRegion );
-  imNumberOfRegions->SetSpacing( imSpacing );
-  imNumberOfRegions->SetOrigin(  imOrigin );
-  imNumberOfRegions->Allocate( );
-  imNumberOfRegions->FillBuffer( 0 );
+  imTemplate->SetRegions( imRegion );
+  imTemplate->SetSpacing( imSpacing );
+  imTemplate->SetOrigin(  imOrigin );
+  imTemplate->Allocate( );
+  imTemplate->FillBuffer( 0 );
 
-  imCorrelation->SetRegions( imRegion );
-  imCorrelation->SetSpacing( imSpacing );
-  imCorrelation->SetOrigin(  imOrigin );
-  imCorrelation->Allocate( );
-  imCorrelation->FillBuffer( 0 );
+  imNonPectoralScore->SetRegions( imRegion );
+  imNonPectoralScore->SetSpacing( imSpacing );
+  imNonPectoralScore->SetOrigin(  imOrigin );
+  imNonPectoralScore->Allocate( );
+  imNonPectoralScore->FillBuffer( 0 );
+
+  imPectoralScore->SetRegions( imRegion );
+  imPectoralScore->SetSpacing( imSpacing );
+  imPectoralScore->SetOrigin(  imOrigin );
+  imPectoralScore->Allocate( );
+  imPectoralScore->FillBuffer( 0 );
 
 
   // Iterate over all of the triangular pectoral x and y intercepts
@@ -239,13 +307,10 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   double i, j, r, c;
   double ncc;
 
+  double pecScore, prevPecScore;
+  double nonPecScore, prevNonPecScore;
+
   double b = 2;             // Factor to equate to region beyond the pectoral boundary
-
-  typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
-  typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;
-
-  typedef typename itk::ImageRegionConstIterator< TInputImage > IteratorConstType;
-  typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
 
 
   for ( pecIntercept[1] = 2; 
@@ -256,7 +321,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
     if ( m_flgVerbose )
     {
-      std::cout << 300*pecIntercept[1]/(2*imSize[1]) << " ";
+      std::cout << 500*pecIntercept[1]/(4*imSize[1]) << " ";
       std::cout.flush();
     }
 
@@ -284,50 +349,54 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
       pecRegion.SetIndex( pecStart );
 
+      // Create the template
 
-      IteratorType itPecRegion( imPipelineConnector, pecRegion );
-
-      nPixels = r*c - r*c*(2 - b)*(2. - b)/2.;
+      GenerateTemplate( imTemplate, pecRegion, tMean, tStdDev, 
+                        nPixels, breastSide );
 
       if ( this->GetDebug() )
       {
         std::cout << "Pec region: " << pecRegion << std::endl
                   << "Number of pixels: " << nPixels << std::endl;
       }
-      
+
+      // Create the image region iterator
+
+      IteratorType itPecRegion( imPipelineConnector, pecRegion );
+      IteratorType itTemplate( imTemplate, pecRegion );
 
       // Compute the mean image intensity for this region
 
       imMean = 0;
        
-      for ( itPecRegion.GoToBegin();
+      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
             ! itPecRegion.IsAtEnd();
-            ++itPecRegion )
+            ++itPecRegion, ++itTemplate )
       {
-        imMean += itPecRegion.Get();
+        if ( itTemplate.Get() )
+        {
+          imMean += itPecRegion.Get();
+        }
       }
 
       imMean /= nPixels;
-      tMean = (r*c - nPixels)/nPixels;
 
       // Compute the standard deviation for this region
 
       imStdDev = 0;
        
-      for ( itPecRegion.GoToBegin();
+      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
             ! itPecRegion.IsAtEnd();
-            ++itPecRegion )
+            ++itPecRegion, ++itTemplate )
       {
-        value = static_cast<double>( itPecRegion.Get() ) - imMean;
-        imStdDev += value*value;
+        if ( itTemplate.Get() )
+        {
+          value = static_cast<double>( itPecRegion.Get() ) - imMean;
+          imStdDev += value*value;
+        }
       }
 
-      imStdDev = sqrt( imStdDev/nPixels );
-
-      tStdDev = sqrt(  (r*c*(1 - tMean))
-                      *(r*c*(1 - tMean))/4.
-                      + ((nPixels - r*c/2.)*(-1 - tMean))
-                       *((nPixels - r*c/2.)*(-1 - tMean)) )/nPixels;
+      imStdDev = sqrt( imStdDev )/nPixels;
 
       if ( this->GetDebug() )
       {
@@ -339,60 +408,16 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
       // Compute the cross correlation
 
-      IteratorWithIndexType itPecRegionWithIndex( imPipelineConnector, pecRegion );
-
       ncc = 0;
-      unsigned int n = 0, m = 0;
 
-      for ( itPecRegionWithIndex.GoToBegin();
-            ! itPecRegionWithIndex.IsAtEnd();
-            ++itPecRegionWithIndex )
+      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
+            ! itPecRegion.IsAtEnd();
+            ++itPecRegion, ++itTemplate )
       {
-        index = itPecRegionWithIndex.GetIndex();
-
-        i = static_cast<double>( index[0] );
-        j = static_cast<double>( index[1] );        
-
-        // Left Breast
-
-        if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+        if ( itTemplate.Get() )
         {
-          // In the pec triangle of the ROI
-          if ( i < static_cast<int>( (1. - j/r)*c + 0.5 ) )
-          {
-            ncc += ( static_cast<double>( itPecRegionWithIndex.Get() ) - imMean )*( 1 - tMean )
+          ncc += ( static_cast<double>( itPecRegion.Get() ) - imMean )*( itTemplate.Get() - tMean )
               / ( imStdDev*tStdDev);
-            n++;
-          }
-
-          // In the non-pec triangle of the ROI
-          else if ( i < static_cast<int>( (b - j/r)*c + 0.5 ) )
-          {
-            ncc += ( static_cast<double>( itPecRegionWithIndex.Get() ) - imMean )*( -1 - tMean )
-              / ( imStdDev*tStdDev);
-            m++;
-          }
-        }
-
-        // Right Breast
-
-        else
-        {
-          // In the pec triangle of the ROI
-          if ( i > static_cast<int>( c + j*(static_cast<double>( imSize[0] ) - c)/r + 0.5 ) )
-          {
-            ncc += ( static_cast<double>( itPecRegionWithIndex.Get() ) - imMean )*( 1 - tMean )
-              / ( imStdDev*tStdDev);
-            n++;
-          } 
-
-          // In the non-pec triangle of the ROI
-          else if ( i > static_cast<int>( b*c + j*(static_cast<double>( imSize[0] ) - b*c)/(b*r) + 0.5 ) )
-          {
-            ncc += ( static_cast<double> ( itPecRegionWithIndex.Get() ) - imMean )*( -1 - tMean )
-              / ( imStdDev*tStdDev);
-            m++;
-          }
         }
       }
 
@@ -400,96 +425,82 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
       if ( this->GetDebug() )
       {
-        std::cout << "NCC: " << ncc << std::endl
-                  << "n: " << n << std::endl
-                  << "m: " << m << std::endl;
+        std::cout << "NCC: " << ncc << std::endl;
       }
 
-#if 0
-      index[0] = pecIntercept[0];
-      index[1] = pecIntercept[1];
-
-      imNumberOfRegions->SetPixel( index, imNumberOfRegions->GetPixel( index ) + 1. );
-      imCorrelation->SetPixel( index, imCorrelation->GetPixel( index ) + ncc );
-#else
-      
       // Iterate over this region again and update the scores for each pixel
 
-      IteratorWithIndexType itNumberOfRegions( imNumberOfRegions, pecRegion );
-      IteratorWithIndexType itCorrelation( imCorrelation, pecRegion );
+      IteratorWithIndexType itNonPectoralScore( imNonPectoralScore, pecRegion );
+      IteratorWithIndexType itPectoralScore( imPectoralScore, pecRegion );
 
-      for ( itNumberOfRegions.GoToBegin(), itCorrelation.GoToBegin();
-            ! itNumberOfRegions.IsAtEnd();
-                      ++itNumberOfRegions, ++itCorrelation )
+      for ( itNonPectoralScore.GoToBegin(), 
+              itPectoralScore.GoToBegin(), 
+              itTemplate.GoToBegin();
+
+            ! itNonPectoralScore.IsAtEnd();
+
+            ++itNonPectoralScore, ++itPectoralScore, ++itTemplate )
       {
-        index = itNumberOfRegions.GetIndex();
+        prevPecScore = itPectoralScore.Get();
+        prevNonPecScore = itNonPectoralScore.Get();
 
-        i = static_cast<double>( index[0] );
-        j = static_cast<double>( index[1] );        
-
-        // Left Breast
-
-        if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+        if ( itTemplate.Get() > 0 )
         {
-          // In the pec triangle of the ROI
-          if ( i < static_cast<int>( (1. - j/r)*c + 0.5 ) )
-          {
-            itNumberOfRegions.Set( itNumberOfRegions.Get() + 1. );
-            itCorrelation.Set( itCorrelation.Get() + ncc );
-          }
-
-          // In the non-pec triangle of the ROI
-          else if ( i < static_cast<int>( (b - j/r)*c + 0.5 ) )
-          {
-            itNumberOfRegions.Set( itNumberOfRegions.Get() + 1. );
-            itCorrelation.Set( itCorrelation.Get() - ncc );
-          }
+          pecScore = ncc;
+          nonPecScore = -ncc;
         }
-
-        // Right Breast
-
+        else if  ( itTemplate.Get() < 0 )
+        {
+          pecScore = -ncc;
+          nonPecScore = ncc;
+        }
         else
         {
-          // In the pec triangle of the ROI
-          if ( i > static_cast<int>( c + j*(static_cast<double>( imSize[0] ) - c)/r + 0.5 ) )
-          {
-            itNumberOfRegions.Set( itNumberOfRegions.Get() + 1. );
-            itCorrelation.Set( itCorrelation.Get() + ncc );
-          } 
+          pecScore = prevPecScore;
+          nonPecScore = prevNonPecScore;
+        }
 
-          // In the non-pec triangle of the ROI
-          else if ( i > static_cast<int>( b*c + j*(static_cast<double>( imSize[0] ) - b*c)/(b*r) + 0.5 ) )
-          {
-            itNumberOfRegions.Set( itNumberOfRegions.Get() + 1. );
-            itCorrelation.Set( itCorrelation.Get() - ncc );
-          }
-        }      
+        if ( pecScore > prevPecScore )
+        {
+          itPectoralScore.Set( pecScore );
+        }
+
+        if ( nonPecScore > prevNonPecScore )
+        {
+          itNonPectoralScore.Set( nonPecScore );
+        }
       }
-#endif
 
     }
   }
 
-  // Divide the score for each pixel by the number of regions it contributes to
-
-  IteratorType itNumberOfRegions( imNumberOfRegions, imRegion );
-  IteratorType itCorrelation( imCorrelation, imRegion );
-  
-  for ( itNumberOfRegions.GoToBegin(), itCorrelation.GoToBegin();
-        ! itNumberOfRegions.IsAtEnd();
-        ++itNumberOfRegions, ++itCorrelation )
+  if ( this->GetDebug() )
   {
-    if ( itNumberOfRegions.Get() )
+    WriteImageToFile< TInputImage >( "FinalTemplate.nii", 
+                                     "final (largest) template image", 
+                                     imTemplate ); 
+  }
+
+  // Calculate the final pectoral score as the difference of pec and non-pec scores
+
+  IteratorType itNonPectoralScore( imNonPectoralScore, imRegion );
+  IteratorType itPectoralScore( imPectoralScore, imRegion );
+  
+  for ( itNonPectoralScore.GoToBegin(), itPectoralScore.GoToBegin();
+        ! itNonPectoralScore.IsAtEnd();
+        ++itNonPectoralScore, ++itPectoralScore )
+  {
+    if ( itPectoralScore.Get() > itNonPectoralScore.Get() )
     {
-      itCorrelation.Set( itCorrelation.Get()/itNumberOfRegions.Get() );
+      itPectoralScore.Set( 100 );
     }
-    else 
+    else
     {
-      itCorrelation.Set( 0. );
+      itPectoralScore.Set( 0 );
     }
   }
 
-  imPipelineConnector = imCorrelation;
+  imPipelineConnector = imPectoralScore;
 
 
   // Expand the image back up to the original size
