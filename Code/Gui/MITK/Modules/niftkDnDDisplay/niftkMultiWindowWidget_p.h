@@ -330,9 +330,9 @@ private:
   /// The function expects the cursor position in m_CursorPositions[orientation].
   void MoveToCursorPosition(MIDASOrientation orientation);
 
-  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// \brief Sets the scale factor of the render window to the value stored in m_ScaleFactors[orientation] (mm/px)
   /// and moves the origin so that the cursor stays in the same position on the display.
-  void ZoomAroundCursorPosition(MIDASOrientation orientation, double scaleFactor);
+  void ZoomAroundCursorPosition(MIDASOrientation orientation);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);

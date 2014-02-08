@@ -952,7 +952,6 @@ void niftkMultiWindowWidget::FitToDisplay()
         mitk::Vector2D cursorPosition;
         cursorPosition.Fill(0.5);
         this->SetCursorPosition(otherOrientation, cursorPosition);
-        this->ZoomAroundCursorPosition(otherOrientation, largestScaleFactor);
         m_ScaleFactors[otherOrientation] = largestScaleFactor;
         m_ScaleFactorHasChanged[otherOrientation] = true;
         m_Magnifications[otherOrientation] = this->GetMagnification(otherOrientation);
@@ -1815,7 +1814,10 @@ void niftkMultiWindowWidget::OnRenderWindowResized(MIDASOrientation orientation,
 {
   bool signalsWereBlocked = this->BlockSignals(true);
   m_CursorPositionHasChanged[orientation] = true;
-  this->ZoomAroundCursorPosition(orientation, scaleFactor);
+  m_ScaleFactors[orientation] = scaleFactor;
+  m_ScaleFactorHasChanged[orientation] = true;
+  m_Magnifications[orientation] = this->GetMagnification(orientation);
+  this->ZoomAroundCursorPosition(orientation);
   this->BlockSignals(signalsWereBlocked);
 }
 
@@ -2166,9 +2168,8 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
   {
     bool signalsWereBlocked = this->BlockSignals(true);
 
-    if (m_RenderWindows[orientation]->isVisible() && scaleFactor != m_ScaleFactors[orientation])
+    if (scaleFactor != m_ScaleFactors[orientation])
     {
-      this->ZoomAroundCursorPosition(orientation, scaleFactor);
       m_ScaleFactors[orientation] = scaleFactor;
       m_ScaleFactorHasChanged[orientation] = true;
       m_Magnifications[orientation] = this->GetMagnification(orientation);
@@ -2180,9 +2181,8 @@ void niftkMultiWindowWidget::SetScaleFactor(MIDASOrientation orientation, double
       for (int i = 0; i < 3; ++i)
       {
         MIDASOrientation otherOrientation = MIDASOrientation(i);
-        if (otherOrientation != orientation && m_RenderWindows[otherOrientation]->isVisible() && scaleFactor != m_ScaleFactors[otherOrientation])
+        if (otherOrientation != orientation && scaleFactor != m_ScaleFactors[otherOrientation])
         {
-          this->ZoomAroundCursorPosition(otherOrientation, scaleFactor);
           m_ScaleFactors[otherOrientation] = scaleFactor;
           m_ScaleFactorHasChanged[otherOrientation] = true;
           m_Magnifications[otherOrientation] = this->GetMagnification(otherOrientation);
@@ -2213,7 +2213,6 @@ void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFac
     MIDASOrientation orientation = MIDASOrientation(i);
     m_ScaleFactorHasChanged[orientation] = true;
     m_Magnifications[orientation] = this->GetMagnification(orientation);
-    this->ZoomAroundCursorPosition(orientation, scaleFactors[orientation]);
   }
 
   this->BlockSignals(signalsWereBlocked);
@@ -2221,7 +2220,7 @@ void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFac
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::ZoomAroundCursorPosition(MIDASOrientation orientation, double scaleFactor)
+void niftkMultiWindowWidget::ZoomAroundCursorPosition(MIDASOrientation orientation)
 {
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
 
@@ -2231,6 +2230,7 @@ void niftkMultiWindowWidget::ZoomAroundCursorPosition(MIDASOrientation orientati
   focusPoint2DInPx[0] = m_CursorPositions[orientation][0] * displaySize[0];
   focusPoint2DInPx[1] = m_CursorPositions[orientation][1] * displaySize[1];
 
+  double scaleFactor = m_ScaleFactors[orientation];
   double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
   bool displayEventsWereBlocked = m_BlockDisplayEvents;
   m_BlockDisplayEvents = true;
@@ -2558,6 +2558,7 @@ bool niftkMultiWindowWidget::BlockSignals(bool blocked)
         if (m_ScaleFactorHasChanged[i])
         {
           m_ScaleFactorHasChanged[i] = false;
+          this->ZoomAroundCursorPosition(MIDASOrientation(i));
           if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
           {
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
