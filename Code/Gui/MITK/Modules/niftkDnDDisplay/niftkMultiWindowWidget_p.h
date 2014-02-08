@@ -368,6 +368,9 @@ private:
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
+  /// \brief Called when the size of the render window has changed.
+  void OnRenderWindowResized(MIDASOrientation orientation, double scaleFactor);
+
   /// \brief Computes the scale factors from the magnification for each axes in mm/px.
   /// Since the magnification is in linear relation with the px/vx ratio but not the
   /// voxel size, the three scale factors can differ if the image has anisotropic voxels.
