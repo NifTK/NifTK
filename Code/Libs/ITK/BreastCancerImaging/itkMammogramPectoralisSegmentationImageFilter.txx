@@ -21,24 +21,72 @@
 
 #include <vnl/vnl_double_2x2.h>
 
+#include <iomanip>
 #include <itkUCLMacro.h>
 
-#include <itkMinimumMaximumImageCalculator.h>
-#include <itkImageToHistogramFilter.h>
-#include <itkImageMomentsCalculator.h>
-#include <itkConnectedThresholdImageFilter.h>
+#include <itkCommand.h>
 #include <itkShrinkImageFilter.h>
 #include <itkExpandImageFilter.h>
-#include <itkNearestNeighborInterpolateImageFunction.h>
 #include <itkIdentityTransform.h>
+#include <itkBinaryThresholdImageFilter.h>
+#include <itkCastImageFilter.h>
 #include <itkResampleImageFilter.h>
 #include <itkSubsampleImageFilter.h>
 #include <itkWriteImage.h>
-
+#include <itkPowellOptimizer.h>
 
 
 namespace itk
 {
+
+template < class TOptimizer >
+class IterationCallback : public itk::Command
+{
+public:
+  typedef IterationCallback             Self;
+  typedef itk::Command                  Superclass;
+  typedef itk::SmartPointer<Self>       Pointer;
+  typedef itk::SmartPointer<const Self> ConstPointer;
+
+  itkTypeMacro( IterationCallback, Superclass );
+  itkNewMacro( Self );
+  typedef    TOptimizer     OptimizerType;
+
+  void SetOptimizer( OptimizerType * optimizer ) {
+    m_Optimizer = optimizer;
+    m_Optimizer->AddObserver( itk::IterationEvent(), this );
+  }
+
+  void Execute(itk::Object *caller, const itk::EventObject & event) {
+    Execute( (const itk::Object *)caller, event);
+  }
+
+  void Execute(const itk::Object *, const itk::EventObject & event) {
+    if( typeid( event ) == typeid( itk::StartEvent ) )
+    {
+      std::cout << std::endl << "Position              Value";
+      std::cout << std::endl << std::endl;
+    }
+    else if( typeid( event ) == typeid( itk::IterationEvent ) )
+    {
+      std::cout << m_Optimizer->GetCurrentIteration() << "   ";
+      std::cout << m_Optimizer->GetValue() << "   ";
+      std::cout << m_Optimizer->GetCurrentPosition() << std::endl;
+    }
+    else if( typeid( event ) == typeid( itk::EndEvent ) )
+    {
+      std::cout << std::endl << std::endl;
+      std::cout << "After " << m_Optimizer->GetCurrentIteration();
+      std::cout << "  iterations " << std::endl;
+      std::cout << "Solution is    = " << m_Optimizer->GetCurrentPosition();
+      std::cout << std::endl;
+    }
+  }
+  
+protected:
+  IterationCallback() {};
+  itk::WeakPointer<OptimizerType>   m_Optimizer;
+};
 
 
 /* -----------------------------------------------------------------------
@@ -154,60 +202,29 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 /* -----------------------------------------------------------------------
-   GenerateData()
+   ShrinkTheInputImage()
    ----------------------------------------------------------------------- */
 
 template <typename TInputImage, typename TOutputImage>
-void 
+typename MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>::InputImagePointer
 MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
-::GenerateData(void)
+::ShrinkTheInputImage( unsigned int maxShrunkDimension, InputImageSizeType &outSize )
 {
+
   unsigned int d;
-
-  typename InputImageType::Pointer imPipelineConnector;
-
-  typedef float RealPixelType;
-  typedef itk::Image< RealPixelType, ImageDimension > RealImageType;   
-
-  // Single-threaded execution
-
-  this->AllocateOutputs();
-
   InputImageConstPointer image = this->GetInput();
+  InputImagePointer imShrunkImage;
 
+  InputImageSizeType SizeType;
+  InputImageRegionType RegionType;
 
-  // Determine if this is the left or right breast
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typename LeftOrRightSideCalculatorType::Pointer 
-    sideCalculator = LeftOrRightSideCalculatorType::New();
-
-  sideCalculator->SetImage( image );
-
-  sideCalculator->SetVerbose( this->GetVerbose() );
-
-  sideCalculator->Compute();
-
-  BreastSideType breastSide = sideCalculator->GetBreastSide();
-
-  if ( m_flgVerbose )
-  {
-    std::cout << "Breast side: " << breastSide << std::endl;
-  }
-
-  
-  // Shrink the image
-  // ~~~~~~~~~~~~~~~~
-
-  typedef typename InputImageType::SizeType SizeType;
-  typedef typename InputImageType::RegionType RegionType;
-
-  SizeType inSize = image->GetLargestPossibleRegion().GetSize();
+  InputImageSizeType inSize = image->GetLargestPossibleRegion().GetSize();
   InputImageSpacingType inSpacing = image->GetSpacing();
 
-  typename SizeType::SizeValueType maxDimension;
+  typename InputImageSizeType::SizeValueType maxDimension;
 
   maxDimension = inSize[0];
+
   for ( d=1; d<ImageDimension; d++ )
   {
     if ( inSize[d] > maxDimension )
@@ -217,12 +234,11 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
   double shrinkFactor = 1;
-  while ( maxDimension/(shrinkFactor + 1) > 500 )
+  while ( maxDimension/(shrinkFactor + 1) > maxShrunkDimension )
   {
     shrinkFactor++;
   }
 
-  SizeType outSize;
   InputImageSpacingType outSpacing;
   double *sampling = new double[ImageDimension];
   
@@ -249,258 +265,344 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   shrinkFilter->SetSubsamplingFactors( sampling );
 
   shrinkFilter->Update();
-  imPipelineConnector = shrinkFilter->GetOutput();
+  imShrunkImage = shrinkFilter->GetOutput();
 
   if ( this->GetDebug() )
   {
-    WriteImageToFile< TInputImage >( "ShrunkImage.nii", "shrunk image", imPipelineConnector ); 
+    WriteImageToFile< TInputImage >( "ShrunkImage.nii", "shrunk image", imShrunkImage ); 
   }
 
+  return imShrunkImage;
+}
 
-  // Create images to store the number of regions and correlation coefficients
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImageRegionType  imRegion  = imPipelineConnector->GetLargestPossibleRegion();
-  InputImageSpacingType imSpacing = imPipelineConnector->GetSpacing();
-  InputImagePointType   imOrigin  = imPipelineConnector->GetOrigin();
+/* -----------------------------------------------------------------------
+   ExhaustiveSearch()
+   ----------------------------------------------------------------------- */
 
-  InputImageSizeType    imSize    = imRegion.GetSize();
+template <typename TInputImage, typename TOutputImage>
+void 
+MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
+::ExhaustiveSearch( InputImageIndexType pecInterceptStart, 
+                    InputImageIndexType pecInterceptEnd, 
+                    typename FitMetricType::Pointer &metric,
+                    InputImagePointer &imPipelineConnector,
+                    InputImagePointType &bestPecInterceptInMM,
+                    typename FitMetricType::ParametersType &bestParameters )
+{
+  bool flgFirstIteration = true;
 
-  typename RealImageType::Pointer imTemplate         = InputImageType::New();
-  typename RealImageType::Pointer imNonPectoralScore = InputImageType::New();
-  typename RealImageType::Pointer imPectoralScore    = InputImageType::New();
+  double ncc = -1., bestNCC = -1.;
 
-  imTemplate->SetRegions( imRegion );
-  imTemplate->SetSpacing( imSpacing );
-  imTemplate->SetOrigin(  imOrigin );
-  imTemplate->Allocate( );
-  imTemplate->FillBuffer( 0 );
+  InputImageIndexType pecIntercept;
+  InputImagePointType pecInterceptInMM;
 
-  imNonPectoralScore->SetRegions( imRegion );
-  imNonPectoralScore->SetSpacing( imSpacing );
-  imNonPectoralScore->SetOrigin(  imOrigin );
-  imNonPectoralScore->Allocate( );
-  imNonPectoralScore->FillBuffer( 0 );
+  metric->SetInputImage( imPipelineConnector );
 
-  imPectoralScore->SetRegions( imRegion );
-  imPectoralScore->SetSpacing( imSpacing );
-  imPectoralScore->SetOrigin(  imOrigin );
-  imPectoralScore->Allocate( );
-  imPectoralScore->FillBuffer( 0 );
+  for ( pecIntercept[1] = pecInterceptStart[1]; 
+        pecIntercept[1] < pecInterceptEnd[1]; 
+        pecIntercept[1]++ )
+  {
+
+    if ( m_flgVerbose && ( ! this->GetDebug() ) )
+    {
+      std::cout << 100*( pecIntercept[1] - pecInterceptStart[1] ) 
+        / (pecInterceptEnd[1] - pecInterceptStart[1] ) << " ";
+      std::cout.flush();
+    }
+
+    for ( pecIntercept[0] = pecInterceptStart[0]; 
+          pecIntercept[0] < pecInterceptEnd[0]; 
+          pecIntercept[0]++ )
+    {
+      imPipelineConnector->TransformIndexToPhysicalPoint( pecIntercept,
+                                                          pecInterceptInMM );
+
+      // Compute the cross correlation
+
+      ncc = metric->GetValue( pecInterceptInMM );
+
+      if ( flgFirstIteration || ( ncc > bestNCC ) )
+      {
+        bestPecInterceptInMM = pecInterceptInMM;
+        bestNCC = ncc;
+        flgFirstIteration = false;
+      }
+
+      if ( this->GetDebug() )
+      {
+        std::cout << "Pec intercept: " << std::setw(12) 
+                  << std::left << pecInterceptInMM << std::right
+                  << " NCC: " << std::setw(12) << ncc 
+                  << " Best NCC: " << std::setw(12) << bestNCC 
+                  << ", " << std::setw(18) << std::left << bestPecInterceptInMM
+                  << std::right << std::endl;
+      }
+
+    }
+  }
+
+  metric->GetParameters( bestPecInterceptInMM, bestParameters );
+
+  std::cout << std::endl
+            << " Best NCC: " << std::setw(12) << bestNCC 
+            << ", " << std::setw(18) << bestPecInterceptInMM
+            << ", " << bestParameters << std::endl;
+}
+
+
+/* -----------------------------------------------------------------------
+   GenerateData()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage, typename TOutputImage>
+void 
+MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
+::GenerateData(void)
+{
+  InputImagePointer imPipelineConnector;
+
+  // Single-threaded execution
+
+  this->AllocateOutputs();
+
+  InputImageConstPointer image = this->GetInput();
+
+
+  // Determine if this is the left or right breast
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typename LeftOrRightSideCalculatorType::Pointer 
+    sideCalculator = LeftOrRightSideCalculatorType::New();
+
+  sideCalculator->SetImage( image );
+
+  sideCalculator->SetVerbose( this->GetVerbose() );
+
+  sideCalculator->Compute();
+
+  BreastSideType breastSide = sideCalculator->GetBreastSide();
+
+  
+  // Shrink the image to max dimension for exhaustive search
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  InputImageSizeType outSize;
+
+  imPipelineConnector = ShrinkTheInputImage( 300, outSize );
 
 
   // Iterate over all of the triangular pectoral x and y intercepts
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImageSizeType pecIntercept;
-
   InputImageRegionType pecRegion;
-  InputImageIndexType  pecStart;
 
-  InputImageIndexType  index;
+  InputImageIndexType pecIntercept;
+
+  InputImageIndexType pecInterceptStart;
+  InputImageIndexType pecInterceptEnd;
+
+  InputImagePointType pecInterceptInMM;
+  InputImagePointType bestPecInterceptInMM;
 
   double nPixels;
-
-  double value;
-  double imMean, imStdDev;
   double tMean, tStdDev;        // The mean and standard deviation of the template image
-  double i, j, r, c;
-  double ncc;
 
-  double pecScore, prevPecScore;
-  double nonPecScore, prevNonPecScore;
+  double ncc = -1., bestNCC = -1.;
 
-  double b = 2;             // Factor to equate to region beyond the pectoral boundary
+  // Create the pectoral fit metric
+
+  typename FitMetricType::Pointer metric = FitMetricType::New();
+  
+  metric->SetDebug( this->GetDebug() );
+
+  typename FitMetricType::ParametersType bestParameters;
+  bestParameters.SetSize( metric->GetNumberOfParameters() );
 
 
-  for ( pecIntercept[1] = 2; 
-        pecIntercept[1] < 4*imSize[1]/5; 
-        pecIntercept[1]++ )
+#if 0
+
+  // Test
+
+  char filename[256];
+  typename FitMetricType::ParametersType parameters;
+  parameters.SetSize( metric->GetNumberOfParameters() );
+  metric->SetInputImage( imPipelineConnector );
+
+  pecInterceptInMM[0] = 37;
+  pecInterceptInMM[1] = 137;
+  metric->GetParameters( pecInterceptInMM, parameters );
+  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+            << "parameters: " << parameters << std::endl;
+  metric->ClearTemplate();
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  imPipelineConnector = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TInputImage >( filename, 
+                                   "test template image", 
+                                   imPipelineConnector ); 
+
+  pecInterceptInMM[0] = 137;
+  pecInterceptInMM[1] = 37;
+  metric->GetParameters( pecInterceptInMM, parameters );
+  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+            << "parameters: " << parameters << std::endl;
+  metric->ClearTemplate();
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  imPipelineConnector = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TInputImage >( filename, 
+                                   "test template image", 
+                                   imPipelineConnector ); 
+
+  pecInterceptInMM[0] = 100;
+  pecInterceptInMM[1] = 100;
+  metric->GetParameters( pecInterceptInMM, parameters );
+  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+            << "parameters: " << parameters << std::endl;
+  metric->ClearTemplate();
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  imPipelineConnector = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TInputImage >( filename, 
+                                   "test template image", 
+                                   imPipelineConnector ); 
+
+  exit(0);
+#endif
+
+
+  // Perform an exhaustive search
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  pecInterceptStart[0] = 17;
+  pecInterceptStart[1] = 13;
+
+  pecInterceptEnd[0] = 2*outSize[0]/3;
+  pecInterceptEnd[1] = 9*outSize[1]/10;
+
+  ExhaustiveSearch( pecInterceptStart, pecInterceptEnd, metric,
+                    imPipelineConnector, bestPecInterceptInMM, bestParameters );
+
+  if ( this->GetDebug() )
   {
-    r = static_cast<double>( pecIntercept[1] );
+    metric->ClearTemplate();
+    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
 
-    if ( m_flgVerbose )
+    imPipelineConnector = metric->GetImTemplate();
+
+    WriteImageToFile< TInputImage >( "ExhaustiveSearchTemplate1.nii", 
+                                     "first exhaustive search template image", 
+                                     imPipelineConnector ); 
+  }
+
+  
+  // Shrink the image to max dimension for optimisation
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  imPipelineConnector = ShrinkTheInputImage( 1000, outSize );
+
+
+  // Perform a second locally exhaustive search
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  imPipelineConnector->TransformPhysicalPointToIndex( bestPecInterceptInMM, pecIntercept );
+  
+  pecInterceptStart[0] = pecIntercept[0] - 17;
+  pecInterceptStart[1] = pecIntercept[1] - 17;
+
+  pecInterceptEnd[0] = pecIntercept[0] + 17;
+  pecInterceptEnd[1] = pecIntercept[1] + 17;
+
+  unsigned int d;
+  for ( d=0; d<2; d++ )
+  {
+    if ( pecInterceptStart[d] < 0 )
     {
-      std::cout << 500*pecIntercept[1]/(4*imSize[1]) << " ";
-      std::cout.flush();
+      pecInterceptStart[d] = 0;
+    }
+    if ( pecInterceptEnd[d] >= imPipelineConnector->GetLargestPossibleRegion().GetSize()[d] )
+    {
+      pecInterceptEnd[d] = imPipelineConnector->GetLargestPossibleRegion().GetSize()[d] - 1;
     }
 
-    for ( pecIntercept[0] = 2; 
-          pecIntercept[0] < imSize[0]/2; 
-          pecIntercept[0]++ )
+    if ( pecInterceptStart[d] > pecInterceptEnd[d] )
     {
-
-      c = static_cast<double>( pecIntercept[0] );
-      
-      // Define the pectoral region to cross-correlate with a triangle
-
-      pecRegion.SetSize( pecIntercept );
-
-      if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
-      {
-        pecStart[0] = 0;
-        pecStart[1] = 0;
-      }
-      else 
-      {
-        pecStart[0] = imSize[0] - pecIntercept[0];
-        pecStart[1] = 0;
-      }
-
-      pecRegion.SetIndex( pecStart );
-
-      // Create the template
-
-      GenerateTemplate( imTemplate, pecRegion, tMean, tStdDev, 
-                        nPixels, breastSide );
-
-      if ( this->GetDebug() )
-      {
-        std::cout << "Pec region: " << pecRegion << std::endl
-                  << "Number of pixels: " << nPixels << std::endl;
-      }
-
-      // Create the image region iterator
-
-      IteratorType itPecRegion( imPipelineConnector, pecRegion );
-      IteratorType itTemplate( imTemplate, pecRegion );
-
-      // Compute the mean image intensity for this region
-
-      imMean = 0;
-       
-      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
-            ! itPecRegion.IsAtEnd();
-            ++itPecRegion, ++itTemplate )
-      {
-        if ( itTemplate.Get() )
-        {
-          imMean += itPecRegion.Get();
-        }
-      }
-
-      imMean /= nPixels;
-
-      // Compute the standard deviation for this region
-
-      imStdDev = 0;
-       
-      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
-            ! itPecRegion.IsAtEnd();
-            ++itPecRegion, ++itTemplate )
-      {
-        if ( itTemplate.Get() )
-        {
-          value = static_cast<double>( itPecRegion.Get() ) - imMean;
-          imStdDev += value*value;
-        }
-      }
-
-      imStdDev = sqrt( imStdDev )/nPixels;
-
-      if ( this->GetDebug() )
-      {
-        std::cout << "Image region mean: " << imMean
-                  << ", std. dev.: " << imStdDev << std::endl
-                  << "Template region mean: " << tMean
-                  << ", std. dev.: " << tStdDev << std::endl;
-      }
-
-      // Compute the cross correlation
-
-      ncc = 0;
-
-      for ( itPecRegion.GoToBegin(), itTemplate.GoToBegin();
-            ! itPecRegion.IsAtEnd();
-            ++itPecRegion, ++itTemplate )
-      {
-        if ( itTemplate.Get() )
-        {
-          ncc += ( static_cast<double>( itPecRegion.Get() ) - imMean )*( itTemplate.Get() - tMean )
-              / ( imStdDev*tStdDev);
-        }
-      }
-
-      ncc /= nPixels;
-
-      if ( this->GetDebug() )
-      {
-        std::cout << "NCC: " << ncc << std::endl;
-      }
-
-      // Iterate over this region again and update the scores for each pixel
-
-      IteratorWithIndexType itNonPectoralScore( imNonPectoralScore, pecRegion );
-      IteratorWithIndexType itPectoralScore( imPectoralScore, pecRegion );
-
-      for ( itNonPectoralScore.GoToBegin(), 
-              itPectoralScore.GoToBegin(), 
-              itTemplate.GoToBegin();
-
-            ! itNonPectoralScore.IsAtEnd();
-
-            ++itNonPectoralScore, ++itPectoralScore, ++itTemplate )
-      {
-        prevPecScore = itPectoralScore.Get();
-        prevNonPecScore = itNonPectoralScore.Get();
-
-        if ( itTemplate.Get() > 0 )
-        {
-          pecScore = ncc;
-          nonPecScore = -ncc;
-        }
-        else if  ( itTemplate.Get() < 0 )
-        {
-          pecScore = -ncc;
-          nonPecScore = ncc;
-        }
-        else
-        {
-          pecScore = prevPecScore;
-          nonPecScore = prevNonPecScore;
-        }
-
-        if ( pecScore > prevPecScore )
-        {
-          itPectoralScore.Set( pecScore );
-        }
-
-        if ( nonPecScore > prevNonPecScore )
-        {
-          itNonPectoralScore.Set( nonPecScore );
-        }
-      }
-
+      pecInterceptStart[d] = pecInterceptEnd[d];
     }
   }
+
+  ExhaustiveSearch( pecInterceptStart, pecInterceptEnd, metric,
+                    imPipelineConnector, bestPecInterceptInMM, bestParameters );
+
+  if ( this->GetDebug() )
+  {
+    metric->ClearTemplate();
+    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
+
+    imPipelineConnector = metric->GetImTemplate();
+
+    WriteImageToFile< TInputImage >( "ExhaustiveSearchTemplate2.nii", 
+                                     "second exhaustive search template image", 
+                                     imPipelineConnector ); 
+  }
+
+
+  // Optimise the fit
+  // ~~~~~~~~~~~~~~~~
+
+  typename FitMetricType::ParametersType parameterScales;
+  parameterScales.SetSize( metric->GetNumberOfParameters() );
+
+  parameterScales[0] = 1;
+  parameterScales[1] = 10;
+  parameterScales[2] = 10;
+
+  typedef itk::PowellOptimizer OptimizerType;
+  OptimizerType::Pointer optimiser = OptimizerType::New();
+  
+  optimiser->SetCostFunction( metric );
+  optimiser->SetInitialPosition( bestParameters );
+  optimiser->SetMaximumIteration( 300 );
+  optimiser->SetStepLength( 5 );
+  optimiser->SetStepTolerance( 0.01 );
+  optimiser->SetMaximumLineIteration( 10 );
+  optimiser->SetValueTolerance( 0.000001 );
+  optimiser->MaximizeOn();
+  optimiser->SetScales( parameterScales );
+
+  typedef IterationCallback< OptimizerType >   IterationCallbackType;
+  IterationCallbackType::Pointer callback = IterationCallbackType::New();
+
+  callback->SetOptimizer( optimiser );
+  
+  std::cout << "Starting optimisation at position: " 
+            << bestParameters << std::endl;
+
+  optimiser->StartOptimization();
+
+  std::cout << "Optimizer stop condition: " 
+            << optimiser->GetStopConditionDescription() << std::endl;
+
+  bestParameters = optimiser->GetCurrentPosition();
+
+  std::cout << "Final parameters: " << bestParameters << std::endl;
+
+
+  // Get the template
+  // ~~~~~~~~~~~~~~~~
+
+  metric->ClearTemplate();
+  metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
+
+  imPipelineConnector = metric->GetImTemplate();
 
   if ( this->GetDebug() )
   {
     WriteImageToFile< TInputImage >( "FinalTemplate.nii", 
                                      "final (largest) template image", 
-                                     imTemplate ); 
+                                     imPipelineConnector ); 
   }
-
-  // Calculate the final pectoral score as the difference of pec and non-pec scores
-
-  IteratorType itNonPectoralScore( imNonPectoralScore, imRegion );
-  IteratorType itPectoralScore( imPectoralScore, imRegion );
-  
-  for ( itNonPectoralScore.GoToBegin(), itPectoralScore.GoToBegin();
-        ! itNonPectoralScore.IsAtEnd();
-        ++itNonPectoralScore, ++itPectoralScore )
-  {
-    if ( itPectoralScore.Get() > itNonPectoralScore.Get() )
-    {
-      itPectoralScore.Set( 100 );
-    }
-    else
-    {
-      itPectoralScore.Set( 0 );
-    }
-  }
-
-  imPipelineConnector = imPectoralScore;
 
 
   // Expand the image back up to the original size
@@ -513,14 +615,13 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   typename ResampleFilterType::Pointer expandFilter = ResampleFilterType::New();
 
   expandFilter->SetInput( imPipelineConnector );
-  expandFilter->SetSize( inSize );
-  expandFilter->SetOutputSpacing( inSpacing );
+  expandFilter->SetSize( image->GetLargestPossibleRegion().GetSize() );
+  expandFilter->SetOutputSpacing( image->GetSpacing() );
   expandFilter->SetTransform( IdentityTransformType::New() );
 
   if ( m_flgVerbose )
   {
-    std::cout << "Expanding the image by a factor of " 
-              << shrinkFactor << std::endl;
+    std::cout << "Expanding the image back up to orginal size" << std::endl;
   }
 
   expandFilter->UpdateLargestPossibleRegion();  
@@ -533,7 +634,42 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
 
-  this->GraftOutput( imPipelineConnector );
+  // And threshold it
+  // ~~~~~~~~~~~~~~~~
+
+  typedef typename itk::BinaryThresholdImageFilter< TInputImage, TInputImage > BinaryThresholdFilterType;
+
+  typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
+
+  thresholder->SetInput( imPipelineConnector );
+
+  thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue( 100 );
+
+  thresholder->SetLowerThreshold( 0.5 );
+  
+  
+  if ( m_flgVerbose )
+  {
+    std::cout << "Thresholding the mask" << std::endl;
+  }
+
+  thresholder->Update();
+  imPipelineConnector = thresholder->GetOutput();
+
+
+  // Cast to the output image type
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typedef itk::CastImageFilter<  TInputImage, TOutputImage > CastingFilterType;
+
+  typename CastingFilterType::Pointer caster = CastingFilterType::New();
+
+  caster->SetInput( imPipelineConnector );
+
+  caster->UpdateLargestPossibleRegion();
+
+  this->GraftOutput( caster->GetOutput() );
 }
 
 

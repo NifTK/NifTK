@@ -21,6 +21,7 @@
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkMammogramLeftOrRightSideCalculator.h>
+#include <itkMammogramPectoralisFitMetric.h>
 
 namespace itk {
   
@@ -95,6 +96,8 @@ public:
 
   typedef typename LeftOrRightSideCalculatorType::BreastSideType BreastSideType;
 
+  typedef typename itk::MammogramPectoralisFitMetric< TInputImage > FitMetricType;
+
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
@@ -121,6 +124,9 @@ protected:
   MammogramPectoralisSegmentationImageFilter();
   virtual ~MammogramPectoralisSegmentationImageFilter();
   void PrintSelf(std::ostream& os, Indent indent) const;
+
+  InputImagePointer ShrinkTheInputImage( unsigned int maxShrunkDimension,
+                                         InputImageSizeType &outSize );
   
   /** Single threaded execution */
   void GenerateData();
@@ -132,6 +138,15 @@ protected:
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);
+
+  // Run and exhaustive search over a region of interest
+  void ExhaustiveSearch( InputImageIndexType pecInterceptStart, 
+                         InputImageIndexType pecInterceptEnd, 
+                         typename FitMetricType::Pointer &metric,
+                         InputImagePointer &imPipelineConnector,
+                         InputImagePointType &bestPecInterceptInMM,
+                         typename FitMetricType::ParametersType &bestParameters );
+
 
 private:
 

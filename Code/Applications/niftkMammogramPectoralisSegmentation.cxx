@@ -68,8 +68,6 @@ int main(int argc, char** argv)
   
   typedef itk::Image< InputPixelType, Dimension > InputImageType;   
 
-  typedef itk::Statistics::ImageToHistogramFilter< InputImageType > ImageToHistogramFilterType;
- 
   typedef float OutputPixelType;
 
   typedef itk::Image< OutputPixelType, Dimension > OutputImageType;   
@@ -137,7 +135,10 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }                
 
-  imageReader->GetOutput()->Print( std::cout );
+  if ( args.flgDebug )
+  {
+    imageReader->GetOutput()->Print( std::cout );
+  }
 
 
   // Create the segmentation filter
