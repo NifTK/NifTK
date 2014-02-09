@@ -172,6 +172,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_BlockDisplayEvents(false)
 , m_BlockUpdate(false)
 , m_SelectedRenderWindowHasChanged(false)
+, m_SncGeometryHasChanged(3)
+, m_SncTimeHasChanged(3)
 , m_SncSliceHasChanged(3)
 , m_SelectedPositionHasChanged(false)
 , m_CursorPositionHasChanged(3)
@@ -968,14 +970,10 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 {
   if (geometry != NULL)
   {
+    bool updateWasBlocked = this->BlockUpdate(true);
+
     bool displayEventsWereBlocked = m_BlockDisplayEvents;
     m_BlockDisplayEvents = true;
-
-    bool sncupdateWasBlocked[4];
-    for (int i = 0; i < 4; ++i)
-    {
-      sncupdateWasBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(true);
-    }
 
     m_Geometry = geometry->GetGeometryForTimeStep(0);
     m_TimeGeometry = geometry;
@@ -1330,20 +1328,16 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
       }
     }
 
-    for (int i = 0; i < 4; ++i)
-    {
-      sncupdateWasBlocked[i] = m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(sncupdateWasBlocked[i]);
-    }
     m_BlockDisplayEvents = displayEventsWereBlocked;
 
-    m_BlockProcessingSncSignals = true;
     for (int i = 0; i < 3; ++i)
     {
-      m_RenderWindows[i]->GetSliceNavigationController()->SendCreatedWorldGeometry();
-      m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
-      m_RenderWindows[i]->GetSliceNavigationController()->SendSlice();
+      m_SncGeometryHasChanged[i] = true;
+      m_SncTimeHasChanged[i] = true;
+      m_SncSliceHasChanged[i] = true;
     }
-    m_BlockProcessingSncSignals = false;
+
+    this->BlockUpdate(updateWasBlocked);
   }
   else
   {
@@ -2496,6 +2490,10 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
   if (blocked != m_BlockUpdate)
   {
     m_BlockUpdate = blocked;
+    for (int i = 0; i < 4; ++i)
+    {
+      m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(blocked);
+    }
 
     if (!blocked)
     {
@@ -2513,6 +2511,30 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       }
       for (unsigned i = 0; i < 3; ++i)
       {
+        if (m_SncGeometryHasChanged[i])
+        {
+          m_SncGeometryHasChanged[i] = false;
+          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
+          {
+            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+            rendererUpdated[i] = true;
+          }
+          m_BlockProcessingSncSignals = true;
+          m_RenderWindows[i]->GetSliceNavigationController()->SendCreatedWorldGeometry();
+          m_BlockProcessingSncSignals = false;
+        }
+        if (m_SncTimeHasChanged[i])
+        {
+          m_SncTimeHasChanged[i] = false;
+          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
+          {
+            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+            rendererUpdated[i] = true;
+          }
+          m_BlockProcessingSncSignals = true;
+          m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
+          m_BlockProcessingSncSignals = false;
+        }
         if (m_SncSliceHasChanged[i])
         {
           m_SncSliceHasChanged[i] = false;

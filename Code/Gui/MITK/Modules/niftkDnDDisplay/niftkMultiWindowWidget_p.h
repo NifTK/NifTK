@@ -448,6 +448,8 @@ private:
   bool m_BlockUpdate;
 
   bool m_SelectedRenderWindowHasChanged;
+  std::vector<bool> m_SncGeometryHasChanged;
+  std::vector<bool> m_SncTimeHasChanged;
   std::vector<bool> m_SncSliceHasChanged;
   bool m_SelectedPositionHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
