@@ -94,7 +94,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_ScaleFactors2(3)
 , m_Origins(3)
 , m_SizesInPx(3)
-, m_FocusPoints(3)
 , m_BlockEvents(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
@@ -307,7 +306,6 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
   m_ScaleFactors2[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
   m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  m_FocusPoints[orientation] = displayGeometry->GetOriginInDisplayUnits();
   m_BlockEvents[orientation] = false;
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
   m_DisplayGeometryModificationObservers[orientation] = observerTag;
@@ -1660,9 +1658,6 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
     m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
     m_ScaleFactors2[orientation] = scaleFactor;
     m_SizesInPx[orientation] = sizeInPx;
-    m_FocusPoints[orientation] = this->GetCursorPosition(orientation);
-    m_FocusPoints[orientation][0] *= displayGeometry->GetDisplayWidth();
-    m_FocusPoints[orientation][1] *= displayGeometry->GetDisplayHeight();
     return;
   }
 
@@ -1678,11 +1673,23 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
 
     mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
     mitk::Vector2D focusPoint = (m_Origins[orientation] * m_ScaleFactors[orientation] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors2[orientation]);
+    mitk::Vector2D cursorPosition = focusPoint;
+    cursorPosition[0] /= m_SizesInPx[orientation][0];
+    cursorPosition[1] /= m_SizesInPx[orientation][1];
 
-    if (focusPoint != m_FocusPoints[orientation])
+    if (cursorPosition != m_CursorPositions[orientation])
     {
-      m_FocusPoints[orientation] = focusPoint;
-      this->OnZoomFocusChanged(orientation, m_FocusPoints[orientation]);
+      if (m_Geometry && !m_BlockDisplayEvents)
+      {
+        mitk::Point2D focusPointInPx;
+        focusPointInPx[0] = focusPoint[0];
+        focusPointInPx[1] = focusPoint[1];
+        mitk::Point2D focusPointInMm;
+        displayGeometry->DisplayToWorld(focusPointInPx, focusPointInMm);
+        mitk::Point3D focusPoint3DInMm;
+        displayGeometry->Map(focusPointInMm, focusPoint3DInMm);
+        this->SetSelectedPosition(focusPoint3DInMm);
+      }
     }
     this->OnScaleFactorChanged(orientation, scaleFactor);
     m_ScaleFactors2[orientation] = scaleFactor;
