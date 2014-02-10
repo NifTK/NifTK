@@ -359,6 +359,9 @@ private:
   /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
   void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
+  /// \brief Called when the display geometry of the render window has changed.
+  void OnDisplayGeometryModified(MIDASOrientation orientation);
+
   /// \brief Called when the origin of the display geometry of the render window has changed.
   void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
@@ -397,6 +400,12 @@ private:
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
+
+  std::vector<mitk::Vector2D> m_SizesInPx;
+  std::vector<mitk::Vector2D> m_Origins;
+  std::vector<double> m_ScaleFactors2;
+  std::vector<mitk::Vector2D> m_FocusPoints;
+  std::vector<bool> m_BlockEvents;
 
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;

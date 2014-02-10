@@ -35,20 +35,14 @@
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro3Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, MIDASOrientation, mitk::DisplayGeometry*);
+  mitkNewMacro2Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, MIDASOrientation);
 
 
   //-----------------------------------------------------------------------------
-  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, MIDASOrientation orientation, mitk::DisplayGeometry* displayGeometry)
+  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, MIDASOrientation orientation)
   : itk::Command()
   , m_MultiWindowWidget(multiWindowWidget)
   , m_Orientation(orientation)
-  , m_DisplayGeometry(displayGeometry)
-  , m_SizeInPx(displayGeometry->GetSizeInDisplayUnits())
-  , m_Origin(displayGeometry->GetOriginInDisplayUnits())
-  , m_ScaleFactor(displayGeometry->GetScaleFactorMMPerDisplayUnit())
-  , m_FocusPoint(displayGeometry->GetOriginInDisplayUnits())
-  , m_BlockEvents(false)
   {
   }
 
@@ -63,83 +57,13 @@ public:
   //-----------------------------------------------------------------------------
   void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/)
   {
-    if (m_BlockEvents)
-    {
-      return;
-    }
-    mitk::Vector2D sizeInPx = m_DisplayGeometry->GetSizeInDisplayUnits();
-    if (sizeInPx != m_SizeInPx)
-    {
-      double horizontalSizeChange = m_SizeInPx[0] / sizeInPx[0];
-      double verticalSizeChange = m_SizeInPx[1] / sizeInPx[1];
-      double horizontalScaleFactor = m_ScaleFactor * horizontalSizeChange;
-      double verticalScaleFactor = m_ScaleFactor * verticalSizeChange;
-
-      /// Find the largest change, let it be zooming or unzooming.
-      if (horizontalSizeChange < 1.0)
-      {
-        horizontalSizeChange = 1.0 / horizontalSizeChange;
-      }
-      if (verticalSizeChange < 1.0)
-      {
-        verticalSizeChange = 1.0 / verticalSizeChange;
-      }
-      double scaleFactor = horizontalSizeChange > verticalSizeChange ? horizontalScaleFactor : verticalScaleFactor;
-
-      m_BlockEvents = true;
-      m_MultiWindowWidget->OnRenderWindowResized(m_Orientation, scaleFactor);
-      m_BlockEvents = false;
-      m_Origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-      m_ScaleFactor = scaleFactor;
-      m_SizeInPx = sizeInPx;
-      m_FocusPoint = m_MultiWindowWidget->GetCursorPosition(m_Orientation);
-      m_FocusPoint[0] *= m_DisplayGeometry->GetDisplayWidth();
-      m_FocusPoint[1] *= m_DisplayGeometry->GetDisplayHeight();
-      return;
-    }
-
-    // Note that the scaling changes the scale factor *and* the origin,
-    // while the moving changes the origin only.
-
-    bool beingPanned = true;
-
-    double scaleFactor = m_DisplayGeometry->GetScaleFactorMMPerDisplayUnit();
-    if (scaleFactor != m_ScaleFactor)
-    {
-      beingPanned = false;
-
-      mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-      mitk::Vector2D focusPoint = (m_Origin * m_ScaleFactor - origin * scaleFactor) / (scaleFactor - m_ScaleFactor);
-
-      if (focusPoint != m_FocusPoint)
-      {
-        m_FocusPoint = focusPoint;
-        m_MultiWindowWidget->OnZoomFocusChanged(m_Orientation, m_FocusPoint);
-      }
-      m_MultiWindowWidget->OnScaleFactorChanged(m_Orientation, scaleFactor);
-      m_ScaleFactor = scaleFactor;
-    }
-
-    mitk::Vector2D origin = m_DisplayGeometry->GetOriginInDisplayUnits();
-    if (origin != m_Origin)
-    {
-      if (beingPanned)
-      {
-        m_MultiWindowWidget->OnOriginChanged(m_Orientation, beingPanned);
-      }
-      m_Origin = origin;
-    }
+    m_MultiWindowWidget->OnDisplayGeometryModified(m_Orientation);
+    return;
   }
 
 private:
   niftkMultiWindowWidget* const m_MultiWindowWidget;
   MIDASOrientation m_Orientation;
-  mitk::DisplayGeometry* const m_DisplayGeometry;
-  mitk::Vector2D m_SizeInPx;
-  mitk::Vector2D m_Origin;
-  double m_ScaleFactor;
-  mitk::Vector2D m_FocusPoint;
-  bool m_BlockEvents;
 };
 
 
@@ -167,6 +91,11 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_Magnifications(3)
+, m_ScaleFactors2(3)
+, m_Origins(3)
+, m_SizesInPx(3)
+, m_FocusPoints(3)
+, m_BlockEvents(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
@@ -373,7 +302,13 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
   assert(displayGeometry);
 
-  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation, displayGeometry);
+  DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation);
+  m_SizesInPx[orientation] = displayGeometry->GetSizeInDisplayUnits();
+  m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
+  m_ScaleFactors2[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  m_FocusPoints[orientation] = displayGeometry->GetOriginInDisplayUnits();
+  m_BlockEvents[orientation] = false;
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
   m_DisplayGeometryModificationObservers[orientation] = observerTag;
 }
@@ -1688,6 +1623,79 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
     m_BlockDisplayEvents = true;
     displayGeometry->SetOriginInMM(originInMm);
     m_BlockDisplayEvents = displayEventsWereBlocked;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientation)
+{
+  if (m_BlockEvents[orientation])
+  {
+    return;
+  }
+  mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
+  mitk::Vector2D sizeInPx = displayGeometry->GetSizeInDisplayUnits();
+  if (sizeInPx != m_SizesInPx[orientation])
+  {
+    double horizontalSizeChange = m_SizesInPx[orientation][0] / sizeInPx[0];
+    double verticalSizeChange = m_SizesInPx[orientation][1] / sizeInPx[1];
+    double horizontalScaleFactor = m_ScaleFactors2[orientation] * horizontalSizeChange;
+    double verticalScaleFactor = m_ScaleFactors2[orientation] * verticalSizeChange;
+
+    /// Find the largest change, let it be zooming or unzooming.
+    if (horizontalSizeChange < 1.0)
+    {
+      horizontalSizeChange = 1.0 / horizontalSizeChange;
+    }
+    if (verticalSizeChange < 1.0)
+    {
+      verticalSizeChange = 1.0 / verticalSizeChange;
+    }
+    double scaleFactor = horizontalSizeChange > verticalSizeChange ? horizontalScaleFactor : verticalScaleFactor;
+
+    m_BlockEvents[orientation] = true;
+    this->OnRenderWindowResized(orientation, scaleFactor);
+    m_BlockEvents[orientation] = false;
+    m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
+    m_ScaleFactors2[orientation] = scaleFactor;
+    m_SizesInPx[orientation] = sizeInPx;
+    m_FocusPoints[orientation] = this->GetCursorPosition(orientation);
+    m_FocusPoints[orientation][0] *= displayGeometry->GetDisplayWidth();
+    m_FocusPoints[orientation][1] *= displayGeometry->GetDisplayHeight();
+    return;
+  }
+
+  // Note that the scaling changes the scale factor *and* the origin,
+  // while the moving changes the origin only.
+
+  bool beingPanned = true;
+
+  double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  if (scaleFactor != m_ScaleFactors2[orientation])
+  {
+    beingPanned = false;
+
+    mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
+    mitk::Vector2D focusPoint = (m_Origins[orientation] * m_ScaleFactors[orientation] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors2[orientation]);
+
+    if (focusPoint != m_FocusPoints[orientation])
+    {
+      m_FocusPoints[orientation] = focusPoint;
+      this->OnZoomFocusChanged(orientation, m_FocusPoints[orientation]);
+    }
+    this->OnScaleFactorChanged(orientation, scaleFactor);
+    m_ScaleFactors2[orientation] = scaleFactor;
+  }
+
+  mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
+  if (origin != m_Origins[orientation])
+  {
+    if (beingPanned)
+    {
+      this->OnOriginChanged(m_Orientation, beingPanned);
+    }
+    m_Origins[orientation] = origin;
   }
 }
 
