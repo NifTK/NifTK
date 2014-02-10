@@ -23,5 +23,5 @@ end
 D = ptsR - repmat(median(ptsR,2),1,size(ptsR,2));
 D = magc(D(1:3,:));
 
-outliers = iIndex(find(D>2));
+outliers = iIndex(find(D>3));
 plot3d(ptsR,1,'.');
