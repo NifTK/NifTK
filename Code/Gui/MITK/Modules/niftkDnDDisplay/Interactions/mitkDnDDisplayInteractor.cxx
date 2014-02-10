@@ -94,15 +94,14 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
     return false;
   }
 
+  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
-  QmitkRenderWindow* renderWindow = 0;
   if (!renderer->GetFocused())
   {
-    renderWindow = this->GetRenderWindow(renderer);
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
-
-  bool itkSignalsWereBlocked = m_MultiWindowWidget->BlockUpdate(true);
-  bool qtSignalsWereBlocked = m_MultiWindowWidget->blockSignals(true);
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
   // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
@@ -110,13 +109,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
   const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
   m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
 
-  if (renderWindow)
-  {
-    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
-  }
-
-  m_MultiWindowWidget->blockSignals(qtSignalsWereBlocked);
-  m_MultiWindowWidget->BlockUpdate(itkSignalsWereBlocked);
+  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
   return true;
 }
@@ -124,34 +117,44 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (!renderer->GetFocused())
   {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
-  return Superclass::ScrollOneUp(action, interactionEvent);
+
+  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+
+  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+
+  return result;
 }
 
 
 bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (!renderer->GetFocused())
   {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
-  return Superclass::ScrollOneDown(action, interactionEvent);
+
+  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+
+  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+
+  return result;
 }
 
 
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  BaseRenderer* renderer = interactionEvent->GetSender();
-  if (!renderer->GetFocused())
-  {
-    mitk::GlobalInteraction::GetInstance()->GetFocusManager()->SetFocused(interactionEvent->GetSender());
-  }
-
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
   if (positionEvent == NULL)
   {
@@ -164,6 +167,15 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   if (!m_Renderers[0]->GetSliceNavigationController()->GetCreatedWorldGeometry())
   {
     return false;
+  }
+
+  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
   // Selects the point under the mouse pointer in the slice navigation controllers.
@@ -203,5 +215,9 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   // Create a new position event with the "corrected" position.
   mitk::InteractionPositionEvent::Pointer positionEvent2 = InteractionPositionEvent::New(renderer, focusPoint2DInPxUL);
 
-  return this->Init(action, positionEvent2);
+  bool result = this->Init(action, positionEvent2);
+
+  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+
+  return result;
 }
