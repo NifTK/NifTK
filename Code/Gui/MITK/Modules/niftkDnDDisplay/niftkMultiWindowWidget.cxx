@@ -92,7 +92,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_ScaleFactors(3)
 , m_Magnifications(3)
 , m_Origins(3)
-, m_SizesInPx(3)
+, m_RenderWindowSizes(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
@@ -300,9 +300,10 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   assert(displayGeometry);
 
   DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation);
-  m_SizesInPx[orientation] = displayGeometry->GetSizeInDisplayUnits();
+  m_RenderWindowSizes[orientation] = displayGeometry->GetSizeInDisplayUnits();
   m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
   m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  m_Magnifications[orientation] = this->GetMagnification(orientation);
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
   m_DisplayGeometryModificationObservers[orientation] = observerTag;
 }
@@ -1466,6 +1467,12 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
 
+  for (size_t i = 0; i < 3; ++i)
+  {
+    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry();
+    m_RenderWindowSizes[i] = displayGeometry->GetSizeInDisplayUnits();
+  }
+
   this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
@@ -1626,11 +1633,11 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
   bool updateWasBlocked = this->BlockUpdate(true);
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
-  mitk::Vector2D sizeInPx = displayGeometry->GetSizeInDisplayUnits();
-  if (sizeInPx != m_SizesInPx[orientation])
+  mitk::Vector2D renderWindowSize = displayGeometry->GetSizeInDisplayUnits();
+  if (renderWindowSize != m_RenderWindowSizes[orientation])
   {
-    double horizontalSizeChange = m_SizesInPx[orientation][0] / sizeInPx[0];
-    double verticalSizeChange = m_SizesInPx[orientation][1] / sizeInPx[1];
+    double horizontalSizeChange = m_RenderWindowSizes[orientation][0] / renderWindowSize[0];
+    double verticalSizeChange = m_RenderWindowSizes[orientation][1] / renderWindowSize[1];
     double horizontalScaleFactor = m_ScaleFactors[orientation] * horizontalSizeChange;
     double verticalScaleFactor = m_ScaleFactors[orientation] * verticalSizeChange;
 
@@ -1645,14 +1652,12 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
     }
     double scaleFactor = horizontalSizeChange > verticalSizeChange ? horizontalScaleFactor : verticalScaleFactor;
 
-    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-    this->OnRenderWindowResized(orientation, scaleFactor);
     m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
+    m_CursorPositionHasChanged[orientation] = true;
     m_ScaleFactors[orientation] = scaleFactor;
     m_ScaleFactorHasChanged[orientation] = true;
     m_Magnifications[orientation] = this->GetMagnification(orientation);
-    m_SizesInPx[orientation] = sizeInPx;
-    this->BlockDisplayEvents(displayEventsWereBlocked);
+    m_RenderWindowSizes[orientation] = renderWindowSize;
 
     this->BlockUpdate(updateWasBlocked);
     return;
@@ -1671,8 +1676,8 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
     mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
     mitk::Vector2D focusPoint = (m_Origins[orientation] * m_ScaleFactors[orientation] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors[orientation]);
     mitk::Vector2D cursorPosition = focusPoint;
-    cursorPosition[0] /= m_SizesInPx[orientation][0];
-    cursorPosition[1] /= m_SizesInPx[orientation][1];
+    cursorPosition[0] /= m_RenderWindowSizes[orientation][0];
+    cursorPosition[1] /= m_RenderWindowSizes[orientation][1];
 
     if (cursorPosition != m_CursorPositions[orientation])
     {
@@ -1813,19 +1818,6 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, 
       this->BlockUpdate(updateWasBlocked);
     }
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnRenderWindowResized(MIDASOrientation orientation, double scaleFactor)
-{
-  bool updateWasBlocked = this->BlockUpdate(true);
-  m_CursorPositionHasChanged[orientation] = true;
-  m_ScaleFactors[orientation] = scaleFactor;
-  m_ScaleFactorHasChanged[orientation] = true;
-  m_Magnifications[orientation] = this->GetMagnification(orientation);
-  this->ZoomAroundCursorPosition(orientation);
-  this->BlockUpdate(updateWasBlocked);
 }
 
 
