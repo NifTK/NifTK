@@ -182,6 +182,11 @@ disp(bestIndex);
 disp('Best calibration value');
 disp(bestValue);
 disp('Best calibration');
-disp(results(bestIndex,4:14));
-
-   
+bestCalib = results(bestIndex,4:14);
+disp(bestCalib);
+rMi = Comp_RigidBody_Matrix(bestCalib(1:6));
+S = diag([bestCalib(10) bestCalib(11) 1 1]);
+disp('Best calibration Matrix');
+disp(rMi);
+disp('Best calibration Scaling Matrix');
+disp(S);
