@@ -330,13 +330,12 @@ void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std
   // slots (Qt::DirectConnection). Another way of achieving this could be calling
   // QApplication::processEvents() but that would process other pending signals as well
   // what we might not want.
-  bool displayEventsWereBlocked = m_BlockDisplayEvents;
-  m_BlockDisplayEvents = true;
+  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
   bool updateWasBlocked = this->BlockUpdate(true);
   this->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(renderWindow, nodes);
   this->BlockUpdate(updateWasBlocked);
-  m_BlockDisplayEvents = displayEventsWereBlocked;
+  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 
@@ -832,10 +831,9 @@ void niftkMultiWindowWidget::FitToDisplay()
       if (!m_ScaleFactorBinding)
       {
         /// If the scale factors are not bound, we simply fit each 'world' into their window.
-        bool displayEventsWereBlocked = m_BlockDisplayEvents;
-        m_BlockDisplayEvents = true;
+        bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
         displayGeometry->Fit();
-        m_BlockDisplayEvents = displayEventsWereBlocked;
+        this->BlockDisplayEvents(displayEventsWereBlocked);
         m_ScaleFactors[i] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
         m_ScaleFactorHasChanged[i] = true;
         m_Magnifications[i] = this->GetMagnification(MIDASOrientation(i));
@@ -864,10 +862,9 @@ void niftkMultiWindowWidget::FitToDisplay()
   {
     /// ... then call mitk::DisplayGeometry::Fit() for that window ...
     mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientationWithLargestScaleFactor]->GetRenderer()->GetDisplayGeometry();
-    bool displayEventsWereBlocked = m_BlockDisplayEvents;
-    m_BlockDisplayEvents = true;
+    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
     displayGeometry->Fit();
-    m_BlockDisplayEvents = displayEventsWereBlocked;
+    this->BlockDisplayEvents(displayEventsWereBlocked);
     double largestScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
     m_ScaleFactors[orientationWithLargestScaleFactor] = largestScaleFactor;
     m_ScaleFactorHasChanged[orientationWithLargestScaleFactor] = true;
@@ -901,8 +898,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    bool displayEventsWereBlocked = m_BlockDisplayEvents;
-    m_BlockDisplayEvents = true;
+    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
     m_Geometry = geometry->GetGeometryForTimeStep(0);
     m_TimeGeometry = geometry;
@@ -1257,7 +1253,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
       }
     }
 
-    m_BlockDisplayEvents = displayEventsWereBlocked;
+    this->BlockDisplayEvents(displayEventsWereBlocked);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -1281,8 +1277,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
-  bool displayEventsWereBlocked = m_BlockDisplayEvents;
-  m_BlockDisplayEvents = true;
+  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
   if (m_GridLayout != NULL)
   {
@@ -1471,7 +1466,7 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
 
-  m_BlockDisplayEvents = displayEventsWereBlocked;
+  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 
@@ -1613,10 +1608,9 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
     mitk::Vector2D originInMm;
     displayGeometry->DisplayToWorld(originInPx, originInMm);
 
-    bool displayEventsWereBlocked = m_BlockDisplayEvents;
-    m_BlockDisplayEvents = true;
+    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
     displayGeometry->SetOriginInMM(originInMm);
-    m_BlockDisplayEvents = displayEventsWereBlocked;
+    this->BlockDisplayEvents(displayEventsWereBlocked);
   }
 }
 
@@ -1682,7 +1676,7 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
 
     if (cursorPosition != m_CursorPositions[orientation])
     {
-      if (m_Geometry && !m_BlockDisplayEvents)
+      if (m_Geometry)
       {
         mitk::Point2D focusPointInPx;
         focusPointInPx[0] = focusPoint[0];
@@ -1714,7 +1708,7 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool beingPanned)
 {
-  if (m_Geometry && !m_BlockDisplayEvents)
+  if (m_Geometry)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -1778,7 +1772,7 @@ void niftkMultiWindowWidget::OnOriginChanged(MIDASOrientation orientation, bool 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint)
 {
-  if (m_Geometry && !m_BlockDisplayEvents)
+  if (m_Geometry)
   {
     mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
     mitk::Point2D focusPointInPx;
@@ -1796,7 +1790,7 @@ void niftkMultiWindowWidget::OnZoomFocusChanged(MIDASOrientation orientation, co
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
 {
-  if (m_Geometry && !m_BlockDisplayEvents)
+  if (m_Geometry)
   {
     if (scaleFactor != m_ScaleFactors[orientation])
     {
@@ -1838,7 +1832,7 @@ void niftkMultiWindowWidget::OnRenderWindowResized(MIDASOrientation orientation,
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientation)
 {
-  if (m_Geometry != NULL && !m_BlockDisplayEvents && orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (m_Geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2070,8 +2064,7 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     m_SelectedPosition = selectedPosition;
     m_SelectedPositionHasChanged = true;
 
-    bool displayEventsWereBlocked = m_BlockDisplayEvents;
-    m_BlockDisplayEvents = true;
+    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
     mitk::SliceNavigationController* axialSnc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
     mitk::SliceNavigationController* sagittalSnc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
@@ -2096,7 +2089,7 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
       m_SncSliceHasChanged[2] = m_SncSliceHasChanged[2] || pos != coronalSnc->GetSlice()->GetPos();
     }
 
-    m_BlockDisplayEvents = displayEventsWereBlocked;
+    this->BlockDisplayEvents(displayEventsWereBlocked);
 
     if (m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->isVisible())
     {
@@ -2237,14 +2230,13 @@ void niftkMultiWindowWidget::ZoomAroundCursorPosition(MIDASOrientation orientati
 
   double scaleFactor = m_ScaleFactors[orientation];
   double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  bool displayEventsWereBlocked = m_BlockDisplayEvents;
-  m_BlockDisplayEvents = true;
+  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
   if (displayGeometry->SetScaleFactor(scaleFactor))
   {
     mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
     displayGeometry->SetOriginInMM(originInMm - focusPoint2DInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
   }
-  m_BlockDisplayEvents = displayEventsWereBlocked;
+  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 
@@ -2494,6 +2486,15 @@ void niftkMultiWindowWidget::SetScaleFactorBinding(bool bound)
 
 
 //-----------------------------------------------------------------------------
+bool niftkMultiWindowWidget::BlockDisplayEvents(bool blocked)
+{
+  bool eventsWereBlocked = m_BlockDisplayEvents;
+  m_BlockDisplayEvents = blocked;
+  return eventsWereBlocked;
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 {
   bool updateWasBlocked = m_BlockUpdate;
@@ -2531,9 +2532,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
-          m_BlockDisplayEvents = true;
+          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendCreatedWorldGeometry();
-          m_BlockDisplayEvents = false;
+          this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockProcessingSncSignals = false;
         }
         if (m_SncTimeHasChanged[i])
@@ -2545,9 +2546,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
-          m_BlockDisplayEvents = true;
+          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
-          m_BlockDisplayEvents = false;
+          this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockProcessingSncSignals = false;
         }
         if (m_SncSliceHasChanged[i])
@@ -2559,9 +2560,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
-          m_BlockDisplayEvents = true;
+          bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendSlice();
-          m_BlockDisplayEvents = false;
+          this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockProcessingSncSignals = false;
         }
       }

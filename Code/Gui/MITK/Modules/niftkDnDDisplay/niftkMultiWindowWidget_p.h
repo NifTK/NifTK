@@ -384,12 +384,7 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
 
-  bool BlockDisplayEvents(bool blocked)
-  {
-    bool eventsWereBlocked = m_BlockDisplayEvents;
-    m_BlockDisplayEvents = blocked;
-    return eventsWereBlocked;
-  }
+  bool BlockDisplayEvents(bool blocked);
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
