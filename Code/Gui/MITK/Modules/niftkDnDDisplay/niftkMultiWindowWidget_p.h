@@ -384,6 +384,13 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
 
+  bool BlockDisplayEvents(bool blocked)
+  {
+    bool eventsWereBlocked = m_BlockDisplayEvents;
+    m_BlockDisplayEvents = blocked;
+    return eventsWereBlocked;
+  }
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
@@ -403,9 +410,7 @@ private:
 
   std::vector<mitk::Vector2D> m_SizesInPx;
   std::vector<mitk::Vector2D> m_Origins;
-  std::vector<double> m_ScaleFactors2;
   std::vector<mitk::Vector2D> m_FocusPoints;
-  std::vector<bool> m_BlockEvents;
 
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;

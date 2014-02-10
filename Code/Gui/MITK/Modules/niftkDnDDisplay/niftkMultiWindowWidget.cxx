@@ -91,10 +91,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_Magnifications(3)
-, m_ScaleFactors2(3)
 , m_Origins(3)
 , m_SizesInPx(3)
-, m_BlockEvents(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
@@ -304,9 +302,7 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation);
   m_SizesInPx[orientation] = displayGeometry->GetSizeInDisplayUnits();
   m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
-  m_ScaleFactors2[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
   m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  m_BlockEvents[orientation] = false;
   unsigned long observerTag = displayGeometry->AddObserver(itk::ModifiedEvent(), command);
   m_DisplayGeometryModificationObservers[orientation] = observerTag;
 }
@@ -1628,18 +1624,21 @@ void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientation)
 {
-  if (m_BlockEvents[orientation])
+  if (m_BlockDisplayEvents)
   {
     return;
   }
+
+  bool updateWasBlocked = this->BlockUpdate(true);
+
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
   mitk::Vector2D sizeInPx = displayGeometry->GetSizeInDisplayUnits();
   if (sizeInPx != m_SizesInPx[orientation])
   {
     double horizontalSizeChange = m_SizesInPx[orientation][0] / sizeInPx[0];
     double verticalSizeChange = m_SizesInPx[orientation][1] / sizeInPx[1];
-    double horizontalScaleFactor = m_ScaleFactors2[orientation] * horizontalSizeChange;
-    double verticalScaleFactor = m_ScaleFactors2[orientation] * verticalSizeChange;
+    double horizontalScaleFactor = m_ScaleFactors[orientation] * horizontalSizeChange;
+    double verticalScaleFactor = m_ScaleFactors[orientation] * verticalSizeChange;
 
     /// Find the largest change, let it be zooming or unzooming.
     if (horizontalSizeChange < 1.0)
@@ -1652,12 +1651,16 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
     }
     double scaleFactor = horizontalSizeChange > verticalSizeChange ? horizontalScaleFactor : verticalScaleFactor;
 
-    m_BlockEvents[orientation] = true;
+    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
     this->OnRenderWindowResized(orientation, scaleFactor);
-    m_BlockEvents[orientation] = false;
     m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
-    m_ScaleFactors2[orientation] = scaleFactor;
+    m_ScaleFactors[orientation] = scaleFactor;
+    m_ScaleFactorHasChanged[orientation] = true;
+    m_Magnifications[orientation] = this->GetMagnification(orientation);
     m_SizesInPx[orientation] = sizeInPx;
+    this->BlockDisplayEvents(displayEventsWereBlocked);
+
+    this->BlockUpdate(updateWasBlocked);
     return;
   }
 
@@ -1667,12 +1670,12 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
   bool beingPanned = true;
 
   double scaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-  if (scaleFactor != m_ScaleFactors2[orientation])
+  if (scaleFactor != m_ScaleFactors[orientation])
   {
     beingPanned = false;
 
     mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
-    mitk::Vector2D focusPoint = (m_Origins[orientation] * m_ScaleFactors[orientation] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors2[orientation]);
+    mitk::Vector2D focusPoint = (m_Origins[orientation] * m_ScaleFactors[orientation] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors[orientation]);
     mitk::Vector2D cursorPosition = focusPoint;
     cursorPosition[0] /= m_SizesInPx[orientation][0];
     cursorPosition[1] /= m_SizesInPx[orientation][1];
@@ -1692,7 +1695,6 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
       }
     }
     this->OnScaleFactorChanged(orientation, scaleFactor);
-    m_ScaleFactors2[orientation] = scaleFactor;
   }
 
   mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
@@ -1704,6 +1706,8 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
     }
     m_Origins[orientation] = origin;
   }
+
+  this->BlockUpdate(updateWasBlocked);
 }
 
 
@@ -2073,10 +2077,6 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     mitk::SliceNavigationController* sagittalSnc = m_RenderWindows[MIDAS_ORIENTATION_SAGITTAL]->GetSliceNavigationController();
     mitk::SliceNavigationController* coronalSnc = m_RenderWindows[MIDAS_ORIENTATION_CORONAL]->GetSliceNavigationController();
 
-    bool axialSncupdateWasBlocked = axialSnc->BlockSignals(true);
-    bool sagittalSncupdateWasBlocked = sagittalSnc->BlockSignals(true);
-    bool coronalSncupdateWasBlocked = coronalSnc->BlockSignals(true);
-
     if (axialSnc->GetCreatedWorldGeometry())
     {
       unsigned pos = axialSnc->GetSlice()->GetPos();
@@ -2110,10 +2110,6 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     {
       this->UpdateCursorPosition(MIDAS_ORIENTATION_CORONAL);
     }
-
-    axialSnc->BlockSignals(axialSncupdateWasBlocked);
-    sagittalSnc->BlockSignals(sagittalSncupdateWasBlocked);
-    coronalSnc->BlockSignals(coronalSncupdateWasBlocked);
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2535,7 +2531,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
+          m_BlockDisplayEvents = true;
           m_RenderWindows[i]->GetSliceNavigationController()->SendCreatedWorldGeometry();
+          m_BlockDisplayEvents = false;
           m_BlockProcessingSncSignals = false;
         }
         if (m_SncTimeHasChanged[i])
@@ -2547,7 +2545,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
+          m_BlockDisplayEvents = true;
           m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
+          m_BlockDisplayEvents = false;
           m_BlockProcessingSncSignals = false;
         }
         if (m_SncSliceHasChanged[i])
@@ -2559,7 +2559,9 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             rendererUpdated[i] = true;
           }
           m_BlockProcessingSncSignals = true;
+          m_BlockDisplayEvents = true;
           m_RenderWindows[i]->GetSliceNavigationController()->SendSlice();
+          m_BlockDisplayEvents = false;
           m_BlockProcessingSncSignals = false;
         }
       }
