@@ -616,8 +616,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       return;
     }
 
-    bool itkSignalsWereBlocked = m_MultiWidget->BlockUpdate(true);
-    bool qtSignalsWereBlocked = m_MultiWidget->blockSignals(true);
+    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
     bool timeStepHasChanged = false;
     bool selectedPositionHasChanged = false;
@@ -760,8 +759,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       }
     }
 
-    m_MultiWidget->blockSignals(qtSignalsWereBlocked);
-    m_MultiWidget->BlockUpdate(itkSignalsWereBlocked);
+    m_MultiWidget->BlockUpdate(updateWasBlocked);
 
     if (timeStepHasChanged)
     {
