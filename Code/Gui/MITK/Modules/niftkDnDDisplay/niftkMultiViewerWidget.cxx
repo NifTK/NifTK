@@ -236,11 +236,8 @@ niftkMultiViewerWidget::~niftkMultiViewerWidget()
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer()
 {
-  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(tr("QmitkRenderWindow"),
-                                                                      -5, 20,
-                                                                      this,
-                                                                      m_RenderingManager,
-                                                                      m_DataStorage);
+  niftkSingleViewerWidget* viewer = new niftkSingleViewerWidget(this, m_RenderingManager);
+  viewer->SetDataStorage(m_DataStorage);
   viewer->setObjectName(tr("niftkSingleViewerWidget"));
   viewer->setVisible(false);
 
@@ -682,9 +679,11 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   for (int i = 0; i < numberOfSurvivingViewers; ++i)
   {
+    bool signalsWereBlocked = m_Viewers[i]->blockSignals(true);
     m_Viewers[i]->SetSelectedPosition(selectedPositionInSurvivingViewers[i]);
     m_Viewers[i]->SetCursorPositions(cursorPositionsInSurvivingViewers[i]);
     m_Viewers[i]->SetScaleFactors(scaleFactorsInSurvivingViewers[i]);
+    m_Viewers[i]->blockSignals(signalsWereBlocked);
   }
 
   ////////////////////////////////////////
@@ -723,7 +722,9 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetBoundGeometry(geometry);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -790,11 +791,13 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    for (int i = 0; i < m_Viewers.size(); i++)
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
-      if (m_Viewers[i] != viewer)
+      if (otherViewer != viewer)
       {
-        m_Viewers[i]->SetSelectedPosition(selectedPosition);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -814,11 +817,13 @@ void niftkMultiViewerWidget::OnSelectedTimeStepChanged(niftkSingleViewerWidget* 
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    for (int i = 0; i < m_Viewers.size(); i++)
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
     {
-      if (m_Viewers[i] != viewer)
+      if (otherViewer != viewer)
       {
-        m_Viewers[i]->SetTimeStep(timeStep);
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetTimeStep(timeStep);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -834,7 +839,9 @@ void niftkMultiViewerWidget::OnCursorPositionChanged(niftkSingleViewerWidget* vi
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorPosition(orientation, cursorPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -853,7 +860,9 @@ void niftkMultiViewerWidget::OnScaleFactorChanged(niftkSingleViewerWidget* viewe
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactor(orientation, scaleFactor);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -870,7 +879,9 @@ void niftkMultiViewerWidget::OnCursorPositionBindingChanged(niftkSingleViewerWid
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorPositionBinding(bound);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -886,7 +897,9 @@ void niftkMultiViewerWidget::OnScaleFactorBindingChanged(niftkSingleViewerWidget
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactorBinding(bound);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -909,25 +922,33 @@ void niftkMultiViewerWidget::OnNodesDropped(niftkSingleViewerWidget* dropOntoVie
 
   if (m_ControlPanel->AreViewerWindowLayoutsBound())
   {
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetWindowLayout(selectedViewer->GetWindowLayout());
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
     const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetSelectedPosition(selectedPosition);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
     const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetCursorPositions(cursorPositions);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
     double scaleFactor = selectedViewer->GetScaleFactor(selectedViewer->GetOrientation());
+    bool signalsWereBlocked = dropOntoViewer->blockSignals(true);
     dropOntoViewer->SetScaleFactor(dropOntoViewer->GetOrientation(), scaleFactor);
+    dropOntoViewer->blockSignals(signalsWereBlocked);
   }
 
 //  m_ControlPanel->SetMagnification(magnification);
@@ -968,7 +989,9 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
       int numberOfNodes = m_VisibilityManager->GetNodesInViewer(selectedViewerIndex);
       if (numberOfNodes > 0)
       {
+        bool signalsWereBlocked = selectedViewer->blockSignals(true);
         selectedViewer->SetSelectedRenderWindow(selectedRenderWindow);
+        selectedViewer->blockSignals(signalsWereBlocked);
       }
     }
 
@@ -1081,7 +1104,9 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
   if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+    bool signalsWereBlocked = selectedViewer->blockSignals(true);
     selectedViewer->SetSliceIndex(orientation, sliceIndex);
+    selectedViewer->blockSignals(signalsWereBlocked);
 
     if (m_ControlPanel->AreViewerPositionsBound())
     {
@@ -1089,7 +1114,9 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetSliceIndex(orientation, sliceIndex);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1120,7 +1147,9 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetMagnification(selectedViewer->GetOrientation(), magnification);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
@@ -1128,7 +1157,9 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1150,7 +1181,9 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
   DnDDisplayDropType dropType = m_ControlPanel->GetDropType();
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetTimeStep(timeStep);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   if (dropType == DNDDISPLAY_DROP_ALL)
   {
@@ -1158,7 +1191,9 @@ void niftkMultiViewerWidget::SetSelectedTimeStep(int timeStep)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        signalsWereBlocked = selectedViewer->blockSignals(true);
         otherViewer->SetTimeStep(timeStep);
+        selectedViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1194,7 +1229,9 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetWindowLayout(windowLayout, m_ControlPanel->AreViewerPositionsBound(), m_ControlPanel->AreViewerCursorsBound(), m_ControlPanel->AreViewerMagnificationsBound());
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1206,7 +1243,9 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1218,7 +1257,9 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorPositions(cursorPositions);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1230,7 +1271,9 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactors(scaleFactors);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1248,7 +1291,9 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(niftkSingleViewerWidget* 
     {
       if (otherViewer != viewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorVisible(visible);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1262,7 +1307,9 @@ void niftkMultiViewerWidget::OnGeometryChanged(niftkSingleViewerWidget* /*select
   {
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
+      bool signalsWereBlocked = viewer->blockSignals(true);
       viewer->SetBoundGeometry(geometry);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
 }
@@ -1280,7 +1327,9 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
     {
       if (viewer->isVisible())
       {
+        bool signalsWereBlocked = viewer->blockSignals(true);
         viewer->SetCursorPositionBinding(bound);
+        viewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1295,7 +1344,9 @@ void niftkMultiViewerWidget::OnWindowCursorBindingChanged(bool bound)
 void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetScaleFactorBinding(bound);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   /// If the scale factors are bound across the viewers then the binding property
   /// across the windows of the viewers can be controlled just together. That is, it
@@ -1307,8 +1358,10 @@ void niftkMultiViewerWidget::OnWindowMagnificationBindingChanged(bool bound)
       const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactorBinding(bound);
         otherViewer->SetScaleFactors(scaleFactors);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1366,7 +1419,9 @@ bool niftkMultiViewerWidget::ToggleCursorVisibility()
 void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  bool signalsWereBlocked = selectedViewer->blockSignals(true);
   selectedViewer->SetWindowLayout(windowLayout);
+  selectedViewer->blockSignals(signalsWereBlocked);
 
   m_ControlPanel->SetWindowLayout(windowLayout);
   m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
@@ -1378,7 +1433,9 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
+        signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetWindowLayout(windowLayout);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1396,11 +1453,15 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowCursorsBound())
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPositions(cursorPositions);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPosition(orientation, cursorPosition);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1417,11 +1478,15 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       {
         if (m_ControlPanel->AreWindowMagnificationsBound())
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactors(scaleFactors);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1447,7 +1512,9 @@ void niftkMultiViewerWidget::UpdateBoundMagnification()
   {
     if (otherViewer != selectedViewer)
     {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
       otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
+      otherViewer->blockSignals(signalsWereBlocked);
     }
   }
 }
@@ -1731,7 +1798,9 @@ void niftkMultiViewerWidget::OnViewerPositionBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetSelectedPosition(selectedPosition);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1754,14 +1823,20 @@ void niftkMultiViewerWidget::OnViewerCursorBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetCursorPositionBinding(windowCursorPositionsBound);
+        otherViewer->blockSignals(signalsWereBlocked);
         if (windowCursorPositionsBound)
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPositions(cursorPositions);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetCursorPosition(orientation, cursorPosition);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1785,14 +1860,20 @@ void niftkMultiViewerWidget::OnViewerMagnificationBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetScaleFactorBinding(windowScaleFactorsBound);
+        otherViewer->blockSignals(signalsWereBlocked);
         if (windowScaleFactorsBound)
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactors(scaleFactors);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
         else
         {
+          signalsWereBlocked = otherViewer->blockSignals(true);
           otherViewer->SetScaleFactor(orientation, scaleFactor);
+          otherViewer->blockSignals(signalsWereBlocked);
         }
       }
     }
@@ -1812,7 +1893,9 @@ void niftkMultiViewerWidget::OnViewerWindowLayoutBindingChanged(bool bound)
     {
       if (otherViewer != selectedViewer)
       {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
         otherViewer->SetWindowLayout(windowLayout);
+        otherViewer->blockSignals(signalsWereBlocked);
       }
     }
   }
@@ -1830,15 +1913,19 @@ void niftkMultiViewerWidget::OnViewerGeometryBindingChanged(bool bound)
 
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
+      bool signalsWereBlocked = viewer->blockSignals(true);
       viewer->SetBoundGeometry(geometry);
       viewer->SetBoundGeometryActive(true);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
   else
   {
     foreach (niftkSingleViewerWidget* viewer, m_Viewers)
     {
+      bool signalsWereBlocked = viewer->blockSignals(true);
       viewer->SetBoundGeometryActive(false);
+      viewer->blockSignals(signalsWereBlocked);
     }
   }
 

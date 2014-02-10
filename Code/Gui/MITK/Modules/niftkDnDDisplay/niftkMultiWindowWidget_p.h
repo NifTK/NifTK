@@ -292,6 +292,12 @@ public:
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
   void SetScaleFactorBinding(bool bound);
 
+  /// \brief Blocks the update of the widget.
+  /// Returns true if the update was already blocked, otherwise false.
+  /// This render windows are updated and the "pending" signals are sent out
+  /// when the update is unblocked.
+  bool BlockUpdate(bool blocked);
+
 signals:
 
   /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
@@ -324,9 +330,9 @@ private:
   /// The function expects the cursor position in m_CursorPositions[orientation].
   void MoveToCursorPosition(MIDASOrientation orientation);
 
-  /// \brief Sets the scale factor of the render window to the given value (mm/px)
+  /// \brief Sets the scale factor of the render window to the value stored in m_ScaleFactors[orientation] (mm/px)
   /// and moves the origin so that the cursor stays in the same position on the display.
-  void ZoomAroundCursorPosition(MIDASOrientation orientation, double scaleFactor);
+  void ZoomAroundCursorPosition(MIDASOrientation orientation);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -353,6 +359,9 @@ private:
   /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
   void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
+  /// \brief Called when the display geometry of the render window has changed.
+  void OnDisplayGeometryModified(MIDASOrientation orientation);
+
   /// \brief Called when the origin of the display geometry of the render window has changed.
   void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
 
@@ -372,6 +381,8 @@ private:
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
 
+  bool BlockDisplayEvents(bool blocked);
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
@@ -389,6 +400,10 @@ private:
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
 
+  std::vector<mitk::Vector2D> m_RenderWindowSizes;
+  std::vector<mitk::Vector2D> m_Origins;
+  std::vector<mitk::Vector2D> m_FocusPoints;
+
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
   std::vector<double> m_Magnifications;
@@ -402,9 +417,6 @@ private:
 
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
-
-  unsigned long m_DisplayGeometryModificationObservers[3];
-  bool m_BlockDisplayEvents;
 
   /// \brief Controls if the cursor positions are synchronised across the render windows.
   /// The binding of the individual coordinates of the cursors can be controlled independently by
@@ -428,6 +440,26 @@ private:
   bool m_CursorCoronalPositionsAreBound;
 
   bool m_ScaleFactorBinding;
+
+  unsigned long m_DisplayGeometryModificationObservers[3];
+  bool m_BlockDisplayEvents;
+
+  /// \brief Blocks updating this object when the selected slice changed in a slice navigation controller.
+  /// This should be set to true if an SNC has been changed internally from this viewer. This does not
+  /// block the signals  the SNCs, only hinders processing them (and falling into an infinite recursion,
+  /// eventually).
+  bool m_BlockProcessingSncSignals;
+
+  /// \brief Blocks sending signals by the slice navigation controller.
+  bool m_BlockUpdate;
+
+  bool m_SelectedRenderWindowHasChanged;
+  std::vector<bool> m_SncGeometryHasChanged;
+  std::vector<bool> m_SncTimeHasChanged;
+  std::vector<bool> m_SncSliceHasChanged;
+  bool m_SelectedPositionHasChanged;
+  std::vector<bool> m_CursorPositionHasChanged;
+  std::vector<bool> m_ScaleFactorHasChanged;
 
   friend class DisplayGeometryModificationCommand;
 

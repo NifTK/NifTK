@@ -17,6 +17,23 @@
 
 #include <niftkSingleViewerWidget.h>
 
+static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001)
+{
+  return std::abs(cursorPosition1[0] - cursorPosition2[0]) < tolerance
+      && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
+}
+
+static bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001)
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    if (!::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+    {
+      return false;
+    }
+  }
+  return true;
+}
 
 class niftkSingleViewerWidgetState : public itk::Object
 {
@@ -94,15 +111,63 @@ public:
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
         && this->GetSelectedPosition() == otherState.GetSelectedPosition()
-        && this->GetCursorPositions() == otherState.GetCursorPositions()
+        && ::EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
         && this->GetScaleFactors() == otherState.GetScaleFactors()
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
 
-  bool operator!=(const niftkSingleViewerWidgetState& otherState) const
+  inline bool operator!=(const niftkSingleViewerWidgetState& otherState) const
   {
     return !(*this == otherState);
+  }
+
+  void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
+  {
+    if (this->GetOrientation() != otherState->GetOrientation())
+    {
+      os << indent << "Orientation: " << this->GetOrientation() << " ; " << otherState->GetOrientation() << std::endl;
+    }
+    if (this->GetWindowLayout() != otherState->GetWindowLayout())
+    {
+      os << indent << "Window layout: " << this->GetWindowLayout() << " ; " << otherState->GetWindowLayout() << std::endl;
+    }
+    if (this->GetSelectedRenderWindow() != otherState->GetSelectedRenderWindow())
+    {
+      os << indent << "Selected render window: " << this->GetSelectedRenderWindow() << " ; " << otherState->GetOrientation() << std::endl;
+    }
+    if (this->GetTimeStep() != otherState->GetTimeStep())
+    {
+      os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
+    }
+    if (this->GetSelectedPosition() != otherState->GetSelectedPosition())
+    {
+      os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
+    }
+    if (this->GetCursorPositions() != otherState->GetCursorPositions())
+    {
+      std::vector<mitk::Vector2D> otherStateCursorPositions = otherState->GetCursorPositions();
+      os << indent << "Cursor positions:" << std::endl;
+      os << indent << "    " << m_CursorPositions[0] << ", " << otherStateCursorPositions[0] << std::endl;
+      os << indent << "    " << m_CursorPositions[1] << ", " << otherStateCursorPositions[1] << std::endl;
+      os << indent << "    " << m_CursorPositions[2] << ", " << otherStateCursorPositions[2] << std::endl;
+    }
+    if (this->GetScaleFactors() != otherState->GetScaleFactors())
+    {
+      std::vector<double> otherStateScaleFactors = otherState->GetScaleFactors();
+      os << indent << "Scale factors:" << std::endl;
+      os << indent << "    " << m_ScaleFactors[0] << ", " << otherStateScaleFactors[0] << std::endl;
+      os << indent << "    " << m_ScaleFactors[1] << ", " << otherStateScaleFactors[1] << std::endl;
+      os << indent << "    " << m_ScaleFactors[2] << ", " << otherStateScaleFactors[2] << std::endl;
+    }
+    if (this->GetCursorPositionBinding() != otherState->GetCursorPositionBinding())
+    {
+      os << indent << "Cursor position binding: " << this->GetCursorPositionBinding() << " ; " << otherState->GetCursorPositionBinding() << std::endl;
+    }
+    if (this->GetScaleFactorBinding() != otherState->GetScaleFactorBinding())
+    {
+      os << indent << "Scale factor binding: " << this->GetScaleFactorBinding() << " ; " << otherState->GetScaleFactorBinding() << std::endl;
+    }
   }
 
 protected:
@@ -150,20 +215,8 @@ protected:
     os << indent << "selected render window: " << m_SelectedRenderWindow << ", " << m_SelectedRenderWindow->GetRenderer()->GetName() << std::endl;
     os << indent << "time step: " << m_TimeStep << std::endl;
     os << indent << "selected position: " << m_SelectedPosition << std::endl;
-    os << indent << "cursor positions: " << std::endl;
-    std::vector<mitk::Vector2D>::const_iterator cursorPositionsIt = m_CursorPositions.begin();
-    std::vector<mitk::Vector2D>::const_iterator cursorPositionsEnd = m_CursorPositions.end();
-    for ( ; cursorPositionsIt != cursorPositionsEnd; ++cursorPositionsIt)
-    {
-      os << indent << "    " << *cursorPositionsIt << std::endl;
-    }
-    os << indent << "scale factors: " << std::endl;
-    std::vector<mitk::Vector2D>::const_iterator scaleFactorsIt = m_CursorPositions.begin();
-    std::vector<mitk::Vector2D>::const_iterator scaleFactorsEnd = m_CursorPositions.end();
-    for ( ; scaleFactorsIt != scaleFactorsEnd; ++scaleFactorsIt)
-    {
-      os << indent << "    " << *scaleFactorsIt << std::endl;
-    }
+    os << indent << "cursor positions: " << m_CursorPositions[0] << ", " << m_CursorPositions[1] << ", " << m_CursorPositions[2] << std::endl;
+    os << indent << "scale factors: " << m_ScaleFactors[0] << ", " << m_ScaleFactors[1] << ", " << m_ScaleFactors[2] << std::endl;
     os << indent << "cursor position binding: " << m_CursorPositionBinding << std::endl;
     os << indent << "scale factor binding: " << m_ScaleFactorBinding << std::endl;
   }

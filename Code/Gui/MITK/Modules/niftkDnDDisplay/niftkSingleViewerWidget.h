@@ -79,16 +79,8 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
-  niftkSingleViewerWidget(QWidget* parent);
-
-  niftkSingleViewerWidget(QString windowName,
-                             double minimumMagnification,
-                             double maximumMagnification,
-                             QWidget* parent = 0,
-                             mitk::RenderingManager* renderingManager = 0,
-                             mitk::DataStorage* dataStorage = 0
-                             );
-  ~niftkSingleViewerWidget();
+  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0);
+  virtual ~niftkSingleViewerWidget();
 
   /// \brief Sets the window to be enabled, where if enabled==true, it's listening to events, and fully turned on.
   void SetEnabled(bool enabled);
@@ -334,11 +326,6 @@ public:
    */
   virtual void SetFocus();
 
-protected:
-
-  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
-  virtual void paintEvent(QPaintEvent* event);
-
 signals:
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
@@ -371,6 +358,11 @@ signals:
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
 
+protected:
+
+  /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
+  virtual void paintEvent(QPaintEvent* event);
+
 protected slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.
@@ -386,12 +378,6 @@ protected slots:
   virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
 private:
-
-  /// \brief This method is called from both constructors to do the construction.
-  void Initialize(QString windowName,
-                  mitk::RenderingManager* renderingManager = 0,
-                  mitk::DataStorage* dataStorage = 0
-                 );
 
   inline int Index(int index) const
   {
