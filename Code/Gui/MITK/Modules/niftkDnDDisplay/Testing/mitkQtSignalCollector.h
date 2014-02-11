@@ -94,7 +94,7 @@ public:
 
   /// \brief Returns a set of the collected Qt signals that are sent from the given object,
   /// and are of the given type.
-  Signals GetSignals(QObject* object, const char* signal = 0) const;
+  Signals GetSignals(const QObject* object, const char* signal = 0) const;
 
   /// \brief Clears all the signals collected by now.
   virtual void Clear();
