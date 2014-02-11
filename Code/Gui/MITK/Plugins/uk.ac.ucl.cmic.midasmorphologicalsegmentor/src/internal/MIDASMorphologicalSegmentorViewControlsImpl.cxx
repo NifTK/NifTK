@@ -40,8 +40,13 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   Ui_MIDASMorphologicalSegmentorViewControls::setupUi(parent);
 
   m_ThresholdingThresholdsSlider->layout()->setSpacing(2);
+  m_ThresholdingThresholdsSlider->setSpinBoxTextAlignment(Qt::AlignRight);
+  m_ThresholdingThresholdsSlider->setDecimals(0);
+  m_ThresholdingThresholdsSlider->setMinimum(0.0);
+  m_ThresholdingThresholdsSlider->setMaximum(0.0);
 
   m_ThresholdingAxialCutoffSlider->layout()->setSpacing(2);
+  m_ThresholdingAxialCutoffSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_ThresholdingAxialCutoffSlider->setSingleStep(1.0);
   m_ThresholdingAxialCutoffSlider->setDecimals(0);
   // Trick alert!
@@ -50,7 +55,9 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 
   m_ErosionsUpperThresholdSlider->setTracking(false);
   m_ErosionsUpperThresholdSlider->layout()->setSpacing(2);
+  m_ErosionsUpperThresholdSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_ErosionsNumberOfErosionsSlider->layout()->setSpacing(2);
+  m_ErosionsNumberOfErosionsSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_ErosionsNumberOfErosionsSlider->setMinimum(0.0);
   m_ErosionsNumberOfErosionsSlider->setMaximum(6.0);
   m_ErosionsNumberOfErosionsSlider->setValue(0.0);
@@ -60,22 +67,28 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_ErosionsNumberOfErosionsSlider->setTickPosition(QSlider::TicksBelow);
 
   m_DilationsThresholdsSlider->layout()->setSpacing(2);
+  m_DilationsThresholdsSlider->setSpinBoxTextAlignment(Qt::AlignRight);
+  m_DilationsThresholdsSlider->setDecimals(0);
   m_DilationsThresholdsSlider->setMinimum(0);
   m_DilationsThresholdsSlider->setMaximum(300);
   m_DilationsThresholdsSlider->setMinimumValue(60);
   m_DilationsThresholdsSlider->setMaximumValue(160);
   m_DilationsThresholdsSlider->setTickInterval(1.0);
+  m_DilationsThresholdsSlider->setSuffix("%");
 
   m_DilationsNumberOfDilationsSlider->layout()->setSpacing(2);
+  m_DilationsNumberOfDilationsSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_DilationsNumberOfDilationsSlider->setMinimum(0.0);
   m_DilationsNumberOfDilationsSlider->setMaximum(10.0);
   m_DilationsNumberOfDilationsSlider->setValue(0.0);
   m_DilationsNumberOfDilationsSlider->setSingleStep(1.0);
   m_DilationsNumberOfDilationsSlider->setDecimals(0);
+  m_DilationsNumberOfDilationsSlider->setSynchronizeSiblings(ctkSliderWidget::SynchronizeWidth);
   m_DilationsNumberOfDilationsSlider->setTickInterval(1.0);
   m_DilationsNumberOfDilationsSlider->setTickPosition(QSlider::TicksBelow);
 
   m_RethresholdingBoxSizeSlider->layout()->setSpacing(2);
+  m_RethresholdingBoxSizeSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_RethresholdingBoxSizeSlider->setSingleStep(1.0);
   m_RethresholdingBoxSizeSlider->setDecimals(0);
   m_RethresholdingBoxSizeSlider->setTickInterval(1.0);
