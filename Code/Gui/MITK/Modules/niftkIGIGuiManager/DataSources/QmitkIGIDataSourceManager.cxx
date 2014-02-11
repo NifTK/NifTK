@@ -17,6 +17,9 @@
 #include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
 #include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QRegExp>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -967,6 +970,82 @@ void QmitkIGIDataSourceManager::OnStop()
 
 
 //-----------------------------------------------------------------------------
+QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(const QString& filepath)
+{
+  QFile   descfile(filepath);
+  if (!descfile.exists())
+  {
+    throw std::runtime_error("Descriptor file does not exist: " + filepath.toStdString());
+  }
+
+  descfile.open(QFile::ReadOnly);
+
+  QTextStream   descstream(&descfile);
+  descstream.setCodec("UTF-8");
+
+  QMap<QString, QString>      map;
+
+  // used for error diagnostic
+  int   lineNumber = 0;
+
+  QRegExp   matcher("(\\w+)\\s*(=)\\s*([0-9a-zA-Z]+)");
+  while (!descstream.atEnd())
+  {
+    QString   line = descstream.readLine().trimmed();
+    ++lineNumber;
+
+    if (line.isEmpty())
+      continue;
+    if (line.startsWith('#'))
+      continue;
+
+    matcher.exactMatch(line);
+    QStringList items = matcher.capturedTexts();
+
+    if (items.size() != 4)
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": parsing failed";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    QString   directoryKey   = items[1];
+    QString   classnameValue = items[3];
+
+    if (items[2] != "=")
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": no equal sign?";
+      throw std::runtime_error(errormsg.str());
+    }
+    if (directoryKey.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+    if (classnameValue.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    if (map.contains(directoryKey))
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key already seen; specified it twice?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    map.insert(directoryKey, classnameValue);
+  }
+
+  return map;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnPlayStart()
 {
   if (m_PlayPushButton->isChecked())
@@ -979,6 +1058,25 @@ void QmitkIGIDataSourceManager::OnPlayStart()
     }
     else
     {
+      try
+      {
+        QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
+
+        // FIXME: run through descriptor, for each item present, use an existing data source.
+        //        if there are descriptor items missing, create new data sources, init their playback but put them on freeze!
+        //        if the user had more data sources present then required by descriptor then freeze these too
+
+      }
+      catch (const std::exception& e)
+      {
+        MITK_ERROR << "Caught exception while trying to initialise data playback: " << e.what();
+        // FIXME: message box!
+
+        // switch off playback. hopefully, user will fix the error
+        // and can then try to click on playback again.
+        m_PlayPushButton->setChecked(false);
+      }
+
       std::set<QmitkIGIDataSource::Pointer> goodSources;
 
       igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
