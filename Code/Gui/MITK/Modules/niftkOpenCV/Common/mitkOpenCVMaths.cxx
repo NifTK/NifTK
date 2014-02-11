@@ -1183,6 +1183,14 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
 
 
 //-----------------------------------------------------------------------------
+double RMS(const std::vector<double>& input)
+{
+  double mean = Mean(input);
+  return sqrt(mean);
+}
+
+
+//-----------------------------------------------------------------------------
 double Mean(const std::vector<double>& input)
 {
   if (input.size() == 0)

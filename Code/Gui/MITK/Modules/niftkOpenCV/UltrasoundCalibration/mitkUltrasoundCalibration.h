@@ -50,6 +50,12 @@ public:
 
   void SetInitialGuess(const vtkMatrix4x4& matrix);
 
+  static void LoadDataFromDirectories(const std::string& matrixDirectory,
+                                      const std::string& pointDirectory,
+                                      const bool& retrievePointIdentifier,
+                                      std::vector< cv::Mat >& matrices,
+                                      std::vector< std::pair<int, cv::Point2d> >& points
+                                      );
   /**
    * \brief Method that provides directory scanning before calling the other calibrate method.
    *

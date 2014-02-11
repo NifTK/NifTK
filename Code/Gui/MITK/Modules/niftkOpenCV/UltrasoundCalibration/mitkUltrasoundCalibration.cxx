@@ -104,11 +104,12 @@ void UltrasoundCalibration::SetInitialGuess(const vtkMatrix4x4& matrix)
 
 
 //-----------------------------------------------------------------------------
-double UltrasoundCalibration::CalibrateFromDirectories(
-  const std::string& matrixDirectory,
-  const std::string& pointDirectory,
-  vtkMatrix4x4& outputMatrix
-  )
+void UltrasoundCalibration::LoadDataFromDirectories(const std::string& matrixDirectory,
+                                                    const std::string& pointDirectory,
+                                                    const bool& retrievePointIdentifier,
+                                                    std::vector< cv::Mat >& matrices,
+                                                    std::vector< std::pair<int, cv::Point2d> >& points
+                                                    )
 {
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(matrixDirectory);
   std::sort(matrixFiles.begin(), matrixFiles.end());
@@ -123,9 +124,8 @@ double UltrasoundCalibration::CalibrateFromDirectories(
     mitkThrow() << errorMessage.str();
   }
 
-  std::vector<cv::Mat> matrices = LoadMatricesFromDirectory (matrixDirectory);
+  matrices = LoadMatricesFromDirectory (matrixDirectory);
 
-  std::vector< std::pair<int, cv::Point2d> > points;
   for (unsigned int i = 0; i < pointFiles.size(); i++)
   {
     int pointIdentifier;
@@ -137,7 +137,7 @@ double UltrasoundCalibration::CalibrateFromDirectories(
       ifstream myfile(fileName.c_str());
       if (myfile.is_open())
       {
-        if (m_RetrievePointIdentifier)
+        if (retrievePointIdentifier)
         {
           myfile >> pointIdentifier;
         }
@@ -169,6 +169,21 @@ double UltrasoundCalibration::CalibrateFromDirectories(
     errorMessage << "Failed to load all the points in directory:" << pointDirectory << std::endl;
     mitkThrow() << errorMessage.str();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+double UltrasoundCalibration::CalibrateFromDirectories(
+  const std::string& matrixDirectory,
+  const std::string& pointDirectory,
+  vtkMatrix4x4& outputMatrix
+  )
+{
+
+  std::vector< cv::Mat > matrices;
+  std::vector< std::pair<int, cv::Point2d> > points;
+
+  UltrasoundCalibration::LoadDataFromDirectories(matrixDirectory, pointDirectory, this->m_RetrievePointIdentifier, matrices, points);
 
   cv::Matx44d transformationMatrix;
   mitk::MakeIdentity(transformationMatrix);

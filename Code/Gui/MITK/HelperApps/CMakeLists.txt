@@ -128,6 +128,7 @@ if(SlicerExecutionModel_FOUND)
       niftkUltrasoundPinCalibration
       niftkUltrasoundPinCalibrationSorter
       niftkUltrasoundPointerCalibration
+      niftkUltrasoundPinCalibrationEvaluation
       niftkTriangulate2DPointPairsTo3D
       niftkPivotCalibration
       niftkIGIMakeGeometry
