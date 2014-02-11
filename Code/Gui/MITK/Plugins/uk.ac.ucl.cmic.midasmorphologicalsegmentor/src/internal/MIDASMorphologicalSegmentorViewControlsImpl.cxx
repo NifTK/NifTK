@@ -74,6 +74,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_DilationsThresholdsSlider->setMinimumValue(60);
   m_DilationsThresholdsSlider->setMaximumValue(160);
   m_DilationsThresholdsSlider->setTickInterval(1.0);
+  m_DilationsThresholdsSlider->setSuffix("%");
 
   m_DilationsNumberOfDilationsSlider->layout()->setSpacing(2);
   m_DilationsNumberOfDilationsSlider->setSpinBoxAlignment(Qt::AlignRight);
