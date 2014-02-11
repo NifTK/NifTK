@@ -105,7 +105,7 @@ QtSignalCollector::Signals QtSignalCollector::GetSignals(const char* signal) con
 
 
 //-----------------------------------------------------------------------------
-QtSignalCollector::Signals QtSignalCollector::GetSignals(QObject* object, const char* signal) const
+QtSignalCollector::Signals QtSignalCollector::GetSignals(const QObject* object, const char* signal) const
 {
   QByteArray normalisedSignal = QMetaObject::normalizedSignature(signal);
   Signals selectedSignals;
