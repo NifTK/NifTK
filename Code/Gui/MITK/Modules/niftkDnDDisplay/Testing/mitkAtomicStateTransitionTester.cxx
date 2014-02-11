@@ -195,7 +195,7 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const QOb
 
 //-----------------------------------------------------------------------------
 template <class TestObject, class TestObjectState>
-void AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const char* signal)
+void AtomicStateTransitionTester<TestObject, TestObjectState>::Connect(const char* signal)
 {
   if (::is_pointer<TestObject>::value)
   {
