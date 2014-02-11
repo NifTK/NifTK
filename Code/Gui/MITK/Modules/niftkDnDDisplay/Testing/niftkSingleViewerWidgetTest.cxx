@@ -265,7 +265,7 @@ void niftkSingleViewerWidgetTestClass::init()
   QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
 
-  this->DropNodes(axialWindow, nodes);
+  this->DropNodes(coronalWindow, nodes);
 
   d->Viewer->SetCursorVisible(true);
 
