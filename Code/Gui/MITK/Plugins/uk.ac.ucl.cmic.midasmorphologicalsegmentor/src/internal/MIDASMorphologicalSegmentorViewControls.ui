@@ -65,6 +65,9 @@
          <property name="text">
           <string>Axial cut-off:</string>
          </property>
+         <property name="buddy">
+          <cstring>m_ThresholdingAxialCutoffSlider</cstring>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
@@ -91,6 +94,9 @@
         <widget class="QLabel" name="m_ThresholdingThresholdsLabel">
          <property name="text">
           <string>Thresholds:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ThresholdingThresholdsSlider</cstring>
          </property>
         </widget>
        </item>
@@ -128,6 +134,9 @@
          <property name="text">
           <string>Iterations:</string>
          </property>
+         <property name="buddy">
+          <cstring>m_ErosionsNumberOfErosionsSlider</cstring>
+         </property>
         </widget>
        </item>
        <item row="1" column="0" colspan="2">
@@ -147,6 +156,9 @@
         <widget class="QLabel" name="m_ErosionsUpperThresholdLabel">
          <property name="text">
           <string>Upper threshold:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ErosionsUpperThresholdSlider</cstring>
          </property>
         </widget>
        </item>
@@ -177,6 +189,9 @@
          <property name="text">
           <string>Iterations:</string>
          </property>
+         <property name="buddy">
+          <cstring>m_DilationsNumberOfDilationsSlider</cstring>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
@@ -203,6 +218,9 @@
         <widget class="QLabel" name="m_DilationsThresholdsLabel">
          <property name="text">
           <string>Thresholds:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_DilationsThresholdsSlider</cstring>
          </property>
         </widget>
        </item>
@@ -232,6 +250,9 @@
         <widget class="QLabel" name="m_RethresholdingLabel">
          <property name="text">
           <string>Box size:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_RethresholdingBoxSizeSlider</cstring>
          </property>
         </widget>
        </item>
