@@ -978,7 +978,11 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
     throw std::runtime_error("Descriptor file does not exist: " + filepath.toStdString());
   }
 
-  descfile.open(QFile::ReadOnly);
+  bool openedok = descfile.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!openedok)
+  {
+    throw std::runtime_error("Cannot open descriptor file: " + filepath.toStdString());
+  }
 
   QTextStream   descstream(&descfile);
   descstream.setCodec("UTF-8");
@@ -1058,13 +1062,60 @@ void QmitkIGIDataSourceManager::OnPlayStart()
     }
     else
     {
+      // data sources participating in igi data playback.
+      // key = fully qualified path for that data source.
+      QMap<std::string, QmitkIGIDataSource::Pointer>  goodSources;
+
+      // union of the time range encompassing everything recorded in that session.
+      igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
+      igtlUint64    overallEndTime   = std::numeric_limits<igtlUint64>::min();
+
       try
       {
         QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
 
+        // for each existing data source (that the user added before), check whether it can playback
+        // that particular directory mentioned in the descriptor.
+        foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+        {
+          // find a suitable directory
+          QMap<QString, QString>::iterator  dir2classmapIterator = dir2classmap.begin();
+          for (; dir2classmapIterator != dir2classmap.end(); ++dir2classmapIterator)
+          {
+            if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+            {
+              igtlUint64  startTime = -1;
+              igtlUint64  endTime   = -1;
+              std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
+              bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
+              if (cando)
+              {
+                overallStartTime = std::min(overallStartTime, startTime);
+                overallEndTime   = std::max(overallEndTime, endTime);
+
+                goodSources.insert(dataSourceDir, source);
+
+                // we found a directory <-> source combination that can work.
+                // so drop it off the list dir2classmap.
+                dir2classmap.erase(dir2classmapIterator);
+                // try the next source that exist already.
+                break;
+              }
+              else
+              {
+                // no special else here (only diagnostic). if this data source cannot playback that particular directory,
+                // even though the descriptor says it can, the data source may still be able to play another director
+                // coming later in the list.
+                MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
+              }
+            }
+          }
+        }
+
         // FIXME: run through descriptor, for each item present, use an existing data source.
         //        if there are descriptor items missing, create new data sources, init their playback but put them on freeze!
         //        if the user had more data sources present then required by descriptor then freeze these too
+        //source->SetShouldCallUpdate(false);
 
       }
       catch (const std::exception& e)
@@ -1077,39 +1128,15 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         m_PlayPushButton->setChecked(false);
       }
 
-      std::set<QmitkIGIDataSource::Pointer> goodSources;
-
-      igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
-      igtlUint64    overallEndTime   = std::numeric_limits<igtlUint64>::min();
-      std::string   pathstring       = playbackpath.toStdString();
-
-      foreach (QmitkIGIDataSource::Pointer source, m_Sources)
-      {
-        igtlUint64  startTime = -1;
-        igtlUint64  endTime   = -1;
-        bool cando = source->ProbeRecordedData(pathstring, &startTime, &endTime);
-        if (cando)
-        {
-          overallStartTime = std::min(overallStartTime, startTime);
-          overallEndTime   = std::max(overallEndTime, endTime);
-
-          goodSources.insert(source);
-        }
-        else
-        {
-          // data source that cannot playback enters freeze-frame mode
-          source->SetShouldCallUpdate(false);
-        }
-      }
-
       if (overallEndTime >= overallStartTime)
       {
-        foreach (QmitkIGIDataSource::Pointer source, goodSources)
+        // sanity check: if we have a timestamp range than at least one source should be ok.
+        assert(!goodSources.empty());
+        for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
         {
-          source->ClearBuffer();
-          source->StartPlayback(pathstring, overallStartTime, overallEndTime);
+          source.value()->ClearBuffer();
+          source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
         }
-
 
         m_PlaybackSliderBase = overallStartTime;
         m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
