@@ -248,7 +248,7 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->SetDefaultSingleWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->Viewer->SetDefaultMultiWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+//  d->VisibilityManager->connect(d->Viewer, SIGNAL(NodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(niftkSingleViewerWidget*, QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
 
   d->VisibilityManager->RegisterViewer(d->Viewer);
   d->VisibilityManager->SetAllNodeVisibilityForViewer(0, false);
@@ -309,10 +309,10 @@ void niftkSingleViewerWidgetTestClass::cleanup()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::DropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
+void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-
+/*
   QMimeData* mimeData = new QMimeData;
   QString dataNodeAddresses("");
   for (int i = 0; i < nodes.size(); ++i)
@@ -328,9 +328,12 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QWidget* window, const std::vec
   mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
   QStringList types;
   types << "application/x-mitk-datanodes";
-  QDropEvent dropEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
-  QApplication::instance()->sendEvent(window, &dropEvent);
+  QApplication::instance()->sendEvent(renderWindow, &dropEvent);
+*/
+  d->VisibilityManager->OnNodesDropped(d->Viewer, renderWindow, nodes);
+  d->Viewer->OnNodesDropped(renderWindow, nodes);
 }
 
 

@@ -75,7 +75,10 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   m_GridLayout->addWidget(m_MultiWidget);
 
   // Connect to niftkMultiWindowWidget, so we can listen for signals.
-  this->connect(m_MultiWidget, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(this->GetAxialWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
@@ -101,7 +104,18 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
+  // We have to block the display geometry events until the event is processed.
+  // Therefore, it is important that the event is processed synchronuously, right after
+  // emitting the signal. To achieve this, the signal has to be directly connected to the
+  // slots (Qt::DirectConnection). Another way of achieving this could be calling
+  // QApplication::processEvents() but that would process other pending signals as well
+  // what we might not want.
+  bool displayEventsWereBlocked = m_MultiWidget->BlockDisplayEvents(true);
+  bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+  m_MultiWidget->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(this, renderWindow, nodes);
+  m_MultiWidget->BlockUpdate(updateWasBlocked);
+  m_MultiWidget->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 
