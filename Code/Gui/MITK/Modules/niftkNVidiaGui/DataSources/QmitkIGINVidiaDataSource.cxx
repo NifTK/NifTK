@@ -648,29 +648,7 @@ bool QmitkIGINVidiaDataSource::InitWithRecordedData(std::map<igtlUint64, Playbac
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
-  QString directoryPath = QString::fromStdString(path);
-  // path used to be fixed. but now there's a suffix, so enum directories.
-  QDir directory(directoryPath);
-  if (!directory.exists())
-  {
-    return false;
-  }
-
-  directory.setNameFilters(QStringList() << "QmitkIGINVidiaDataSource*");
-  directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
-  QStringList possibledirs = directory.entryList();
-  if (possibledirs.size() > 1)
-  {
-    // yes, die here if in debug mode!
-    assert(false);
-    MITK_ERROR << "QmitkIGINVidiaDataSource: Warning: found more than one data directory, will use " + possibledirs[0].toStdString() + " only!" << std::endl;
-  }
-  if (possibledirs.size() == 0)
-  {
-    return false;
-  }
-
-  directory = (directoryPath + QDir::separator()) + possibledirs[0];
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
     QStringList filters;
