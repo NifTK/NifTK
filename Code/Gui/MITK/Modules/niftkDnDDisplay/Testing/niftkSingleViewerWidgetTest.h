@@ -32,6 +32,8 @@ namespace mitk
 class DataNode;
 }
 
+class QmitkRenderWindow;
+
 class niftkSingleViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
@@ -147,7 +149,7 @@ private slots:
 
 private:
 
-  void DropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes);
+  void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
   QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
 

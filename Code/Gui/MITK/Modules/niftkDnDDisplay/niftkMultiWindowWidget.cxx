@@ -189,12 +189,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   // Default to unselected, so borders are off.
   this->SetSelected(false);
 
-  // Need each widget to signal when something is dropped, so connect signals to OnNodesDropped.
-  this->connect(this->mitkWidget1, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  this->connect(this->mitkWidget2, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  this->connect(this->mitkWidget3, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-  this->connect(this->mitkWidget4, SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)));
-
   // Register to listen to SliceNavigators, slice changed events.
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onAxialSliceChangedCommand =
     itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
@@ -319,24 +313,6 @@ void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(MIDASOrie
   assert(displayGeometry);
 
   displayGeometry->RemoveObserver(m_DisplayGeometryModificationObservers[orientation]);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
-{
-  // We have to block the display geometry events until the event is processed.
-  // Therefore, it is important that the event is processed synchronuously, right after
-  // emitting the signal. To achieve this, the signal has to be directly connected to the
-  // slots (Qt::DirectConnection). Another way of achieving this could be calling
-  // QApplication::processEvents() but that would process other pending signals as well
-  // what we might not want.
-  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-  bool updateWasBlocked = this->BlockUpdate(true);
-  this->SetSelectedRenderWindow(renderWindow);
-  emit NodesDropped(renderWindow, nodes);
-  this->BlockUpdate(updateWasBlocked);
-  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 

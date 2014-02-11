@@ -358,15 +358,17 @@ signals:
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(niftkSingleViewerWidget* thisViewer, bool visible);
 
+public slots:
+
+  /// \brief Called when nodes are dropped on the contained render windows.
+  virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
+
 protected:
 
   /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
   virtual void paintEvent(QPaintEvent* event);
 
 protected slots:
-
-  /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);

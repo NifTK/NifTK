@@ -298,10 +298,9 @@ public:
   /// when the update is unblocked.
   bool BlockUpdate(bool blocked);
 
-signals:
+  bool BlockDisplayEvents(bool blocked);
 
-  /// \brief Emits a signal to say that this widget/window has had the following nodes dropped on it.
-  void NodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
+signals:
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -311,11 +310,6 @@ signals:
 
   /// \brief Emitted when the scale factor has changed.
   void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
-
-protected slots:
-
-  /// \brief The 4 individual render windows get connected to this slot, and then all emit NodesDropped.
-  void OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes);
 
 private:
 
@@ -380,8 +374,6 @@ private:
   /// \brief The magnification is calculated with the longer voxel side of an orientation.
   /// This function returns the index of this axis.
   int GetDominantAxis(MIDASOrientation orientation) const;
-
-  bool BlockDisplayEvents(bool blocked);
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
