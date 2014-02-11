@@ -62,7 +62,7 @@ void QmitkIGIDataSource::SetSavingInterval(int seconds)
 
 
 //-----------------------------------------------------------------------------
-std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QString& extension)
+std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QString& suffix)
 {
   // this should be a static assert...
   assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<igtlUint64>::max());
@@ -70,7 +70,7 @@ std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QS
   std::set<igtlUint64>  result;
 
   QStringList filters;
-  filters << QString("*." + extension);
+  filters << QString("*" + suffix);
   path.setNameFilters(filters);
   path.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
 
@@ -79,19 +79,16 @@ std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QS
   {
     foreach (QString file, files)
     {
-      //std::cout << file.toStdString() << std::endl;
-
-      QStringList parts = file.split('.');
-      if (parts.size() == 2)
+      if (file.endsWith(suffix))
       {
-        if (parts[1] == extension)
+        // in the future, maybe add prefix parsing too.
+        QString  middle = file.mid(0, file.size() - suffix.size());
+
+        bool  ok = false;
+        qulonglong value = middle.toULongLong(&ok);
+        if (ok)
         {
-          bool  ok = false;
-          qulonglong value = parts[0].toULongLong(&ok);
-          if (ok)
-          {
-            result.insert(value);
-          }
+          result.insert(value);
         }
       }
     }
@@ -99,4 +96,3 @@ std::set<igtlUint64> QmitkIGIDataSource::ProbeTimeStampFiles(QDir path, const QS
 
   return result;
 }
-

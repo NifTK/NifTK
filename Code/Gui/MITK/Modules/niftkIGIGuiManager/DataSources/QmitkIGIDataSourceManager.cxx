@@ -992,7 +992,7 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
   // used for error diagnostic
   int   lineNumber = 0;
 
-  QRegExp   matcher("(\\w+)\\s*(=)\\s*([0-9a-zA-Z]+)");
+  QRegExp   matcher("(\\S+)\\s*(=)\\s*([0-9a-zA-Z]+)");
   while (!descstream.atEnd())
   {
     QString   line = descstream.readLine().trimmed();
