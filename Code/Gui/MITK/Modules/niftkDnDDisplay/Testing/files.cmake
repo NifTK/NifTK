@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(MOC_H_FILES
-  mitkAtomicStateTransitionTester.h
   mitkQtSignalCollector.h
   niftkMultiViewerWidgetTest.h
   niftkSingleViewerWidgetTest.h
