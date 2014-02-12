@@ -1007,11 +1007,6 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
     // with something that can deal with all the path names we had so far.
     QStringList items = line.split('=');
 
-    foreach(QString s, items)
-    {
-      std::cerr << '\"' << s.toStdString() << '\"' << std::endl;
-    }
-
     if (items.size() != 2)
     {
       std::ostringstream  errormsg;
