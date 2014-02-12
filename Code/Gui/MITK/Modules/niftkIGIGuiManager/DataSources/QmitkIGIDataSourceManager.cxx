@@ -19,6 +19,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
+#include <QDateTime>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -750,7 +751,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
+  m_TimeStampEdit->setText(QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz"));
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
