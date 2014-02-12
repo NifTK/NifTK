@@ -14,6 +14,7 @@
 
 #include "QmitkBaseAppWorkbenchAdvisor.h"
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
+#include <QMessageBox>
 
 //-----------------------------------------------------------------------------
 void QmitkBaseAppWorkbenchAdvisor::Initialize(berry::IWorkbenchConfigurer::Pointer configurer)
@@ -48,4 +49,26 @@ QmitkBaseWorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateQmitkBaseWo
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
   return new QmitkBaseWorkbenchWindowAdvisor(this, configurer);
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkBaseAppWorkbenchAdvisor::PreShutdown()
+{
+  QMessageBox msgBox;
+  // would be nice if we could include application's name here.
+  msgBox.setText("Do you want to close the application?");
+  msgBox.setInformativeText("Make sure you have saved everything you deem important!");
+  msgBox.setIcon(QMessageBox::Information);
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+  msgBox.setDefaultButton(QMessageBox::No);
+  int r = msgBox.exec();
+
+  // only close the application if user really clicked on "yes".
+  // everything else will simply cancel the dialog box and keep us running.
+  bool  okToClose = r == QMessageBox::Yes;
+  // ask base class as well.
+  okToClose &= QtWorkbenchAdvisor::PreShutdown();
+
+  return true;//okToClose;
 }
