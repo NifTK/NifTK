@@ -1112,53 +1112,71 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         // then simply leave them be. at first, i thought it might make sense to freeze-frame
         // these. but now this feels wrong.
 
-        // FIXME: if there are descriptor items missing, create new data sources, init their playback but put them on freeze!
+        if (overallEndTime >= overallStartTime)
+        {
+          // sanity check: if we have a timestamp range than at least one source should be ok.
+          assert(!goodSources.empty());
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->ClearBuffer();
+            source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
+          }
+
+          m_PlaybackSliderBase = overallStartTime;
+          m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+          // if the time range is very short then dont upscale for the slider
+          m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+
+          double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+          assert(sliderMax < std::numeric_limits<int>::max());
+
+          m_PlaybackSlider->setMinimum(0);
+          m_PlaybackSlider->setMaximum((int) sliderMax);
+
+          // pop open the controls
+          m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+          // can stop playback with stop button (in addition to unchecking the playbutton)
+          m_StopPushButton->setEnabled(true);
+          // for now, cannot start recording directly from playback mode.
+          // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+          m_RecordPushButton->setEnabled(false);
+
+          m_TimeStampEdit->setReadOnly(false);
+          m_PlaybackSlider->setEnabled(true);
+          m_PlaybackSlider->setValue(0);
+        }
+        else
+        {
+          m_PlayPushButton->setChecked(false);
+        }
       }
       catch (const std::exception& e)
       {
         MITK_ERROR << "Caught exception while trying to initialise data playback: " << e.what();
-        // FIXME: message box!
+
+        // try stopping playback if we had it started already on some sources.
+        try
+        {
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->StopPlayback();
+          }
+        }
+        catch (...)
+        {
+          // swallow
+          MITK_WARN << "Caught exception while trying to stop data source playback during an exception handler.";
+        }
+
+        QMessageBox msgbox;
+        msgbox.setText("Data playback initialisation failed.");
+        msgbox.setInformativeText("Playback cannot continue and will stop. Have a look at the detailed message and try to fix it. Good luck.");
+        msgbox.setDetailedText(QString::fromStdString(e.what()));
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.exec();
 
         // switch off playback. hopefully, user will fix the error
         // and can then try to click on playback again.
-        m_PlayPushButton->setChecked(false);
-      }
-
-      if (overallEndTime >= overallStartTime)
-      {
-        // sanity check: if we have a timestamp range than at least one source should be ok.
-        assert(!goodSources.empty());
-        for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
-        {
-          source.value()->ClearBuffer();
-          source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
-        }
-
-        m_PlaybackSliderBase = overallStartTime;
-        m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
-        // if the time range is very short then dont upscale for the slider
-        m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
-
-        double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
-        assert(sliderMax < std::numeric_limits<int>::max());
-
-        m_PlaybackSlider->setMinimum(0);
-        m_PlaybackSlider->setMaximum((int) sliderMax);
-
-        // pop open the controls
-        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
-        // can stop playback with stop button (in addition to unchecking the playbutton)
-        m_StopPushButton->setEnabled(true);
-        // for now, cannot start recording directly from playback mode.
-        // could be possible: leave this enabled and simply stop all playback when user clicks on record.
-        m_RecordPushButton->setEnabled(false);
-
-        m_TimeStampEdit->setReadOnly(false);
-        m_PlaybackSlider->setEnabled(true);
-        m_PlaybackSlider->setValue(0);
-      }
-      else
-      {
         m_PlayPushButton->setChecked(false);
       }
     }
