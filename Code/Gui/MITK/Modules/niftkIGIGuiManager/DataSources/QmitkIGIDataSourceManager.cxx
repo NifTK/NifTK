@@ -1074,8 +1074,9 @@ void QmitkIGIDataSourceManager::OnPlayStart()
         foreach (QmitkIGIDataSource::Pointer source, m_Sources)
         {
           // find a suitable directory
-          QMap<QString, QString>::iterator  dir2classmapIterator = dir2classmap.begin();
-          for (; dir2classmapIterator != dir2classmap.end(); ++dir2classmapIterator)
+          for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
+               dir2classmapIterator != dir2classmap.end();
+               ++dir2classmapIterator)
           {
             if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
             {
@@ -1107,11 +1108,11 @@ void QmitkIGIDataSourceManager::OnPlayStart()
           }
         }
 
-        // FIXME: run through descriptor, for each item present, use an existing data source.
-        //        if there are descriptor items missing, create new data sources, init their playback but put them on freeze!
-        //        if the user had more data sources present then required by descriptor then freeze these too
-        //source->SetShouldCallUpdate(false);
+        // if there are more user-added data sources than listed in the descriptor
+        // then simply leave them be. at first, i thought it might make sense to freeze-frame
+        // these. but now this feels wrong.
 
+        // FIXME: if there are descriptor items missing, create new data sources, init their playback but put them on freeze!
       }
       catch (const std::exception& e)
       {

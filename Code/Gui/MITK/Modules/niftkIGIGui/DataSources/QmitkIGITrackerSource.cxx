@@ -337,6 +337,7 @@ bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint6
       std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(tooldir, QString(".txt"));
       if (!timestamps.empty())
       {
+        // FIXME: this breaks start and end time-range for multiple tools.
         firstTimeStampFound = *timestamps.begin();
         lastTimeStampFound  = *(--(timestamps.end()));
       }
