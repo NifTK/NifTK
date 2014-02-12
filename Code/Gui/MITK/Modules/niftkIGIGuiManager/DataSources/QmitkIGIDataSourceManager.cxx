@@ -992,7 +992,7 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
   // used for error diagnostic
   int   lineNumber = 0;
 
-  QRegExp   matcher("(\\S+)\\s*(=)\\s*([0-9a-zA-Z]+)");
+  QRegExp   matcher("\\b(\\S+)\\b\\s*(=)\\s*([0-9a-zA-Z]+)");
   while (!descstream.atEnd())
   {
     QString   line = descstream.readLine().trimmed();
@@ -1003,25 +1003,25 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
     if (line.startsWith('#'))
       continue;
 
-    matcher.exactMatch(line);
-    QStringList items = matcher.capturedTexts();
+    // parse string by hand. my regexp skills are too rusty to come up
+    // with something that can deal with all the path names we had so far.
+    QStringList items = line.split('=');
 
-    if (items.size() != 4)
+    foreach(QString s, items)
+    {
+      std::cerr << '\"' << s.toStdString() << '\"' << std::endl;
+    }
+
+    if (items.size() != 2)
     {
       std::ostringstream  errormsg;
       errormsg << "Syntax error in descriptor file at line " << lineNumber << ": parsing failed";
       throw std::runtime_error(errormsg.str());
     }
 
-    QString   directoryKey   = items[1];
-    QString   classnameValue = items[3];
+    QString   directoryKey   = items[0].trimmed();
+    QString   classnameValue = items[1].trimmed();
 
-    if (items[2] != "=")
-    {
-      std::ostringstream  errormsg;
-      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": no equal sign?";
-      throw std::runtime_error(errormsg.str());
-    }
     if (directoryKey.isEmpty())
     {
       std::ostringstream  errormsg;
