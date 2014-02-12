@@ -19,7 +19,6 @@
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
-#include <QRegExp>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -992,7 +991,6 @@ QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(cons
   // used for error diagnostic
   int   lineNumber = 0;
 
-  QRegExp   matcher("\\b(\\S+)\\b\\s*(=)\\s*([0-9a-zA-Z]+)");
   while (!descstream.atEnd())
   {
     QString   line = descstream.readLine().trimmed();
