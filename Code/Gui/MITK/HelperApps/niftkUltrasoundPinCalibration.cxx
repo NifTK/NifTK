@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     {
       calibration->InitialiseInvariantPoint(2, invariantPoint3);
     }
-    std::cerr << "Matt, setting initial guess" <<std::endl;
+
     calibration->InitialiseInitialGuess(initialGuess);
 
     // Do calibration.

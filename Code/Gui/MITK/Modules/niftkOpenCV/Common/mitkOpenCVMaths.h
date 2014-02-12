@@ -336,6 +336,11 @@ extern "C++" NIFTKOPENCV_EXPORT double Mean(const std::vector<double>& input);
  */
 extern "C++" NIFTKOPENCV_EXPORT double StdDev(const std::vector<double>& input);
 
+/**
+ * \brief Assuming input contains squared errors, will sum them, divide by N, and take sqrt for an RMS measure.
+ */
+extern "C++" NIFTKOPENCV_EXPORT double RMS(const std::vector<double>& input);
+
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)
  * to the passed point, and returns the index of that point
