@@ -77,6 +77,11 @@ QmitkIGIOpenCVDataSource::~QmitkIGIOpenCVDataSource()
   m_Lock.lock();
   m_SourcesInUse.remove(m_ChannelNumber);
   m_Lock.unlock();
+
+  // explicitly tell base class to stop the thread.
+  // otherwise there's a race condition where this class has been cleaned up but the thread
+  // calls a virtual function on us before the base class destructor has had a chance to stop it.
+  StopGrabbingThread();
 }
 
 
@@ -139,6 +144,7 @@ void QmitkIGIOpenCVDataSource::GrabData()
   // somehow this can become null, probably a race condition during destruction.
   if (m_VideoSource.IsNull())
   {
+    MITK_ERROR << "Video source is null. This should not happen! It's most likely a race-condition.";
     return;
   }
 
