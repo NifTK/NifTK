@@ -17,6 +17,9 @@
 #include <QmitkStdMultiWidget.h>
 #include <QDesktopServices>
 #include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
@@ -748,7 +751,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = timeNow->GetTimeInNanoSeconds();
   }
 
-  m_TimeStampEdit->setText(tr("%1").arg(m_CurrentTime));
+  m_TimeStampEdit->setText(QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yy/MM/dd hh:mm:ss.zzz"));
 
   igtlUint64 idNow = m_CurrentTime;
   emit UpdateGuiStart(idNow);
@@ -929,6 +932,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 {
   QString directoryName = this->GetDirectoryName();
   QDir directory(directoryName);
+  QDir().mkpath(directoryName);
 
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
 
@@ -941,6 +945,55 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   m_StopPushButton->setEnabled(true);
   assert(!m_PlayPushButton->isChecked());
   m_PlayPushButton->setEnabled(false);
+
+  // dump our descriptor file
+  QFile   descfile(directory.absolutePath() + QDir::separator() + "descriptor.cfg");
+  bool openok = descfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  if (openok)
+  {
+    QTextStream   descstream(&descfile);
+    descstream.setCodec("UTF-8");
+    descstream << 
+      "# this file is encoded as utf-8.\n"
+      "# lines starting with hash are comments and ignored.\n"
+      "   # all lines are white-space trimmed.   \n"
+      "   # empty lines are ignored too.\n"
+      "\n"
+      "# the format is:\n"
+      "#   key = value\n"
+      "# both key and value are white-space trimmed.\n"
+      "# key is the directory which you want to associate with a data source class.\n"
+      "# value is the name of the data source class.\n"
+      "# there is no escaping! so neither key nor value can contain the equal sign!\n"
+      "#\n"
+      "# known data source classes are:\n"
+      "#  QmitkIGINVidiaDataSource\n"
+      "#  QmitkIGIUltrasonixTool\n"
+      "#  QmitkIGIOpenCVDataSource\n"
+      "#  QmitkIGITrackerSource\n"
+      "# however, not all might be compiled in.\n";
+
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      // this should be a relative path!
+      // relative to the descriptor file or directoryName (equivalent).
+      QString datasourcedir = QString::fromStdString(source->GetSaveDirectoryName());
+      // despite this being relativeFilePath() it works perfectly fine for directories too.
+      datasourcedir = directory.relativeFilePath(datasourcedir);
+
+      descstream << datasourcedir << " = " << QString::fromStdString(source->GetNameOfClass()) << "\n";
+    }
+
+    descstream.flush();
+  }
+  else
+  {
+    QMessageBox msgbox;
+    msgbox.setText("Error creating descriptor file.");
+    msgbox.setInformativeText("Cannot open " + descfile.fileName() + " for writing. Data source playback will be borked later on; you will need to create a descriptor by hand.");
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
+  }
 }
 
 
@@ -967,6 +1020,80 @@ void QmitkIGIDataSourceManager::OnStop()
 
 
 //-----------------------------------------------------------------------------
+QMap<QString, QString> QmitkIGIDataSourceManager::ParseDataSourceDescriptor(const QString& filepath)
+{
+  QFile   descfile(filepath);
+  if (!descfile.exists())
+  {
+    throw std::runtime_error("Descriptor file does not exist: " + filepath.toStdString());
+  }
+
+  bool openedok = descfile.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!openedok)
+  {
+    throw std::runtime_error("Cannot open descriptor file: " + filepath.toStdString());
+  }
+
+  QTextStream   descstream(&descfile);
+  descstream.setCodec("UTF-8");
+
+  QMap<QString, QString>      map;
+
+  // used for error diagnostic
+  int   lineNumber = 0;
+
+  while (!descstream.atEnd())
+  {
+    QString   line = descstream.readLine().trimmed();
+    ++lineNumber;
+
+    if (line.isEmpty())
+      continue;
+    if (line.startsWith('#'))
+      continue;
+
+    // parse string by hand. my regexp skills are too rusty to come up
+    // with something that can deal with all the path names we had so far.
+    QStringList items = line.split('=');
+
+    if (items.size() != 2)
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": parsing failed";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    QString   directoryKey   = items[0].trimmed();
+    QString   classnameValue = items[1].trimmed();
+
+    if (directoryKey.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+    if (classnameValue.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    if (map.contains(directoryKey))
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key already seen; specified it twice?";
+      throw std::runtime_error(errormsg.str());
+    }
+
+    map.insert(directoryKey, classnameValue);
+  }
+
+  return map;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnPlayStart()
 {
   if (m_PlayPushButton->isChecked())
@@ -979,65 +1106,126 @@ void QmitkIGIDataSourceManager::OnPlayStart()
     }
     else
     {
-      std::set<QmitkIGIDataSource::Pointer> goodSources;
+      // data sources participating in igi data playback.
+      // key = fully qualified path for that data source.
+      QMap<std::string, QmitkIGIDataSource::Pointer>  goodSources;
 
+      // union of the time range encompassing everything recorded in that session.
       igtlUint64    overallStartTime = std::numeric_limits<igtlUint64>::max();
       igtlUint64    overallEndTime   = std::numeric_limits<igtlUint64>::min();
-      std::string   pathstring       = playbackpath.toStdString();
 
-      foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+      try
       {
-        igtlUint64  startTime = -1;
-        igtlUint64  endTime   = -1;
-        bool cando = source->ProbeRecordedData(pathstring, &startTime, &endTime);
-        if (cando)
-        {
-          overallStartTime = std::min(overallStartTime, startTime);
-          overallEndTime   = std::max(overallEndTime, endTime);
+        QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
 
-          goodSources.insert(source);
+        // for each existing data source (that the user added before), check whether it can playback
+        // that particular directory mentioned in the descriptor.
+        foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+        {
+          // find a suitable directory
+          for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
+               dir2classmapIterator != dir2classmap.end();
+               ++dir2classmapIterator)
+          {
+            if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+            {
+              igtlUint64  startTime = -1;
+              igtlUint64  endTime   = -1;
+              std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
+              bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
+              if (cando)
+              {
+                overallStartTime = std::min(overallStartTime, startTime);
+                overallEndTime   = std::max(overallEndTime, endTime);
+
+                goodSources.insert(dataSourceDir, source);
+
+                // we found a directory <-> source combination that can work.
+                // so drop it off the list dir2classmap.
+                dir2classmap.erase(dir2classmapIterator);
+                // try the next source that exist already.
+                break;
+              }
+              else
+              {
+                // no special else here (only diagnostic). if this data source cannot playback that particular directory,
+                // even though the descriptor says it can, the data source may still be able to play another director
+                // coming later in the list.
+                MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
+              }
+            }
+          }
+        }
+
+        // if there are more user-added data sources than listed in the descriptor
+        // then simply leave them be. at first, i thought it might make sense to freeze-frame
+        // these. but now this feels wrong.
+
+        if (overallEndTime >= overallStartTime)
+        {
+          // sanity check: if we have a timestamp range than at least one source should be ok.
+          assert(!goodSources.empty());
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->ClearBuffer();
+            source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
+          }
+
+          m_PlaybackSliderBase = overallStartTime;
+          m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
+          // if the time range is very short then dont upscale for the slider
+          m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
+
+          double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
+          assert(sliderMax < std::numeric_limits<int>::max());
+
+          m_PlaybackSlider->setMinimum(0);
+          m_PlaybackSlider->setMaximum((int) sliderMax);
+
+          // pop open the controls
+          m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+          // can stop playback with stop button (in addition to unchecking the playbutton)
+          m_StopPushButton->setEnabled(true);
+          // for now, cannot start recording directly from playback mode.
+          // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+          m_RecordPushButton->setEnabled(false);
+
+          m_TimeStampEdit->setReadOnly(false);
+          m_PlaybackSlider->setEnabled(true);
+          m_PlaybackSlider->setValue(0);
         }
         else
         {
-          // data source that cannot playback enters freeze-frame mode
-          source->SetShouldCallUpdate(false);
+          m_PlayPushButton->setChecked(false);
         }
       }
-
-      if (overallEndTime >= overallStartTime)
+      catch (const std::exception& e)
       {
-        foreach (QmitkIGIDataSource::Pointer source, goodSources)
+        MITK_ERROR << "Caught exception while trying to initialise data playback: " << e.what();
+
+        // try stopping playback if we had it started already on some sources.
+        try
         {
-          source->ClearBuffer();
-          source->StartPlayback(pathstring, overallStartTime, overallEndTime);
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->StopPlayback();
+          }
+        }
+        catch (...)
+        {
+          // swallow
+          MITK_WARN << "Caught exception while trying to stop data source playback during an exception handler.";
         }
 
+        QMessageBox msgbox;
+        msgbox.setText("Data playback initialisation failed.");
+        msgbox.setInformativeText("Playback cannot continue and will stop. Have a look at the detailed message and try to fix it. Good luck.");
+        msgbox.setDetailedText(QString::fromStdString(e.what()));
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.exec();
 
-        m_PlaybackSliderBase = overallStartTime;
-        m_PlaybackSliderFactor = (std::numeric_limits<int>::max() / 2) / (double) (overallEndTime - overallStartTime);
-        // if the time range is very short then dont upscale for the slider
-        m_PlaybackSliderFactor = std::min(m_PlaybackSliderFactor, 1.0);
-
-        double  sliderMax = m_PlaybackSliderFactor * (overallEndTime - overallStartTime);
-        assert(sliderMax < std::numeric_limits<int>::max());
-
-        m_PlaybackSlider->setMinimum(0);
-        m_PlaybackSlider->setMaximum((int) sliderMax);
-
-        // pop open the controls
-        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
-        // can stop playback with stop button (in addition to unchecking the playbutton)
-        m_StopPushButton->setEnabled(true);
-        // for now, cannot start recording directly from playback mode.
-        // could be possible: leave this enabled and simply stop all playback when user clicks on record.
-        m_RecordPushButton->setEnabled(false);
-
-        m_TimeStampEdit->setReadOnly(false);
-        m_PlaybackSlider->setEnabled(true);
-        m_PlaybackSlider->setValue(0);
-      }
-      else
-      {
+        // switch off playback. hopefully, user will fix the error
+        // and can then try to click on playback again.
         m_PlayPushButton->setChecked(false);
       }
     }

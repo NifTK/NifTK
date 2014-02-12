@@ -23,6 +23,8 @@
 #include <Conversion/ImageConversion.h>
 #include <cv.h>
 #include <itkNiftiImageIO.h>
+#include <NiftyLinkMessage.h>
+#include <boost/typeof/typeof.hpp>
 
 #include <mitkImageWriter.h>
 
@@ -368,4 +370,169 @@ bool QmitkIGIUltrasonixTool::SaveData(mitk::IGIDataType* data, std::string& outp
     } // end if (pointerToMessage != NULL)
   } // end if (dataType.IsNotNull())
   return success;
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkIGIUltrasonixTool::ProbeRecordedData(const std::string& path, igtlUint64* firstTimeStampInStore, igtlUint64* lastTimeStampInStore)
+{
+  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
+  igtlUint64    firstTimeStampFound = 0;
+  igtlUint64    lastTimeStampFound  = 0;
+
+  QDir directory(QString::fromStdString(path));
+  if (directory.exists())
+  {
+    std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(directory, QString("-ultrasoundImage.nii"));
+    if (!timestamps.empty())
+    {
+      firstTimeStampFound = *timestamps.begin();
+      lastTimeStampFound  = *(--(timestamps.end()));
+    }
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::StartPlayback(const std::string& path, igtlUint64 firstTimeStamp, igtlUint64 lastTimeStamp)
+{
+  //StopGrabbingThread();
+  ClearBuffer();
+
+  // needs to match what SaveData() does
+  QDir directory(QString::fromStdString(path));
+  if (directory.exists())
+  {
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString("-ultrasoundImage.nii"));
+    m_PlaybackDirectoryName = path;
+  }
+  else
+  {
+    // shouldnt happen
+    assert(false);
+  }
+
+  SetIsPlayingBack(true);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::StopPlayback()
+{
+  m_PlaybackIndex.clear();
+  ClearBuffer();
+
+  SetIsPlayingBack(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkIGIUltrasonixTool::PlaybackData(igtlUint64 requestedTimeStamp)
+{
+  assert(GetIsPlayingBack());
+
+  // this will find us the timestamp right after the requested one
+  BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
+
+  // so we need to pick the previous
+  // FIXME: not sure if the non-existing-else here ever applies!
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
+  if (i != m_PlaybackIndex.end())
+  {
+    // completely ignore motor position for now.
+    // it currently contains garbage.
+
+    std::ostringstream    filename;
+    filename << m_PlaybackDirectoryName << '/' << (*i) << "-ultrasoundImage.nii";
+
+    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+    io->SetFileName(filename.str());
+    io->ReadImageInformation();
+
+    // only supporting 2d images, for now
+    if (io->GetNumberOfDimensions() != 2)
+    {
+      MITK_ERROR << "Unsupported number of dimensions for " << filename.str();
+      return;
+    }
+    if (io->GetComponentType() != itk::ImageIOBase::UCHAR)
+    {
+      MITK_ERROR << "Unsupported component type for " << filename.str();
+      return;
+    }
+
+    // there is probably a way to avoid this extra qimage round trip
+    QImage  img;
+    switch (io->GetPixelType())
+    {
+      case itk::ImageIOBase::RGBA:
+        if (io->GetNumberOfComponents() != 4)
+        {
+          MITK_ERROR << "Unexpected number of components for RGBA image in " << filename.str();
+          return;
+        }
+        img = QImage(io->GetDimensions(0), io->GetDimensions(1), QImage::Format_ARGB32);
+        break;
+
+      case itk::ImageIOBase::SCALAR:
+        if (io->GetNumberOfComponents() != 1)
+        {
+          MITK_ERROR << "Unexpected number of components for SCALAR image in " << filename.str();
+          return;
+        }
+        img = QImage(io->GetDimensions(0), io->GetDimensions(1), QImage::Format_Indexed8);
+        break;
+
+      // we only expect image formats that we can write in SaveData() above.
+      default:
+        MITK_ERROR << "Unsupported image type for " << filename.str();
+        // nothing we can do to recover, better stop right here.
+        return;
+    }
+    itk::ImageIORegion  ioregion;
+    ioregion.SetIndex(0, 0);
+    ioregion.SetIndex(1, 0);
+    ioregion.SetSize(0, io->GetDimensions(0));
+    ioregion.SetSize(1, io->GetDimensions(1));
+    io->SetIORegion(ioregion);
+    io->Read(img.bits());
+
+    if (img.format() == QImage::Format_ARGB32)
+    {
+      // flip from RGBA (on disc) to BGRA (in qt)
+      IplImage  ocvimg;
+      cvInitImageHeader(&ocvimg, cvSize(img.width(), img.height()), IPL_DEPTH_8U, 4);
+      cvSetData(&ocvimg, (void*) img.constScanLine(0), img.constScanLine(1) - img.constScanLine(0));
+      // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+      // so should be fine to do this here...
+      cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+    }
+
+    NiftyLinkImageMessage*   msg = new NiftyLinkImageMessage;
+    msg->ChangeMessageType("IMAGE");
+    msg->ChangeHostName("localhost");
+    msg->SetQImage(img);
+
+    QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
+    dataType->SetMessage(msg);
+    dataType->SetTimeStampInNanoSeconds(*i);
+    dataType->SetDuration(m_TimeStampTolerance);
+
+    AddData(dataType.GetPointer());
+    SetStatus("Playing back");
+  }
 }

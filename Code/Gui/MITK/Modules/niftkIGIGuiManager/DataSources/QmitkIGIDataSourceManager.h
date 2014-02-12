@@ -25,6 +25,8 @@
 #include <QSet>
 #include <QColor>
 #include <QThread>
+#include <QMap>
+#include <QString>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
 #include <NiftyLinkSocketObject.h>
@@ -147,6 +149,15 @@ public:
    * synchronise clocks via NTP.
    */
   void SetPickLatestData(const bool& pickLatest);
+
+  /**
+   * Tries to parse the data source descriptor for directory-to-classname mappings.
+   * @param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
+   * @returns a map with key = directory, value = classname
+   * @throws std::exception if something goes wrong.
+   * @warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
+   */
+  static QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
 
 signals:
 

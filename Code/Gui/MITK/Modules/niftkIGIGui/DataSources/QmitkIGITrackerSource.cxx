@@ -321,17 +321,11 @@ bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint6
   igtlUint64    firstTimeStampFound = 0;
   igtlUint64    lastTimeStampFound  = 0;
 
-  // needs to match what SaveData() does below
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-
-  // FIXME: check for QmitkIGITrackerSource too!
-  QDir directory(directoryPath);
+  // needs to match what SaveData() does above
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
     // then directories with tool names
-    //QStringList filters;
-    //filters << QString("*.");
-    //path.setNameFilters(filters);
     directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
 
     QStringList toolNames = directory.entryList();
@@ -340,9 +334,10 @@ bool QmitkIGITrackerSource::ProbeRecordedData(const std::string& path, igtlUint6
       QDir  tooldir(directory.path() + QDir::separator() + tool);
       assert(tooldir.exists());
 
-      std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(tooldir, QString("txt"));
+      std::set<igtlUint64>  timestamps = ProbeTimeStampFiles(tooldir, QString(".txt"));
       if (!timestamps.empty())
       {
+        // FIXME: this breaks start and end time-range for multiple tools.
         firstTimeStampFound = *timestamps.begin();
         lastTimeStampFound  = *(--(timestamps.end()));
       }
@@ -369,8 +364,7 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
   ClearBuffer();
 
   // needs to match what SaveData() does
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
-  QDir directory(directoryPath);
+  QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
     directory.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
@@ -381,10 +375,10 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
       QDir  tooldir(directory.path() + QDir::separator() + tool);
       assert(tooldir.exists());
 
-      m_PlaybackIndex[tool.toStdString()] = ProbeTimeStampFiles(tooldir, QString("txt"));
+      m_PlaybackIndex[tool.toStdString()] = ProbeTimeStampFiles(tooldir, QString(".txt"));
     }
 
-    m_PlaybackDirectoryName = directoryPath.toStdString();
+    m_PlaybackDirectoryName = path;
   }
   else
   {
@@ -460,4 +454,3 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
     }
   }
 }
-
