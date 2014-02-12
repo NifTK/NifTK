@@ -24,6 +24,7 @@
 #include <cv.h>
 #include <itkNiftiImageIO.h>
 #include <NiftyLinkMessage.h>
+#include <boost/typeof/typeof.hpp>
 
 #include <mitkImageWriter.h>
 
