@@ -488,7 +488,7 @@ void QmitkIGIUltrasonixTool::PlaybackData(igtlUint64 requestedTimeStamp)
         break;
 
       case itk::ImageIOBase::SCALAR:
-        if (io->GetNumberOfComponents() != 4)
+        if (io->GetNumberOfComponents() != 1)
         {
           MITK_ERROR << "Unexpected number of components for SCALAR image in " << filename.str();
           return;
