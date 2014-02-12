@@ -932,6 +932,7 @@ void QmitkIGIDataSourceManager::OnRecordStart()
 {
   QString directoryName = this->GetDirectoryName();
   QDir directory(directoryName);
+  QDir().mkpath(directoryName);
 
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
 
@@ -944,6 +945,55 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   m_StopPushButton->setEnabled(true);
   assert(!m_PlayPushButton->isChecked());
   m_PlayPushButton->setEnabled(false);
+
+  // dump our descriptor file
+  QFile   descfile(directory.absolutePath() + QDir::separator() + "descriptor.cfg");
+  bool openok = descfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  if (openok)
+  {
+    QTextStream   descstream(&descfile);
+    descstream.setCodec("UTF-8");
+    descstream << 
+      "# this file is encoded as utf-8.\n"
+      "# lines starting with hash are comments and ignored.\n"
+      "   # all lines are white-space trimmed.   \n"
+      "   # empty lines are ignored too.\n"
+      "\n"
+      "# the format is:\n"
+      "#   key = value\n"
+      "# both key and value are white-space trimmed.\n"
+      "# key is the directory which you want to associate with a data source class.\n"
+      "# value is the name of the data source class.\n"
+      "# there is no escaping! so neither key nor value can contain the equal sign!\n"
+      "#\n"
+      "# known data source classes are:\n"
+      "#  QmitkIGINVidiaDataSource\n"
+      "#  QmitkIGIUltrasonixTool\n"
+      "#  QmitkIGIOpenCVDataSource\n"
+      "#  QmitkIGITrackerSource\n"
+      "# however, not all might be compiled in.\n";
+
+    foreach ( QmitkIGIDataSource::Pointer source, m_Sources )
+    {
+      // this should be a relative path!
+      // relative to the descriptor file or directoryName (equivalent).
+      QString datasourcedir = QString::fromStdString(source->GetSaveDirectoryName());
+      // despite this being relativeFilePath() it works perfectly fine for directories too.
+      datasourcedir = directory.relativeFilePath(datasourcedir);
+
+      descstream << datasourcedir << " = " << QString::fromStdString(source->GetNameOfClass()) << "\n";
+    }
+
+    descstream.flush();
+  }
+  else
+  {
+    QMessageBox msgbox;
+    msgbox.setText("Error creating descriptor file.");
+    msgbox.setInformativeText("Cannot open " + descfile.fileName() + " for writing. Data source playback will be borked later on; you will need to create a descriptor by hand.");
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
+  }
 }
 
 
