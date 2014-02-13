@@ -65,23 +65,23 @@ int main(int argc, char** argv)
  
   movingnode->SetData(MovingSurface);
 
+  bool randomPerturb = true;
+  vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  if ( randomPerturb )
+  {
+    vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
+    niftk::RandomTransform ( randomTrans , 10.0, 10.0 , 10.0 , 6.0 , 6.0 , 6.0);
+    randomMatrix = randomTrans->GetMatrix();
+    mitk::ComposeTransformWithNode(*randomMatrix, movingnode);
+  }
+
   vtkMatrix4x4 * initialTransform = vtkMatrix4x4::New();
   if ( initTrans.length() != 0 ) 
   {
     initialTransform = niftk::LoadMatrix4x4FromFile(initTrans);
     mitk::ComposeTransformWithNode(*initialTransform, movingnode);
   }
-  bool randomPerturb = true;
-  vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  if ( randomPerturb )
-  {
-    vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
-  niftk::RandomTransform ( randomTrans , 10.0, 10.0 , 10.0 , 10.0 , 10.0 , 10.0);
-//  niftk::RandomTransform ( randomTrans , 0.0, 0.0 , 0.0 , 0.0 , 0.0 , 0.0);
-  randomMatrix = randomTrans->GetMatrix();
-    mitk::ComposeTransformWithNode(*randomMatrix, movingnode);
-//    MITK_INFO << *randomMatrix;
-  }
+   
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   registerer->SetMaximumIterations(maxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
@@ -95,11 +95,11 @@ int main(int argc, char** argv)
   }
   MITK_INFO << "Result" << *resultMatrix;
   vtkMatrix4x4 * compound = vtkMatrix4x4::New();
+  resultMatrix->Multiply4x4(resultMatrix, initialTransform , compound);
   if ( randomPerturb )
   {
-    resultMatrix->Multiply4x4(resultMatrix, randomMatrix , compound);
+    compound->Multiply4x4(compound, randomMatrix , compound);
   }
-  compound->Multiply4x4(compound, initialTransform , compound);
  
   MITK_INFO << "Full Result " << *compound;
   if ( output.length () != 0 ) 
