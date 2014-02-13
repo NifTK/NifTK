@@ -70,5 +70,5 @@ bool QmitkBaseAppWorkbenchAdvisor::PreShutdown()
   // ask base class as well.
   okToClose &= QtWorkbenchAdvisor::PreShutdown();
 
-  return true;//okToClose;
+  return okToClose;
 }
