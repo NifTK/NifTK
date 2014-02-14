@@ -65,12 +65,12 @@ int main(int argc, char** argv)
  
   movingnode->SetData(MovingSurface);
 
-  bool randomPerturb = true;
   vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  if ( randomPerturb )
+  if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
-    niftk::RandomTransform ( randomTrans , 10.0, 10.0 , 10.0 , 6.0 , 6.0 , 6.0);
+    niftk::RandomTransform ( randomTrans , perturbTrans, perturbTrans ,perturbTrans, 
+        perturbRot, perturbRot, perturbRot);
     randomMatrix = randomTrans->GetMatrix();
     mitk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
@@ -89,14 +89,14 @@ int main(int argc, char** argv)
   MITK_INFO << "Starting registration";
   registerer->Update(fixednode, movingnode, *resultMatrix);
   MITK_INFO << "Init" << *initialTransform;
-  if ( randomPerturb )
+  if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     MITK_INFO << "Random" << *randomMatrix;
   }
   MITK_INFO << "Result" << *resultMatrix;
   vtkMatrix4x4 * compound = vtkMatrix4x4::New();
   resultMatrix->Multiply4x4(resultMatrix, initialTransform , compound);
-  if ( randomPerturb )
+  if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     compound->Multiply4x4(compound, randomMatrix , compound);
   }
