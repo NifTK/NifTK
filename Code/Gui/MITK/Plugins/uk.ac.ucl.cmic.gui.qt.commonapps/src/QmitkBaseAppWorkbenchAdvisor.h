@@ -52,6 +52,13 @@ public:
    */
   virtual std::string GetInitialWindowPerspectiveId() = 0;
 
+  /**
+   * Overriden from berry::WorkbenchAdvisor so that we can pop up a dialog box
+   * asking the user whether they really want to close the application.
+   * @returns true if closing is ok, false otherwise.
+   */
+  virtual bool PreShutdown();
+
 protected:
 
   /**
