@@ -1019,12 +1019,20 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
     m_ControlPanel->SetMaxTimeStep(maxTimeStep);
     m_ControlPanel->SetTimeStep(timeStep);
 
-    double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
-    double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
-    double magnification = selectedViewer->GetMagnification(orientation);
-    m_ControlPanel->SetMinMagnification(minMagnification);
-    m_ControlPanel->SetMaxMagnification(maxMagnification);
-    m_ControlPanel->SetMagnification(magnification);
+    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    {
+      m_ControlPanel->SetMagnificationControlsEnabled(true);
+      double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
+      double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
+      double magnification = selectedViewer->GetMagnification(orientation);
+      m_ControlPanel->SetMinMagnification(minMagnification);
+      m_ControlPanel->SetMaxMagnification(maxMagnification);
+      m_ControlPanel->SetMagnification(magnification);
+    }
+    else
+    {
+      m_ControlPanel->SetMagnificationControlsEnabled(false);
+    }
 
     this->OnCursorVisibilityChanged(selectedViewer, selectedViewer->IsCursorVisible());
   }

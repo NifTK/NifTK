@@ -113,6 +113,21 @@ void niftkSingleViewerControls::SetMagnificationControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool niftkSingleViewerControls::AreMagnificationControlsEnabled() const
+{
+  return ui->m_MagnificationLabel->isEnabled() && ui->m_MagnificationSlider->isEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerControls::SetMagnificationControlsEnabled(bool enabled)
+{
+  ui->m_MagnificationLabel->setEnabled(enabled);
+  ui->m_MagnificationSlider->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkSingleViewerControls::AreShowOptionsVisible() const
 {
   return m_ShowShowOptions;

@@ -48,6 +48,12 @@ public:
   /// \brief Shows or hides the magnification controls.
   void SetMagnificationControlsVisible(bool visible);
 
+  /// \brief Tells if the magnification controls are enabled.
+  bool AreMagnificationControlsEnabled() const;
+
+  /// \brief Enables or disables the magnification controls.
+  void SetMagnificationControlsEnabled(bool enabled);
+
   /// \brief Tells if the show options (cursor, directions, 3D window) are visible.
   bool AreShowOptionsVisible() const;
 
