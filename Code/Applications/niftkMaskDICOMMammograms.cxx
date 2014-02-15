@@ -508,7 +508,7 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
             ! maskIterator.IsAtEnd();
             ++maskIterator, ++pecIterator )
       {
-        if ( ! pecIterator.Get() )
+        if ( pecIterator.Get() )
           maskIterator.Set( 0 );
       }
     }
