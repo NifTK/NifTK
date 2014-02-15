@@ -309,7 +309,10 @@ MammogramPectoralisFitMetric<TInputImage>
 
   double theta = -parameters[5]*vnl_math::pi/180.0; // Convert to radians
 
-  double profile =  parameters[6];
+  // The coefficient for the muscle profile should be have a minimum
+  // of 1 but be asymptotic to y = x i.e. hyperbolic
+
+  double profile =  sqrt ( 1 + parameters[6]*parameters[6] );
   
   double sinTheta = sin( theta );
   double cosTheta = cos( theta );
