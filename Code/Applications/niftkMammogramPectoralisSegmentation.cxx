@@ -24,6 +24,7 @@
 #include <itkImageFileWriter.h>
 
 #include <itkMammogramPectoralisSegmentationImageFilter.h>
+#include <itkMammogramMaskSegmentationImageFilter.h>
 
 #include <niftkMammogramPectoralisSegmentationCLP.h>
 
@@ -44,13 +45,16 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+  bool flgApplyMaskToImage;
 
   std::string inputImage;
+  std::string maskImage;
   std::string outputImage;  
   
   arguments() {
     flgVerbose = false;
     flgDebug = false;
+    flgApplyMaskToImage = false;
   }
 };
 
@@ -59,69 +63,33 @@ struct arguments
  * \brief Takes the input and segments it using itk::MammogramPectoralisSegmentationImageFilter
  */
 
-int main(int argc, char** argv)
+template <int Dimension, class InputPixelType> 
+int DoMain(arguments args)
 {
   unsigned int i;
 
-  const unsigned int Dimension = 2;
-  typedef float InputPixelType;
-  
   typedef itk::Image< InputPixelType, Dimension > InputImageType;   
 
-  typedef float OutputPixelType;
-
-  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;   
+  typedef unsigned char MaskPixelType;
+  typedef itk::Image< MaskPixelType, Dimension > MaskImageType;   
 
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
-  typedef itk::ImageFileWriter< OutputImageType > OutputImageWriterType;
-  typedef itk::MammogramPectoralisSegmentationImageFilter<InputImageType, OutputImageType> MammogramPectoralisSegmentationImageFilterType;
+  typedef itk::ImageFileWriter< MaskImageType > OutputImageWriterType;
+
+  typedef itk::MammogramPectoralisSegmentationImageFilter<InputImageType, MaskImageType> 
+    MammogramPectoralisSegmentationImageFilterType;
 
 
-  // Parse the command line arguments
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> 
+    MammogramMaskSegmentationImageFilterType;
 
-  PARSE_ARGS;
-
-  // To pass around command line args
-  struct arguments args;
-
-  args.inputImage  = inputImage.c_str();
-  args.outputImage = outputImage.c_str();
-
-  args.flgVerbose = flgVerbose;
-  args.flgDebug = flgDebug;
-
-  std::cout << "Input image:  " << args.inputImage << std::endl
-            << "Output image: " << args.outputImage << std::endl;
-
-  // Validate command line args
-
-  if (args.inputImage.length() == 0 ||
-      args.outputImage.length() == 0)
-  {
-    return EXIT_FAILURE;
-  }
-
-
-  // Check that the input is 2D
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
-  if (dims != 2)
-  {
-    std::cout << "ERROR: Unsupported image dimension" << std::endl;
-    return EXIT_FAILURE;
-  }
-  else if (dims == 2)
-  {
-    std::cout << "Input is 2D" << std::endl;
-  }
+  typename MaskImageType::Pointer mask = 0;
 
 
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
 
-  InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
+  typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName(args.inputImage);
 
   try {
@@ -129,8 +97,7 @@ int main(int argc, char** argv)
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << "ERROR: Failed to read image: " 
-              << args.inputImage << std::endl
+    std::cerr << "ERROR: Failed to read image: " << args.inputImage << std::endl
               << err << std::endl; 
     return EXIT_FAILURE;
   }                
@@ -141,24 +108,78 @@ int main(int argc, char** argv)
   }
 
 
+  // Read the mask image?
+  // ~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.maskImage.length() > 0 ) 
+  {
+    typedef itk::ImageFileReader< MaskImageType > InputMaskReaderType;
+
+    typename InputMaskReaderType::Pointer maskReader = InputMaskReaderType::New();
+    maskReader->SetFileName(args.maskImage);
+    
+    try {
+      maskReader->Update();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to read mask: " << args.maskImage << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    mask = maskReader->GetOutput();
+  }
+
+  // Or generate it
+  // ~~~~~~~~~~~~~~
+
+  else
+  {
+    typename MammogramMaskSegmentationImageFilterType::Pointer 
+      maskFilter = MammogramMaskSegmentationImageFilterType::New();
+
+    maskFilter->SetInput( imageReader->GetOutput() );
+
+    maskFilter->SetDebug(   args.flgDebug );
+    maskFilter->SetVerbose( args.flgVerbose );
+
+    try {
+      maskFilter->Update();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to segment image" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    mask = maskFilter->GetOutput();
+
+    mask->DisconnectPipeline();
+  }
+
+
   // Create the segmentation filter
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  MammogramPectoralisSegmentationImageFilterType::Pointer 
-    filter = MammogramPectoralisSegmentationImageFilterType::New();
+  typename MammogramPectoralisSegmentationImageFilterType::Pointer 
+    pecFilter = MammogramPectoralisSegmentationImageFilterType::New();
 
-  filter->SetInput( imageReader->GetOutput() );
+  pecFilter->SetInput( imageReader->GetOutput() );  
 
-  filter->SetVerbose( args.flgVerbose );
-  filter->SetDebug( args.flgDebug );
+  pecFilter->SetVerbose( args.flgVerbose );
+  pecFilter->SetDebug( args.flgDebug );
+
+  pecFilter->SetMask( mask );
   
   try
   {
-    filter->Update(); 
+    pecFilter->Update(); 
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << "Failed to segment the pectoral muscle: " << err << std::endl; 
+    std::cerr << "ERROR: Failed to segment the pectoral muscle: " << err << std::endl; 
     return EXIT_FAILURE;
   }                
 
@@ -166,10 +187,10 @@ int main(int argc, char** argv)
   // Create the image writer and execute the pipeline
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
+  typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
   imageWriter->SetFileName(args.outputImage);
-  imageWriter->SetInput( filter->GetOutput() );
+  imageWriter->SetInput( pecFilter->GetOutput() );
   
   try
   {
@@ -177,10 +198,118 @@ int main(int argc, char** argv)
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << "Failed write image to file: " << args.outputImage << std::endl
+    std::cerr << "ERROR: Failed write image to file: " << args.outputImage << std::endl
               << err << std::endl; 
     return EXIT_FAILURE;
   }                
 
   return EXIT_SUCCESS;
+}
+
+
+/**
+ * \brief Takes the input and segments it using itk::MammogramMaskSegmentationImageFilter
+ */
+
+int main(int argc, char** argv)
+{
+
+  // Parse the command line arguments
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  PARSE_ARGS;
+
+  // To pass around command line args
+  struct arguments args;
+
+  args.flgVerbose          = flgVerbose;
+  args.flgDebug            = flgDebug;
+  args.flgApplyMaskToImage = flgApplyMaskToImage;
+
+  args.inputImage  = inputImage;
+  args.maskImage   = maskImage;
+  args.outputImage = outputImage;
+
+  std::cout << "Input image:  " << args.inputImage << std::endl
+            << "Input mask:   " << args.maskImage << std::endl
+            << "Output image: " << args.outputImage << std::endl;
+
+  // Validate command line args
+
+  if ( (  args.inputImage.length() == 0 ) ||
+       ( args.outputImage.length() == 0 ) )
+  {
+    std::cout << "ERROR: Input and output image filenames must be specified" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+
+  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
+  if (dims != 2)
+  {
+    std::cout << "ERROR: Input image must be 2D" << std::endl;
+    return EXIT_FAILURE;
+  }
+   
+  int result;
+
+  switch (itk::PeekAtComponentType(args.inputImage))
+  {
+
+  case itk::ImageIOBase::UCHAR:
+    std::cout << "Input is UNSIGNED CHAR" << std::endl;
+    result = DoMain<2, unsigned char>(args);  
+    break;
+
+  case itk::ImageIOBase::CHAR:
+    std::cout << "Input is CHAR" << std::endl;
+    result = DoMain<2, char>(args);  
+    break;
+
+  case itk::ImageIOBase::USHORT:
+    std::cout << "Input is UNSIGNED SHORT" << std::endl;
+    result = DoMain<2, unsigned short>(args);  
+    break;
+
+  case itk::ImageIOBase::SHORT:
+    std::cout << "Input is SHORT" << std::endl;
+    result = DoMain<2, short>(args);  
+    break;
+
+  case itk::ImageIOBase::UINT:
+    std::cout << "Input is UNSIGNED INT" << std::endl;
+    result = DoMain<2, unsigned int>(args);  
+    break;
+
+  case itk::ImageIOBase::INT:
+    std::cout << "Input is INT" << std::endl;
+    result = DoMain<2, int>(args);  
+    break;
+
+  case itk::ImageIOBase::ULONG:
+    std::cout << "Input is UNSIGNED LONG" << std::endl;
+    result = DoMain<2, unsigned long>(args);  
+    break;
+
+  case itk::ImageIOBase::LONG:
+    std::cout << "Input is LONG" << std::endl;
+    result = DoMain<2, long>(args);  
+    break;
+
+  case itk::ImageIOBase::FLOAT:
+    std::cout << "Input is FLOAT" << std::endl;
+    result = DoMain<2, float>(args);  
+    break;
+
+  case itk::ImageIOBase::DOUBLE:
+    std::cout << "Input is DOUBLE" << std::endl;
+    result = DoMain<2, double>(args);  
+    break;
+
+  default:
+    std::cerr << "ERROR: non standard pixel format" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return result;
 }
