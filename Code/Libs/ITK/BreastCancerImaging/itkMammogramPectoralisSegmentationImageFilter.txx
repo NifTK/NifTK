@@ -948,7 +948,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   bestParameters = optimiser->GetCurrentPosition();
 
-  std::cout << "Final parameters: " << bestParameters << std::endl;
+  std::cout << "Final parameters: " << bestParameters << ", Cost: " << optimiser->GetCurrentCost() << std::endl;
 
 
   // Get the template
