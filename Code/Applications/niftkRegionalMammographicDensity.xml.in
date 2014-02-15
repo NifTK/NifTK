@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Breast Cancer Imaging Tools . MG . Directories of Images</category>
+  <category>Breast Cancer Imaging Tools . MG . Images via Access Database</category>
 
   <title>Calculate Regional Density</title>
 
