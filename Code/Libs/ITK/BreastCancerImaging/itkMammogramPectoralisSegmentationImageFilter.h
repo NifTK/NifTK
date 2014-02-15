@@ -98,8 +98,7 @@ public:
   typedef typename MaskImageType::IndexType                  MaskImageIndexType;
 
   /// Set the optional mask image
-  itkSetObjectMacro( Mask, MaskImageType );
-
+  void SetMask( const MaskImageType *imMask );
 
   typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
   typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;

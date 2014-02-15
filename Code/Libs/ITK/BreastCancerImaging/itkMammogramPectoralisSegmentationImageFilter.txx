@@ -35,6 +35,8 @@
 #include <itkWriteImage.h>
 #include <itkPowellOptimizer.h>
 #include <itkFlipImageFilter.h>
+#include <itkImageDuplicator.h>
+
 
 namespace itk
 {
@@ -116,6 +118,28 @@ template<class TInputImage, class TOutputImage>
 MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 ::~MammogramPectoralisSegmentationImageFilter()
 {
+}
+
+
+/* -----------------------------------------------------------------------
+   SetMask()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage, typename TOutputImage>
+void 
+MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
+::SetMask( const MaskImageType *imMask )
+{
+  // Duplicate the image so we can modify it later to limit ROI to pectoral region only
+
+  typedef itk::ImageDuplicator< MaskImageType > DuplicatorType;
+
+  typename DuplicatorType::Pointer duplicator = DuplicatorType::New();
+
+  duplicator->SetInputImage( imMask );
+  duplicator->Update();
+
+  m_Mask = duplicator->GetOutput();
 }
 
 
@@ -1025,7 +1049,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 100 );
 
-  thresholder->SetLowerThreshold( 0.01 );
+  thresholder->SetLowerThreshold( 0.000001 );
   
   
   if ( m_flgVerbose )
