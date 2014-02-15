@@ -2090,11 +2090,16 @@ const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
+  assert(cursorPositions.size() == 3);
+
   bool updateWasBlocked = this->BlockUpdate(true);
-  m_CursorPositions = cursorPositions;
-  for (int i = 0; i < 3; ++i)
+  for (std::size_t i = 0; i < 3; ++i)
   {
-    m_CursorPositionHasChanged[i] = true;
+    if (cursorPositions[i] != m_CursorPositions[i])
+    {
+      m_CursorPositions[i] = cursorPositions[i];
+      m_CursorPositionHasChanged[i] = true;
+    }
   }
   this->BlockUpdate(updateWasBlocked);
 }

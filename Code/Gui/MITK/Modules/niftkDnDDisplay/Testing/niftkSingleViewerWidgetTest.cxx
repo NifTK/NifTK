@@ -743,8 +743,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
 
@@ -756,8 +756,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
 
@@ -769,8 +769,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
 
@@ -784,8 +784,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
@@ -799,8 +799,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
@@ -814,8 +814,8 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   d->Viewer->SetCursorPositions(cursorPositions);
 
   QVERIFY(d->StateTester->GetItkSignals().empty());
-  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
@@ -833,7 +833,6 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
   QVERIFY(d->StateTester->GetItkSignals().empty());
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
-
 }
 
 
