@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
 
-  <category>Breast Cancer Imaging Tools . MG</category>
+  <category>Breast Cancer Imaging Tools . MG . Individual Images</category>
+
   <title>Mammogram Mask Segmentation</title>
 
   <description><![CDATA[Segments a mammogram generating a binary mask corresponding to the breast area.]]></description>
@@ -35,6 +36,13 @@
       <default>outputMask.nii</default>
       <channel>output</channel>
     </image>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
 
     <boolean>
       <name>flgApplyMaskToImage</name>

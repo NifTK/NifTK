@@ -73,22 +73,8 @@ int DoMain(arguments args)
 
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
 
-  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> MammogramMaskSegmentationImageFilterType;
-
-
-  // Check that the input is 2D
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
-  if (dims != 2)
-  {
-    std::cout << "ERROR: Unsupported image dimension" << std::endl;
-    return EXIT_FAILURE;
-  }
-  else if (dims == 2)
-  {
-    std::cout << "Input is 2D" << std::endl;
-  }
+  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> 
+    MammogramMaskSegmentationImageFilterType;
 
 
   // Read the input image
@@ -121,7 +107,8 @@ int DoMain(arguments args)
   // Create the segmentation filter
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+  typename MammogramMaskSegmentationImageFilterType::Pointer 
+    filter = MammogramMaskSegmentationImageFilterType::New();
 
   filter->SetInput( image );
 
@@ -236,6 +223,7 @@ int main(int argc, char** argv)
   if ( (  args.inputImage.length() == 0 ) ||
        ( args.outputImage.length() == 0 ) )
   {
+    std::cout << "ERROR: Input and output image filenames must be specified" << std::endl;
     return EXIT_FAILURE;
   }
 
