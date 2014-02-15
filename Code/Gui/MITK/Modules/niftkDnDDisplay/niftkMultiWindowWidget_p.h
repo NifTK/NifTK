@@ -302,6 +302,9 @@ public:
 
 signals:
 
+  /// \brief Emitted when the selected render window has changed.
+  void SelectedRenderWindowChanged(MIDASOrientation orientation);
+
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 

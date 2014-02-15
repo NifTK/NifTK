@@ -415,6 +415,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
 
   m_IsSelected = true;
   m_SelectedRenderWindow = renderWindow;
+  m_SelectedRenderWindowHasChanged = true;
 
   if (renderWindow == this->GetRenderWindow1())
   {
@@ -2499,6 +2500,7 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         }
         m_SelectedRenderWindow->setFocus();
         mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
+        emit SelectedRenderWindowChanged(m_Orientation);
       }
       for (unsigned i = 0; i < 3; ++i)
       {

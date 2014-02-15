@@ -331,6 +331,9 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
+  /// \brief Emitted when a render window has got selected in this viewer.
+  void SelectedRenderWindowChanged(MIDASOrientation orientation);
+
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
