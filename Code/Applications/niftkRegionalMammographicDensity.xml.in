@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Breast Cancer Imaging Tools . MG</category>
+  <category>Breast Cancer Imaging Tools . MG . Directories of Images</category>
+
   <title>Calculate Regional Density</title>
-  <description><![CDATA[Calculates the density of regions on interest across a mammogram.]]></description>
+
+  <description><![CDATA[Calculates the density of regions of interest across a mammogram.]]></description>
+
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
