@@ -810,7 +810,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Shrink the image to max dimension for optimisation
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 1000, outSize );
+  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 600, outSize );
 
   if ( this->GetDebug() )
   {
@@ -822,7 +822,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     MaskImageSizeType outMaskSize;
 
     typename MaskImageType::ConstPointer imMaskConst = static_cast< MaskImageType * >(m_Mask);
-    imMask = ShrinkTheInputImage<MaskImageType>( imMaskConst, 1000, outMaskSize );
+    imMask = ShrinkTheInputImage<MaskImageType>( imMaskConst, 600, outMaskSize );
     metric->SetMask( imMask );
 
     if ( this->GetDebug() )
@@ -833,6 +833,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 #if 0
+
   // Perform a second locally exhaustive search
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
