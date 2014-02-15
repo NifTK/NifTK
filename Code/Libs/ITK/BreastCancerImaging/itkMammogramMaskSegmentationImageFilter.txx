@@ -334,11 +334,17 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
     if ( (xDiff > 10 ) && ( index[1] < outSize[1]/10 ) )
     {
-      lowerStart = prevIndex;
       break;
     }
 
     prevIndex = index;
+  }
+
+  lowerStart = prevIndex;
+
+  if ( this->GetDebug() )
+  {
+    std::cout << "Lower border index: " << lowerStart[1] << std::endl;
   }
 
   // Set this border region to zero
@@ -433,11 +439,17 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
     if ( (xDiff > 10 ) && ( index[1] > 9*outSize[1]/10 ) )
     {
-      upperStart = prevIndex;
       break;
     }
 
     prevIndex = index;
+  }
+  
+  upperStart = prevIndex;
+
+  if ( this->GetDebug() )
+  {
+    std::cout << "Upper border index: " << upperStart[1] << std::endl;
   }
 
   // Set this border region to zero
@@ -470,19 +482,21 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   InputImageIndexType start;
 
+  // Left breast
   if ( comIndex[0] < outSize[0] - comIndex[0] )
   {
-    size[0] = 8*comIndex[0]/5;
+    start[0] = comIndex[0]/5;
+    size[0] = 4*comIndex[0]/5 + (outSize[0] - comIndex[0])/2;
   }
+  // Right breast
   else 
   {
-    size[0] = 8*(outSize[0] - comIndex[0])/5;
+    start[0] = comIndex[0]/2;
+    size[0] = 4*(outSize[0] - comIndex[0])/5 + comIndex[0]/2;
   }
 
-  start[0] = comIndex[0] - size[0]/2;
-
   start[1] = lowerStart[1];
-  size[1] = upperStart[1] - lowerStart[1];
+  size[1]  = upperStart[1] - lowerStart[1];
   
   if ( this->GetDebug() )
   {

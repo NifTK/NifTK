@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 
   if ( fileOutputDensityCSV.length() != 0 ) {
     foutOutputDensityCSV 
-      = new std::ofstream( fileOutputDensityCSV.c_str(), ios::binary );
+      = new std::ofstream( fileOutputDensityCSV.c_str(), std::ios::binary );
 
     if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad() || foutOutputDensityCSV->fail()) {
       std::cerr << "ERROR: Could not open CSV output file: " << fileOutputDensityCSV << std::endl;

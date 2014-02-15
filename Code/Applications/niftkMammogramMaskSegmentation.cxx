@@ -20,12 +20,17 @@
 #include <itkImage.h>
 #include <itkCommandLineHelper.h>
 
+#include <itkMetaDataDictionary.h>
+#include <itkMetaDataObject.h>
+#include <itkGDCMImageIO.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
 
 #include <itkMammogramMaskSegmentationImageFilter.h>
+#include <itkMammogramPectoralisSegmentationImageFilter.h>
+#include <itkMammogramMLOorCCViewCalculator.h>
 
 #include <niftkMammogramMaskSegmentationCLP.h>
 
@@ -47,6 +52,7 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+  bool flgPectoralis;
   bool flgApplyMaskToImage;
   
   std::string inputImage;
@@ -56,8 +62,42 @@ struct arguments
     flgVerbose = false;
     flgDebug = false;
     flgApplyMaskToImage = false;
+    flgPectoralis = false;
   }
 
+};
+
+typedef itk::MetaDataDictionary DictionaryType;
+typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+
+// -------------------------------------------------------------------------
+// PrintDictionary()
+// -------------------------------------------------------------------------
+
+void PrintDictionary( DictionaryType &dictionary )
+{
+  DictionaryType::ConstIterator tagItr = dictionary.Begin();
+  DictionaryType::ConstIterator end = dictionary.End();
+   
+  while ( tagItr != end )
+  {
+    MetaDataStringType::ConstPointer entryvalue = 
+      dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
+    
+    if ( entryvalue )
+    {
+      std::string tagkey = tagItr->first;
+      std::string tagID;
+      bool found =  itk::GDCMImageIO::GetLabelFromTag( tagkey, tagID );
+
+      std::string tagValue = entryvalue->GetMetaDataObjectValue();
+      
+      std::cout << tagkey << " " << tagID <<  ": " << tagValue << std::endl;
+    }
+
+    ++tagItr;
+  }
 };
 
 
@@ -73,22 +113,8 @@ int DoMain(arguments args)
 
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
 
-  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> MammogramMaskSegmentationImageFilterType;
-
-
-  // Check that the input is 2D
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  int dims = itk::PeekAtImageDimensionFromSizeInVoxels(args.inputImage);
-  if (dims != 2)
-  {
-    std::cout << "ERROR: Unsupported image dimension" << std::endl;
-    return EXIT_FAILURE;
-  }
-  else if (dims == 2)
-  {
-    std::cout << "Input is 2D" << std::endl;
-  }
+  typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> 
+    MammogramMaskSegmentationImageFilterType;
 
 
   // Read the input image
@@ -117,11 +143,19 @@ int DoMain(arguments args)
 
   image->DisconnectPipeline();
 
+  DictionaryType dictionary = imageReader->GetOutput()->GetMetaDataDictionary();
+  
+  if ( args.flgVerbose )
+  {
+    PrintDictionary( dictionary );
+  }
+
 
   // Create the segmentation filter
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+  typename MammogramMaskSegmentationImageFilterType::Pointer 
+    filter = MammogramMaskSegmentationImageFilterType::New();
 
   filter->SetInput( image );
 
@@ -141,6 +175,90 @@ int DoMain(arguments args)
   typename MaskImageType::Pointer mask = filter->GetOutput();
 
   mask->DisconnectPipeline();
+
+
+  // Detect the pectoral muscle also?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.flgPectoralis )
+  {
+    typedef typename itk::MammogramMLOorCCViewCalculator< InputImageType > 
+      MammogramMLOorCCViewCalculatorType;
+    
+    typedef typename MammogramMLOorCCViewCalculatorType::MammogramViewType MammogramViewType;
+
+    MammogramViewType mammogramView = MammogramMLOorCCViewCalculatorType::UNKNOWN_MAMMO_VIEW;
+    double mammogramViewScore = 0;
+
+    typename MammogramMLOorCCViewCalculatorType::Pointer 
+      viewCalculator = MammogramMLOorCCViewCalculatorType::New();
+
+    viewCalculator->SetImage( image );
+    viewCalculator->SetDictionary( dictionary );
+    viewCalculator->SetImageFileName(  args.inputImage );
+
+    viewCalculator->SetVerbose( args.flgVerbose );
+    viewCalculator->SetDebug( args.flgDebug );
+
+    try {
+      viewCalculator->Compute();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to compute left or right breast" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    mammogramView = viewCalculator->GetMammogramView();
+
+    if ( mammogramView == MammogramMLOorCCViewCalculatorType::MLO_MAMMO_VIEW )
+    {
+      typedef itk::MammogramPectoralisSegmentationImageFilter<InputImageType, MaskImageType> 
+        MammogramPectoralisSegmentationImageFilterType;
+
+      typename MammogramPectoralisSegmentationImageFilterType::Pointer 
+        pecFilter = MammogramPectoralisSegmentationImageFilterType::New();
+
+      pecFilter->SetInput( image );  
+      
+      pecFilter->SetVerbose( args.flgVerbose );
+      pecFilter->SetDebug( args.flgDebug );
+
+      if ( mask )
+      {
+        pecFilter->SetMask( mask );
+      }
+      
+      try
+      {
+        pecFilter->Update(); 
+      }
+      catch( itk::ExceptionObject & err ) 
+      { 
+        std::cerr << "Failed to segment the pectoral muscle: " << err << std::endl; 
+        return EXIT_FAILURE;
+      }                
+
+      typename MaskImageType::Pointer pecMask = pecFilter->GetOutput();
+
+      pecMask->DisconnectPipeline();
+
+      typename itk::ImageRegionIterator< MaskImageType > 
+        maskIterator( mask, mask->GetLargestPossibleRegion());
+
+      typename itk::ImageRegionConstIterator< MaskImageType > 
+        pecIterator( pecMask, pecMask->GetLargestPossibleRegion());
+       
+      for ( maskIterator.GoToBegin(), pecIterator.GoToBegin();
+            ! maskIterator.IsAtEnd();
+            ++maskIterator, ++pecIterator )
+      {
+        if ( pecIterator.Get() )
+          maskIterator.Set( 0 );
+      }
+    }
+  }
 
 
   // Apply the mask to the image?
@@ -223,6 +341,7 @@ int main(int argc, char** argv)
 
   args.flgVerbose = flgVerbose;
   args.flgDebug = flgDebug;
+  args.flgPectoralis = flgPectoralis;
   args.flgApplyMaskToImage = flgApplyMaskToImage;
 
   args.inputImage=inputImage.c_str();
@@ -236,6 +355,7 @@ int main(int argc, char** argv)
   if ( (  args.inputImage.length() == 0 ) ||
        ( args.outputImage.length() == 0 ) )
   {
+    std::cout << "ERROR: Input and output image filenames must be specified" << std::endl;
     return EXIT_FAILURE;
   }
 

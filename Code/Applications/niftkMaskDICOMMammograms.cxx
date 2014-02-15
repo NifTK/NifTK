@@ -37,8 +37,11 @@
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkRescaleIntensityImageFilter.h>
-#include <itkMammogramMaskSegmentationImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
+
+#include <itkMammogramMaskSegmentationImageFilter.h>
+#include <itkMammogramPectoralisSegmentationImageFilter.h>
+#include <itkMammogramMLOorCCViewCalculator.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -61,6 +64,7 @@ struct arguments
   std::string dcmDirectoryOut;
   std::string strAdd2Suffix;  
 
+  bool flgPectoralis;
   bool flgOverwrite;
   bool flgRescaleIntensitiesToMaxRange;
   bool flgVerbose;
@@ -409,14 +413,14 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
 
   typedef typename itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> MammogramMaskSegmentationImageFilterType;
 
-  typename MammogramMaskSegmentationImageFilterType::Pointer filter = MammogramMaskSegmentationImageFilterType::New();
+  typename MammogramMaskSegmentationImageFilterType::Pointer segFilter = MammogramMaskSegmentationImageFilterType::New();
 
-  filter->SetInput( image );
+  segFilter->SetInput( image );
 
-  filter->SetVerbose( args.flgVerbose );
+  segFilter->SetVerbose( args.flgVerbose );
 
   try {
-    filter->Update();
+    segFilter->Update();
   }
   catch( itk::ExceptionObject & err ) 
   { 
@@ -425,9 +429,90 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
     return EXIT_FAILURE;
   }                
 
-  typename MaskImageType::Pointer mask = filter->GetOutput();
+  typename MaskImageType::Pointer mask = segFilter->GetOutput();
 
   mask->DisconnectPipeline();
+
+
+  // Detect the pectoral muscle also?
+
+  if ( args.flgPectoralis )
+  {
+    typedef typename itk::MammogramMLOorCCViewCalculator< InputImageType > 
+      MammogramMLOorCCViewCalculatorType;
+    
+    typedef typename MammogramMLOorCCViewCalculatorType::MammogramViewType MammogramViewType;
+
+    MammogramViewType mammogramView = MammogramMLOorCCViewCalculatorType::UNKNOWN_MAMMO_VIEW;
+    double mammogramViewScore = 0;
+
+    typename MammogramMLOorCCViewCalculatorType::Pointer 
+      viewCalculator = MammogramMLOorCCViewCalculatorType::New();
+
+    viewCalculator->SetImage( image );
+    viewCalculator->SetDictionary( dictionary );
+    viewCalculator->SetImageFileName( args.iterFilename );
+
+    viewCalculator->SetVerbose( args.flgVerbose );
+
+    try {
+      viewCalculator->Compute();
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "ERROR: Failed to compute left or right breast" << std::endl
+                << err << std::endl; 
+      return EXIT_FAILURE;
+    }                
+
+    mammogramView = viewCalculator->GetMammogramView();
+
+    if ( mammogramView == MammogramMLOorCCViewCalculatorType::MLO_MAMMO_VIEW )
+    {
+      typedef itk::MammogramPectoralisSegmentationImageFilter<InputImageType, MaskImageType> 
+        MammogramPectoralisSegmentationImageFilterType;
+
+      typename MammogramPectoralisSegmentationImageFilterType::Pointer 
+        pecFilter = MammogramPectoralisSegmentationImageFilterType::New();
+
+      pecFilter->SetInput( image );  
+      
+      pecFilter->SetVerbose( args.flgVerbose );
+
+      if ( mask )
+      {
+        pecFilter->SetMask( mask );
+      }
+      
+      try
+      {
+        pecFilter->Update(); 
+      }
+      catch( itk::ExceptionObject & err ) 
+      { 
+        std::cerr << "Failed to segment the pectoral muscle: " << err << std::endl; 
+        return EXIT_FAILURE;
+      }                
+
+      typename MaskImageType::Pointer pecMask = pecFilter->GetOutput();
+
+      pecMask->DisconnectPipeline();
+
+      typename itk::ImageRegionIterator< MaskImageType > 
+        maskIterator( mask, mask->GetLargestPossibleRegion());
+
+      typename itk::ImageRegionConstIterator< MaskImageType > 
+        pecIterator( pecMask, pecMask->GetLargestPossibleRegion());
+       
+      for ( maskIterator.GoToBegin(), pecIterator.GoToBegin();
+            ! maskIterator.IsAtEnd();
+            ++maskIterator, ++pecIterator )
+      {
+        if ( pecIterator.Get() )
+          maskIterator.Set( 0 );
+      }
+    }
+  }
 
 
   // Apply the mask to the image
@@ -552,8 +637,9 @@ int main( int argc, char *argv[] )
 
   args.strAdd2Suffix = strAdd2Suffix;                      
 				   	                                                 
-  args.flgOverwrite            = flgOverwrite;                       
-  args.flgVerbose              = flgVerbose;    
+  args.flgOverwrite  = flgOverwrite;                       
+  args.flgVerbose    = flgVerbose;    
+  args.flgPectoralis = flgPectoralis;
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
 

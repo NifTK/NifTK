@@ -12,6 +12,9 @@
 
 =============================================================================*/
 
+#ifndef __itkWriteImage_h
+#define __itkWriteImage_h
+
 #include <itkImageFileWriter.h>
 
 
@@ -49,3 +52,5 @@ WriteImageToFile( const char *fileOutput, const char *description,
 
 
 } // end namespace itk
+
+#endif /* __itkWriteImage_h */

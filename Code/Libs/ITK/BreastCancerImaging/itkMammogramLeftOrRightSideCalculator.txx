@@ -40,7 +40,7 @@ MammogramLeftOrRightSideCalculator< TInputImage >
 
 
 // ---------------------------------------------------------------------
-// Compute the threshold for m_Image
+// Compute the breast side
 // ---------------------------------------------------------------------
 
 template< class TInputImage >
