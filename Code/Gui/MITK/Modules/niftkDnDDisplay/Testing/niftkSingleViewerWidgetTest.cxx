@@ -731,7 +731,109 @@ void niftkSingleViewerWidgetTestClass::testGetCursorPositions()
 void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-  /// TODO
+
+  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
+
+  std::vector<mitk::Vector2D> cursorPositions = d->Viewer->GetCursorPositions();
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.41;
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.61;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.52;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.72;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] = 0.33;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] = 0.23;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.44;
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.74;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.64;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.84;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.25;
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.35;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] = 0.75;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] = 0.95;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.16;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.56;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] = 0.46;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] = 0.86;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][0] = 0.27;
+  cursorPositions[MIDAS_ORIENTATION_AXIAL][1] = 0.37;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] = 0.47;
+  cursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] = 0.57;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] = 0.67;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] = 0.77;
+  expectedState->SetCursorPositions(cursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  d->Viewer->SetCursorPositions(cursorPositions);
+
+  QVERIFY(d->StateTester->GetItkSignals().empty());
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
 }
 
 
