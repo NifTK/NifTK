@@ -20,6 +20,7 @@
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageLinearIteratorWithIndex.h>
 #include <itkMammogramLeftOrRightSideCalculator.h>
 #include <itkMammogramPectoralisFitMetric.h>
 
@@ -62,8 +63,6 @@ public:
   typedef typename InputImageType::IndexType    InputImageIndexType;
   typedef typename InputImageType::SizeType     InputImageSizeType;
 
-  typedef typename NumericTraits<InputImagePixelType>::RealType    RealType;
-
   /** Type of the output image */
   typedef TOutputImage                          OutputImageType;
   typedef typename OutputImageType::Pointer     OutputImagePointer;
@@ -72,23 +71,40 @@ public:
   typedef typename OutputImageType::IndexType   OutputImageIndexType;
   typedef typename OutputImageType::PointType   OutputImagePointType;
 
-  typedef OutputImagePointType OriginType;
+  /** Type of the template image */
+  typedef typename itk::MammogramPectoralisFitMetric<InputImageType>::TemplateImageType TemplateImageType;
 
+  typedef typename TemplateImageType::Pointer      TemplateImagePointer;
+  typedef typename TemplateImageType::ConstPointer TemplateImageConstPointer;
+  typedef typename TemplateImageType::RegionType   TemplateImageRegionType;
+  typedef typename TemplateImageType::PixelType    TemplateImagePixelType;
+  typedef typename TemplateImageType::SpacingType  TemplateImageSpacingType;
+  typedef typename TemplateImageType::PointType    TemplateImagePointType;
+  typedef typename TemplateImageType::IndexType    TemplateImageIndexType;
+  typedef typename TemplateImageType::SizeType     TemplateImageSizeType;
 
-  /** Define the image type for internal computations 
-      RealType is usually 'double' in NumericTraits. 
-      Here we prefer float in order to save memory.  */
+  typedef typename itk::ImageRegionIterator< TemplateImageType >          TemplateIteratorType;
+  typedef typename itk::ImageRegionIteratorWithIndex< TemplateImageType > TemplateIteratorWithIndexType;
 
-  typedef float InternalRealType;
+  /** Optional mask image */
+  typedef unsigned char                                      MaskPixelType;
+  typedef typename itk::Image<MaskPixelType, ImageDimension> MaskImageType;
+  typedef typename MaskImageType::ConstPointer               MaskImageConstPointer;
+  typedef typename MaskImageType::RegionType                 MaskImageRegionType;
+  typedef typename MaskImageType::Pointer                    MaskImagePointer;
+  typedef typename MaskImageType::SizeType                   MaskImageSizeType;
+  typedef typename MaskImageType::SpacingType                MaskImageSpacingType;
+  typedef typename MaskImageType::PointType                  MaskImagePointType;
+  typedef typename MaskImageType::IndexType                  MaskImageIndexType;
 
-  typedef Image< InternalRealType, TInputImage::ImageDimension > RealImageType;
-
-  typedef typename RealImageType::Pointer RealImagePointer;
+  /// Set the optional mask image
+  itkSetObjectMacro( Mask, MaskImageType );
 
 
   typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
   typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;
-
+  typedef typename itk::ImageLinearIteratorWithIndex< MaskImageType > MaskLineIteratorType;
+ 
   typedef typename itk::ImageRegionConstIterator< TInputImage > IteratorConstType;
   typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
 
@@ -119,22 +135,28 @@ public:
 
 protected:
 
-  bool m_flgVerbose;
-
   MammogramPectoralisSegmentationImageFilter();
   virtual ~MammogramPectoralisSegmentationImageFilter();
   void PrintSelf(std::ostream& os, Indent indent) const;
 
-  InputImagePointer ShrinkTheInputImage( unsigned int maxShrunkDimension,
-                                         InputImageSizeType &outSize );
+  bool m_flgVerbose;
+  BreastSideType m_BreastSide;
+
+  InputImagePointer m_Image;
+  MaskImagePointer m_Mask;
+
+  template<typename ShrinkImageType>
+    typename ShrinkImageType::Pointer 
+    ShrinkTheInputImage( typename ShrinkImageType::ConstPointer &image,
+                         unsigned int maxShrunkDimension,
+                         typename ShrinkImageType::SizeType &outSize );
   
   /** Single threaded execution */
   void GenerateData();
 
   void GenerateTemplate( typename TInputImage::Pointer &imTemplate,
                          typename TInputImage::RegionType region,
-                         double &tMean, double &tStdDev, double &nPixels,
-                         BreastSideType breastSide );
+                         double &tMean, double &tStdDev, double &nPixels );
 
   // Override since the filter produces the entire dataset
   void EnlargeOutputRequestedRegion(DataObject *output);

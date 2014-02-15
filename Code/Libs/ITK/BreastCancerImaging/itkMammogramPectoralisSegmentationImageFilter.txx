@@ -34,7 +34,7 @@
 #include <itkSubsampleImageFilter.h>
 #include <itkWriteImage.h>
 #include <itkPowellOptimizer.h>
-
+#include <itkFlipImageFilter.h>
 
 namespace itk
 {
@@ -98,9 +98,13 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 ::MammogramPectoralisSegmentationImageFilter()
 {
   m_flgVerbose = false;
+  m_BreastSide = LeftOrRightSideCalculatorType::UNKNOWN_BREAST_SIDE;
 
   this->SetNumberOfRequiredInputs( 1 );
   this->SetNumberOfRequiredOutputs( 1 );
+
+  m_Mask = 0;
+  m_Image = 0;
 }
 
 
@@ -130,90 +134,22 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     out->SetRequestedRegion( out->GetLargestPossibleRegion() );
 }
 
-
-/* -----------------------------------------------------------------------
-   GenerateTemplate()
-   ----------------------------------------------------------------------- */
-
-template <typename TInputImage, typename TOutputImage>
-void 
-MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
-::GenerateTemplate( typename TInputImage::Pointer &imTemplate,
-                    typename TInputImage::RegionType region,
-                    double &tMean, double &tStdDev, double &nPixels,
-                    BreastSideType breastSide )
-{
-  unsigned int nInside = 0, nOutside = 0;
-
-  double x, y;
-  
-  double w = region.GetSize()[0];
-  double h = region.GetSize()[1];
-
-  double a = 1.;
-  double b = -4.;
-  double c = -3.7/w;
-
-  InputImageIndexType  index;
-  InputImageIndexType  start = region.GetIndex();
-
-  IteratorWithIndexType itTemplateWithIndex( imTemplate, region );
-   
-  nPixels = 0;
-
-  for ( itTemplateWithIndex.GoToBegin();
-        ! itTemplateWithIndex.IsAtEnd();
-        ++itTemplateWithIndex )
-  {
-    index = itTemplateWithIndex.GetIndex();
-    
-    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
-    {
-      x = static_cast<double>( index[0] );
-    }
-    else 
-    {
-      x = w - static_cast<double>( index[0] - start[0] );
-    }
-
-    y = static_cast<double>( index[1] );        
-
-    if ( (0.9*h - y) > 1.1*a*h*exp( b*exp( c*x ) ) )
-    {
-      itTemplateWithIndex.Set( 1. );
-      nInside++;
-    }
-    else if ( (1.05*h - y) > 1.1*a*h*exp( b*exp( c*(x-0.1*w) ) ) )
-    {
-      itTemplateWithIndex.Set( -1. );
-      nOutside++;
-    }
-    else
-    {
-      itTemplateWithIndex.Set( 0. );
-    }
-  }
-
-  nPixels = nInside + nOutside;
-  tMean = ( nInside - nOutside )/nPixels;
-  tStdDev = sqrt(   ( nInside*( 1 - tMean))*( nInside*( 1 - tMean))
-                  + (nOutside*(-1 - tMean))*(nOutside*(-1 - tMean)) )/nPixels;
-}
-
-
 /* -----------------------------------------------------------------------
    ShrinkTheInputImage()
    ----------------------------------------------------------------------- */
 
 template <typename TInputImage, typename TOutputImage>
-typename MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>::InputImagePointer
+template <typename ShrinkImageType>
+typename ShrinkImageType::Pointer
 MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
-::ShrinkTheInputImage( unsigned int maxShrunkDimension, InputImageSizeType &outSize )
+::ShrinkTheInputImage( typename ShrinkImageType::ConstPointer &image,
+                       unsigned int maxShrunkDimension, 
+                       typename ShrinkImageType::SizeType &outSize )
 {
 
   unsigned int d;
-  InputImageConstPointer image = this->GetInput();
-  InputImagePointer imShrunkImage;
+
+  typename ShrinkImageType::Pointer imShrunkImage;
 
   InputImageSizeType SizeType;
   InputImageRegionType RegionType;
@@ -256,21 +192,17 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
               << "Output size: " << outSize << ", spacing: " << outSpacing << std::endl;
   }
 
-  typedef itk::SubsampleImageFilter< TInputImage, TInputImage > SubsampleImageFilterType;
+  typedef itk::SubsampleImageFilter< ShrinkImageType, ShrinkImageType > SubsampleImageFilterType;
 
   typename SubsampleImageFilterType::Pointer shrinkFilter = SubsampleImageFilterType::New();
 
 
-  shrinkFilter->SetInput( image );
+  shrinkFilter->SetInput( image.GetPointer() );
   shrinkFilter->SetSubsamplingFactors( sampling );
 
   shrinkFilter->Update();
-  imShrunkImage = shrinkFilter->GetOutput();
 
-  if ( this->GetDebug() )
-  {
-    WriteImageToFile< TInputImage >( "ShrunkImage.nii", "shrunk image", imShrunkImage ); 
-  }
+  imShrunkImage = shrinkFilter->GetOutput();
 
   return imShrunkImage;
 }
@@ -352,7 +284,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 /* -----------------------------------------------------------------------
-   GenerateData()
+   GenerateData() - REDUNDANT, MOVED TO METRIC
    ----------------------------------------------------------------------- */
 
 template <typename TInputImage, typename TOutputImage>
@@ -360,13 +292,25 @@ void
 MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 ::GenerateData(void)
 {
+  unsigned int d;
+
   InputImagePointer imPipelineConnector;
+  TemplateImagePointer imTemplate;
 
   // Single-threaded execution
 
   this->AllocateOutputs();
 
   InputImageConstPointer image = this->GetInput();
+
+  InputImageRegionType  inRegion  = image->GetLargestPossibleRegion();
+  InputImageSpacingType inSpacing = image->GetSpacing();
+  InputImagePointType   inOrigin  = image->GetOrigin();
+
+  InputImageSizeType    inSize    = inRegion.GetSize();
+  InputImageIndexType   inStart   = inRegion.GetIndex();
+
+  MaskImagePointer imMask = 0;
 
 
   // Determine if this is the left or right breast
@@ -381,16 +325,397 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   sideCalculator->Compute();
 
-  BreastSideType breastSide = sideCalculator->GetBreastSide();
+  m_BreastSide = sideCalculator->GetBreastSide();
+
+
+  // If this a right breast then flip it 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( m_BreastSide == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE )
+  {
+    typedef itk::FlipImageFilter<InputImageType> FlipImageFilterType;
+ 
+    typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New();
+
+    itk::FixedArray<bool, ImageDimension> flipAxes;
+
+    flipAxes[0] = true;
+    flipAxes[1] = false;
+  
+    flipFilter->SetInput( image );
+    flipFilter->SetFlipAxes( flipAxes );
+
+    flipFilter->Update();
+
+    InputImagePointer imFlipped = flipFilter->GetOutput();
+    
+    imFlipped->DisconnectPipeline();
+    imFlipped->SetOrigin( inOrigin );
+ 
+    if ( this->GetDebug() )
+    {
+      std::cout << "Flipping the input image" << std::endl;
+      WriteImageToFile< InputImageType >( "FlippedInput.nii", "flipped input image", 
+                                          imFlipped ); 
+    }
+
+    image = static_cast< InputImageType* >( imFlipped );
+  }
+  
+  
+  // Initial definition of the pectoral intercepts in mm
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  InputImageIndexType index;
+  InputImagePointType pecInterceptStartPoint, pecInterceptEndPoint;
+
+  index[0] = inStart[0];
+  index[1] = inStart[1];
+
+  image->TransformIndexToPhysicalPoint( index, pecInterceptStartPoint );
+
+  pecInterceptStartPoint[0] += 10; // ensure smallest pec region isn't too small
+  pecInterceptStartPoint[1] += 10;
+
+  index[0] = inStart[0] + 2*inSize[0]/3 - 1;
+  index[1] = inStart[1] + 9*inSize[1]/10 - 1;
+  
+  image->TransformIndexToPhysicalPoint( index, pecInterceptEndPoint );
+
+
+  // Check that the mask image is the same size as the input
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( m_Mask )
+  {
+    MaskImageSizeType    maskSize    = m_Mask->GetLargestPossibleRegion().GetSize();
+    MaskImageSpacingType maskSpacing = m_Mask->GetSpacing();
+    MaskImagePointType   maskOrigin  = m_Mask->GetOrigin();
+    
+    if ( ( maskSize[0] != inSize[0] ) || ( maskSize[1] != inSize[1] ) )
+    {
+      itkExceptionMacro( << "ERROR: Mask dimensions, " << maskSize 
+                         << ", do not match input image, " << inSize );
+      return;
+    }
+    
+    if ( ( maskSpacing[0] != inSpacing[0] ) || ( maskSpacing[1] != inSpacing[1] ) )
+    {
+      itkExceptionMacro( << "ERROR: Mask resolution, " << maskSpacing 
+                         << ", does not match input image, " << inSpacing );
+      return;
+    }
+    
+    if ( ( maskOrigin[0] != inOrigin[0] ) || ( maskOrigin[1] != inOrigin[1] ) )
+    {
+      itkExceptionMacro( << "ERROR: Mask origin, " << maskOrigin 
+                         << ", does not match input image, " << inOrigin );
+      return;
+    }
+
+    // Check it is the same breast as the input
+
+    typedef typename itk::MammogramLeftOrRightSideCalculator< MaskImageType > 
+      LeftOrRightMaskSideCalculatorType;
+
+    typedef typename LeftOrRightMaskSideCalculatorType::BreastSideType MaskBreastSideType;
+
+    typename LeftOrRightMaskSideCalculatorType::Pointer 
+      maskSideCalculator = LeftOrRightMaskSideCalculatorType::New();
+    
+    maskSideCalculator->SetImage( m_Mask );
+
+    maskSideCalculator->SetVerbose( this->GetVerbose() );
+
+    maskSideCalculator->Compute();
+
+    MaskBreastSideType maskBreastSide = maskSideCalculator->GetBreastSide();
+
+    if ( maskBreastSide != static_cast< MaskBreastSideType >( m_BreastSide ) )
+    {
+      itkExceptionMacro( << "ERROR: Mask breast side, " << maskBreastSide 
+                         << ", does not match the input image, " << m_BreastSide );
+      return;
+    }      
+
+    // If this a right breast then flip it 
+
+    if ( maskBreastSide == LeftOrRightMaskSideCalculatorType::RIGHT_BREAST_SIDE )
+    {
+      MaskImagePointType maskOrigin = m_Mask->GetOrigin();
+
+      typedef itk::FlipImageFilter< MaskImageType > FlipImageFilterType;
+ 
+      typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New();
+
+      itk::FixedArray<bool, ImageDimension> flipAxes;
+
+      flipAxes[0] = true;
+      flipAxes[1] = false;
+  
+      flipFilter->SetInput( m_Mask );
+      flipFilter->SetFlipAxes( flipAxes );
+ 
+      if ( this->GetDebug() )
+      {
+        std::cout << "Flipping the input mask" << std::endl;
+      }
+
+      flipFilter->Update();
+
+      m_Mask = flipFilter->GetOutput();
+
+      m_Mask->DisconnectPipeline();
+      m_Mask->SetOrigin( maskOrigin );
+    }
+    
+
+    // And modify it to only include the pectoral muscle region
+
+    MaskImageRegionType regionMask = m_Mask->GetLargestPossibleRegion();
+    
+    MaskImageSizeType sizeMask = regionMask.GetSize();
+    
+    double nRowToTestMask = sizeMask[1]/10;
+
+    MaskLineIteratorType itMaskLinear( m_Mask, regionMask );
+
+    itMaskLinear.SetDirection( 0 );
+
+    unsigned int iRow = 0;
+    unsigned int iColumn = 0;
+
+    unsigned int widthOfPecRegion = 0;
+
+    itMaskLinear.GoToBegin();
+
+    while ( iRow < nRowToTestMask )
+    {
+      itMaskLinear.GoToBeginOfLine();
+
+      iColumn = 0;
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        if ( itMaskLinear.Get() )
+        {
+          if ( iColumn > widthOfPecRegion )
+          {
+            widthOfPecRegion = iColumn;
+          }
+        }
+          
+        ++iColumn;
+        ++itMaskLinear;
+      }
+        
+      itMaskLinear.NextLine();
+      iRow++;
+    }
+      
+    while ( ! itMaskLinear.IsAtEnd() )
+    {
+      itMaskLinear.GoToBeginOfLine();
+        
+      iColumn = 0;
+      while ( iColumn < widthOfPecRegion )
+      {
+        ++iColumn;
+        ++itMaskLinear;
+      }
+        
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        itMaskLinear.Set( 0 );
+        ++itMaskLinear;       
+      }    
+        
+      itMaskLinear.NextLine();
+    }
+
+
+    if ( this->GetDebug() )
+    {
+      WriteImageToFile< MaskImageType >( "PectoralROI.nii", "pectoral region", m_Mask ); 
+    }
+
+    // Find the first and last pixels in the mask
+
+    bool flgPixelFound;
+    MaskImageIndexType maskIndex, firstMaskPixel, lastMaskPixel;
+
+    itMaskLinear.SetDirection( 1 ); // First 'x' coord
+    itMaskLinear.GoToBegin();
+
+    flgPixelFound = false;
+    while ( ! itMaskLinear.IsAtEnd() )
+    {
+      itMaskLinear.GoToBeginOfLine();
+
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        if ( itMaskLinear.Get() )
+        {
+          flgPixelFound = true;
+          break;
+        }
+        ++itMaskLinear;
+      }
+      if ( flgPixelFound )
+      {
+        break;
+      }
+      itMaskLinear.NextLine();
+    }
+    maskIndex = itMaskLinear.GetIndex();
+    firstMaskPixel[0] = maskIndex[0];
+
+    itMaskLinear.SetDirection( 0 ); // First 'y' coord
+    itMaskLinear.GoToBegin();
+
+    flgPixelFound = false;
+    while ( ! itMaskLinear.IsAtEnd() )
+    {
+      itMaskLinear.GoToBeginOfLine();
+
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        if ( itMaskLinear.Get() )
+        {
+          flgPixelFound = true;
+          break;
+        }
+        ++itMaskLinear;
+      }
+      if ( flgPixelFound )
+      {
+        break;
+      }
+      itMaskLinear.NextLine();
+    }
+    maskIndex = itMaskLinear.GetIndex();
+    firstMaskPixel[1] = maskIndex[1];
+
+
+    itMaskLinear.SetDirection( 1 ); // Last 'x' coord
+    itMaskLinear.GoToReverseBegin();
+
+    flgPixelFound = false;
+    while ( ! itMaskLinear.IsAtReverseEnd() )
+    {
+      itMaskLinear.GoToBeginOfLine();
+
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        if ( itMaskLinear.Get() )
+        {
+          flgPixelFound = true;
+          break;
+        }
+        ++itMaskLinear;
+      }
+      if ( flgPixelFound )
+      {
+        break;
+      }
+      itMaskLinear.PreviousLine();
+    }
+    maskIndex = itMaskLinear.GetIndex();
+    lastMaskPixel[0] = maskIndex[0];
+
+    itMaskLinear.SetDirection( 0 ); // Last 'y' coord
+    itMaskLinear.GoToReverseBegin();
+
+    flgPixelFound = false;
+    while ( ! itMaskLinear.IsAtReverseEnd() )
+    {
+      itMaskLinear.GoToBeginOfLine();
+
+      while ( ! itMaskLinear.IsAtEndOfLine() )
+      {
+        if ( itMaskLinear.Get() )
+        {
+          flgPixelFound = true;
+          break;
+        }
+        ++itMaskLinear;
+      }
+      if ( flgPixelFound )
+      {
+        break;
+      }
+      itMaskLinear.PreviousLine();
+    }
+    maskIndex = itMaskLinear.GetIndex();
+    lastMaskPixel[1] = maskIndex[1];
+
+    if ( this->GetDebug() )
+    {
+      std::cout << "First mask pixel: " << firstMaskPixel << std::endl
+                << "Last mask pixel:  " << lastMaskPixel << std::endl;
+    }
+
+    MaskImagePointType firstMaskPoint, lastMaskPoint;
+    
+    m_Mask->TransformIndexToPhysicalPoint( firstMaskPixel, firstMaskPoint );
+    m_Mask->TransformIndexToPhysicalPoint( lastMaskPixel, lastMaskPoint );
+
+    for ( d=0; d<ImageDimension; d++ )
+    {
+      if ( firstMaskPoint[d] > pecInterceptStartPoint[d] )
+      {
+        pecInterceptStartPoint[d] = firstMaskPoint[d];
+      }
+      if ( lastMaskPoint[d] < pecInterceptEndPoint[d] )
+      {
+        pecInterceptEndPoint[d] = lastMaskPoint[d];
+      }
+    }
+  } 
+
+  if ( this->GetDebug() )
+  {
+    std::cout << "First pec intercept: " << pecInterceptStartPoint << std::endl
+              << "Last pec intercept:  " << pecInterceptEndPoint << std::endl;
+  }
 
   
+  // Create the pectoral fit metric
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  typename FitMetricType::Pointer metric = FitMetricType::New();
+  
+  metric->SetDebug( this->GetDebug() );
+
+  typename FitMetricType::ParametersType bestParameters;
+  bestParameters.SetSize( metric->GetNumberOfParameters() );
+
+
   // Shrink the image to max dimension for exhaustive search
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   InputImageSizeType outSize;
 
-  imPipelineConnector = ShrinkTheInputImage( 300, outSize );
+  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 300, outSize );
 
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< InputImageType >( "ShrunkImage1.nii", "shrunk image", imPipelineConnector ); 
+  }
+
+  if ( m_Mask )
+  {
+    MaskImageSizeType outMaskSize;
+
+    typename MaskImageType::ConstPointer imMaskConst = static_cast< MaskImageType * >(m_Mask);
+    imMask = ShrinkTheInputImage<MaskImageType>( imMaskConst, 300, outMaskSize );
+    metric->SetMask( imMask );
+
+    if ( this->GetDebug() )
+    {
+      WriteImageToFile< MaskImageType >( "ShrunkMask1.nii", "shrunk mask", imMask ); 
+    }
+  }
+    
 
   // Iterate over all of the triangular pectoral x and y intercepts
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -410,63 +735,44 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   double ncc = -1., bestNCC = -1.;
 
-  // Create the pectoral fit metric
-
-  typename FitMetricType::Pointer metric = FitMetricType::New();
-  
-  metric->SetDebug( this->GetDebug() );
-
-  typename FitMetricType::ParametersType bestParameters;
-  bestParameters.SetSize( metric->GetNumberOfParameters() );
-
 
 #if 0
 
   // Test
+
+  typename TemplateImageType::Pointer imTemp;
 
   char filename[256];
   typename FitMetricType::ParametersType parameters;
   parameters.SetSize( metric->GetNumberOfParameters() );
   metric->SetInputImage( imPipelineConnector );
 
-  pecInterceptInMM[0] = 37;
-  pecInterceptInMM[1] = 137;
-  metric->GetParameters( pecInterceptInMM, parameters );
-  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+  metric->GetParameters( pecInterceptStartPoint, parameters );
+  std::cout << "pecInterceptInMM: " << pecInterceptStartPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
   metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
-  imPipelineConnector = metric->GetImTemplate();
-  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
-  WriteImageToFile< TInputImage >( filename, 
-                                   "test template image", 
-                                   imPipelineConnector ); 
+  imTemp = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate1_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TemplateImageType >( filename, "test template image", imTemp ); 
 
-  pecInterceptInMM[0] = 137;
-  pecInterceptInMM[1] = 37;
-  metric->GetParameters( pecInterceptInMM, parameters );
-  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+  metric->GetParameters( pecInterceptEndPoint, parameters );
+  std::cout << "pecInterceptInMM: " << pecInterceptEndPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
   metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
-  imPipelineConnector = metric->GetImTemplate();
-  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
-  WriteImageToFile< TInputImage >( filename, 
-                                   "test template image", 
-                                   imPipelineConnector ); 
+  imTemp = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate2_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TemplateImageType >( filename,  "test template image", imTemp ); 
 
-  pecInterceptInMM[0] = 100;
-  pecInterceptInMM[1] = 100;
-  metric->GetParameters( pecInterceptInMM, parameters );
-  std::cout << "pecInterceptInMM: " << pecInterceptInMM << std::endl
+  parameters[5] = 23;
+  std::cout << "pecInterceptInMM: " << pecInterceptEndPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
   metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
-  imPipelineConnector = metric->GetImTemplate();
-  sprintf( filename, "TestTemplate_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
-  WriteImageToFile< TInputImage >( filename, 
-                                   "test template image", 
-                                   imPipelineConnector ); 
+  imTemp = metric->GetImTemplate();
+  sprintf( filename, "TestTemplate3_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
+  WriteImageToFile< TemplateImageType >( filename, "test template image", imTemp ); 
 
   exit(0);
 #endif
@@ -475,11 +781,15 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Perform an exhaustive search
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  pecInterceptStart[0] = 17;
-  pecInterceptStart[1] = 13;
+  imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptStartPoint, pecInterceptStart );
+  imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptEndPoint,   pecInterceptEnd );
 
-  pecInterceptEnd[0] = 2*outSize[0]/3;
-  pecInterceptEnd[1] = 9*outSize[1]/10;
+  if ( this->GetDebug() )
+  {
+    std::cout << "Starting exhaustive search from: " 
+              << pecInterceptStart << " (" << pecInterceptStartPoint << ") to " 
+              << pecInterceptEnd << " (" << pecInterceptEndPoint << ")" << std::endl;
+  }
 
   ExhaustiveSearch( pecInterceptStart, pecInterceptEnd, metric,
                     imPipelineConnector, bestPecInterceptInMM, bestParameters );
@@ -489,33 +799,53 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     metric->ClearTemplate();
     metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
 
-    imPipelineConnector = metric->GetImTemplate();
+    imTemplate = metric->GetImTemplate();
 
-    WriteImageToFile< TInputImage >( "ExhaustiveSearchTemplate1.nii", 
-                                     "first exhaustive search template image", 
-                                     imPipelineConnector ); 
+    WriteImageToFile< TemplateImageType >( "ExhaustiveSearchTemplate1.nii", 
+                                           "first exhaustive search template image", 
+                                           imTemplate ); 
   }
 
   
   // Shrink the image to max dimension for optimisation
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imPipelineConnector = ShrinkTheInputImage( 1000, outSize );
+  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 1000, outSize );
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< InputImageType >( "ShrunkImage2.nii", "shrunk image", imPipelineConnector ); 
+  }
+
+  if ( m_Mask )
+  {
+    MaskImageSizeType outMaskSize;
+
+    typename MaskImageType::ConstPointer imMaskConst = static_cast< MaskImageType * >(m_Mask);
+    imMask = ShrinkTheInputImage<MaskImageType>( imMaskConst, 1000, outMaskSize );
+    metric->SetMask( imMask );
+
+    if ( this->GetDebug() )
+    {
+      WriteImageToFile< MaskImageType >( "ShrunkMask2.nii", "shrunk mask", imMask ); 
+    }
+  }
 
 
+#if 0
   // Perform a second locally exhaustive search
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imPipelineConnector->TransformPhysicalPointToIndex( bestPecInterceptInMM, pecIntercept );
-  
-  pecInterceptStart[0] = pecIntercept[0] - 17;
-  pecInterceptStart[1] = pecIntercept[1] - 17;
+  for ( d=0; d<ImageDimension; d++ )
+  {
+    pecInterceptStartPoint[d] = bestPecInterceptInMM[d] - 10;
+    pecInterceptEndPoint[d]   = bestPecInterceptInMM[d] + 10;
+  }
 
-  pecInterceptEnd[0] = pecIntercept[0] + 17;
-  pecInterceptEnd[1] = pecIntercept[1] + 17;
+  imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptStartPoint, pecInterceptStart );
+  imPipelineConnector->TransformPhysicalPointToIndex( pecInterceptEndPoint,   pecInterceptEnd );
 
-  unsigned int d;
-  for ( d=0; d<2; d++ )
+  for ( d=0; d<ImageDimension; d++ )
   {
     if ( pecInterceptStart[d] < 0 )
     {
@@ -540,16 +870,19 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     metric->ClearTemplate();
     metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
 
-    imPipelineConnector = metric->GetImTemplate();
+    imTemplate = metric->GetImTemplate();
 
-    WriteImageToFile< TInputImage >( "ExhaustiveSearchTemplate2.nii", 
-                                     "second exhaustive search template image", 
-                                     imPipelineConnector ); 
+    WriteImageToFile< TemplateImageType >( "ExhaustiveSearchTemplate2.nii", 
+                                           "second exhaustive search template image", 
+                                           imTemplate ); 
   }
 
+#endif
 
   // Optimise the fit
   // ~~~~~~~~~~~~~~~~
+
+  metric->SetInputImage( imPipelineConnector );
 
   typename FitMetricType::ParametersType parameterScales;
   parameterScales.SetSize( metric->GetNumberOfParameters() );
@@ -557,6 +890,10 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   parameterScales[0] = 1;
   parameterScales[1] = 10;
   parameterScales[2] = 10;
+  parameterScales[3] = 1;
+  parameterScales[4] = 1;
+  parameterScales[5] = 1;
+  parameterScales[6] = 100;
 
   typedef itk::PowellOptimizer OptimizerType;
   OptimizerType::Pointer optimiser = OptimizerType::New();
@@ -595,13 +932,51 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   metric->ClearTemplate();
   metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
 
-  imPipelineConnector = metric->GetImTemplate();
+  imTemplate = metric->GetImTemplate();
 
   if ( this->GetDebug() )
   {
-    WriteImageToFile< TInputImage >( "FinalTemplate.nii", 
-                                     "final (largest) template image", 
-                                     imPipelineConnector ); 
+    WriteImageToFile< TemplateImageType >( "FinalTemplate.nii", 
+                                           "final template image", 
+                                           imTemplate ); 
+  }
+
+
+  // If this a right breast then flip it back
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( m_BreastSide == LeftOrRightSideCalculatorType::RIGHT_BREAST_SIDE )
+  {
+    typedef itk::FlipImageFilter< TemplateImageType > FlipImageFilterType;
+    
+    typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New();
+
+    itk::FixedArray<bool, ImageDimension> flipAxes;
+
+    flipAxes[0] = true;
+    flipAxes[1] = false;
+  
+    flipFilter->SetInput( imTemplate );
+    flipFilter->SetFlipAxes( flipAxes );
+ 
+    if ( this->GetDebug() )
+    {
+      std::cout << "Flipping the input mask" << std::endl;
+    }
+    
+    flipFilter->Update();
+    
+    imTemplate = flipFilter->GetOutput();
+
+    imTemplate->DisconnectPipeline();
+    imTemplate->SetOrigin( inOrigin );
+ 
+    if ( this->GetDebug() )
+    {
+      WriteImageToFile< TemplateImageType >( "FlippedTemplate.nii", 
+                                             "flipped template image", 
+                                             imTemplate ); 
+    }
   }
 
 
@@ -610,13 +985,15 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   typedef itk::IdentityTransform< double, ImageDimension > IdentityTransformType;
 
-  typedef itk::ResampleImageFilter< TInputImage, TInputImage > ResampleFilterType;
+  typedef itk::ResampleImageFilter< TemplateImageType, TemplateImageType > ResampleFilterType;
 
   typename ResampleFilterType::Pointer expandFilter = ResampleFilterType::New();
 
-  expandFilter->SetInput( imPipelineConnector );
+  expandFilter->SetInput( imTemplate );
+
   expandFilter->SetSize( image->GetLargestPossibleRegion().GetSize() );
   expandFilter->SetOutputSpacing( image->GetSpacing() );
+
   expandFilter->SetTransform( IdentityTransformType::New() );
 
   if ( m_flgVerbose )
@@ -625,28 +1002,29 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
   expandFilter->UpdateLargestPossibleRegion();  
-  imPipelineConnector = expandFilter->GetOutput();
+  imTemplate = expandFilter->GetOutput();
+  imTemplate->SetOrigin( inOrigin );
 
   if ( this->GetDebug() )
   {
-    WriteImageToFile< TInputImage >( "ExpandedImage.nii", "expanded image", 
-                                     imPipelineConnector ); 
+    WriteImageToFile< TemplateImageType >( "ExpandedImage.nii", "expanded image", 
+                                           imTemplate ); 
   }
 
 
   // And threshold it
   // ~~~~~~~~~~~~~~~~
 
-  typedef typename itk::BinaryThresholdImageFilter< TInputImage, TInputImage > BinaryThresholdFilterType;
+  typedef typename itk::BinaryThresholdImageFilter< TemplateImageType, TOutputImage > BinaryThresholdFilterType;
 
   typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
 
-  thresholder->SetInput( imPipelineConnector );
+  thresholder->SetInput( imTemplate );
 
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 100 );
 
-  thresholder->SetLowerThreshold( 0.5 );
+  thresholder->SetLowerThreshold( 0.01 );
   
   
   if ( m_flgVerbose )
@@ -654,22 +1032,9 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
     std::cout << "Thresholding the mask" << std::endl;
   }
 
-  thresholder->Update();
-  imPipelineConnector = thresholder->GetOutput();
+  thresholder->UpdateLargestPossibleRegion();
 
-
-  // Cast to the output image type
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  typedef itk::CastImageFilter<  TInputImage, TOutputImage > CastingFilterType;
-
-  typename CastingFilterType::Pointer caster = CastingFilterType::New();
-
-  caster->SetInput( imPipelineConnector );
-
-  caster->UpdateLargestPossibleRegion();
-
-  this->GraftOutput( caster->GetOutput() );
+  this->GraftOutput( thresholder->GetOutput() );
 }
 
 

@@ -20,13 +20,15 @@
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
-#include <itkMammogramLeftOrRightSideCalculator.h>
 
 namespace itk {
   
 /** \class MammogramPectoralisFitMetric
  * \brief A metric to compute the similarity between an image and a pectoral shape model.
  *
+ * \section itkMammogramPectoralisFitMetricCaveats Caveats
+ * \li The mammogram is assumed to be have the chest wall of the left-hand
+ * edge so right mammograms should be flipped first.
  */
 
 template <class TInputImage>
@@ -61,37 +63,61 @@ public:
   typedef typename InputImageType::IndexType    InputImageIndexType;
   typedef typename InputImageType::SizeType     InputImageSizeType;
 
-
-  typedef typename itk::ImageRegionIterator< TInputImage > IteratorType;
-  typedef typename itk::ImageRegionIteratorWithIndex< TInputImage > IteratorWithIndexType;
-
-  typedef typename itk::ImageRegionConstIterator< TInputImage > IteratorConstType;
+  typedef typename itk::ImageRegionIterator< TInputImage >               IteratorType;
+  typedef typename itk::ImageRegionIteratorWithIndex< TInputImage >      IteratorWithIndexType;
+  typedef typename itk::ImageRegionConstIterator< TInputImage >          IteratorConstType;
   typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
 
-  typedef typename itk::MammogramLeftOrRightSideCalculator< InputImageType > LeftOrRightSideCalculatorType;
 
-  typedef typename LeftOrRightSideCalculatorType::BreastSideType BreastSideType;
+  /** Type of the template image */
+  typedef float                                                  TemplatePixelType;
+  typedef typename itk::Image<TemplatePixelType, ImageDimension> TemplateImageType;
+  typedef typename TemplateImageType::Pointer                    TemplateImagePointer;
+  typedef typename TemplateImageType::ConstPointer               TemplateImageConstPointer;
+  typedef typename TemplateImageType::RegionType                 TemplateImageRegionType;
+  typedef typename TemplateImageType::PixelType                  TemplateImagePixelType;
+  typedef typename TemplateImageType::SpacingType                TemplateImageSpacingType;
+  typedef typename TemplateImageType::PointType                  TemplateImagePointType;
+  typedef typename TemplateImageType::IndexType                  TemplateImageIndexType;
+  typedef typename TemplateImageType::SizeType                   TemplateImageSizeType;
+
+  typedef typename itk::ImageRegionIterator< TemplateImageType >          TemplateIteratorType;
+  typedef typename itk::ImageRegionIteratorWithIndex< TemplateImageType > TemplateIteratorWithIndexType;
+
+  /** Optional mask image */
+  typedef unsigned char                                      MaskPixelType;
+  typedef typename itk::Image<MaskPixelType, ImageDimension> MaskImageType;
+  typedef typename MaskImageType::ConstPointer               MaskImageConstPointer;
+  typedef typename MaskImageType::Pointer                    MaskImagePointer;
+  typedef typename MaskImageType::RegionType                 MaskImageRegionType;
+  typedef typename MaskImageType::SizeType                   MaskImageSizeType;
+  typedef typename MaskImageType::IndexType                  MaskImageIndexType;
+  typedef typename MaskImageType::SpacingType                MaskImageSpacingType;
+
+
+  typedef typename itk::ImageRegionConstIterator< MaskImageType > MaskIteratorType;
+  typedef typename itk::ImageLinearConstIteratorWithIndex< MaskImageType > MaskLineIteratorType;
 
 
   /** Connect the input image. */
   void SetInputImage( const InputImageType *imInput );
 
+  /// Set the optional mask image
+  void SetMask( const MaskImageType *imMask );
+
   /** Get the template image. */
-  itkGetObjectMacro( ImTemplate, InputImageType );
+  itkGetObjectMacro( ImTemplate, TemplateImageType );
 
   typedef Superclass::ParametersType ParametersType;
   typedef Superclass::DerivativeType DerivativeType;
   typedef Superclass::MeasureType    MeasureType;
 
-  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 3 );
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
 
   unsigned int GetNumberOfParameters(void) const  
   {
     return ParametricSpaceDimension;
   }
-
-  void GetRegion( const ParametersType &parameters,
-                  InputImageRegionType &region ) const;
 
   void GetParameters( const InputImagePointType &pecInterceptInMM,
                       ParametersType &parameters );
@@ -117,7 +143,7 @@ public:
   void ClearTemplate( void );
 
   void GenerateTemplate( const ParametersType &parameters,
-                         double &tMean, double &tStdDev, double &nPixels ) const;
+                         double &tMean, double &tStdDev, double &nPixels );
 
 protected:
 
@@ -127,16 +153,17 @@ protected:
   void operator=(const Self &) {}
   void PrintSelf(std::ostream & os, Indent indent) const;
 
-  BreastSideType m_BreastSide;
-
-  InputImageRegionType  m_ImRegion;
-  InputImageSpacingType m_ImSpacing;
-  InputImagePointType   m_ImOrigin;
-  InputImageSizeType    m_ImSize;
-  InputImagePointType   m_ImSizeInMM;
-
+  InputImageRegionType   m_ImRegion;
+  InputImageSpacingType  m_ImSpacing;
+  InputImagePointType    m_ImOrigin;
+  InputImageSizeType     m_ImSize;
+  InputImagePointType    m_ImSizeInMM;
   InputImageConstPointer m_InputImage;
-  InputImagePointer m_ImTemplate;
+
+  TemplateImagePointer   m_ImTemplate;
+
+  MaskImageRegionType    m_MaskRegion;
+  MaskImageConstPointer  m_Mask;
 
 };
 
