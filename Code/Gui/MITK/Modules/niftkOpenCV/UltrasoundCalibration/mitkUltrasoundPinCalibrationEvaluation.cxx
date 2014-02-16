@@ -43,7 +43,6 @@ void UltrasoundPinCalibrationEvaluation::Evaluate(
     const std::string& cameraToWorldMatrixFileName
     )
 {
-
   cv::Mat calibMatrix = cvCreateMat(4,4,CV_64FC1);
   if (calibrationMatrixFileName.size() != 0)
   {
@@ -67,8 +66,9 @@ void UltrasoundPinCalibrationEvaluation::Evaluate(
 
   mitk::UltrasoundCalibration::LoadDataFromDirectories(matrixDirectory, pointDirectory, false, matrices, points);
 
-  double distance = 0;
+  double squaredDistance = 0;
   std::vector<double> distancesFromInvariantPoint;
+  std::vector<double> squaredDistancesFromInvariantPoint;
   cv::Matx41d transformedPoint;
 
   cv::Matx44d scaling = mitk::ConstructScalingTransformation(
@@ -92,21 +92,21 @@ void UltrasoundPinCalibrationEvaluation::Evaluate(
 
     transformedPoint = (camToWorldMat * (trackerMatrix * (calibMat * (scaling * ultrasoundPoint))));
 
-    distance = sqrt(
-                     (transformedPoint(0,0) - invariantPoint[0])*(transformedPoint(0,0) - invariantPoint[0])
-                   + (transformedPoint(1,0) - invariantPoint[1])*(transformedPoint(1,0) - invariantPoint[1])
-                   + (transformedPoint(2,0) - invariantPoint[2])*(transformedPoint(2,0) - invariantPoint[2])
-                   );
+    squaredDistance =  (transformedPoint(0,0) - invariantPoint[0])*(transformedPoint(0,0) - invariantPoint[0])
+                     + (transformedPoint(1,0) - invariantPoint[1])*(transformedPoint(1,0) - invariantPoint[1])
+                     + (transformedPoint(2,0) - invariantPoint[2])*(transformedPoint(2,0) - invariantPoint[2])
+                     ;
 
-    distancesFromInvariantPoint.push_back(distance);
+    distancesFromInvariantPoint.push_back(sqrt(squaredDistance));
+    squaredDistancesFromInvariantPoint.push_back(squaredDistance);
   }
 
   std::cout << "Distance error:" << std::endl;
-  std::cout << "  Mean   = " << mitk::Mean(distancesFromInvariantPoint);
-  std::cout << "  StdDev = " << mitk::StdDev(distancesFromInvariantPoint);
-  std::cout << "  Min    = " << *std::min_element(distancesFromInvariantPoint.begin(), distancesFromInvariantPoint.end());
-  std::cout << "  Max    = " << *std::max_element(distancesFromInvariantPoint.begin(), distancesFromInvariantPoint.end());
-  std::cout << "  RMS    = " << mitk::RMS(distancesFromInvariantPoint);
+  std::cout << "  Mean   = " << mitk::Mean(distancesFromInvariantPoint) << std::endl;
+  std::cout << "  StdDev = " << mitk::StdDev(distancesFromInvariantPoint) << std::endl;
+  std::cout << "  Min    = " << *std::min_element(distancesFromInvariantPoint.begin(), distancesFromInvariantPoint.end()) << std::endl;
+  std::cout << "  Max    = " << *std::max_element(distancesFromInvariantPoint.begin(), distancesFromInvariantPoint.end()) << std::endl;
+  std::cout << "  RMS    = " << mitk::RMS(squaredDistancesFromInvariantPoint) << std::endl;
 }
 
 
