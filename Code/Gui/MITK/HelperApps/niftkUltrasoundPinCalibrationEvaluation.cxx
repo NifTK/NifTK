@@ -39,7 +39,35 @@ int main(int argc, char** argv)
 
   try
   {
+    mitk::Point3D invPoint;
+    invPoint[0] = 0;
+    invPoint[1] = 0;
+    invPoint[2] = 0;
+    if (invariantPoint.size() == 3)
+    {
+      invPoint[0] = invariantPoint[0];
+      invPoint[1] = invariantPoint[1];
+      invPoint[2] = invariantPoint[2];
+    }
 
+    mitk::Point2D mmPerPix;
+    mmPerPix[0] = 1;
+    mmPerPix[1] = 1;
+    if (millimetresPerPixel.size() == 2)
+    {
+      mmPerPix[0] = millimetresPerPixel[0];
+      mmPerPix[1] = millimetresPerPixel[1];
+    }
+
+    mitk::UltrasoundPinCalibrationEvaluation::Pointer evaluator = mitk::UltrasoundPinCalibrationEvaluation::New();
+    evaluator->Evaluate(
+          matrixDirectory,
+          pointDirectory,
+          invPoint,
+          mmPerPix,
+          calibrationMatrix,
+          cameraToWorldMatrix
+          );
     returnStatus = EXIT_SUCCESS;
   }
   catch (std::exception& e)
