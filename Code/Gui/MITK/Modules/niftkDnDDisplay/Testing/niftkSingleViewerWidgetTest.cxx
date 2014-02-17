@@ -636,21 +636,30 @@ void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
   mitk::Vector2D centrePosition;
   centrePosition.Fill(0.5);
 
-  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), centrePosition, 0.01));
+  mitk::Vector2D cursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  QVERIFY(::EqualsWithTolerance(cursorPosition, centrePosition, 0.01));
   QVERIFY(d->StateTester->GetItkSignals().empty());
   QVERIFY(d->StateTester->GetQtSignals().empty());
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   d->StateTester->Clear();
+  d->StateTester->SetExpectedState(ViewerState::New(d->Viewer));
 
-  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL), centrePosition, 0.01));
+  cursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+
+  QVERIFY(::EqualsWithTolerance(cursorPosition, centrePosition, 0.01));
   QVERIFY(d->StateTester->GetItkSignals().empty());
   QVERIFY(d->StateTester->GetQtSignals().empty());
 
+  d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
   d->StateTester->Clear();
+  d->StateTester->SetExpectedState(ViewerState::New(d->Viewer));
 
-  QVERIFY(::EqualsWithTolerance(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL), centrePosition, 0.01));
+  cursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+
+  QVERIFY(::EqualsWithTolerance(cursorPosition, centrePosition, 0.01));
   QVERIFY(d->StateTester->GetItkSignals().empty());
   QVERIFY(d->StateTester->GetQtSignals().empty());
 }
