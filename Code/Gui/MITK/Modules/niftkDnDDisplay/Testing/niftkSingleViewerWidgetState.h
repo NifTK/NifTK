@@ -23,18 +23,6 @@ static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mit
       && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
 }
 
-static bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001)
-{
-  for (int i = 0; i < 3; ++i)
-  {
-    if (!::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
 class niftkSingleViewerWidgetState : public itk::Object
 {
 public:
@@ -88,7 +76,7 @@ public:
   /// \brief Sets the scale factors in the render windows of the viewer.
   void SetScaleFactors(const std::vector<double>& scaleFactors)
   {
-    this->m_ScaleFactors = scaleFactors;
+    m_ScaleFactors = scaleFactors;
   }
 
   /// \brief Gets the cursor position binding property of the viewer.
@@ -103,6 +91,36 @@ public:
   /// \brief Sets the scale factor binding property of the viewer.
   itkSetMacro(ScaleFactorBinding, bool);
 
+  /// \brief Compares the cursor positions of the visible render windows, permetting the given tolerance.
+  /// Returns true if the cursor positions are equal, otherwise false.
+  bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001) const
+  {
+    std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+    for (int i = 0; i < 3; ++i)
+    {
+      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// \brief Compares the scale factors of the visible render windows, permetting the given tolerance.
+  /// Returns true if the scale factors are equal, otherwise false.
+  bool EqualsWithTolerance(const std::vector<double>& scaleFactors1, const std::vector<double>& scaleFactors2, double tolerance = 0.001) const
+  {
+    std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+    for (int i = 0; i < 3; ++i)
+    {
+      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool operator==(const niftkSingleViewerWidgetState& otherState) const
   {
     return
@@ -111,8 +129,8 @@ public:
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
         && this->GetSelectedPosition() == otherState.GetSelectedPosition()
-        && ::EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
-        && this->GetScaleFactors() == otherState.GetScaleFactors()
+        && this->EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
+        && this->EqualsWithTolerance(this->GetScaleFactors(), otherState.GetScaleFactors(), 0.01)
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
@@ -175,6 +193,7 @@ protected:
   /// \brief Constructs a niftkSingleViewerWidgetState object that stores the current state of the specified viewer.
   niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
   : itk::Object()
+  , m_Viewer(viewer)
   , m_Orientation(viewer->GetOrientation())
   , m_WindowLayout(viewer->GetWindowLayout())
   , m_SelectedRenderWindow(viewer->GetSelectedRenderWindow())
@@ -190,6 +209,7 @@ protected:
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
   niftkSingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
+  , m_Viewer(otherState->m_Viewer)
   , m_Orientation(otherState->GetOrientation())
   , m_WindowLayout(otherState->GetWindowLayout())
   , m_SelectedRenderWindow(otherState->GetSelectedRenderWindow())
@@ -222,6 +242,9 @@ protected:
   }
 
 private:
+
+  /// \brief The viewer.
+  const niftkSingleViewerWidget* m_Viewer;
 
   /// \brief The orientation of the viewer.
   MIDASOrientation m_Orientation;
