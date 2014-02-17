@@ -150,8 +150,18 @@ int DoMain(arguments args,
 
   DictionaryType &dictionary = image->GetMetaDataDictionary();
 
+  bool found;
   unsigned int iTag = 0;
+
+  DictionaryType::ConstIterator tagItr;
+  DictionaryType::ConstIterator tagEnd;
+
+  std::string tagID;
+  std::string tagValue;
+
   std::vector< std::string >::iterator iterTags;     
+
+  MetaDataStringType::ConstPointer entryvalue;
 
   foutTagsCSV << boost::filesystem::canonical( args.iterFilename );
 
@@ -161,42 +171,37 @@ int DoMain(arguments args,
 	iterTags < tagList.end(); 
 	++iterTags, iTag += 1. )
   {
-  
-    DictionaryType::ConstIterator tagItr;
-    DictionaryType::ConstIterator tagEnd;
-
-    std::string tagID;
-    std::string tagValue;
+    found = false;
 
     tagItr = dictionary.Find( *iterTags );
     tagEnd = dictionary.End();
    
     if( tagItr != tagEnd )
     {
-      MetaDataStringType::ConstPointer entryvalue = 
+      entryvalue = 
         dynamic_cast<const MetaDataStringType *>( tagItr->second.GetPointer() );
 
       if ( entryvalue )
       {
         tagValue = entryvalue->GetMetaDataObjectValue();
 
-        bool found =  itk::GDCMImageIO::GetLabelFromTag( *iterTags, tagID );
+        found =  itk::GDCMImageIO::GetLabelFromTag( *iterTags, tagID );
 
         if ( args.flgVerbose )
         {
           std::cout << std::setw(12) << iTag << " Tag (" << *iterTags <<  ") " << tagID
                     << " is: " << tagValue << std::endl;
         }
-
-        if ( found )
-        {
-          foutTagsCSV << ",\"" << tagValue << "\"";
-        }
-        else
-        {
-          foutTagsCSV << ",";
-        }
       }
+    }
+     
+    if ( found )
+    {
+      foutTagsCSV << ",\"" << tagValue << "\"";
+    }
+    else
+    {
+      foutTagsCSV << ",";
     }
   }
 
