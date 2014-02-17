@@ -2577,7 +2577,10 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
             rendererUpdated[i] = true;
           }
-          emit CursorPositionChanged(MIDASOrientation(i), m_CursorPositions[i]);
+          if (m_RenderWindows[i]->isVisible())
+          {
+            emit CursorPositionChanged(MIDASOrientation(i), m_CursorPositions[i]);
+          }
         }
       }
       for (unsigned i = 0; i < 3; ++i)
@@ -2591,7 +2594,10 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
             rendererUpdated[i] = true;
           }
-          emit ScaleFactorChanged(MIDASOrientation(i), m_ScaleFactors[i]);
+          if (m_RenderWindows[i]->isVisible())
+          {
+            emit ScaleFactorChanged(MIDASOrientation(i), m_ScaleFactors[i]);
+          }
         }
       }
       if (m_CursorPositionBindingHasChanged)

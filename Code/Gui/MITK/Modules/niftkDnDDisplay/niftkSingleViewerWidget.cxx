@@ -730,7 +730,9 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         orientation = MIDAS_ORIENTATION_AXIAL; // somewhat arbitrary.
       }
 
-      if (!hasBeenInitialised)
+      /// If the positions are not remembered for each window layout,
+      /// we reset them.
+//      if (!hasBeenInitialised)
       {
         if (!dontSetSelectedPosition)
         {

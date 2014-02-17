@@ -17,7 +17,7 @@
 
 #include <niftkSingleViewerWidget.h>
 
-static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001)
+static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.01)
 {
   return std::abs(cursorPosition1[0] - cursorPosition2[0]) < tolerance
       && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
