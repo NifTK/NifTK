@@ -97,6 +97,8 @@ void UltrasoundPinCalibrationEvaluation::Evaluate(
                      + (transformedPoint(2,0) - invariantPoint[2])*(transformedPoint(2,0) - invariantPoint[2])
                      ;
 
+    std::cerr << "Point " << i << ", image=" << points[i].second.x << ", " << points[i].second.y << ", transforms to " << transformedPoint(0,0) << ", " << transformedPoint(1,0) << ", " << transformedPoint(2,0) << ", compared with " << invariantPoint[0] << ", " << invariantPoint[1] << ", " << invariantPoint[2] << " distance = " << sqrt(squaredDistance) << std::endl;
+
     distancesFromInvariantPoint.push_back(sqrt(squaredDistance));
     squaredDistancesFromInvariantPoint.push_back(squaredDistance);
   }
