@@ -1420,44 +1420,151 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
 
   d->Viewer->SetRememberSettingsPerWindowLayout(true);
 
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  this->SetRandomPositions();
+  ViewerState::Pointer axialState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  this->SetRandomPositions();
+  ViewerState::Pointer sagittalState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+  this->SetRandomPositions();
+  ViewerState::Pointer coronalState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
+  this->SetRandomPositions();
+  ViewerState::Pointer _3DState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
+  this->SetRandomPositions();
+  ViewerState::Pointer _3HState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
+  this->SetRandomPositions();
+  ViewerState::Pointer _3VState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
+  this->SetRandomPositions();
+  ViewerState::Pointer corAxHState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
+  this->SetRandomPositions();
+  ViewerState::Pointer corAxVState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
+  this->SetRandomPositions();
+  ViewerState::Pointer corSagHState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
+  this->SetRandomPositions();
+  ViewerState::Pointer corSagVState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
+  this->SetRandomPositions();
+  ViewerState::Pointer sagAxHState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
+  this->SetRandomPositions();
+  ViewerState::Pointer sagAxVState = ViewerState::New(d->Viewer);
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  this->SetRandomPositions();
+  ViewerState::Pointer orthoState = ViewerState::New(d->Viewer);
+
+  ///
+  /// Switch back to each layout and check if the states are correctly restored.
+  ///
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(axialState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(sagittalState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(coronalState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(_3DState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(_3HState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(_3VState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(corAxHState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(corAxVState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(corSagHState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(corSagVState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(sagAxHState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(sagAxVState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
+
+  d->StateTester->Clear();
+  d->StateTester->SetExpectedState(orthoState);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+
+  //// -------------------------------------------------------------------------
+
+  d->StateTester->Clear();
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
+
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
 
-  mitk::Point3D selectedPosition;
-  selectedPosition[0] = 100.0;
-  selectedPosition[1] = -50.0;
-  selectedPosition[2] = -100.0;
+  mitk::Vector2D cursorPosition;
+  cursorPosition[0] = 0.4;
+  cursorPosition[1] = 0.6;
+  QPoint pointCursorPosition = this->GetPointAtCursorPosition(coronalWindow, cursorPosition);
 
-  d->Viewer->SetSelectedPosition(selectedPosition);
+  d->StateTester->Clear();
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, pointCursorPosition);
+
+  QVERIFY(this->Equals(d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL), cursorPosition));
+
+  coronalState = ViewerState::New(d->Viewer);
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
   d->StateTester->Clear();
+  d->StateTester->SetExpectedState(coronalState);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-
-  mitk::Point3D newPosition = d->Viewer->GetSelectedPosition();
-
-  QVERIFY(this->Equals(newPosition, selectedPosition));
-
-  mitk::Vector2D coronalCursorPosition;
-  coronalCursorPosition[0] = 0.4;
-  coronalCursorPosition[1] = 0.6;
-  QPoint pointAtCoronalCursorPosition = this->GetPointAtCursorPosition(coronalWindow, coronalCursorPosition);
-
-  d->StateTester->Clear();
-  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, pointAtCoronalCursorPosition);
-
-  mitk::Point3D newPosition2 = d->Viewer->GetSelectedPosition();
-  mitk::Vector2D newCoronalCursorPosition2 = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
-
-  QVERIFY(this->Equals(coronalCursorPosition, newCoronalCursorPosition2));
-
-  d->StateTester->Clear();
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
-  d->StateTester->Clear();
-  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
-
-  mitk::Point3D newPosition3 = d->Viewer->GetSelectedPosition();
-  QVERIFY(this->Equals(newPosition3, newPosition2));
 }
 
 
