@@ -903,21 +903,6 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testFocusedRenderer()
-{
-  Q_D(niftkSingleViewerWidgetTestClass);
-
-  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  QVERIFY(coronalWindow->hasFocus());
-  QCOMPARE(focusedRenderer, coronalWindow->GetRenderer());
-}
-
-
-// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
