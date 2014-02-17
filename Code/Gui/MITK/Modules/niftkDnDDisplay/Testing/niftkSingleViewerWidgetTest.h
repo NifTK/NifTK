@@ -40,6 +40,8 @@ class niftkSingleViewerWidgetTestClass: public QObject
 
 public:
 
+  enum WorldAxes { SagittalAxis, CoronalAxis, AxialAxis };
+
   typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
   typedef niftkSingleViewerWidgetState ViewerState;
   typedef niftkSingleViewerWidgetTestClass Self;
