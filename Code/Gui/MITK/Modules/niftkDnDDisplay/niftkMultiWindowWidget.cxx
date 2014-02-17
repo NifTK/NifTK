@@ -104,6 +104,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedPositionHasChanged(false)
 , m_CursorPositionHasChanged(3)
 , m_ScaleFactorHasChanged(3)
+, m_CursorPositionBindingHasChanged(false)
+, m_ScaleFactorBindingHasChanged(false)
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
@@ -2404,28 +2406,30 @@ bool niftkMultiWindowWidget::GetCursorPositionBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPositionBinding(bool bound)
+void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding)
 {
-  if (bound == this->GetCursorPositionBinding())
+  if (cursorPositionBinding != m_CursorPositionBinding)
   {
-    // Already bound/unbound.
-    return;
-  }
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_CursorPositionBinding = bound;
+    m_CursorPositionBinding = cursorPositionBinding;
+    m_CursorPositionBindingHasChanged = true;
 
-  if (bound)
-  {
-    MIDASOrientation orientation = this->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    if (cursorPositionBinding)
     {
-      this->OnOriginChanged(orientation, true);
-      /// We raise the event in another window as well so that the cursors are in sync
-      /// along the third axis as well.
-      MIDASOrientation someOtherOrientation =
-          orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
-      this->OnOriginChanged(someOtherOrientation, true);
+      MIDASOrientation orientation = this->GetOrientation();
+      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+      {
+        this->OnOriginChanged(orientation, true);
+        /// We raise the event in another window as well so that the cursors are in sync
+        /// along the third axis as well.
+        MIDASOrientation someOtherOrientation =
+            orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
+        this->OnOriginChanged(someOtherOrientation, true);
+      }
     }
+
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2438,29 +2442,31 @@ bool niftkMultiWindowWidget::GetScaleFactorBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactorBinding(bool bound)
+void niftkMultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 {
-  if (bound == this->GetScaleFactorBinding())
+  if (scaleFactorBinding != m_ScaleFactorBinding)
   {
-    // Already bound/unbound.
-    return;
-  }
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_ScaleFactorBinding = bound;
+    m_ScaleFactorBinding = scaleFactorBinding;
+    m_ScaleFactorBindingHasChanged = true;
 
-  if (bound)
-  {
-    MIDASOrientation orientation = this->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    if (scaleFactorBinding)
     {
-      for (int i = 0; i < 3; ++i)
+      MIDASOrientation orientation = this->GetOrientation();
+      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
       {
-        if (i != orientation)
+        for (int i = 0; i < 3; ++i)
         {
-          this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+          if (i != orientation)
+          {
+            this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+          }
         }
       }
     }
+
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2587,6 +2593,16 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
           }
           emit ScaleFactorChanged(MIDASOrientation(i), m_ScaleFactors[i]);
         }
+      }
+      if (m_CursorPositionBindingHasChanged)
+      {
+        m_CursorPositionBindingHasChanged = false;
+        emit CursorPositionBindingChanged();
+      }
+      if (m_ScaleFactorBindingHasChanged)
+      {
+        m_ScaleFactorBindingHasChanged = false;
+        emit ScaleFactorBindingChanged();
       }
     }
   }

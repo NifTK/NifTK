@@ -83,6 +83,8 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+  this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
+  this->connect(m_MultiWidget, SIGNAL(ScaleFactorBindingChanged()), SLOT(OnScaleFactorBindingChanged()));
 
   // Create/Connect the state machine
   m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
@@ -161,6 +163,20 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
 void niftkSingleViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
 {
   emit ScaleFactorChanged(this, orientation, scaleFactor);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnCursorPositionBindingChanged()
+{
+  emit CursorPositionBindingChanged(this, this->GetCursorPositionBinding());
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnScaleFactorBindingChanged()
+{
+  emit ScaleFactorBindingChanged(this, this->GetScaleFactorBinding());
 }
 
 
@@ -447,9 +463,9 @@ bool niftkSingleViewerWidget::GetCursorPositionBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPositionBinding(bool bound)
+void niftkSingleViewerWidget::SetCursorPositionBinding(bool cursorPositionBinding)
 {
-  m_MultiWidget->SetCursorPositionBinding(bound);
+  m_MultiWidget->SetCursorPositionBinding(cursorPositionBinding);
 }
 
 
@@ -461,9 +477,9 @@ bool niftkSingleViewerWidget::GetScaleFactorBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactorBinding(bool bound)
+void niftkSingleViewerWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 {
-  m_MultiWidget->SetScaleFactorBinding(bound);
+  m_MultiWidget->SetScaleFactorBinding(scaleFactorBinding);
 }
 
 
@@ -633,14 +649,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
-    bool timeStepHasChanged = false;
-    bool selectedPositionHasChanged = false;
-    bool cursorPositionsHaveChanged = false;
-    bool scaleFactorsHaveChanged = false;
-    bool selectedRenderWindowHasChanged = false;
-    bool cursorPositionBindingHasChanged = false;
-    bool scaleFactorBindingHasChanged = false;
-
     bool wasSelected = this->IsSelected();
     QmitkRenderWindow* selectedRenderWindow = m_MultiWidget->GetSelectedRenderWindow();
 
@@ -679,20 +687,16 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       {
         m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
         m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
-        timeStepHasChanged = true;
-        selectedPositionHasChanged = true;
       }
 
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
-        cursorPositionsHaveChanged = true;
       }
 
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactors(m_ScaleFactors[Index(windowLayout)]);
-        scaleFactorsHaveChanged = true;
       }
 
       if (wasSelected)
@@ -703,12 +707,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositionBinding(m_CursorPositionBinding[Index(windowLayout)]);
-        cursorPositionBindingHasChanged = true;
       }
       if (!dontSetScaleFactors)
       {
         m_MultiWidget->SetScaleFactorBinding(m_ScaleFactorBinding[Index(windowLayout)]);
-        scaleFactorBindingHasChanged = true;
       }
 
       m_LastSelectedPositions.clear();
@@ -734,14 +736,10 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         {
           m_MultiWidget->SetTimeStep(0);
           m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
-          timeStepHasChanged = true;
-          selectedPositionHasChanged = true;
         }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
         {
           m_MultiWidget->FitToDisplay();
-          cursorPositionsHaveChanged = true;
-          scaleFactorsHaveChanged = true;
         }
 
         m_LastSelectedPositions.clear();
@@ -775,41 +773,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     }
 
     m_MultiWidget->BlockUpdate(updateWasBlocked);
-
-    if (timeStepHasChanged)
-    {
-      emit SelectedTimeStepChanged(this, this->GetTimeStep());
-    }
-    if (selectedPositionHasChanged)
-    {
-      emit SelectedPositionChanged(this, this->GetSelectedPosition());
-    }
-    if (cursorPositionsHaveChanged)
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        emit CursorPositionChanged(this, MIDASOrientation(i), this->GetCursorPosition(MIDASOrientation(i)));
-      }
-    }
-    if (scaleFactorsHaveChanged)
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        emit ScaleFactorChanged(this, MIDASOrientation(i), this->GetScaleFactor(MIDASOrientation(i)));
-      }
-    }
-    if (timeStepHasChanged)
-    {
-      emit SelectedTimeStepChanged(this, this->GetTimeStep());
-    }
-    if (cursorPositionBindingHasChanged)
-    {
-      emit CursorPositionBindingChanged(this, this->GetCursorPositionBinding());
-    }
-    if (scaleFactorBindingHasChanged)
-    {
-      emit ScaleFactorBindingChanged(this, this->GetScaleFactorBinding());
-    }
   }
 }
 

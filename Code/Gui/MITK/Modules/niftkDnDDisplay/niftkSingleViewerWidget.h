@@ -382,6 +382,12 @@ protected slots:
   /// \brief Called when the scale factor has changed.
   virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
 
+  /// \brief Called when the cursor position binding has changed.
+  virtual void OnCursorPositionBindingChanged();
+
+  /// \brief Called when the scale factor binding has changed.
+  virtual void OnScaleFactorBindingChanged();
+
 private:
 
   inline int Index(int index) const

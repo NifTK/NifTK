@@ -284,13 +284,13 @@ public:
   bool GetCursorPositionBinding() const;
 
   /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
-  void SetCursorPositionBinding(bool bound);
+  void SetCursorPositionBinding(bool cursorPositionBinding);
 
   /// \brief Gets the flag controls whether the scale factors are bound across the 2D render windows.
   bool GetScaleFactorBinding() const;
 
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
-  void SetScaleFactorBinding(bool bound);
+  void SetScaleFactorBinding(bool scaleFactorBinding);
 
   /// \brief Blocks the update of the widget.
   /// Returns true if the update was already blocked, otherwise false.
@@ -313,6 +313,12 @@ signals:
 
   /// \brief Emitted when the scale factor has changed.
   void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Emitted when the cursor position binding has changed.
+  void CursorPositionBindingChanged();
+
+  /// \brief Emitted when the scale factor binding has changed.
+  void ScaleFactorBindingChanged();
 
 private:
 
@@ -455,6 +461,8 @@ private:
   bool m_SelectedPositionHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
   std::vector<bool> m_ScaleFactorHasChanged;
+  bool m_CursorPositionBindingHasChanged;
+  bool m_ScaleFactorBindingHasChanged;
 
   friend class DisplayGeometryModificationCommand;
 
