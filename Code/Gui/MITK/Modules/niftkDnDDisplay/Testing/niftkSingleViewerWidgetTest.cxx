@@ -212,6 +212,41 @@ bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>&
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::SetRandomPositions()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  mitk::Geometry3D* geometry = d->Image->GetGeometry();
+
+  mitk::Point3D randomSelectedPosition;
+  randomSelectedPosition = geometry->GetOrigin()
+      + geometry->GetAxisVector(0) * ((double) std::rand() / RAND_MAX)
+      + geometry->GetAxisVector(1) * ((double) std::rand() / RAND_MAX)
+      + geometry->GetAxisVector(2) * ((double) std::rand() / RAND_MAX);
+
+  std::vector<mitk::Vector2D> randomCursorPositions(3);
+  randomCursorPositions[0][0] = (double) std::rand() / RAND_MAX;
+  randomCursorPositions[0][1] = (double) std::rand() / RAND_MAX;
+  randomCursorPositions[1][0] = (double) std::rand() / RAND_MAX;
+  randomCursorPositions[1][1] = (double) std::rand() / RAND_MAX;
+  randomCursorPositions[2][0] = (double) std::rand() / RAND_MAX;
+  randomCursorPositions[2][1] = (double) std::rand() / RAND_MAX;
+
+  std::vector<double> randomScaleFactors(3);
+  randomScaleFactors[0] = 2 * (double) std::rand() / RAND_MAX;
+  randomScaleFactors[1] = 2 * (double) std::rand() / RAND_MAX;
+  randomScaleFactors[2] = 2 * (double) std::rand() / RAND_MAX;
+
+  d->StateTester->Clear();
+  d->Viewer->SetSelectedPosition(randomSelectedPosition);
+  d->StateTester->Clear();
+  d->Viewer->SetCursorPositions(randomCursorPositions);
+  d->StateTester->Clear();
+  d->Viewer->SetScaleFactors(randomScaleFactors);
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::initTestCase()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
@@ -1257,34 +1292,13 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   /// Check if we get the same state when returning to a previously selected orientation.
   ///
 
-  mitk::Point3D randomSelectedPosition;
-  mitk::Geometry3D* geometry = d->Image->GetGeometry();
-  randomSelectedPosition = geometry->GetOrigin()
-      + geometry->GetAxisVector(0) * ((double) std::rand() / RAND_MAX)
-      + geometry->GetAxisVector(1) * ((double) std::rand() / RAND_MAX)
-      + geometry->GetAxisVector(2) * ((double) std::rand() / RAND_MAX);
-  std::vector<mitk::Vector2D> randomCursorPositions(3);
-  randomCursorPositions[0][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[0][1] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[1][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[1][1] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[2][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[2][1] = (double) std::rand() / RAND_MAX;
-  std::vector<double> randomScaleFactors(3);
-  randomScaleFactors[0] = 2 * (double) std::rand() / RAND_MAX;
-  randomScaleFactors[1] = 2 * (double) std::rand() / RAND_MAX;
-  randomScaleFactors[2] = 2 * (double) std::rand() / RAND_MAX;
+  this->SetRandomPositions();
 
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateAxial);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateAxial);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
@@ -1293,12 +1307,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateSagittal);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateSagittal);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
@@ -1307,12 +1316,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateCoronal);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateCoronal);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
@@ -1321,12 +1325,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(state3D);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(state3D);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
@@ -1335,12 +1334,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(state3H);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(state3H);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
@@ -1349,12 +1343,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(state3V);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(state3V);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
@@ -1363,12 +1352,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateCorAxH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateCorAxH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
@@ -1377,12 +1361,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateCorAxV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateCorAxV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
@@ -1391,12 +1370,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateCorSagH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateCorSagH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
@@ -1405,12 +1379,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateCorSagV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateCorSagV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
@@ -1419,12 +1388,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateSagAxH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateSagAxH);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
@@ -1433,12 +1397,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateSagAxV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateSagAxV);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
@@ -1447,12 +1406,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->SetExpectedState(stateOrtho);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-  d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
-  d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
-  d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  this->SetRandomPositions();
   d->StateTester->Clear();
   d->StateTester->SetExpectedState(stateOrtho);
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
@@ -1460,7 +1414,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testRememberSelectedPosition()
+void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 

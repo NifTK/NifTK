@@ -87,6 +87,9 @@ public:
   /// The function assumes that the vectors contain three elements.
   static bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001);
 
+  /// \brief Sets random selected position, cursor positions and scale factors for the viewer.
+  void SetRandomPositions();
+
 private slots:
 
   /// \brief Initialisation before the first test function.
@@ -138,7 +141,7 @@ private slots:
   void testSetWindowLayout();
 
   /// \brief Tests remembering selected position when changing window layout.
-  void testRememberSelectedPosition();
+  void testRememberPositionsPerWindowLayout();
 
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectPositionByInteraction();
