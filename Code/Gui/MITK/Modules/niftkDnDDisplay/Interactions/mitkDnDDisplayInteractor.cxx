@@ -78,6 +78,11 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
   return renderWindow;
 }
 
+int mitk::DnDDisplayInteractor::GetOrientation(mitk::BaseRenderer* renderer)
+{
+  return std::find(m_Renderers.begin(), m_Renderers.end(), renderer) - m_Renderers.begin();
+}
+
 bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, InteractionEvent* interactionEvent)
 {
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
@@ -117,6 +122,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  MITK_INFO << "mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)";
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
@@ -126,11 +132,23 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+
+  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+
+  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, +1);
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
-  return result;
+//  return result;
+  return true;
 }
 
 
@@ -145,11 +163,23 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+
+  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+
+  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, -1);
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
-  return result;
+//  return result;
+  return true;
 }
 
 

@@ -73,7 +73,10 @@ protected:
   virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
 private:
+
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
+
+  int GetOrientation(mitk::BaseRenderer* renderer);
 
   niftkMultiWindowWidget* m_MultiWindowWidget;
 
