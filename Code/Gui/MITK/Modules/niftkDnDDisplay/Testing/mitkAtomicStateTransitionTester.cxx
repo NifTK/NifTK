@@ -125,6 +125,8 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
       MITK_INFO << typename Self::Pointer(this);
       MITK_INFO << "New, illegal state:";
       MITK_INFO << newState;
+      MITK_INFO << "Difference of expected state and new state:";
+      m_ExpectedState->PrintDifference(newState);
       QFAIL("Illegal state. The new state of the object is not equal to the expected state.");
     }
     m_NextState = newState;
