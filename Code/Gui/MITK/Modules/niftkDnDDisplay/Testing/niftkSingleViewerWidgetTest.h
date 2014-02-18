@@ -162,8 +162,11 @@ private slots:
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectPositionByInteraction();
 
-  /// \brief Tests selecting a position by interaction (left mouse button click).
+  /// \brief Tests changing slice by mouse interaction (wheel up or down).
   void testChangeSliceByMouseInteraction();
+
+  /// \brief Tests changing slice by key interaction ('a' or 'z').
+  void testChangeSliceByKeyInteraction();
 
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectRenderWindowByInteraction();
