@@ -129,6 +129,9 @@ void AtomicStateTransitionTester<TestObject, TestObjectState>::CheckState()
       m_ExpectedState->PrintDifference(newState);
       QFAIL("Illegal state. The new state of the object is not equal to the expected state.");
     }
+
+    newState->Check();
+
     m_NextState = newState;
   }
   else if (*newState != *m_NextState)

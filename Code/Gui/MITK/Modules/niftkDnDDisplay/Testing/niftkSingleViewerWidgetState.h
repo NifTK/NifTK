@@ -17,6 +17,10 @@
 
 #include <niftkSingleViewerWidget.h>
 
+#include <QTest>
+
+#include <mitkGlobalInteraction.h>
+
 static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
 {
   return std::abs(worldPosition1[0] - worldPosition2[0]) < tolerance
@@ -193,6 +197,76 @@ public:
     {
       os << indent << "Scale factor binding: " << this->GetScaleFactorBinding() << " ; " << otherState->GetScaleFactorBinding() << std::endl;
     }
+  }
+
+  void Check() const
+  {
+    if (m_Viewer->IsSelected())
+    {
+      QmitkRenderWindow* selectedRenderWindow = m_Viewer->GetSelectedRenderWindow();
+      if (!selectedRenderWindow)
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but there is no selected render window.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
+      }
+      if (!selectedRenderWindow->hasFocus())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but the selected render window has not got the Qt key focus.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but the selected render window has not got the Qt key focus.");
+      }
+      if (mitk::GlobalInteraction::GetInstance()->GetFocus() != selectedRenderWindow->GetRenderer())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but the selected render window has not got the MITK interaction focus.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but the selected render window has not got the MITK interaction focus.");
+      }
+    }
+    else
+    {
+      QmitkRenderWindow* selectedRenderWindow = m_Viewer->GetSelectedRenderWindow();
+      if (!selectedRenderWindow)
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but there is no selected render window.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
+      }
+      if (m_Viewer->GetAxialWindow()->hasFocus()
+          || m_Viewer->GetSagittalWindow()->hasFocus()
+          || m_Viewer->GetCoronalWindow()->hasFocus()
+          || m_Viewer->Get3DWindow()->hasFocus()
+          || m_Viewer->hasFocus())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer has the Qt focus, although it is not selected.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer has the Qt focus, although it is not selected.");
+      }
+      mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+      if (focusedRenderer == m_Viewer->GetAxialWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->GetSagittalWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->GetCoronalWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->Get3DWindow()->GetRenderer())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer has the MITK interaction focus, although it is not selected.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer has the MITK interaction focus, although it is not selected.");
+      }
+    }
+
+    /// TODO
+    /// This check is disabled for the moment.
+//    if (m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL)
+//            != m_Viewer->GetAxialWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
+//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL)
+//            != m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
+//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL)
+//            != m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->GetSlice()->GetPos())
+//    {
+//      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
+//      MITK_INFO << Self::ConstPointer(this);
+//      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
+//    }
   }
 
 protected:
