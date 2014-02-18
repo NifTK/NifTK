@@ -449,10 +449,34 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
   types << "application/x-mitk-datanodes";
   QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
-  QApplication::instance()->sendEvent(renderWindow, &dropEvent);
+//  qApp->sendEvent(renderWindow, &dropEvent);
+  if (!qApp->notify(renderWindow, &dropEvent))
+  {
+    QTest::qWarn("Drop event not accepted by receiving widget.");
+  }
 */
   d->VisibilityManager->OnNodesDropped(d->Viewer, renderWindow, nodes);
   d->Viewer->OnNodesDropped(renderWindow, nodes);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::MouseWheel(QWidget* widget,
+                            Qt::MouseButtons buttons,
+                            Qt::KeyboardModifiers modifiers,
+                            QPoint position, int delta,
+                            Qt::Orientation orientation)
+{
+  QTEST_ASSERT(modifiers == 0 || modifiers & Qt::KeyboardModifierMask);
+
+  modifiers &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
+  QWheelEvent wheelEvent(position, widget->mapToGlobal(position), delta, buttons, modifiers, orientation);
+
+  QSpontaneKeyEvent::setSpontaneous(&wheelEvent); // hmmmm
+  if (!QApplication::instance()->notify(widget, &wheelEvent))
+  {
+    QTest::qWarn("Wheel event not accepted by receiving widget.");
+  }
 }
 
 
@@ -2147,6 +2171,67 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
   QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
+
+  d->StateTester->Clear();
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  QmitkRenderWindow* axialWindow = d->Viewer->GetAxialWindow();
+  mitk::SliceNavigationController* axialSnc = axialWindow->GetSliceNavigationController();
+  QmitkRenderWindow* sagittalWindow = d->Viewer->GetSagittalWindow();
+  mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
+  QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
+  mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
+
+  QPoint centre;
+  ViewerState::Pointer expectedState;
+  mitk::Point3D expectedSelectedPosition;
+  std::vector<mitk::Vector2D> expectedCursorPositions;
+
+  int delta;
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// Coronal window
+  /// ---------------------------------------------------------------------------
+
+  centre = coronalWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, centre);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  /// Note that the origin of a QPoint is the upper left corner and the y coordinate
+  /// is increasing downwards, in contrast with both the world coordinates and the
+  /// display coordinates, where the origin is in the bottom left corner (and in the
+  /// front for the world position) and the y coordinate is increasing upwards.
+
+  delta = +1;
+  expectedSelectedPosition[SagittalAxis] += d->UpDirectionsInWorld[SagittalAxis] * delta * d->SpacingsInWorld[SagittalAxis];
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  d->StateTester->SetExpectedState(expectedState);
+
+  Self::MouseWheel(coronalWindow, Qt::NoButton, Qt::NoModifier, centre, delta);
+  MITK_INFO << d->StateTester;
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 
   d->StateTester->Clear();
 }

@@ -163,11 +163,17 @@ private slots:
   void testSelectPositionByInteraction();
 
   /// \brief Tests selecting a position by interaction (left mouse button click).
+  void testChangeSliceByMouseInteraction();
+
+  /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectRenderWindowByInteraction();
 
 private:
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
+
+  static void MouseWheel(QWidget* window, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
+                         QPoint point, int delta, Qt::Orientation orientation = Qt::Vertical);
 
   QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
 
