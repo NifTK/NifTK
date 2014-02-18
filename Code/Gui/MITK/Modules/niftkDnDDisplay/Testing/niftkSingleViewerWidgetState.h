@@ -17,6 +17,13 @@
 
 #include <niftkSingleViewerWidget.h>
 
+static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
+{
+  return std::abs(worldPosition1[0] - worldPosition2[0]) < tolerance
+      && std::abs(worldPosition1[1] - worldPosition2[1]) < tolerance
+      && std::abs(worldPosition1[2] - worldPosition2[2]) < tolerance;
+}
+
 static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.01)
 {
   return std::abs(cursorPosition1[0] - cursorPosition2[0]) < tolerance
@@ -128,7 +135,7 @@ public:
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
-        && this->GetSelectedPosition() == otherState.GetSelectedPosition()
+        && ::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
         && this->EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
         && this->EqualsWithTolerance(this->GetScaleFactors(), otherState.GetScaleFactors(), 0.01)
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
@@ -158,7 +165,7 @@ public:
     {
       os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
     }
-    if (this->GetSelectedPosition() != otherState->GetSelectedPosition())
+    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition()))
     {
       os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
