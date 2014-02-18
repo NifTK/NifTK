@@ -171,6 +171,12 @@ private slots:
   /// \brief Tests selecting a position by interaction (left mouse button click).
   void testSelectRenderWindowByInteraction();
 
+  /// \brief Test select slice through SNC.
+  void testSelectSliceThroughSliceNavigationController();
+
+  /// \brief Test select position through SNC.
+  void testSelectPositionThroughSliceNavigationController();
+
 private:
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
