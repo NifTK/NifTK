@@ -53,15 +53,14 @@ struct arguments
   bool flgVerbose;
   bool flgDebug;
   bool flgPectoralis;
-  bool flgApplyMaskToImage;
   
   std::string inputImage;
+  std::string outputMask;  
   std::string outputImage;  
   
   arguments() {
     flgVerbose = false;
     flgDebug = false;
-    flgApplyMaskToImage = false;
     flgPectoralis = false;
   }
 
@@ -264,7 +263,7 @@ int DoMain(arguments args)
   // Apply the mask to the image?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( args.flgApplyMaskToImage )
+  if ( args.outputImage.length() )
   {
 
     typename itk::ImageRegionConstIterator< MaskImageType > 
@@ -300,13 +299,17 @@ int DoMain(arguments args)
     }       
   }
 
-  else
+
+  // Save the mask image?
+  // ~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.outputMask.length() )
   {
     typedef itk::ImageFileWriter< MaskImageType > MaskImageWriterType;
 
     typename MaskImageWriterType::Pointer imageWriter = MaskImageWriterType::New();
 
-    imageWriter->SetFileName(args.outputImage);
+    imageWriter->SetFileName(args.outputMask);
     imageWriter->SetInput( mask );
   
     try
@@ -342,18 +345,19 @@ int main(int argc, char** argv)
   args.flgVerbose = flgVerbose;
   args.flgDebug = flgDebug;
   args.flgPectoralis = flgPectoralis;
-  args.flgApplyMaskToImage = flgApplyMaskToImage;
 
-  args.inputImage=inputImage.c_str();
-  args.outputImage=outputImage.c_str();
+  args.inputImage  = inputImage;
+  args.outputMask  = outputMask;
+  args.outputImage = outputImage;
 
   std::cout << "Input image:  " << args.inputImage << std::endl
+            << "Output mask:  " << args.outputMask << std::endl
             << "Output image: " << args.outputImage << std::endl;
 
   // Validate command line args
 
   if ( (  args.inputImage.length() == 0 ) ||
-       ( args.outputImage.length() == 0 ) )
+       ( ( args.outputImage.length() == 0 ) && ( args.outputMask.length() == 0 ) ) )
   {
     std::cout << "ERROR: Input and output image filenames must be specified" << std::endl;
     return EXIT_FAILURE;

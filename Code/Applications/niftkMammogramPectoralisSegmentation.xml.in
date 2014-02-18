@@ -33,10 +33,20 @@
     <image>
       <name>maskImage</name>
       <flag>m</flag>
-      <longflag>maskImage</longflag>
+      <longflag>im</longflag>
       <description>Mask image</description>
       <label>Mask image</label>
       <channel>input</channel>
+    </image>
+
+    <image>
+      <name>outputMask</name>
+      <flag>n</flag>
+      <longflag>om</longflag>
+      <description>Output mask</description>      
+      <label>Output mask</label>
+      <default>outputMask.nii</default>
+      <channel>output</channel>
     </image>
 
     <image>

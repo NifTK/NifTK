@@ -28,12 +28,22 @@
     </image>
 
     <image>
+      <name>outputMask</name>
+      <flag>m</flag>
+      <longflag>om</longflag>
+      <description>Output mask image</description>      
+      <label>Output mask</label>
+      <default>outputMask.nii</default>
+      <channel>output</channel>
+    </image>
+
+    <image>
       <name>outputImage</name>
       <flag>o</flag>
       <longflag>outputImage</longflag>
       <description>Output image</description>      
       <label>Output image</label>
-      <default>outputMask.nii</default>
+      <default>outputMasked.nii</default>
       <channel>output</channel>
     </image>
 
@@ -49,13 +59,6 @@
       <longflag>pectoralis</longflag>
       <description>Also mask the pectoral muscle on MLO mammogram images.</description>
       <label>Also mask the pectoral muscle?</label>
-    </boolean>
-
-    <boolean>
-      <name>flgApplyMaskToImage</name>
-      <longflag>apply2image</longflag>
-      <description>Apply the mask to the image, setting pixels in the background to zero.</description>
-      <label>Apply mask to image?</label>
     </boolean>
 
     <boolean>
