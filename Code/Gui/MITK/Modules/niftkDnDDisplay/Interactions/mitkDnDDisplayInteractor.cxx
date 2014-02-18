@@ -122,7 +122,6 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
-  MITK_INFO << "mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)";
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
 
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
