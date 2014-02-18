@@ -2342,12 +2342,74 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
 // --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationController()
 {
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+//  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
+
+  mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();
+  unsigned expectedAxialSlice = d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL);
+  unsigned expectedSagittalSlice = d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL);
+  unsigned expectedCoronalSlice = d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL);
+
+  int axialSliceDelta;
+  int sagittalSliceDelta;
+  int coronalSliceDelta;
+
+  axialSliceDelta = +2;
+  expectedAxialSlice += axialSliceDelta;
+  expectedSelectedPosition[AxialAxis] += d->UpDirectionsInWorld[AxialAxis] * axialSliceDelta * d->SpacingsInWorld[AxialAxis];
+
+  /// TODO State transition is not atomic.
+return;
+  d->AxialSnc->GetSlice()->SetPos(expectedAxialSlice);
+
+  QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL), expectedAxialSlice);
+  MITK_INFO << "Expected selected position: " << expectedSelectedPosition;
+  MITK_INFO << "Actual selected position: " << d->Viewer->GetSelectedPosition();
+  QCOMPARE(d->Viewer->GetSelectedPosition(), expectedSelectedPosition);
+
+  d->StateTester->Clear();
+
+  sagittalSliceDelta = -3;
+  expectedSagittalSlice += sagittalSliceDelta;
+  expectedSelectedPosition[SagittalAxis] += d->UpDirectionsInWorld[SagittalAxis] * sagittalSliceDelta * d->SpacingsInWorld[SagittalAxis];
+
+  d->SagittalSnc->GetSlice()->SetPos(expectedSagittalSlice);
+
+  QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL), expectedSagittalSlice);
+  MITK_INFO << "Expected selected position: " << expectedSelectedPosition;
+  MITK_INFO << "Actual selected position: " << d->Viewer->GetSelectedPosition();
+  QCOMPARE(d->Viewer->GetSelectedPosition(), expectedSelectedPosition);
+
+  d->StateTester->Clear();
+
+  coronalSliceDelta = +5;
+  expectedCoronalSlice += coronalSliceDelta;
+  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * coronalSliceDelta * d->SpacingsInWorld[CoronalAxis];
+
+  d->CoronalSnc->GetSlice()->SetPos(expectedCoronalSlice);
+
+  QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL), expectedCoronalSlice);
+  MITK_INFO << "Expected selected position: " << expectedSelectedPosition;
+  MITK_INFO << "Actual selected position: " << d->Viewer->GetSelectedPosition();
+  QCOMPARE(d->Viewer->GetSelectedPosition(), expectedSelectedPosition);
+
+  d->StateTester->Clear();
 }
 
 
 // --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationController()
 {
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  mitk::Point3D randomWorldPosition = this->GetRandomWorldPosition();
+
+  /// TODO Test has not been written.
+return;
+  d->AxialSnc->SelectSliceByPoint(randomWorldPosition);
+
+  d->StateTester->Clear();
 }
 
 
