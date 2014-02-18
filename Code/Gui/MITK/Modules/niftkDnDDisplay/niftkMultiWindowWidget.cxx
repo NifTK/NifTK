@@ -411,57 +411,76 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  bool updateWasBlocked = this->BlockUpdate(true);
+  if (renderWindow != m_SelectedRenderWindow)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  /// TODO This function does not follow the usual pattern.
+    if (renderWindow == this->GetRenderWindow1())
+    {
+      m_Orientation = MIDAS_ORIENTATION_AXIAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  m_IsSelected = true;
-  m_SelectedRenderWindow = renderWindow;
-  m_SelectedRenderWindowHasChanged = true;
+      m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow2())
+    {
+      m_Orientation = MIDAS_ORIENTATION_SAGITTAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  if (renderWindow == this->GetRenderWindow1())
-  {
-    m_Orientation = MIDAS_ORIENTATION_AXIAL;
-    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow2())
-  {
-    m_Orientation = MIDAS_ORIENTATION_SAGITTAL;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow3())
-  {
-    m_Orientation = MIDAS_ORIENTATION_CORONAL;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow4())
-  {
-    m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
-  }
-  else
-  {
-    this->SetSelected(false);
-  }
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow3())
+    {
+      m_Orientation = MIDAS_ORIENTATION_CORONAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  if (m_IsSelected)
-  {
-    m_SelectedRenderWindowHasChanged = true;
-  }
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow4())
+    {
+      m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  this->BlockUpdate(updateWasBlocked);
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
+    }
+    else
+    {
+      m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
+      m_IsSelected = false;
+      if (m_SelectedRenderWindow != 0)
+      {
+        m_SelectedRenderWindow = 0;
+        m_SelectedRenderWindowHasChanged = true;
+      }
+
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering3->Disable();
+    }
+
+    this->BlockUpdate(updateWasBlocked);
+  }
 }
 
 
