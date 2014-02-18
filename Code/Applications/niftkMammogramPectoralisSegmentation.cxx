@@ -45,16 +45,15 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
-  bool flgApplyMaskToImage;
 
   std::string inputImage;
   std::string maskImage;
+  std::string outputMask;  
   std::string outputImage;  
   
   arguments() {
     flgVerbose = false;
     flgDebug = false;
-    flgApplyMaskToImage = false;
   }
 };
 
@@ -107,6 +106,10 @@ int DoMain(arguments args)
     imageReader->GetOutput()->Print( std::cout );
   }
 
+  typename InputImageType::Pointer image = imageReader->GetOutput();
+
+  image->DisconnectPipeline();
+
 
   // Read the mask image?
   // ~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +142,7 @@ int DoMain(arguments args)
     typename MammogramMaskSegmentationImageFilterType::Pointer 
       maskFilter = MammogramMaskSegmentationImageFilterType::New();
 
-    maskFilter->SetInput( imageReader->GetOutput() );
+    maskFilter->SetInput( image );
 
     maskFilter->SetDebug(   args.flgDebug );
     maskFilter->SetVerbose( args.flgVerbose );
@@ -166,7 +169,7 @@ int DoMain(arguments args)
   typename MammogramPectoralisSegmentationImageFilterType::Pointer 
     pecFilter = MammogramPectoralisSegmentationImageFilterType::New();
 
-  pecFilter->SetInput( imageReader->GetOutput() );  
+  pecFilter->SetInput( image );  
 
   pecFilter->SetVerbose( args.flgVerbose );
   pecFilter->SetDebug( args.flgDebug );
@@ -183,25 +186,74 @@ int DoMain(arguments args)
     return EXIT_FAILURE;
   }                
 
+  mask = pecFilter->GetOutput();
+  mask->DisconnectPipeline();
 
-  // Create the image writer and execute the pipeline
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
-  imageWriter->SetFileName(args.outputImage);
-  imageWriter->SetInput( pecFilter->GetOutput() );
-  
-  try
+
+  // Apply the mask to the image?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.outputImage.length() )
   {
-    imageWriter->Update(); 
+
+    typename itk::ImageRegionConstIterator< MaskImageType > 
+      inputIterator( mask, mask->GetLargestPossibleRegion());
+
+    typename itk::ImageRegionIterator< InputImageType > 
+      outputIterator(image, image->GetLargestPossibleRegion());
+        
+    for ( inputIterator.GoToBegin(), outputIterator.GoToBegin();
+          ! inputIterator.IsAtEnd();
+          ++inputIterator, ++outputIterator )
+    {
+      if ( ! inputIterator.Get() )
+        outputIterator.Set( 0 );
+    }
+
+
+    typedef itk::ImageFileWriter< InputImageType > InputImageWriterType;
+
+    typename InputImageWriterType::Pointer imageWriter = InputImageWriterType::New();
+
+    imageWriter->SetFileName(args.outputImage);
+    imageWriter->SetInput( image );
+  
+    try
+    {
+      imageWriter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "Failed: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }       
   }
-  catch( itk::ExceptionObject & err ) 
-  { 
-    std::cerr << "ERROR: Failed write image to file: " << args.outputImage << std::endl
-              << err << std::endl; 
-    return EXIT_FAILURE;
-  }                
+
+
+  // Save the mask image?
+  // ~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.outputMask.length() )
+  {
+    typedef itk::ImageFileWriter< MaskImageType > MaskImageWriterType;
+
+    typename MaskImageWriterType::Pointer imageWriter = MaskImageWriterType::New();
+
+    imageWriter->SetFileName(args.outputMask);
+    imageWriter->SetInput( mask );
+  
+    try
+    {
+      imageWriter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "Failed: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }       
+  }         
 
   return EXIT_SUCCESS;
 }
@@ -224,20 +276,21 @@ int main(int argc, char** argv)
 
   args.flgVerbose          = flgVerbose;
   args.flgDebug            = flgDebug;
-  args.flgApplyMaskToImage = flgApplyMaskToImage;
 
   args.inputImage  = inputImage;
   args.maskImage   = maskImage;
+  args.outputMask  = outputMask;
   args.outputImage = outputImage;
 
   std::cout << "Input image:  " << args.inputImage << std::endl
             << "Input mask:   " << args.maskImage << std::endl
+            << "Output mask:  " << args.outputMask << std::endl
             << "Output image: " << args.outputImage << std::endl;
 
   // Validate command line args
 
   if ( (  args.inputImage.length() == 0 ) ||
-       ( args.outputImage.length() == 0 ) )
+       ( ( args.outputImage.length() == 0 ) && ( args.outputMask.length() == 0 ) ) )
   {
     std::cout << "ERROR: Input and output image filenames must be specified" << std::endl;
     return EXIT_FAILURE;
