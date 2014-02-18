@@ -2018,6 +2018,39 @@ unsigned int niftkMultiWindowWidget::GetSliceIndex(MIDASOrientation orientation)
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientation, int slices)
+{
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN && slices != 0)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
+
+    unsigned int sliceIndex = this->GetSliceIndex(orientation);
+    int upDirection = this->GetSliceUpDirection(orientation);
+
+    int nextSliceIndex = sliceIndex + slices * upDirection;
+
+    unsigned int maxSliceIndex = this->GetMaxSliceIndex(orientation);
+
+    if (nextSliceIndex >= 0 && nextSliceIndex <= static_cast<int>(maxSliceIndex))
+    {
+      this->SetSliceIndex(orientation, nextSliceIndex);
+
+      /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
+      /// when scrolling through them by keeping the 'a' or 'z' key pressed.
+      /// Otherwise, issues on the scan or in the segmentation may be not seen.
+
+      /// TODO:
+      /// In spite of the comment above, it is not right to do any render window update here.
+      /// The forced immediate update should be done in the BlockUpdate() function.
+//      m_RenderingManager->ForceImmediateUpdate(m_MultiWidget->GetRenderWindow(orientation)->GetRenderWindow());
+    }
+
+    this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
 {
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();

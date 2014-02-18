@@ -186,6 +186,10 @@ public:
   /// \brief Set the current slice index.
   void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
 
+  /// \brief Move n slices towards or opposite of the up direction.
+  /// If delta is positive, the direction is the up direction.
+  void MoveAnteriorOrPosterior(MIDASOrientation orientation, int delta);
+
   /// \brief Get the current time step.
   unsigned int GetTimeStep() const;
 

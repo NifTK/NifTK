@@ -928,7 +928,7 @@ void niftkSingleViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLay
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::MoveAnterior()
 {
-  return this->MoveAnteriorPosterior(1);
+  return this->MoveAnteriorPosterior(+1);
 }
 
 
@@ -942,33 +942,8 @@ bool niftkSingleViewerWidget::MovePosterior()
 //-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::MoveAnteriorPosterior(int slices)
 {
-  bool actuallyDidSomething = false;
-
-  MIDASOrientation orientation = this->GetOrientation();
-  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    unsigned int sliceIndex = this->GetSliceIndex(orientation);
-    int upDirection = this->GetSliceUpDirection(orientation);
-
-    int nextSliceIndex = sliceIndex + slices * upDirection;
-
-    unsigned int maxSliceIndex = this->GetMaxSliceIndex(orientation);
-
-    if (nextSliceIndex >= 0 && nextSliceIndex <= static_cast<int>(maxSliceIndex))
-    {
-      this->SetSliceIndex(orientation, nextSliceIndex);
-
-      /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
-      /// when scrolling through them by keeping the 'a' or 'z' key pressed.
-      /// Otherwise, issues on the scan or in the segmentation may be not seen.
-      m_RenderingManager->ForceImmediateUpdate(m_MultiWidget->GetRenderWindow(orientation)->GetRenderWindow());
-
-      actuallyDidSomething = true;
-      emit SelectedPositionChanged(this, this->GetSelectedPosition());
-    }
-  }
-
-  return actuallyDidSomething;
+  m_MultiWidget->MoveAnteriorOrPosterior(this->GetOrientation(), slices);
+  return true;
 }
 
 
