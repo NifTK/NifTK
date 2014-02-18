@@ -165,7 +165,7 @@ QPoint niftkSingleViewerWidgetTestClass::GetPointAtCursorPosition(QmitkRenderWin
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCursorPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point)
+mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point)
 {
   QRect rect = renderWindow->rect();
   mitk::Vector2D cursorPosition;
@@ -212,37 +212,71 @@ bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>&
 
 
 // --------------------------------------------------------------------------
+mitk::Point3D niftkSingleViewerWidgetTestClass::GetRandomWorldPosition() const
+{
+  Q_D(const niftkSingleViewerWidgetTestClass);
+
+  mitk::Geometry3D* geometry = d->Image->GetGeometry();
+
+  return geometry->GetOrigin()
+      + geometry->GetAxisVector(0) * ((double) std::rand() / RAND_MAX)
+      + geometry->GetAxisVector(1) * ((double) std::rand() / RAND_MAX)
+      + geometry->GetAxisVector(2) * ((double) std::rand() / RAND_MAX);
+}
+
+
+// --------------------------------------------------------------------------
+mitk::Vector2D niftkSingleViewerWidgetTestClass::GetRandomDisplayPosition()
+{
+  mitk::Vector2D randomDisplayPosition;
+  randomDisplayPosition[0] = (double) std::rand() / RAND_MAX;
+  randomDisplayPosition[1] = (double) std::rand() / RAND_MAX;
+  return randomDisplayPosition;
+}
+
+
+// --------------------------------------------------------------------------
+std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetRandomDisplayPositions(std::size_t size)
+{
+  std::vector<mitk::Vector2D> randomDisplayPositions(size);
+  for (std::size_t i = 0; i < size; ++i)
+  {
+    randomDisplayPositions[i] = Self::GetRandomDisplayPosition();
+  }
+  return randomDisplayPositions;
+}
+
+
+// --------------------------------------------------------------------------
+double niftkSingleViewerWidgetTestClass::GetRandomScaleFactor()
+{
+  return 2.0 * std::rand() / RAND_MAX;
+}
+
+
+// --------------------------------------------------------------------------
+std::vector<double> niftkSingleViewerWidgetTestClass::GetRandomScaleFactors(std::size_t size)
+{
+  std::vector<double> randomScaleFactors(size);
+  for (std::size_t i = 0; i < size; ++i)
+  {
+    randomScaleFactors[i] = Self::GetRandomScaleFactor();
+  }
+  return randomScaleFactors;
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::SetRandomPositions()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  mitk::Geometry3D* geometry = d->Image->GetGeometry();
-
-  mitk::Point3D randomSelectedPosition;
-  randomSelectedPosition = geometry->GetOrigin()
-      + geometry->GetAxisVector(0) * ((double) std::rand() / RAND_MAX)
-      + geometry->GetAxisVector(1) * ((double) std::rand() / RAND_MAX)
-      + geometry->GetAxisVector(2) * ((double) std::rand() / RAND_MAX);
-
-  std::vector<mitk::Vector2D> randomCursorPositions(3);
-  randomCursorPositions[0][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[0][1] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[1][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[1][1] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[2][0] = (double) std::rand() / RAND_MAX;
-  randomCursorPositions[2][1] = (double) std::rand() / RAND_MAX;
-
-  std::vector<double> randomScaleFactors(3);
-  randomScaleFactors[0] = 2 * (double) std::rand() / RAND_MAX;
-  randomScaleFactors[1] = 2 * (double) std::rand() / RAND_MAX;
-  randomScaleFactors[2] = 2 * (double) std::rand() / RAND_MAX;
-
   d->StateTester->Clear();
-  d->Viewer->SetSelectedPosition(randomSelectedPosition);
+  d->Viewer->SetSelectedPosition(this->GetRandomWorldPosition());
   d->StateTester->Clear();
-  d->Viewer->SetCursorPositions(randomCursorPositions);
+  d->Viewer->SetCursorPositions(Self::GetRandomDisplayPositions());
   d->StateTester->Clear();
-  d->Viewer->SetScaleFactors(randomScaleFactors);
+  d->Viewer->SetScaleFactors(Self::GetRandomScaleFactors());
 }
 
 
@@ -328,8 +362,8 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->SetShow3DWindowIn2x2WindowLayout(true);
   d->Viewer->SetRememberSettingsPerWindowLayout(false);
   d->Viewer->SetDisplayInteractionsEnabled(true);
-  d->Viewer->SetCursorPositionBinding(true);
-  d->Viewer->SetScaleFactorBinding(true);
+  d->Viewer->SetCursorPositionBinding(false);
+  d->Viewer->SetScaleFactorBinding(false);
   d->Viewer->SetDefaultSingleWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->Viewer->SetDefaultMultiWindowLayout(WINDOW_LAYOUT_ORTHO);
 
@@ -609,9 +643,6 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->Viewer->SetSelectedPosition(selectedPosition);
 
-//  MITK_INFO << "actual selected position: " << selectedPosition;
-//  MITK_INFO << "actual slices: " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL) << " " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL) << " " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL);
-
   QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL), expectedSagittalSlice);
   QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL), expectedCoronalSlice);
@@ -631,16 +662,11 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   expectedState->SetSelectedPosition(selectedPosition);
   expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * 50;
   expectedAxialSlice += d->UpDirectionsInWorld[AxialAxis] * 50;
-//  MITK_INFO << "delta (sag, cor, ax): 0, +50, +50";
-//  MITK_INFO << "expected selected position: " << selectedPosition;
-//  MITK_INFO << "expected slices: " << expectedSagittalSlice << " " << expectedCoronalSlice << " " << expectedAxialSlice;
   cursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 50 * d->SpacingsInWorld[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / coronalWindow->height();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
   d->Viewer->SetSelectedPosition(selectedPosition);
-//  MITK_INFO << "actual selected position: " << selectedPosition;
-//  MITK_INFO << "actual slices: " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL) << " " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL) << " " << d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL);
 
   QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL), expectedAxialSlice);
   QCOMPARE(d->Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL), expectedSagittalSlice);
@@ -1580,60 +1606,547 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QmitkRenderWindow* coronalWindow = d->Viewer->GetCoronalWindow();
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  QPoint centre = coronalWindow->rect().center();
-  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, centre);
+  QPoint newPoint;
+  ViewerState::Pointer expectedState;
+  mitk::Point3D expectedSelectedPosition;
+  std::vector<mitk::Vector2D> expectedCursorPositions;
 
+  double scaleFactor;
+
+  /// ---------------------------------------------------------------------------
+  /// Coronal window
+  /// ---------------------------------------------------------------------------
+
+  newPoint = coronalWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
   d->StateTester->Clear();
 
-  mitk::Point3D lastPosition = d->Viewer->GetSelectedPosition();
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
 
-  QPoint newPoint = centre;
-  newPoint.rx() += 30;
-  std::vector<mitk::Vector2D> expectedCursorPositions = d->Viewer->GetCursorPositions();
-  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL] = Self::GetCursorPositionAtPoint(coronalWindow, newPoint);
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_CORONAL);
+
+  /// Note that the origin of a QPoint is the upper left corner and the y coordinate
+  /// is increasing downwards, in contrast with both the world coordinates and the
+  /// display coordinates, where the origin is in the bottom left corner (and in the
+  /// front for the world position) and the y coordinate is increasing upwards.
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[SagittalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] += 120.0 / coronalWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
 
   QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
-  mitk::Point3D newPosition = d->Viewer->GetSelectedPosition();
-  std::vector<mitk::Vector2D> newCursorPositions = d->Viewer->GetCursorPositions();
-  QVERIFY(newPosition[0] != lastPosition[0]);
-  QCOMPARE(newPosition[1], lastPosition[1]);
-  QCOMPARE(newPosition[2], lastPosition[2]);
-  QVERIFY(Self::Equals(newCursorPositions, expectedCursorPositions));
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), std::size_t(0));
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), std::size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
-  lastPosition = newPosition;
+  newPoint.ry() += 60;
+  expectedSelectedPosition[AxialAxis] -= 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] -= 60.0 / coronalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
 
-  newPoint.ry() += 20;
   QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
-  newPosition = d->Viewer->GetSelectedPosition();
-  QCOMPARE(newPosition[0], lastPosition[0]);
-  QCOMPARE(newPosition[1], lastPosition[1]);
-  QVERIFY(newPosition[2] != lastPosition[1]);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), std::size_t(0));
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), std::size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
-  lastPosition = d->Viewer->GetSelectedPosition();
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[SagittalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[AxialAxis] += 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 30.0 / coronalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 40.0 / coronalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
 
-  newPoint.rx() -= 40;
-  newPoint.ry() += 50;
   QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
-  newPosition = d->Viewer->GetSelectedPosition();
-  QVERIFY(newPosition[0] != lastPosition[0]);
-  QCOMPARE(newPosition[1], lastPosition[1]);
-  QVERIFY(newPosition[2] != lastPosition[2]);
-  QCOMPARE(d->StateTester->GetItkSignals(axialSnc).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc).size(), std::size_t(0));
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// Axial window
+  /// ---------------------------------------------------------------------------
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
+  d->StateTester->Clear();
+
+  newPoint = axialWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_AXIAL);
+
+  /// Note that the origin of a QPoint is the upper left corner and the y coordinate
+  /// is increasing downwards, in contrast with both the world coordinates and the
+  /// display coordinates, where the origin is in the bottom left corner (and in the
+  /// front for the world position) and the y coordinate is increasing upwards.
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[SagittalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] += 120.0 / axialWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  newPoint.ry() += 60;
+  expectedSelectedPosition[CoronalAxis] += 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] -= 60.0 / axialWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[SagittalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[CoronalAxis] -= 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] -= 30.0 / axialWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] += 40.0 / axialWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// Sagittal window
+  /// ---------------------------------------------------------------------------
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
+  d->StateTester->Clear();
+
+  newPoint = sagittalWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_SAGITTAL);
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[CoronalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] += 120.0 / sagittalWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  newPoint.ry() += 60;
+  expectedSelectedPosition[AxialAxis] -= 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] -= 60.0 / sagittalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[CoronalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[AxialAxis] += 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] -= 30.0 / sagittalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] += 40.0 / sagittalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// 2x2 (orthogonal) window layout
+  /// ---------------------------------------------------------------------------
+
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// 2x2 (orthogonal) window layout, coronal window
+  /// ---------------------------------------------------------------------------
+
+  newPoint = coronalWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_CORONAL);
+
+  /// Note that the origin of a QPoint is the upper left corner and the y coordinate
+  /// is increasing downwards, in contrast with both the world coordinates and the
+  /// display coordinates, where the origin is in the bottom left corner (and in the
+  /// front for the world position) and the y coordinate is increasing upwards.
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[SagittalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] += 120.0 / coronalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] += 120.0 / axialWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.ry() += 60;
+  expectedSelectedPosition[AxialAxis] -= 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] -= 60.0 / coronalWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] -= 60.0 / sagittalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[SagittalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[AxialAxis] += 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 30.0 / coronalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 40.0 / coronalWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] -= 30.0 / axialWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] += 40.0 / sagittalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(coronalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// 2x2 (orthogonal) window layout, axial window
+  /// ---------------------------------------------------------------------------
+
+  newPoint = axialWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QVERIFY(axialWindow->hasFocus());
+  QCOMPARE(mitk::GlobalInteraction::GetInstance()->GetFocus(), axialWindow->GetRenderer());
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), axialWindow);
+  QCOMPARE(d->Viewer->GetOrientation(), MIDAS_ORIENTATION_AXIAL);
+  QCOMPARE(d->StateTester->GetItkSignals(d->FocusEvent).size(), std::size_t(1));
+  /// Disabled, see the TODO comment above. None of these events should be emitted.
+//  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedRenderWindowChanged).size(), std::size_t(1));
+//  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_AXIAL);
+
+  /// Note that the origin of a QPoint is the upper left corner and the y coordinate
+  /// is increasing downwards, in contrast with both the world coordinates and the
+  /// display coordinates, where the origin is in the bottom left corner (and in the
+  /// front for the world position) and the y coordinate is increasing upwards.
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[SagittalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] += 120.0 / axialWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] += 120.0 / axialWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.ry() += 60;
+  expectedSelectedPosition[CoronalAxis] += 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] -= 60.0 / axialWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] += 60.0 / sagittalWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[SagittalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[CoronalAxis] -= 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][0] -= 30.0 / axialWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] += 40.0 / axialWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 30.0 / coronalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] -= 40.0 / sagittalWindow->width();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(axialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
+
+  d->StateTester->Clear();
+
+  /// ---------------------------------------------------------------------------
+  /// 2x2 (orthogonal) window layout, sagittal window
+  /// ---------------------------------------------------------------------------
+
+  newPoint = sagittalWindow->rect().center();
+
+  /// TODO
+  /// The position should already be in the centre, but there seem to be
+  /// a half spacing difference from the expected position. After clicking
+  /// into the middle of the render window, the selected position moves
+  /// with about half a spacing.
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QVERIFY(sagittalWindow->hasFocus());
+  QCOMPARE(mitk::GlobalInteraction::GetInstance()->GetFocus(), sagittalWindow->GetRenderer());
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), sagittalWindow);
+  QCOMPARE(d->Viewer->GetOrientation(), MIDAS_ORIENTATION_SAGITTAL);
+  QCOMPARE(d->StateTester->GetItkSignals(d->FocusEvent).size(), std::size_t(1));
+  /// Disabled, see the TODO comment above. None of these events should be emitted.
+//  QCOMPARE(d->StateTester->GetItkSignals(sagittalSnc, d->GeometrySliceEvent).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedRenderWindowChanged).size(), std::size_t(1));
+//  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(0));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+
+  d->StateTester->Clear();
+
+  expectedState = ViewerState::New(d->Viewer);
+  expectedSelectedPosition = expectedState->GetSelectedPosition();
+  expectedCursorPositions = expectedState->GetCursorPositions();
+
+  scaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_SAGITTAL);
+
+  newPoint.rx() += 120;
+  expectedSelectedPosition[CoronalAxis] += 120.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] += 120.0 / sagittalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] -= 120.0 / axialWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.ry() += 60;
+  expectedSelectedPosition[AxialAxis] -= 60.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] -= 60.0 / sagittalWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] -= 60.0 / coronalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  /// TODO
+  /// Two CursorPositionChanged signals should be emitted, but three is.
+//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+
+  d->StateTester->Clear();
+
+  newPoint.rx() -= 30;
+  newPoint.ry() -= 40;
+  expectedSelectedPosition[CoronalAxis] -= 30.0 * scaleFactor;
+  expectedSelectedPosition[AxialAxis] += 40.0 * scaleFactor;
+  expectedState->SetSelectedPosition(expectedSelectedPosition);
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][0] -= 30.0 / sagittalWindow->width();
+  expectedCursorPositions[MIDAS_ORIENTATION_SAGITTAL][1] += 40.0 / sagittalWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_AXIAL][1] += 30.0 / axialWindow->height();
+  expectedCursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 40.0 / coronalWindow->height();
+  expectedState->SetCursorPositions(expectedCursorPositions);
+  d->StateTester->SetExpectedState(expectedState);
+
+  QTest::mouseClick(sagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
+
+  QCOMPARE(d->StateTester->GetItkSignals(coronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals(axialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
 
   d->StateTester->Clear();
 }

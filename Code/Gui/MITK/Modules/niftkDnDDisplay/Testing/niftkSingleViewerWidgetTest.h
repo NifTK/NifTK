@@ -74,7 +74,7 @@ public:
   /// \brief Converts a point on the screen to a cursor position in a render window.
   /// The cursor position is a relative position within the render window normalised to the render window size.
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
-  static mitk::Vector2D GetCursorPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
+  static mitk::Vector2D GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
 
   /// \brief Determines if two world positions are equal with the tolerance of half spacing.
   /// Converting the positions to voxel space should result equal coordinates.
@@ -86,6 +86,22 @@ public:
   /// \brief Determines if two vectors of cursor positions are equal with the given tolerance.
   /// The function assumes that the vectors contain three elements.
   static bool Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001);
+
+  /// \brief Gives a random position from the image volume, in mm coordinates.
+  mitk::Point3D GetRandomWorldPosition() const;
+
+  /// \brief Gives a random position in the render window, normalised with the render window size.
+  /// The measurement is unit (i.e. px/px).
+  static mitk::Vector2D GetRandomDisplayPosition();
+
+  /// \brief Gives a vector of random diplay positions, normalised with the render window size.
+  static std::vector<mitk::Vector2D> GetRandomDisplayPositions(std::size_t size = std::size_t(3));
+
+  /// \brief Gives a random scale factor (mm/px) within the range (0.0, 2.0).
+  static double GetRandomScaleFactor();
+
+  /// \brief Gives a vector of random scale factors (mm/px) within the range (0.0, 2.0).
+  static std::vector<double> GetRandomScaleFactors(std::size_t size = std::size_t(3));
 
   /// \brief Sets random selected position, cursor positions and scale factors for the viewer.
   void SetRandomPositions();
