@@ -29,6 +29,7 @@
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkWriteImage.h>
+#include <itkImageRegionIterator.h>
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkMammogramLeftOrRightSideCalculator.h>
 
@@ -200,7 +201,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
               << "Output size: " << outSize << ", spacing: " << outSpacing << std::endl;
   }
 
-  typedef itk::SubsampleImageFilter< TInputImage, TInputImage > SubsampleImageFilterType;
+  typedef itk::SubsampleImageFilter< InputImageType, InputImageType > SubsampleImageFilterType;
 
   typename SubsampleImageFilterType::Pointer shrinkFilter = SubsampleImageFilterType::New();
 
@@ -209,13 +210,31 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   shrinkFilter->SetSubsamplingFactors( sampling );
 
   shrinkFilter->Update();
+
   imPipelineConnector = shrinkFilter->GetOutput();
+  imPipelineConnector->DisconnectPipeline();
+
+  // Subtract the threshold to ensure the background is close to zero
+
+  typename itk::ImageRegionIterator< InputImageType > 
+    imIterator(imPipelineConnector, imPipelineConnector->GetLargestPossibleRegion());
+  
+  for ( imIterator.GoToBegin();
+        ! imIterator.IsAtEnd();
+        ++imIterator )
+  {
+    if ( imIterator.Get() < intThreshold )
+    {
+      imIterator.Set( 0 );
+    }
+  }
 
   if ( this->GetDebug() )
   {
     WriteImageToFile< TInputImage >( "ShrunkImage.nii", "shrunk image", imPipelineConnector ); 
   }
 
+  
 
   // Find the center of mass of the image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
