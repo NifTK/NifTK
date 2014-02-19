@@ -172,7 +172,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
   this->SetViewerNumber(m_DefaultViewerRows, m_DefaultViewerColumns, false);
 
   // Connect Qt Signals to make it all hang together.
-  this->connect(m_ControlPanel, SIGNAL(SliceIndexChanged(int)), SLOT(OnSliceIndexChanged(int)));
+  this->connect(m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceChanged(int)));
   this->connect(m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
   this->connect(m_ControlPanel, SIGNAL(MagnificationChanged(double)), SLOT(OnMagnificationChanged(double)));
 
@@ -787,7 +787,7 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
     return;
   }
 
-  m_ControlPanel->SetSliceIndex(viewer->GetSliceIndex(viewer->GetOrientation()));
+  m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(viewer->GetOrientation()));
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
@@ -1008,14 +1008,14 @@ void niftkMultiViewerWidget::SetSelectedRenderWindow(int selectedViewerIndex, Qm
 
     if (orientation != MIDAS_ORIENTATION_UNKNOWN)
     {
-      unsigned int maxSliceIndex = selectedViewer->GetMaxSliceIndex(orientation);
-      unsigned int sliceIndex = selectedViewer->GetSliceIndex(orientation);
-      m_ControlPanel->SetMaxSliceIndex(maxSliceIndex);
-      m_ControlPanel->SetSliceIndex(sliceIndex);
+      int maxSlice = selectedViewer->GetMaxSlice(orientation);
+      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
+      m_ControlPanel->SetMaxSlice(maxSlice);
+      m_ControlPanel->SetSelectedSlice(selectedSlice);
     }
 
-    unsigned int maxTimeStep = selectedViewer->GetMaxTimeStep();
-    unsigned int timeStep = selectedViewer->GetTimeStep();
+    int maxTimeStep = selectedViewer->GetMaxTimeStep();
+    int timeStep = selectedViewer->GetTimeStep();
     m_ControlPanel->SetMaxTimeStep(maxTimeStep);
     m_ControlPanel->SetTimeStep(timeStep);
 
@@ -1090,14 +1090,7 @@ void niftkMultiViewerWidget::OnDropAccumulateChanged(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::OnSliceIndexChanged(int sliceIndex)
-{
-  this->SetSelectedWindowSliceIndex(sliceIndex);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
+void niftkMultiViewerWidget::OnSelectedSliceChanged(int selectedSlice)
 {
   MIDASOrientation orientation = this->GetSelectedViewer()->GetOrientation();
 
@@ -1105,7 +1098,7 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
   {
     niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
     bool signalsWereBlocked = selectedViewer->blockSignals(true);
-    selectedViewer->SetSliceIndex(orientation, sliceIndex);
+    selectedViewer->SetSelectedSlice(orientation, selectedSlice);
     selectedViewer->blockSignals(signalsWereBlocked);
 
     if (m_ControlPanel->AreViewerPositionsBound())
@@ -1115,7 +1108,7 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
           signalsWereBlocked = otherViewer->blockSignals(true);
-          otherViewer->SetSliceIndex(orientation, sliceIndex);
+          otherViewer->SetSelectedSlice(orientation, selectedSlice);
           otherViewer->blockSignals(signalsWereBlocked);
         }
       }
@@ -1123,7 +1116,7 @@ void niftkMultiViewerWidget::SetSelectedWindowSliceIndex(int sliceIndex)
   }
   else
   {
-    MITK_WARN << "Found an invalid orientation in viewer " << this->GetSelectedViewerIndex() << ", so ignoring request to change to slice " << sliceIndex << std::endl;
+    MITK_WARN << "Found an invalid orientation in viewer " << this->GetSelectedViewerIndex() << ", so ignoring request to change to slice " << selectedSlice << std::endl;
   }
 }
 
@@ -1944,9 +1937,9 @@ void niftkMultiViewerWidget::OnPopupOpened(bool opened)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::SetSliceIndexTracking(bool tracking)
+void niftkMultiViewerWidget::SetSliceTracking(bool tracking)
 {
-  m_ControlPanel->SetSliceIndexTracking(tracking);
+  m_ControlPanel->SetSliceTracking(tracking);
 }
 
 

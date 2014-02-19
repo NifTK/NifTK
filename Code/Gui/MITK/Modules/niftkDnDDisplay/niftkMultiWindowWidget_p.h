@@ -175,26 +175,26 @@ public:
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
+  int GetMaxSlice(MIDASOrientation orientation) const;
 
   /// \brief Returns the maximum allowed time step.
-  unsigned int GetMaxTimeStep() const;
+  int GetMaxTimeStep() const;
 
   /// \brief Get the current slice index.
-  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
+  int GetSelectedSlice(MIDASOrientation orientation) const;
 
   /// \brief Set the current slice index.
-  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
+  void SetSelectedSlice(MIDASOrientation orientation, int selectedSlice);
 
   /// \brief Move n slices towards or opposite of the up direction.
   /// If delta is positive, the direction is the up direction.
   void MoveAnteriorOrPosterior(MIDASOrientation orientation, int delta);
 
   /// \brief Get the current time step.
-  unsigned int GetTimeStep() const;
+  int GetTimeStep() const;
 
   /// \brief Set the current time step.
-  void SetTimeStep(unsigned int timeStep);
+  void SetTimeStep(int timeStep);
 
   /// \brief Gets the selected point in the world coordinate system (mm).
   const mitk::Point3D& GetSelectedPosition() const;
@@ -391,9 +391,9 @@ private:
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
-  unsigned m_AxialSliceTag;
-  unsigned m_SagittalSliceTag;
-  unsigned m_CoronalSliceTag;
+  unsigned long m_AxialSliceTag;
+  unsigned long m_SagittalSliceTag;
+  unsigned long m_CoronalSliceTag;
   bool m_IsSelected;
   bool m_IsEnabled;
   QmitkRenderWindow* m_SelectedRenderWindow;

@@ -166,8 +166,8 @@ public:
   /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the window layout.
   void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
 
-  /// \brief Sets the slice index slider to be tracking.
-  void SetSliceIndexTracking(bool tracking);
+  /// \brief Sets the slice slider to be tracking.
+  void SetSliceTracking(bool tracking);
 
   /// \brief Sets the time step slider to be tracking.
   void SetTimeStepTracking(bool tracking);
@@ -177,9 +177,6 @@ public:
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
   void SetSelectedTimeStep(int timeStep);
-
-  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes slice index.
-  void SetSelectedWindowSliceIndex(int sliceIndex);
 
   /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
@@ -258,8 +255,8 @@ signals:
 
 protected slots:
 
-  /// \brief Called when the slice index has been changed through the control panel.
-  void OnSliceIndexChanged(int sliceIndex);
+  /// \brief Called when the selected slice has been changed through the control panel.
+  void OnSelectedSliceChanged(int selectedSlice);
 
   /// \brief Called when the time step has been changed through the control panel.
   void OnTimeStepChanged(int timeStep);

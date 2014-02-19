@@ -89,7 +89,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   // Create/Connect the state machine
   m_DnDDisplayStateMachine = mitk::DnDDisplayStateMachine::New("DnDDisplayStateMachine", this);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
-  for (unsigned j = 0; j < renderWindows.size(); ++j)
+  for (std::size_t j = 0; j < renderWindows.size(); ++j)
   {
     m_DnDDisplayStateMachine->AddRenderer(renderWindows[j]->GetRenderer());
   }
@@ -335,14 +335,14 @@ QColor niftkSingleViewerWidget::GetBackgroundColor() const
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkSingleViewerWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetMaxSlice(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetMaxSliceIndex(orientation);
+  return m_MultiWidget->GetMaxSlice(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkSingleViewerWidget::GetMaxTimeStep() const
+int niftkSingleViewerWidget::GetMaxTimeStep() const
 {
   return m_MultiWidget->GetMaxTimeStep();
 }
@@ -597,31 +597,31 @@ void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkSingleViewerWidget::GetSliceIndex(MIDASOrientation orientation) const
+int niftkSingleViewerWidget::GetSelectedSlice(MIDASOrientation orientation) const
 {
-  return m_MultiWidget->GetSliceIndex(orientation);
+  return m_MultiWidget->GetSelectedSlice(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
+void niftkSingleViewerWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
 {
   if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    m_MultiWidget->SetSliceIndex(orientation, sliceIndex);
+    m_MultiWidget->SetSelectedSlice(orientation, selectedSlice);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkSingleViewerWidget::GetTimeStep() const
+int niftkSingleViewerWidget::GetTimeStep() const
 {
   return m_MultiWidget->GetTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetTimeStep(unsigned int timeStep)
+void niftkSingleViewerWidget::SetTimeStep(int timeStep)
 {
   m_MultiWidget->SetTimeStep(timeStep);
 }
@@ -886,7 +886,7 @@ void niftkSingleViewerWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
-  for (unsigned i = 0; i < renderWindows.size(); i++)
+  for (std::size_t i = 0; i < renderWindows.size(); i++)
   {
     renderWindows[i]->GetVtkRenderWindow()->Render();
   }

@@ -221,7 +221,7 @@ void niftkDnDDisplayEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
-    d->m_MultiViewer->SetSliceIndexTracking(sliceIndexTracking);
+    d->m_MultiViewer->SetSliceTracking(sliceIndexTracking);
     d->m_MultiViewer->SetTimeStepTracking(timeStepTracking);
     d->m_MultiViewer->SetMagnificationTracking(magnificationTracking);
     d->m_MultiViewer->SetDefaultWindowLayout(defaultLayout);
@@ -276,7 +276,7 @@ void niftkDnDDisplayEditor::OnPreferencesChanged( const berry::IBerryPreferences
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
-    d->m_MultiViewer->SetSliceIndexTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetSliceTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
     d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
     d->m_MultiViewer->SetMagnificationTracking(prefs->GetBool(niftkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
   }

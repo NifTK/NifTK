@@ -77,9 +77,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 : QmitkStdMultiWidget(parent, flags, renderingManager)
 , m_RenderWindows(4)
 , m_GridLayout(NULL)
-, m_AxialSliceTag(0)
-, m_SagittalSliceTag(0)
-, m_CoronalSliceTag(0)
+, m_AxialSliceTag(0ul)
+, m_SagittalSliceTag(0ul)
+, m_CoronalSliceTag(0ul)
 , m_IsSelected(false)
 , m_IsEnabled(false)
 , m_SelectedRenderWindow(0)
@@ -268,7 +268,7 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
   // Stop listening to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  for (unsigned i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     this->RemoveDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
@@ -1483,37 +1483,37 @@ WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
+int niftkMultiWindowWidget::GetMaxSlice(MIDASOrientation orientation) const
 {
   assert(orientation != MIDAS_ORIENTATION_UNKNOWN);
 
-  unsigned int result = 0;
+  int maxSlice = 0;
 
   mitk::SliceNavigationController* snc = m_RenderWindows[orientation]->GetSliceNavigationController();
 
   if (snc->GetSlice() != NULL && snc->GetSlice()->GetSteps() > 0)
   {
-    result = snc->GetSlice()->GetSteps() - 1;
+    maxSlice = snc->GetSlice()->GetSteps() - 1;
   }
 
-  return result;
+  return maxSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetMaxTimeStep() const
+int niftkMultiWindowWidget::GetMaxTimeStep() const
 {
-  unsigned int result = 0;
+  int maxTimeStep = 0;
 
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   assert(snc);
 
   if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
   {
-    result = snc->GetTime()->GetSteps() -1;
+    maxTimeStep = snc->GetTime()->GetSteps() -1;
   }
 
-  return result;
+  return maxTimeStep;
 }
 
 
@@ -1969,7 +1969,25 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
+int niftkMultiWindowWidget::GetSelectedSlice(MIDASOrientation orientation) const
+{
+  int selectedSlice = 0;
+
+  if (m_Geometry != NULL)
+  {
+    mitk::Index3D selectedPositionInVx;
+    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+
+    int axis = m_OrientationToAxisMap[orientation];
+    selectedSlice = selectedPositionInVx[axis];
+  }
+
+  return selectedSlice;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
 {
   const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
@@ -1980,7 +1998,7 @@ void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigne
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    selectedPositionInVx[axis] = sliceIndex;
+    selectedPositionInVx[axis] = selectedSlice;
 
     mitk::Point3D tmp;
     tmp[0] = selectedPositionInVx[0];
@@ -2000,40 +2018,22 @@ void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigne
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetSliceIndex(MIDASOrientation orientation) const
-{
-  int sliceIndex = 0;
-
-  if (m_Geometry != NULL)
-  {
-    mitk::Index3D selectedPositionInVx;
-    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
-
-    int axis = m_OrientationToAxisMap[orientation];
-    sliceIndex = selectedPositionInVx[axis];
-  }
-
-  return sliceIndex;
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientation, int slices)
 {
   if (orientation != MIDAS_ORIENTATION_UNKNOWN && slices != 0)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
-    unsigned int sliceIndex = this->GetSliceIndex(orientation);
+    int selectedSlice = this->GetSelectedSlice(orientation);
     int upDirection = this->GetSliceUpDirection(orientation);
 
-    int nextSliceIndex = sliceIndex + slices * upDirection;
+    int nextSelectedSlice = selectedSlice + slices * upDirection;
 
-    unsigned int maxSliceIndex = this->GetMaxSliceIndex(orientation);
+    int maxSlice = this->GetMaxSlice(orientation);
 
-    if (nextSliceIndex >= 0 && nextSliceIndex <= static_cast<int>(maxSliceIndex))
+    if (nextSelectedSlice >= 0 && nextSelectedSlice <= static_cast<int>(maxSlice))
     {
-      this->SetSliceIndex(orientation, nextSliceIndex);
+      this->SetSelectedSlice(orientation, nextSelectedSlice);
 
       /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
       /// when scrolling through them by keeping the 'a' or 'z' key pressed.
@@ -2051,7 +2051,7 @@ void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientatio
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
+void niftkMultiWindowWidget::SetTimeStep(int timeStep)
 {
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   snc->GetTime()->SetPos(timeStep);
@@ -2065,7 +2065,7 @@ void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetTimeStep() const
+int niftkMultiWindowWidget::GetTimeStep() const
 {
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
 

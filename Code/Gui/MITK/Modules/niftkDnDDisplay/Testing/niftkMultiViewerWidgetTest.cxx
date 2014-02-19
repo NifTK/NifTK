@@ -163,7 +163,7 @@ void niftkMultiViewerWidgetTestClass::init()
   d->MultiViewer->SetShow3DWindowIn2x2WindowLayout(false);
   d->MultiViewer->SetShowMagnificationSlider(true);
   d->MultiViewer->SetRememberSettingsPerWindowLayout(true);
-  d->MultiViewer->SetSliceIndexTracking(true);
+  d->MultiViewer->SetSliceTracking(true);
   d->MultiViewer->SetTimeStepTracking(true);
   d->MultiViewer->SetMagnificationTracking(true);
   d->MultiViewer->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
