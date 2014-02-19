@@ -132,6 +132,12 @@ private slots:
   /// \brief Tests the SetSelectedPosition function.
   void testSetSelectedPosition();
 
+  /// \brief Tests if the centre slice is selected after the image is loaded.
+  void testGetSliceIndex();
+
+  /// \brief Tests the SetSliceIndex function.
+  void testSetSliceIndex();
+
   /// \brief Tests if the cursor position is in the centre of the windoow after the image is loaded.
   void testGetCursorPosition();
 

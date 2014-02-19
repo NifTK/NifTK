@@ -712,6 +712,18 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testGetSliceIndex()
+{
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testSetSliceIndex()
+{
+}
+
+
+// --------------------------------------------------------------------------
 void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
