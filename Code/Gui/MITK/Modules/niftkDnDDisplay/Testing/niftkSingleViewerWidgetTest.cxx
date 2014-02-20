@@ -441,7 +441,7 @@ void niftkSingleViewerWidgetTestClass::cleanup()
 void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
 {
   Q_D(niftkSingleViewerWidgetTestClass);
-/*
+
   QMimeData* mimeData = new QMimeData;
   QString dataNodeAddresses("");
   for (int i = 0; i < nodes.size(); ++i)
@@ -464,9 +464,9 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
   {
     QTest::qWarn("Drop event not accepted by receiving widget.");
   }
-*/
+
   d->VisibilityManager->OnNodesDropped(d->Viewer, renderWindow, nodes);
-  d->Viewer->OnNodesDropped(renderWindow, nodes);
+//  d->Viewer->OnNodesDropped(renderWindow, nodes);
 }
 
 
@@ -483,7 +483,7 @@ void niftkSingleViewerWidgetTestClass::MouseWheel(QWidget* widget,
   QWheelEvent wheelEvent(position, widget->mapToGlobal(position), delta, buttons, modifiers, orientation);
 
   QSpontaneKeyEvent::setSpontaneous(&wheelEvent); // hmmmm
-  if (!QApplication::instance()->notify(widget, &wheelEvent))
+  if (!qApp->notify(widget, &wheelEvent))
   {
     QTest::qWarn("Wheel event not accepted by receiving widget.");
   }
