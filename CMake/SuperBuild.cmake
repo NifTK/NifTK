@@ -130,7 +130,8 @@ set(EXTERNAL_PROJECTS
   apriltags
   FLANN
   PCL
-  ITK          
+  ITK
+  RTK
   CTK          
   MITK         
   CGAL           
@@ -188,6 +189,10 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   if(BUILD_NIFTYREC)
     list(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
   endif(BUILD_NIFTYREC)
+
+  if(BUILD_RTK)
+    list(APPEND proj_DEPENDENCIES ${RTK_DEPENDS})
+  endif(BUILD_RTK)
 
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
@@ -301,6 +306,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DFLANN_DIR:PATH=${FLANN_DIR}
       -DFLANN_ROOT:PATH=${FLANN_ROOT}
       -DPCL_DIR:PATH=${PCL_DIR}
+      -DRTK_DIR:PATH=${RTK_DIR}
       DEPENDS ${proj_DEPENDENCIES}
   )
 

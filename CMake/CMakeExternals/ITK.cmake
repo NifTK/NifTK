@@ -78,6 +78,17 @@ if(NOT DEFINED ITK_DIR)
         )
   endif()
   
+  if(BUILD_RTK)
+    list(APPEND additional_cmake_args
+         -DITK_USE_SYSTEM_GDCM:BOOL=OFF
+        )
+  else()
+    list(APPEND additional_cmake_args
+         -DITK_USE_SYSTEM_GDCM:BOOL=ON
+         -DGDCM_DIR:PATH=${GDCM_DIR}
+        )
+  endif()
+
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.3.1.cmake)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
@@ -98,8 +109,7 @@ if(NOT DEFINED ITK_DIR)
       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DITK_USE_SYSTEM_GDCM:BOOL=ON
-      -DGDCM_DIR:PATH=${GDCM_DIR}
+      -DITK_USE_SYSTEM_GDCM:BOOL=OFF
     DEPENDS ${proj_DEPENDENCIES}
   )
 
