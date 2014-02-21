@@ -159,6 +159,7 @@ option(BUILD_NIFTYSIM "Build NiftySim." ON)
 option(BUILD_NIFTYSEG "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
+option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -218,7 +219,7 @@ set(NIFTK_VERSION_DATA "7915f6a087" CACHE STRING "Version of NifTKData" FORCE)
 set(NIFTK_VERSION_Boost "1_54_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.2.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
-set(NIFTK_VERSION_ITK "4.3.2.2" CACHE STRING "Version of ITK" FORCE)
+set(NIFTK_VERSION_ITK "4.3.2.3" CACHE STRING "Version of ITK" FORCE)
 set(NIFTK_VERSION_RTK "ad65217614" CACHE STRING "Version of RTK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
@@ -352,6 +353,7 @@ mark_as_advanced(NIFTK_LOCATION_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(NIFTK_VERSION_RTK)
 mark_as_advanced(NIFTK_LOCATION_RTK)
+mark_as_advanced(BUILD_ITKFFTW)
 
 # PCL's cmake bits are extremely chatty and fill the cmake window/log with noise.
 if(BUILD_PCL)
@@ -538,6 +540,10 @@ endif(BUILD_GUI)
 if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
+
+if(BUILD_ITKFFTW)
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This is not supported by NifTK.")
+endif(BUILD_ITKFFTW)
 
 ########################################################################
 # Simplest if we list ALL our include directories here.
