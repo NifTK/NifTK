@@ -26,48 +26,52 @@ if(DEFINED GDCM_DIR AND NOT EXISTS ${GDCM_DIR})
   message(FATAL_ERROR "GDCM_DIR variable is defined but corresponds to non-existing directory \"${GDCM_DIR}\".")
 endif()
 
-# Check if an external ITK build tree was specified.
-# If yes, use the GDCM from ITK, otherwise ITK will complain
-if(ITK_DIR)
-  find_package(ITK)
-  if(ITK_GDCM_DIR)
-    set(GDCM_DIR ${ITK_GDCM_DIR})
+# If we are building RTK, we should not build GDCM, we use the one supplied by ITK
+if(NOT BUILD_RTK)
+
+  # Check if an external ITK build tree was specified.
+  # If yes, use the GDCM from ITK, otherwise ITK will complain
+  if(ITK_DIR)
+    find_package(ITK)
+    if(ITK_GDCM_DIR)
+      set(GDCM_DIR ${ITK_GDCM_DIR})
+    endif()
   endif()
-endif()
 
+  set(proj GDCM)
+  set(proj_DEPENDENCIES )
+  set(GDCM_DEPENDS ${proj})
 
-set(proj GDCM)
-set(proj_DEPENDENCIES )
-set(GDCM_DEPENDS ${proj})
+  if(NOT DEFINED GDCM_DIR)
 
-if(NOT DEFINED GDCM_DIR)
+    niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
 
-  niftkMacroGetChecksum(NIFTK_CHECKSUM_GDCM ${NIFTK_LOCATION_GDCM})
+    ExternalProject_Add(${proj}
+      SOURCE_DIR ${proj}-src
+      BINARY_DIR ${proj}-build
+      PREFIX ${proj}-cmake
+      INSTALL_DIR ${proj}-install
+      URL ${NIFTK_LOCATION_GDCM}
+      URL_MD5 ${NIFTK_CHECKSUM_GDCM}
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${GEN}
+      CMAKE_ARGS
+        ${EP_COMMON_ARGS}
+        -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+        -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
+        -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
+      DEPENDS ${proj_DEPENDENCIES}
+    )
 
-  ExternalProject_Add(${proj}
-    SOURCE_DIR ${proj}-src
-    BINARY_DIR ${proj}-build
-    PREFIX ${proj}-cmake
-    INSTALL_DIR ${proj}-install
-    URL ${NIFTK_LOCATION_GDCM}
-    URL_MD5 ${NIFTK_CHECKSUM_GDCM}
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${GEN}
-    CMAKE_ARGS
-      ${EP_COMMON_ARGS}
-      -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DGDCM_BUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
-      -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
-      -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
-    DEPENDS ${proj_DEPENDENCIES}
-  )
-  set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-  message("SuperBuild loading GDCM from ${GDCM_DIR}")
+    set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+    message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
-else()
+  else()
 
-  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+    mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  find_package(GDCM)
+    find_package(GDCM)
 
+  endif()
 endif()

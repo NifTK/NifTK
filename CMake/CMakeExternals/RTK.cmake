@@ -25,7 +25,7 @@ endif()
 if(BUILD_RTK)
 
   set(proj RTK)
-  set(proj_DEPENDENCIES ITK GDCM)
+  set(proj_DEPENDENCIES ITK)
   set(RTK_DEPENDS ${proj})
 
   if(NOT DEFINED RTK_DIR)
