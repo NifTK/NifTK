@@ -405,9 +405,9 @@ private:
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
 
+  std::vector<const mitk::Geometry2D*> m_WorldGeometries;
   std::vector<mitk::Vector2D> m_RenderWindowSizes;
   std::vector<mitk::Vector2D> m_Origins;
-  std::vector<mitk::Vector2D> m_FocusPoints;
 
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;

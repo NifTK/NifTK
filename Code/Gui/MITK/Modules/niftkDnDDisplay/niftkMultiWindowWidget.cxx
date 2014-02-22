@@ -91,8 +91,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_Magnifications(3)
-, m_Origins(3)
+, m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
+, m_Origins(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
@@ -296,6 +297,7 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   assert(displayGeometry);
 
   DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation);
+  m_WorldGeometries[orientation] = displayGeometry->GetWorldGeometry();
   m_RenderWindowSizes[orientation] = displayGeometry->GetSizeInDisplayUnits();
   m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
   m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
@@ -1102,7 +1104,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
         m_Geometry->IndexToWorld(originInVx, originInMm);
 
-        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
+//        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
 
         // Setting up the width, height, axis orientation.
         switch (viewDirection)
@@ -1126,6 +1128,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
           slices = permutedBoundingBox[0];
           isFlipped = false;
           break;
+        /// Coronal:
         case mitk::SliceNavigationController::Frontal:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[2];
@@ -1145,6 +1148,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
           slices = permutedBoundingBox[1];
           isFlipped = true;
           break;
+        /// Axial:
         default:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
@@ -1634,6 +1638,16 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
   bool updateWasBlocked = this->BlockUpdate(true);
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
+
+  const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
+  if (worldGeometry != m_WorldGeometries[orientation])
+  {
+    m_WorldGeometries[orientation] = worldGeometry;
+    m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
+    m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+    m_Magnifications[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  }
+
   mitk::Vector2D renderWindowSize = displayGeometry->GetSizeInDisplayUnits();
   if (renderWindowSize != m_RenderWindowSizes[orientation])
   {
