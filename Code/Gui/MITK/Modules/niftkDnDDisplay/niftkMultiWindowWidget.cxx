@@ -380,7 +380,7 @@ void niftkMultiWindowWidget::SetSelected(bool selected)
 
   if (selected)
   {
-    this->EnableColoredRectangles();
+//    this->EnableColoredRectangles();
   }
   else
   {
