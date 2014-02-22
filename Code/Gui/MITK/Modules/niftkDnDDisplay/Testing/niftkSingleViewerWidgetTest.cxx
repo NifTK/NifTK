@@ -55,9 +55,9 @@ public:
 
   mitk::DataNode::Pointer ImageNode;
   mitk::Image* Image;
-  mitk::Vector3D ExtentsInVxInWorldCoordinateOrder;
-  mitk::Vector3D SpacingsInWorld;
-  int UpDirectionsInWorld[3];
+  mitk::Vector3D WorldExtents;
+  mitk::Vector3D WorldSpacings;
+  int WorldAxisFlipped[3];
 
   niftkSingleViewerWidget* Viewer;
   niftkMultiViewerVisibilityManager* VisibilityManager;
@@ -103,11 +103,11 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
 
   d->ImageNode = 0;
   d->Image = 0;
-  d->ExtentsInVxInWorldCoordinateOrder.Fill(0.0);
-  d->SpacingsInWorld.Fill(1.0);
-  d->UpDirectionsInWorld[0] = 0;
-  d->UpDirectionsInWorld[1] = 0;
-  d->UpDirectionsInWorld[2] = 0;
+  d->WorldExtents.Fill(0.0);
+  d->WorldSpacings.Fill(1.0);
+  d->WorldAxisFlipped[0] = 0;
+  d->WorldAxisFlipped[1] = 0;
+  d->WorldAxisFlipped[2] = 0;
   d->Viewer = 0;
   d->VisibilityManager = 0;
   d->InteractiveMode = false;
@@ -191,7 +191,7 @@ bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosit
 
   for (int i = 0; i < 3; ++i)
   {
-    double tolerance = d->SpacingsInWorld[i] / 2.0;
+    double tolerance = d->WorldSpacings[i] / 2.0;
     if (std::abs(selectedPosition1[i] - selectedPosition2[i]) > tolerance)
     {
       return false;
@@ -334,21 +334,13 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
   d->Image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
 
-  int axesInWorldCoordinateOrder[3];
-  mitk::GetAxesInWorldCoordinateOrder(d->Image, axesInWorldCoordinateOrder);
-  mitk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->ExtentsInVxInWorldCoordinateOrder);
-  mitk::GetSpacingInWorldCoordinateOrder(d->Image, d->SpacingsInWorld);
+  mitk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->WorldExtents);
+  mitk::GetSpacingInWorldCoordinateOrder(d->Image, d->WorldSpacings);
 
-  /// TODO:
-  /// The right image up directions are hard-coded to match the test image,
-  /// because the mitk::GetUpDirection function returned incorrect values.
-//  d->UpDirectionsInWorld[SagittalAxis] = mitk::GetUpDirection(d->Image, MIDAS_ORIENTATION_SAGITTAL);
-//  d->UpDirectionsInWorld[CoronalAxis] = mitk::GetUpDirection(d->Image, MIDAS_ORIENTATION_CORONAL);
-//  d->UpDirectionsInWorld[AxialAxis] = mitk::GetUpDirection(d->Image, MIDAS_ORIENTATION_AXIAL);
-
-  d->UpDirectionsInWorld[SagittalAxis] = +1;
-  d->UpDirectionsInWorld[CoronalAxis] = -1;
-  d->UpDirectionsInWorld[AxialAxis] = -1;
+  /// This is fixed and does not depend on the image geometry.
+  d->WorldAxisFlipped[SagittalAxis] = +1;
+  d->WorldAxisFlipped[CoronalAxis] = -1;
+  d->WorldAxisFlipped[AxialAxis] = -1;
 }
 
 
@@ -541,12 +533,12 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
   for (int i = 0; i < 3; ++i)
   {
     double distanceFromCentre = std::abs(selectedPosition[i] - centre[i]);
-    if (static_cast<int>(d->ExtentsInVxInWorldCoordinateOrder[i]) % 2 == 0)
+    if (static_cast<int>(d->WorldExtents[i]) % 2 == 0)
     {
       /// If the number of slices is an even number then the selected position
       /// must be a half voxel far from the centre, either way.
       /// Tolerance is 0.001 millimetre because of float precision.
-      QVERIFY(std::abs(distanceFromCentre - d->SpacingsInWorld[i] / 2.0) < 0.001);
+      QVERIFY(std::abs(distanceFromCentre - d->WorldSpacings[i] / 2.0) < 0.001);
     }
     else
     {
@@ -571,12 +563,12 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
 
-  selectedPosition[SagittalAxis] += 20 * d->SpacingsInWorld[SagittalAxis];
+  selectedPosition[SagittalAxis] += 20 * d->WorldSpacings[SagittalAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedSagittalSlice += d->UpDirectionsInWorld[SagittalAxis] * 20;
+  expectedSagittalSlice += d->WorldAxisFlipped[SagittalAxis] * 20;
   std::vector<mitk::Vector2D> cursorPositions = expectedState->GetCursorPositions();
   std::vector<double> scaleFactors = expectedState->GetScaleFactors();
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] += 20 * d->SpacingsInWorld[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] += 20 * d->WorldSpacings[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -595,9 +587,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  selectedPosition[CoronalAxis] += 20 * d->SpacingsInWorld[CoronalAxis];
+  selectedPosition[CoronalAxis] += 20 * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * 20;
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * 20;
   d->StateTester->SetExpectedState(expectedState);
 
   d->Viewer->SetSelectedPosition(selectedPosition);
@@ -615,10 +607,10 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  selectedPosition[AxialAxis] += 20 * d->SpacingsInWorld[AxialAxis];
+  selectedPosition[AxialAxis] += 20 * d->WorldSpacings[AxialAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedAxialSlice += d->UpDirectionsInWorld[AxialAxis] * 20;
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 20 * d->SpacingsInWorld[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
+  expectedAxialSlice += d->WorldAxisFlipped[AxialAxis] * 20;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 20 * d->WorldSpacings[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -637,12 +629,12 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  selectedPosition[SagittalAxis] -= 30 * d->SpacingsInWorld[SagittalAxis];
-  selectedPosition[CoronalAxis] -= 30 * d->SpacingsInWorld[CoronalAxis];
+  selectedPosition[SagittalAxis] -= 30 * d->WorldSpacings[SagittalAxis];
+  selectedPosition[CoronalAxis] -= 30 * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedSagittalSlice -= d->UpDirectionsInWorld[SagittalAxis] * 30;
-  expectedCoronalSlice -= d->UpDirectionsInWorld[CoronalAxis] * 30;
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 30 * d->SpacingsInWorld[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
+  expectedSagittalSlice -= d->WorldAxisFlipped[SagittalAxis] * 30;
+  expectedCoronalSlice -= d->WorldAxisFlipped[CoronalAxis] * 30;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 30 * d->WorldSpacings[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -661,13 +653,13 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
   d->StateTester->Clear();
 
-  selectedPosition[SagittalAxis] -= 40 * d->SpacingsInWorld[SagittalAxis];
-  selectedPosition[AxialAxis] -= 40 * d->SpacingsInWorld[AxialAxis];
+  selectedPosition[SagittalAxis] -= 40 * d->WorldSpacings[SagittalAxis];
+  selectedPosition[AxialAxis] -= 40 * d->WorldSpacings[AxialAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedSagittalSlice -= d->UpDirectionsInWorld[SagittalAxis] * 40;
-  expectedAxialSlice -= d->UpDirectionsInWorld[AxialAxis] * 40;
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 40 * d->SpacingsInWorld[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] -= 40 * d->SpacingsInWorld[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
+  expectedSagittalSlice -= d->WorldAxisFlipped[SagittalAxis] * 40;
+  expectedAxialSlice -= d->WorldAxisFlipped[AxialAxis] * 40;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][0] -= 40 * d->WorldSpacings[SagittalAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->width();
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] -= 40 * d->WorldSpacings[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -687,12 +679,12 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
   d->StateTester->Clear();
 
   selectedPosition = d->Viewer->GetSelectedPosition();
-  selectedPosition[CoronalAxis] += 50 * d->SpacingsInWorld[CoronalAxis];
-  selectedPosition[AxialAxis] += 50 * d->SpacingsInWorld[AxialAxis];
+  selectedPosition[CoronalAxis] += 50 * d->WorldSpacings[CoronalAxis];
+  selectedPosition[AxialAxis] += 50 * d->WorldSpacings[AxialAxis];
   expectedState->SetSelectedPosition(selectedPosition);
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * 50;
-  expectedAxialSlice += d->UpDirectionsInWorld[AxialAxis] * 50;
-  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 50 * d->SpacingsInWorld[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * 50;
+  expectedAxialSlice += d->WorldAxisFlipped[AxialAxis] * 50;
+  cursorPositions[MIDAS_ORIENTATION_CORONAL][1] += 50 * d->WorldSpacings[AxialAxis] / scaleFactors[MIDAS_ORIENTATION_CORONAL] / d->CoronalWindow->height();
   expectedState->SetCursorPositions(cursorPositions);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -728,9 +720,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
   int expectedCoronalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
   mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
 
-  selectedPosition[CoronalAxis] += 20 * d->SpacingsInWorld[CoronalAxis];
+  selectedPosition[CoronalAxis] += 20 * d->WorldSpacings[CoronalAxis];
   unsigned expectedCoronalSliceInSnc = expectedCoronalSlice + 20;
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * 20;
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * 20;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
@@ -740,9 +732,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
   QCOMPARE(coronalSlice, expectedCoronalSlice);
   QCOMPARE(coronalSliceInSnc, expectedCoronalSliceInSnc);
 
-  selectedPosition[AxialAxis] += 30 * d->SpacingsInWorld[AxialAxis];
+  selectedPosition[AxialAxis] += 30 * d->WorldSpacings[AxialAxis];
   unsigned expectedAxialSliceInSnc = expectedAxialSlice + 30;
-  expectedAxialSlice += d->UpDirectionsInWorld[AxialAxis] * 30;
+  expectedAxialSlice += d->WorldAxisFlipped[AxialAxis] * 30;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
@@ -752,9 +744,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
   QCOMPARE(axialSlice, expectedAxialSlice);
   QCOMPARE(axialSliceInSnc, expectedAxialSliceInSnc);
 
-  selectedPosition[SagittalAxis] += 40 * d->SpacingsInWorld[SagittalAxis];
+  selectedPosition[SagittalAxis] += 40 * d->WorldSpacings[SagittalAxis];
   unsigned expectedSagittalSliceInSnc = expectedSagittalSlice + 40;
-  expectedSagittalSlice += d->UpDirectionsInWorld[SagittalAxis] * 40;
+  expectedSagittalSlice += d->WorldAxisFlipped[SagittalAxis] * 40;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
@@ -783,7 +775,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedSlice()
   int delta;
 
   delta = +20;
-  expectedSelectedPosition[CoronalAxis] += delta * d->SpacingsInWorld[CoronalAxis];
+  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
   expectedCoronalSlice += delta;
   expectedCoronalSncPos -= delta;
 
@@ -2281,8 +2273,8 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   expectedCoronalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
 
   delta = +1;
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * delta * d->SpacingsInWorld[CoronalAxis];
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   /// TODO The selected position and the cursor position changes in an unexpected way.
 //  d->StateTester->SetExpectedState(expectedState);
@@ -2307,8 +2299,8 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   d->StateTester->Clear();
 
   delta = -1;
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * delta * d->SpacingsInWorld[CoronalAxis];
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   /// TODO The selected position and the cursor position changes in an unexpected way.
 //  d->StateTester->SetExpectedState(expectedState);
@@ -2372,8 +2364,8 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   expectedCoronalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
 
   delta = +1;
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * delta * d->SpacingsInWorld[CoronalAxis];
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   /// TODO The selected position and the cursor position changes in an unexpected way.
 //  d->StateTester->SetExpectedState(expectedState);
@@ -2397,8 +2389,8 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   d->StateTester->Clear();
 
   delta = -1;
-  expectedCoronalSlice += d->UpDirectionsInWorld[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * delta * d->SpacingsInWorld[CoronalAxis];
+  expectedCoronalSlice += d->WorldAxisFlipped[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   /// TODO The selected position and the cursor position changes in an unexpected way.
 //  d->StateTester->SetExpectedState(expectedState);
@@ -2445,7 +2437,7 @@ void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationCont
   axialSliceDelta = +2;
   axialSncPos -= axialSliceDelta;
   expectedAxialSlice += axialSliceDelta;
-  expectedSelectedPosition[AxialAxis] += d->UpDirectionsInWorld[AxialAxis] * axialSliceDelta * d->SpacingsInWorld[AxialAxis];
+  expectedSelectedPosition[AxialAxis] += d->WorldAxisFlipped[AxialAxis] * axialSliceDelta * d->WorldSpacings[AxialAxis];
 
   d->AxialSnc->GetSlice()->SetPos(axialSncPos);
 
@@ -2458,7 +2450,7 @@ void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationCont
   sagittalSliceDelta = -3;
   sagittalSncPos += sagittalSliceDelta;
   expectedSagittalSlice += sagittalSliceDelta;
-  expectedSelectedPosition[SagittalAxis] += d->UpDirectionsInWorld[SagittalAxis] * sagittalSliceDelta * d->SpacingsInWorld[SagittalAxis];
+  expectedSelectedPosition[SagittalAxis] += d->WorldAxisFlipped[SagittalAxis] * sagittalSliceDelta * d->WorldSpacings[SagittalAxis];
 
   d->SagittalSnc->GetSlice()->SetPos(sagittalSncPos);
 
@@ -2470,7 +2462,7 @@ void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationCont
   coronalSliceDelta = +5;
   coronalSncPos -= coronalSliceDelta;
   expectedCoronalSlice += coronalSliceDelta;
-  expectedSelectedPosition[CoronalAxis] += d->UpDirectionsInWorld[CoronalAxis] * coronalSliceDelta * d->SpacingsInWorld[CoronalAxis];
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * coronalSliceDelta * d->WorldSpacings[CoronalAxis];
 
   d->CoronalSnc->GetSlice()->SetPos(coronalSncPos);
 
