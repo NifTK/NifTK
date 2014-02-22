@@ -23,11 +23,7 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
 endif()
 
 set(proj ITK)
-set(proj_DEPENDENCIES)
-
-if(NOT BUILD_RTK)
-  list(APPEND proj_DEPENDENCIES GDCM)
-endif()
+set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
   list(APPEND proj_DEPENDENCIES CableSwig)
@@ -83,17 +79,6 @@ if(NOT DEFINED ITK_DIR)
         )
   endif()
   
-  if(BUILD_RTK)
-    list(APPEND additional_cmake_args
-         -DITK_USE_SYSTEM_GDCM:BOOL=OFF
-        )
-  else()
-    list(APPEND additional_cmake_args
-         -DITK_USE_SYSTEM_GDCM:BOOL=ON
-         -DGDCM_DIR:PATH=${GDCM_DIR}
-        )
-  endif()
-
   if (BUILD_ITKFFTW)
     if(WIN32)
       # On Windows, you have to precompile one.
@@ -131,6 +116,8 @@ if(NOT DEFINED ITK_DIR)
       -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
       -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
+      -DITK_USE_SYSTEM_GDCM:BOOL=ON
+      -DGDCM_DIR:PATH=${GDCM_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
 

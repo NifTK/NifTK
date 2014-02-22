@@ -25,7 +25,7 @@ endif()
 if(BUILD_RTK)
 
   set(proj RTK)
-  set(proj_DEPENDENCIES ITK)
+  set(proj_DEPENDENCIES GDCM ITK)
   set(RTK_DEPENDS ${proj})
 
   if(NOT DEFINED RTK_DIR)
@@ -46,6 +46,9 @@ if(BUILD_RTK)
         ${EP_COMMON_ARGS}
         ${additional_cmake_args}
         -DITK_DIR:PATH=${ITK_DIR}
+        -DGDCM_DIR:PATH=${GDCM_DIR}
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-L${GDCM_DIR}/bin
+        -DCMAKE_EXE_LINKER_FLAGS:STRING=-L${GDCM_DIR}/bin
       DEPENDS ${proj_DEPENDENCIES}
     )
 
