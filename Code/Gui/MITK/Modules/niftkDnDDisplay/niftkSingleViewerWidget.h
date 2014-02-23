@@ -159,10 +159,10 @@ public:
   QColor GetBackgroundColor() const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
+  int GetMaxSlice(MIDASOrientation orientation) const;
 
   /// \brief Gets the maximum time step.
-  unsigned int GetMaxTimeStep() const;
+  int GetMaxTimeStep() const;
 
   /// \brief Returns true if the widget is fully created and contains the given render window, and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
@@ -201,17 +201,17 @@ public:
   /// \brief Returns true if the geometry of the viewer is bound to other viewers, otherwise false.
   bool IsBoundGeometryActive();
 
-  /// \brief Get the current slice index for a given orientation.
-  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
+  /// \brief Gets the index of the selected slice for a given orientation.
+  int GetSelectedSlice(MIDASOrientation orientation) const;
 
-  /// \brief Set the current slice index for a given orientation.
-  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
+  /// \brief Sets the index of the selected slice for a given orientation.
+  void SetSelectedSlice(MIDASOrientation orientation, int slice);
 
   /// \brief Get the current time step.
-  unsigned int GetTimeStep() const;
+  int GetTimeStep() const;
 
   /// \brief Set the current time step.
-  void SetTimeStep(unsigned int timeStep);
+  void SetTimeStep(int timeStep);
 
   /// \brief Gets the render window layout.
   WindowLayout GetWindowLayout() const;
@@ -331,6 +331,9 @@ signals:
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(niftkSingleViewerWidget* thisViewer, QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
 
+  /// \brief Emitted when a render window has got selected in this viewer.
+  void SelectedRenderWindowChanged(MIDASOrientation orientation);
+
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(niftkSingleViewerWidget* thisViewer, const mitk::Point3D& selectedPosition);
 
@@ -378,6 +381,12 @@ protected slots:
 
   /// \brief Called when the scale factor has changed.
   virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Called when the cursor position binding has changed.
+  virtual void OnCursorPositionBindingChanged();
+
+  /// \brief Called when the scale factor binding has changed.
+  virtual void OnScaleFactorBindingChanged();
 
 private:
 

@@ -175,22 +175,26 @@ public:
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns the maximum allowed slice index for a given orientation.
-  unsigned int GetMaxSliceIndex(MIDASOrientation orientation) const;
+  int GetMaxSlice(MIDASOrientation orientation) const;
 
   /// \brief Returns the maximum allowed time step.
-  unsigned int GetMaxTimeStep() const;
+  int GetMaxTimeStep() const;
 
   /// \brief Get the current slice index.
-  unsigned int GetSliceIndex(MIDASOrientation orientation) const;
+  int GetSelectedSlice(MIDASOrientation orientation) const;
 
   /// \brief Set the current slice index.
-  void SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex);
+  void SetSelectedSlice(MIDASOrientation orientation, int selectedSlice);
+
+  /// \brief Move n slices towards or opposite of the up direction.
+  /// If delta is positive, the direction is the up direction.
+  void MoveAnteriorOrPosterior(MIDASOrientation orientation, int delta);
 
   /// \brief Get the current time step.
-  unsigned int GetTimeStep() const;
+  int GetTimeStep() const;
 
   /// \brief Set the current time step.
-  void SetTimeStep(unsigned int timeStep);
+  void SetTimeStep(int timeStep);
 
   /// \brief Gets the selected point in the world coordinate system (mm).
   const mitk::Point3D& GetSelectedPosition() const;
@@ -284,13 +288,13 @@ public:
   bool GetCursorPositionBinding() const;
 
   /// \brief Sets the flag that controls whether the cursor position is bound between the 2D render windows.
-  void SetCursorPositionBinding(bool bound);
+  void SetCursorPositionBinding(bool cursorPositionBinding);
 
   /// \brief Gets the flag controls whether the scale factors are bound across the 2D render windows.
   bool GetScaleFactorBinding() const;
 
   /// \brief Sets the flag that controls whether the scale factors are bound across the 2D render windows.
-  void SetScaleFactorBinding(bool bound);
+  void SetScaleFactorBinding(bool scaleFactorBinding);
 
   /// \brief Blocks the update of the widget.
   /// Returns true if the update was already blocked, otherwise false.
@@ -302,6 +306,9 @@ public:
 
 signals:
 
+  /// \brief Emitted when the selected render window has changed.
+  void SelectedRenderWindowChanged(MIDASOrientation orientation);
+
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
@@ -310,6 +317,12 @@ signals:
 
   /// \brief Emitted when the scale factor has changed.
   void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+
+  /// \brief Emitted when the cursor position binding has changed.
+  void CursorPositionBindingChanged();
+
+  /// \brief Emitted when the scale factor binding has changed.
+  void ScaleFactorBindingChanged();
 
 private:
 
@@ -378,9 +391,9 @@ private:
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
   QGridLayout* m_GridLayout;
-  unsigned m_AxialSliceTag;
-  unsigned m_SagittalSliceTag;
-  unsigned m_CoronalSliceTag;
+  unsigned long m_AxialSliceTag;
+  unsigned long m_SagittalSliceTag;
+  unsigned long m_CoronalSliceTag;
   bool m_IsSelected;
   bool m_IsEnabled;
   QmitkRenderWindow* m_SelectedRenderWindow;
@@ -392,9 +405,9 @@ private:
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
 
+  std::vector<const mitk::Geometry2D*> m_WorldGeometries;
   std::vector<mitk::Vector2D> m_RenderWindowSizes;
   std::vector<mitk::Vector2D> m_Origins;
-  std::vector<mitk::Vector2D> m_FocusPoints;
 
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
@@ -452,6 +465,8 @@ private:
   bool m_SelectedPositionHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
   std::vector<bool> m_ScaleFactorHasChanged;
+  bool m_CursorPositionBindingHasChanged;
+  bool m_ScaleFactorBindingHasChanged;
 
   friend class DisplayGeometryModificationCommand;
 

@@ -17,22 +17,21 @@
 
 #include <niftkSingleViewerWidget.h>
 
-static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.001)
+#include <QTest>
+
+#include <mitkGlobalInteraction.h>
+
+static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
+{
+  return std::abs(worldPosition1[0] - worldPosition2[0]) < tolerance
+      && std::abs(worldPosition1[1] - worldPosition2[1]) < tolerance
+      && std::abs(worldPosition1[2] - worldPosition2[2]) < tolerance;
+}
+
+static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance = 0.01)
 {
   return std::abs(cursorPosition1[0] - cursorPosition2[0]) < tolerance
       && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
-}
-
-static bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001)
-{
-  for (int i = 0; i < 3; ++i)
-  {
-    if (!::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
-    {
-      return false;
-    }
-  }
-  return true;
 }
 
 class niftkSingleViewerWidgetState : public itk::Object
@@ -88,7 +87,7 @@ public:
   /// \brief Sets the scale factors in the render windows of the viewer.
   void SetScaleFactors(const std::vector<double>& scaleFactors)
   {
-    this->m_ScaleFactors = scaleFactors;
+    m_ScaleFactors = scaleFactors;
   }
 
   /// \brief Gets the cursor position binding property of the viewer.
@@ -103,6 +102,36 @@ public:
   /// \brief Sets the scale factor binding property of the viewer.
   itkSetMacro(ScaleFactorBinding, bool);
 
+  /// \brief Compares the cursor positions of the visible render windows, permetting the given tolerance.
+  /// Returns true if the cursor positions are equal, otherwise false.
+  bool EqualsWithTolerance(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance = 0.001) const
+  {
+    std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+    for (int i = 0; i < 3; ++i)
+    {
+      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// \brief Compares the scale factors of the visible render windows, permetting the given tolerance.
+  /// Returns true if the scale factors are equal, otherwise false.
+  bool EqualsWithTolerance(const std::vector<double>& scaleFactors1, const std::vector<double>& scaleFactors2, double tolerance = 0.001) const
+  {
+    std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+    for (int i = 0; i < 3; ++i)
+    {
+      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool operator==(const niftkSingleViewerWidgetState& otherState) const
   {
     return
@@ -110,9 +139,9 @@ public:
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
-        && this->GetSelectedPosition() == otherState.GetSelectedPosition()
-        && ::EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
-        && this->GetScaleFactors() == otherState.GetScaleFactors()
+        && ::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
+        && this->EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
+        && this->EqualsWithTolerance(this->GetScaleFactors(), otherState.GetScaleFactors(), 0.01)
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
@@ -140,7 +169,7 @@ public:
     {
       os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
     }
-    if (this->GetSelectedPosition() != otherState->GetSelectedPosition())
+    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition()))
     {
       os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
@@ -170,11 +199,82 @@ public:
     }
   }
 
+  void Check() const
+  {
+    if (m_Viewer->IsSelected())
+    {
+      QmitkRenderWindow* selectedRenderWindow = m_Viewer->GetSelectedRenderWindow();
+      if (!selectedRenderWindow)
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but there is no selected render window.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
+      }
+      if (!selectedRenderWindow->hasFocus())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but the selected render window has not got the Qt key focus.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but the selected render window has not got the Qt key focus.");
+      }
+      if (mitk::GlobalInteraction::GetInstance()->GetFocus() != selectedRenderWindow->GetRenderer())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but the selected render window has not got the MITK interaction focus.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but the selected render window has not got the MITK interaction focus.");
+      }
+    }
+    else
+    {
+      QmitkRenderWindow* selectedRenderWindow = m_Viewer->GetSelectedRenderWindow();
+      if (!selectedRenderWindow)
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer is selected but there is no selected render window.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
+      }
+      if (m_Viewer->GetAxialWindow()->hasFocus()
+          || m_Viewer->GetSagittalWindow()->hasFocus()
+          || m_Viewer->GetCoronalWindow()->hasFocus()
+          || m_Viewer->Get3DWindow()->hasFocus()
+          || m_Viewer->hasFocus())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer has the Qt focus, although it is not selected.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer has the Qt focus, although it is not selected.");
+      }
+      mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+      if (focusedRenderer == m_Viewer->GetAxialWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->GetSagittalWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->GetCoronalWindow()->GetRenderer()
+          || focusedRenderer == m_Viewer->Get3DWindow()->GetRenderer())
+      {
+        MITK_INFO << "ERROR: Invalid state. The viewer has the MITK interaction focus, although it is not selected.";
+        MITK_INFO << Self::ConstPointer(this);
+        QFAIL("Invalid state. The viewer has the MITK interaction focus, although it is not selected.");
+      }
+    }
+
+    /// TODO
+    /// This check is disabled for the moment.
+//    if (m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_AXIAL)
+//            != m_Viewer->GetAxialWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
+//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_SAGITTAL)
+//            != m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->GetSlice()->GetPos()
+//        || m_Viewer->GetSliceIndex(MIDAS_ORIENTATION_CORONAL)
+//            != m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->GetSlice()->GetPos())
+//    {
+//      MITK_INFO << "ERROR: Invalid state. The selected slices are different in the viewer and in the SNC.";
+//      MITK_INFO << Self::ConstPointer(this);
+//      QFAIL("Invalid state. The selected slices is different in the viewer and in the SNC.");
+//    }
+  }
+
 protected:
 
   /// \brief Constructs a niftkSingleViewerWidgetState object that stores the current state of the specified viewer.
   niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
   : itk::Object()
+  , m_Viewer(viewer)
   , m_Orientation(viewer->GetOrientation())
   , m_WindowLayout(viewer->GetWindowLayout())
   , m_SelectedRenderWindow(viewer->GetSelectedRenderWindow())
@@ -190,6 +290,7 @@ protected:
   /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
   niftkSingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
+  , m_Viewer(otherState->m_Viewer)
   , m_Orientation(otherState->GetOrientation())
   , m_WindowLayout(otherState->GetWindowLayout())
   , m_SelectedRenderWindow(otherState->GetSelectedRenderWindow())
@@ -222,6 +323,9 @@ protected:
   }
 
 private:
+
+  /// \brief The viewer.
+  const niftkSingleViewerWidget* m_Viewer;
 
   /// \brief The orientation of the viewer.
   MIDASOrientation m_Orientation;

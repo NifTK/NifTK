@@ -67,16 +67,16 @@ public:
   void SetWindowLayoutControlsVisible(bool visible);
 
   /// \brief Gets the maximal slice index that is the number of slices - 1.
-  int GetMaxSliceIndex() const;
+  int GetMaxSlice() const;
 
   /// \brief Sets the maximal value of the slice index controls to the given number.
-  void SetMaxSliceIndex(int maxSliceIndex);
+  void SetMaxSlice(int maxSliceIndex);
 
   /// \brief Gets the selected slice index.
-  int GetSliceIndex() const;
+  int GetSelectedSlice() const;
 
   /// \brief Sets the slice index controls to the given number.
-  void SetSliceIndex(int sliceIndex);
+  void SetSelectedSlice(int sliceIndex);
 
   /// \brief Gets the maximal time step that is the number of time steps - 1.
   int GetMaxTimeStep() const;
@@ -109,7 +109,7 @@ public:
   void SetMagnification(double magnification);
 
   /// \brief Sets the slice index slider to be tracking.
-  void SetSliceIndexTracking(bool tracking);
+  void SetSliceTracking(bool tracking);
 
   /// \brief Sets the time step slider to be tracking.
   void SetTimeStepTracking(bool tracking);
@@ -155,36 +155,36 @@ public:
 
 signals:
 
-  /// \brief Emitted when the selected slice index has been changed.
-  void SliceIndexChanged(int sliceIndex);
+  /// \brief Emitted when the selected slice has changed.
+  void SelectedSliceChanged(int selectedSlice);
 
-  /// \brief Emitted when the selected time step has been changed.
+  /// \brief Emitted when the selected time step has changed.
   void TimeStepChanged(int timeStep);
 
-  /// \brief Emitted when the selected magnification has been changed.
+  /// \brief Emitted when the selected magnification has changed.
   void MagnificationChanged(double magnification);
 
-  /// \brief Emitted when the show cursor option has been changed.
+  /// \brief Emitted when the show cursor option has changed.
   void ShowCursorChanged(bool visible);
 
-  /// \brief Emitted when the show direction annotations option has been changed.
+  /// \brief Emitted when the show direction annotations option has changed.
   void ShowDirectionAnnotationsChanged(bool visible);
 
-  /// \brief Emitted when the show 3D window option has been changed.
+  /// \brief Emitted when the show 3D window option has changed.
   void Show3DWindowChanged(bool visible);
 
-  /// \brief Emitted when the select layout has been changed.
+  /// \brief Emitted when the select layout has changed.
   void WindowLayoutChanged(WindowLayout windowLayout);
 
-  /// \brief Emitted when the window cursor binding option has been changed.
+  /// \brief Emitted when the window cursor binding option has changed.
   void WindowCursorBindingChanged(bool bound);
 
-  /// \brief Emitted when the window magnification binding option has been changed.
+  /// \brief Emitted when the window magnification binding option has changed.
   void WindowMagnificationBindingChanged(bool bound);
 
 protected slots:
 
-  void OnSliceIndexChanged(double sliceIndex);
+  void OnSelectedSliceChanged(double selectedSlice);
   void OnTimeStepChanged(double timeStep);
 
   /// \brief Called when the axial window radio button is toggled.

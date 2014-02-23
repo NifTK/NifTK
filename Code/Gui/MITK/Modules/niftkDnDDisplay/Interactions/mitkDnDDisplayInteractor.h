@@ -70,10 +70,18 @@ protected:
   /// Overrides superclass function to set the focus to the renderer before scrolling.
   virtual bool ScrollOneDown(StateMachineAction*, InteractionEvent*);
 
+  /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
+  virtual bool InitMove(StateMachineAction*, InteractionEvent*);
+
+  /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
+  /// It also changes the selected position to the middle of the focused voxel.
   virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
 
 private:
+
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
+
+  int GetOrientation(mitk::BaseRenderer* renderer);
 
   niftkMultiWindowWidget* m_MultiWindowWidget;
 

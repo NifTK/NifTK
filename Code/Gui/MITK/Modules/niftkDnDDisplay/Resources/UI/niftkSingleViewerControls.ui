@@ -20,13 +20,22 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="m_ControlPanelGridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <property name="horizontalSpacing">
     <number>2</number>
    </property>
    <property name="verticalSpacing">
-    <number>0</number>
-   </property>
-   <property name="margin">
     <number>0</number>
    </property>
    <item row="2" column="2" rowspan="3">
@@ -92,14 +101,23 @@
    <item row="0" column="2">
     <widget class="QWidget" name="m_WindowLayoutWidget" native="true">
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <property name="horizontalSpacing">
        <number>0</number>
       </property>
       <property name="verticalSpacing">
        <number>2</number>
-      </property>
-      <property name="margin">
-       <number>0</number>
       </property>
       <item row="2" column="0">
        <widget class="QRadioButton" name="m_MultiWindowRadioButton">
@@ -182,7 +200,16 @@
       </sizepolicy>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -254,21 +281,30 @@
    <item row="0" column="0" rowspan="3">
     <widget class="QWidget" name="m_SlidersWidget" native="true">
      <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <property name="spacing">
        <number>2</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="m_SliceIndexLabel">
+       <widget class="QLabel" name="m_SliceLabel">
         <property name="text">
          <string>slice:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="ctkSliderWidget" name="m_SliceIndexSlider" native="true">
+       <widget class="ctkSliderWidget" name="m_SliceSlider" native="true">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the index of the selected slice in the currently selected 2D window.&lt;/p&gt;&lt;p&gt;Changing the slice index changes the &lt;span style=&quot; font-style:italic;&quot;&gt;selected position&lt;/span&gt; along the dimension that is orthogonal to the plane of the currently selected orientation. The selected position is always bound across the windows of the same viewer. You can bind the selected position across the viewers by the '&lt;span style=&quot; font-style:italic;&quot;&gt;position&lt;/span&gt;' check box in the '&lt;span style=&quot; font-style:italic;&quot;&gt;bind viewers&lt;/span&gt;' section on this panel.&lt;/p&gt;&lt;p&gt;The selected position can be displayed by the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor&lt;/span&gt; (aka. crosshair). Changing the slice index also changes the &lt;span style=&quot; font-style:italic;&quot;&gt;cursor position&lt;/span&gt; in the other two 2D windows of the same viewer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>

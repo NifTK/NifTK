@@ -24,6 +24,8 @@
 #include <mitkSliceNavigationController.h>
 #include <mitkGlobalInteraction.h>
 
+
+//-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget)
 : mitk::DisplayInteractor()
 , m_MultiWindowWidget(multiWindowWidget)
@@ -35,10 +37,14 @@ mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWi
   m_Renderers[3] = m_MultiWindowWidget->GetRenderWindow4()->GetRenderer();
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::~DnDDisplayInteractor()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
@@ -48,14 +54,18 @@ void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 {
   mitk::DisplayInteractor::ConnectActionsAndFunctions();
   CONNECT_FUNCTION("selectPosition", SelectPosition);
+  CONNECT_FUNCTION("initMove", InitMove);
   CONNECT_FUNCTION("initZoom", InitZoom);
 }
 
 
+//-----------------------------------------------------------------------------
 QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRenderer* renderer)
 {
   QmitkRenderWindow* renderWindow = 0;
@@ -78,6 +88,15 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
   return renderWindow;
 }
 
+
+//-----------------------------------------------------------------------------
+int mitk::DnDDisplayInteractor::GetOrientation(mitk::BaseRenderer* renderer)
+{
+  return std::find(m_Renderers.begin(), m_Renderers.end(), renderer) - m_Renderers.begin();
+}
+
+
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, InteractionEvent* interactionEvent)
 {
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
@@ -115,6 +134,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* /*action*/, 
 }
 
 
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
@@ -126,14 +146,27 @@ bool mitk::DnDDisplayInteractor::ScrollOneUp(StateMachineAction* action, Interac
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneUp(action, interactionEvent);
+
+  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+
+  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, +1);
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
-  return result;
+//  return result;
+  return true;
 }
 
 
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
@@ -145,7 +178,53 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+  /// Note:
+  /// This does not work if the slice are locked.
+  /// See:
+  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  /// and
+  ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
+
+//  bool result = Superclass::ScrollOneDown(action, interactionEvent);
+
+  MIDASOrientation orientation = MIDASOrientation(this->GetOrientation(renderer));
+
+  m_MultiWindowWidget->MoveAnteriorOrPosterior(orientation, -1);
+
+  m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
+
+//  return result;
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent == NULL)
+  {
+    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
+    return false;
+  }
+
+  // First, check if the slice navigation controllers have a valid geometry,
+  // i.e. an image is loaded.
+  if (!m_Renderers[0]->GetSliceNavigationController()->GetCreatedWorldGeometry())
+  {
+    return false;
+  }
+
+  bool updateWasBlocked = m_MultiWindowWidget->BlockUpdate(true);
+
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+  if (!renderer->GetFocused())
+  {
+    QmitkRenderWindow* renderWindow = this->GetRenderWindow(renderer);
+    m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
+  }
+
+  bool result = this->Init(action, interactionEvent);
 
   m_MultiWindowWidget->BlockUpdate(updateWasBlocked);
 
@@ -153,6 +232,7 @@ bool mitk::DnDDisplayInteractor::ScrollOneDown(StateMachineAction* action, Inter
 }
 
 
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);

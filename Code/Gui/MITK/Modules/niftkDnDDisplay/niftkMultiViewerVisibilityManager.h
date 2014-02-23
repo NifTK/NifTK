@@ -53,13 +53,13 @@ public:
   void DeRegisterAllViewers();
 
   /// \brief De-registers a range of viewers, which means actually removing them from m_DataNodes and m_Viewers.
-  void DeRegisterViewers(unsigned int startViewerIndex, unsigned int endViewerIndex);
+  void DeRegisterViewers(std::size_t startViewerIndex, std::size_t endViewerIndex);
 
   /// \brief Clears all windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
   void ClearAllViewers();
 
   /// \brief Used to clear a range of windows, meaning to set renderer specific visibility properties to false for all the nodes registered in m_DataNodes.
-  void ClearViewers(unsigned int startWindowIndex, unsigned int endWindowIndex);
+  void ClearViewers(std::size_t startWindowIndex, std::size_t endWindowIndex);
 
   /// \brief Will query the DataStorage for all valid nodes, and for all currently registered windows, will set a renderer specific property equal to visibility.
   void SetAllNodeVisibilityForAllViewers(bool visibility);
@@ -68,10 +68,10 @@ public:
   void SetNodeVisibilityForAllViewers(mitk::DataNode* node, bool visibility);
 
   /// \brief Will query the DataStorage for all valid nodes, and for the given window, will set a renderer specific property equal to visibility.
-  void SetAllNodeVisibilityForViewer(unsigned int viewerIndex, bool visibility);
+  void SetAllNodeVisibilityForViewer(std::size_t viewerIndex, bool visibility);
 
   /// \brief Sets the node to have a renderer specific visibility.
-  void SetNodeVisibilityForViewer(mitk::DataNode* node, unsigned int viewerIndex, bool visibility);
+  void SetNodeVisibilityForViewer(mitk::DataNode* node, std::size_t viewerIndex, bool visibility);
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards.
   void NodeAddedProxy(const mitk::DataNode* node);

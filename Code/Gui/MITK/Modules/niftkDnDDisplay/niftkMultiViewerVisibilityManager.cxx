@@ -151,9 +151,9 @@ void niftkMultiViewerVisibilityManager::DeRegisterAllViewers()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::DeRegisterViewers(unsigned int startViewerIndex, unsigned int endViewerIndex)
+void niftkMultiViewerVisibilityManager::DeRegisterViewers(std::size_t startViewerIndex, std::size_t endViewerIndex)
 {
-  for (unsigned int i = startViewerIndex; i <= endViewerIndex; i++)
+  for (std::size_t i = startViewerIndex; i <= endViewerIndex; i++)
   {
     this->RemoveNodesFromViewer(i);
   }
@@ -170,9 +170,9 @@ void niftkMultiViewerVisibilityManager::ClearAllViewers()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::ClearViewers(unsigned int startViewerIndex, unsigned int endViewerIndex)
+void niftkMultiViewerVisibilityManager::ClearViewers(std::size_t startViewerIndex, std::size_t endViewerIndex)
 {
-  for (unsigned int i = startViewerIndex; i <= endViewerIndex; i++)
+  for (std::size_t i = startViewerIndex; i <= endViewerIndex; i++)
   {
     this->RemoveNodesFromViewer(i);
   }
@@ -199,7 +199,7 @@ void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForAllViewers(bool v
 //-----------------------------------------------------------------------------
 void niftkMultiViewerVisibilityManager::SetNodeVisibilityForAllViewers(mitk::DataNode* node, bool visibility)
 {
-  for (unsigned int i = 0; i < m_Viewers.size(); i++)
+  for (std::size_t i = 0; i < m_Viewers.size(); i++)
   {
     this->SetNodeVisibilityForViewer(node, i, visibility);
   }
@@ -207,7 +207,7 @@ void niftkMultiViewerVisibilityManager::SetNodeVisibilityForAllViewers(mitk::Dat
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForViewer(unsigned int viewerIndex, bool visibility)
+void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForViewer(std::size_t viewerIndex, bool visibility)
 {
   assert(m_DataStorage);
 
@@ -224,7 +224,7 @@ void niftkMultiViewerVisibilityManager::SetAllNodeVisibilityForViewer(unsigned i
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::SetNodeVisibilityForViewer(mitk::DataNode* node, unsigned int viewerIndex, bool visibility)
+void niftkMultiViewerVisibilityManager::SetNodeVisibilityForViewer(mitk::DataNode* node, std::size_t viewerIndex, bool visibility)
 {
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back(node);
@@ -237,7 +237,7 @@ int niftkMultiViewerVisibilityManager::GetViewerIndexFromWindow(QmitkRenderWindo
 {
   int result = -1;
 
-  for (unsigned int i = 0; i < m_Viewers.size(); i++)
+  for (std::size_t i = 0; i < m_Viewers.size(); i++)
   {
     bool contains = m_Viewers[i]->ContainsRenderWindow(renderWindow);
     if (contains)
@@ -268,7 +268,7 @@ void niftkMultiViewerVisibilityManager::NodeRemoved( const mitk::DataNode* node)
 {
   this->UpdateObserverToVisibilityMap();
 
-  for (unsigned int i = 0; i < m_DataNodes.size(); i++)
+  for (std::size_t i = 0; i < m_DataNodes.size(); i++)
   {
     std::set<mitk::DataNode*>::iterator iter;
     iter = m_DataNodes[i].find(const_cast<mitk::DataNode*>(node));
@@ -336,7 +336,7 @@ void niftkMultiViewerVisibilityManager::SetInitialNodeProperties(mitk::DataNode*
   mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(m_DataStorage, node);
   if (parent.IsNotNull())
   {
-    for (unsigned int i = 0; i < m_DataNodes.size(); i++)
+    for (std::size_t i = 0; i < m_DataNodes.size(); i++)
     {
       std::set<mitk::DataNode*>::iterator iter;
       for (iter = m_DataNodes[i].begin(); iter != m_DataNodes[i].end(); iter++)
@@ -379,7 +379,7 @@ void niftkMultiViewerVisibilityManager::UpdateVisibilityProperty(const itk::Even
     }
 
     // Then we iterate through our list of viewers.
-    for (unsigned int i = 0; i < m_DataNodes.size(); i++)
+    for (std::size_t i = 0; i < m_DataNodes.size(); i++)
     {
 
       // And for each viewer, we have a set of registered nodes.
@@ -446,7 +446,7 @@ void niftkMultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::D
     assert(m_DataStorage);
 
     mitk::DataStorage::SetOfObjects::Pointer possibleChildren = mitk::FindDerivedVisibleNonHelperChildren(m_DataStorage, node);
-    for (unsigned int i = 0; i < possibleChildren->size(); i++)
+    for (std::size_t i = 0; i < possibleChildren->size(); i++)
     {
       mitk::DataNode* possibleNode = (*possibleChildren)[i];
 
@@ -474,7 +474,7 @@ mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetGeometry(std::
 
     // First try to find an image geometry, and if so, use the first one.
     mitk::Image::Pointer image = NULL;
-    for (unsigned int i = 0; i < nodes.size(); i++)
+    for (std::size_t i = 0; i < nodes.size(); i++)
     {
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
       if (image.IsNotNull())
@@ -488,7 +488,7 @@ mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetGeometry(std::
     // Failing that, use the first geometry available.
     if (geometry.IsNull())
     {
-      for (unsigned int i = 0; i < nodes.size(); i++)
+      for (std::size_t i = 0; i < nodes.size(); i++)
       {
         mitk::BaseData::Pointer data = nodes[i]->GetData();
         if (data.IsNotNull())
@@ -607,7 +607,7 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
     MIDASOrientation orientation = MIDAS_ORIENTATION_CORONAL;
 
     mitk::Image::Pointer image = NULL;
-    for (unsigned int i = 0; i < nodes.size(); i++)
+    for (std::size_t i = 0; i < nodes.size(); i++)
     {
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
       if (image.IsNotNull())
@@ -660,7 +660,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
 
   if (m_DataStorage.IsNotNull() && viewerIndex != -1)
   {
-    for (unsigned int i = 0; i < nodes.size(); i++)
+    for (std::size_t i = 0; i < nodes.size(); i++)
     {
       std::string name;
       if (nodes[i] != 0 && nodes[i]->GetStringProperty("name", name))
@@ -696,7 +696,7 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
       }
 
       // Then add all nodes into the same viewer denoted by viewerIndex (the one that was dropped into).
-      for (unsigned int i = 0; i < nodes.size(); i++)
+      for (std::size_t i = 0; i < nodes.size(); i++)
       {
         this->AddNodeToViewer(viewerIndex, nodes[i]);
       }
@@ -709,9 +709,9 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
       // We aim to put one object, in each of consecutive viewers.
       // If we hit the end (of the 5x5=25 list), we go back to zero.
 
-      unsigned int dropIndex = viewerIndex;
+      std::size_t dropIndex = viewerIndex;
 
-      for (unsigned int i = 0; i < nodes.size(); i++)
+      for (std::size_t i = 0; i < nodes.size(); i++)
       {
         while (dropIndex < m_Viewers.size() && !m_Viewers[dropIndex]->isVisible())
         {
@@ -800,17 +800,17 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
         m_Viewers[0]->SetWindowLayout(windowLayout);
       }
 
-      unsigned int maxSliceIndex = m_Viewers[0]->GetMaxSliceIndex(orientation);
-      unsigned int numberOfSlices = maxSliceIndex + 1;
-      unsigned int viewersToUse = std::min((unsigned int)numberOfSlices, (unsigned int)m_Viewers.size());
+      int maxSlice = m_Viewers[0]->GetMaxSlice(orientation);
+      int numberOfSlices = maxSlice + 1;
+      std::size_t viewersToUse = std::min((std::size_t)numberOfSlices, (std::size_t)m_Viewers.size());
 
-      MITK_DEBUG << "Dropping thumbnail, maxSlice=" << maxSliceIndex << ", numberOfSlices=" << numberOfSlices << ", viewersToUse=" << viewersToUse << std::endl;
+      MITK_DEBUG << "Dropping thumbnail, maxSlice=" << maxSlice << ", numberOfSlices=" << numberOfSlices << ", viewersToUse=" << viewersToUse << std::endl;
 
       // Now decide how we calculate which viewer is showing which slice.
       if (numberOfSlices <= m_Viewers.size())
       {
         // In this method, we have less slices than viewers, so we just spread them in increasing order.
-        for (unsigned int i = 0; i < viewersToUse; i++)
+        for (std::size_t i = 0; i < viewersToUse; i++)
         {
           if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
           {
@@ -818,15 +818,15 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
             m_Viewers[i]->SetWindowLayout(windowLayout);
             m_Viewers[i]->SetEnabled(true);
           }
-          m_Viewers[i]->SetSliceIndex(orientation, i);
+          m_Viewers[i]->SetSelectedSlice(orientation, i);
           m_Viewers[i]->FitToDisplay();
-          MITK_DEBUG << "Dropping thumbnail, sliceIndex=" << i << std::endl;
+          MITK_DEBUG << "Dropping thumbnail, slice=" << i << std::endl;
         }
       }
       else
       {
         // In this method, we have more slices than viewers, so we spread them evenly over the max number of viewers.
-        for (unsigned int i = 0; i < viewersToUse; i++)
+        for (std::size_t i = 0; i < viewersToUse; i++)
         {
           if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
           {
@@ -834,27 +834,28 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(niftkSingleViewerWidget* 
             m_Viewers[i]->SetWindowLayout(windowLayout);
             m_Viewers[i]->SetEnabled(true);
           }
-          unsigned int maxSliceIndex = m_Viewers[i]->GetMaxSliceIndex(orientation);
-          unsigned int numberOfEdgeSlicesToIgnore = static_cast<unsigned int>(numberOfSlices * 0.05); // ignore first and last 5 percent, as usually junk/blank.
-          unsigned int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
+          int maxSlice = m_Viewers[i]->GetMaxSlice(orientation);
+          int numberOfEdgeSlicesToIgnore = static_cast<int>(numberOfSlices * 0.05); // ignore first and last 5 percent, as usually junk/blank.
+          int remainingNumberOfSlices = numberOfSlices - (2 * numberOfEdgeSlicesToIgnore);
           float fraction = static_cast<float>(i) / m_Viewers.size();
-          unsigned int chosenSlice = numberOfEdgeSlicesToIgnore + static_cast<unsigned int>(remainingNumberOfSlices * fraction);
+
+          int chosenSlice = numberOfEdgeSlicesToIgnore + static_cast<int>(remainingNumberOfSlices * fraction);
 
           MITK_DEBUG << "Dropping thumbnail, i=" << i \
-              << ", maxSlice=" << maxSliceIndex \
+              << ", maxSlice=" << maxSlice \
               << ", numberOfEdgeSlicesToIgnore=" << numberOfEdgeSlicesToIgnore \
               << ", remainingNumberOfSlices=" << remainingNumberOfSlices \
               << ", fraction=" << fraction \
               << ", chosenSlice=" << chosenSlice << std::endl;
-          m_Viewers[i]->SetSliceIndex(orientation, chosenSlice);
+          m_Viewers[i]->SetSelectedSlice(orientation, chosenSlice);
           m_Viewers[i]->FitToDisplay();
         }
       } // end if (which method of spreading thumbnails)
 
       // Now add the nodes to the right number of viewers.
-      for (unsigned int i = 0; i < viewersToUse; i++)
+      for (std::size_t i = 0; i < viewersToUse; i++)
       {
-        for (unsigned int j = 0; j < nodes.size(); j++)
+        for (std::size_t j = 0; j < nodes.size(); j++)
         {
           this->AddNodeToViewer(i, nodes[j]);
         }

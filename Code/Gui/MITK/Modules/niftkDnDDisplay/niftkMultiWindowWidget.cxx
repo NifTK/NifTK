@@ -77,9 +77,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 : QmitkStdMultiWidget(parent, flags, renderingManager)
 , m_RenderWindows(4)
 , m_GridLayout(NULL)
-, m_AxialSliceTag(0)
-, m_SagittalSliceTag(0)
-, m_CoronalSliceTag(0)
+, m_AxialSliceTag(0ul)
+, m_SagittalSliceTag(0ul)
+, m_CoronalSliceTag(0ul)
 , m_IsSelected(false)
 , m_IsEnabled(false)
 , m_SelectedRenderWindow(0)
@@ -91,8 +91,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_Magnifications(3)
-, m_Origins(3)
+, m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
+, m_Origins(3)
 , m_Geometry(NULL)
 , m_TimeGeometry(NULL)
 , m_BlockDisplayEvents(false)
@@ -104,6 +105,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SelectedPositionHasChanged(false)
 , m_CursorPositionHasChanged(3)
 , m_ScaleFactorHasChanged(3)
+, m_CursorPositionBindingHasChanged(false)
+, m_ScaleFactorBindingHasChanged(false)
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
@@ -266,7 +269,7 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
   // Stop listening to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
-  for (unsigned i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     this->RemoveDisplayGeometryModificationObserver(MIDASOrientation(i));
   }
@@ -294,6 +297,7 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
   assert(displayGeometry);
 
   DisplayGeometryModificationCommand::Pointer command = DisplayGeometryModificationCommand::New(this, orientation);
+  m_WorldGeometries[orientation] = displayGeometry->GetWorldGeometry();
   m_RenderWindowSizes[orientation] = displayGeometry->GetSizeInDisplayUnits();
   m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
   m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
@@ -376,7 +380,7 @@ void niftkMultiWindowWidget::SetSelected(bool selected)
 
   if (selected)
   {
-    this->EnableColoredRectangles();
+//    this->EnableColoredRectangles();
   }
   else
   {
@@ -409,56 +413,76 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  bool updateWasBlocked = this->BlockUpdate(true);
+  if (renderWindow != m_SelectedRenderWindow)
+  {
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  /// TODO This function does not follow the usual pattern.
+    if (renderWindow == this->GetRenderWindow1())
+    {
+      m_Orientation = MIDAS_ORIENTATION_AXIAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  m_IsSelected = true;
-  m_SelectedRenderWindow = renderWindow;
+      m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow2())
+    {
+      m_Orientation = MIDAS_ORIENTATION_SAGITTAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  if (renderWindow == this->GetRenderWindow1())
-  {
-    m_Orientation = MIDAS_ORIENTATION_AXIAL;
-    m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow2())
-  {
-    m_Orientation = MIDAS_ORIENTATION_SAGITTAL;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow3())
-  {
-    m_Orientation = MIDAS_ORIENTATION_CORONAL;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-    m_RectangleRendering4->Disable();
-  }
-  else if (renderWindow == this->GetRenderWindow4())
-  {
-    m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
-  }
-  else
-  {
-    this->SetSelected(false);
-  }
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow3())
+    {
+      m_Orientation = MIDAS_ORIENTATION_CORONAL;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  if (m_IsSelected)
-  {
-    m_SelectedRenderWindowHasChanged = true;
-  }
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
+      m_RectangleRendering4->Disable();
+    }
+    else if (renderWindow == this->GetRenderWindow4())
+    {
+      m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
+      m_IsSelected = true;
+      m_SelectedRenderWindow = renderWindow;
+      m_SelectedRenderWindowHasChanged = true;
 
-  this->BlockUpdate(updateWasBlocked);
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
+    }
+    else
+    {
+      m_Orientation = MIDAS_ORIENTATION_UNKNOWN;
+      m_IsSelected = false;
+      if (m_SelectedRenderWindow != 0)
+      {
+        m_SelectedRenderWindow = 0;
+        m_SelectedRenderWindowHasChanged = true;
+      }
+
+      m_RectangleRendering1->Disable();
+      m_RectangleRendering2->Disable();
+      m_RectangleRendering3->Disable();
+      m_RectangleRendering3->Disable();
+    }
+
+    this->BlockUpdate(updateWasBlocked);
+  }
 }
 
 
@@ -1080,7 +1104,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
 
         m_Geometry->IndexToWorld(originInVx, originInMm);
 
-        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
+//        MITK_DEBUG << "Matt, originInVx: " << originInVx << ", originInMm: " << originInMm << std::endl;
 
         // Setting up the width, height, axis orientation.
         switch (viewDirection)
@@ -1104,6 +1128,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
           slices = permutedBoundingBox[0];
           isFlipped = false;
           break;
+        /// Coronal:
         case mitk::SliceNavigationController::Frontal:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[2];
@@ -1123,6 +1148,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
           slices = permutedBoundingBox[1];
           isFlipped = true;
           break;
+        /// Axial:
         default:
           width  = permutedBoundingBox[0];
           height = permutedBoundingBox[1];
@@ -1461,37 +1487,37 @@ WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetMaxSliceIndex(MIDASOrientation orientation) const
+int niftkMultiWindowWidget::GetMaxSlice(MIDASOrientation orientation) const
 {
   assert(orientation != MIDAS_ORIENTATION_UNKNOWN);
 
-  unsigned int result = 0;
+  int maxSlice = 0;
 
   mitk::SliceNavigationController* snc = m_RenderWindows[orientation]->GetSliceNavigationController();
 
   if (snc->GetSlice() != NULL && snc->GetSlice()->GetSteps() > 0)
   {
-    result = snc->GetSlice()->GetSteps() - 1;
+    maxSlice = snc->GetSlice()->GetSteps() - 1;
   }
 
-  return result;
+  return maxSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetMaxTimeStep() const
+int niftkMultiWindowWidget::GetMaxTimeStep() const
 {
-  unsigned int result = 0;
+  int maxTimeStep = 0;
 
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   assert(snc);
 
   if (snc->GetTime() != NULL && snc->GetTime()->GetSteps() >= 1)
   {
-    result = snc->GetTime()->GetSteps() -1;
+    maxTimeStep = snc->GetTime()->GetSteps() -1;
   }
 
-  return result;
+  return maxTimeStep;
 }
 
 
@@ -1612,6 +1638,16 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(MIDASOrientation orientat
   bool updateWasBlocked = this->BlockUpdate(true);
 
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[orientation]->GetRenderer()->GetDisplayGeometry();
+
+  const mitk::Geometry2D* worldGeometry = displayGeometry->GetWorldGeometry();
+  if (worldGeometry != m_WorldGeometries[orientation])
+  {
+    m_WorldGeometries[orientation] = worldGeometry;
+    m_Origins[orientation] = displayGeometry->GetOriginInDisplayUnits();
+    m_ScaleFactors[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+    m_Magnifications[orientation] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+  }
+
   mitk::Vector2D renderWindowSize = displayGeometry->GetSizeInDisplayUnits();
   if (renderWindowSize != m_RenderWindowSizes[orientation])
   {
@@ -1947,7 +1983,25 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientat
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigned int sliceIndex)
+int niftkMultiWindowWidget::GetSelectedSlice(MIDASOrientation orientation) const
+{
+  int selectedSlice = 0;
+
+  if (m_Geometry != NULL)
+  {
+    mitk::Index3D selectedPositionInVx;
+    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+
+    int axis = m_OrientationToAxisMap[orientation];
+    selectedSlice = selectedPositionInVx[axis];
+  }
+
+  return selectedSlice;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
 {
   const mitk::Geometry3D* geometry = m_Geometry;
   if (geometry != NULL)
@@ -1958,7 +2012,7 @@ void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigne
     geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationToAxisMap[orientation];
-    selectedPositionInVx[axis] = sliceIndex;
+    selectedPositionInVx[axis] = selectedSlice;
 
     mitk::Point3D tmp;
     tmp[0] = selectedPositionInVx[0];
@@ -1978,25 +2032,40 @@ void niftkMultiWindowWidget::SetSliceIndex(MIDASOrientation orientation, unsigne
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetSliceIndex(MIDASOrientation orientation) const
+void niftkMultiWindowWidget::MoveAnteriorOrPosterior(MIDASOrientation orientation, int slices)
 {
-  int sliceIndex = 0;
-
-  if (m_Geometry != NULL)
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN && slices != 0)
   {
-    mitk::Index3D selectedPositionInVx;
-    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-    int axis = m_OrientationToAxisMap[orientation];
-    sliceIndex = selectedPositionInVx[axis];
+    int selectedSlice = this->GetSelectedSlice(orientation);
+    int upDirection = this->GetSliceUpDirection(orientation);
+
+    int nextSelectedSlice = selectedSlice + slices * upDirection;
+
+    int maxSlice = this->GetMaxSlice(orientation);
+
+    if (nextSelectedSlice >= 0 && nextSelectedSlice <= static_cast<int>(maxSlice))
+    {
+      this->SetSelectedSlice(orientation, nextSelectedSlice);
+
+      /// Note. As a request and for MIDAS compatibility, all the slice have to be forcibly rendered
+      /// when scrolling through them by keeping the 'a' or 'z' key pressed.
+      /// Otherwise, issues on the scan or in the segmentation may be not seen.
+
+      /// TODO:
+      /// In spite of the comment above, it is not right to do any render window update here.
+      /// The forced immediate update should be done in the BlockUpdate() function.
+//      m_RenderingManager->ForceImmediateUpdate(m_MultiWidget->GetRenderWindow(orientation)->GetRenderWindow());
+    }
+
+    this->BlockUpdate(updateWasBlocked);
   }
-
-  return sliceIndex;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
+void niftkMultiWindowWidget::SetTimeStep(int timeStep)
 {
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
   snc->GetTime()->SetPos(timeStep);
@@ -2010,7 +2079,7 @@ void niftkMultiWindowWidget::SetTimeStep(unsigned int timeStep)
 
 
 //-----------------------------------------------------------------------------
-unsigned int niftkMultiWindowWidget::GetTimeStep() const
+int niftkMultiWindowWidget::GetTimeStep() const
 {
   mitk::SliceNavigationController* snc = m_RenderWindows[MIDAS_ORIENTATION_AXIAL]->GetSliceNavigationController();
 
@@ -2090,11 +2159,16 @@ const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
+  assert(cursorPositions.size() == 3);
+
   bool updateWasBlocked = this->BlockUpdate(true);
-  m_CursorPositions = cursorPositions;
-  for (int i = 0; i < 3; ++i)
+  for (std::size_t i = 0; i < 3; ++i)
   {
-    m_CursorPositionHasChanged[i] = true;
+    if (cursorPositions[i] != m_CursorPositions[i])
+    {
+      m_CursorPositions[i] = cursorPositions[i];
+      m_CursorPositionHasChanged[i] = true;
+    }
   }
   this->BlockUpdate(updateWasBlocked);
 }
@@ -2398,28 +2472,30 @@ bool niftkMultiWindowWidget::GetCursorPositionBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPositionBinding(bool bound)
+void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding)
 {
-  if (bound == this->GetCursorPositionBinding())
+  if (cursorPositionBinding != m_CursorPositionBinding)
   {
-    // Already bound/unbound.
-    return;
-  }
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_CursorPositionBinding = bound;
+    m_CursorPositionBinding = cursorPositionBinding;
+    m_CursorPositionBindingHasChanged = true;
 
-  if (bound)
-  {
-    MIDASOrientation orientation = this->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    if (cursorPositionBinding)
     {
-      this->OnOriginChanged(orientation, true);
-      /// We raise the event in another window as well so that the cursors are in sync
-      /// along the third axis as well.
-      MIDASOrientation someOtherOrientation =
-          orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
-      this->OnOriginChanged(someOtherOrientation, true);
+      MIDASOrientation orientation = this->GetOrientation();
+      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+      {
+        this->OnOriginChanged(orientation, true);
+        /// We raise the event in another window as well so that the cursors are in sync
+        /// along the third axis as well.
+        MIDASOrientation someOtherOrientation =
+            orientation == MIDAS_ORIENTATION_CORONAL ? MIDAS_ORIENTATION_SAGITTAL : MIDAS_ORIENTATION_CORONAL;
+        this->OnOriginChanged(someOtherOrientation, true);
+      }
     }
+
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2432,29 +2508,31 @@ bool niftkMultiWindowWidget::GetScaleFactorBinding() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactorBinding(bool bound)
+void niftkMultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 {
-  if (bound == this->GetScaleFactorBinding())
+  if (scaleFactorBinding != m_ScaleFactorBinding)
   {
-    // Already bound/unbound.
-    return;
-  }
+    bool updateWasBlocked = this->BlockUpdate(true);
 
-  m_ScaleFactorBinding = bound;
+    m_ScaleFactorBinding = scaleFactorBinding;
+    m_ScaleFactorBindingHasChanged = true;
 
-  if (bound)
-  {
-    MIDASOrientation orientation = this->GetOrientation();
-    if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+    if (scaleFactorBinding)
     {
-      for (int i = 0; i < 3; ++i)
+      MIDASOrientation orientation = this->GetOrientation();
+      if (orientation != MIDAS_ORIENTATION_UNKNOWN)
       {
-        if (i != orientation)
+        for (int i = 0; i < 3; ++i)
         {
-          this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+          if (i != orientation)
+          {
+            this->SetScaleFactor(MIDASOrientation(i), m_ScaleFactors[orientation]);
+          }
         }
       }
     }
+
+    this->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -2494,6 +2572,7 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         }
         m_SelectedRenderWindow->setFocus();
         mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
+        emit SelectedRenderWindowChanged(m_Orientation);
       }
       for (unsigned i = 0; i < 3; ++i)
       {
@@ -2564,7 +2643,10 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
             rendererUpdated[i] = true;
           }
-          emit CursorPositionChanged(MIDASOrientation(i), m_CursorPositions[i]);
+          if (m_RenderWindows[i]->isVisible())
+          {
+            emit CursorPositionChanged(MIDASOrientation(i), m_CursorPositions[i]);
+          }
         }
       }
       for (unsigned i = 0; i < 3; ++i)
@@ -2578,8 +2660,21 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
             rendererUpdated[i] = true;
           }
-          emit ScaleFactorChanged(MIDASOrientation(i), m_ScaleFactors[i]);
+          if (m_RenderWindows[i]->isVisible())
+          {
+            emit ScaleFactorChanged(MIDASOrientation(i), m_ScaleFactors[i]);
+          }
         }
+      }
+      if (m_CursorPositionBindingHasChanged)
+      {
+        m_CursorPositionBindingHasChanged = false;
+        emit CursorPositionBindingChanged();
+      }
+      if (m_ScaleFactorBindingHasChanged)
+      {
+        m_ScaleFactorBindingHasChanged = false;
+        emit ScaleFactorBindingChanged();
       }
     }
   }
