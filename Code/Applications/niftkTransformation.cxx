@@ -639,23 +639,13 @@ int main(int argc, char** argv)
   switch (componentType)
     {
     case itk::ImageIOBase::CHAR:
-      if (dims == 2)
-        result = DoMain<2, short>(args);
-      else
-        result = DoMain<3, short>(args);
-      break;    
     case itk::ImageIOBase::UCHAR:
-      if (dims == 2)
-        result = DoMain<2, short>(args);
-      else
-        result = DoMain<3, short>(args);
-      break;    
     case itk::ImageIOBase::SHORT:
       if (dims == 2)
         result = DoMain<2, short>(args);
       else
         result = DoMain<3, short>(args);
-      break;
+      break;    
     case itk::ImageIOBase::USHORT:
       if (dims == 2)
         result = DoMain<2, unsigned short>(args);
@@ -673,18 +663,6 @@ int main(int argc, char** argv)
         result = DoMain<2, unsigned int>(args);
       else
         result = DoMain<3, unsigned int>(args);
-      break;
-    case itk::ImageIOBase::LONG:
-      if (dims == 2)
-        result = DoMain<2, long>(args);
-      else
-        result = DoMain<3, long>(args);
-      break;
-    case itk::ImageIOBase::ULONG:
-      if (dims == 2)
-        result = DoMain<2, unsigned long>(args);
-      else
-        result = DoMain<3, unsigned long>(args);
       break;
     case itk::ImageIOBase::FLOAT:
       if (dims == 2)
