@@ -130,7 +130,8 @@ set(EXTERNAL_PROJECTS
   apriltags
   FLANN
   PCL
-  ITK          
+  ITK
+  RTK
   CTK          
   MITK         
   CGAL           
@@ -189,6 +190,10 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     list(APPEND proj_DEPENDENCIES ${NIFTYREC_DEPENDS})
   endif(BUILD_NIFTYREC)
 
+  if(BUILD_RTK)
+    list(APPEND proj_DEPENDENCIES ${RTK_DEPENDS})
+  endif(BUILD_RTK)
+
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
     # and compilation will fail with the weirdest errors.
@@ -229,6 +234,8 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_TESTING:BOOL=${BUILD_TESTING} # The value set in EP_COMMON_ARGS normally forces this off, but we may need NifTK to be on.
       -DBUILD_SUPERBUILD:BOOL=OFF           # Must force this to be off, or else you will loop forever.
       -DBUILD_PCL:BOOL=${BUILD_PCL}
+      -DBUILD_RTK:BOOL=${BUILD_RTK}
+      -DBUILD_ITKFFTW=${BUILD_ITKFFTW}
       -DBUILD_CAMINO:BOOL=${BUILD_CAMINO}
       -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_COMMAND_LINE_PROGRAMS}
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
@@ -301,6 +308,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DFLANN_DIR:PATH=${FLANN_DIR}
       -DFLANN_ROOT:PATH=${FLANN_ROOT}
       -DPCL_DIR:PATH=${PCL_DIR}
+      -DRTK_DIR:PATH=${RTK_DIR}
       DEPENDS ${proj_DEPENDENCIES}
   )
 
