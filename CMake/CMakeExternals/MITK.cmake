@@ -23,10 +23,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
 endif()
 
 set(proj MITK)
-set(proj_DEPENDENCIES Boost ITK VTK DCMTK)
-if (NOT BUILD_RTK)
-  list(APPEND proj_DEPENDENCIES GDCM)
-endif()
+set(proj_DEPENDENCIES Boost ITK VTK GDCM DCMTK)
 if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
@@ -47,13 +44,6 @@ endif(WIN32)
 
 if(NOT DEFINED MITK_DIR)
 
-    set(additional_cmake_args)
-    if(NOT BUILD_RTK)
-      list(APPEND additional_cmake_args
-          -DGDCM_DIR:PATH=${GDCM_DIR}
-          -DMITK_USE_GDCMIO:BOOL=ON
-          )
-    endif()
     ######################################################################
     # Configure the MITK Superbuild, to decide which plugins we want.
     ######################################################################
@@ -103,7 +93,6 @@ if(NOT DEFINED MITK_DIR)
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_ARGS}
-        ${additional_cmake_args}
         -DDESIRED_QT_VERSION:STRING=4
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         -DMITK_BUILD_TUTORIAL:BOOL=OFF
@@ -111,18 +100,19 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_QT:BOOL=${QT_FOUND}
         -DMITK_USE_CTK:BOOL=${QT_FOUND}
         -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
+        -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
         -DMITK_USE_Boost:BOOL=ON
         -DMITK_USE_Boost_LIBRARIES:STRING="filesystem system date_time"
         -DMITK_USE_SYSTEM_Boost:BOOL=OFF
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
-        -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
         -DMITK_ADDITIONAL_LIBRARY_SEARCH_PATHS:STRING=${mitk_additional_library_search_paths}
         -DEXTERNAL_BOOST_ROOT:PATH=${BOOST_ROOT}               # FindBoost expects BOOST_ROOT
         -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
         -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}            # Derived from BOOST_ROOT, set in BOOST.cmake
+        -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
         -DVTK_DIR:PATH=${VTK_DIR}                              # FindVTK expects VTK_DIR
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR

@@ -35,6 +35,7 @@ if(ITK_DIR)
   endif()
 endif()
 
+
 set(proj GDCM)
 set(proj_DEPENDENCIES )
 set(GDCM_DEPENDS ${proj})
@@ -60,13 +61,13 @@ if(NOT DEFINED GDCM_DIR)
       -DBUILD_EXAMPLES:BOOL=${EP_BUILD_EXAMPLES}
     DEPENDS ${proj_DEPENDENCIES}
   )
-
   set(GDCM_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 
 else()
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+
   find_package(GDCM)
 
 endif()
