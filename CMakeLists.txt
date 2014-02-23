@@ -220,7 +220,7 @@ set(NIFTK_VERSION_Boost "1_54_0" CACHE STRING "Version of Boost" FORCE)
 set(NIFTK_VERSION_GDCM "2.2.1" CACHE STRING "Version of GDCM" FORCE)
 set(NIFTK_VERSION_DCMTK "3.6.1_20121102" CACHE STRING "Version of DCMTK" FORCE)
 set(NIFTK_VERSION_ITK "4.3.2.3" CACHE STRING "Version of ITK" FORCE)
-set(NIFTK_VERSION_RTK "ad65217614" CACHE STRING "Version of RTK" FORCE)
+set(NIFTK_VERSION_RTK "c88ec7cf4d" CACHE STRING "Version of RTK" FORCE)
 set(NIFTK_VERSION_VTK "5.10.0" CACHE STRING "Version of VTK" FORCE)
 # Note: If the CTK version changes, then you either clear the plugin cache
 # or change the deploy path by changing the patch level.
