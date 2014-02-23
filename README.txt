@@ -64,17 +64,6 @@ License : Doc/Licenses/ITK.txt (Apache v2 license)
 Mods    : 4.3.2.1: Removed path length check in top level CMakeLists.txt
           4.3.2.2: Raised https://issues.itk.org/jira/browse/ITK-3206
                    Applied patch directly to our 4.3.2.1 version.
-          4.3.2.4: Fixed ITK dilation bug, reported by Kelvin.
-
-          diff  ~/Downloads/itkBinaryCrossStructuringElement.hxx  ./Modules/Filtering/MathematicalMorphology/include/itkBinaryCrossStructuringElement.hxx
-          35c35
-          <   //radius.Fill(1);
-          ---
-          >   radius.Fill(1);
-          57c57
-          <     for ( i = static_cast<OffsetValueType>(-radius[d]); i <= static_cast<OffsetValueType>(radius[d]); ++i )
-          ---
-          >     for ( i = -1; i <= 1; i += 2 )
 
 Library : OpenCV
 Website : http://opencv.willowgarage.com/wiki
