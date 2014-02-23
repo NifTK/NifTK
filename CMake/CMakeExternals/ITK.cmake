@@ -24,6 +24,7 @@ endif()
 
 set(proj ITK)
 set(proj_DEPENDENCIES GDCM)
+
 if(MITK_USE_Python)
   list(APPEND proj_DEPENDENCIES CableSwig)
 endif()
@@ -78,6 +79,23 @@ if(NOT DEFINED ITK_DIR)
         )
   endif()
   
+  if (BUILD_ITKFFTW)
+    if(WIN32)
+      # On Windows, you have to precompile one.
+      # This is currently untested.
+      list(APPEND additional_cmake_args
+           -DUSE_SYSTEM_FFTW:BOOL=ON
+          )
+    else()
+      # This causes FFTW to be downloaded and compiled.
+      list(APPEND additional_cmake_args
+           -DUSE_FFTWF:BOOL=ON
+           -DUSE_FFTWD:BOOL=ON
+           -DUSE_SYSTEM_FFTW:BOOL=OFF
+          )
+    endif()
+  endif()
+
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchITK-4.3.1.cmake)
 
   niftkMacroGetChecksum(NIFTK_CHECKSUM_ITK ${NIFTK_LOCATION_ITK})
