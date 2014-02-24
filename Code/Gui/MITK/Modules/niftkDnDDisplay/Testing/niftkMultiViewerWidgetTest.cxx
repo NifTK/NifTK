@@ -24,8 +24,7 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkTestingMacros.h>
 
-#include <QmitkRenderingManagerFactory.h>
-#include <QmitkApplicationCursor.h>
+#include <QmitkRegisterClasses.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
@@ -103,17 +102,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
   // Need to load images, specifically using MIDAS/DRC object factory.
   ::RegisterNifTKCoreObjectFactory();
 
-  mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
-  globalInteraction->Initialize("global");
-  globalInteraction->GetStateMachineFactory()->LoadBehaviorString(mitk::DnDDisplayStateMachine::STATE_MACHINE_XML);
-
-  /// Create and register RenderingManagerFactory for this platform.
-  static QmitkRenderingManagerFactory qmitkRenderingManagerFactory;
-  Q_UNUSED(qmitkRenderingManagerFactory);
-
-  /// Create one instance
-  static QmitkApplicationCursor globalQmitkApplicationCursor;
-  Q_UNUSED(globalQmitkApplicationCursor);
+  QmitkRegisterClasses();
 
   d->DataStorage = mitk::StandaloneDataStorage::New();
 
