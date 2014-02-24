@@ -606,7 +606,7 @@ int niftkSingleViewerWidget::GetSelectedSlice(MIDASOrientation orientation) cons
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::SetSelectedSlice(MIDASOrientation orientation, int selectedSlice)
 {
-  if (m_Orientation != MIDAS_ORIENTATION_UNKNOWN)
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
     m_MultiWidget->SetSelectedSlice(orientation, selectedSlice);
   }

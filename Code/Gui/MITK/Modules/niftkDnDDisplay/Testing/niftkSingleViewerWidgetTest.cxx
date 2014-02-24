@@ -452,11 +452,15 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
     }
   }
   mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
-  QStringList types;
-  types << "application/x-mitk-datanodes";
+//  QStringList types;
+//  types << "application/x-mitk-datanodes";
+  QDragEnterEvent dragEnterEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
   QDropEvent dropEvent(renderWindow->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
-//  qApp->sendEvent(renderWindow, &dropEvent);
+  if (!qApp->notify(renderWindow, &dragEnterEvent))
+  {
+    QTest::qWarn("Drag enter event not accepted by receiving widget.");
+  }
   if (!qApp->notify(renderWindow, &dropEvent))
   {
     QTest::qWarn("Drop event not accepted by receiving widget.");
@@ -763,25 +767,25 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedSlice()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
+//  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
-  int expectedAxialSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
-  int expectedSagittalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
-  int expectedCoronalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
-  unsigned expectedCoronalSncPos = d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
+//  int axialSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_AXIAL);
+//  int sagittalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_SAGITTAL);
+  int coronalSlice = d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL);
+  unsigned expectedCoronalSncPos = d->CoronalSnc->GetSlice()->GetSteps() - 1 - coronalSlice;
 
   mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();
 
   int delta;
 
   delta = +20;
-  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
-  expectedCoronalSlice += delta;
-  expectedCoronalSncPos -= delta;
+  coronalSlice += delta;
+  expectedSelectedPosition[CoronalAxis] += d->WorldAxisFlipped[CoronalAxis] * delta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSncPos += d->WorldAxisFlipped[CoronalAxis] * delta;
 
-  d->Viewer->SetSelectedSlice(MIDAS_ORIENTATION_CORONAL, expectedCoronalSlice);
+  d->Viewer->SetSelectedSlice(MIDAS_ORIENTATION_CORONAL, coronalSlice);
 
-  QCOMPARE(d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL), expectedCoronalSlice);
+  QCOMPARE(d->Viewer->GetSelectedSlice(MIDAS_ORIENTATION_CORONAL), coronalSlice);
   QCOMPARE(d->CoronalSnc->GetSlice()->GetPos(), expectedCoronalSncPos);
 
   d->StateTester->Clear();
