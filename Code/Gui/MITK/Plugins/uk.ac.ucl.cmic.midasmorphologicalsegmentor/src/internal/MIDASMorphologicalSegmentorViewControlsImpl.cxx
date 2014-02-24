@@ -48,6 +48,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
   m_ThresholdingAxialCutoffSlider->layout()->setSpacing(2);
   m_ThresholdingAxialCutoffSlider->setSpinBoxAlignment(Qt::AlignRight);
   m_ThresholdingAxialCutoffSlider->setSingleStep(1.0);
+  m_ThresholdingAxialCutoffSlider->setPageStep(2.0);
   m_ThresholdingAxialCutoffSlider->setDecimals(0);
   // Trick alert!
   // So that the width of the spinbox is equal to the other spinboxes:
