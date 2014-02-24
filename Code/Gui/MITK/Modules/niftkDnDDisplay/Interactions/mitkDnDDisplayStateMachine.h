@@ -38,8 +38,9 @@ public:
   mitkClassMacro(DnDDisplayStateMachine, StateMachine); // this creates the Self typedef
   mitkNewMacro2Param(Self, const char*, DnDDisplayStateMachineResponder*);
 
-  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
-  static const std::string STATE_MACHINE_XML;
+  /// \brief Loads the behaviour string to the global interaction.
+  /// This function should be called before any DnDDisplayStateMachine object is created.
+  static void LoadBehaviourString();
 
   /// \brief Tells if the state machine listens to the key events of the renderer.
   bool HasRenderer(const mitk::BaseRenderer* renderer) const;
@@ -91,6 +92,11 @@ private:
 
   /// \brief The renderers whose key events are listened to.
   std::vector<const mitk::BaseRenderer*> m_Renderers;
+
+  // Currently, creating state machine using hard coded string, as I don't know where to load them from.
+  static const std::string STATE_MACHINE_XML;
+
+  static bool s_BehaviourStringLoaded;
 
 }; // end class
 
