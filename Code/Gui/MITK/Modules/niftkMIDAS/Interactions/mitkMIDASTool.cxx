@@ -225,6 +225,10 @@ const std::string mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML = std
 
 
 //-----------------------------------------------------------------------------
+bool mitk::MIDASTool::s_BehaviourStringsLoaded = false;
+
+
+//-----------------------------------------------------------------------------
 mitk::MIDASTool::MIDASTool(const char* type) :
     FeedbackContourTool(type)
 , m_AddToPointSetInteractor(NULL)
@@ -239,6 +243,33 @@ mitk::MIDASTool::MIDASTool(const char* type) :
 //-----------------------------------------------------------------------------
 mitk::MIDASTool::~MIDASTool()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::LoadBehaviourStrings()
+{
+  if (!s_BehaviourStringsLoaded)
+  {
+    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
+    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
+    if (stateMachineFactory)
+    {
+      if (stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_DROPPER_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_SEED_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_DRAW_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_POLY_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_PAINTBRUSH_TOOL_STATE_MACHINE_XML)
+          && stateMachineFactory->LoadBehaviorString(mitk::MIDASTool::MIDAS_TOOL_KEYPRESS_STATE_MACHINE_XML))
+      {
+        s_BehaviourStringsLoaded = true;
+      }
+    }
+    else
+    {
+      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+    }
+  }
 }
 
 
