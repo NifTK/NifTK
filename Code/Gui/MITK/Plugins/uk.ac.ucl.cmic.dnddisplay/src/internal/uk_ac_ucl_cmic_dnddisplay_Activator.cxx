@@ -29,9 +29,6 @@ void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(niftkDnDDisplayEditor, context)
   BERRY_REGISTER_EXTENSION_CLASS(niftkDnDDisplayPreferencePage, context);
   s_PluginContext = context;
-
-  mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
-  globalInteractor->GetStateMachineFactory()->LoadBehaviorString(mitk::DnDDisplayStateMachine::STATE_MACHINE_XML);
 }
 
 
