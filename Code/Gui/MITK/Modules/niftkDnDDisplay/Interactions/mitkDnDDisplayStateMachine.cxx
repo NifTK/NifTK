@@ -16,10 +16,12 @@
 #include <mitkWheelEvent.h>
 #include <mitkStateEvent.h>
 #include <mitkBaseRenderer.h>
+#include <mitkGlobalInteraction.h>
 
 namespace mitk
 {
 
+//-----------------------------------------------------------------------------
 const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "<stateMachine NAME=\"DnDDisplayStateMachine\">"
     "  <state NAME=\"stateStart\" ID=\"1\" START_STATE=\"TRUE\">"
@@ -47,11 +49,17 @@ const std::string mitk::DnDDisplayStateMachine::STATE_MACHINE_XML =
     "  </state>"
     "</stateMachine>";
 
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayStateMachine::s_BehaviourStringLoaded = false;
+
+
 //-----------------------------------------------------------------------------
 DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, DnDDisplayStateMachineResponder* responder)
 : StateMachine(stateMachinePattern)
 {
   assert(responder);
+
   m_Responder = responder;
 
   CONNECT_ACTION(350001, MoveAnterior);
@@ -61,6 +69,28 @@ DnDDisplayStateMachine::DnDDisplayStateMachine(const char* stateMachinePattern, 
   CONNECT_ACTION(350005, SwitchToCoronal);
   CONNECT_ACTION(350013, ToggleMultiWindowLayout);
   CONNECT_ACTION(350014, ToggleCursorVisibility);
+}
+
+
+//-----------------------------------------------------------------------------
+void DnDDisplayStateMachine::LoadBehaviourString()
+{
+  if (!s_BehaviourStringLoaded)
+  {
+    mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
+    mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
+    if (stateMachineFactory)
+    {
+      if (stateMachineFactory->LoadBehaviorString(mitk::DnDDisplayStateMachine::STATE_MACHINE_XML))
+      {
+        s_BehaviourStringLoaded = true;
+      }
+    }
+    else
+    {
+      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
+    }
+  }
 }
 
 
