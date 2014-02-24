@@ -313,7 +313,14 @@ protected:
   {
     os << indent << "orientation: " << m_Orientation << std::endl;
     os << indent << "window layout: " << m_WindowLayout << std::endl;
-    os << indent << "selected render window: " << m_SelectedRenderWindow << ", " << m_SelectedRenderWindow->GetRenderer()->GetName() << std::endl;
+    if (m_SelectedRenderWindow)
+    {
+      os << indent << "selected render window: " << m_SelectedRenderWindow << ", " << m_SelectedRenderWindow->GetRenderer()->GetName() << std::endl;
+    }
+    else
+    {
+      os << indent << "selected render window: none" << std::endl;
+    }
     os << indent << "time step: " << m_TimeStep << std::endl;
     os << indent << "selected position: " << m_SelectedPosition << std::endl;
     os << indent << "cursor positions: " << m_CursorPositions[0] << ", " << m_CursorPositions[1] << ", " << m_CursorPositions[2] << std::endl;
