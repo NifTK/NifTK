@@ -146,7 +146,7 @@ void UltrasoundTransformAndImageMerger::Merge(
   std::cout << "Written to " << outputFileName << std::endl;
   std::cout << "Extra header info required for .mhd:" << std::endl;
 
-  std::cout << "UltrasoundImageOrientation = MATT FIXME" << std::endl;
+  std::cout << "UltrasoundImageOrientation = MF" << std::endl;
   std::cout << "UltrasoundImageType = BRIGHTNESS" << std::endl;
 
   std::string oneZero = "0";
