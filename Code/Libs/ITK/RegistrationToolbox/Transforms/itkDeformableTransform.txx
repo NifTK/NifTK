@@ -273,7 +273,7 @@ DeformableTransform<TFixedImage, TScalarType,NDimensions, TDeformationScalar>
   if (expectedParameters != this->m_Parameters.GetSize())
     {
       itkExceptionMacro(<<"Parameters array is the wrong length, it is:" <<  this->m_Parameters.GetSize()
-        << ", it should be:" +  expectedParameters);      
+        << ", it should be:" <<  expectedParameters);      
     }  
 
   VectorFieldIteratorType iterator(image, image->GetLargestPossibleRegion());
