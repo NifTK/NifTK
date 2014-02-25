@@ -22,7 +22,7 @@
       <name>inputImageDirectory</name>
       <longflag>inputImageDirectory</longflag>
       <description>Directory containing ultrasound images.</description>
-      <label>Input Points Directory</label>
+      <label>Input Image Directory</label>
     </directory>
     <directory>
       <name>outputMatrixDirectory</name>

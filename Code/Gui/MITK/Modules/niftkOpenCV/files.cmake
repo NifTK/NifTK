@@ -49,5 +49,6 @@ set(CPP_FILES
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPointerCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibrationEvaluation.cxx
+  UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
 )
