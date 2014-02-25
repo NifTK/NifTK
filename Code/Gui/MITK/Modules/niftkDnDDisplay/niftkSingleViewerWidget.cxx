@@ -79,7 +79,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)));
+  this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(int)), SLOT(OnSelectedRenderWindowChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
@@ -120,6 +120,13 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, st
   emit NodesDropped(this, renderWindow, nodes);
   m_MultiWidget->BlockUpdate(updateWasBlocked);
   m_MultiWidget->BlockDisplayEvents(displayEventsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int orientation)
+{
+  emit SelectedRenderWindowChanged(MIDASOrientation(orientation));
 }
 
 
@@ -359,7 +366,7 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 //-----------------------------------------------------------------------------
 MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
-  return m_MultiWidget->GetOrientation();
+  return MIDASOrientation(m_MultiWidget->GetOrientation());
 }
 
 

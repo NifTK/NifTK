@@ -79,6 +79,15 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
+  enum WindowOrientation
+  {
+    Unknown = -1,
+    AxialWindow,
+    SagittalWindow,
+    CoronalWindow,
+    _3DWindow
+  };
+
   niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0);
   virtual ~niftkSingleViewerWidget();
 
@@ -372,6 +381,9 @@ protected:
   virtual void paintEvent(QPaintEvent* event);
 
 protected slots:
+
+  /// \brief Called when the selected render window has changed.
+  virtual void OnSelectedRenderWindowChanged(int orientation);
 
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);

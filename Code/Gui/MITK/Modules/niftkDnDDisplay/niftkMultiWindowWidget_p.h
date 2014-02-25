@@ -134,7 +134,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Works out the orientation of the current window layout.
-  MIDASOrientation GetOrientation() const;
+  int GetOrientation() const;
 
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   void SetBackgroundColor(QColor color);
@@ -241,13 +241,13 @@ public:
   void SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions);
 
   /// \brief Gets the scale factor of the given render window. (mm/px)
-  double GetScaleFactor(MIDASOrientation orientation) const;
+  double GetScaleFactor(int orientation) const;
 
   /// \brief Sets the scale factor of the render window to the given value (mm/px)
   /// and moves the image so that the position of the focus remains the same.
   /// If the zooming is bound across the windows then this will set the scaling
   /// of the other windows as well.
-  void SetScaleFactor(MIDASOrientation orientation, double scaleFactor);
+  void SetScaleFactor(int orientation, double scaleFactor);
 
   /// \brief Gets the scale factors of the 2D render windows.
   const std::vector<double>& GetScaleFactors() const;
@@ -259,10 +259,10 @@ public:
   const mitk::Vector3D& GetVoxelSize() const;
 
   /// \brief Computes the magnification of a render window.
-  double GetMagnification(MIDASOrientation orientation) const;
+  double GetMagnification(int orientation) const;
 
   /// \brief Sets the magnification of a render window to the given value.
-  void SetMagnification(MIDASOrientation orientation, double magnification);
+  void SetMagnification(int orientation, double magnification);
 
   /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
   void FitToDisplay();
@@ -307,7 +307,7 @@ public:
 signals:
 
   /// \brief Emitted when the selected render window has changed.
-  void SelectedRenderWindowChanged(MIDASOrientation orientation);
+  void SelectedRenderWindowChanged(int orientation);
 
   /// \brief Emitted when the selected slice has changed in a render window.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -331,7 +331,7 @@ private:
   ///
   ///    pixel coordinate / render window size
   ///
-  void UpdateCursorPosition(MIDASOrientation orientation);
+  void UpdateCursorPosition(int orientation);
 
   /// \brief Moves the image (world) so that the given point gets to the currently stored position of the cursor.
   /// The function expects the cursor position in m_CursorPositions[orientation].
@@ -367,16 +367,16 @@ private:
   void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
 
   /// \brief Called when the display geometry of the render window has changed.
-  void OnDisplayGeometryModified(MIDASOrientation orientation);
+  void OnDisplayGeometryModified(int orientation);
 
   /// \brief Called when the origin of the display geometry of the render window has changed.
-  void OnOriginChanged(MIDASOrientation orientation, bool beingPanned);
+  void OnOriginChanged(int orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(int orientation, double scaleFactor);
 
   /// \brief Computes the scale factors from the magnification for each axes in mm/px.
   /// Since the magnification is in linear relation with the px/vx ratio but not the
@@ -386,7 +386,7 @@ private:
 
   /// \brief The magnification is calculated with the longer voxel side of an orientation.
   /// This function returns the index of this axis.
-  int GetDominantAxis(MIDASOrientation orientation) const;
+  int GetDominantAxis(int orientation) const;
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
   QColor m_BackgroundColor;
@@ -400,7 +400,7 @@ private:
   bool m_CursorVisibility;
   bool m_CursorGlobalVisibility;
   bool m_Show3DWindowIn2x2WindowLayout;
-  MIDASOrientation m_Orientation;
+  int m_Orientation;
   WindowLayout m_WindowLayout;
   mitk::Point3D m_SelectedPosition;
   std::vector<mitk::Vector2D> m_CursorPositions;
@@ -413,7 +413,7 @@ private:
   std::vector<double> m_ScaleFactors;
   std::vector<double> m_Magnifications;
 
-  mutable std::map<MIDASOrientation, int> m_OrientationToAxisMap;
+  mutable std::map<int, int> m_OrientationToAxisMap;
   mitk::Geometry3D* m_Geometry;
   mitk::TimeGeometry* m_TimeGeometry;
 
