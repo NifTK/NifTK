@@ -389,10 +389,10 @@ protected slots:
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
-  virtual void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  virtual void OnCursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor has changed.
-  virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  virtual void OnScaleFactorChanged(int orientation, double scaleFactor);
 
   /// \brief Called when the cursor position binding has changed.
   virtual void OnCursorPositionBindingChanged();

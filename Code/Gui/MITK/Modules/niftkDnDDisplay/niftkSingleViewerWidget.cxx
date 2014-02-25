@@ -81,8 +81,8 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(int)), SLOT(OnSelectedRenderWindowChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
-  this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
-  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+  this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
+  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorBindingChanged()), SLOT(OnScaleFactorBindingChanged()));
 
@@ -149,7 +149,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkSingleViewerWidget::OnCursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition)
 {
   /// A double click can result in up to six CursorPositionChanged events, depending on how many
   /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
@@ -163,14 +163,14 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(this, orientation, cursorPosition);
+  emit CursorPositionChanged(this, MIDASOrientation(orientation), cursorPosition);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
+void niftkSingleViewerWidget::OnScaleFactorChanged(int orientation, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, orientation, scaleFactor);
+  emit ScaleFactorChanged(this, MIDASOrientation(orientation), scaleFactor);
 }
 
 

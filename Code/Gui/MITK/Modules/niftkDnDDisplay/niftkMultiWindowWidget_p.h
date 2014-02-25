@@ -165,11 +165,13 @@ public:
   const std::vector<QmitkRenderWindow*>& GetRenderWindows() const;
 
   /// \brief Gets the render window corresponding to the given orientation, or NULL if it can't be found.
-  QmitkRenderWindow* GetRenderWindow(MIDASOrientation orientation) const;
+  QmitkRenderWindow* GetRenderWindow(int orientation) const;
 
   /// \brief Gets the orientation corresponding to the given render window.
-  /// Returns MIDAS_ORIENTATION_UNKNOWN for the 3D window.
-  MIDASOrientation GetOrientation(const QmitkRenderWindow* renderWindow) const;
+  /// Returns QmitkStdMultiWidget::AXIAL, QmitkStdMultiWidget::SAGITTAL, QmitkStdMultiWidget::CORONAL
+  /// or QmitkStdMultiWidget::THREE_D if the render window is within this widget,
+  /// otherwise -1.
+  int GetOrientation(const QmitkRenderWindow* renderWindow) const;
 
   /// \brief Returns true if this widget contains the provided window and false otherwise.
   bool ContainsRenderWindow(QmitkRenderWindow* renderWindow) const;
@@ -211,7 +213,7 @@ public:
   ///
   ///    pixel coordinate / render window size
   ///
-  const mitk::Vector2D& GetCursorPosition(MIDASOrientation orientation) const;
+  const mitk::Vector2D& GetCursorPosition(int orientation) const;
 
   /// \brief Sets the cursor position normalised with the render window size.
   ///
@@ -222,7 +224,7 @@ public:
   /// This function does not change the selected point in world but moves the image
   /// in the given render window so that the cursor (aka. crosshair) gets to the specified
   /// position in the render window.
-  void SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void SetCursorPosition(int orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Gets the positions of the cursor in the 2D render windows normalised with the render window size.
   ///
@@ -313,10 +315,10 @@ signals:
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Emitted when the cursor position has changed in a render window.
-  void CursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  void CursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Emitted when the scale factor has changed.
-  void ScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  void ScaleFactorChanged(int orientation, double scaleFactor);
 
   /// \brief Emitted when the cursor position binding has changed.
   void CursorPositionBindingChanged();
@@ -335,11 +337,11 @@ private:
 
   /// \brief Moves the image (world) so that the given point gets to the currently stored position of the cursor.
   /// The function expects the cursor position in m_CursorPositions[orientation].
-  void MoveToCursorPosition(MIDASOrientation orientation);
+  void MoveToCursorPosition(int orientation);
 
   /// \brief Sets the scale factor of the render window to the value stored in m_ScaleFactors[orientation] (mm/px)
   /// and moves the origin so that the cursor stays in the same position on the display.
-  void ZoomAroundCursorPosition(MIDASOrientation orientation);
+  void ZoomAroundCursorPosition(int orientation);
 
   /// \brief Callback from internal Axial SliceNavigatorController
   void OnAxialSliceChanged(const itk::EventObject& geometrySliceEvent);
@@ -352,7 +354,7 @@ private:
 
   /// \brief Callback, called from OnAxialSliceChanged, OnSagittalSliceChanged, OnCoronalSliceChanged to emit SelectedPositionChanged.
   /// The parameter describes which coordinate of the selected position has changed.
-  void OnSelectedPositionChanged(MIDASOrientation orientation);
+  void OnSelectedPositionChanged(int orientation);
 
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
@@ -361,10 +363,10 @@ private:
   void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visible);
 
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
-  void AddDisplayGeometryModificationObserver(MIDASOrientation orientation);
+  void AddDisplayGeometryModificationObserver(int orientation);
 
   /// \brief Removes a display geometry observer from the render window. Used to synchronise panning and zooming.
-  void RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation);
+  void RemoveDisplayGeometryModificationObserver(int orientation);
 
   /// \brief Called when the display geometry of the render window has changed.
   void OnDisplayGeometryModified(int orientation);
@@ -373,7 +375,7 @@ private:
   void OnOriginChanged(int orientation, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint);
+  void OnZoomFocusChanged(int orientation, const mitk::Vector2D& focusPoint);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(int orientation, double scaleFactor);

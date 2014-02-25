@@ -288,7 +288,7 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrientation orientation)
+void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(int orientation)
 {
   mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   assert(renderer);
@@ -308,7 +308,7 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(MIDASOrienta
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(MIDASOrientation orientation)
+void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(int orientation)
 {
   mitk::BaseRenderer* renderer = m_RenderWindows[orientation]->GetRenderer();
   assert(renderer);
@@ -1484,14 +1484,14 @@ int niftkMultiWindowWidget::GetMaxTimeStep() const
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector2D& niftkMultiWindowWidget::GetCursorPosition(MIDASOrientation orientation) const
+const mitk::Vector2D& niftkMultiWindowWidget::GetCursorPosition(int orientation) const
 {
   return m_CursorPositions[orientation];
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkMultiWindowWidget::SetCursorPosition(int orientation, const mitk::Vector2D& cursorPosition)
 {
   assert(orientation >= 0 && orientation < 3);
 
@@ -1554,7 +1554,7 @@ void niftkMultiWindowWidget::SetCursorPosition(MIDASOrientation orientation, con
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveToCursorPosition(MIDASOrientation orientation)
+void niftkMultiWindowWidget::MoveToCursorPosition(int orientation)
 {
   if (m_Geometry)
   {
@@ -1752,7 +1752,7 @@ void niftkMultiWindowWidget::OnOriginChanged(int orientation, bool beingPanned)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnZoomFocusChanged(MIDASOrientation orientation, const mitk::Vector2D& focusPoint)
+void niftkMultiWindowWidget::OnZoomFocusChanged(int orientation, const mitk::Vector2D& focusPoint)
 {
   if (m_Geometry)
   {
@@ -1799,7 +1799,7 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(int orientation, double scaleF
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnSelectedPositionChanged(MIDASOrientation orientation)
+void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
 {
   if (m_Geometry != NULL && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
@@ -2225,7 +2225,7 @@ void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFac
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::ZoomAroundCursorPosition(MIDASOrientation orientation)
+void niftkMultiWindowWidget::ZoomAroundCursorPosition(int orientation)
 {
   if (m_Geometry)
   {
@@ -2328,25 +2328,25 @@ mitk::Vector3D niftkMultiWindowWidget::ComputeScaleFactors(double magnification)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkMultiWindowWidget::GetRenderWindow(MIDASOrientation orientation) const
+QmitkRenderWindow* niftkMultiWindowWidget::GetRenderWindow(int orientation) const
 {
   QmitkRenderWindow* renderWindow;
-  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  if (orientation == AXIAL)
   {
     renderWindow = this->GetRenderWindow1();
   }
-  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (orientation == SAGITTAL)
   {
     renderWindow = this->GetRenderWindow2();
   }
-  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  else if (orientation == CORONAL)
   {
     renderWindow = this->GetRenderWindow3();
   }
-//  else if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-//  {
-//    renderWindow = this->GetRenderWindow4();
-//  }
+  else if (orientation == THREE_D)
+  {
+    renderWindow = this->GetRenderWindow4();
+  }
   else
   {
     renderWindow = 0;
@@ -2356,24 +2356,28 @@ QmitkRenderWindow* niftkMultiWindowWidget::GetRenderWindow(MIDASOrientation orie
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftkMultiWindowWidget::GetOrientation(const QmitkRenderWindow* renderWindow) const
+int niftkMultiWindowWidget::GetOrientation(const QmitkRenderWindow* renderWindow) const
 {
-  MIDASOrientation orientation;
+  int orientation;
   if (renderWindow == this->GetRenderWindow1())
   {
-    orientation = MIDAS_ORIENTATION_AXIAL;
+    orientation = AXIAL;
   }
   else if (renderWindow == this->GetRenderWindow2())
   {
-    orientation = MIDAS_ORIENTATION_SAGITTAL;
+    orientation = SAGITTAL;
   }
   else if (renderWindow == this->GetRenderWindow3())
   {
-    orientation = MIDAS_ORIENTATION_CORONAL;
+    orientation = CORONAL;
+  }
+  else if (renderWindow == this->GetRenderWindow4())
+  {
+    orientation = THREE_D;
   }
   else
   {
-    orientation = MIDAS_ORIENTATION_UNKNOWN;
+    orientation = -1;
   }
   return orientation;
 }
