@@ -148,17 +148,34 @@ void UltrasoundTransformAndImageMerger::Merge(
   std::cout << "UltrasoundImageOrientation = MATT FIXME" << std::endl;
   std::cout << "UltrasoundImageType = BRIGHTNESS" << std::endl;
 
-  char suffix[5];
-  suffix[4] = '\0';
+  std::string oneZero = "0";
+  std::string twoZero = "00";
+  std::string threeZero = "000";
 
   for (unsigned int i = 0; i < images.size(); i++)
   {
-    sprintf(suffix, "%s", i);
-    std::cout << "Seq_Frame" << std::string(suffix) << "_FrameNumber = " << i << std::endl;
-    std::cout << "Seq_Frame" << std::string(suffix) << "_UnfilteredTimestamp = " << i << std::endl;
-    std::cout << "Seq_Frame" << std::string(suffix) << "_Timestamp = " << i << std::endl;
-    std::cout << "Seq_Frame" << std::string(suffix) << "_ToolToTrackerTransformTransformStatus = OK" << std::endl;
-    std::cout << "Seq_Frame" << std::string(suffix) << "_ToolToTrackerTransform =";
+    std::ostringstream suffix;
+    if (i < 10)
+    {
+      suffix << threeZero << i;
+    }
+    else if (i < 100)
+    {
+      suffix << twoZero << i;
+    }
+    else if (i < 1000)
+    {
+      suffix << oneZero << i;
+    }
+    else
+    {
+      suffix << i;
+    }
+    std::cout << "Seq_Frame" << suffix.str() << "_FrameNumber = " << i << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_UnfilteredTimestamp = " << i << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_Timestamp = " << i << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_ToolToTrackerTransformTransformStatus = OK" << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_ToolToTrackerTransform =";
     for (int r = 0; r < 4; r++)
     {
       for (int c = 0; c < 4; c++)
