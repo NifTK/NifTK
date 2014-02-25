@@ -670,12 +670,14 @@ int main(int argc, char** argv)
       else
         result = DoMain<3, float>(args);
       break;
+#ifdef NIFTK_TRANSFORMATION_DOUBLE
     case itk::ImageIOBase::DOUBLE:
       if (dims == 2)
         result = DoMain<2, double>(args);
       else
         result = DoMain<3, double>(args);
       break;
+#endif
     default:
       std::cerr << "Unsupported pixel format" << std::endl;
       return EXIT_FAILURE;
