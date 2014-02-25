@@ -210,7 +210,11 @@ public:
         MITK_INFO << Self::ConstPointer(this);
         QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
       }
-      if (!selectedRenderWindow->hasFocus())
+      /// Note:
+      /// If the display is redirected (like during the overnight builds) then the application
+      /// will not have key focus. Therefore, here we check if the focus is on the right window
+      /// if and only if the application has key focus at all.
+      if (qApp->focusWidget() && !selectedRenderWindow->hasFocus())
       {
         MITK_INFO << "ERROR: Invalid state. The viewer is selected but the selected render window has not got the Qt key focus.";
         MITK_INFO << Self::ConstPointer(this);

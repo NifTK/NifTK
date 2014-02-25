@@ -1035,7 +1035,11 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
-  QVERIFY(d->CoronalWindow->hasFocus());
+  /// Note:
+  /// If the display is redirected (like during the overnight builds) then the application
+  /// will not have key focus. Therefore, here we check if the focus is on the right window
+  /// if and only if the application has key focus at all.
+  QVERIFY(!qApp->focusWidget() || d->CoronalWindow->hasFocus());
   QCOMPARE(focusManager->GetFocused(), d->CoronalWindow->GetRenderer());
   QCOMPARE(d->Viewer->IsSelected(), true);
 
@@ -1048,7 +1052,7 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 
   d->Viewer->SetSelectedRenderWindow(d->AxialWindow);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QCOMPARE(d->Viewer->IsSelected(), true);
 
@@ -1074,7 +1078,11 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   std::size_t scaleFactorChanges;
   std::size_t cursorPositionChanges;
 
-  QVERIFY(d->CoronalWindow->hasFocus());
+  /// Note:
+  /// If the display is redirected (like during the overnight builds) then the application
+  /// will not have key focus. Therefore, here we check if the focus is on the right window
+  /// if and only if the application has key focus at all.
+  QVERIFY(!qApp->focusWidget() || d->CoronalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
   QCOMPARE(focusManager->GetFocused(), d->CoronalWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1093,7 +1101,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   /// The default layout was set to coronal in the init() function.
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAGITTAL);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1114,7 +1122,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1142,7 +1150,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_CORONAL);
 
-  QVERIFY(d->CoronalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->CoronalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
   QCOMPARE(focusManager->GetFocused(), d->CoronalWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1165,7 +1173,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3D);
 
-  QVERIFY(d->_3DWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->_3DWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->_3DWindow);
   QCOMPARE(focusManager->GetFocused(), d->_3DWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1183,7 +1191,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3H);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1208,7 +1216,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_3V);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1233,7 +1241,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_H);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1257,7 +1265,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_AX_V);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(focusManager->GetFocused(), d->AxialWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1281,7 +1289,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_H);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1305,7 +1313,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_COR_SAG_V);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(!d->AxialWindow->isVisible());
@@ -1329,7 +1337,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_H);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1353,7 +1361,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_SAG_AX_V);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -1377,7 +1385,7 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(focusManager->GetFocused(), d->SagittalWindow->GetRenderer());
   QVERIFY(d->AxialWindow->isVisible());
@@ -2037,7 +2045,11 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   /// with about half a spacing.
   QTest::mouseClick(d->AxialWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
-  QVERIFY(d->AxialWindow->hasFocus());
+  /// Note:
+  /// If the display is redirected (like during the overnight builds) then the application
+  /// will not have key focus. Therefore, here we check if the focus is on the right window
+  /// if and only if the application has key focus at all.
+  QVERIFY(!qApp->focusWidget() || d->AxialWindow->hasFocus());
   QCOMPARE(mitk::GlobalInteraction::GetInstance()->GetFocus(), d->AxialWindow->GetRenderer());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->AxialWindow);
   QCOMPARE(d->Viewer->GetOrientation(), MIDAS_ORIENTATION_AXIAL);
@@ -2140,7 +2152,7 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   /// with about half a spacing.
   QTest::mouseClick(d->SagittalWindow, Qt::LeftButton, Qt::NoModifier, newPoint);
 
-  QVERIFY(d->SagittalWindow->hasFocus());
+  QVERIFY(!qApp->focusWidget() || d->SagittalWindow->hasFocus());
   QCOMPARE(mitk::GlobalInteraction::GetInstance()->GetFocus(), d->SagittalWindow->GetRenderer());
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
   QCOMPARE(d->Viewer->GetOrientation(), MIDAS_ORIENTATION_SAGITTAL);
