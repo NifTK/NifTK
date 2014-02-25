@@ -63,7 +63,6 @@ void UltrasoundTransformAndImageMerger::Merge(
   matrices = LoadMatricesFromDirectory (inputMatrixDirectory);
 
   // Load all images.
-
   std::vector<mitk::Image::Pointer> images;
   for (int i = 0; i < imageFiles.size(); i++)
   {
@@ -76,6 +75,8 @@ void UltrasoundTransformAndImageMerger::Merge(
     errorMessage << "Loaded " << matrices.size() << " matrices, and loaded a difference number of images " << images.size() << std::endl;
     mitkThrow() << errorMessage.str();
   }
+
+  // Now generate output.
 
   typedef itk::Image<unsigned char, 3> ImageType;
   ImageType::Pointer outputImage = ImageType::New();
