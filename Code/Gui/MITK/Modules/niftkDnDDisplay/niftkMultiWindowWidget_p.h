@@ -361,9 +361,6 @@ private:
   void OnOriginChanged(int windowIndex, bool beingPanned);
 
   /// \brief Called when the scale factor of the display geometry of the render window has changed.
-  void OnZoomFocusChanged(int windowIndex, const mitk::Vector2D& focusPoint);
-
-  /// \brief Called when the scale factor of the display geometry of the render window has changed.
   void OnScaleFactorChanged(int windowIndex, double scaleFactor);
 
   /// \brief The magnification is calculated with the longer voxel side of an orientation.

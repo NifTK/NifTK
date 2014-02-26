@@ -112,10 +112,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
 {
-  m_RenderWindows[0] = this->GetRenderWindow1();
-  m_RenderWindows[1] = this->GetRenderWindow2();
-  m_RenderWindows[2] = this->GetRenderWindow3();
-  m_RenderWindows[3] = this->GetRenderWindow4();
+  m_RenderWindows[AXIAL] = this->GetRenderWindow1();
+  m_RenderWindows[SAGITTAL] = this->GetRenderWindow2();
+  m_RenderWindows[CORONAL] = this->GetRenderWindow3();
+  m_RenderWindows[THREE_D] = this->GetRenderWindow4();
 
   if (dataStorage != NULL)
   {
@@ -153,9 +153,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->mitkWidget4->setAcceptDrops(true);
 
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
-  m_CornerAnnotaions[0].cornerText->SetText(0, "");
-  m_CornerAnnotaions[1].cornerText->SetText(0, "");
-  m_CornerAnnotaions[2].cornerText->SetText(0, "");
+  m_CornerAnnotaions[AXIAL].cornerText->SetText(0, "");
+  m_CornerAnnotaions[SAGITTAL].cornerText->SetText(0, "");
+  m_CornerAnnotaions[CORONAL].cornerText->SetText(0, "");
 
   for (int i = 0; i < 3; ++i)
   {
@@ -172,18 +172,18 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   double sagittalColour[3] = {0.0, 1.0, 0.0};
   double coronalColour[3] = {0.295, 0.295, 1.0};
 
-  m_DirectionAnnotations[0]->SetColour(0, coronalColour);
-  m_DirectionAnnotations[0]->SetColour(1, sagittalColour);
-  m_DirectionAnnotations[0]->SetColour(2, coronalColour);
-  m_DirectionAnnotations[0]->SetColour(3, sagittalColour);
-  m_DirectionAnnotations[1]->SetColour(0, axialColour);
-  m_DirectionAnnotations[1]->SetColour(1, coronalColour);
-  m_DirectionAnnotations[1]->SetColour(2, axialColour);
-  m_DirectionAnnotations[1]->SetColour(3, coronalColour);
-  m_DirectionAnnotations[2]->SetColour(0, axialColour);
-  m_DirectionAnnotations[2]->SetColour(1, sagittalColour);
-  m_DirectionAnnotations[2]->SetColour(2, axialColour);
-  m_DirectionAnnotations[2]->SetColour(3, sagittalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(0, coronalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(1, sagittalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(2, coronalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(3, sagittalColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(0, axialColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(1, coronalColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(2, axialColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(3, coronalColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(0, axialColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(1, sagittalColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(2, axialColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(3, sagittalColour);
 
   // Set default layout. This must be ORTHO.
   this->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
@@ -629,9 +629,9 @@ bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
 //-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 {
-  return m_DirectionAnnotations[0]->GetVisibility()
-      && m_DirectionAnnotations[1]->GetVisibility()
-      && m_DirectionAnnotations[2]->GetVisibility();
+  return m_DirectionAnnotations[AXIAL]->GetVisibility()
+      && m_DirectionAnnotations[SAGITTAL]->GetVisibility()
+      && m_DirectionAnnotations[CORONAL]->GetVisibility();
 }
 
 
@@ -850,9 +850,9 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
     }
 
     // Add these annotations the first time we have a real geometry.
-    m_CornerAnnotaions[0].cornerText->SetText(0, "Axial");
-    m_CornerAnnotaions[1].cornerText->SetText(0, "Sagittal");
-    m_CornerAnnotaions[2].cornerText->SetText(0, "Coronal");
+    m_CornerAnnotaions[AXIAL].cornerText->SetText(0, "Axial");
+    m_CornerAnnotaions[SAGITTAL].cornerText->SetText(0, "Sagittal");
+    m_CornerAnnotaions[CORONAL].cornerText->SetText(0, "Coronal");
 
     /// The place of the direction annotations on the render window:
     ///
@@ -1725,24 +1725,6 @@ void niftkMultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnZoomFocusChanged(int windowIndex, const mitk::Vector2D& focusPoint)
-{
-  if (m_Geometry)
-  {
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-    mitk::Point2D focusPointInPx;
-    focusPointInPx[0] = focusPoint[0];
-    focusPointInPx[1] = focusPoint[1];
-    mitk::Point2D focusPointInMm;
-    displayGeometry->DisplayToWorld(focusPointInPx, focusPointInMm);
-    mitk::Point3D focusPoint3DInMm;
-    displayGeometry->Map(focusPointInMm, focusPoint3DInMm);
-    this->SetSelectedPosition(focusPoint3DInMm);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
   if (m_Geometry)
@@ -2050,19 +2032,19 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     {
       unsigned pos = axialSnc->GetSlice()->GetPos();
       axialSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[0] = m_SncSliceHasChanged[0] || pos != axialSnc->GetSlice()->GetPos();
+      m_SncSliceHasChanged[AXIAL] = m_SncSliceHasChanged[AXIAL] || pos != axialSnc->GetSlice()->GetPos();
     }
     if (sagittalSnc->GetCreatedWorldGeometry())
     {
       unsigned pos = sagittalSnc->GetSlice()->GetPos();
       sagittalSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[1] = m_SncSliceHasChanged[1] || pos != sagittalSnc->GetSlice()->GetPos();
+      m_SncSliceHasChanged[SAGITTAL] = m_SncSliceHasChanged[SAGITTAL] || pos != sagittalSnc->GetSlice()->GetPos();
     }
     if (coronalSnc->GetCreatedWorldGeometry())
     {
       unsigned pos = coronalSnc->GetSlice()->GetPos();
       coronalSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[2] = m_SncSliceHasChanged[2] || pos != coronalSnc->GetSlice()->GetPos();
+      m_SncSliceHasChanged[CORONAL] = m_SncSliceHasChanged[CORONAL] || pos != coronalSnc->GetSlice()->GetPos();
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
@@ -2079,6 +2061,19 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     {
       this->UpdateCursorPosition(CORONAL);
     }
+
+//    if (m_SncSliceHasChanged[AXIAL])
+//    {
+//      this->OnSelectedPositionChanged(AXIAL);
+//    }
+//    if (m_SncSliceHasChanged[SAGITTAL])
+//    {
+//      this->OnSelectedPositionChanged(SAGITTAL);
+//    }
+//    if (m_SncSliceHasChanged[CORONAL])
+//    {
+//      this->OnSelectedPositionChanged(CORONAL);
+//    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2433,6 +2428,7 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
   if (blocked != m_BlockUpdate)
   {
     m_BlockUpdate = blocked;
+
     for (int i = 0; i < 4; ++i)
     {
       m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(blocked);
