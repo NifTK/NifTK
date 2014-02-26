@@ -341,6 +341,11 @@ private:
   /// The parameter describes which coordinate of the selected position has changed.
   void OnSelectedPositionChanged(int orientation);
 
+  /// \brief Synchronises the cursor positions in the 2D render windows after the selected position changes.
+  /// The 'reference' is the selected render window, or the first visible render window
+  /// if no render window is selected.
+  void SynchroniseCursorPositions();
+
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
