@@ -424,7 +424,6 @@ private:
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
   WindowLayout m_WindowLayout;
-  MIDASOrientation m_Orientation;
 
   /// \brief Stores the selected point per window layout. Two for each window layout. Unbound, then bound, alternatingly.
   mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];

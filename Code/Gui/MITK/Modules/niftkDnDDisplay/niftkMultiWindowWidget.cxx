@@ -2250,7 +2250,7 @@ double niftkMultiWindowWidget::GetMagnification(int orientation) const
 {
   double magnification = 0.0;
 
-  if (0 <= orientation && orientation < 3)
+  if (m_Geometry && 0 <= orientation && orientation < 3)
   {
     int dominantAxis = this->GetDominantAxis(orientation);
     double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / m_ScaleFactors[orientation];
@@ -2271,7 +2271,7 @@ double niftkMultiWindowWidget::GetMagnification(int orientation) const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetMagnification(int orientation, double magnification)
 {
-  if (0 <= orientation && orientation < 3)
+  if (m_Geometry && 0 <= orientation && orientation < 3)
   {
     double scaleFactorVxPerPx;
     if (magnification >= 0.0)

@@ -38,7 +38,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_NavigationControllerEventListening(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
@@ -124,9 +123,9 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, st
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int orientation)
+void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int windowIndex)
 {
-  emit SelectedRenderWindowChanged(MIDASOrientation(orientation));
+  emit SelectedRenderWindowChanged(MIDASOrientation(windowIndex));
 }
 
 
@@ -149,7 +148,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnCursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition)
+void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
   /// A double click can result in up to six CursorPositionChanged events, depending on how many
   /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
@@ -163,14 +162,14 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int orientation, const mit
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(this, MIDASOrientation(orientation), cursorPosition);
+  emit CursorPositionChanged(this, MIDASOrientation(windowIndex), cursorPosition);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorChanged(int orientation, double scaleFactor)
+void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, MIDASOrientation(orientation), scaleFactor);
+  emit ScaleFactorChanged(this, MIDASOrientation(windowIndex), scaleFactor);
 }
 
 
@@ -694,8 +693,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     m_MultiWidget->update();
 
     // Now store the current window layout/orientation.
-    MIDASOrientation orientation = this->GetOrientation();
-    m_Orientation = orientation;
     m_WindowLayout = windowLayout;
     if (! ::IsSingleWindowLayout(windowLayout))
     {
@@ -749,11 +746,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     }
     else
     {
-      if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-      {
-        orientation = MIDAS_ORIENTATION_AXIAL; // somewhat arbitrary.
-      }
-
       /// If the positions are not remembered for each window layout,
       /// we reset them.
 //      if (!hasBeenInitialised)
