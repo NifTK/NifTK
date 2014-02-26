@@ -17,6 +17,7 @@
 
 #include <itkImageToImageFilter.h>
 #include <itkMacro.h>
+#include <itkArray.h>
 
 
 namespace itk {
