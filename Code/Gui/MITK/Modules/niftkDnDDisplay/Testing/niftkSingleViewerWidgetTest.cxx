@@ -2566,6 +2566,34 @@ void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
 
 
 // --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->Viewer->SetCursorPositionBinding(true);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testScaleFactorBinding()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->Viewer->SetScaleFactorBinding(true);
+}
+
+
+// --------------------------------------------------------------------------
+void niftkSingleViewerWidgetTestClass::testCursorPositionAndScaleFactorBinding()
+{
+  Q_D(niftkSingleViewerWidgetTestClass);
+
+  d->Viewer->SetCursorPositionBinding(true);
+  d->Viewer->SetScaleFactorBinding(true);
+}
+
+
+// --------------------------------------------------------------------------
 static void ShiftArgs(int& argc, char* argv[], int steps = 1)
 {
   /// We exploit that there must be a NULL pointer after the arguments.
