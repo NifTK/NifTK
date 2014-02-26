@@ -84,8 +84,7 @@ public:
   /// \brief Constructor.
   niftkMultiWindowWidget(QWidget* parent = 0,
                            Qt::WindowFlags f = 0,
-                           mitk::RenderingManager* renderingManager = 0,
-                           mitk::DataStorage* dataStorage = 0);
+                           mitk::RenderingManager* renderingManager = 0);
 
   /// \brief Destructor.
   virtual ~niftkMultiWindowWidget();

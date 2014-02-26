@@ -71,9 +71,7 @@ private:
 niftkMultiWindowWidget::niftkMultiWindowWidget(
     QWidget* parent,
     Qt::WindowFlags flags,
-    mitk::RenderingManager* renderingManager,
-    mitk::DataStorage* dataStorage
-    )
+    mitk::RenderingManager* renderingManager)
 : QmitkStdMultiWidget(parent, flags, renderingManager)
 , m_RenderWindows(4)
 , m_GridLayout(NULL)
@@ -116,11 +114,6 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   m_RenderWindows[SAGITTAL] = this->GetRenderWindow2();
   m_RenderWindows[CORONAL] = this->GetRenderWindow3();
   m_RenderWindows[THREE_D] = this->GetRenderWindow4();
-
-  if (dataStorage != NULL)
-  {
-    this->SetDataStorage(dataStorage);
-  }
 
   // We don't need these 4 lines if we pass in a widget specific RenderingManager.
   // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.

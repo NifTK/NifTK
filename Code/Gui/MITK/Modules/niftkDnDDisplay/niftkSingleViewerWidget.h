@@ -79,15 +79,6 @@ class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget, public mi
 
 public:
 
-  enum WindowOrientation
-  {
-    Unknown = -1,
-    AxialWindow,
-    SagittalWindow,
-    CoronalWindow,
-    _3DWindow
-  };
-
   niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0);
   virtual ~niftkSingleViewerWidget();
 
