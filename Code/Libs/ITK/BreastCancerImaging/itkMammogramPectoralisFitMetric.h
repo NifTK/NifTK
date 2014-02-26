@@ -112,7 +112,7 @@ public:
   typedef Superclass::DerivativeType DerivativeType;
   typedef Superclass::MeasureType    MeasureType;
 
-  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 8 );
 
   unsigned int GetNumberOfParameters(void) const  
   {
@@ -143,7 +143,8 @@ public:
   void ClearTemplate( void );
 
   void GenerateTemplate( const ParametersType &parameters,
-                         double &tMean, double &tStdDev, double &nPixels );
+                         double &tMean, double &tStdDev, double &nInside, double &nPixels,
+                         TemplateImageRegionType &templateRegion );
 
 protected:
 
