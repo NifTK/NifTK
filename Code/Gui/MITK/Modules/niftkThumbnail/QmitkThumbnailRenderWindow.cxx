@@ -13,25 +13,26 @@
 =============================================================================*/
 
 #include "QmitkThumbnailRenderWindow.h"
-#include <QtGui>
 
-#include <mitkGlobalInteraction.h>
-#include <mitkFocusManager.h>
-#include <mitkDataStorage.h>
-#include <mitkDisplayGeometry.h>
 #include <itkCommand.h>
-#include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
-#include <vtkCubeSource.h>
+
+#include <mitkDataStorage.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkDisplayGeometry.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 
 #include <QmitkMouseEventEater.h>
 #include <QmitkWheelEventEater.h>
-#include <mitkDataStorageUtils.h>
 
 #include <usGetModuleContext.h>
+#include <usModule.h>
 #include <usModuleContext.h>
 #include <usModuleRegistry.h>
-#include <usModule.h>
+
+#include <vtkCubeSource.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 
 //-----------------------------------------------------------------------------
