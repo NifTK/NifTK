@@ -1765,14 +1765,14 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
     /// which the selected position has changed. If the event was a scroll event then
     /// the two orientations are equal. If it was a mouse click event then they will
     /// be different.
-    int selectedWindowIndex = m_SelectedWindowIndex;
+    int windowIndex = m_SelectedWindowIndex;
 
-    if (selectedWindowIndex == orientation)
+    if (windowIndex == orientation)
     {
       /// If the position has changed by scrolling through the slices in one window
       /// then the image stays in place in each window, but the cursor positions change
       /// in the other two windows, therefore we have to update them.
-      if (selectedWindowIndex == AXIAL)
+      if (windowIndex == AXIAL)
       {
         this->UpdateCursorPosition(CORONAL);
 
@@ -1786,7 +1786,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(SAGITTAL);
         }
       }
-      else if (selectedWindowIndex == SAGITTAL)
+      else if (windowIndex == SAGITTAL)
       {
         this->UpdateCursorPosition(CORONAL);
 
@@ -1800,23 +1800,23 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(AXIAL);
         }
       }
-      else if (selectedWindowIndex == CORONAL)
+      else if (windowIndex == CORONAL)
       {
         this->UpdateCursorPosition(AXIAL);
         this->UpdateCursorPosition(SAGITTAL);
       }
     }
-    else if (0 <= selectedWindowIndex && selectedWindowIndex < 3)
+    else if (0 <= windowIndex && windowIndex < 3)
     {
       /// If the selected position has changed by clicking into the render window.
 
-      this->UpdateCursorPosition(selectedWindowIndex);
+      this->UpdateCursorPosition(windowIndex);
 
       /// sagittal[1] <-> coronal[1]      (if m_CursorAxialPositionsAreBound is set)
       /// axial[0] <-> coronal[0]         (if m_CursorSagittalPositionsAreBound is set)
       /// axial[1] <-> 1.0 - sagittal[0]  (if m_CursorCoronalPositionsAreBound is set)
 
-      if (selectedWindowIndex == AXIAL && orientation == SAGITTAL)
+      if (windowIndex == AXIAL && orientation == SAGITTAL)
       {
         if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
         {
@@ -1828,7 +1828,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(CORONAL);
         }
       }
-      else if (selectedWindowIndex == AXIAL && orientation == CORONAL)
+      else if (windowIndex == AXIAL && orientation == CORONAL)
       {
         if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
         {
@@ -1840,7 +1840,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(SAGITTAL);
         }
       }
-      else if (selectedWindowIndex == SAGITTAL && orientation == AXIAL)
+      else if (windowIndex == SAGITTAL && orientation == AXIAL)
       {
         if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
         {
@@ -1852,7 +1852,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(CORONAL);
         }
       }
-      else if (selectedWindowIndex == SAGITTAL && orientation == CORONAL)
+      else if (windowIndex == SAGITTAL && orientation == CORONAL)
       {
         if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
         {
@@ -1864,7 +1864,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(AXIAL);
         }
       }
-      else if (selectedWindowIndex == CORONAL && orientation == AXIAL)
+      else if (windowIndex == CORONAL && orientation == AXIAL)
       {
         if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
         {
@@ -1876,7 +1876,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
           this->UpdateCursorPosition(SAGITTAL);
         }
       }
-      else if (selectedWindowIndex == CORONAL && orientation == SAGITTAL)
+      else if (windowIndex == CORONAL && orientation == SAGITTAL)
       {
         if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
         {
@@ -2046,31 +2046,119 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
-    if (m_RenderWindows[AXIAL]->isVisible())
+    /// Work out a window so that if the cursor positions are bound then
+    /// we can synchronise the other two render windows to it.
+    /// This will be the selected render window, or the first visible window
+    /// if no window is selected.
+    int windowIndex = m_SelectedWindowIndex;
+    if (windowIndex == -1 || windowIndex == THREE_D)
     {
-      this->UpdateCursorPosition(AXIAL);
-    }
-    if (m_RenderWindows[SAGITTAL]->isVisible())
-    {
-      this->UpdateCursorPosition(SAGITTAL);
-    }
-    if (m_RenderWindows[CORONAL]->isVisible())
-    {
-      this->UpdateCursorPosition(CORONAL);
+      if (m_RenderWindows[CORONAL]->isVisible())
+      {
+        windowIndex = CORONAL;
+      }
+      else if (m_RenderWindows[SAGITTAL]->isVisible())
+      {
+        windowIndex = SAGITTAL;
+      }
+      else if (m_RenderWindows[AXIAL]->isVisible())
+      {
+        windowIndex = AXIAL;
+      }
     }
 
-//    if (m_SncSliceHasChanged[AXIAL])
-//    {
-//      this->OnSelectedPositionChanged(AXIAL);
-//    }
-//    if (m_SncSliceHasChanged[SAGITTAL])
-//    {
-//      this->OnSelectedPositionChanged(SAGITTAL);
-//    }
-//    if (m_SncSliceHasChanged[CORONAL])
-//    {
-//      this->OnSelectedPositionChanged(CORONAL);
-//    }
+    /// sagittal[1] <-> coronal[1]      (if m_CursorAxialPositionsAreBound is set)
+    /// axial[0] <-> coronal[0]         (if m_CursorSagittalPositionsAreBound is set)
+    /// axial[1] <-> 1.0 - sagittal[0]  (if m_CursorCoronalPositionsAreBound is set)
+
+    if (windowIndex == AXIAL)
+    {
+      this->UpdateCursorPosition(AXIAL);
+
+      if (m_SncSliceHasChanged[SAGITTAL])
+      {
+        if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
+        {
+          m_CursorPositions[CORONAL][0] = m_CursorPositions[AXIAL][0];
+          m_CursorPositionHasChanged[CORONAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(CORONAL);
+        }
+      }
+
+      if (m_SncSliceHasChanged[CORONAL])
+      {
+        if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
+        {
+          m_CursorPositions[SAGITTAL][0] = 1.0 - m_CursorPositions[AXIAL][1];
+          m_CursorPositionHasChanged[SAGITTAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(SAGITTAL);
+        }
+      }
+    }
+    else if (windowIndex == SAGITTAL)
+    {
+      this->UpdateCursorPosition(SAGITTAL);
+
+      if (m_SncSliceHasChanged[AXIAL])
+      {
+        if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
+        {
+          m_CursorPositions[CORONAL][1] = m_CursorPositions[SAGITTAL][1];
+          m_CursorPositionHasChanged[CORONAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(CORONAL);
+        }
+      }
+      if (m_SncSliceHasChanged[CORONAL])
+      {
+        if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
+        {
+          m_CursorPositions[AXIAL][1] = 1.0 - m_CursorPositions[SAGITTAL][0];
+          m_CursorPositionHasChanged[AXIAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(AXIAL);
+        }
+      }
+    }
+    else if (windowIndex == CORONAL)
+    {
+      this->UpdateCursorPosition(CORONAL);
+
+      if (m_SncSliceHasChanged[AXIAL])
+      {
+        if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
+        {
+          m_CursorPositions[SAGITTAL][1] = m_CursorPositions[CORONAL][1];
+          m_CursorPositionHasChanged[SAGITTAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(SAGITTAL);
+        }
+      }
+      if (m_SncSliceHasChanged[SAGITTAL])
+      {
+        if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
+        {
+          m_CursorPositions[AXIAL][0] = m_CursorPositions[CORONAL][0];
+          m_CursorPositionHasChanged[AXIAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(AXIAL);
+        }
+      }
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }

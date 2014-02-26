@@ -1943,6 +1943,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
   d->StateTester->Clear();
+  d->Viewer->SetCursorPositionBinding(false);
+  d->StateTester->Clear();
 
   /// ---------------------------------------------------------------------------
   /// 2x2 (orthogonal) window layout, coronal window
@@ -1982,10 +1984,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->SagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2002,10 +2002,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->AxialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2089,10 +2087,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->SagittalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2109,10 +2105,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->CoronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2187,10 +2181,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->CoronalSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2207,10 +2199,8 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
   QCOMPARE(d->StateTester->GetItkSignals(d->AxialSnc, d->GeometrySliceEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->SelectedPositionChanged).size(), std::size_t(1));
-  /// TODO
-  /// Two CursorPositionChanged signals should be emitted, but three is.
-//  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
-//  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(2));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
 
   d->StateTester->Clear();
 
@@ -2547,21 +2537,21 @@ void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
-//  QCOMPARE(d->Viewer->IsSelected(), true);
-//  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
+  QCOMPARE(d->Viewer->IsSelected(), true);
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
 
-//  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
-//  QCOMPARE(d->Viewer->IsSelected(), true);
-//  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
+  QCOMPARE(d->Viewer->IsSelected(), true);
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
 
-//  d->StateTester->Clear();
+  d->StateTester->Clear();
 
-//  QPoint centre = d->SagittalWindow->rect().center();
-//  QTest::mouseClick(d->SagittalWindow, Qt::LeftButton, Qt::NoModifier, centre);
+  QPoint centre = d->SagittalWindow->rect().center();
+  QTest::mouseClick(d->SagittalWindow, Qt::LeftButton, Qt::NoModifier, centre);
 
-//  QCOMPARE(d->Viewer->IsSelected(), true);
-//  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
+  QCOMPARE(d->Viewer->IsSelected(), true);
+  QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->SagittalWindow);
 }
 
 
@@ -2625,9 +2615,6 @@ void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
   displayPosition = this->GetRandomDisplayPosition();
 
   QPoint pointAtDisplayPosition = this->GetPointAtCursorPosition(d->CoronalWindow, displayPosition);
-  MITK_INFO << "axial cursor position: " << axialCursorPosition;
-  MITK_INFO << "sagittal cursor position: " << sagittalCursorPosition;
-  MITK_INFO << "coronal cursor position: " << coronalCursorPosition;
 
   d->StateTester->Clear();
   QTest::mouseClick(d->CoronalWindow, Qt::LeftButton, Qt::NoModifier, pointAtDisplayPosition);
@@ -2636,9 +2623,6 @@ void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
   sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
   coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
 
-  MITK_INFO << "axial cursor position: " << axialCursorPosition;
-  MITK_INFO << "sagittal cursor position: " << sagittalCursorPosition;
-  MITK_INFO << "coronal cursor position: " << coronalCursorPosition;
   QCOMPARE(axialCursorPosition[0], coronalCursorPosition[0]);
   QCOMPARE(sagittalCursorPosition[1], coronalCursorPosition[1]);
 
