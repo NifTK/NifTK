@@ -50,6 +50,7 @@ struct arguments
   std::string maskImage;
   std::string outputMask;  
   std::string outputImage;  
+  std::string outputTemplate;  
   
   arguments() {
     flgVerbose = false;
@@ -78,6 +79,7 @@ int DoMain(arguments args)
   typedef itk::MammogramPectoralisSegmentationImageFilter<InputImageType, MaskImageType> 
     MammogramPectoralisSegmentationImageFilterType;
 
+  typedef typename MammogramPectoralisSegmentationImageFilterType::TemplateImageType TemplateImageType;
 
   typedef itk::MammogramMaskSegmentationImageFilter<InputImageType, MaskImageType> 
     MammogramMaskSegmentationImageFilterType;
@@ -186,7 +188,7 @@ int DoMain(arguments args)
     return EXIT_FAILURE;
   }                
 
-  mask = pecFilter->GetOutput();
+  mask = pecFilter->GetOutput( 0 );
   mask->DisconnectPipeline();
 
 
@@ -208,8 +210,10 @@ int DoMain(arguments args)
           ! inputIterator.IsAtEnd();
           ++inputIterator, ++outputIterator )
     {
-      if ( ! inputIterator.Get() )
+      if ( inputIterator.Get() )
+      {
         outputIterator.Set( 0 );
+      }
     }
 
 
@@ -255,6 +259,32 @@ int DoMain(arguments args)
     }       
   }         
 
+
+  // Save the final template image?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.outputTemplate.length() )
+  {
+    typename TemplateImageType::Pointer imTemplate = pecFilter->GetTemplateImage();
+    imTemplate->DisconnectPipeline();
+
+    typedef itk::ImageFileWriter< TemplateImageType > TemplateImageWriterType;
+    typename TemplateImageWriterType::Pointer imageWriter = TemplateImageWriterType::New();
+
+    imageWriter->SetFileName(args.outputTemplate);
+    imageWriter->SetInput( imTemplate );
+  
+    try
+    {
+      imageWriter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "Failed: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }       
+  }         
+
   return EXIT_SUCCESS;
 }
 
@@ -277,15 +307,17 @@ int main(int argc, char** argv)
   args.flgVerbose          = flgVerbose;
   args.flgDebug            = flgDebug;
 
-  args.inputImage  = inputImage;
-  args.maskImage   = maskImage;
-  args.outputMask  = outputMask;
-  args.outputImage = outputImage;
+  args.inputImage     = inputImage;
+  args.maskImage      = maskImage;
+  args.outputMask     = outputMask;
+  args.outputImage    = outputImage;
+  args.outputTemplate = outputTemplate;
 
-  std::cout << "Input image:  " << args.inputImage << std::endl
-            << "Input mask:   " << args.maskImage << std::endl
-            << "Output mask:  " << args.outputMask << std::endl
-            << "Output image: " << args.outputImage << std::endl;
+  std::cout << "Input image:     " << args.inputImage << std::endl
+            << "Input mask:      " << args.maskImage << std::endl
+            << "Output mask:     " << args.outputMask << std::endl
+            << "Output image:    " << args.outputImage << std::endl
+            << "Output template: " << args.outputTemplate << std::endl;
 
   // Validate command line args
 

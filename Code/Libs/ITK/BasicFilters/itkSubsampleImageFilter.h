@@ -17,6 +17,7 @@
 
 #include <itkImageToImageFilter.h>
 #include <itkMacro.h>
+#include <itkArray.h>
 
 
 namespace itk {
@@ -64,6 +65,7 @@ public:
 
   /** Directly Set/Get the array of subsampling factors for each image dimension */
   void SetSubsamplingFactors(double data[]);
+  void SetSubsamplingFactors(itk::Array< double > &sampling);
   itkGetVectorMacro(SubsamplingFactors, const double, TInputImage::ImageDimension);
 
   /** SubsampleImageFilter produces images which are of

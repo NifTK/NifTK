@@ -274,6 +274,8 @@ MammogramPectoralisFitMetric<TInputImage>
   parameters[5] = 0.;           // The rotation theta
 
   parameters[6] = 2.;           // 1/(d + x) : the intensity profile
+
+  parameters[7] = 0.5;          // The slope in 'y'
 }
 
 
@@ -285,7 +287,8 @@ template <typename TInputImage>
 void 
 MammogramPectoralisFitMetric<TInputImage>
 ::GenerateTemplate( const ParametersType &parameters,
-                    double &tMean, double &tStdDev, double &nPixels )
+                    double &tMean, double &tStdDev, double &nInside, double &nPixels,
+                    TemplateImageRegionType &templateRegion )
 {
   if ( ! m_InputImage )
   {
@@ -295,7 +298,11 @@ MammogramPectoralisFitMetric<TInputImage>
 
   tMean = 0.;
   tStdDev = 1.;
+
   nPixels = 0;
+  nInside = 0;
+
+  double nOutside = 0;
 
   double value;
   double x, y;
@@ -317,10 +324,19 @@ MammogramPectoralisFitMetric<TInputImage>
   double sinTheta = sin( theta );
   double cosTheta = cos( theta );
 
+  double ay = fabs( parameters[7] );    // The slope in 'y'
+
+  if ( ay > 1. )
+  {
+    ay = 1.;
+  }
+
+
   InputImageIndexType index;
+  InputImageIndexType maxIndex;
   InputImagePointType point;
 
-  TemplateImageRegionType templateRegion;
+  TemplateImageSizeType   templateSize;
 
   MaskIteratorType *itMask = 0;
 
@@ -336,16 +352,18 @@ MammogramPectoralisFitMetric<TInputImage>
     templateRegion = m_ImTemplate->GetLargestPossibleRegion();
   }
 
-  TemplateIteratorWithIndexType itTemplateWithIndex( m_ImTemplate, templateRegion );
+  TemplateIteratorWithIndexType itTemplate( m_ImTemplate, templateRegion );
 
-  for ( itTemplateWithIndex.GoToBegin();
-        ! itTemplateWithIndex.IsAtEnd();
-        ++itTemplateWithIndex )
+  maxIndex = templateRegion.GetIndex();
+
+  for ( itTemplate.GoToBegin();
+        ! itTemplate.IsAtEnd();
+        ++itTemplate )
   {
     if ( (! itMask) || itMask->Get() )
     {
 
-      index = itTemplateWithIndex.GetIndex();
+      index = itTemplate.GetIndex();
 
       m_InputImage->TransformIndexToPhysicalPoint( index, point );      
     
@@ -354,17 +372,14 @@ MammogramPectoralisFitMetric<TInputImage>
 
       if ( (0.8*a - y) > a*exp( b*exp( c*x ) ) )
       {
-        itTemplateWithIndex.Set( 1. );
+        itTemplate.Set( 1. );
+
+        if ( index[0] > maxIndex[0] ) maxIndex[0] = index[0];
+        if ( index[1] > maxIndex[1] ) maxIndex[1] = index[1];
       }
-#if 0
-      else if ( (a - y) > a*exp( 1.5*b*exp( c*x ) ) )
-      {
-        itTemplateWithIndex.Set( -1. );
-      }
-#endif
       else
       {
-        itTemplateWithIndex.Set( 0. );
+        itTemplate.Set( 0. );
       }
     }
 
@@ -373,6 +388,9 @@ MammogramPectoralisFitMetric<TInputImage>
       ++(*itMask);
     }
   }
+
+  double yStart  = static_cast<double>( templateRegion.GetIndex()[1] );
+  double yLength = static_cast<double>( maxIndex[1] ) - yStart;
 
   // Compute the distance transform to simulate the muscle profile via d/(1 + d)
 
@@ -390,7 +408,6 @@ MammogramPectoralisFitMetric<TInputImage>
 
   TemplateImagePointer imDistTrans = distanceTransform->GetOutput();
 
-  TemplateIteratorType itTemplate( m_ImTemplate, templateRegion );
   TemplateIteratorType itDistTrans( imDistTrans, templateRegion );
 
   if ( m_Mask )
@@ -398,7 +415,8 @@ MammogramPectoralisFitMetric<TInputImage>
     itMask->GoToBegin();
   }
 
-  double nInside = 0, nOutside = 0;
+  nInside = 0;
+  nOutside = 0;
 
   for ( itTemplate.GoToBegin(), itDistTrans.GoToBegin();
         ! itTemplate.IsAtEnd();
@@ -406,14 +424,27 @@ MammogramPectoralisFitMetric<TInputImage>
   {
     if ( (! itMask) || itMask->Get() ) 
     {
+      index = itTemplate.GetIndex();
+
       if ( itTemplate.Get() > 0 )
       {
-        itTemplate.Set( itDistTrans.Get()/( profile + itDistTrans.Get()) );
+        y = itTemplate.GetIndex()[1];
+
+        itTemplate.Set( (1. - ay*(y - yStart)/yLength)
+                        *itDistTrans.Get()/( profile + itDistTrans.Get()) );
+
+        if ( index[0] > maxIndex[0] ) maxIndex[0] = index[0];
+        if ( index[1] > maxIndex[1] ) maxIndex[1] = index[1];
+
         nInside++;
       }
       else if ( itDistTrans.Get() > -10. )
       {
         itTemplate.Set( -1 );
+
+        if ( index[0] > maxIndex[0] ) maxIndex[0] = index[0];
+        if ( index[1] > maxIndex[1] ) maxIndex[1] = index[1];
+
         nOutside++;
       }
     }
@@ -503,9 +534,17 @@ MammogramPectoralisFitMetric<TInputImage>
     delete itMask;
   }
 
+  templateSize[0] = maxIndex[0] - templateRegion.GetIndex()[0] + 1;
+  templateSize[1] = maxIndex[1] - templateRegion.GetIndex()[1] + 1;
+
+  templateRegion.SetSize( templateSize );
+  
+
   if ( this->GetDebug() )
   {
-    std::cout << "Mean : " << tMean << " = " << "(" << nInside << " - " << nOutside << ")/" << nPixels << std::endl;
+    std::cout << "Mean : " << tMean << " = " << "(" << nInside << " - " 
+              << nOutside << ")/" << nPixels << std::endl
+              << "Template region: " << maxIndex << std::endl;
   }
 }
 
@@ -566,7 +605,7 @@ MammogramPectoralisFitMetric<TInputImage>
   } 
 
   double value;
-  double nPixels;
+  double nPixels, nPecPixels;
   double imMean, imStdDev;
   double tMean, tStdDev;
 
@@ -575,9 +614,12 @@ MammogramPectoralisFitMetric<TInputImage>
 
   // Create the template
 
-  typename TInputImage::RegionType pecRegion;
+  TemplateImageRegionType templateRegion;
 
-  const_cast< MammogramPectoralisFitMetric<TInputImage>* >(this)->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  const_cast< MammogramPectoralisFitMetric<TInputImage>* >(this)->GenerateTemplate( parameters, 
+                                                                                    tMean, tStdDev, 
+                                                                                    nPecPixels, nPixels,
+                                                                                    templateRegion );
   
 
   if ( nPixels == 0 )
@@ -614,26 +656,15 @@ MammogramPectoralisFitMetric<TInputImage>
 
   // Create the image region iterator
 
-  InputImageRegionType inputRegion;
-  TemplateImageRegionType templateRegion;
-
   MaskIteratorType *itMask = 0;
 
   if ( m_Mask )
   {
     itMask = new MaskIteratorType( m_Mask, m_MaskRegion );
     itMask->GoToBegin();
-
-    inputRegion    = m_MaskRegion;
-    templateRegion = m_MaskRegion;
-  }
-  else
-  {
-    inputRegion    = m_InputImage->GetLargestPossibleRegion();
-    templateRegion = m_ImTemplate->GetLargestPossibleRegion();
   }
 
-  IteratorConstType itPecRegion(   m_InputImage, inputRegion );
+  IteratorConstType itPecRegion(   m_InputImage, templateRegion );
   TemplateIteratorType itTemplate( m_ImTemplate, templateRegion );
 
   // Compute the mean image intensity for this region
@@ -698,7 +729,6 @@ MammogramPectoralisFitMetric<TInputImage>
     return -1.;
   }
   
-
   imStdDev = sqrt( imStdDev/nPixels );
 
   // Compute the cross correlation
@@ -737,12 +767,14 @@ MammogramPectoralisFitMetric<TInputImage>
 
   ncc /= nPixels*imStdDev*tStdDev;
 
+  //ncc *= sqrt( nPecPixels );
+
   if ( 0 && this->GetDebug() )
   {
-    std::cout << "NCC: " << std::setw(12) << ncc 
-              << " Parameters: " << std::setw(12) << parameters
-              << " Region start: " << std::setw(12) << pecRegion.GetIndex() 
-              << ", size: " << std::setw(12) << pecRegion.GetSize() << std::endl;
+    std::cout << "NCC: "           << std::setw(12) << ncc 
+              << " Parameters: "   << std::setw(12) << parameters
+              << " Region start: " << std::setw(12) << templateRegion.GetIndex() 
+              << ", size: "        << std::setw(12) << templateRegion.GetSize() << std::endl;
   }
 
   return ncc;

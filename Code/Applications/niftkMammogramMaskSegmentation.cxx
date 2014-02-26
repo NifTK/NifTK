@@ -53,15 +53,18 @@ struct arguments
   bool flgVerbose;
   bool flgDebug;
   bool flgPectoralis;
-  
+  bool flgIncludeBorderRegion;
+
   std::string inputImage;
   std::string outputMask;  
   std::string outputImage;  
-  
+  std::string outputTemplate;  
+
   arguments() {
     flgVerbose = false;
     flgDebug = false;
     flgPectoralis = false;
+    flgIncludeBorderRegion = false;
   }
 
 };
@@ -161,6 +164,8 @@ int DoMain(arguments args)
   filter->SetDebug(   args.flgDebug );
   filter->SetVerbose( args.flgVerbose );
 
+  filter->SetIncludeBorderRegion( args.flgIncludeBorderRegion );
+
   try {
     filter->Update();
   }
@@ -256,7 +261,32 @@ int DoMain(arguments args)
         if ( pecIterator.Get() )
           maskIterator.Set( 0 );
       }
-    }
+
+      if ( args.outputTemplate.length() )
+      {
+        typedef typename MammogramPectoralisSegmentationImageFilterType::TemplateImageType 
+          TemplateImageType;
+        
+        typename TemplateImageType::Pointer imTemplate = pecFilter->GetTemplateImage();
+        imTemplate->DisconnectPipeline();
+        
+        typedef itk::ImageFileWriter< TemplateImageType > TemplateImageWriterType;
+        typename TemplateImageWriterType::Pointer imageWriter = TemplateImageWriterType::New();
+        
+        imageWriter->SetFileName(args.outputTemplate);
+        imageWriter->SetInput( imTemplate );
+        
+        try
+        {
+          imageWriter->Update(); 
+        }
+        catch( itk::ExceptionObject & err ) 
+        { 
+          std::cerr << "Failed: " << err << std::endl; 
+          return EXIT_FAILURE;
+        }       
+      }
+    }         
   }
 
 
@@ -345,14 +375,17 @@ int main(int argc, char** argv)
   args.flgVerbose = flgVerbose;
   args.flgDebug = flgDebug;
   args.flgPectoralis = flgPectoralis;
+  args.flgIncludeBorderRegion = flgIncludeBorderRegion;
 
   args.inputImage  = inputImage;
   args.outputMask  = outputMask;
   args.outputImage = outputImage;
-
-  std::cout << "Input image:  " << args.inputImage << std::endl
-            << "Output mask:  " << args.outputMask << std::endl
-            << "Output image: " << args.outputImage << std::endl;
+  args.outputTemplate = outputTemplate;
+  
+  std::cout << "Input image:     " << args.inputImage << std::endl
+            << "Output mask:     " << args.outputMask << std::endl
+            << "Output image:    " << args.outputImage << std::endl
+            << "Output template: " << args.outputTemplate << std::endl;
 
   // Validate command line args
 

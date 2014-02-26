@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __itkMammogramPectoralisFitMetric_h
-#define __itkMammogramPectoralisFitMetric_h
+#ifndef __itkMammogramFatEstimationFitMetric_h
+#define __itkMammogramFatEstimationFitMetric_h
 
 #include <itkSingleValuedCostFunction.h>
 #include <itkImageRegionIterator.h>
@@ -23,27 +23,30 @@
 
 namespace itk {
   
-/** \class MammogramPectoralisFitMetric
- * \brief A metric to compute the similarity between an image and a pectoral shape model.
+/** \class MammogramFatEstimationFitMetric
+ * \brief A metric to compute the similarity between an image and breast fat model.
  *
- * \section itkMammogramPectoralisFitMetricCaveats Caveats
- * \li The mammogram is assumed to be have the chest wall of the left-hand
- * edge so right mammograms should be flipped first.
+ * Computes the similarity to a shape model:
+ *
+ * y = {x < 0: 0}, {0 < x < a: b/a sqrt(a^2 - x^2)}, {x > a: b}
+ *
+ * \section itkMammogramFatEstimationFitMetricCaveats Caveats
+ * \li None
  */
 
 template <class TInputImage>
-class  ITK_EXPORT MammogramPectoralisFitMetric :
+class  ITK_EXPORT MammogramFatEstimationFitMetric :
   public SingleValuedCostFunction
 {
 //  Software Guide : EndCodeSnippet
 public:
-  typedef MammogramPectoralisFitMetric  Self;
+  typedef MammogramFatEstimationFitMetric  Self;
   typedef SingleValuedCostFunction   Superclass;
   typedef SmartPointer< Self >       Pointer;
   typedef SmartPointer< const Self > ConstPointer;
   
   /** Run-time type information (and related methods).   */
-  itkTypeMacro( MammogramPectoralisFitMetric, SingleValuedCostFunction );
+  itkTypeMacro( MammogramFatEstimationFitMetric, SingleValuedCostFunction );
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -69,20 +72,20 @@ public:
   typedef typename itk::ImageRegionConstIteratorWithIndex< TInputImage > IteratorWithIndexConstType;
 
 
-  /** Type of the template image */
-  typedef float                                                  TemplatePixelType;
-  typedef typename itk::Image<TemplatePixelType, ImageDimension> TemplateImageType;
-  typedef typename TemplateImageType::Pointer                    TemplateImagePointer;
-  typedef typename TemplateImageType::ConstPointer               TemplateImageConstPointer;
-  typedef typename TemplateImageType::RegionType                 TemplateImageRegionType;
-  typedef typename TemplateImageType::PixelType                  TemplateImagePixelType;
-  typedef typename TemplateImageType::SpacingType                TemplateImageSpacingType;
-  typedef typename TemplateImageType::PointType                  TemplateImagePointType;
-  typedef typename TemplateImageType::IndexType                  TemplateImageIndexType;
-  typedef typename TemplateImageType::SizeType                   TemplateImageSizeType;
+  /** Type of the distance image */
+  typedef float                                                  DistancePixelType;
+  typedef typename itk::Image<DistancePixelType, ImageDimension> DistanceImageType;
+  typedef typename DistanceImageType::Pointer                    DistanceImagePointer;
+  typedef typename DistanceImageType::ConstPointer               DistanceImageConstPointer;
+  typedef typename DistanceImageType::RegionType                 DistanceImageRegionType;
+  typedef typename DistanceImageType::PixelType                  DistanceImagePixelType;
+  typedef typename DistanceImageType::SpacingType                DistanceImageSpacingType;
+  typedef typename DistanceImageType::PointType                  DistanceImagePointType;
+  typedef typename DistanceImageType::IndexType                  DistanceImageIndexType;
+  typedef typename DistanceImageType::SizeType                   DistanceImageSizeType;
 
-  typedef typename itk::ImageRegionIterator< TemplateImageType >          TemplateIteratorType;
-  typedef typename itk::ImageRegionIteratorWithIndex< TemplateImageType > TemplateIteratorWithIndexType;
+  typedef typename itk::ImageRegionIterator< DistanceImageType >          DistanceIteratorType;
+  typedef typename itk::ImageRegionIteratorWithIndex< DistanceImageType > DistanceIteratorWithIndexType;
 
   /** Optional mask image */
   typedef unsigned char                                      MaskPixelType;
@@ -105,30 +108,31 @@ public:
   /// Set the optional mask image
   void SetMask( const MaskImageType *imMask );
 
-  /** Get the template image. */
-  itkGetObjectMacro( ImTemplate, TemplateImageType );
+  /** Get the fat image. */
+  itkGetObjectMacro( Fat, InputImageType );
+
+  /** Get the maximum distance to the breast edge in mm. */
+  DistancePixelType GetMaxDistance( void ) { return m_MaxDistance; }
+
+  /** Get the distance image. */
+  itkGetObjectMacro( Distance, DistanceImageType );
 
   typedef Superclass::ParametersType ParametersType;
   typedef Superclass::DerivativeType DerivativeType;
   typedef Superclass::MeasureType    MeasureType;
 
-  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 8 );
+  itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
 
   unsigned int GetNumberOfParameters(void) const  
   {
     return ParametricSpaceDimension;
   }
 
-  void GetParameters( const InputImagePointType &pecInterceptInMM,
-                      ParametersType &parameters );
-
   void GetDerivative( const ParametersType &parameters, 
                       DerivativeType &Derivative ) const
   {
     return;
   }
-
-  MeasureType GetValue( const InputImagePointType &pecInterceptInMM );
 
   MeasureType GetValue( const ParametersType &parameters ) const;
 
@@ -140,17 +144,15 @@ public:
     this->GetDerivative( parameters, Derivative );
   }
 
-  void ClearTemplate( void );
+  void ClearFatImage( void );
 
-  void GenerateTemplate( const ParametersType &parameters,
-                         double &tMean, double &tStdDev, double &nInside, double &nPixels,
-                         TemplateImageRegionType &templateRegion );
+  void GenerateFatImage( const ParametersType &parameters );
 
 protected:
 
-  MammogramPectoralisFitMetric();
-  virtual ~MammogramPectoralisFitMetric();
-  MammogramPectoralisFitMetric(const Self &) {}
+  MammogramFatEstimationFitMetric();
+  virtual ~MammogramFatEstimationFitMetric();
+  MammogramFatEstimationFitMetric(const Self &) {}
   void operator=(const Self &) {}
   void PrintSelf(std::ostream & os, Indent indent) const;
 
@@ -161,17 +163,20 @@ protected:
   InputImagePointType    m_ImSizeInMM;
   InputImageConstPointer m_InputImage;
 
-  TemplateImagePointer   m_ImTemplate;
+  InputImagePointer      m_Fat;
 
   MaskImageRegionType    m_MaskRegion;
   MaskImageConstPointer  m_Mask;
+
+  DistancePixelType      m_MaxDistance;
+  DistanceImagePointer   m_Distance;
 
 };
 
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkMammogramPectoralisFitMetric.txx"
+#include "itkMammogramFatEstimationFitMetric.txx"
 #endif
 
 #endif

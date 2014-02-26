@@ -43,8 +43,8 @@
       <name>outputMask</name>
       <flag>n</flag>
       <longflag>om</longflag>
-      <description>Output mask</description>      
-      <label>Output mask</label>
+      <description>Output binary pectoral mask image</description>      
+      <label>Output pectoral mask</label>
       <default>outputMask.nii</default>
       <channel>output</channel>
     </image>
@@ -53,9 +53,9 @@
       <name>outputImage</name>
       <flag>o</flag>
       <longflag>outputImage</longflag>
-      <description>Output image</description>      
-      <label>Output image</label>
-      <default>outputMask.nii</default>
+      <description>Output image with pectoral muscle removed</description>      
+      <label>Output masked image</label>
+      <default>outputMasked.nii</default>
       <channel>output</channel>
     </image>
 
@@ -65,13 +65,6 @@
 
     <label>Options</label>
     <description><![CDATA[Optional parameters]]></description>
-
-    <boolean>
-      <name>flgApplyMaskToImage</name>
-      <longflag>apply2image</longflag>
-      <description>Apply the mask to the image, setting pixels in the background to zero.</description>
-      <label>Apply mask to image?</label>
-    </boolean>
 
     <boolean>
       <name>flgVerbose</name>
@@ -87,6 +80,15 @@
 
     <label>Advanced</label>
     <description><![CDATA[Additional Parameters]]></description>
+
+    <image>
+      <name>outputTemplate</name>
+      <flag>t</flag>
+      <longflag>ot</longflag>
+      <description>Output the final pectoral muscle template image</description>      
+      <label>Output template image</label>
+      <channel>output</channel>
+    </image>
 
     <boolean>
       <name>flgDebug</name>

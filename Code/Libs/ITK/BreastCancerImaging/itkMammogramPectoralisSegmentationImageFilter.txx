@@ -36,21 +36,22 @@
 #include <itkPowellOptimizer.h>
 #include <itkFlipImageFilter.h>
 #include <itkImageDuplicator.h>
+#include <itkMammogramFatSubtractionImageFilter.h>
 
 
 namespace itk
 {
 
 template < class TOptimizer >
-class IterationCallback : public itk::Command
+class PecFitIterationCallback : public itk::Command
 {
 public:
-  typedef IterationCallback             Self;
+  typedef PecFitIterationCallback             Self;
   typedef itk::Command                  Superclass;
   typedef itk::SmartPointer<Self>       Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
 
-  itkTypeMacro( IterationCallback, Superclass );
+  itkTypeMacro( PecFitIterationCallback, Superclass );
   itkNewMacro( Self );
   typedef    TOptimizer     OptimizerType;
 
@@ -86,7 +87,7 @@ public:
   }
   
 protected:
-  IterationCallback() {};
+  PecFitIterationCallback() {};
   itk::WeakPointer<OptimizerType>   m_Optimizer;
 };
 
@@ -107,6 +108,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   m_Mask = 0;
   m_Image = 0;
+  m_Template = 0;
 }
 
 
@@ -140,6 +142,8 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   duplicator->Update();
 
   m_Mask = duplicator->GetOutput();
+
+  this->Modified();
 }
 
 
@@ -308,7 +312,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
 
 /* -----------------------------------------------------------------------
-   GenerateData() - REDUNDANT, MOVED TO METRIC
+   GenerateData()
    ----------------------------------------------------------------------- */
 
 template <typename TInputImage, typename TOutputImage>
@@ -714,12 +718,45 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   bestParameters.SetSize( metric->GetNumberOfParameters() );
 
 
+  // Subtract fat from the image
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#if 0
+
+  typedef itk::MammogramFatSubtractionImageFilter<InputImageType> 
+    MammogramFatSubtractionImageFilterType;
+
+  typename MammogramFatSubtractionImageFilterType::Pointer 
+    fatFilter = MammogramFatSubtractionImageFilterType::New();
+
+  fatFilter->SetInput( image );  
+
+  fatFilter->SetVerbose( m_flgVerbose );
+  fatFilter->SetDebug( this->GetDebug() );
+  fatFilter->SetComputeFatEstimationFit( true );
+
+  fatFilter->Update(); 
+  
+  imPipelineConnector = fatFilter->GetOutput( 0 );
+  imPipelineConnector->DisconnectPipeline();
+
+  typename InputImageType::ConstPointer imPipeConst = 
+    static_cast< InputImageType * >(imPipelineConnector);
+
+#else
+
+  typename InputImageType::ConstPointer imPipeConst = image;
+
+#endif
+
+
   // Shrink the image to max dimension for exhaustive search
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   InputImageSizeType outSize;
 
-  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 300, outSize );
+  imPipelineConnector = 
+    ShrinkTheInputImage<InputImageType>( imPipeConst, 300, outSize );
 
   if ( this->GetDebug() )
   {
@@ -744,7 +781,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Iterate over all of the triangular pectoral x and y intercepts
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  InputImageRegionType pecRegion;
+  TemplateImageRegionType pecRegion;
 
   InputImageIndexType pecIntercept;
 
@@ -754,7 +791,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   InputImagePointType pecInterceptInMM;
   InputImagePointType bestPecInterceptInMM;
 
-  double nPixels;
+  double nPixels, nPecPixels;
   double tMean, tStdDev;        // The mean and standard deviation of the template image
 
   double ncc = -1., bestNCC = -1.;
@@ -775,7 +812,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   std::cout << "pecInterceptInMM: " << pecInterceptStartPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
-  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
   imTemp = metric->GetImTemplate();
   sprintf( filename, "TestTemplate1_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
   WriteImageToFile< TemplateImageType >( filename, "test template image", imTemp ); 
@@ -784,7 +821,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   std::cout << "pecInterceptInMM: " << pecInterceptEndPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
-  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
   imTemp = metric->GetImTemplate();
   sprintf( filename, "TestTemplate2_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
   WriteImageToFile< TemplateImageType >( filename,  "test template image", imTemp ); 
@@ -793,7 +830,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   std::cout << "pecInterceptInMM: " << pecInterceptEndPoint << std::endl
             << "parameters: " << parameters << std::endl;
   metric->ClearTemplate();
-  metric->GenerateTemplate( parameters, tMean, tStdDev, nPixels );
+  metric->GenerateTemplate( parameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
   imTemp = metric->GetImTemplate();
   sprintf( filename, "TestTemplate3_%03.0fx%03.0f.nii", pecInterceptInMM[0], pecInterceptInMM[1] );
   WriteImageToFile< TemplateImageType >( filename, "test template image", imTemp ); 
@@ -821,7 +858,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   if ( this->GetDebug() )
   {
     metric->ClearTemplate();
-    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
+    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
 
     imTemplate = metric->GetImTemplate();
 
@@ -834,7 +871,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // Shrink the image to max dimension for optimisation
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  imPipelineConnector = ShrinkTheInputImage<InputImageType>( image, 600, outSize );
+  imPipelineConnector = ShrinkTheInputImage<InputImageType>( imPipeConst, 600, outSize );
 
   if ( this->GetDebug() )
   {
@@ -893,7 +930,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   if ( this->GetDebug() )
   {
     metric->ClearTemplate();
-    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
+    metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
 
     imTemplate = metric->GetImTemplate();
 
@@ -919,6 +956,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   parameterScales[4] = 1;
   parameterScales[5] = 1;
   parameterScales[6] = 100;
+  parameterScales[7] = 100;
 
   typedef itk::PowellOptimizer OptimizerType;
   OptimizerType::Pointer optimiser = OptimizerType::New();
@@ -933,7 +971,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   optimiser->MaximizeOn();
   optimiser->SetScales( parameterScales );
 
-  typedef IterationCallback< OptimizerType >   IterationCallbackType;
+  typedef PecFitIterationCallback< OptimizerType >   IterationCallbackType;
   IterationCallbackType::Pointer callback = IterationCallbackType::New();
 
   callback->SetOptimizer( optimiser );
@@ -955,7 +993,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   // ~~~~~~~~~~~~~~~~
 
   metric->ClearTemplate();
-  metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPixels );
+  metric->GenerateTemplate( bestParameters, tMean, tStdDev, nPecPixels, nPixels, pecRegion );
 
   imTemplate = metric->GetImTemplate();
 
@@ -1027,13 +1065,14 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
   expandFilter->UpdateLargestPossibleRegion();  
-  imTemplate = expandFilter->GetOutput();
-  imTemplate->SetOrigin( inOrigin );
+
+  m_Template = expandFilter->GetOutput();
+  m_Template->SetOrigin( inOrigin );
 
   if ( this->GetDebug() )
   {
     WriteImageToFile< TemplateImageType >( "ExpandedImage.nii", "expanded image", 
-                                           imTemplate ); 
+                                           m_Template ); 
   }
 
 
@@ -1044,7 +1083,7 @@ MammogramPectoralisSegmentationImageFilter<TInputImage,TOutputImage>
 
   typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
 
-  thresholder->SetInput( imTemplate );
+  thresholder->SetInput( m_Template );
 
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 100 );
