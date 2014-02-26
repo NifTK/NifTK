@@ -23,6 +23,9 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionPositionEvent" event_variant="StartMove" target="move">
             <action name="initMove"/>
         </transition>
+        <transition event_class="InteractionPositionEvent" event_variant="StartMoveWithShift" target="move">
+            <action name="initMove"/>
+        </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartZoom" target="zoom">
             <action name="initZoom"/>
         </transition>
@@ -44,7 +47,11 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionPositionEvent" event_variant="Moving" target="move">
             <action name="move"/>
         </transition>
+        <transition event_class="InteractionPositionEvent" event_variant="MovingWithShift" target="move">
+            <action name="move"/>
+        </transition>
         <transition event_class="InteractionPositionEvent" event_variant="EndMoving" target="start"/>
+        <transition event_class="InteractionPositionEvent" event_variant="EndMovingWithShift" target="start"/>
     </state>
     <state name="zoom">
         <transition event_class="InteractionPositionEvent" event_variant="Zooming" target="zoom">
