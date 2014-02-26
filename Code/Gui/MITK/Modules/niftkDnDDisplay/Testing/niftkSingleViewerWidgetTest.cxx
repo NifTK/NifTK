@@ -2570,7 +2570,79 @@ void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->StateTester->Clear();
   d->Viewer->SetCursorPositionBinding(true);
+  d->Viewer->SetScaleFactorBinding(false);
+  d->StateTester->Clear();
+
+  mitk::Point3D worldPosition;
+  mitk::Vector2D displayPosition;
+
+  mitk::Vector2D axialCursorPosition;
+  mitk::Vector2D sagittalCursorPosition;
+  mitk::Vector2D coronalCursorPosition;
+
+  worldPosition = this->GetRandomWorldPosition();
+  d->Viewer->SetSelectedPosition(worldPosition);
+
+  axialCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+  sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+  coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  QCOMPARE(axialCursorPosition[0], coronalCursorPosition[0]);
+  QCOMPARE(sagittalCursorPosition[1], coronalCursorPosition[1]);
+
+  d->StateTester->Clear();
+
+  double axialScaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_AXIAL);
+  double sagittalScaleFactor = d->Viewer->GetScaleFactor(MIDAS_ORIENTATION_SAGITTAL);
+
+  d->Viewer->SetScaleFactor(MIDAS_ORIENTATION_AXIAL, axialScaleFactor * 2);
+  d->StateTester->Clear();
+  d->Viewer->SetScaleFactor(MIDAS_ORIENTATION_SAGITTAL, sagittalScaleFactor * 0.5);
+  d->StateTester->Clear();
+
+  axialCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+  sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+  coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  QCOMPARE(axialCursorPosition[0], coronalCursorPosition[0]);
+  QCOMPARE(sagittalCursorPosition[1], coronalCursorPosition[1]);
+
+  worldPosition = this->GetRandomWorldPosition();
+  d->Viewer->SetSelectedPosition(worldPosition);
+
+  axialCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+  sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+  coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  QCOMPARE(axialCursorPosition[0], coronalCursorPosition[0]);
+  QCOMPARE(sagittalCursorPosition[1], coronalCursorPosition[1]);
+
+  d->StateTester->Clear();
+
+  displayPosition = this->GetRandomDisplayPosition();
+
+  QPoint pointAtDisplayPosition = this->GetPointAtCursorPosition(d->CoronalWindow, displayPosition);
+  MITK_INFO << "axial cursor position: " << axialCursorPosition;
+  MITK_INFO << "sagittal cursor position: " << sagittalCursorPosition;
+  MITK_INFO << "coronal cursor position: " << coronalCursorPosition;
+
+  d->StateTester->Clear();
+  QTest::mouseClick(d->CoronalWindow, Qt::LeftButton, Qt::NoModifier, pointAtDisplayPosition);
+
+  axialCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_AXIAL);
+  sagittalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_SAGITTAL);
+  coronalCursorPosition = d->Viewer->GetCursorPosition(MIDAS_ORIENTATION_CORONAL);
+
+  MITK_INFO << "axial cursor position: " << axialCursorPosition;
+  MITK_INFO << "sagittal cursor position: " << sagittalCursorPosition;
+  MITK_INFO << "coronal cursor position: " << coronalCursorPosition;
+  QCOMPARE(axialCursorPosition[0], coronalCursorPosition[0]);
+  QCOMPARE(sagittalCursorPosition[1], coronalCursorPosition[1]);
+
+  d->StateTester->Clear();
 }
 
 
@@ -2579,7 +2651,10 @@ void niftkSingleViewerWidgetTestClass::testScaleFactorBinding()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->StateTester->Clear();
   d->Viewer->SetScaleFactorBinding(true);
+  d->StateTester->Clear();
 }
 
 
@@ -2588,8 +2663,12 @@ void niftkSingleViewerWidgetTestClass::testCursorPositionAndScaleFactorBinding()
 {
   Q_D(niftkSingleViewerWidgetTestClass);
 
+  d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  d->StateTester->Clear();
   d->Viewer->SetCursorPositionBinding(true);
+  d->StateTester->Clear();
   d->Viewer->SetScaleFactorBinding(true);
+  d->StateTester->Clear();
 }
 
 
