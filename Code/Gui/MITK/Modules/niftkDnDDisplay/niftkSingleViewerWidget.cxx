@@ -521,7 +521,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
   if (!m_IsBoundGeometryActive)
   {
-    m_MultiWidget->SetGeometry(timeGeometry);
+    m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -560,14 +560,14 @@ mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geometry)
+void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeGeometry)
 {
-  assert(geometry);
-  m_BoundGeometry = geometry;
+  assert(timeGeometry);
+  m_BoundGeometry = timeGeometry;
 
   if (m_IsBoundGeometryActive)
   {
-    m_MultiWidget->SetGeometry(geometry);
+    m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -611,8 +611,8 @@ void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
     return;
   }
 
-  mitk::TimeGeometry* geometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
-  m_MultiWidget->SetGeometry(geometry);
+  mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  m_MultiWidget->SetTimeGeometry(timeGeometry);
 
   m_IsBoundGeometryActive = isBoundGeometryActive;
   //  m_WindowLayout = WINDOW_LAYOUT_UNKNOWN;

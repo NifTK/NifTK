@@ -90,12 +90,15 @@ public:
   /// \brief Destructor.
   virtual ~niftkMultiWindowWidget();
 
-  /// \brief There are several things we turn off/on depending on whether the widget is
-  /// visible or considered active, so we group them all under this Enabled(true/false) flag.
-  void SetEnabled(bool b);
-
   /// \brief Return whether this widget is considered 'enabled'.
   bool IsEnabled() const;
+
+  /// \brief There are several things we turn off/on depending on whether the widget is
+  /// visible or considered active, so we group them all under this Enabled(true/false) flag.
+  void SetEnabled(bool enabled);
+
+  /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
+  bool IsCursorVisible() const;
 
   /// \brief Turn the 2D cursors visible/invisible for this viewer (renderer specific properties).
   void SetCursorVisible(bool visible);
@@ -106,24 +109,21 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
-  /// \brief Get the flag controlling the 2D cursors visibility (renderer specific properties).
-  bool IsCursorVisible() const;
+  /// \brief Get the flag controlling 2D cursors global visibility.
+  bool IsCursorGloballyVisible() const;
 
   /// \brief Turn the 2D cursors visible/invisible globally, controlled by a user preference.
   void SetCursorGloballyVisible(bool visible);
 
-  /// \brief Get the flag controlling 2D cursors global visibility.
-  bool IsCursorGloballyVisible() const;
+  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
+  bool GetShow3DWindowIn2x2WindowLayout() const;
 
   /// \brief If true, then nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   void SetShow3DWindowIn2x2WindowLayout(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  bool GetShow3DWindowIn2x2WindowLayout() const;
-
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
-  void SetGeometry(mitk::TimeGeometry* geometry);
+  void SetTimeGeometry(mitk::TimeGeometry* timeGeometry);
 
   /// \brief Switches the window layout, i.e. the set and the arrangement of the render windows.
   void SetWindowLayout(WindowLayout windowLayout);
@@ -374,7 +374,7 @@ private:
   unsigned long m_SagittalSliceTag;
   unsigned long m_CoronalSliceTag;
   bool m_IsSelected;
-  bool m_IsEnabled;
+  bool m_Enabled;
   QmitkRenderWindow* m_SelectedRenderWindow;
   bool m_CursorVisibility;
   bool m_CursorGlobalVisibility;
@@ -396,7 +396,9 @@ private:
   mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Voxel size in millimetres.
-  mitk::Vector3D m_MmPerVx;
+  /// The values are stored in axis order. The mapping of orientations to axes
+  /// is stored in m_OrientationAxes.
+  double m_MmPerVx[3];
 
   vtkSideAnnotation* m_DirectionAnnotations[3];
   vtkRenderer* m_DirectionAnnotationRenderers[3];
@@ -422,9 +424,15 @@ private:
   /// axial window.)
   bool m_CursorCoronalPositionsAreBound;
 
+  /// \brief Controls if the scale factors are synchronised across the render windows.
   bool m_ScaleFactorBinding;
 
+  /// \brief Observer tags of the display geometry observers of the three 2D render windows.
   unsigned long m_DisplayGeometryModificationObservers[3];
+
+  /// \brief Blocks processing of display geometry events.
+  /// Set to true when the display geometry change is initiated from this class, and cleared
+  /// when the change is finished.
   bool m_BlockDisplayEvents;
 
   /// \brief Blocks updating this object when the selected slice changed in a slice navigation controller.

@@ -81,7 +81,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_SagittalSliceTag(0ul)
 , m_CoronalSliceTag(0ul)
 , m_IsSelected(false)
-, m_IsEnabled(false)
+, m_Enabled(false)
 , m_SelectedRenderWindow(0)
 , m_CursorVisibility(true)
 , m_CursorGlobalVisibility(false)
@@ -221,9 +221,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   m_ScaleFactors[CORONAL] = 1.0;
 
   // Set the default voxel size to 1.0mm for each axes.
-  m_MmPerVx[AXIAL] = 1.0;
-  m_MmPerVx[SAGITTAL] = 1.0;
-  m_MmPerVx[CORONAL] = 1.0;
+  m_MmPerVx[0] = 1.0;
+  m_MmPerVx[1] = 1.0;
+  m_MmPerVx[2] = 1.0;
 
   // Listen to the display geometry changes so we raise an event when
   // the geometry changes through the display interactor (e.g. zooming with the mouse).
@@ -558,25 +558,36 @@ void niftkMultiWindowWidget::RequestUpdate()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetEnabled(bool b)
+bool niftkMultiWindowWidget::IsEnabled() const
 {
-  // See also constructor for things that are ALWAYS on/off.
-  if (b && !m_IsEnabled)
-  {
-    this->AddPlanesToDataStorage();
-  }
-  else if (!b && m_IsEnabled)
-  {
-    this->RemovePlanesFromDataStorage();
-  }
-  m_IsEnabled = b;
+  return m_Enabled;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsEnabled() const
+void niftkMultiWindowWidget::SetEnabled(bool enabled)
 {
-  return m_IsEnabled;
+  // See also constructor for things that are ALWAYS on/off.
+  if (enabled != m_Enabled)
+  {
+    m_Enabled = enabled;
+
+    if (enabled)
+    {
+      this->AddPlanesToDataStorage();
+    }
+    else
+    {
+      this->RemovePlanesFromDataStorage();
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMultiWindowWidget::IsCursorVisible() const
+{
+  return m_CursorVisibility;
 }
 
 
@@ -599,9 +610,9 @@ void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorVisible() const
+bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
 {
-  return m_CursorVisibility;
+  return m_CursorGlobalVisibility;
 }
 
 
@@ -616,13 +627,6 @@ void niftkMultiWindowWidget::SetCursorGloballyVisible(bool visible)
   m_PlaneNode2->Modified();
   m_PlaneNode3->SetVisibility(visible);
   m_PlaneNode3->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorGloballyVisible() const
-{
-  return m_CursorGlobalVisibility;
 }
 
 
@@ -647,17 +651,17 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
+bool niftkMultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
-  m_Show3DWindowIn2x2WindowLayout = visible;
-  this->Update3DWindowVisibility();
+  return m_Show3DWindowIn2x2WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
+void niftkMultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
 {
-  return m_Show3DWindowIn2x2WindowLayout;
+  m_Show3DWindowIn2x2WindowLayout = visible;
+  this->Update3DWindowVisibility();
 }
 
 
@@ -831,22 +835,22 @@ void niftkMultiWindowWidget::FitToDisplay()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
+void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 {
-  if (geometry != NULL)
+  if (timeGeometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
-    m_Geometry = geometry->GetGeometryForTimeStep(0);
-    m_TimeGeometry = geometry;
+    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
+    m_TimeGeometry = timeGeometry;
 
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
-    for (int i = 0; i < 3; ++i)
+    for (int axis = 0; axis < 3; ++axis)
     {
-      m_MmPerVx[i] = m_Geometry->GetExtentInMM(i) / m_Geometry->GetExtent(i);
+      m_MmPerVx[axis] = m_Geometry->GetExtentInMM(axis) / m_Geometry->GetExtent(axis);
     }
 
     // Add these annotations the first time we have a real geometry.
@@ -1121,7 +1125,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
         // TODO Commented out when migrating to the redesigned MITK geometry framework.
         // This will definitely not work. Should be fixed.
 
-        mitk::TimeStepType numberOfTimeSteps = geometry->CountTimeSteps();
+        mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
 
         mitk::ProportionalTimeGeometry::Pointer createdTimeGeometry = mitk::ProportionalTimeGeometry::New();
         createdTimeGeometry->Initialize();
@@ -1163,7 +1167,7 @@ void niftkMultiWindowWidget::SetGeometry(mitk::TimeGeometry* geometry)
           slicedGeometry->SetImageGeometry(false);
           slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped);
 
-          slicedGeometry->SetTimeBounds(geometry->GetGeometryForTimeStep(timeStep)->GetTimeBounds());
+          slicedGeometry->SetTimeBounds(timeGeometry->GetGeometryForTimeStep(timeStep)->GetTimeBounds());
           createdTimeGeometry->SetTimeStepGeometry(slicedGeometry, timeStep);
         }
         createdTimeGeometry->Update();
