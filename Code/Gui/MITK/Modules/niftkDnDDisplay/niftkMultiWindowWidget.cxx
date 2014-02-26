@@ -2075,6 +2075,21 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     {
       this->UpdateCursorPosition(AXIAL);
 
+      if (m_SncSliceHasChanged[AXIAL])
+      {
+        this->UpdateCursorPosition(CORONAL);
+
+        if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
+        {
+          m_CursorPositions[SAGITTAL][1] = m_CursorPositions[CORONAL][1];
+          m_CursorPositionHasChanged[SAGITTAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(SAGITTAL);
+        }
+      }
+
       if (m_SncSliceHasChanged[SAGITTAL])
       {
         if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
@@ -2117,6 +2132,22 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
           this->UpdateCursorPosition(CORONAL);
         }
       }
+
+      if (m_SncSliceHasChanged[SAGITTAL])
+      {
+        this->UpdateCursorPosition(CORONAL);
+
+        if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
+        {
+          m_CursorPositions[AXIAL][0] = m_CursorPositions[CORONAL][0];
+          m_CursorPositionHasChanged[AXIAL] = true;
+        }
+        else
+        {
+          this->UpdateCursorPosition(AXIAL);
+        }
+      }
+
       if (m_SncSliceHasChanged[CORONAL])
       {
         if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
@@ -2146,6 +2177,7 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
           this->UpdateCursorPosition(SAGITTAL);
         }
       }
+
       if (m_SncSliceHasChanged[SAGITTAL])
       {
         if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
@@ -2157,6 +2189,12 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
         {
           this->UpdateCursorPosition(AXIAL);
         }
+      }
+
+      if (m_SncSliceHasChanged[CORONAL])
+      {
+        this->UpdateCursorPosition(AXIAL);
+        this->UpdateCursorPosition(SAGITTAL);
       }
     }
 
