@@ -56,6 +56,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 ::MammogramMaskSegmentationImageFilter()
 {
   m_flgVerbose = false;
+  m_flgIncludeBorderRegion = false;
 
   this->SetNumberOfRequiredInputs( 1 );
   this->SetNumberOfRequiredOutputs( 1 );
@@ -273,216 +274,222 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   // Find the top and bottom borders of the image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  typedef typename itk::ImageLinearIteratorWithIndex< TInputImage > LineIteratorType;
-
-  InputImageIndexType index, prevIndex;
-  bool flgFirstRow;
-  int xDiff;
-
-  RegionType lowerRegion;
-  SizeType lowerRegionSize;
   InputImageIndexType lowerStart;
+  InputImageIndexType upperStart;
+    
 
-  lowerStart[0] = 0;
-  lowerStart[1] = 0;
-
-  lowerRegionSize[0] = outSize[0];
-  lowerRegionSize[1] = comIndex[1];
-
-  lowerRegion.SetSize( lowerRegionSize );
-  lowerRegion.SetIndex( lowerStart );
-
-  LineIteratorType itLowerRegion( imPipelineConnector, lowerRegion );
-
-  itLowerRegion.SetDirection( 0 );
-
-  if ( this->GetDebug() )
+  if ( ! m_flgIncludeBorderRegion )
   {
-    std::cout << "Scanning lower region: " << lowerRegion << std::endl;
-  }
 
-  flgFirstRow = true;
-  xDiff = 0;
+    typedef typename itk::ImageLinearIteratorWithIndex< TInputImage > LineIteratorType;
 
-  for ( itLowerRegion.GoToReverseBegin(); 
-        ! itLowerRegion.IsAtReverseEnd(); 
-        itLowerRegion.PreviousLine() )
-  {
-    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+    InputImageIndexType index, prevIndex;
+    bool flgFirstRow;
+    int xDiff;
+
+    RegionType lowerRegion;
+    SizeType lowerRegionSize;
+
+    lowerStart[0] = 0;
+    lowerStart[1] = 0;
+
+    lowerRegionSize[0] = outSize[0];
+    lowerRegionSize[1] = comIndex[1];
+
+    lowerRegion.SetSize( lowerRegionSize );
+    lowerRegion.SetIndex( lowerStart );
+
+    LineIteratorType itLowerRegion( imPipelineConnector, lowerRegion );
+
+    itLowerRegion.SetDirection( 0 );
+
+    if ( this->GetDebug() )
+    {
+      std::cout << "Scanning lower region: " << lowerRegion << std::endl;
+    }
+
+    flgFirstRow = true;
+    xDiff = 0;
+
+    for ( itLowerRegion.GoToReverseBegin(); 
+          ! itLowerRegion.IsAtReverseEnd(); 
+          itLowerRegion.PreviousLine() )
+    {
+      if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+      {
+        itLowerRegion.GoToBeginOfLine();
+      
+        while ( ( ! itLowerRegion.IsAtEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
+        {
+          ++itLowerRegion;
+        }
+      }
+      else
+      {
+        itLowerRegion.GoToReverseBeginOfLine();
+      
+        while ( ( ! itLowerRegion.IsAtReverseEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
+        {
+          --itLowerRegion;
+        } 
+      }
+
+      index = itLowerRegion.GetIndex();
+    
+      if ( flgFirstRow )
+      {
+        flgFirstRow = false;
+      }
+      else 
+      {
+        if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+        {
+          xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
+        }
+        else
+        {
+          xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
+        }
+
+        if ( this->GetDebug() )
+        {
+          std::cout << "Current: " << index << " Previous: " 
+                    << prevIndex << ", x diff: " << xDiff << std::endl;    
+        }
+      }
+
+      if ( (xDiff > 10 ) && ( index[1] < outSize[1]/10 ) )
+      {
+        break;
+      }
+
+      prevIndex = index;
+    }
+
+    lowerStart = prevIndex;
+
+    if ( this->GetDebug() )
+    {
+      std::cout << "Lower border index: " << lowerStart[1] << std::endl;
+    }
+
+    // Set this border region to zero
+
+    for ( ; 
+          ! itLowerRegion.IsAtReverseEnd(); 
+          itLowerRegion.PreviousLine() )
     {
       itLowerRegion.GoToBeginOfLine();
       
-      while ( ( ! itLowerRegion.IsAtEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
+      while ( ! itLowerRegion.IsAtEndOfLine() )
       {
+        itLowerRegion.Set( 0 );
         ++itLowerRegion;
       }
     }
-    else
+
+    // The region above the center of mass
+
+    RegionType upperRegion;
+    SizeType upperRegionSize;
+
+    upperStart[0] = 0;
+    upperStart[1] = comIndex[1];
+
+    upperRegionSize[0] = outSize[0];
+    upperRegionSize[1] = outSize[1] - comIndex[1];
+
+    upperRegion.SetSize( upperRegionSize );
+    upperRegion.SetIndex( upperStart );
+
+    LineIteratorType itUpperRegion( imPipelineConnector, upperRegion );
+
+    itUpperRegion.SetDirection( 0 );
+
+
+    if ( this->GetDebug() )
     {
-      itLowerRegion.GoToReverseBeginOfLine();
-      
-      while ( ( ! itLowerRegion.IsAtReverseEndOfLine() ) && ( itLowerRegion.Get() > intThreshold ) )
-      {
-        --itLowerRegion;
-      } 
+      std::cout << "Scanning upper region: " << upperRegion << std::endl;
     }
 
-    index = itLowerRegion.GetIndex();
-    
-    if ( flgFirstRow )
-    {
-      flgFirstRow = false;
-    }
-    else 
+    flgFirstRow = true;
+    xDiff = 0;
+
+    for ( itUpperRegion.GoToBegin(); 
+          ! itUpperRegion.IsAtEnd(); 
+          itUpperRegion.NextLine() )
     {
       if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
       {
-        xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
+        itUpperRegion.GoToBeginOfLine();
+      
+        while ( ( ! itUpperRegion.IsAtEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
+        {
+          ++itUpperRegion;
+        }
       }
       else
       {
-        xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
-      }
-
-      if ( this->GetDebug() )
-      {
-        std::cout << "Current: " << index << " Previous: " 
-                  << prevIndex << ", x diff: " << xDiff << std::endl;    
-      }
-    }
-
-    if ( (xDiff > 10 ) && ( index[1] < outSize[1]/10 ) )
-    {
-      break;
-    }
-
-    prevIndex = index;
-  }
-
-  lowerStart = prevIndex;
-
-  if ( this->GetDebug() )
-  {
-    std::cout << "Lower border index: " << lowerStart[1] << std::endl;
-  }
-
-  // Set this border region to zero
-
-  for ( ; 
-        ! itLowerRegion.IsAtReverseEnd(); 
-        itLowerRegion.PreviousLine() )
-  {
-    itLowerRegion.GoToBeginOfLine();
+        itUpperRegion.GoToReverseBeginOfLine();
       
-    while ( ! itLowerRegion.IsAtEndOfLine() )
-    {
-      itLowerRegion.Set( 0 );
-      ++itLowerRegion;
+        while ( ( ! itUpperRegion.IsAtReverseEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
+        {
+          --itUpperRegion;
+        }
+      }
+    
+      index = itUpperRegion.GetIndex();
+    
+      if ( flgFirstRow )
+      {
+        flgFirstRow = false;
+      }
+      else 
+      {
+        if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+        {
+          xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
+        }
+        else
+        {
+          xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
+        }
+
+        if ( this->GetDebug() )
+        {
+          std::cout << "Current: " << index << " Previous: " 
+                    << prevIndex << ", x diff: " << xDiff << std::endl;
+        }
+      }
+
+      if ( (xDiff > 10 ) && ( index[1] > 9*outSize[1]/10 ) )
+      {
+        break;
+      }
+
+      prevIndex = index;
     }
-  }
+  
+    upperStart = prevIndex;
 
-  // The region above the center of mass
+    if ( this->GetDebug() )
+    {
+      std::cout << "Upper border index: " << upperStart[1] << std::endl;
+    }
 
-  RegionType upperRegion;
-  SizeType upperRegionSize;
-  InputImageIndexType upperStart;
+    // Set this border region to zero
 
-  upperStart[0] = 0;
-  upperStart[1] = comIndex[1];
-
-  upperRegionSize[0] = outSize[0];
-  upperRegionSize[1] = outSize[1] - comIndex[1];
-
-  upperRegion.SetSize( upperRegionSize );
-  upperRegion.SetIndex( upperStart );
-
-  LineIteratorType itUpperRegion( imPipelineConnector, upperRegion );
-
-  itUpperRegion.SetDirection( 0 );
-
-
-  if ( this->GetDebug() )
-  {
-    std::cout << "Scanning upper region: " << upperRegion << std::endl;
-  }
-
-  flgFirstRow = true;
-  xDiff = 0;
-
-  for ( itUpperRegion.GoToBegin(); 
-        ! itUpperRegion.IsAtEnd(); 
-        itUpperRegion.NextLine() )
-  {
-    if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
+    for ( ; 
+          ! itUpperRegion.IsAtEnd(); 
+          itUpperRegion.NextLine() )
     {
       itUpperRegion.GoToBeginOfLine();
       
-      while ( ( ! itUpperRegion.IsAtEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
+      while ( ! itUpperRegion.IsAtEndOfLine() )
       {
+        itUpperRegion.Set( 0 );
         ++itUpperRegion;
       }
-    }
-    else
-    {
-      itUpperRegion.GoToReverseBeginOfLine();
-      
-      while ( ( ! itUpperRegion.IsAtReverseEndOfLine() ) && ( itUpperRegion.Get() > intThreshold ) )
-      {
-        --itUpperRegion;
-      }
-    }
-    
-    index = itUpperRegion.GetIndex();
-    
-    if ( flgFirstRow )
-    {
-      flgFirstRow = false;
-    }
-    else 
-    {
-      if ( breastSide == LeftOrRightSideCalculatorType::LEFT_BREAST_SIDE )
-      {
-        xDiff = static_cast<int>( index[0] ) - static_cast<int>( prevIndex[0] );
-      }
-      else
-      {
-        xDiff = static_cast<int>( prevIndex[0] ) - static_cast<int>( index[0] );
-      }
-
-      if ( this->GetDebug() )
-      {
-        std::cout << "Current: " << index << " Previous: " 
-                  << prevIndex << ", x diff: " << xDiff << std::endl;
-      }
-    }
-
-    if ( (xDiff > 10 ) && ( index[1] > 9*outSize[1]/10 ) )
-    {
-      break;
-    }
-
-    prevIndex = index;
-  }
-  
-  upperStart = prevIndex;
-
-  if ( this->GetDebug() )
-  {
-    std::cout << "Upper border index: " << upperStart[1] << std::endl;
-  }
-
-  // Set this border region to zero
-
-  for ( ; 
-        ! itUpperRegion.IsAtEnd(); 
-        itUpperRegion.NextLine() )
-  {
-    itUpperRegion.GoToBeginOfLine();
-      
-    while ( ! itUpperRegion.IsAtEndOfLine() )
-    {
-      itUpperRegion.Set( 0 );
-      ++itUpperRegion;
     }
   }
 
@@ -490,44 +497,52 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   // Calculate the image range (for an ROI centered on the C-of-M in x)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  RegionType region;
+
   typedef itk::MinimumMaximumImageCalculator<TInputImage> MinMaxCalculatorType;
   
   typename MinMaxCalculatorType::Pointer minMaxCalculator = MinMaxCalculatorType::New();
 
   minMaxCalculator->SetImage( imPipelineConnector );
 
-  RegionType region;
-  SizeType size;
-
-  InputImageIndexType start;
-
-  // Left breast
-  if ( comIndex[0] < outSize[0] - comIndex[0] )
+  if ( m_flgIncludeBorderRegion )
   {
-    start[0] = comIndex[0]/5;
-    size[0] = 4*comIndex[0]/5 + (outSize[0] - comIndex[0])/2;
+    region = imPipelineConnector->GetLargestPossibleRegion();
   }
-  // Right breast
-  else 
+  else
   {
-    start[0] = comIndex[0]/2;
-    size[0] = 4*(outSize[0] - comIndex[0])/5 + comIndex[0]/2;
+    SizeType size;
+
+    InputImageIndexType start;
+
+    // Left breast
+    if ( comIndex[0] < outSize[0] - comIndex[0] )
+    {
+      start[0] = comIndex[0]/5;
+      size[0] = 4*comIndex[0]/5 + (outSize[0] - comIndex[0])/2;
+    }
+    // Right breast
+    else 
+    {
+      start[0] = comIndex[0]/2;
+      size[0] = 4*(outSize[0] - comIndex[0])/5 + comIndex[0]/2;
+    }
+    
+    start[1] = lowerStart[1];
+    size[1]  = upperStart[1] - lowerStart[1];
+    
+    if ( this->GetDebug() )
+    {
+      std::cout << "comIndex: " << comIndex << std::endl
+                << "outSize: " << outSize << std::endl
+                << "size: " << size << std::endl
+                << "start: " << start << std::endl;
+    }
+    
+    region.SetSize( size );
+    region.SetIndex( start );
   }
 
-  start[1] = lowerStart[1];
-  size[1]  = upperStart[1] - lowerStart[1];
-  
-  if ( this->GetDebug() )
-  {
-    std::cout << "comIndex: " << comIndex << std::endl
-              << "outSize: " << outSize << std::endl
-              << "size: " << size << std::endl
-              << "start: " << start << std::endl;
-  }
-
-  region.SetSize( size );
-  region.SetIndex( start );
-  
   if ( m_flgVerbose )
   {
     std::cout << "Computing image range in region: " <<  region << std::endl;
@@ -606,6 +621,135 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
 
+  // Add a border to the image to avoid edge interpolation problems
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  InputImageSpacingType oldSpacing = imPipelineConnector->GetSpacing();
+  InputImageRegionType  oldRegion  = imPipelineConnector->GetLargestPossibleRegion();
+  InputImagePointType   oldOrigin  = imPipelineConnector->GetOrigin();
+
+  InputImageSizeType    oldSize    = oldRegion.GetSize();
+  InputImageIndexType   oldStart   = oldRegion.GetIndex();
+
+  InputImageRegionType  newRegion;
+  InputImagePointType   newOrigin;
+
+  InputImageSizeType    newSize;
+  InputImageIndexType   newStart;
+
+  for (i=0; i < ImageDimension; i++)
+  {
+    newSize[i] = oldSize[i] + 2;
+    newOrigin[i] = oldOrigin[i] - oldSpacing[i];
+    newStart[i] = 1;
+  }
+
+  newRegion.SetSize( newSize );
+
+  typename InputImageType::Pointer newImage = InputImageType::New();
+  
+  newImage->SetSpacing( oldSpacing );
+  newImage->SetRegions( newRegion );
+  newImage->SetOrigin(  newOrigin );
+
+  newImage->Allocate();
+  newImage->FillBuffer( 0 );
+  
+  // Copy the old image into the center of the new image
+
+  newRegion.SetSize( oldSize );
+  newRegion.SetIndex( newStart );
+
+  typedef typename itk::ImageRegionIterator< InputImageType > IteratorType;
+
+  IteratorType oldIterator( imPipelineConnector,  oldRegion );
+  IteratorType newIterator( newImage, newRegion );
+      
+  if ( this->GetDebug() )
+  {
+    std::cout << "Copying input region: " << oldRegion
+              << " to output region: " << newRegion << std::endl;
+  }
+
+  for ( oldIterator.GoToBegin(), newIterator.GoToBegin(); 
+        (! oldIterator.IsAtEnd()) && (! newIterator.IsAtEnd());
+        ++oldIterator, ++newIterator )
+  {
+    newIterator.Set( oldIterator.Get() );
+  }
+  
+  // Set the border pixels of the new image to the nearest pixels in the old image
+
+  typedef itk::ImageLinearIteratorWithIndex< InputImageType > LineIteratorType;
+  
+  LineIteratorType oldLineIterator( imPipelineConnector, oldRegion );
+  LineIteratorType newLineIterator( newImage, newImage->GetLargestPossibleRegion() );
+
+  // First row and column
+
+  for (i=0; i < ImageDimension; i++)
+  {
+    oldLineIterator.SetDirection( i );
+    newLineIterator.SetDirection( i );
+
+    oldLineIterator.GoToBegin();
+    newLineIterator.GoToBegin();
+
+    oldLineIterator.GoToBeginOfLine();
+    newLineIterator.GoToBeginOfLine();
+
+    newLineIterator.Set( oldLineIterator.Get() );
+    ++newLineIterator;
+
+    while ( ! oldLineIterator.IsAtEndOfLine() )
+    {
+      newLineIterator.Set( oldLineIterator.Get() );
+      
+      ++oldLineIterator;
+      ++newLineIterator;
+    }
+
+    --oldLineIterator;
+    newLineIterator.Set( oldLineIterator.Get() );
+  }
+
+  // Last row and column
+
+  for (i=0; i < ImageDimension; i++)
+  {
+    oldLineIterator.SetDirection( i );
+    newLineIterator.SetDirection( i );
+
+    oldLineIterator.GoToReverseBegin();
+    newLineIterator.GoToReverseBegin();
+
+    oldLineIterator.GoToReverseBeginOfLine();
+    newLineIterator.GoToReverseBeginOfLine();
+
+    newLineIterator.Set( oldLineIterator.Get() );
+    --newLineIterator;
+
+    while ( ! oldLineIterator.IsAtReverseEndOfLine() )
+    {
+      newLineIterator.Set( oldLineIterator.Get() );
+      
+      --oldLineIterator;
+      --newLineIterator;
+    }
+
+    ++oldLineIterator;
+    newLineIterator.Set( oldLineIterator.Get() );
+  }
+
+  imPipelineConnector = newImage;
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "SmoothedImageWithBorder.nii", "image with border", 
+                                     imPipelineConnector ); 
+  }
+
+
   // Expand the mask back up to the original size
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -631,7 +775,7 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   if ( this->GetDebug() )
   {
-    WriteImageToFile< TInputImage >( "ExpandedImage.nii", "expanded image", 
+    WriteImageToFile< TInputImage >( "ExpandedMask.nii", "expanded mask", 
                                      imPipelineConnector ); 
   }
 
@@ -658,6 +802,12 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   thresholder->Update();
   imPipelineConnector = thresholder->GetOutput();
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "ThresholdedMask.nii", "thresholded mask", 
+                                     imPipelineConnector ); 
+  }
 
 
   // Cast to the output image type

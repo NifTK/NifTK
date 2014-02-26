@@ -54,6 +54,7 @@ public:
   typedef typename InputImageType::SpacingType  InputImageSpacingType;
   typedef typename InputImageType::PointType    InputImagePointType;
   typedef typename InputImageType::IndexType    InputImageIndexType;
+  typedef typename InputImageType::SizeType     InputImageSizeType;
 
   typedef typename NumericTraits<InputImagePixelType>::RealType    RealType;
 
@@ -91,14 +92,19 @@ public:
 
   bool GetVerbose( void ) { return m_flgVerbose; }
   void SetVerbose( bool flag ) { m_flgVerbose = flag; }
-
   void SetVerboseOn( void ) { m_flgVerbose = true; }
   void SetVerboseOff( void ) { m_flgVerbose = false; }
+
+  bool GetIncludeBorderRegion( void ) { return m_flgIncludeBorderRegion; }
+  void SetIncludeBorderRegion( bool flag ) { m_flgIncludeBorderRegion = flag; }
+  void SetIncludeBorderRegionOn( void ) { m_flgIncludeBorderRegion = true; }
+  void SetIncludeBorderRegionOff( void ) { m_flgIncludeBorderRegion = false; }
 
 
 protected:
 
   bool m_flgVerbose;
+  bool m_flgIncludeBorderRegion;
 
   MammogramMaskSegmentationImageFilter();
   virtual ~MammogramMaskSegmentationImageFilter();
