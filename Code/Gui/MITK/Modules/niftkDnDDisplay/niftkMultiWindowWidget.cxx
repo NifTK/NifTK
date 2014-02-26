@@ -96,10 +96,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_BlockDisplayEvents(false)
 , m_BlockUpdate(false)
 , m_SelectedRenderWindowHasChanged(false)
-, m_SncGeometryHasChanged(3)
-, m_SncTimeHasChanged(3)
-, m_SncSliceHasChanged(3)
-, m_SelectedPositionHasChanged(false)
+, m_GeometryHasChanged(false)
+, m_TimeStepHasChanged(false)
+, m_SelectedSliceHasChanged(3)
 , m_CursorPositionHasChanged(3)
 , m_ScaleFactorHasChanged(3)
 , m_CursorPositionBindingHasChanged(false)
@@ -1192,11 +1191,11 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
+    m_TimeStepHasChanged = true;
+    m_GeometryHasChanged = true;
     for (int i = 0; i < 3; ++i)
     {
-      m_SncGeometryHasChanged[i] = true;
-      m_SncTimeHasChanged[i] = true;
-      m_SncSliceHasChanged[i] = true;
+      m_SelectedSliceHasChanged[i] = true;
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -1757,8 +1756,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int orientation)
     bool updateWasBlocked = this->BlockUpdate(true);
 
     m_SelectedPosition = this->GetCrossPosition();
-    m_SelectedPositionHasChanged = true;
-    m_SncSliceHasChanged[orientation] = true;
+    m_SelectedSliceHasChanged[orientation] = true;
 
     this->SynchroniseCursorPositions();
 
@@ -1889,7 +1887,6 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     bool updateWasBlocked = this->BlockUpdate(true);
 
     m_SelectedPosition = selectedPosition;
-    m_SelectedPositionHasChanged = true;
 
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
@@ -1901,19 +1898,19 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     {
       unsigned pos = axialSnc->GetSlice()->GetPos();
       axialSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[AXIAL] = m_SncSliceHasChanged[AXIAL] || pos != axialSnc->GetSlice()->GetPos();
+      m_SelectedSliceHasChanged[AXIAL] = m_SelectedSliceHasChanged[AXIAL] || pos != axialSnc->GetSlice()->GetPos();
     }
     if (sagittalSnc->GetCreatedWorldGeometry())
     {
       unsigned pos = sagittalSnc->GetSlice()->GetPos();
       sagittalSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[SAGITTAL] = m_SncSliceHasChanged[SAGITTAL] || pos != sagittalSnc->GetSlice()->GetPos();
+      m_SelectedSliceHasChanged[SAGITTAL] = m_SelectedSliceHasChanged[SAGITTAL] || pos != sagittalSnc->GetSlice()->GetPos();
     }
     if (coronalSnc->GetCreatedWorldGeometry())
     {
       unsigned pos = coronalSnc->GetSlice()->GetPos();
       coronalSnc->SelectSliceByPoint(selectedPosition);
-      m_SncSliceHasChanged[CORONAL] = m_SncSliceHasChanged[CORONAL] || pos != coronalSnc->GetSlice()->GetPos();
+      m_SelectedSliceHasChanged[CORONAL] = m_SelectedSliceHasChanged[CORONAL] || pos != coronalSnc->GetSlice()->GetPos();
     }
 
     this->BlockDisplayEvents(displayEventsWereBlocked);
@@ -1957,7 +1954,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
   {
     this->UpdateCursorPosition(AXIAL);
 
-    if (m_SncSliceHasChanged[AXIAL])
+    if (m_SelectedSliceHasChanged[AXIAL])
     {
       this->UpdateCursorPosition(CORONAL);
 
@@ -1972,7 +1969,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
       }
     }
 
-    if (m_SncSliceHasChanged[SAGITTAL])
+    if (m_SelectedSliceHasChanged[SAGITTAL])
     {
       if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
       {
@@ -1985,7 +1982,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
       }
     }
 
-    if (m_SncSliceHasChanged[CORONAL])
+    if (m_SelectedSliceHasChanged[CORONAL])
     {
       if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
       {
@@ -2002,7 +1999,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
   {
     this->UpdateCursorPosition(SAGITTAL);
 
-    if (m_SncSliceHasChanged[SAGITTAL])
+    if (m_SelectedSliceHasChanged[SAGITTAL])
     {
       this->UpdateCursorPosition(CORONAL);
 
@@ -2017,7 +2014,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
       }
     }
 
-    if (m_SncSliceHasChanged[AXIAL])
+    if (m_SelectedSliceHasChanged[AXIAL])
     {
       if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
       {
@@ -2030,7 +2027,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
       }
     }
 
-    if (m_SncSliceHasChanged[CORONAL])
+    if (m_SelectedSliceHasChanged[CORONAL])
     {
       if (m_CursorPositionBinding && m_CursorCoronalPositionsAreBound)
       {
@@ -2047,13 +2044,13 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
   {
     this->UpdateCursorPosition(CORONAL);
 
-    if (m_SncSliceHasChanged[CORONAL])
+    if (m_SelectedSliceHasChanged[CORONAL])
     {
       this->UpdateCursorPosition(AXIAL);
       this->UpdateCursorPosition(SAGITTAL);
     }
 
-    if (m_SncSliceHasChanged[AXIAL])
+    if (m_SelectedSliceHasChanged[AXIAL])
     {
       if (m_CursorPositionBinding && m_CursorAxialPositionsAreBound)
       {
@@ -2066,7 +2063,7 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions()
       }
     }
 
-    if (m_SncSliceHasChanged[SAGITTAL])
+    if (m_SelectedSliceHasChanged[SAGITTAL])
     {
       if (m_CursorPositionBinding && m_CursorSagittalPositionsAreBound)
       {
@@ -2451,11 +2448,12 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
         emit SelectedRenderWindowChanged(m_SelectedWindowIndex);
       }
-      for (unsigned i = 0; i < 3; ++i)
+
+      if (m_GeometryHasChanged)
       {
-        if (m_SncGeometryHasChanged[i])
+        m_GeometryHasChanged = false;
+        for (unsigned i = 0; i < 3; ++i)
         {
-          m_SncGeometryHasChanged[i] = false;
           if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
           {
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
@@ -2467,9 +2465,13 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
           this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockProcessingSncSignals = false;
         }
-        if (m_SncTimeHasChanged[i])
+      }
+
+      if (m_TimeStepHasChanged)
+      {
+        m_TimeStepHasChanged = false;
+        for (unsigned i = 0; i < 3; ++i)
         {
-          m_SncTimeHasChanged[i] = false;
           if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
           {
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
@@ -2481,9 +2483,15 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
           this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockProcessingSncSignals = false;
         }
-        if (m_SncSliceHasChanged[i])
+      }
+
+      bool selectedPositionHasChanged = false;
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (m_SelectedSliceHasChanged[i])
         {
-          m_SncSliceHasChanged[i] = false;
+          selectedPositionHasChanged = true;
+          m_SelectedSliceHasChanged[i] = false;
           if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
           {
             m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
@@ -2496,17 +2504,8 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
           m_BlockProcessingSncSignals = false;
         }
       }
-      if (m_SelectedPositionHasChanged)
+      if (selectedPositionHasChanged)
       {
-        m_SelectedPositionHasChanged = false;
-        for (unsigned i = 0; i < 4; ++i)
-        {
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
-        }
         emit SelectedPositionChanged(m_SelectedPosition);
       }
       for (unsigned i = 0; i < 3; ++i)
