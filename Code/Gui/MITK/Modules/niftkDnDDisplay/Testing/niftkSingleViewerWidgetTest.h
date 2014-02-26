@@ -183,6 +183,15 @@ private slots:
   /// \brief Test select position through SNC.
   void testSelectPositionThroughSliceNavigationController();
 
+  /// \brief Test the cursor position binding.
+  void testCursorPositionBinding();
+
+  /// \brief Test the scale factor binding.
+  void testScaleFactorBinding();
+
+  /// \brief Test the cursor position and scale factor binding together.
+  void testCursorPositionAndScaleFactorBinding();
+
 private:
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);

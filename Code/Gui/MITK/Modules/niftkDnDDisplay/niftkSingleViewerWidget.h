@@ -373,14 +373,17 @@ protected:
 
 protected slots:
 
+  /// \brief Called when the selected render window has changed.
+  virtual void OnSelectedRenderWindowChanged(int orientation);
+
   /// \brief Called when the selected position has changed.
   virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
 
   /// \brief Called when the cursor position has changed.
-  virtual void OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition);
+  virtual void OnCursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition);
 
   /// \brief Called when the scale factor has changed.
-  virtual void OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor);
+  virtual void OnScaleFactorChanged(int orientation, double scaleFactor);
 
   /// \brief Called when the cursor position binding has changed.
   virtual void OnCursorPositionBindingChanged();
@@ -412,7 +415,6 @@ private:
   double m_MaximumMagnification;         // Passed in as constructor arguments, so this class unaware of where it came from.
 
   WindowLayout m_WindowLayout;
-  MIDASOrientation m_Orientation;
 
   /// \brief Stores the selected point per window layout. Two for each window layout. Unbound, then bound, alternatingly.
   mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];

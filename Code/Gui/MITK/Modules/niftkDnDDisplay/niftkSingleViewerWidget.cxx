@@ -38,7 +38,6 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_MinimumMagnification(-5.0)
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_Orientation(MIDAS_ORIENTATION_UNKNOWN)
 , m_NavigationControllerEventListening(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
@@ -62,7 +61,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   }
 
   // Create the main niftkMultiWindowWidget
-  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager, m_DataStorage);
+  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->SetNavigationControllerEventListening(false);
@@ -79,10 +78,10 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)), SIGNAL(SelectedRenderWindowChanged(MIDASOrientation)));
+  this->connect(m_MultiWidget, SIGNAL(SelectedRenderWindowChanged(int)), SLOT(OnSelectedRenderWindowChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
-  this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(MIDASOrientation, const mitk::Vector2D&)));
-  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(MIDASOrientation, double)), SLOT(OnScaleFactorChanged(MIDASOrientation, double)));
+  this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
+  this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionBindingChanged()), SLOT(OnCursorPositionBindingChanged()));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorBindingChanged()), SLOT(OnScaleFactorBindingChanged()));
 
@@ -124,6 +123,13 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, st
 
 
 //-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int windowIndex)
+{
+  emit SelectedRenderWindowChanged(MIDASOrientation(windowIndex));
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
   /// A double click can result in 0, 1 or 2 SelectedPositionChanged events, depending on how many
@@ -142,7 +148,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientation, const mitk::Vector2D& cursorPosition)
+void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
   /// A double click can result in up to six CursorPositionChanged events, depending on how many
   /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
@@ -156,14 +162,14 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(MIDASOrientation orientati
   m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
   m_LastCursorPositionTimes.push_back(QTime::currentTime());
 
-  emit CursorPositionChanged(this, orientation, cursorPosition);
+  emit CursorPositionChanged(this, MIDASOrientation(windowIndex), cursorPosition);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorChanged(MIDASOrientation orientation, double scaleFactor)
+void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  emit ScaleFactorChanged(this, orientation, scaleFactor);
+  emit ScaleFactorChanged(this, MIDASOrientation(windowIndex), scaleFactor);
 }
 
 
@@ -359,7 +365,23 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 //-----------------------------------------------------------------------------
 MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
-  return m_MultiWidget->GetOrientation();
+  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+
+  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
+  if (selectedRenderWindow == this->GetAxialWindow())
+  {
+    orientation = MIDAS_ORIENTATION_AXIAL;
+  }
+  else if (selectedRenderWindow == this->GetSagittalWindow())
+  {
+    orientation = MIDAS_ORIENTATION_SAGITTAL;
+  }
+  else if (selectedRenderWindow == this->GetCoronalWindow())
+  {
+    orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+
+  return orientation;
 }
 
 
@@ -499,7 +521,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
   if (!m_IsBoundGeometryActive)
   {
-    m_MultiWidget->SetGeometry(timeGeometry);
+    m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -538,14 +560,14 @@ mitk::TimeGeometry::Pointer niftkSingleViewerWidget::GetGeometry()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer geometry)
+void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeGeometry)
 {
-  assert(geometry);
-  m_BoundGeometry = geometry;
+  assert(timeGeometry);
+  m_BoundGeometry = timeGeometry;
 
   if (m_IsBoundGeometryActive)
   {
-    m_MultiWidget->SetGeometry(geometry);
+    m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
@@ -589,8 +611,8 @@ void niftkSingleViewerWidget::SetBoundGeometryActive(bool isBoundGeometryActive)
     return;
   }
 
-  mitk::TimeGeometry* geometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
-  m_MultiWidget->SetGeometry(geometry);
+  mitk::TimeGeometry* timeGeometry = isBoundGeometryActive ? m_BoundGeometry : m_Geometry;
+  m_MultiWidget->SetTimeGeometry(timeGeometry);
 
   m_IsBoundGeometryActive = isBoundGeometryActive;
   //  m_WindowLayout = WINDOW_LAYOUT_UNKNOWN;
@@ -671,8 +693,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     m_MultiWidget->update();
 
     // Now store the current window layout/orientation.
-    MIDASOrientation orientation = this->GetOrientation();
-    m_Orientation = orientation;
     m_WindowLayout = windowLayout;
     if (! ::IsSingleWindowLayout(windowLayout))
     {
@@ -726,11 +746,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     }
     else
     {
-      if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-      {
-        orientation = MIDAS_ORIENTATION_AXIAL; // somewhat arbitrary.
-      }
-
       /// If the positions are not remembered for each window layout,
       /// we reset them.
 //      if (!hasBeenInitialised)
