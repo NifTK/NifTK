@@ -366,7 +366,23 @@ bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWind
 //-----------------------------------------------------------------------------
 MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 {
-  return MIDASOrientation(m_MultiWidget->GetOrientation());
+  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+
+  QmitkRenderWindow* selectedRenderWindow = this->GetSelectedRenderWindow();
+  if (selectedRenderWindow == this->GetAxialWindow())
+  {
+    orientation = MIDAS_ORIENTATION_AXIAL;
+  }
+  else if (selectedRenderWindow == this->GetSagittalWindow())
+  {
+    orientation = MIDAS_ORIENTATION_SAGITTAL;
+  }
+  else if (selectedRenderWindow == this->GetCoronalWindow())
+  {
+    orientation = MIDAS_ORIENTATION_CORONAL;
+  }
+
+  return orientation;
 }
 
 

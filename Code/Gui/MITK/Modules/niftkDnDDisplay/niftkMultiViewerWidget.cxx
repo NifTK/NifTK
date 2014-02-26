@@ -787,7 +787,11 @@ void niftkMultiViewerWidget::OnSelectedPositionChanged(niftkSingleViewerWidget* 
     return;
   }
 
-  m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(viewer->GetOrientation()));
+  MIDASOrientation orientation = viewer->GetOrientation();
+  if (orientation != MIDAS_ORIENTATION_UNKNOWN)
+  {
+    m_ControlPanel->SetSelectedSlice(viewer->GetSelectedSlice(orientation));
+  }
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
