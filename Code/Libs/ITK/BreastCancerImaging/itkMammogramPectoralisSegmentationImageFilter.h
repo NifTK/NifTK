@@ -131,6 +131,7 @@ public:
   void SetVerboseOn( void ) { m_flgVerbose = true; }
   void SetVerboseOff( void ) { m_flgVerbose = false; }
 
+  TemplateImagePointer GetTemplateImage( void ) { return m_Template; }
 
 protected:
 
@@ -143,6 +144,7 @@ protected:
 
   InputImagePointer m_Image;
   MaskImagePointer m_Mask;
+  TemplateImagePointer m_Template;
 
   template<typename ShrinkImageType>
     typename ShrinkImageType::Pointer 
