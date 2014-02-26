@@ -175,8 +175,7 @@ void UltrasoundTransformAndImageMerger::Merge(
     std::cout << "Seq_Frame" << suffix.str() << "_FrameNumber = " << i << std::endl;
     std::cout << "Seq_Frame" << suffix.str() << "_UnfilteredTimestamp = " << i << std::endl;
     std::cout << "Seq_Frame" << suffix.str() << "_Timestamp = " << i << std::endl;
-    std::cout << "Seq_Frame" << suffix.str() << "_ToolToTrackerTransformTransformStatus = OK" << std::endl;
-    std::cout << "Seq_Frame" << suffix.str() << "_ToolToTrackerTransform =";
+    std::cout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransform =";
     for (int r = 0; r < 4; r++)
     {
       for (int c = 0; c < 4; c++)
@@ -185,6 +184,31 @@ void UltrasoundTransformAndImageMerger::Merge(
       }
     }
     std::cout << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_ProbeToTrackerTransformStatus = OK" << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_ReferenceToTrackerTransform =";
+    for (int r = 0; r < 4; r++)
+    {
+      for (int c = 0; c < 4; c++)
+      {
+        // Could put identity matrix here. We are not actually tracking a reference object.
+        // This is just so that I can get data into fCal.
+        std::cout << " " << matrices[i].at<double>(r, c);
+      }
+    }
+    std::cout << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_ReferenceToTrackerTransformStatus = OK" << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_StylusToTrackerTransform =";
+    for (int r = 0; r < 4; r++)
+    {
+      for (int c = 0; c < 4; c++)
+      {
+        // Could put identity matrix here. We are not actually tracking a stylus object.
+        // This is just so that I can get data into fCal.
+        std::cout << " " << matrices[i].at<double>(r, c);
+      }
+    }
+    std::cout << std::endl;
+    std::cout << "Seq_Frame" << suffix.str() << "_StylusToTrackerTransformStatus = OK" << std::endl;
   }
 }
 
