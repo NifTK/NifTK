@@ -19,6 +19,8 @@
 #include <mitkIDataStorageService.h>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageEditorInput.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkWorkbenchUtil.h>
 #include "QmitkThumbnailViewPreferencePage.h"
 
@@ -26,7 +28,8 @@ const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
 //-----------------------------------------------------------------------------
 ThumbnailView::ThumbnailView()
-: m_Controls(NULL)
+: m_FocusManagerObserverTag(-1)
+, m_Controls(NULL)
 {
 }
 
@@ -35,6 +38,13 @@ ThumbnailView::ThumbnailView()
 ThumbnailView::~ThumbnailView()
 {
   m_Controls->m_RenderWindow->Deactivated();
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL)
+  {
+    focusManager->RemoveObserver(m_FocusManagerObserverTag);
+    m_FocusManagerObserverTag = -1;
+  }
 
   if (m_Controls != NULL)
   {
@@ -60,12 +70,24 @@ void ThumbnailView::CreateQtPartControl( QWidget *parent )
 
     RetrievePreferenceValues();
 
+    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+    if (focusManager != NULL)
+    {
+      itk::SimpleMemberCommand<ThumbnailView>::Pointer onFocusChangedCommand =
+        itk::SimpleMemberCommand<ThumbnailView>::New();
+      onFocusChangedCommand->SetCallbackFunction( this, &ThumbnailView::OnFocusChanged );
+
+      m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+    }
+
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
     m_Controls->m_RenderWindow->SetDataStorage(dataStorage);
     m_Controls->m_RenderWindow->Activated();
     m_Controls->m_RenderWindow->SetDisplayInteractionsEnabled(true);
+
+    this->OnFocusChanged();
   }
 }
 
@@ -132,4 +154,25 @@ void ThumbnailView::RetrievePreferenceValues()
   m_Controls->m_RenderWindow->setBoundingBoxLineThickness(thickness);
   m_Controls->m_RenderWindow->setBoundingBoxOpacity(opacity);
   m_Controls->m_RenderWindow->setBoundingBoxLayer(layer);
+}
+
+
+//-----------------------------------------------------------------------------
+void ThumbnailView::OnFocusChanged()
+{
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (!focusManager)
+  {
+    return;
+  }
+
+  mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+  if (focusedRenderer == m_Controls->m_RenderWindow->GetRenderer()
+      || focusedRenderer.IsNull()
+      || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D)
+  {
+    return;
+  }
+
+  m_Controls->m_RenderWindow->TrackRenderer(focusedRenderer);
 }

@@ -17,14 +17,16 @@
 
 #include <niftkThumbnailExports.h>
 
-#include <QColor>
-#include <QmitkRenderWindow.h>
-#include <mitkDataStorage.h>
-#include <mitkDataNode.h>
 #include <mitkCuboid.h>
-#include <mitkDataStorageVisibilityTracker.h>
+#include <mitkDataNode.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <mitkDataNodeStringPropertyFilter.h>
+#include <mitkDataStorage.h>
+#include <mitkDataStorageVisibilityTracker.h>
+
+#include <QColor>
+
+#include <QmitkRenderWindow.h>
 
 #include "mitkThumbnailInteractor.h"
 
@@ -141,6 +143,10 @@ public:
   /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
   void NodeChangedProxy(const mitk::DataNode* node);
 
+  /// \brief Makes the thumbnail render window track the given renderer.
+  /// The renderer is supposed to come from the main display (aka. editor).
+  void TrackRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack);
+
 protected:
 
   /// \brief Called when a DataStorage Add event was emmitted and may be reimplemented by deriving classes.
@@ -150,9 +156,6 @@ protected:
   virtual void NodeChanged(const mitk::DataNode* node);
 
 private:
-
-  // Callback for when the focus changes, where we update the thumbnail view to the right window, then call OnWorldGeometryChanged(), UpdateBoundingBox() and OnVisibilityChanged().
-  void OnFocusChanged();
 
   // Callback for when the world geometry changes.
   void OnWorldGeometryChanged();
@@ -189,16 +192,13 @@ private:
   // If add=true will add the bounding box to data storage if it isn't already,
   // and if false will remove it if it isn't already removed.
   // If data storage is NULL, will silently do nothing.
-  void AddBoundingBoxToDataStorage(const bool &add);
+  void AddBoundingBoxToDataStorage(bool add);
 
   // Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
 
   // Internal method, so that any time we need the mitk::DataStorage we go via this method, which checks assert(m_DataStorage).
   mitk::DataStorage::Pointer GetDataStorage();
-
-  // Used for the mitkFocusManager to register callbacks to track the currently focus window.
-  unsigned long m_FocusManagerObserverTag;
 
   // Used for when the focused window world geometry changes
   unsigned long m_FocusedWindowWorldGeometryTag;

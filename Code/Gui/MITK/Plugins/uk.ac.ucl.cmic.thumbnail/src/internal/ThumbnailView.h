@@ -69,8 +69,15 @@ protected:
 
 private:
 
+  /// \brief Callback for when the focus changes.
+  /// It updates the thumbnail view to the right window.
+  void OnFocusChanged();
+
   /// \brief Retrieve's the pref values from preference service, and store locally.
   void RetrievePreferenceValues();
+
+  // Used for the mitkFocusManager to register callbacks to track the currently focus window.
+  unsigned long m_FocusManagerObserverTag;
 
   // All the controls for the main view part.
   Ui::ThumbnailViewControls *m_Controls;

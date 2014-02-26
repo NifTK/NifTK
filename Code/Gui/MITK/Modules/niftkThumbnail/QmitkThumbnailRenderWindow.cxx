@@ -38,7 +38,6 @@
 //-----------------------------------------------------------------------------
 QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent)
   : QmitkRenderWindow(parent)
-, m_FocusManagerObserverTag(-1)
 , m_FocusedWindowWorldGeometryTag(-1)
 , m_FocusedWindowDisplayGeometryTag(-1)
 , m_FocusedWindowSliceSelectorTag(-1)
@@ -184,7 +183,7 @@ bool QmitkThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(const bool &add)
+void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(bool add)
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   if (dataStorage.IsNotNull())
@@ -207,18 +206,7 @@ void QmitkThumbnailRenderWindow::AddBoundingBoxToDataStorage(const bool &add)
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Activated()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onFocusChangedCommand =
-      itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::New();
-    onFocusChangedCommand->SetCallbackFunction( this, &QmitkThumbnailRenderWindow::OnFocusChanged );
-
-    m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
-  }
-
   this->AddBoundingBoxToDataStorage(false);
-  this->OnFocusChanged();
 
   if (m_DataStorage.IsNotNull())
   {
@@ -234,13 +222,6 @@ void QmitkThumbnailRenderWindow::Activated()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::Deactivated()
 {
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
-  {
-    focusManager->RemoveObserver(m_FocusManagerObserverTag);
-    m_FocusManagerObserverTag = -1;
-  }
-
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkThumbnailRenderWindow, const mitk::DataNode*>
@@ -549,24 +530,10 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::OnFocusChanged()
+void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack)
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
   if (dataStorage.IsNull())
-  {
-    return;
-  }
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (!focusManager)
-  {
-    return;
-  }
-
-  mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
-  if (focusedRenderer == m_Renderer
-      || focusedRenderer.IsNull()
-      || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D)
   {
     return;
   }
@@ -575,14 +542,14 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
   this->RemoveObserversFromTrackedObjects();
 
   // Store pointers to the display and world geometry, and render window
-  m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(focusedRenderer->GetWorldGeometry());
-  m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(focusedRenderer->GetDisplayGeometry());
+  m_TrackedWorldGeometry = const_cast<mitk::Geometry3D*>(rendererToTrack->GetWorldGeometry());
+  m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(rendererToTrack->GetDisplayGeometry());
 
   if (m_TrackedWorldGeometry.IsNotNull()
       && m_TrackedDisplayGeometry.IsNotNull())
   {
-    m_TrackedRenderer = focusedRenderer;
-    m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(focusedRenderer.GetPointer()))->GetSliceNavigationController();
+    m_TrackedRenderer = rendererToTrack;
+    m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()))->GetSliceNavigationController();
 
     // Add Observers to track when these geometries change
     itk::SimpleMemberCommand<QmitkThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
@@ -618,9 +585,9 @@ void QmitkThumbnailRenderWindow::OnFocusChanged()
     this->OnDisplayGeometryChanged();
 
     // Setup the visibility tracker.
-    std::vector<mitk::BaseRenderer*> windowsToTrack;
-    windowsToTrack.push_back(const_cast<mitk::BaseRenderer*>(focusedRenderer.GetPointer()));
-    m_VisibilityTracker->SetRenderersToTrack(windowsToTrack);
+    std::vector<mitk::BaseRenderer*> renderersToTrack;
+    renderersToTrack.push_back(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
+    m_VisibilityTracker->SetRenderersToTrack(renderersToTrack);
     m_VisibilityTracker->OnPropertyChanged(); // force update
 
     // Get the box to update
