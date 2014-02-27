@@ -313,7 +313,7 @@ void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(int windo
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockProcessingSncSignals)
+  if (!m_BlockSncEvents)
   {
     this->OnSelectedPositionChanged(AXIAL);
   }
@@ -323,7 +323,7 @@ void niftkMultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geome
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockProcessingSncSignals)
+  if (!m_BlockSncEvents)
   {
     this->OnSelectedPositionChanged(SAGITTAL);
   }
@@ -333,7 +333,7 @@ void niftkMultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*ge
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
-  if (!m_BlockProcessingSncSignals)
+  if (!m_BlockSncEvents)
   {
     this->OnSelectedPositionChanged(CORONAL);
   }
@@ -2435,17 +2435,66 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
 
     if (!blocked)
     {
-      bool rendererUpdated[4] = {false, false, false, false};
+      bool rendererNeedsUpdate[4] = {false, false, false, false};
+
+      /// Updating state according to the recorded changes.
+
+      if (m_SelectedRenderWindowHasChanged)
+      {
+        m_SelectedRenderWindow->setFocus();
+        mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
+        rendererNeedsUpdate[m_SelectedWindowIndex] = true;
+      }
+
+      if (m_GeometryHasChanged || m_TimeStepHasChanged)
+      {
+        for (unsigned i = 0; i < 4; ++i)
+        {
+          rendererNeedsUpdate[i] = true;
+        }
+      }
+
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (m_SelectedSliceHasChanged[i])
+        {
+          rendererNeedsUpdate[i] = true;
+        }
+      }
+
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (m_CursorPositionHasChanged[i])
+        {
+          this->MoveToCursorPosition(i);
+          rendererNeedsUpdate[i] = true;
+        }
+      }
+
+      for (unsigned i = 0; i < 3; ++i)
+      {
+        if (m_ScaleFactorHasChanged[i])
+        {
+          this->ZoomAroundCursorPosition(i);
+          rendererNeedsUpdate[i] = true;
+        }
+      }
+
+      /// Updating render windows where necessary.
+
+      for (unsigned i = 0; i < 4; ++i)
+      {
+        if (m_RenderWindows[i]->isVisible() && rendererNeedsUpdate[i])
+        {
+          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+        }
+      }
+
+      /// Sending events and signals.
+
       if (m_SelectedRenderWindowHasChanged)
       {
         m_SelectedRenderWindowHasChanged = false;
-        if (m_RenderWindows[m_SelectedWindowIndex]->isVisible() && !rendererUpdated[m_SelectedWindowIndex])
-        {
-          m_RenderingManager->RequestUpdate(m_SelectedRenderWindow->GetRenderWindow());
-          rendererUpdated[m_SelectedWindowIndex] = true;
-        }
-        m_SelectedRenderWindow->setFocus();
-        mitk::GlobalInteraction::GetInstance()->SetFocus(m_SelectedRenderWindow->GetRenderer());
         emit SelectedRenderWindowChanged(m_SelectedWindowIndex);
       }
 
@@ -2454,34 +2503,24 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         m_GeometryHasChanged = false;
         for (unsigned i = 0; i < 3; ++i)
         {
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
-          m_BlockProcessingSncSignals = true;
+          m_BlockSncEvents = true;
           bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendCreatedWorldGeometry();
           this->BlockDisplayEvents(displayEventsWereBlocked);
-          m_BlockProcessingSncSignals = false;
+          m_BlockSncEvents = false;
         }
       }
 
       if (m_TimeStepHasChanged)
       {
         m_TimeStepHasChanged = false;
-        for (unsigned i = 0; i < 3; ++i)
+        for (unsigned i = 0; i < 4; ++i)
         {
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
-          m_BlockProcessingSncSignals = true;
+          m_BlockSncEvents = true;
           bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendTime();
           this->BlockDisplayEvents(displayEventsWereBlocked);
-          m_BlockProcessingSncSignals = false;
+          m_BlockSncEvents = false;
         }
       }
 
@@ -2492,61 +2531,48 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
         {
           selectedPositionHasChanged = true;
           m_SelectedSliceHasChanged[i] = false;
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
-          m_BlockProcessingSncSignals = true;
+          m_BlockSncEvents = true;
           bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
           m_RenderWindows[i]->GetSliceNavigationController()->SendSlice();
           this->BlockDisplayEvents(displayEventsWereBlocked);
-          m_BlockProcessingSncSignals = false;
+          m_BlockSncEvents = false;
         }
       }
       if (selectedPositionHasChanged)
       {
         emit SelectedPositionChanged(m_SelectedPosition);
       }
+
       for (unsigned i = 0; i < 3; ++i)
       {
         if (m_CursorPositionHasChanged[i])
         {
           m_CursorPositionHasChanged[i] = false;
-          this->MoveToCursorPosition(i);
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
           if (m_RenderWindows[i]->isVisible())
           {
             emit CursorPositionChanged(i, m_CursorPositions[i]);
           }
         }
       }
+
       for (unsigned i = 0; i < 3; ++i)
       {
         if (m_ScaleFactorHasChanged[i])
         {
           m_ScaleFactorHasChanged[i] = false;
-          this->ZoomAroundCursorPosition(i);
-          if (m_RenderWindows[i]->isVisible() && !rendererUpdated[i])
-          {
-            m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
-            rendererUpdated[i] = true;
-          }
           if (m_RenderWindows[i]->isVisible())
           {
             emit ScaleFactorChanged(i, m_ScaleFactors[i]);
           }
         }
       }
+
       if (m_CursorPositionBindingHasChanged)
       {
         m_CursorPositionBindingHasChanged = false;
         emit CursorPositionBindingChanged();
       }
+
       if (m_ScaleFactorBindingHasChanged)
       {
         m_ScaleFactorBindingHasChanged = false;

@@ -443,9 +443,9 @@ private:
   /// This should be set to true if an SNC has been changed internally from this viewer. This does not
   /// block the signals  the SNCs, only hinders processing them (and falling into an infinite recursion,
   /// eventually).
-  bool m_BlockProcessingSncSignals;
+  bool m_BlockSncEvents;
 
-  /// \brief Blocks sending signals by the slice navigation controller.
+  /// \brief Blocks the update of this widget.
   bool m_BlockUpdate;
 
   bool m_SelectedRenderWindowHasChanged;
