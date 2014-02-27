@@ -754,34 +754,54 @@ const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows(
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitToDisplay()
+void niftkMultiWindowWidget::FitRenderWindows()
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
-  double largestScaleFactor = -1.0;
-  int windowWithLargestScaleFactor = -1;
-
-  for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+  if (!m_ScaleFactorBinding)
   {
-    if (m_RenderWindows[windowIndex]->isVisible())
+    /// If the scale factors are not bound, we simply fit each 'world' into their window.
+    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
     {
-      mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-
-      if (!m_ScaleFactorBinding)
+      if (m_RenderWindows[windowIndex]->isVisible())
       {
-        /// If the scale factors are not bound, we simply fit each 'world' into their window.
-        bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-        displayGeometry->Fit();
-        this->BlockDisplayEvents(displayEventsWereBlocked);
-        m_ScaleFactors[windowIndex] = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-        m_ScaleFactorHasChanged[windowIndex] = true;
-        this->UpdateCursorPosition(windowIndex);
+        this->FitRenderWindow(windowIndex);
       }
-      else
+    }
+  }
+  else
+  {
+    /// If the scale factors are bound, first we find the window that requires the largest scaling...
+    double largestScaleFactor = -1.0;
+    int windowWithLargestScaleFactor = -1;
+
+    for (int windowIndex = 0; windowIndex < 3; ++windowIndex)
+    {
+      if (m_RenderWindows[windowIndex]->isVisible())
       {
-        /// If the scale factors are bound, first we find the window that requires the largest scaling...
-        double widthMmPerPx = displayGeometry->GetWorldGeometry()->GetParametricExtentInMM(0) / displayGeometry->GetDisplayWidth();
-        double heightMmPerPx = displayGeometry->GetWorldGeometry()->GetParametricExtentInMM(1) / displayGeometry->GetDisplayHeight();
+        int width = m_RenderWindowSizes[windowIndex][0];
+        int height = m_RenderWindowSizes[windowIndex][1];
+
+        double widthInMm = width;
+        double heightInMm = height;
+        if (windowIndex == AXIAL)
+        {
+          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+        }
+        else if (windowIndex == SAGITTAL)
+        {
+          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+        }
+        else if (windowIndex == CORONAL)
+        {
+          widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+          heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+        }
+
+        double widthMmPerPx = widthInMm / width;
+        double heightMmPerPx = heightInMm / height;
         if (widthMmPerPx > largestScaleFactor)
         {
           largestScaleFactor = widthMmPerPx;
@@ -794,35 +814,93 @@ void niftkMultiWindowWidget::FitToDisplay()
         }
       }
     }
-  }
 
-  if (m_ScaleFactorBinding && windowWithLargestScaleFactor != -1)
-  {
-    /// ... then call mitk::DisplayGeometry::Fit() for that window ...
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowWithLargestScaleFactor]->GetRenderer()->GetDisplayGeometry();
-    bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-    displayGeometry->Fit();
-    this->BlockDisplayEvents(displayEventsWereBlocked);
-    double largestScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
-    m_ScaleFactors[windowWithLargestScaleFactor] = largestScaleFactor;
-    m_ScaleFactorHasChanged[windowWithLargestScaleFactor] = true;
-    this->UpdateCursorPosition(windowWithLargestScaleFactor);
-
-    /// ... and finally, apply the same scale factor for the other render windows.
-    for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
+    /// ... then we 'fit' that window ...
+    if (windowWithLargestScaleFactor != -1)
     {
-      if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
+      this->FitRenderWindow(windowWithLargestScaleFactor);
+
+      /// ... and finally, apply the same scale factor for the other render windows.
+      for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
       {
-        mitk::Vector2D cursorPosition;
-        cursorPosition.Fill(0.5);
-        this->SetCursorPosition(otherWindowIndex, cursorPosition);
-        m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
-        m_ScaleFactorHasChanged[otherWindowIndex] = true;
+        if (otherWindowIndex != windowWithLargestScaleFactor && m_RenderWindows[otherWindowIndex]->isVisible())
+        {
+          mitk::Vector2D cursorPosition;
+          cursorPosition.Fill(0.5);
+          this->SetCursorPosition(otherWindowIndex, cursorPosition);
+          m_ScaleFactors[otherWindowIndex] = largestScaleFactor;
+          m_ScaleFactorHasChanged[otherWindowIndex] = true;
+        }
       }
     }
   }
 
   this->BlockUpdate(updateWasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
+{
+  bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+
+  int width = m_RenderWindowSizes[windowIndex][0];
+  int height = m_RenderWindowSizes[windowIndex][1];
+
+  int w = width;
+  int h = height;
+
+  double widthInMm = width;
+  double heightInMm = height;
+  if (windowIndex == AXIAL)
+  {
+    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+  }
+  else if (windowIndex == SAGITTAL)
+  {
+    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+  }
+  else if (windowIndex == CORONAL)
+  {
+    widthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    heightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+  }
+
+  double sfh = widthInMm / width;
+  double sfv = heightInMm / height;
+  double scaleFactor;
+  if (sfh > sfv)
+  {
+    h = static_cast<int>(heightInMm / sfh);
+    scaleFactor = sfh;
+  }
+  else
+  {
+    w = static_cast<int>(widthInMm / sfv);
+    scaleFactor = sfv;
+  }
+
+  /// TODO
+  /// The display geometry should not be manipulated here.
+  /// Here we should set the state of the viewer (e.g. m_CursorPositions)
+  /// and the display geometry should be set accordingly when the update
+  /// is unblocked (this->BlockUpdate(false)).
+
+  mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
+  displayGeometry->SetScaleFactor(scaleFactor);
+
+  mitk::Vector2D origin;
+  origin[0] = (w - width) / 2.0;
+  origin[1] = (h - height) / 2.0;
+  displayGeometry->SetOriginInMM(origin * scaleFactor);
+
+  m_ScaleFactors[windowIndex] = scaleFactor;
+  m_ScaleFactorHasChanged[windowIndex] = true;
+  this->UpdateCursorPosition(windowIndex);
+
+  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 
@@ -1402,10 +1480,13 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
 
+  // Call Qt update to try and make sure we are painted at the right size.
+  this->update();
+
   for (size_t i = 0; i < 3; ++i)
   {
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[i]->GetRenderer()->GetDisplayGeometry();
-    m_RenderWindowSizes[i] = displayGeometry->GetSizeInDisplayUnits();
+    m_RenderWindowSizes[i][0] = m_RenderWindows[i]->width();
+    m_RenderWindowSizes[i][1] = m_RenderWindows[i]->height();
   }
 
   this->BlockDisplayEvents(displayEventsWereBlocked);
