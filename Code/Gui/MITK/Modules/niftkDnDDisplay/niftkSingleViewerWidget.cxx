@@ -388,7 +388,7 @@ MIDASOrientation niftkSingleViewerWidget::GetOrientation() const
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::FitToDisplay()
 {
-  m_MultiWidget->FitToDisplay();
+  m_MultiWidget->FitRenderWindows();
 }
 
 
@@ -521,6 +521,8 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 
   if (!m_IsBoundGeometryActive)
   {
+    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+
     m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
@@ -545,6 +547,8 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
         m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
       }
     }
+
+    m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
 
   emit GeometryChanged(this, timeGeometry);
@@ -567,6 +571,8 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeG
 
   if (m_IsBoundGeometryActive)
   {
+    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+
     m_MultiWidget->SetTimeGeometry(timeGeometry);
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
@@ -591,6 +597,8 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeG
         m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
       }
     }
+
+    m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
 }
 
@@ -689,8 +697,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
 
     // This will initialise the whole QmitkStdMultiWidget according to the supplied geometry (normally an image).
     m_MultiWidget->SetWindowLayout(windowLayout);
-    // Call Qt update to try and make sure we are painted at the right size.
-    m_MultiWidget->update();
 
     // Now store the current window layout/orientation.
     m_WindowLayout = windowLayout;
@@ -757,7 +763,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
         }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
         {
-          m_MultiWidget->FitToDisplay();
+          m_MultiWidget->FitRenderWindows();
         }
 
         m_LastSelectedPositions.clear();

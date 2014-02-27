@@ -251,8 +251,11 @@ public:
   /// \brief Sets the magnification of a render window to the given value.
   void SetMagnification(int windowIndex, double magnification);
 
-  /// \brief Only to be used for Thumbnail mode, makes the displayed 2D geometry fit the display window.
-  void FitToDisplay();
+  /// \brief Makes the displayed 2D geometries fit the render windows.
+  void FitRenderWindows();
+
+  /// \brief Makes the displayed 2D geometry fit the given render window.
+  double FitRenderWindow(int windowIndex);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
