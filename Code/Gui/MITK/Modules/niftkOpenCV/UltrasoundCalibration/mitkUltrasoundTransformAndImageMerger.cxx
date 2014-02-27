@@ -45,6 +45,9 @@ void UltrasoundTransformAndImageMerger::Merge(
     const std::string& outputFileName
     )
 {
+  cv::Matx44d identityMatrix;
+  mitk::MakeIdentity(identityMatrix);
+
   std::vector< cv::Mat > matrices;
 
   std::vector<std::string> matrixFiles = niftk::GetFilesInDirectory(inputMatrixDirectory);
@@ -146,12 +149,14 @@ void UltrasoundTransformAndImageMerger::Merge(
   std::cout << "Written to " << outputFileName << std::endl;
   std::cout << "Extra header info required for .mhd:" << std::endl;
 
-  std::cout << "UltrasoundImageOrientation = MF" << std::endl;
+  std::cout << "UltrasoundImageOrientation = UF" << std::endl;
   std::cout << "UltrasoundImageType = BRIGHTNESS" << std::endl;
 
   std::string oneZero = "0";
   std::string twoZero = "00";
   std::string threeZero = "000";
+
+  std::cout.precision(10);
 
   for (unsigned int i = 0; i < images.size(); i++)
   {
@@ -190,9 +195,9 @@ void UltrasoundTransformAndImageMerger::Merge(
     {
       for (int c = 0; c < 4; c++)
       {
-        // Could put identity matrix here. We are not actually tracking a reference object.
+        // We are not actually tracking a reference object.
         // This is just so that I can get data into fCal.
-        std::cout << " " << matrices[i].at<double>(r, c);
+        std::cout << " " << identityMatrix(r, c);
       }
     }
     std::cout << std::endl;
@@ -202,9 +207,9 @@ void UltrasoundTransformAndImageMerger::Merge(
     {
       for (int c = 0; c < 4; c++)
       {
-        // Could put identity matrix here. We are not actually tracking a stylus object.
+        // We are not actually tracking a stylus object.
         // This is just so that I can get data into fCal.
-        std::cout << " " << matrices[i].at<double>(r, c);
+        std::cout << " " << identityMatrix(r, c);
       }
     }
     std::cout << std::endl;
