@@ -432,7 +432,6 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
 void QmitkThumbnailRenderWindow::NodeAdded( const mitk::DataNode* node)
 {
   this->UpdateSliceAndTimeStep();
-  this->OnDisplayGeometryChanged();
   this->UpdateBoundingBox();
 
   mitk::RenderingManager::GetInstance()->RequestUpdate(this->GetVtkRenderWindow());
@@ -582,7 +581,6 @@ void QmitkThumbnailRenderWindow::TrackRenderer(mitk::BaseRenderer::ConstPointer 
     }
 
     this->UpdateSliceAndTimeStep();
-    this->OnDisplayGeometryChanged();
 
     // Setup the visibility tracker.
     std::vector<mitk::BaseRenderer*> renderersToTrack;
