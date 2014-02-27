@@ -166,14 +166,10 @@ void ThumbnailView::OnFocusChanged()
     return;
   }
 
-  QmitkRenderWindow* mainWindow = this->GetRenderWindowPart()->GetActiveQmitkRenderWindow();
-  mitk::BaseRenderer* mainRenderer = mainWindow ? mainWindow->GetRenderer() : 0;
-
   mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
   if (focusedRenderer == m_Controls->m_RenderWindow->GetRenderer()
       || focusedRenderer.IsNull()
-      || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D
-      || focusedRenderer != mainRenderer)
+      || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D)
   {
     return;
   }
