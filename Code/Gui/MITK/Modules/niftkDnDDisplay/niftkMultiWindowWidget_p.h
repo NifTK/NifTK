@@ -443,16 +443,15 @@ private:
   /// This should be set to true if an SNC has been changed internally from this viewer. This does not
   /// block the signals  the SNCs, only hinders processing them (and falling into an infinite recursion,
   /// eventually).
-  bool m_BlockProcessingSncSignals;
+  bool m_BlockSncEvents;
 
-  /// \brief Blocks sending signals by the slice navigation controller.
+  /// \brief Blocks the update of this widget.
   bool m_BlockUpdate;
 
   bool m_SelectedRenderWindowHasChanged;
-  std::vector<bool> m_SncGeometryHasChanged;
-  std::vector<bool> m_SncTimeHasChanged;
-  std::vector<bool> m_SncSliceHasChanged;
-  bool m_SelectedPositionHasChanged;
+  bool m_GeometryHasChanged;
+  bool m_TimeStepHasChanged;
+  std::vector<bool> m_SelectedSliceHasChanged;
   std::vector<bool> m_CursorPositionHasChanged;
   std::vector<bool> m_ScaleFactorHasChanged;
   bool m_CursorPositionBindingHasChanged;
