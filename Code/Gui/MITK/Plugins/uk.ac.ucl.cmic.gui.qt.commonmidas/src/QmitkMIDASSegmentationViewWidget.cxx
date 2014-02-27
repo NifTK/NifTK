@@ -410,17 +410,17 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   mitk::SliceNavigationController* sagittalSnc = sagittalWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* coronalSnc = coronalWindow->GetSliceNavigationController();
 
-  if (m_MainAxialWindow && m_MainAxialWindow != mainAxialWindow)
+  if (m_MainAxialWindow)
   {
     m_MainAxialSnc->Disconnect(axialSnc);
     axialSnc->Disconnect(m_MainAxialSnc);
   }
-  if (m_MainSagittalWindow && m_MainSagittalWindow != mainSagittalWindow)
+  if (m_MainSagittalWindow)
   {
     m_MainSagittalSnc->Disconnect(sagittalSnc);
     sagittalSnc->Disconnect(m_MainSagittalSnc);
   }
-  if (m_MainCoronalWindow && m_MainCoronalWindow != mainCoronalWindow)
+  if (m_MainCoronalWindow)
   {
     m_MainCoronalSnc->Disconnect(coronalSnc);
     coronalSnc->Disconnect(m_MainCoronalSnc);
@@ -486,19 +486,19 @@ void QmitkMIDASSegmentationViewWidget::SetMainWindow(QmitkRenderWindow* mainWind
   mitk::SliceNavigationController* mainSagittalSnc = mainSagittalWindow->GetSliceNavigationController();
   mitk::SliceNavigationController* mainCoronalSnc = mainCoronalWindow->GetSliceNavigationController();
 
-  if (mainAxialWindow && mainAxialWindow != m_MainAxialWindow)
+  if (mainAxialWindow)
   {
     mainAxialSnc->ConnectGeometryEvents(axialSnc);
     axialSnc->ConnectGeometryEvents(mainAxialSnc);
     this->connect(mainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
-  if (mainSagittalWindow && mainSagittalWindow != m_MainSagittalWindow)
+  if (mainSagittalWindow)
   {
     mainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
     sagittalSnc->ConnectGeometryEvents(mainSagittalSnc);
     this->connect(mainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
   }
-  if (mainCoronalWindow && mainCoronalWindow != m_MainCoronalWindow)
+  if (mainCoronalWindow)
   {
     mainCoronalSnc->ConnectGeometryEvents(coronalSnc);
     coronalSnc->ConnectGeometryEvents(mainCoronalSnc);
