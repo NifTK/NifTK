@@ -765,11 +765,7 @@ void niftkMultiWindowWidget::FitRenderWindows()
     {
       if (m_RenderWindows[windowIndex]->isVisible())
       {
-        double scaleFactor = this->FitRenderWindow(windowIndex);
-
-        m_ScaleFactors[windowIndex] = scaleFactor;
-        m_ScaleFactorHasChanged[windowIndex] = true;
-        this->UpdateCursorPosition(windowIndex);
+        this->FitRenderWindow(windowIndex);
       }
     }
   }
@@ -822,10 +818,7 @@ void niftkMultiWindowWidget::FitRenderWindows()
     /// ... then we 'fit' that window ...
     if (windowWithLargestScaleFactor != -1)
     {
-      double largestScaleFactor = this->FitRenderWindow(windowWithLargestScaleFactor);
-      m_ScaleFactors[windowWithLargestScaleFactor] = largestScaleFactor;
-      m_ScaleFactorHasChanged[windowWithLargestScaleFactor] = true;
-      this->UpdateCursorPosition(windowWithLargestScaleFactor);
+      this->FitRenderWindow(windowWithLargestScaleFactor);
 
       /// ... and finally, apply the same scale factor for the other render windows.
       for (int otherWindowIndex = 0; otherWindowIndex < 3; ++otherWindowIndex)
@@ -847,7 +840,7 @@ void niftkMultiWindowWidget::FitRenderWindows()
 
 
 //-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
+void niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
 {
   bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
@@ -889,6 +882,12 @@ double niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
     scaleFactor = sfv;
   }
 
+  /// TODO
+  /// The display geometry should not be manipulated here.
+  /// Here we should set the state of the viewer (e.g. m_CursorPositions)
+  /// and the display geometry should be set accordingly when the update
+  /// is unblocked (this->BlockUpdate(false)).
+
   mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
   displayGeometry->SetScaleFactor(scaleFactor);
 
@@ -897,9 +896,11 @@ double niftkMultiWindowWidget::FitRenderWindow(int windowIndex)
   origin[1] = (h - height) / 2.0;
   displayGeometry->SetOriginInMM(origin * scaleFactor);
 
-  this->BlockDisplayEvents(displayEventsWereBlocked);
+  m_ScaleFactors[windowIndex] = scaleFactor;
+  m_ScaleFactorHasChanged[windowIndex] = true;
+  this->UpdateCursorPosition(windowIndex);
 
-  return scaleFactor;
+  this->BlockDisplayEvents(displayEventsWereBlocked);
 }
 
 

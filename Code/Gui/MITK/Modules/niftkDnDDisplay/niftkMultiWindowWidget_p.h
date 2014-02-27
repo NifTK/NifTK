@@ -255,7 +255,7 @@ public:
   void FitRenderWindows();
 
   /// \brief Makes the displayed 2D geometry fit the given render window.
-  double FitRenderWindow(int windowIndex);
+  void FitRenderWindow(int windowIndex);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
   void SetRendererSpecificVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
