@@ -107,18 +107,8 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes)
 {
-  // We have to block the display geometry events until the event is processed.
-  // Therefore, it is important that the event is processed synchronuously, right after
-  // emitting the signal. To achieve this, the signal has to be directly connected to the
-  // slots (Qt::DirectConnection). Another way of achieving this could be calling
-  // QApplication::processEvents() but that would process other pending signals as well
-  // what we might not want.
-  bool displayEventsWereBlocked = m_MultiWidget->BlockDisplayEvents(true);
-  bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
-  m_MultiWidget->SetSelectedRenderWindow(renderWindow);
   emit NodesDropped(this, renderWindow, nodes);
-  m_MultiWidget->BlockUpdate(updateWasBlocked);
-  m_MultiWidget->BlockDisplayEvents(displayEventsWereBlocked);
+  m_MultiWidget->SetSelected(true);
 }
 
 
