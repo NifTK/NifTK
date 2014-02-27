@@ -181,7 +181,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
 
   // Default to unselected, so borders are off.
-  this->SetSelected(false);
+  this->DisableColoredRectangles();
 
   // Register to listen to SliceNavigators, slice changed events.
   itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onAxialSliceChangedCommand =
@@ -366,15 +366,31 @@ QColor niftkMultiWindowWidget::GetBackgroundColor() const
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetSelected(bool selected)
 {
-  m_IsSelected = selected;
+  if (selected != m_IsSelected)
+  {
+    m_IsSelected = selected;
 
-  if (selected)
-  {
-//    this->EnableColoredRectangles();
-  }
-  else
-  {
-    this->DisableColoredRectangles();
+    QmitkRenderWindow* selectedRenderWindow = 0;
+    if (selected)
+    {
+      if (m_RenderWindows[CORONAL]->isVisible())
+      {
+        selectedRenderWindow = m_RenderWindows[CORONAL];
+      }
+      else if (m_RenderWindows[SAGITTAL]->isVisible())
+      {
+        selectedRenderWindow = m_RenderWindows[SAGITTAL];
+      }
+      else if (m_RenderWindows[AXIAL]->isVisible())
+      {
+        selectedRenderWindow = m_RenderWindows[AXIAL];
+      }
+      else if (m_RenderWindows[THREE_D]->isVisible())
+      {
+        selectedRenderWindow = m_RenderWindows[THREE_D];
+      }
+    }
+    this->SetSelectedRenderWindow(selectedRenderWindow);
   }
 }
 
@@ -459,7 +475,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
     }
 
     m_IsSelected = m_SelectedRenderWindow != 0;
-    m_SelectedRenderWindowHasChanged = true;
+    m_SelectedRenderWindowHasChanged = m_IsSelected;
 
     this->BlockUpdate(updateWasBlocked);
   }
