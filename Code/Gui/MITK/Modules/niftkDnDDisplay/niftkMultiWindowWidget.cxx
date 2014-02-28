@@ -2321,15 +2321,15 @@ int niftkMultiWindowWidget::GetDominantAxis(int orientation) const
 
   if (orientation == AXIAL)
   {
-    axisWithLongerSide = m_MmPerVx[sagittalAxis] > m_MmPerVx[coronalAxis] ? sagittalAxis : coronalAxis;
+    axisWithLongerSide = m_MmPerVx[sagittalAxis] < m_MmPerVx[coronalAxis] ? sagittalAxis : coronalAxis;
   }
   else if (orientation == SAGITTAL)
   {
-    axisWithLongerSide = m_MmPerVx[axialAxis] > m_MmPerVx[coronalAxis] ? axialAxis : coronalAxis;
+    axisWithLongerSide = m_MmPerVx[axialAxis] < m_MmPerVx[coronalAxis] ? axialAxis : coronalAxis;
   }
   else if (orientation == CORONAL)
   {
-    axisWithLongerSide = m_MmPerVx[axialAxis] > m_MmPerVx[sagittalAxis] ? axialAxis : sagittalAxis;
+    axisWithLongerSide = m_MmPerVx[axialAxis] < m_MmPerVx[sagittalAxis] ? axialAxis : sagittalAxis;
   }
 
   return axisWithLongerSide;
