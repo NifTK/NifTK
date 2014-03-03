@@ -43,6 +43,17 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(MINGW)
 
+  if(DESIRED_QT_VERSION MATCHES 4) # current VTK package has a HARD Qt 4 dependency
+    list(APPEND additional_cmake_args
+        -DDESIRED_QT_VERSION:STRING=${DESIRED_QT_VERSION}
+        -DVTK_USE_GUISUPPORT:BOOL=ON
+        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
+        -DVTK_USE_QT:BOOL=ON
+        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DVTK_Group_Qt:BOOL=ON
+    )
+  endif()
+
   niftkMacroGetChecksum(NIFTK_CHECKSUM_VTK ${NIFTK_LOCATION_VTK})
 
   ExternalProject_Add(${proj}
@@ -53,7 +64,6 @@ if(NOT DEFINED VTK_DIR)
     URL ${NIFTK_LOCATION_VTK}
     URL_MD5 ${NIFTK_CHECKSUM_VTK}
     INSTALL_COMMAND ""
-    PATCH_COMMAND ${VTK_PATCH_COMMAND}
     CMAKE_GENERATOR ${GEN}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -62,16 +72,18 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_WRAP_JAVA:BOOL=OFF
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DVTK_USE_RPATH:BOOL=ON
-        -DVTK_USE_PARALLEL:BOOL=ON
-        -DVTK_USE_CHARTS:BOOL=ON
-        -DVTK_USE_QTCHARTS:BOOL=ON
-        -DVTK_USE_GEOVIS:BOOL=OFF
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=${VTK_USE_SYSTEM_FREETYPE}
-        -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
+        -DVTK_USE_GUISUPPORT:BOOL=ON
         -DVTK_LEGACY_REMOVE:BOOL=ON
+        -DModule_vtkTestingRendering:BOOL=ON
+        -DModule_vtkGUISupportQt:BOOL=ON
+        -DModule_vtkGUISupportQtWebkit:BOOL=ON
+        -DModule_vtkGUISupportQtSQL:BOOL=ON
+        -DModule_vtkRenderingQt:BOOL=ON
+        -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
-     DEPENDS ${proj_DEPENDENCIES}
+    DEPENDS ${proj_DEPENDENCIES}
     )
 
   set(VTK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
