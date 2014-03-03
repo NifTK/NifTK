@@ -13,5 +13,5 @@
 #============================================================================*/
 
 if(MITK_FOUND)
-  add_subdirectory(MITK)
+#  add_subdirectory(MITK)
 endif(MITK_FOUND)
