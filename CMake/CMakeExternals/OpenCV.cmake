@@ -30,6 +30,8 @@ if(BUILD_IGI)
   
   if(NOT DEFINED OpenCV_DIR)
   
+    set(OpenCV_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchOpenCV-2.4.6.1.cmake)
+
     niftkMacroGetChecksum(NIFTK_CHECKSUM_OPENCV ${NIFTK_LOCATION_OPENCV})
     
     ExternalProject_Add(${proj}
@@ -41,6 +43,7 @@ if(BUILD_IGI)
       URL_MD5 ${NIFTK_CHECKSUM_OPENCV}
       UPDATE_COMMAND  ""
       INSTALL_COMMAND ""
+      PATCH_COMMAND ${OpenCV_PATCH_COMMAND}
       CMAKE_GENERATOR ${GEN}
       CMAKE_CACHE_ARGS
       ${EP_COMMON_ARGS}
