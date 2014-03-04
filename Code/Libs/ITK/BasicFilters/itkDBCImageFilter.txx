@@ -21,7 +21,7 @@
 #include <itkSubtractImageFilter.h>
 #include <itkMedianImageFilter.h>
 #include <itkExpImageFilter.h>
-#include <itkDivideByConstantImageFilter.h>
+#include <itkDivideImageFilter.h>
 #include <itkMultiplyImageFilter.h>
 #include <itkDivideImageFilter.h>
 #include <itkImageFileWriter.h>
@@ -64,7 +64,7 @@ DBCImageFilter<TImageType, TMaskType>
   typedef SubtractImageFilter<TImageType, TImageType> SubtractImageFilterType; 
   typedef MedianImageFilter<TImageType, TImageType> MedianImageFilterType; 
   typedef ExpImageFilter<TImageType, TImageType> ExpImageFilterType; 
-  typedef DivideByConstantImageFilter<TImageType, typename TImageType::PixelType, TImageType> DivideByConstantImageFilterType; 
+  typedef DivideImageFilter<TImageType, typename TImageType::PixelType, TImageType> DivideByConstantImageFilterType;
   typedef MultiplyImageFilter<TImageType, TImageType> MultiplyImageFilterType; 
   typedef ImageDuplicator<TImageType> DuplicatorType; 
   typedef ImageFileWriter<TImageType> WriterType; 
