@@ -273,8 +273,12 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataPoints( nifti_image *con
 
         vtkSmartPointer<vtkPolyData> polydataCopy = vtkSmartPointer<vtkPolyData>::New();
         polydataCopy->DeepCopy( sphere->GetOutput() );
-        
+
+#if VTK_MAJOR_VERSION <= 5        
         appendFilter->AddInput( polydataCopy );
+#else
+        appendFilter->AddInputData( polydataCopy );
+#endif
         appendFilter->Update();
 
         index++;
@@ -407,7 +411,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataHedgehog( nifti_image *c
 
 
   vtkSmartPointer<vtkHedgeHog> hedgehog = vtkSmartPointer<vtkHedgeHog>::New();
+#if VTK_MAJOR_VERSION <= 5
   hedgehog->SetInput( sgrid );
+#else
+  hedgehog->SetInputData( sgrid );
+#endif
   hedgehog->SetScaleFactor( 1. );
 
   vtkSmartPointer<vtkPolyData> polyData = hedgehog->GetOutput();
@@ -550,7 +558,11 @@ vtkSmartPointer<vtkPolyData> F3DControlGridToVTKPolyDataVectorField( nifti_image
   sgrid->GetPointData()->SetVectors( displacements );
 
 
+#if VTK_MAJOR_VERSION <= 5
   glyphFilter->SetInputConnection( sgrid->GetProducerPort() );
+#else
+  glyphFilter->SetInputData( sgrid );
+#endif
   glyphFilter->Update();
 
   vtkSmartPointer<vtkPolyData> polyData = glyphFilter->GetOutput();
@@ -677,7 +689,11 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
 
   vtkSmartPointer<vtkStructuredGridGeometryFilter> structuredGridFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
 
+#if VTK_MAJOR_VERSION <= 5 
   structuredGridFilter->SetInput( sgrid );
+#else
+  structuredGridFilter->SetInputData( sgrid );
+#endif
 
   switch (plane )
   {
@@ -694,7 +710,11 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
     
@@ -713,7 +733,11 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
     
@@ -732,7 +756,11 @@ vtkSmartPointer<vtkPolyData> F3DDeformationToVTKPolyDataSurface( PlaneType plane
       structuredGridFilter->Update();
       polydataCopy->DeepCopy( structuredGridFilter->GetOutput() );
       
+#if VTK_MAJOR_VERSION <= 5 
       appendFilter->AddInput( polydataCopy );
+#else
+      appendFilter->AddInputData( polydataCopy );
+#endif
       appendFilter->Update();
     }
   }
