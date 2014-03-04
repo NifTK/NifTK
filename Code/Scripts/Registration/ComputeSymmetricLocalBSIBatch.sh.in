@@ -46,7 +46,7 @@ function Usage()
 {
 cat <<EOF
 
-This script is a wrapper which compute symmetric ventricular BSI.
+This script is a wrapper which compute symmetric local BSI.
 
 Usage: $0 input_file ss_atlas output_dir
 
@@ -72,6 +72,8 @@ Optional arguements:
                         8. Mutual Information
                         9. Normalized Mutual Information
   -pptol [float]      : stopping criteria for the powell optimization. [0.01]
+  -brain_reg_dir [dir]          : brain-to-brain reg results to be reused. All dof files will be copied to output dir.
+  -double_window [yes/no]       : double window or not [no].
   -local_region_search [yes/no] : large search space for local region registration [no]. Mainly for mirror BSI.
                           
 EOF
@@ -88,6 +90,8 @@ ajc="no"
 region="yes"
 pptol=0.01
 local_region_search="no"
+double_window="no"
+brain_reg_dir=""
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -139,6 +143,14 @@ do
       local_region_search=$2
       shift 1
       ;; 
+    -double_window)
+      double_window="$2"
+      shift 1
+      ;;
+    -brain_reg_dir)
+      brain_reg_dir="$2"
+      shift 1
+      ;;
     -*)
         Usage
       exitprog "Error: option $1 not recognised" 1
@@ -173,11 +185,11 @@ function iterate_through_input_file
     
     if [ ${do_or_check} == 1 ] 
     then 
-      echo ${script_dir}/ComputeSymmetricVentsBSI.sh \
+      echo ${script_dir}/ComputeSymmetricLocalBSI.sh \
            ${output_dir}/${output_format} \
            ${dilation} ${symmetric}  \
            ${dof} ${scaling_using_skull} ${similarity} ${ajc} \
-           ${pptol} ${region} ${local_region_search} ${ss_atlas} \
+           ${pptol} ${region} ${local_region_search} ${ss_atlas} ${double_window} \
            ${fixed_image} ${fixed_image_mask} ${moving_images_and_masks}  >> ${command_filename}
     else
       check_file_exists ${image} "no"
@@ -189,6 +201,12 @@ function iterate_through_input_file
 
 # Create output directory. 
 mkdir -p ${output_dir}
+
+# Reuse the brain-to-brain registraion results.
+if [ "${brain_reg_dir}" != "" ]
+then
+  cp ${brain_reg_dir}/*.dof ${output_dir}/.
+fi
 
 check_file_exists ${input_file} "no"
 dos_2_unix ${input_file}
