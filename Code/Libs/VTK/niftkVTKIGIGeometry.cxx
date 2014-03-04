@@ -22,9 +22,11 @@
 #include <vtkCylinderSource.h>
 #include <vtkLineSource.h>
 #include <vtkArcSource.h>
+#include <vtkVersion.h>
 
 #include <sstream>
 #include <cassert>
+
 namespace niftk
 { 
 //-----------------------------------------------------------------------------
@@ -68,9 +70,15 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string rigid
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(ireds);
   appenderer->AddInput(lensCowl);
   appenderer->AddInput(this->ConnectIREDs(axis));
+#else
+  appenderer->AddInputData(ireds);
+  appenderer->AddInputData(lensCowl);
+  appenderer->AddInputData(this->ConnectIREDs(axis));
+#endif
 
   //get the lens position
   return appenderer->GetOutput();
@@ -115,9 +123,15 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscopePolaris ( std::strin
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(ireds);
   appenderer->AddInput(lensCowl);
   appenderer->AddInput(this->ConnectIREDs(axis));
+#else
+  appenderer->AddInputData(ireds);
+  appenderer->AddInputData(lensCowl);
+  appenderer->AddInputData(this->ConnectIREDs(axis));
+#endif
 
   //get the lens position
   return appenderer->GetOutput();
@@ -147,10 +161,17 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(ireds);
   appenderer->AddInput(this->ConnectIREDs(positions, true));
   appenderer->AddInput(tipBall);
   appenderer->AddInput(this->ConnectIREDs(axis));
+#else
+  appenderer->AddInputData(ireds);
+  appenderer->AddInputData(this->ConnectIREDs(positions, true));
+  appenderer->AddInputData(tipBall);
+  appenderer->AddInputData(this->ConnectIREDs(axis));
+#endif
 
   //get the lens position
   return appenderer->GetOutput();
@@ -186,9 +207,15 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string 
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(ireds);
   appenderer->AddInput(tipBall);
   appenderer->AddInput(this->ConnectIREDs(axis));
+#else
+  appenderer->AddInputData(ireds);
+  appenderer->AddInputData(tipBall);
+  appenderer->AddInputData(this->ConnectIREDs(axis));
+#endif
 
   return appenderer->GetOutput();
 
@@ -348,11 +375,19 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLapLensAxes()
   YAxisRHC->SetPoint2(0,20,10);
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(ZAxis->GetOutput());
   appenderer->AddInput(XAxisLHC->GetOutput());
   appenderer->AddInput(XAxisRHC->GetOutput());
   appenderer->AddInput(YAxisLHC->GetOutput());
   appenderer->AddInput(YAxisRHC->GetOutput());
+#else
+  appenderer->AddInputData(ZAxis->GetOutput());
+  appenderer->AddInputData(XAxisLHC->GetOutput());
+  appenderer->AddInputData(XAxisRHC->GetOutput());
+  appenderer->AddInputData(YAxisLHC->GetOutput());
+  appenderer->AddInputData(YAxisRHC->GetOutput());
+#endif
   
   return appenderer->GetOutput();
 }
@@ -414,12 +449,21 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width)
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(topBar1->GetOutput());
   appenderer->AddInput(topBar2->GetOutput());
   appenderer->AddInput(neck->GetOutput());
   appenderer->AddInput(eye->GetOutput());
   appenderer->AddInput(leftEye->GetOutput());
   appenderer->AddInput(rightEye->GetOutput());
+#else
+  appenderer->AddInputData(topBar1->GetOutput());
+  appenderer->AddInputData(topBar2->GetOutput());
+  appenderer->AddInputData(neck->GetOutput());
+  appenderer->AddInputData(eye->GetOutput());
+  appenderer->AddInputData(leftEye->GetOutput());
+  appenderer->AddInputData(rightEye->GetOutput());
+#endif
 
   return appenderer->GetOutput();
 
@@ -464,12 +508,21 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string 
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
+#if VTK_MAJOR_VERSION <= 5
   appenderer->AddInput(body->GetOutput());
   appenderer->AddInput(cowl->GetOutput());
   appenderer->AddInput(transducer->GetOutput());
   appenderer->AddInput(projection1->GetOutput());
   appenderer->AddInput(projection2->GetOutput());
   appenderer->AddInput(projection3->GetOutput());
+#else
+  appenderer->AddInputData(body->GetOutput());
+  appenderer->AddInputData(cowl->GetOutput());
+  appenderer->AddInputData(transducer->GetOutput());
+  appenderer->AddInputData(projection1->GetOutput());
+  appenderer->AddInputData(projection2->GetOutput());
+  appenderer->AddInputData(projection3->GetOutput());
+#endif
 
   vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
   vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
@@ -530,7 +583,11 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeIREDs(std::vector < std::vector
     sphere->SetThetaResolution(ThetaRes);
     sphere->SetPhiResolution(PhiRes);
     sphere->SetCenter(IREDPositions[i][0],IREDPositions[i][1],IREDPositions[i][2]);
+#if VTK_MAJOR_VERSION <= 5
     appenderer->AddInput(sphere->GetOutput());
+#else
+    appenderer->AddInputData(sphere->GetOutput());
+#endif
   }
   return appenderer->GetOutput();
 }
@@ -574,7 +631,11 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
       vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
       join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
       join->SetPoint2 ( IREDPositions[i+1][0], IREDPositions[i+1][1], IREDPositions[i+1][2]);
+#if VTK_MAJOR_VERSION <= 5
       appenderer->AddInput(join->GetOutput());
+#else
+      appenderer->AddInputData(join->GetOutput());
+#endif
     }
   }
   else
@@ -598,10 +659,17 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
     join4->SetPoint1 ( IREDPositions[1][0], IREDPositions[1][1], IREDPositions[1][2]);
     join4->SetPoint2 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
       
+#if VTK_MAJOR_VERSION <= 5
     appenderer->AddInput(join1->GetOutput());
     appenderer->AddInput(join2->GetOutput());
     appenderer->AddInput(join3->GetOutput());
     appenderer->AddInput(join4->GetOutput());
+#else
+    appenderer->AddInputData(join1->GetOutput());
+    appenderer->AddInputData(join2->GetOutput());
+    appenderer->AddInputData(join3->GetOutput());
+    appenderer->AddInputData(join4->GetOutput());
+#endif
   }
   return appenderer->GetOutput();
 } 
