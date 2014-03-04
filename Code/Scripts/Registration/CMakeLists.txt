@@ -43,6 +43,8 @@ if(NOT WIN32)
     compute_symmetric_transform.sh
     compute_symmetric_transform_3.sh
     compute_symmetric_transform_n.sh
+    ComputeSymmetricBrainBSI.sh
+    ComputeSymmetricBrainBSIBatch.sh
   )
   foreach(script ${scripts})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
