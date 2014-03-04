@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_surfaceextractor)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE SURFACEEXTRACTOR_EXPORTS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDENCIES CTK MitkExt QmitkExt Segmentation
+  MODULE_DEPENDS CTK MitkExt QmitkExt Segmentation
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
