@@ -18,7 +18,7 @@ function Usage()
 {
 cat <<EOF
 
-This script is the working script which is called ComputeSymmetricBrainBSI.sh to perform symmetric brain BSI. Please use ComputeSymmetricBrainBSIBatch.sh.
+This script is the working script which is called ComputeSymmetricVentsBSI.sh to perform symmetric vents BSI. Please use ComputeSymmetricVentsBSIBatch.sh.
   
 EOF
 exit 127
