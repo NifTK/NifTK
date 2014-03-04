@@ -80,7 +80,7 @@ EOF
 exit 127
 }
 
-ndefargs=2
+ndefargs=3
 dilation=0
 symmetric="-symmetric sym_midway"
 scaling_using_skull="no"
