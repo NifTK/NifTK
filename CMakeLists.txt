@@ -1135,7 +1135,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICE
 # These represent the libraries that the apps, libraries and unit tests actually link against
 #############################################################################################
 
-set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIO vtkCommon vtkGraphics vtkRendering vtkHybrid )
+set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL)
 set(NIFTK_VTK_LIBS_WITH_QT vtkRendering QVTK)
 
 ######################################################################

@@ -15,9 +15,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(MEDIT_LIBS
-  vtkGraphics
-  vtkIO
-  vtkCommon
+  vtkIOCore
+  vtkCommonCore
 )
 
 if(VTK_FOUND)
