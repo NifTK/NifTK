@@ -528,10 +528,10 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     itLightBlob.Set( opts[3] );
 
     opts[4] = oneSqrtTwo*( gamma - lambda );
-    itDarkLine.Set( opts[4] );
+    itLightLine.Set( opts[4] );
 
     opts[5] = oneSqrtTwo*( gamma + lambda );
-    itLightLine.Set( opts[5] );
+    itDarkLine.Set( opts[5] );
 
     opts[6] = gamma;
     itSaddle.Set( opts[6] );
@@ -963,8 +963,8 @@ BasicImageFeaturesImageFilter<TInputImage,TOutputImage>
     case 1: { inputImage = m_ResponseSlope;     break; }
     case 2: { inputImage = m_ResponseDarkBlob;  break; }
     case 3: { inputImage = m_ResponseLightBlob; break; }
-    case 4: { inputImage = m_ResponseDarkLine;  break; }
-    case 5: { inputImage = m_ResponseLightLine; break; }
+    case 4: { inputImage = m_ResponseLightLine; break; }
+    case 5: { inputImage = m_ResponseDarkLine;  break; }
     case 6: { inputImage = m_ResponseSaddle;    break; }
       
     default : {
