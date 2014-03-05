@@ -15,15 +15,14 @@
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
   INCLUDE_DIRS Common DataSources OverlayEditor
-  DEPENDS MitkExt QmitkExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
+  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
+  PACKAGE_DEPENDS Qt4|QtGui QVTK CTK
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkIGIGui)
 endif()
 
-if(BUILD_TESTING)  
+if(BUILD_TESTING)
   add_subdirectory(Testing)
 endif()

@@ -17,7 +17,8 @@ project(uk_ac_ucl_cmic_dnddisplay)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE DNDDISPLAY_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS CTK MitkExt QmitkExt niftkCoreGui niftkDnDDisplay
+  PACKAGE_DEPENDS CTK
+  MODULE_DEPENDS MitkQtWidgetsExt niftkCoreGui niftkDnDDisplay
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

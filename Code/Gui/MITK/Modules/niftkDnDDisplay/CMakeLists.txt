@@ -15,9 +15,8 @@
 MITK_CREATE_MODULE(niftkDnDDisplay
   EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
   INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS Mitk Qmitk niftkCore
-  PACKAGE_DEPENDS QT QVTK CTK
-  QT_MODULE 
+  DEPENDS MitkCore MitkQtWidgets niftkCore
+  PACKAGE_DEPENDS Qt4|QtCore QVTK CTK
 )
 
 target_link_libraries(niftkDnDDisplay
