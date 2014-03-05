@@ -412,8 +412,8 @@ void GetCurrentTransformFromNode ( const mitk::DataNode::Pointer& node , vtkMatr
   }
 
   mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->Clone()->GetIndexToWorldTransform();
-  itk::Matrix<float, 3, 3>  matrix;
-  itk::Vector<float, 3> offset;
+  itk::Matrix<double, 3, 3>  matrix;
+  itk::Vector<double, 3> offset;
   matrix = affineTransform->GetMatrix();
   offset = affineTransform->GetOffset();
 

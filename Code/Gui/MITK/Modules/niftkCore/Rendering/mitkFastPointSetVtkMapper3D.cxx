@@ -146,7 +146,7 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
   }
 
   mitk::Color colour;
-  vtkFloatingPointType colourVtk[4]={1.0f, 1.0f, 1.0f,1.0f};
+  double colourVtk[4]={1.0f, 1.0f, 1.0f,1.0f};
 
   bool isSelected = false;
   bool gotSelected = dataNode->GetBoolProperty("selected", isSelected);
@@ -188,7 +188,7 @@ void FastPointSetVtkMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* render
       ls->m_CellArray->SetCells(numberOfPoints, ls->m_Indicies);
       ls->m_PolyData->SetPoints(ls->m_Points);
       ls->m_PolyData->SetVerts(ls->m_CellArray);
-      ls->m_PolyDataMapper->SetInputConnection(0, ls->m_PolyData->GetProducerPort());
+      ls->m_PolyDataMapper->SetInputDataObject(0, ls->m_PolyData);
       ls->m_Actor->SetMapper(ls->m_PolyDataMapper);
       ls->m_NumberOfPoints = numberOfPoints;
     }

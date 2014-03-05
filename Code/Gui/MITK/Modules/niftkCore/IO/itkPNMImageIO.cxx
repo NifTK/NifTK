@@ -283,7 +283,7 @@ void PNMImageIO::WriteSlice(const std::string & fileName, const void * buffer)
 
   vtkPNMWriter * pnmWriter = vtkPNMWriter::New();
   pnmWriter->SetFileName(fileName.c_str());
-  pnmWriter->SetInput(imageImport->GetOutput());
+  pnmWriter->SetInputDataObject(imageImport->GetOutputDataObject(0));
   pnmWriter->Update();
 
   pnmWriter->Delete();

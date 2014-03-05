@@ -2641,7 +2641,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   surfaceExtractor->SetValue(0, 1000.*finalSegmThreshold);
 
-  surfaceExtractor->SetInput((vtkDataObject *) convertITKtoVTK->GetOutput());
+  surfaceExtractor->SetInputDataObject((vtkDataObject *) convertITKtoVTK->GetOutputDataObject());
   pipeVTKPolyDataConnector = surfaceExtractor->GetOutput();
 
   if (flgVerbose) {
