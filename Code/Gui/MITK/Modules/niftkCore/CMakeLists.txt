@@ -27,7 +27,8 @@ endif()
 MITK_CREATE_MODULE(niftkCore
   EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
-  PACKAGE_DEPENDS ITK VTK
+  DEPENDS MitkCore
+  PACKAGE_DEPENDS ITK ITK|ITKIOTransformBase VTK
 )
 
 target_link_libraries(niftkCore
