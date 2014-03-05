@@ -994,7 +994,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(mitk::TimeGeometry* timeGeometry)
     // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
 
     mitk::AffineTransform3D::Pointer affineTransform = m_Geometry->GetIndexToWorldTransform();
-    itk::Matrix<float, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+    itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
     mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
     for (unsigned int i=0; i < 3; i++)
     {
