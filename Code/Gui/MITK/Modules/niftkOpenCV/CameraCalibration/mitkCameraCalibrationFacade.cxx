@@ -1144,7 +1144,10 @@ std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
     CvMat*& outputLeftCameraWorldPointsIn3D,
     CvMat*& outputLeftCameraWorldNormalsIn3D,
     CvMat*& output2DPointsLeft,
-    CvMat*& output2DPointsRight
+    CvMat*& output2DPointsRight,
+    const bool& cropPointsToScreen,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh, const double& cropValue
     )
 {
   if (   outputLeftCameraWorldPointsIn3D != NULL

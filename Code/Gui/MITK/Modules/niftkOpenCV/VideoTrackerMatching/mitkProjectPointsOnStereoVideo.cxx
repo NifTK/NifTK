@@ -256,6 +256,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
       leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
     
+      bool cropUndistortedPointsToScreen = true;
+      double cropValue = std::numeric_limits<double>::quiet_NaN();
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( leftCameraWorldPoints,leftCameraWorldNormals,
           leftCameraPositionToFocalPointUnitVector,
@@ -265,7 +267,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           outputLeftCameraWorldPointsIn3D,
           outputLeftCameraWorldNormalsIn3D,
           output2DPointsLeft,
-          output2DPointsRight);
+          output2DPointsRight,
+          cropUndistortedPointsToScreen , 
+          0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
       
       mitk::ProjectVisible3DWorldPointsToStereo2D
         ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
@@ -276,7 +280,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           classifierOutputLeftCameraWorldPointsIn3D,
           classifierOutputLeftCameraWorldNormalsIn3D,
           classifierOutput2DPointsLeft,
-          classifierOutput2DPointsRight);
+          classifierOutput2DPointsRight,
+          cropUndistortedPointsToScreen , 
+          0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
 
 
       std::vector < std::pair < cv::Point2d , cv::Point2d > > screenPoints;

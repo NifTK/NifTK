@@ -447,6 +447,10 @@ extern "C++" NIFTKOPENCV_EXPORT void Project3DModelPositionsToStereo2D(
  * \param outputLeftCameraWorldNormalsIn3D [nx3] newly created matrix, that the user must de-allocate, of 3D unit normals that were actually visible.
  * \param output2DPointsLeft [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in left camera
  * \param output2DPointsRight [nx3] newly created matrix, that the user must de-allocate of the 2D pixel location in right camera
+ * \param cropPointsToScreen optionally you can crop the output points to only use points that 
+ * fit with set limits. This is useful if it possible to pass very large valued input points
+ * as in this situation the underlying cv::undistortPoints will return the image principal point.
+ * With this parameter set the cropValue will be returned instead.
  */
 extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToStereo2D(
   const CvMat& leftCameraWorldPointsIn3D,
@@ -461,7 +465,10 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector<int> ProjectVisible3DWorldPointsToSt
   CvMat*& outputLeftCameraWorldPointsIn3D,
   CvMat*& outputLeftCameraWorldNormalsIn3D,
   CvMat*& output2DPointsLeft,
-  CvMat*& output2DPointsRight
+  CvMat*& output2DPointsRight,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
