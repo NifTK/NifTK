@@ -792,8 +792,16 @@ if(VTK_FOUND)
   include(${VTK_USE_FILE})
 endif(VTK_FOUND)
 
-
 ######################################################################
+# Find GDCM. ITK is built with GDCM, so GDCM is effectively mandatory.
+######################################################################
+find_package(GDCM PATHS ${GDCM_DIR} REQUIRED)
+if(GDCM_FOUND)
+  message("Found GDCM")
+  list(APPEND NIFTK_INCLUDE_DIRS_BUILD_TREE ${GDCM_INCLUDE_DIRS})
+  link_directories(${GDCM_LIBRARY_DIRS})
+endif()
+
 # Find OpenCV.
 ######################################################################
 if(BUILD_IGI)
