@@ -932,6 +932,7 @@ endif()
 ######################################################################
 
 if(BUILD_RTK)
+  find_package(RTK)
   if(RTK_FOUND)
     message("Found RTK")
     include(${RTK_USE_FILE})
