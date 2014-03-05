@@ -14,8 +14,7 @@
 
 #include "XnatBrowserWidget.h"
 
-#include <ctkXnatConnection.h>
-#include <ctkXnatConnectionFactory.h>
+#include <ctkXnatSession.h>
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
 #include <ctkXnatReconstructionResource.h>
@@ -44,7 +43,7 @@ class XnatBrowserWidgetPrivate
 public:
   ctkXnatSettings* settings;
 
-  ctkXnatConnection* connection;
+  ctkXnatSession* connection;
   XnatDownloadManager* downloadManager;
 
   QAction* downloadAction;
@@ -167,7 +166,7 @@ void XnatBrowserWidget::loginXnat()
   Q_D(XnatBrowserWidget);
 
   // show dialog for user to login to XNAT
-  ctkXnatLoginDialog* loginDialog = new ctkXnatLoginDialog(new ctkXnatConnectionFactory());
+  ctkXnatLoginDialog* loginDialog = new ctkXnatLoginDialog();
   loginDialog->setSettings(d->settings);
   if (loginDialog->exec())
   {
@@ -178,7 +177,7 @@ void XnatBrowserWidget::loginXnat()
       d->connection = 0;
     }
     // get connection object
-    d->connection = loginDialog->getConnection();
+    d->connection = loginDialog->session();
 
     ui->xnatTreeView->initialize(d->connection);
 
@@ -207,7 +206,7 @@ void XnatBrowserWidget::importFile()
 
   // download file
   QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
-  QString tempWorkDirectory = d->settings->getWorkSubdirectory();
+  QString tempWorkDirectory = d->settings->workSubdirectory();
   d->downloadManager->silentlyDownloadFile(xnatFileNameTemp, tempWorkDirectory);
 
   // create list of files to open
@@ -269,7 +268,7 @@ void XnatBrowserWidget::importFiles()
 
   // download file
 //  QString xnatFileNameTemp = QFileInfo(xnatFilename).fileName();
-  QString tempWorkDirectory = d->settings->getWorkSubdirectory();
+  QString tempWorkDirectory = d->settings->workSubdirectory();
   d->downloadManager->silentlyDownloadAllFiles(tempWorkDirectory);
 
   // create list of files to open
@@ -322,11 +321,13 @@ void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QString
 
 void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
-  const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
+  const ctkXnatObject* object = ui->xnatTreeView->xnatObject(index);
 
-  ui->downloadButton->setEnabled(object->isFile());
+  /// TODO Temporarily disabled because of the MITK upgrade.
+//  ui->downloadButton->setEnabled(object->isFile());
   ui->downloadAllButton->setEnabled(this->holdsFiles(object));
-  ui->importButton->setEnabled(object->isFile());
+  /// TODO Temporarily disabled because of the MITK upgrade.
+//  ui->importButton->setEnabled(object->isFile());
   ui->importAllButton->setEnabled(this->holdsFiles(object));
 }
 
@@ -337,9 +338,10 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   const QModelIndex& index = ui->xnatTreeView->indexAt(position);
   if ( index.isValid() )
   {
-    const ctkXnatObject::Pointer object = ui->xnatTreeView->getObject(index);
+    const ctkXnatObject* object = ui->xnatTreeView->xnatObject(index);
     QList<QAction*> actions;
-    if ( object->isFile() )
+    /// TODO Temporarily disabled because of the MITK upgrade.
+//    if ( object->isFile() )
     {
       actions.append(d->downloadAction);
     }
@@ -348,7 +350,8 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
         actions.append(d->downloadAllAction);
         actions.append(d->importAllAction);
     }
-    if ( object->isFile() )
+    /// TODO Temporarily disabled because of the MITK upgrade.
+//    if ( object->isFile() )
     {
       actions.append(d->importAction);
     }
@@ -359,10 +362,10 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   }
 }
 
-bool XnatBrowserWidget::holdsFiles(const ctkXnatObject::Pointer xnatObject) const
+bool XnatBrowserWidget::holdsFiles(const ctkXnatObject* xnatObject) const
 {
-  if (dynamic_cast<ctkXnatScanResource*>(xnatObject.data())
-      || dynamic_cast<ctkXnatReconstructionResource*>(xnatObject.data()))
+  if (dynamic_cast<const ctkXnatScanResource*>(xnatObject)
+      || dynamic_cast<const ctkXnatReconstructionResource*>(xnatObject))
   {
     return true;
   }

@@ -12,7 +12,7 @@
 #include <ctkXnatTreeModel.h>
 #include <ctkXnatSettings.h>
 
-#include <JlCompress.h>
+//#include <JlCompress.h>
 
 #include "XnatDownloadDialog.h"
 #include "XnatTreeView.h"
@@ -69,7 +69,7 @@ void XnatDownloadManager::downloadFile()
 
   d->xnatFileName = QFileInfo(fileName).fileName();
 
-  d->currDir = d->settings->getDefaultDirectory();
+  d->currDir = d->settings->defaultDirectory();
 
   QString caption = tr("Save Downloaded File");
   QString dir = QFileInfo(d->currDir, d->xnatFileName).absoluteFilePath();
@@ -224,7 +224,7 @@ void XnatDownloadManager::downloadAllFiles()
   // download files
 
   // initialize current directory
-  d->currDir = d->settings->getDefaultDirectory();
+  d->currDir = d->settings->defaultDirectory();
 
   // get output directory from user
   QString outputDir = QFileDialog::getExistingDirectory(d->xnatTreeView, tr("Save Downloaded Files"), d->currDir);
@@ -468,7 +468,9 @@ void XnatDownloadManager::unzipData()
   }
 
   // unzip downloaded file
-  QStringList files = JlCompress::extractDir(d->zipFileName, d->currDir);
+  // TODO Temporarily disabled because of the MITK upgrade.
+//  QStringList files = JlCompress::extractDir(d->zipFileName, d->currDir);
+  QStringList files;
 
   // close dialog
   d->downloadDialog->close();
