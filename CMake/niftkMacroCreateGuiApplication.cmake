@@ -57,8 +57,13 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${NiftyLink_LIBRARY_DIRS}
     ${Boost_LIBRARY_DIRS}
     ${aruco_DIR}/lib
-    ${apriltags_LIBRARY_DIRS}
   )
+
+  # FIXME
+  if(BUILD_IGI)
+    include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
+    list(APPEND _library_dirs ${NiftyLink_LIBRARY_DIRS})
+  endif()
 
   # FIXME
   # Temporary workaround for CTK bug of not exposing external project library dirs.
