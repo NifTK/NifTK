@@ -55,32 +55,33 @@ public:
   /// \see mitk::Tool::GetXPM()
   virtual const char** GetXPM() const;
 
-  /// \brief Get the Cursor size, default 0.5.
-  itkGetConstMacro(CursorSize, double);
+  /// \brief Gets the cursor size.
+  /// Default size is 0.5.
+  double GetCursorSize() const;
 
-  /// \brief Set the cursor size, default 0.5.
+  /// \brief Sets the cursor size.
   void SetCursorSize(double cursorSize);
 
   /// \brief Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<double> CursorSizeChanged;
 
   /// \brief Start drawing a line at the given mouse point.
-  virtual bool OnLeftMousePressed  (Action* action, const StateEvent* stateEvent);
+  virtual bool OnLeftMousePressed(Action* action, const StateEvent* stateEvent);
 
   /// \brief Continue drawing a line.
-  virtual bool OnLeftMouseMoved    (Action* action, const StateEvent* stateEvent);
+  virtual bool OnLeftMouseMoved(Action* action, const StateEvent* stateEvent);
 
   /// \brief Finish drawing a line.
-  virtual bool OnLeftMouseReleased (Action* action, const StateEvent* stateEvent);
+  virtual bool OnLeftMouseReleased(Action* action, const StateEvent* stateEvent);
 
   /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
   virtual bool OnMiddleMousePressed(Action* action, const StateEvent* stateEvent);
 
   /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
-  virtual bool OnMiddleMouseMoved  (Action* action, const StateEvent* stateEvent);
+  virtual bool OnMiddleMouseMoved(Action* action, const StateEvent* stateEvent);
 
   /// \brief Finish editing.
-  virtual bool OnMiddleMouseReleased (Action* action, const StateEvent* stateEvent);
+  virtual bool OnMiddleMouseReleased(Action* action, const StateEvent* stateEvent);
 
   /// \brief Different to MIDASContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
   virtual void ClearWorkingData();

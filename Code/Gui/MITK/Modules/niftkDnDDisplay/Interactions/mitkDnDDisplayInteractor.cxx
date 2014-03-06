@@ -267,7 +267,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   displayGeometry->DisplayToULDisplay(focusPoint2DInPx, focusPoint2DInPxUL);
 
   // Create a new position event with the selected position.
-  mitk::InteractionPositionEvent::Pointer positionEvent2 = InteractionPositionEvent::New(renderer, focusPoint2DInPxUL);
+  mitk::InteractionPositionEvent::Pointer positionEvent2 = mitk::InteractionPositionEvent::New(renderer, focusPoint2DInPxUL, focusPoint3DInMm);
 
   bool result = this->Init(action, positionEvent2);
 

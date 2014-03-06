@@ -414,6 +414,26 @@ void mitk::MIDASTool::Deactivated()
 
 
 //-----------------------------------------------------------------------------
+bool mitk::MIDASTool::GetBlockNumberOfSeedsSignal() const
+{
+  return m_BlockNumberOfSeedsSignal;
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
+{
+  m_BlockNumberOfSeedsSignal = blockNumberOfSeedsSignal;
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::RenderCurrentWindow(const PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );

@@ -154,9 +154,24 @@ float mitk::MIDASPaintbrushTool::CanHandle(const mitk::StateEvent* stateEvent) c
   }
 }
 
-void mitk::MIDASPaintbrushTool::SetCursorSize(int current)
+int mitk::MIDASPaintbrushTool::GetCursorSize() const
 {
-  m_CursorSize = current;
+  return m_CursorSize;
+}
+
+void mitk::MIDASPaintbrushTool::SetCursorSize(int cursorSize)
+{
+  m_CursorSize = cursorSize;
+}
+
+bool mitk::MIDASPaintbrushTool::GetErosionMode() const
+{
+  return m_ErosionMode;
+}
+
+void mitk::MIDASPaintbrushTool::SetErosionMode(int erosionMode)
+{
+  m_ErosionMode = erosionMode;;
 }
 
 void mitk::MIDASPaintbrushTool::GetListOfAffectedVoxels(

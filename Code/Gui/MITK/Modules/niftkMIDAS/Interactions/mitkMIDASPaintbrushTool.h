@@ -78,17 +78,20 @@ public:
   /** We store the name of a property that stores the image region. */
   static const std::string REGION_PROPERTY_NAME;
 
-  /** Get the Cursor size, default 1. */
-  itkGetConstMacro(CursorSize, int);
+  /// \brief Gets the cursor size.
+  /// Default size is 1 pixel.
+  int GetCursorSize() const;
 
-  /** Set the cursor size, default 1. */
-  void SetCursorSize(int current);
+  /// \brief Sets the cursor size.
+  void SetCursorSize(int cursorSize);
 
-  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
-  itkSetMacro(ErosionMode, bool);
+  /// \brief Gets the erosion mode.
+  /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
+  bool GetErosionMode() const;
 
-  /** If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true. */
-  itkGetMacro(ErosionMode, bool);
+  /// \brief Sets the erosion mode.
+  /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
+  void SetErosionMode(bool erosionMode);
 
   /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
   Message1<int> CursorSizeChanged;

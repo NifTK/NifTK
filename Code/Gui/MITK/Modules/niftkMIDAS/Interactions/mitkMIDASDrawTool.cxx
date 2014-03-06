@@ -256,6 +256,13 @@ bool mitk::MIDASDrawTool::OnLeftMouseReleased(Action* action, const StateEvent* 
 
 
 //-----------------------------------------------------------------------------
+double mitk::MIDASDrawTool::GetCursorSize() const
+{
+  return m_CursorSize;
+}
+
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASDrawTool::SetCursorSize(double cursorSize)
 {
   m_CursorSize = cursorSize;
