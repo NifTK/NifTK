@@ -1251,7 +1251,10 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
       *minRatio = 0.0;
     }
   }
-  
+  if (std::isinf (sortedMatches[0].x))
+  {
+    *minRatio =  0.0;
+  }
   return  point - sortedMatches [0];
 }
 
