@@ -532,7 +532,7 @@ void QmitkThumbnailRenderWindow::UpdateWorldGeometry(bool fitToDisplay)
     if (focusedRenderer.IsNotNull())
     {
       // World geometry of thumbnail must be same (or larger) as world geometry of the focused window.
-      m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(focusedRenderer->GetTimeWorldGeometry()));
+      m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(focusedRenderer->GetWorldTimeGeometry()));
 
       // Display geometry of widget must encompass whole of world geometry
       if (fitToDisplay)
