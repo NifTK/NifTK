@@ -423,7 +423,10 @@ extern "C++" NIFTKOPENCV_EXPORT void Project3DModelPositionsToStereo2D(
   const CvMat& rightToLeftRotationMatrix,
   const CvMat& rightToLeftTranslationVector,
   CvMat& output2DPointsLeft,
-  CvMat& output2DPointsRight
+  CvMat& output2DPointsRight,
+  const bool& cropPointsToScreen = false,
+  const double& xLow = 0.0 , const double& xHigh = 0.0 , 
+  const double& yLow = 0.0 , const double& yHigh = 0.0 , const double& cropValue = 0.0
   );
 
 
