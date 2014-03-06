@@ -1128,7 +1128,7 @@ void Project3DModelPositionsToStereo2D(
     CvMat *leftCameraZeroDistortion = cvCreateMat(leftCameraDistortion.rows, leftCameraDistortion.cols , CV_64FC1);
     for ( int i = 0 ; i < leftCameraDistortion.rows ; i ++ ) 
     {
-      for ( int j = 0 ; i < leftCameraDistortion.cols ; j ++ ) 
+      for ( int j = 0 ; j < leftCameraDistortion.cols ; j ++ ) 
       {
         CV_MAT_ELEM(*leftCameraZeroDistortion, double , i , j) = 0.0;
       }
@@ -1136,7 +1136,7 @@ void Project3DModelPositionsToStereo2D(
     CvMat *rightCameraZeroDistortion = cvCreateMat(rightCameraDistortion.rows, rightCameraDistortion.cols , CV_64FC1);
     for ( int i = 0 ; i < rightCameraDistortion.rows ; i ++ ) 
     {
-      for ( int j = 0 ; i < rightCameraDistortion.cols ; j ++ ) 
+      for ( int j = 0 ; j < rightCameraDistortion.cols ; j ++ ) 
       {
         CV_MAT_ELEM(*rightCameraZeroDistortion, double , i , j) = 0.0;
       }
@@ -1161,32 +1161,26 @@ void Project3DModelPositionsToStereo2D(
       );
     for ( int i = 0 ; i < output2DPointsLeft.rows ; i ++ ) 
     {
-      for ( int j = 0 ; j <  output2DPointsLeft.cols ; j ++ ) 
+      if (
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) < xLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) > xHigh) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) < yLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) > yHigh) )
       {
-        if (
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) < xLow ) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 0 ) > xHigh) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) < yLow ) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsLeft, double, i , 1 ) > yHigh) )
-        {
-          CV_MAT_ELEM ( output2DPointsLeft, double , i , 0) = cropValue;
-          CV_MAT_ELEM ( output2DPointsLeft, double , i , 1) = cropValue;
-        }
+        CV_MAT_ELEM ( output2DPointsLeft, double , i , 0) = cropValue;
+        CV_MAT_ELEM ( output2DPointsLeft, double , i , 1) = cropValue;
       }
     }
     for ( int i = 0 ; i < output2DPointsRight.rows ; i ++ ) 
     {
-      for ( int j = 0 ; j < output2DPointsRight.cols ; j ++ ) 
+      if (
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) < xLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) > xHigh) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) < yLow ) ||
+        ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) > yHigh) )
       {
-        if (
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) < xLow ) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 0 ) > xHigh) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) < yLow ) ||
-          ( CV_MAT_ELEM ( *zeroDistortion2DPointsRight, double, i , 1 ) > yHigh) )
-        {
-          CV_MAT_ELEM ( output2DPointsRight, double , i , 0) = cropValue;
-          CV_MAT_ELEM ( output2DPointsRight, double , i , 1) = cropValue;
-        }
+        CV_MAT_ELEM ( output2DPointsRight, double , i , 0) = cropValue;
+        CV_MAT_ELEM ( output2DPointsRight, double , i , 1) = cropValue;
       }
     }
     cvReleaseMat(&zeroDistortion2DPointsLeft);
