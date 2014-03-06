@@ -19,7 +19,6 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegionConstIterator.h>
 #include <mitkPositionEvent.h>
-#include <mitkStateEvent.h>
 #include <mitkInteractionConst.h>
 #include <itkMIDASHelper.h>
 
