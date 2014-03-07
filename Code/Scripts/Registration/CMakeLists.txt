@@ -45,6 +45,10 @@ if(NOT WIN32)
     compute_symmetric_transform_n.sh
     ComputeSymmetricBrainBSI.sh
     ComputeSymmetricBrainBSIBatch.sh
+    ComputeSymmetricLocalBSIBatch.sh
+    ComputeSymmetricLocalBSI.sh
+    ComputeSymmetricHippoBSIBatch.sh
+    ComputeSymmetricVentsBSIBatch.sh
   )
   foreach(script ${scripts})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )

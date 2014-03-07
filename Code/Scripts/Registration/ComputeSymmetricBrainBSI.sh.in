@@ -32,12 +32,12 @@ fi
 set -x
 
 # Do the symmetric registration.
-ComputePairwiseRegistration.sh "$*"
+ComputePairwiseRegistration.sh $*
 
 output_dir=`dirname $1`
 
 # Get the reg input images and regions.
-shift 11
+shift 10
 reg_files="$*"
 
 # Create the input for the transform, e.g. image1 region1 dummy dummy dof1_2.dof dof1_3.dof and so on.
