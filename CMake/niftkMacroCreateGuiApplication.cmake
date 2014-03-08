@@ -26,9 +26,14 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   if(NOT _APP_NAME)
     message(FATAL_ERROR "NAME argument cannot be empty.")
   endif()
-
+                        
   set(MY_APP_NAME ${_APP_NAME})
 
+  # The MITK_USE_MODULE sets up the include path for compile time...
+  MITK_USE_MODULE(niftkCore)
+  MITK_USE_MODULE(qtsingleapplication)
+  include_directories(${ALL_INCLUDE_DIRECTORIES})
+  
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
     niftkCore
@@ -46,7 +51,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   set(_exclude_plugins
     ${_APP_EXCLUDE_PLUGINS}
   )
-
+  
   # NOTE: Check CMake/PackageDepends for any additional dependencies.
   set(_library_dirs
     ${NiftyLink_LIBRARY_DIRS}
@@ -87,12 +92,12 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   # last executable. So, we save the variable here, and restore it at the end
   # of this macro.
   #############################################################################
-
+  
   if(APPLE)
     set(TMP_MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES})
     set(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   endif()
-
+  
   FunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     SOURCES ${MY_APP_NAME}.cxx
@@ -103,9 +108,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_app_options}
   )
 
-  # The mitk_use_modules sets up the include path for compile time...
-  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES qtsingleapplication niftkCore)
-  include_directories(${ALL_INCLUDE_DIRECTORIES})
+#  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.
@@ -117,5 +120,5 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${NIFTK_VERSION_STRING})
     set_target_properties(${MY_APP_NAME} PROPERTIES MACOSX_BUNDLE_COPYRIGHT ${NIFTK_COPYRIGHT})
   endif()
-
+  
 endmacro()
