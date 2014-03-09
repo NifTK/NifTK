@@ -17,9 +17,8 @@ project(uk_ac_ucl_cmic_gui_qt_commonmidas)
 MACRO_CREATE_MITK_CTK_PLUGIN(
   EXPORT_DIRECTIVE CMIC_QT_COMMONMIDAS
   EXPORTED_INCLUDE_SUFFIXES src
-  PACKAGE_DEPENDS CTK
   MODULE_DEPENDS niftkMIDASGui
-  )
+)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(uk_ac_ucl_cmic_gui_qt_commonmidas)

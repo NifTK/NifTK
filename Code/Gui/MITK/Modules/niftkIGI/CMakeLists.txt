@@ -14,7 +14,7 @@
 
 find_package(OpenMP)
 
-set(_packages ITK NiftyLink)
+set(_packages NiftyLink)
 if(BUILD_PCL)
   list(APPEND _packages PCL)
 endif()
