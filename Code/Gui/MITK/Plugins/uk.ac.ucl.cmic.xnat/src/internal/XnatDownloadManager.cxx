@@ -519,17 +519,15 @@ QStringList XnatDownloadManager::ExtractFile(QString zipFileName, QString direct
 
   for (mz_uint i = 0; i < fileNumber; ++i)
   {
+    std::size_t uncompressedSize;
+    void* p = mz_zip_reader_extract_to_heap(&zipArchive, i, &uncompressedSize, 0);
+
     mz_zip_archive_file_stat fileStat;
     mz_zip_reader_file_stat(&zipArchive, i, &fileStat);
 
-    QString archivedFileName = fileStat.m_filename;
-
-    std::size_t uncompressedSize;
-    void* p = mz_zip_reader_extract_file_to_heap(&zipArchive, fileStat.m_filename, &uncompressedSize, 0);
-
     if (mz_zip_reader_is_file_a_directory(&zipArchive, i))
     {
-      dir.mkpath(archivedFileName);
+      dir.mkpath(fileStat.m_filename);
     }
     else
     {
@@ -539,7 +537,7 @@ QStringList XnatDownloadManager::ExtractFile(QString zipFileName, QString direct
         throw "mz_zip_reader_extract_file_to_heap() failed!\n";
       }
 
-      QFileInfo extractedFile(dir, archivedFileName);
+      QFileInfo extractedFile(dir, fileStat.m_filename);
       QDir extractedFileDir = extractedFile.dir();
       if (!extractedFileDir.exists())
       {
@@ -548,7 +546,9 @@ QStringList XnatDownloadManager::ExtractFile(QString zipFileName, QString direct
       QFile file(extractedFile.absoluteFilePath());
       file.open(QIODevice::WriteOnly);
       QDataStream stream(&file);
-      stream.writeBytes((const char*)p, uncompressedSize);
+      /// Magic number alert!
+      /// 4 should be replaced with some of the offset literals, maybe MZ_ZIP_ECDH_NUM_THIS_DISK_OFS?
+      stream.writeBytes((const char*)p + 4, uncompressedSize - 4);
       file.close();
       result << extractedFile.absoluteFilePath();
     }
