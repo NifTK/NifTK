@@ -207,6 +207,9 @@ public:
   itkSetMacro (UseOriginalImageAtFinalLevel, bool); 
   itkGetMacro (UseOriginalImageAtFinalLevel, bool); 
 
+  itkSetMacro (IsAutoAdjustMovingSamping, bool);
+  itkGetMacro (IsAutoAdjustMovingSamping, bool);
+
 protected:
   MultiResolutionImageRegistrationWrapper();
   virtual ~MultiResolutionImageRegistrationWrapper() {};
@@ -271,6 +274,10 @@ protected:
   ScheduleType*                       m_Schedule;
   
   bool                                m_MaskBeforePyramid;
+
+  // Automatically adjust the sampling in moving image
+  // depending on the resolution.
+  bool                                m_IsAutoAdjustMovingSamping;
   
 private:
   MultiResolutionImageRegistrationWrapper(const Self&); //purposely not implemented
