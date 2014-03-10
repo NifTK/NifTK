@@ -1,0 +1,136 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+function Usage()
+{
+cat <<EOF
+
+This script is the working script which is called ComputeSymmetricLocalBSI.sh to perform symmetric local BSI. Please use ComputeSymmetricLocalBSIBatch.sh.
+  
+EOF
+exit 127
+}
+
+if [ $# -lt 3 ]
+then 
+  Usage
+fi 
+
+set -x
+
+tmp_dir=`mktemp -d -q ~/temp/__local_bsi.XXXXXX`
+function cleanup
+{
+  echo "Cleaning up..."
+  rm -rf  ${tmp_dir}
+}
+trap "cleanup" EXIT SIGINT SIGTERM SIGKILL
+
+# Identity transformation.
+identity_dof=${tmp_dir}/identity.dof
+niftkCreateTransformation -type 3 -ot ${identity_dof}  0 0 0 0 0 0 1 1 1 0 0 0
+
+#
+# The vents/hippos segmentations are done in standard space.
+# 1. For the registration, the regions need to be transform to the native space.
+# 2. For the calculation of BSI, after the symmetric registration,
+#    we want to resample the region only once. This means that we need to provide
+#    the standard space transformation to the transformation script.
+#
+reg_starting_arg=13
+mni_305=${11}
+double_window=${12}
+input_reg=""
+for (( arg=1; arg<${reg_starting_arg}-2; arg++ ))
+do
+  input_reg="${input_reg} ${!arg}"
+done
+for (( arg=${reg_starting_arg}; arg<=$#; arg+=4 ))
+do
+  (( i=(arg-reg_starting_arg)/4 ))
+
+  (( img_arg=arg ))
+  image=${!img_arg}
+  (( mask_arg=arg+1 ))
+  image_mask=${!mask_arg}
+  (( region_arg=arg+2 ))
+  local_region=${!region_arg}
+  (( ss_air_arg=arg+3 ))
+  ss_air=${!ss_air_arg}
+
+  # Transfrom the local regions (vents/hippos) to native space.
+  invert_air ${ss_air} ${tmp_dir}/invert_air_${i}.air y
+  regslice ${tmp_dir}/invert_air_${i}.air ${local_region} ${tmp_dir}/local_native_${i} 5 -i 2
+  input_reg="${input_reg} ${image} ${image_mask} ${tmp_dir}/local_native_${i} dummy"
+
+  # Convert ss air file into niftk format.
+  scanair ${ss_air} -r | awk '/\[/,/\]/' | sed -r 's/\[|\]//g' > ${tmp_dir}/air_ss_${i}.txt
+  niftkMultiplyTransformation -i1 ${tmp_dir}/air_ss_${i}.txt -i2 ${identity_dof} -o1 ${tmp_dir}/air_ss_${i}.dof -air_target_image ${mni_305} -air_source_image ${image}
+done
+
+# Do the symmetric registration.
+ComputePairwiseRegistration.sh ${input_reg}
+
+output_dir=`dirname $1`
+
+# Get the reg input images and regions.
+shift ${reg_starting_arg}
+reg_files="$*"
+
+# Create the input for the transform, e.g. image1 region1 local_region1 ss_dof1 dof1_2.dof dof1_3.dof and so on.
+field_count=`echo ${reg_files} | awk '{printf NF}'`
+image_count=`echo "${field_count}/4" | bc`
+image1=`echo ${reg_files} | awk '{printf $1}'`
+image1_basename=`basename ${image1}`
+image1_id=`echo ${image1_basename} | awk -F- '{printf $1}'`
+prefix="${image1_id}_groupwise"
+input_transform="${prefix} ${image_count}"
+for ((i=0; i<${image_count}; i++))
+do
+   (( j=i\*4+1 ))
+   (( k=j+1 ))
+   # Add in image1 region1 local_region1 ss_dof1.
+   input_transform="${input_transform} `echo ${reg_files} | awk -v j=${i} j=${j} -v k=${k} '{printf $j" "$k}'` ${tmp_dir}/local_native_${i} ${tmp_dir}/air_ss_${i}.dof"
+   # Add in dof1_2.dof dof1_3.dof ... etc.
+   for ((m=0; m<${image_count}; m++))
+   do
+     if [ ${i} != ${m} ]
+     then
+       input_transform="${input_transform} ${output_dir}/${image1_id}_pairwise_${i}_${m}_affine_second.dof"
+     fi
+   done
+done
+
+# Do the transformation and calcualte local BSI.
+asym_flag=""
+interpolation="-interpolation 4"
+double_window="-double_window ${double_window}"
+ss_atlas="-ss_atlas ${mni_305}"
+just_dbc="-just_dbc no"
+kernel_size="-radius 5"
+dbc_method="-mode 1"
+pairwise_dbc="-pairwise_dbc 0"
+compute_symmetric_transform_n.sh ${asym_flag} ${interpolation} ${double_window} ${just_dbc} ${kernel_size} ${pairwise_dbc} ${dbc_method} ${ss_atlas} ${output_dir} ${input_transform}
+
+
+
+
+
+
+
+
+
+
