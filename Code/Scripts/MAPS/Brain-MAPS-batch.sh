@@ -78,6 +78,7 @@ Optional arguements:
   -kmeans           : use kmeans-clustering to determine intensity for condition dilation [no]. 
   -init_9dof        : use 9dof for the global reg initialisatino. 
   -cd_mode          : conditional dilation mode [2]. 
+  -blur_9dof        : use bluring in 9dof [no].
 
 EOF
 exit 127
@@ -103,6 +104,7 @@ leaveoneout=yes
 kmeans=no
 init_9dof=no
 cd_mode=2
+blur_9dof=no
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -190,6 +192,10 @@ do
         cd_mode=$2
         shift 1
       ;;
+     -blur_9dof)
+        blur_9dof=$2
+        shift 1
+      ;;
      -*)
         Usage
         exitprog "Error: option $1 not recognised" 1
@@ -237,7 +243,7 @@ function iterate_through_input_file
           ${watjo_brain_region} ${dilation_for_f3d} ${nreg} ${f3d_brain_prereg} \
           ${areg} ${cpp} ${f3d_energy} ${f3d_iterations} \
           ${confidence} ${vents_or_not} ${remove_dir} ${use_orientation} \
-          ${leaveoneout} ${kmeans} ${init_9dof} ${cd_mode} >> ${command_filename}
+          ${leaveoneout} ${kmeans} ${init_9dof} ${cd_mode} ${blur_9dof} >> ${command_filename}
     else
       check_file_exists ${image} "no"
       check_file_exists ${image%.img}.hdr "no"

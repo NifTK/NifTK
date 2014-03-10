@@ -139,7 +139,7 @@ function brain-match()
       ${output_brain_image} ${output_brain_series_number} ${output_brain_air} "no" 
   else
     brain_to_brain_registration_without_repeat_mask_using_irtk ${watjo_image} ${watjo_brain_region} ${subject_image}   \
-        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no" "${init_9dof}"
+        ${output_brain_image} ${output_brain_series_number} ${output_brain_air}.dof "no" "${init_9dof}" "${blur_9dof}"
   fi 
   
   rm -f ${output_left_corr}
@@ -873,6 +873,7 @@ leaveoneout=${23}
 use_kmeans=${24}
 init_9dof=${25}
 cd_mode=${26}
+blur_9dof=${27}
 
 output_areg_template_brain_series_number=400
 output_left_series_number=665

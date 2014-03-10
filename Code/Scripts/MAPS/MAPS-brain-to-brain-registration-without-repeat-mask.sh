@@ -60,9 +60,11 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
   local output_reg_air=${6}
   local is_invert_air=$7
   local is_9dof=$8
+  local is_blurring=$9
 
   local temp_dir=`mktemp -d -q ~/temp/__areg.XXXXXXXX`
-  
+  set -x
+
   if [ ! -f ${output_reg_air} ] 
   then 
   
@@ -70,18 +72,34 @@ function brain_to_brain_registration_without_repeat_mask_using_irtk()
     then 
       # Registration. 
       local parameter_file=`mktemp ~/temp/param.XXXXXXXXXX`
-      echo "Target blurring (in mm) = 0 "  > ${parameter_file}
-      echo "Target resolution (in mm) = 0"  >> ${parameter_file}
-      echo "# source image paramters"  >> ${parameter_file}
-      echo "Source blurring (in mm) = 0"  >> ${parameter_file}
-      echo "Source resolution (in mm)  = 0"  >> ${parameter_file}
-      echo "# registration parameters"  >> ${parameter_file}
-      echo "No. of resolution levels = 3"  >> ${parameter_file}
-      echo "No. of bins = 64"  >> ${parameter_file}
-      echo "No. of iterations = 100"  >> ${parameter_file}
-      echo "No. of steps = 2"  >> ${parameter_file}
-      echo "Length of steps = 1"  >> ${parameter_file}
-      echo "Similarity measure = NMI"  >> ${parameter_file}
+      if [ "${is_blurring}" == "yes" ]
+      then
+        echo "Target blurring (in mm) = 1 "  > ${parameter_file}
+        echo "Target resolution (in mm) = 1"  >> ${parameter_file}
+        echo "# source image paramters"  >> ${parameter_file}
+        echo "Source blurring (in mm) = 1"  >> ${parameter_file}
+        echo "Source resolution (in mm)  = 1"  >> ${parameter_file}
+        echo "# registration parameters"  >> ${parameter_file}
+        echo "No. of resolution levels = 3"  >> ${parameter_file}
+        echo "No. of bins = 128"  >> ${parameter_file}
+        echo "No. of iterations = 100"  >> ${parameter_file}
+        echo "No. of steps = 2"  >> ${parameter_file}
+        echo "Length of steps = 1"  >> ${parameter_file}
+        echo "Similarity measure = CC"  >> ${parameter_file}
+      else
+        echo "Target blurring (in mm) = 0 "  > ${parameter_file}
+        echo "Target resolution (in mm) = 0"  >> ${parameter_file}
+        echo "# source image paramters"  >> ${parameter_file}
+        echo "Source blurring (in mm) = 0"  >> ${parameter_file}
+        echo "Source resolution (in mm)  = 0"  >> ${parameter_file}
+        echo "# registration parameters"  >> ${parameter_file}
+        echo "No. of resolution levels = 3"  >> ${parameter_file}
+        echo "No. of bins = 64"  >> ${parameter_file}
+        echo "No. of iterations = 100"  >> ${parameter_file}
+        echo "No. of steps = 2"  >> ${parameter_file}
+        echo "Length of steps = 1"  >> ${parameter_file}
+        echo "Similarity measure = NMI"  >> ${parameter_file}
+      fi
       ${MIDAS_FFD}/ffdareg.sh ${baseline_image} ${repeat_image} ${output_reg_air} -dof 9 -comreg -params ${parameter_file} -tmpdir ${temp_dir} 
     else
       # Registration. 
