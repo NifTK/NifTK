@@ -81,7 +81,7 @@ exit 127
 }
 
 ndefargs=2
-dilation=0
+dilation=10
 symmetric="sym_midway"
 scaling_using_skull="no"
 dof=4
