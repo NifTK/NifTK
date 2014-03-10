@@ -17,6 +17,7 @@
 #include <ctkXnatSession.h>
 #include <ctkXnatLoginDialog.h>
 #include <ctkXnatObject.h>
+#include <ctkXnatFile.h>
 #include <ctkXnatReconstructionResource.h>
 #include <ctkXnatScanResource.h>
 #include <ctkXnatSettings.h>
@@ -25,7 +26,6 @@
 #include "XnatDownloadManager.h"
 #include "XnatTreeView.h"
 
-// Qt includes
 #include <QAction>
 #include <QDialog>
 #include <QDir>
@@ -136,7 +136,6 @@ void XnatBrowserWidget::createConnections()
 {
   Q_D(XnatBrowserWidget);
 
-  // create actions for popup menus
   d->downloadAction = new QAction(tr("Download"), this);
   connect(d->downloadAction, SIGNAL(triggered()), d->downloadManager, SLOT(downloadFile()));
   d->downloadAllAction = new QAction(tr("Download All"), this);
@@ -146,19 +145,17 @@ void XnatBrowserWidget::createConnections()
   d->importAllAction = new QAction(tr("Import All"), this);
   connect(d->importAllAction, SIGNAL(triggered()), this, SLOT(importFiles()));
 
-  // create button widgets
-  QObject::connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(loginXnat()));
-  QObject::connect(ui->refreshButton, SIGNAL(clicked()), ui->xnatTreeView, SLOT(refreshRows()));
-  QObject::connect(ui->downloadButton, SIGNAL(clicked()), d->downloadManager, SLOT(downloadFile()));
-  QObject::connect(ui->downloadAllButton, SIGNAL(clicked()), d->downloadManager, SLOT(downloadAllFiles()));
-  QObject::connect(ui->importButton, SIGNAL(clicked()), this, SLOT(importFile()));
-  QObject::connect(ui->importAllButton, SIGNAL(clicked()), this, SLOT(importFiles()));
+  this->connect(ui->loginButton, SIGNAL(clicked()), SLOT(loginXnat()));
+  ui->xnatTreeView->connect(ui->refreshButton, SIGNAL(clicked()), SLOT(refreshRows()));
+  d->downloadManager->connect(ui->downloadButton, SIGNAL(clicked()), SLOT(downloadFile()));
+  d->downloadManager->connect(ui->downloadAllButton, SIGNAL(clicked()), SLOT(downloadAllFiles()));
+  this->connect(ui->importButton, SIGNAL(clicked()), SLOT(importFile()));
+  this->connect(ui->importAllButton, SIGNAL(clicked()), SLOT(importFiles()));
 
   QObject::connect(ui->xnatTreeView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(setButtonEnabled(const QModelIndex&)));
 
   ui->xnatTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
-  QObject::connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)),
-          this, SLOT(showContextMenu(const QPoint&)));
+  this->connect(ui->xnatTreeView, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(showContextMenu(const QPoint&)));
 }
 
 void XnatBrowserWidget::loginXnat()
@@ -247,7 +244,7 @@ void XnatBrowserWidget::importFile()
       d->dataStorage->Add(dataNode);
     }
   }
-  catch (std::exception& exc)
+  catch (std::exception&)
   {
     MITK_ERROR << "reading the image has failed";
   }
@@ -295,7 +292,7 @@ void XnatBrowserWidget::importFiles()
       d->dataStorage->Add(dataNode);
     }
   }
-  catch (std::exception& exc)
+  catch (std::exception&)
   {
     MITK_ERROR << "reading the image has failed";
   }
@@ -323,11 +320,10 @@ void XnatBrowserWidget::setButtonEnabled(const QModelIndex& index)
 {
   const ctkXnatObject* object = ui->xnatTreeView->xnatObject(index);
 
-  /// TODO Temporarily disabled because of the MITK upgrade.
-//  ui->downloadButton->setEnabled(object->isFile());
+  bool isFile = dynamic_cast<const ctkXnatFile*>(object);
+  ui->downloadButton->setEnabled(isFile);
   ui->downloadAllButton->setEnabled(this->holdsFiles(object));
-  /// TODO Temporarily disabled because of the MITK upgrade.
-//  ui->importButton->setEnabled(object->isFile());
+  ui->importButton->setEnabled(isFile);
   ui->importAllButton->setEnabled(this->holdsFiles(object));
 }
 
@@ -340,22 +336,21 @@ void XnatBrowserWidget::showContextMenu(const QPoint& position)
   {
     const ctkXnatObject* object = ui->xnatTreeView->xnatObject(index);
     QList<QAction*> actions;
-    /// TODO Temporarily disabled because of the MITK upgrade.
-//    if ( object->isFile() )
+    bool isFile = dynamic_cast<const ctkXnatFile*>(object);
+    if (isFile)
     {
       actions.append(d->downloadAction);
     }
     if (this->holdsFiles(object))
     {
-        actions.append(d->downloadAllAction);
-        actions.append(d->importAllAction);
+      actions.append(d->downloadAllAction);
+      actions.append(d->importAllAction);
     }
-    /// TODO Temporarily disabled because of the MITK upgrade.
-//    if ( object->isFile() )
+    if (isFile)
     {
       actions.append(d->importAction);
     }
-    if ( actions.count() > 0 )
+    if (actions.count() > 0)
     {
       QMenu::exec(actions, ui->xnatTreeView->mapToGlobal(position));
     }
