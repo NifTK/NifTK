@@ -27,7 +27,8 @@
   #endif
 #endif
 
-#include <sys/syslimits.h>
+#include <syslimits.h>
+#include <cstring>
 #include "miniz.c"
 
 class XnatDownloadManagerPrivate
