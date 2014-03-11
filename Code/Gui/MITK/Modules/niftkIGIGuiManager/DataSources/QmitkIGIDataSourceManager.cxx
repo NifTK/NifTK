@@ -60,6 +60,7 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
 , m_PlaybackSliderBase(0)
 , m_PlaybackSliderFactor(1)
 , m_CurrentSourceGUI(NULL)
+, m_setupUiHasBeenCalled(false)
 {
   m_SuspendedColour = DEFAULT_SUSPENDED_COLOUR;
   m_OKColour = DEFAULT_OK_COLOUR;
@@ -87,6 +88,29 @@ QmitkIGIDataSourceManager::~QmitkIGIDataSourceManager()
   if (m_ClearDownTimer != NULL)
   {
     m_ClearDownTimer->stop();
+  }
+
+  if (m_setupUiHasBeenCalled)
+  {
+    bool  ok = false;
+    ok = QObject::disconnect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
+    assert(ok);
+    ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+    assert(ok);
+    ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+    assert(ok);
+    ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+    assert(ok);
+    ok = QObject::disconnect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+    assert(ok);
+    ok = QObject::disconnect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+    assert(ok);
+    ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+    assert(ok);
+    ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+    assert(ok);
+    ok = QObject::disconnect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+    assert(ok);
   }
 
   this->DeleteCurrentGuiWidget();
@@ -308,18 +332,29 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_TableWidget->setMaximumHeight(150);
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-  connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
-  connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
-  connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
-  connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
-  connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
-  connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
-  connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
-  connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
-  connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
-  // FIXME: do we need to connect a slot to the playback slider? gui-update-timer will eventually check its state anyway.
+  bool    ok = false;
+  ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
+  assert(ok);
+  ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+  assert(ok);
+  ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+  assert(ok);
+  ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+  assert(ok);
+  ok = QObject::connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  assert(ok);
+  ok = QObject::connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  assert(ok);
+  ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+  assert(ok);
+  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
+  ok = QObject::connect(m_ClearDownTimer, SIGNAL(timeout()), this, SLOT(OnCleanData()));
+  assert(ok);
 
   m_SourceSelectComboBox->setCurrentIndex(0);
+
+  m_setupUiHasBeenCalled = true;
 }
 
 

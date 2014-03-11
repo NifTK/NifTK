@@ -296,6 +296,9 @@ private:
   // at the assigned frame rate.
   QmitkIGIDataSourceGui                    *m_CurrentSourceGUI;
 
+  // used to decide whether to clean up signals in the destructor;
+  bool                                      m_setupUiHasBeenCalled;
+
   /**
    * \brief Checks the m_SourceSelectComboBox to see if the currentIndex pertains to a port specific type.
    */
