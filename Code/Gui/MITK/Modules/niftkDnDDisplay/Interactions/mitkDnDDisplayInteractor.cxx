@@ -29,12 +29,11 @@
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkMultiWindowWidget* multiWindowWidget)
 : mitk::DisplayInteractor()
 , m_MultiWindowWidget(multiWindowWidget)
-, m_Renderers(4)
+, m_Renderers(3)
 {
   m_Renderers[0] = m_MultiWindowWidget->GetRenderWindow1()->GetRenderer();
   m_Renderers[1] = m_MultiWindowWidget->GetRenderWindow2()->GetRenderer();
   m_Renderers[2] = m_MultiWindowWidget->GetRenderWindow3()->GetRenderer();
-  m_Renderers[3] = m_MultiWindowWidget->GetRenderWindow4()->GetRenderer();
 }
 
 
@@ -80,10 +79,6 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
   else if (renderer == m_Renderers[2])
   {
     renderWindow = m_MultiWindowWidget->GetRenderWindow3();
-  }
-  else if (renderer == m_Renderers[3])
-  {
-    renderWindow = m_MultiWindowWidget->GetRenderWindow4();
   }
   return renderWindow;
 }
