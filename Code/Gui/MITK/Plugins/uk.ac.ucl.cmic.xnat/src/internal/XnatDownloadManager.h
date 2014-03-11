@@ -57,7 +57,7 @@ private slots:
 
 private:
 
-  QStringList ExtractFile(QString zipFileName, QString directory);
+  void ExtractFile(QString zipFileName, QString directory);
 
 protected:
   QScopedPointer<XnatDownloadManagerPrivate> d_ptr;

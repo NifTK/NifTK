@@ -27,10 +27,8 @@
   #endif
 #endif
 
-extern "C"
-{
+#include <sys/syslimits.h>
 #include "miniz.c"
-}
 
 class XnatDownloadManagerPrivate
 {
@@ -483,82 +481,70 @@ void XnatDownloadManager::unzipData()
   }
 
   // unzip downloaded file
-  QStringList files = this->ExtractFile(d->zipFileName, d->currDir);
+  try
+  {
+    this->ExtractFile(d->zipFileName, d->currDir);
+  }
+  catch (QString& exception)
+  {
+    QMessageBox::warning(d->xnatTreeView, tr("Error"), exception);
+  }
 
   // close dialog
   d->downloadDialog->close();
 
-  if (files.isEmpty())    // check unzip status
-  {
-    QMessageBox::warning(d->xnatTreeView, tr("Unzip Downloaded File Error"), tr("Failed to extract the archive."));
-  }
-  else if (!QFile::remove(d->zipFileName))    // delete zip file
+  if (!QFile::remove(d->zipFileName))    // delete zip file
   {
     QMessageBox::warning(d->xnatTreeView, tr("Delete Zip File Error"), tr("Cannot delete zip file"));
   }
+
   emit done();
 }
 
 
-QStringList XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
+void XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
 {
-  QStringList result;
-
-  QDir dir(directory);
-
   mz_zip_archive zipArchive;
   std::memset(&zipArchive, 0, sizeof(zipArchive));
 
-  mz_bool status = mz_zip_reader_init_file(&zipArchive, zipFileName.toAscii().data(), 0);
-  if (!status)
+  if (!mz_zip_reader_init_file(&zipArchive, zipFileName.toAscii().data(), 0))
   {
-    throw "mz_zip_reader_init_file() failed!\n";
+    throw QString("Cannot open the zip archive.");
   }
+
+  QDir dir(directory);
 
   mz_uint fileNumber = mz_zip_reader_get_num_files(&zipArchive);
 
   for (mz_uint i = 0; i < fileNumber; ++i)
   {
-    std::size_t uncompressedSize;
-    void* p = mz_zip_reader_extract_to_heap(&zipArchive, i, &uncompressedSize, 0);
-
-    mz_zip_archive_file_stat fileStat;
-    mz_zip_reader_file_stat(&zipArchive, i, &fileStat);
+    char fileName[PATH_MAX];
+    mz_zip_reader_get_filename(&zipArchive, i, fileName, PATH_MAX);
 
     if (mz_zip_reader_is_file_a_directory(&zipArchive, i))
     {
-      dir.mkpath(fileStat.m_filename);
+      dir.mkpath(fileName);
     }
     else
     {
-      if (!p)
-      {
-        mz_zip_reader_end(&zipArchive);
-        throw "mz_zip_reader_extract_file_to_heap() failed!\n";
-      }
-
-      QFileInfo extractedFile(dir, fileStat.m_filename);
+      QFileInfo extractedFile(dir, fileName);
       QDir extractedFileDir = extractedFile.dir();
       if (!extractedFileDir.exists())
       {
-        dir.mkpath(extractedFileDir.path());
+        extractedFileDir.mkpath(".");
       }
-      QFile file(extractedFile.absoluteFilePath());
-      file.open(QIODevice::WriteOnly);
-      QDataStream stream(&file);
-      /// Magic number alert!
-      /// 4 should be replaced with some of the offset literals, maybe MZ_ZIP_ECDH_NUM_THIS_DISK_OFS?
-      stream.writeBytes((const char*)p + 4, uncompressedSize - 4);
-      file.close();
-      result << extractedFile.absoluteFilePath();
+      if (!mz_zip_reader_extract_to_file(&zipArchive, i, extractedFile.absoluteFilePath().toAscii().data(), 0))
+      {
+        mz_zip_reader_end(&zipArchive);
+        throw QString("Cannot extract the zip archive. Disk full?");
+      }
     }
-
-    mz_free(p);
   }
 
-  mz_zip_reader_end(&zipArchive);
-
-  return result;
+  if (!mz_zip_reader_end(&zipArchive))
+  {
+    throw QString("Cannot close the zip archive.");
+  }
 }
 
 void XnatDownloadManager::finishDownload()
