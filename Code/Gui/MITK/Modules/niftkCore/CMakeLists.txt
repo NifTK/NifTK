@@ -28,7 +28,7 @@ MITK_CREATE_MODULE(niftkCore
   EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   DEPENDS MitkCore
-  PACKAGE_DEPENDS ITK ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL
+  PACKAGE_DEPENDS ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL
 )
 
 target_link_libraries(niftkCore

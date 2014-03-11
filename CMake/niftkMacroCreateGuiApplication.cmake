@@ -29,11 +29,6 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
                         
   set(MY_APP_NAME ${_APP_NAME})
 
-  # The MITK_USE_MODULE sets up the include path for compile time...
-  MITK_USE_MODULE(niftkCore)
-  MITK_USE_MODULE(qtsingleapplication)
-  include_directories(${ALL_INCLUDE_DIRECTORIES})
-  
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
     niftkCore
@@ -96,7 +91,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_app_options}
   )
 
-#  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
+  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.
