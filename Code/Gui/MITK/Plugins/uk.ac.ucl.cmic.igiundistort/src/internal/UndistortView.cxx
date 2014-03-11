@@ -533,7 +533,9 @@ void UndistortView::OnBackgroundProcessFinished()
     if (nodeIsNew)
     {
       mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_InputNodeName);
-      if (inputNode.IsNotNull())
+      // workaround for bug in mitk.
+      // see https://cmicdev.cs.ucl.ac.uk/trac/ticket/3269
+      if (false)//if (inputNode.IsNotNull())
       {
         storage->Add(outputNode, inputNode);
       }
