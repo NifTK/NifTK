@@ -19,6 +19,7 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include "DataSourcesViewActivator.h"
+#include <cassert>
 
 const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 
@@ -50,7 +51,11 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
 
   this->RetrievePreferenceValues();
 
-  connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  bool ok = false;
+  ok = QObject::connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  assert(ok);
+  ok = QObject::connect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
+  assert(ok);
 
   ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
@@ -58,6 +63,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
   {
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
+    eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
   }
 }
 
@@ -151,4 +157,13 @@ void DataSourcesView::OnUpdateGuiEnd(igtlUint64 timeStamp)
   ctkDictionary properties;
   properties["timeStamp"] = timeStamp;
   emit Updated(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingStarted(QString baseDirectory)
+{
+  ctkDictionary properties;
+  properties["directory"] = baseDirectory;
+  emit RecordingStarted(properties);
 }

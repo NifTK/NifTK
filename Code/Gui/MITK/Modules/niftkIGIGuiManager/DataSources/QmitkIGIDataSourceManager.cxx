@@ -946,6 +946,11 @@ void QmitkIGIDataSourceManager::OnRecordStart()
   assert(!m_PlayPushButton->isChecked());
   m_PlayPushButton->setEnabled(false);
 
+  // tell interested parties (e.g. other plugins) that recording has started.
+  // we do this before dumping the descriptor because that might pop up a message box,
+  // which would stall delivering this signal.
+  emit RecordingStarted(directory.absolutePath());
+
   // dump our descriptor file
   QFile   descfile(directory.absolutePath() + QDir::separator() + "descriptor.cfg");
   bool openok = descfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);

@@ -181,6 +181,9 @@ signals:
    */
   void UpdateGuiEnd(igtlUint64 timeStamp);
 
+  void RecordingStarted(QString basedirectory);
+
+
 protected:
 
   QmitkIGIDataSourceManager();
