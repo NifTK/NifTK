@@ -435,6 +435,8 @@ int main(int argc, char** argv)
   }
   else if (mode == 6)
   {
+    testImage->FillBuffer(255);
+
     for (int z = 0; z < nz; z++)
       {
         for (int y = 0; y < ny; y++)
@@ -450,7 +452,7 @@ int main(int argc, char** argv)
                 if ( x%2 == 0 && y%2 == 0
                      || x%2 == 1 && y%2 == 1)
                 {
-                  testImage->SetPixel(index, 255);
+                  testImage->SetPixel(index, 0);
                 }
               }
           }
