@@ -207,8 +207,7 @@ int mitkUndistortionLoopTest ( int argc, char * argv[] )
 
   mitk::UndistortPoints(output2DPointsRight, 
       rightCameraIntrinsic,rightCameraDistortion,
-      rightScreenPoints,
-      cropNonVisiblePoints);
+      rightScreenPoints);
 
   mitk::UndistortPoints(outputTrimmed2DPointsLeft, 
       leftCameraIntrinsic,leftCameraDistortion,
@@ -243,11 +242,118 @@ int mitkUndistortionLoopTest ( int argc, char * argv[] )
 
   for ( int i = 0 ; i < numberOfPoints ; i ++ ) 
   {
-    double XError = CV_MAT_ELEM(*output2DZeroDistortionPointsLeft,double,i,0) - leftScreenPoints.at<double>(i,0);
-    MITK_INFO << i << " :[ " <<  CV_MAT_ELEM(*output2DPointsLeft,double,i,0) << " ] " << 
-      CV_MAT_ELEM(*output2DZeroDistortionPointsLeft,double,i,0) << " - " << leftScreenPoints.at<double>(i,0) << " = " <<  XError;
-     //do something
+    double XErrorLeft = CV_MAT_ELEM(*output2DZeroDistortionPointsLeft,double,i,0) - leftScreenPoints.at<double>(i,0);
+    double YErrorLeft = CV_MAT_ELEM(*output2DZeroDistortionPointsLeft,double,i,1) - leftScreenPoints.at<double>(i,1);
+    double XErrorRight = CV_MAT_ELEM(*output2DZeroDistortionPointsRight,double,i,0) - rightScreenPoints.at<double>(i,0);
+    double YErrorRight = CV_MAT_ELEM(*output2DZeroDistortionPointsRight,double,i,1) - rightScreenPoints.at<double>(i,1);
+    double errorLeft = XErrorLeft * XErrorLeft + YErrorLeft * YErrorLeft;
+    double errorRight = XErrorRight * XErrorRight + YErrorRight * YErrorRight;
+
+    if ( !  ( boost::math::isnan(XErrorRight) || boost::math::isnan(XErrorLeft))  )
+    {
+      goodPoints ++;
+      xErrorMeanLeft += XErrorLeft;
+      xErrorMeanRight += XErrorRight;
+      yErrorMeanLeft += YErrorLeft;
+      yErrorMeanRight += YErrorRight;
+      errorRMSLeft += errorLeft;
+      errorRMSRight += errorRight;
+    
+      if ( goodPoints % 500 == 1 )
+      {
+        MITK_INFO << i << " :Left[ " <<  CV_MAT_ELEM(*output2DPointsLeft,double,i,0) << " ] " << 
+          CV_MAT_ELEM(*output2DZeroDistortionPointsLeft,double,i,0) << " - " << leftScreenPoints.at<double>(i,0) << " = " <<  XErrorLeft;
+      
+        MITK_INFO << i << " :Right[ " <<  CV_MAT_ELEM(*output2DPointsRight,double,i,0) << " ] " << 
+          CV_MAT_ELEM(*output2DZeroDistortionPointsRight,double,i,0) << " - " << rightScreenPoints.at<double>(i,0) << " = " <<  XErrorRight;
+      }
+    
+
+
+    }
+   
+    double XErrorLeftTrimmed = CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsLeft,double,i,0) - leftTrimmedScreenPoints.at<double>(i,0);
+    double YErrorLeftTrimmed = CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsLeft,double,i,1) - leftTrimmedScreenPoints.at<double>(i,1);
+    double XErrorRightTrimmed = CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsRight,double,i,0) - rightTrimmedScreenPoints.at<double>(i,0);
+    double YErrorRightTrimmed = CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsRight,double,i,1) - rightTrimmedScreenPoints.at<double>(i,1);
+    double errorLeftTrimmed = XErrorLeftTrimmed * XErrorLeftTrimmed + YErrorLeftTrimmed * YErrorLeftTrimmed;
+    double errorRightTrimmed = XErrorRightTrimmed * XErrorRightTrimmed + YErrorRightTrimmed * YErrorRightTrimmed;
+
+    if ( !  ( boost::math::isnan(XErrorRightTrimmed) || boost::math::isnan(XErrorLeftTrimmed))  )
+    {
+      goodPointsTrimmed ++;
+      xErrorMeanTrimmedLeft += XErrorLeftTrimmed;
+      xErrorMeanTrimmedRight += XErrorRightTrimmed;
+      yErrorMeanTrimmedLeft += YErrorLeftTrimmed;
+      yErrorMeanTrimmedRight += YErrorRightTrimmed;
+      errorRMSTrimmedLeft += errorLeftTrimmed;
+      errorRMSTrimmedRight += errorRightTrimmed;
+      if ( goodPointsTrimmed % 250 == 1 )
+      {
+        MITK_INFO << i << " :LeftTrimmed[ " <<  CV_MAT_ELEM(*outputTrimmed2DPointsLeft,double,i,0) << " ] " << 
+        CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsLeft,double,i,0) << " - " << leftTrimmedScreenPoints.at<double>(i,0) << " = " <<  XErrorLeftTrimmed;
+      
+        MITK_INFO << i << " :RightTrimmed[ " <<  CV_MAT_ELEM(*outputTrimmed2DPointsRight,double,i,0) << " ] " << 
+        CV_MAT_ELEM(*outputTrimmed2DZeroDistortionPointsRight,double,i,0) << " - " << rightTrimmedScreenPoints.at<double>(i,0) << " = " <<  XErrorRightTrimmed;
+      }
+
+    }
+   
   }
+
+  xErrorMeanLeft /= goodPoints;
+  xErrorMeanRight /= goodPoints;
+  yErrorMeanLeft /= goodPoints;
+  yErrorMeanRight /= goodPoints;
+  errorRMSLeft = sqrt(errorRMSLeft/goodPoints);
+  errorRMSRight = sqrt(errorRMSRight/goodPoints);
+  
+  xErrorMeanTrimmedLeft /= goodPointsTrimmed;
+  xErrorMeanTrimmedRight /= goodPointsTrimmed;
+  yErrorMeanTrimmedLeft /= goodPointsTrimmed;
+  yErrorMeanTrimmedRight /= goodPointsTrimmed;
+  errorRMSTrimmedLeft = sqrt(errorRMSTrimmedLeft/goodPointsTrimmed);
+  errorRMSTrimmedRight = sqrt(errorRMSTrimmedRight/goodPointsTrimmed);
+ 
+  MITK_INFO << "There are " << goodPoints << " untrimmed points";
+  MITK_INFO << "Mean Left x error = " << xErrorMeanLeft; 
+  MITK_INFO << "Mean Left y error = " << yErrorMeanLeft; 
+  MITK_INFO << "RMS Left y error = " << errorRMSLeft; 
+  
+  MITK_INFO << "Mean Right x error = " << xErrorMeanRight; 
+  MITK_INFO << "Mean Right y error = " << yErrorMeanRight; 
+  MITK_INFO << "RMS Right y error = " << errorRMSRight; 
+
+  MITK_INFO << "There are " << goodPointsTrimmed << " trimmed points";
+  MITK_INFO << "Trimmed Mean Left x error = " << xErrorMeanTrimmedLeft; 
+  MITK_INFO << "Trimmed Mean Left y error = " << yErrorMeanTrimmedLeft; 
+  MITK_INFO << "Trimmed RMS Left y error = " << errorRMSTrimmedLeft; 
+  
+  MITK_INFO << "Trimmed Mean Right x error = " << xErrorMeanTrimmedRight; 
+  MITK_INFO << "Trimmed Mean Right y error = " << yErrorMeanTrimmedRight; 
+  MITK_INFO << "Trimmed RMS Right y error = " << errorRMSTrimmedRight; 
+
+
+
+
+
+  MITK_TEST_CONDITION (fabs(xErrorMeanLeft) < 1e-3 , "Testing x error mean value for left screen");
+  MITK_TEST_CONDITION (fabs(yErrorMeanLeft) < 1e-3 , "Testing y error mean value for left screen");
+  MITK_TEST_CONDITION (fabs(errorRMSLeft) < 1e-3 , "Testing RMS error value for left screen");
+  
+  MITK_TEST_CONDITION (fabs(xErrorMeanRight) < 1e-1 , "Testing x error mean value for right screen");
+  MITK_TEST_CONDITION (fabs(yErrorMeanRight) < 1e-1 , "Testing y error mean value for right screen");
+  MITK_TEST_CONDITION (fabs(errorRMSRight) < 1e-1 , "Testing RMS error value for right screen");
+
+  MITK_TEST_CONDITION (fabs(xErrorMeanTrimmedLeft) < 1e-3 , "Testing x error mean value for trimmed left screen");
+  MITK_TEST_CONDITION (fabs(yErrorMeanTrimmedLeft) < 1e-3 , "Testing y error mean value for trimmed left screen");
+  MITK_TEST_CONDITION (fabs(errorRMSTrimmedLeft) < 1e-3 , "Testing RMS error value for trimmed left screen");
+  
+  MITK_TEST_CONDITION (fabs(xErrorMeanTrimmedRight) < 1e-3 , "Testing x error mean value for trimmed right screen");
+  MITK_TEST_CONDITION (fabs(yErrorMeanTrimmedRight) < 1e-3 , "Testing y error mean value for trimmed right screen");
+  MITK_TEST_CONDITION (fabs(errorRMSTrimmedRight) < 1e-2 , "Testing RMS error value for trimmed right screen");
+
+
 
   MITK_TEST_END();
 }
