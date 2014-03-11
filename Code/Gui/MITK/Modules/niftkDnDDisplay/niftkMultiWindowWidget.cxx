@@ -2583,13 +2583,7 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       {
         if (m_RenderWindows[i]->isVisible() && rendererNeedsUpdate[i])
         {
-          /// Note:
-          /// Here we need to call the vtkRenderWindow::Render() directly,
-          /// bypassing the MITK rendering pipeline. Even with ForceImmediateUpdate()
-          /// the new render windows were not rendered after you switched from single
-          /// window layout to multi window layout what resulted a pure grey area
-          /// in the render windows. This happened on Linux, but not on Mac.
-          m_RenderWindows[i]->GetRenderWindow()->Render();
+          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
         }
       }
 
