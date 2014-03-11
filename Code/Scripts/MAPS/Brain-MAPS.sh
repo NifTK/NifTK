@@ -283,7 +283,7 @@ function brain_delineation()
       regslice ${output_areg_template_air} ${template_brain_region} ${output_areg_hippo_region} 500
     else 
       brain_to_brain_registration_without_repeat_mask_using_irtk ${template_image} ${template_brain_region} ${subject_image}   \
-          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes" "${init_9dof}"
+          ${output_areg_template_brain_image} ${output_areg_template_brain_series_number} ${output_areg_template_air}.dof "yes" "${init_9dof}" "${blur_9dof}"
 	local tmp_dir=`mktemp -d -q ~/temp/__maps-f3d-reg.XXXXXX`
       ${ffdroitransformation} ${template_brain_region} ${output_areg_hippo_region} ${template_image}  ${subject_image} ${output_areg_template_air}.dof -invert -bspline -tmpdir ${tmp_dir}
       rm -rf ${tmp_dir}
