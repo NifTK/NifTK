@@ -1467,22 +1467,6 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     break;
   }
 
-  if (!showAxial)
-  {
-    this->mitkWidget1->GetRenderWindow()->SetSize(0, 0);
-  }
-  if (!showSagittal)
-  {
-    this->mitkWidget2->GetRenderWindow()->SetSize(0, 0);
-  }
-  if (!showCoronal)
-  {
-    this->mitkWidget3->GetRenderWindow()->SetSize(0, 0);
-  }
-  if (!show3D)
-  {
-    this->mitkWidget4->GetRenderWindow()->SetSize(0, 0);
-  }
   this->mitkWidget1Container->setVisible(showAxial);
   this->mitkWidget2Container->setVisible(showSagittal);
   this->mitkWidget3Container->setVisible(showCoronal);
@@ -1496,8 +1480,17 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->Update3DWindowVisibility();
   m_GridLayout->activate();
 
-  // Call Qt update to try and make sure we are painted at the right size.
-  this->update();
+  for (std::size_t i = 0; i < 4; ++i)
+  {
+    if (m_RenderWindows[i]->isVisible())
+    {
+      m_RenderWindows[i]->GetRenderWindow()->SetSize(m_RenderWindows[i]->width(), m_RenderWindows[i]->height());
+    }
+    else
+    {
+      m_RenderWindows[i]->GetRenderWindow()->SetSize(0, 0);
+    }
+  }
 
   for (size_t i = 0; i < 3; ++i)
   {
