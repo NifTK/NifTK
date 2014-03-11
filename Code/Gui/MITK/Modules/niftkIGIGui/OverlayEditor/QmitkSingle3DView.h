@@ -134,6 +134,8 @@ public:
    */
   void SetTrackingCalibrationFileName(const std::string& fileName);
 
+  std::string GetTrackingCalibrationFileName() const;
+
   /**
    * \brief Sets whether or not we are doing camera tracking mode.
    *
