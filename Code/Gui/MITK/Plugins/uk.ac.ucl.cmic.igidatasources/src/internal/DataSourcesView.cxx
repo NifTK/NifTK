@@ -32,6 +32,27 @@ DataSourcesView::DataSourcesView()
 //-----------------------------------------------------------------------------
 DataSourcesView::~DataSourcesView()
 {
+  ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
+  if (context)
+  {
+    ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
+      if (eventAdmin)
+      {
+        eventAdmin->unpublishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
+        eventAdmin->unpublishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+      }
+    }
+  }
+
+
+  bool ok = false;
+  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  assert(ok);
+  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
+  assert(ok);
 }
 
 
