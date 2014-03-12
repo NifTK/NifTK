@@ -502,9 +502,9 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
         bool left = true;
         this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
             ( frameNumber, leftPoints[i] ) , left, &minRatio, &index );
-        if ( minRatio < m_AllowablePointMatchingRatio ) 
+        if ( minRatio < m_AllowablePointMatchingRatio || isinf (minRatio) ) 
         {
-          MITK_WARN << "Ambiguous point match at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
+          MITK_WARN << "Ambiguous point match or infinite match Ratio at left frame " << frameNumber << " point " << i << " discarding point from triangulation  errors"; 
         }
         else 
         {
@@ -514,9 +514,9 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             unsigned int rightIndex;
             this->FindNearestScreenPoint ( std::pair < unsigned int, cv::Point2d >
               ( frameNumber, rightPoints[j] ) , left, &minRatio, &rightIndex );
-            if ( minRatio < m_AllowablePointMatchingRatio ) 
+            if ( minRatio < m_AllowablePointMatchingRatio || isinf(minRatio) ) 
             {
-              MITK_WARN << "Ambiguous point match at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
+              MITK_WARN << "Ambiguous point match or infinite match Ratio at right frame " << frameNumber << " point " << j << " discarding point from triangulation errors"; 
             }
             else
             {
@@ -793,6 +793,13 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( std::pair < unsign
     return;
   }
 
+  if ( isinf(minRatio) ) 
+  {
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from re-projection errors"; 
+    return;
+  }
+
+
   cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.first].second[*index].first;
 
   if ( ! left )
@@ -875,6 +882,13 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( std::pair < unsigned
     return;
   }
   
+  if ( isinf(minRatio) ) 
+  {
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.first << " discarding point from projection errors"; 
+    return;
+  }
+
+
   if ( left ) 
   {
     m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.second);
