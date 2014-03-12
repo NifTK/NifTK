@@ -57,7 +57,6 @@ protected:
   virtual void ConnectActionsAndFunctions();
 
   virtual bool Init(StateMachineAction* action, InteractionEvent* event);
-  virtual bool InitZoom(StateMachineAction* action, InteractionEvent* event);
   virtual bool Move(StateMachineAction* action, InteractionEvent* event);
   virtual bool Zoom(StateMachineAction* action, InteractionEvent* event);
 
