@@ -73,19 +73,6 @@ private:
   mitk::BaseRenderer* m_Renderer;
 
   /**
-   * Slice navigation controller of the thumbnail window that this display interactor belongs to.
-   */
-  mitk::SliceNavigationController* m_SliceNavigationController;
-
-  /**
-   * \brief Coordinate of the pointer at begin of an interaction
-   */
-  mitk::Point2D m_StartDisplayCoordinate;
-  /**
-   * \brief Coordinate of the pointer at begin of an interaction translated to mm unit
-   */
-  mitk::Point2D m_StartCoordinateInMM;
-  /**
    * \brief Coordinate of the pointer in the last step within an interaction.
    */
   mitk::Point2D m_LastDisplayCoordinate;

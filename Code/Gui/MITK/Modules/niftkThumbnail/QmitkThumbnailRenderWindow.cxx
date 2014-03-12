@@ -647,28 +647,18 @@ void QmitkThumbnailRenderWindow::OnBoundingBoxPanned(const mitk::Vector2D& displ
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::OnSelectedPositionChanged(const mitk::Point3D& /*selectedPosition*/)
-{
-  // Here we should select the position in the tracked render window. The concept of selected
-  // positions, however, is meaningful only for StdMultiWidgets that have three 2D renderers
-  // with orthogonal planes. (See crosshair.)
-  // The thumbnail window does not know the StdMultiWidget that contains the tracked render
-  // window and therefore it cannot select the position in it.
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor, const mitk::Point2D& focusPointInMM)
+void QmitkThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
 {
   if (!m_TrackedDisplayGeometry)
   {
     return;
   }
 
-  mitk::Point2D focusPointPx;
-  m_TrackedDisplayGeometry->WorldToDisplay(focusPointInMM, focusPointPx);
-
-  m_TrackedDisplayGeometry->ZoomWithFixedWorldCoordinates(scaleFactor, focusPointPx, focusPointInMM);
+  mitk::Vector2D displaySize = m_TrackedDisplayGeometry->GetSizeInDisplayUnits();
+  mitk::Point2D centreInPx;
+  centreInPx[0] = displaySize[0] / 2;
+  centreInPx[1] = displaySize[1] / 2;
+  m_TrackedDisplayGeometry->Zoom(scaleFactor, centreInPx);
 }
 
 

@@ -169,11 +169,8 @@ private:
   // Callback for when the bounding box is panned through the interactor.
   void OnBoundingBoxPanned(const mitk::Vector2D& displacement);
 
-  // Callback for when the selected position is changed through the interactor.
-  void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
-
   // Callback for when the bounding box is zoomed through the interactor.
-  void OnBoundingBoxZoomed(double scaleFactor, const mitk::Point2D& focusPointInMM);
+  void OnBoundingBoxZoomed(double scaleFactor);
 
   // When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry(bool fitToDisplay);
