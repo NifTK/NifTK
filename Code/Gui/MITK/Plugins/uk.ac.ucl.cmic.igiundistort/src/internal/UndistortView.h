@@ -60,7 +60,7 @@ protected:
 
   void RunBackgroundProcessing();
 
-  void WriteCurrentConfig(QString directory);
+  void WriteCurrentConfig(const QString& directory) const;
 
 signals:
   void SignalDeferredNodeTableUpdate();

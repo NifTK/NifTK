@@ -245,7 +245,7 @@ void UndistortView::UpdateNodeTable()
 
 
 //-----------------------------------------------------------------------------
-void UndistortView::WriteCurrentConfig(QString directory)
+void UndistortView::WriteCurrentConfig(const QString& directory) const
 {
   // igi data sources bits will create a unique directory for each recording session.
   // so in theory we should never overwrite an existing info file (because none exists in that location).
