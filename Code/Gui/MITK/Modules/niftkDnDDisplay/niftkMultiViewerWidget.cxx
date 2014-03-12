@@ -731,7 +731,18 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns, 
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    this->UpdateBoundMagnification();
+    niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+    MIDASOrientation orientation = selectedViewer->GetOrientation();
+    double magnification = selectedViewer->GetMagnification(orientation);
+    foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+    {
+      if (otherViewer != selectedViewer)
+      {
+        bool signalsWereBlocked = otherViewer->blockSignals(true);
+        otherViewer->SetMagnification(orientation, magnification);
+        otherViewer->blockSignals(signalsWereBlocked);
+      }
+    }
   }
 }
 
@@ -1152,8 +1163,10 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
   }
 
   niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
+  MIDASOrientation orientation = selectedViewer->GetOrientation();
+
   bool signalsWereBlocked = selectedViewer->blockSignals(true);
-  selectedViewer->SetMagnification(selectedViewer->GetOrientation(), magnification);
+  selectedViewer->SetMagnification(orientation, magnification);
   selectedViewer->blockSignals(signalsWereBlocked);
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
@@ -1163,7 +1176,7 @@ void niftkMultiViewerWidget::OnMagnificationChanged(double magnification)
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
         signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
+        otherViewer->SetMagnification(orientation, magnification);
         otherViewer->blockSignals(signalsWereBlocked);
       }
     }
@@ -1504,23 +1517,6 @@ void niftkMultiViewerWidget::SetWindowLayout(WindowLayout windowLayout)
   else
   {
     m_MultiWindowLayout = windowLayout;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMultiViewerWidget::UpdateBoundMagnification()
-{
-  niftkSingleViewerWidget* selectedViewer = this->GetSelectedViewer();
-  double magnification = selectedViewer->GetMagnification(selectedViewer->GetOrientation());
-  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
-  {
-    if (otherViewer != selectedViewer)
-    {
-      bool signalsWereBlocked = otherViewer->blockSignals(true);
-      otherViewer->SetMagnification(otherViewer->GetOrientation(), magnification);
-      otherViewer->blockSignals(signalsWereBlocked);
-    }
   }
 }
 
