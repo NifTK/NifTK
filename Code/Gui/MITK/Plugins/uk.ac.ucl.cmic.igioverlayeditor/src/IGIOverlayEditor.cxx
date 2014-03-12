@@ -28,6 +28,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
+#include <QDir>
 
 #include <mitkColorProperty.h>
 #include <mitkGlobalInteraction.h>
