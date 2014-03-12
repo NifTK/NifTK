@@ -24,6 +24,7 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkNodePredicateDataType.h>
 #include <QFileDialog>
+#include <QDateTime>
 #include <mitkCoordinateAxesData.h>
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
@@ -33,12 +34,14 @@
 #include <cctype>
 
 
-const std::string SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+const char* SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
 
 //-----------------------------------------------------------------------------
 SurfaceReconView::SurfaceReconView()
   : m_BackgroundOutputNodeIsVisible(true)
+  , m_IGIUpdateSubscriptionID(-1)
+  , m_IGIRecordingStartedSubscriptionID(-1)
 {
   m_SurfaceReconstruction = niftk::SurfaceReconstruction::New();
 
@@ -54,6 +57,21 @@ SurfaceReconView::~SurfaceReconView()
   bool ok = false;
   ok = disconnect(DoItButton, SIGNAL(clicked()), this, SLOT(DoSurfaceReconstruction()));
   assert(ok);
+
+
+  // ctk event bus de-registration
+  {
+    ctkServiceReference ref = mitk::SurfaceReconViewActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = mitk::SurfaceReconViewActivator::getContext()->getService<ctkEventAdmin>(ref);
+      if (eventAdmin)
+      {
+        eventAdmin->unsubscribeSlot(m_IGIUpdateSubscriptionID);
+        eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
+      }
+    }
+  }
 
   // wait for it to finish first and then disconnect?
   // or the other way around?
@@ -87,7 +105,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = mitk::SurfaceReconViewActivator::getContext()->getService<ctkEventAdmin>(ref);
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+    m_IGIUpdateSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
+    m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
   }
 
   this->RetrievePreferenceValues();
@@ -174,6 +195,65 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
     {
       DoSurfaceReconstruction();
     }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::WriteCurrentConfig(const QString& directory) const
+{
+  QFile   infoFile(directory + QDir::separator() + VIEW_ID + ".txt");
+  bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
+  if (opened)
+  {
+    QTextStream   info(&infoFile);
+    info.setCodec("UTF-8");
+    info << "START: " << QDateTime::currentDateTime().toString() << "\n";
+
+    mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
+    mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
+
+    info << "leftnode=" << (leftNode.IsNotNull() ? QString::fromStdString("\"" + leftNode->GetName() + "\"") : "null") << "\n";
+    info << "rightnode=" << (rightNode.IsNotNull() ? QString::fromStdString("\"" + rightNode->GetName() + "\"") : "null") << "\n";
+
+    info << "leftcalibfile=" << m_StereoCameraCalibrationSelectionWidget->GetLeftIntrinsicFileName() << "\n";
+    info << "rightcalibfile=" << m_StereoCameraCalibrationSelectionWidget->GetRightIntrinsicFileName() << "\n";
+    info << "stereorigfile=" << m_StereoCameraCalibrationSelectionWidget->GetLeftToRightTransformationFileName() << "\n";
+
+    info << "outputnodeisvisible=" << (OutputNodeIsVisibleCheckBox->isChecked() ? "yes" : "no") << "\n";
+    info << "outputnode=" << OutputNodeNameLineEdit->text() << "\n";
+    info << "autoincoutputnodename=" << (AutoIncNodeNameCheckBox->isChecked() ? "yes" : "no") << "\n";
+    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage" : "pointcloud") << "\n";
+
+    mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
+    info << "cameranode=" << (camNode.IsNotNull() ? QString::fromStdString("\"" + camNode->GetName() + "\"") : "null") << "\n";
+
+    info << "methodname=" << MethodComboBox->currentText() << "\n";
+    info << "maxtrierror=" << m_MaxTriangulationErrorThresholdSpinBox->value() << "\n";
+    info << "mindepth=" << m_MinDepthRangeSpinBox->value() << "\n";
+    info << "maxdepth=" << m_MaxDepthRangeSpinBox->value() << "\n";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnRecordingStarted(const ctkEvent& event)
+{
+  QString   directory = event.getProperty("directory").toString();
+  if (!directory.isEmpty())
+  {
+    try
+    {
+      WriteCurrentConfig(directory);
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Caught exception while writing info file! Ignoring it and aborting info file.";
+    }
+  }
+  else
+  {
+    MITK_WARN << "Received igi-recording-started event without directory information! Ignoring it.";
   }
 }
 
