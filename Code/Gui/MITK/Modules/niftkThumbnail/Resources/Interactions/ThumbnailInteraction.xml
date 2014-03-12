@@ -22,7 +22,7 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="init"/>
         </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartZoom" target="zoom">
-            <action name="initZoom"/>
+            <action name="init"/>
         </transition>
         <!-- mitkDispplayInteractor.cpp implements this for all events -->
         <transition event_class="InteractionEvent" event_variant="PlaneUP" target="start">
