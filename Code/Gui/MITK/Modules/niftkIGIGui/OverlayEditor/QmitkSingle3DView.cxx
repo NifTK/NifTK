@@ -262,6 +262,13 @@ void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 
 
 //-----------------------------------------------------------------------------
+std::string QmitkSingle3DView::GetTrackingCalibrationFileName() const
+{
+  return m_TrackingCalibrationFileName;
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileName)
 {
   if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != this->m_TrackingCalibrationFileName)

@@ -67,6 +67,9 @@ signals:
    */
   void Updated(const ctkDictionary&);
 
+  /** CTK-bus equivalent of QmitkIGIDataSourceManager's RecordingStarted. Topic is "uk/ac/ucl/cmic/IGIRECORDINGSTARTED". */
+  void RecordingStarted(const ctkDictionary&);
+
 protected slots:
 
 protected:
@@ -77,6 +80,9 @@ private slots:
    * \brief We listen to the QmitkIGIDataSourceManager to publish the update signal.
    */
   void OnUpdateGuiEnd(igtlUint64 timeStamp);
+
+  /** Listens for QmitkIGIDataSourceManager's RecordingStarted signal and forwards it onto the CTK bus. */
+  void OnRecordingStarted(QString baseDirectory);
 
 private:
 

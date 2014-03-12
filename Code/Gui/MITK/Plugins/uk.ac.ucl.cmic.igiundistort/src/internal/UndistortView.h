@@ -45,7 +45,7 @@ public:
   UndistortView();
   virtual ~UndistortView();
 
-  static const std::string VIEW_ID;
+  static const char*    VIEW_ID;
 
   virtual void CreateQtPartControl(QWidget *parent);
 
@@ -59,6 +59,8 @@ protected:
   void UpdateNodeTable();
 
   void RunBackgroundProcessing();
+
+  void WriteCurrentConfig(const QString& directory) const;
 
 signals:
   void SignalDeferredNodeTableUpdate();
@@ -75,6 +77,9 @@ private slots:
    * \brief We can listen to the event bus to trigger updates.
    */
   void OnUpdate(const ctkEvent& event);
+
+  /** Triggered by igidatasources plugin (and QmitkIGIDataSourceManager) to tell us that recording has started. */
+  void OnRecordingStarted(const ctkEvent& event);
 
   // we connect the future to this slot
   void OnBackgroundProcessFinished();
@@ -103,6 +108,10 @@ private:
 
   QFuture<void>                                 m_BackgroundProcess;
   QFutureWatcher<void>                          m_BackgroundProcessWatcher;
+
+  // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
+  qlonglong           m_IGIUpdateSubscriptionID;
+  qlonglong           m_IGIRecordingStartedSubscriptionID;
 };
 
 #endif // UndistortView_h
