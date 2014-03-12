@@ -384,9 +384,6 @@ private:
   /// \brief Force all visible viewers to match the 'currently selected' viewers geometry.
   void UpdateBoundGeometry(bool isBoundNow);
 
-  /// \brief Force all visible viewers to match the 'currently selected' viewers magnification.
-  void UpdateBoundMagnification();
-
   /// \brief Selects the render window of the given viewer.
   void SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow);
 
