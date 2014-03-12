@@ -1709,26 +1709,21 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
   {
     beingPanned = false;
 
+    /// Note:
+    /// Even if the zooming was not initiated by the DnDDisplayInteractor, we still
+    /// have to zoom around the selected position, not the origin, centre or mouse
+    /// position, whatever. This happens e.g. if you zoom through the thumbnail viewer,
+    /// or call the DisplayGeometry SetScaleFactor/Zoom functions from code.
     mitk::Vector2D origin = displayGeometry->GetOriginInDisplayUnits();
     mitk::Vector2D focusPoint = (m_Origins[windowIndex] * m_ScaleFactors[windowIndex] - origin * scaleFactor) / (scaleFactor - m_ScaleFactors[windowIndex]);
-    mitk::Vector2D cursorPosition = focusPoint;
-    cursorPosition[0] /= m_RenderWindowSizes[windowIndex][0];
-    cursorPosition[1] /= m_RenderWindowSizes[windowIndex][1];
+    focusPoint[0] /= m_RenderWindowSizes[windowIndex][0];
+    focusPoint[1] /= m_RenderWindowSizes[windowIndex][1];
 
-    if (cursorPosition != m_CursorPositions[windowIndex])
+    if (focusPoint != m_CursorPositions[windowIndex])
     {
-      if (m_Geometry)
-      {
-        mitk::Point2D focusPointInPx;
-        focusPointInPx[0] = focusPoint[0];
-        focusPointInPx[1] = focusPoint[1];
-        mitk::Point2D focusPointInMm;
-        displayGeometry->DisplayToWorld(focusPointInPx, focusPointInMm);
-        mitk::Point3D focusPoint3DInMm;
-        displayGeometry->Map(focusPointInMm, focusPoint3DInMm);
-        this->SetSelectedPosition(focusPoint3DInMm);
-      }
+      this->MoveToCursorPosition(windowIndex);
     }
+
     this->OnScaleFactorChanged(windowIndex, scaleFactor);
   }
 

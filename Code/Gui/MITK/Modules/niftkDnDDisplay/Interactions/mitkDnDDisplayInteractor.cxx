@@ -253,30 +253,9 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
     m_MultiWindowWidget->SetSelectedRenderWindow(renderWindow);
   }
 
-  // Selects the point under the mouse pointer in the slice navigation controllers.
-  // In the niftkMultiWindowWidget this puts the crosshair to the mouse position, and
-  // selects the slice in the two other render window.
-  const mitk::Point3D& positionInWorld = positionEvent->GetPositionInWorld();
-  m_MultiWindowWidget->SetSelectedPosition(positionInWorld);
-
-  // Although the code above puts the crosshair to the mouse pointer position,
-  // the two positions are not completely equal because the crosshair is always in
-  // the middle of the voxel that contains the mouse position. This slight difference
-  // causes that in strong zooming the crosshair moves away from the focus point.
-  // So that we zoom around the crosshair, we have to calculate the crosshair position
-  // (in world coordinates) and then its projection to the displayed region (in pixels).
-  // This will be the focus point during the zooming.
-  const mitk::PlaneGeometry* plane1 = m_Renderers[0]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry* plane2 = m_Renderers[1]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-  const mitk::PlaneGeometry* plane3 = m_Renderers[2]->GetSliceNavigationController()->GetCurrentPlaneGeometry();
-
-  mitk::Line3D intersectionLine;
-  mitk::Point3D focusPoint3DInMm;
-  if (!(plane1 && plane2 && plane1->IntersectionLine(plane2, intersectionLine) &&
-        plane3 && plane3->IntersectionPoint(intersectionLine, focusPoint3DInMm)))
-  {
-    focusPoint3DInMm = positionInWorld;
-  }
+  /// Note that the zoom focus must always be the selected position,
+  /// i.e. the position at the cursor (crosshair).
+  mitk::Point3D focusPoint3DInMm = m_MultiWindowWidget->GetSelectedPosition();
 
   mitk::Point2D focusPoint2DInMm;
   mitk::Point2D focusPoint2DInPx;
@@ -287,7 +266,7 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   displayGeometry->WorldToDisplay(focusPoint2DInMm, focusPoint2DInPx);
   displayGeometry->DisplayToULDisplay(focusPoint2DInPx, focusPoint2DInPxUL);
 
-  // Create a new position event with the "corrected" position.
+  // Create a new position event with the selected position.
   mitk::InteractionPositionEvent::Pointer positionEvent2 = InteractionPositionEvent::New(renderer, focusPoint2DInPxUL);
 
   bool result = this->Init(action, positionEvent2);
