@@ -305,6 +305,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkVesselExtractor
   niftkVolToFreeSurfer
   niftkVoxelWiseMaximumIntensities
+  niftkKmeansClassifier
 )
 list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES})
 
