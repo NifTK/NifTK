@@ -89,7 +89,7 @@ ajc="no"
 region="yes"
 pptol=0.01
 local_region_search="no"
-reset_vox_offset="yes"
+reset_vox_offset="no"
 
 # Check args
 if [ $# -lt ${ndefargs} ]; then
@@ -190,6 +190,12 @@ function iterate_through_input_file
       anchange ${input_image} ${output_dir}/${local_image} -sex m
       if [ "${reset_vox_offset}" == "yes" ]
       then
+        nifti_tool=`which nifti_tool`
+        if [ "${nifti_tool}" == "" ]
+        then
+          echo "nifti_tool not found"
+          exit
+        fi
         nifti_tool -infiles ${output_dir}/${local_image%.img}.hdr -mod_hdr -mod_field vox_offset 0 -overwrite
       fi
       input_files="${input_files} ${output_dir}/${local_image} `echo ${each_line} | awk -v k=${k} -v l=${l} -v m=${m} '{printf $k" "$l" "$m}'`"
