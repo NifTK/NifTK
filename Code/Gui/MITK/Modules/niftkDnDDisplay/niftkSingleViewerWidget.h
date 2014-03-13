@@ -219,7 +219,7 @@ public:
   WindowLayout GetWindowLayout() const;
 
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
-  void SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition = false, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
+  void SetWindowLayout(WindowLayout windowLayout, bool dontSetCursorPositions = false, bool dontSetScaleFactors = false);
 
   /// \brief Get the currently selected position in world coordinates (mm)
   const mitk::Point3D& GetSelectedPosition() const;
@@ -418,12 +418,6 @@ private:
 
   WindowLayout m_WindowLayout;
 
-  /// \brief Stores the selected point per window layout. Two for each window layout. Unbound, then bound, alternatingly.
-  mitk::Point3D m_SelectedPositions[WINDOW_LAYOUT_NUMBER * 2];
-
-  /// \brief Stores the selected time step. One for unbound, one for bound.
-  int m_TimeSteps[2];                                             // Two, one for unbound, one for bound.
-
   /// \brief Stores the cursor positions for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   /// The vectors store the cursor positions for the render windows of the layout.
   std::vector<mitk::Vector2D> m_CursorPositions[WINDOW_LAYOUT_NUMBER * 2];
@@ -440,6 +434,9 @@ private:
 
   /// \brief Stores the scale factor binding property for each window layout. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_ScaleFactorBinding[WINDOW_LAYOUT_NUMBER * 2];
+
+  /// \brief Stores whether the geometry has been initialised.
+  bool m_GeometryInitialised;
 
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];

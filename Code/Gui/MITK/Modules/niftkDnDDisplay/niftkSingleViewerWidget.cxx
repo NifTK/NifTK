@@ -39,6 +39,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget *parent, mitk::Renderin
 , m_MaximumMagnification(20.0)
 , m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
 , m_LinkedNavigation(false)
+, m_GeometryInitialised(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
@@ -523,6 +524,7 @@ void niftkSingleViewerWidget::SetGeometry(mitk::TimeGeometry::Pointer timeGeomet
 {
   assert(timeGeometry);
   m_Geometry = timeGeometry;
+  m_GeometryInitialised = false;
 
   if (!m_IsBoundGeometryActive)
   {
@@ -573,6 +575,7 @@ void niftkSingleViewerWidget::SetBoundGeometry(mitk::TimeGeometry::Pointer timeG
 {
   assert(timeGeometry);
   m_BoundGeometry = timeGeometry;
+  m_GeometryInitialised = false;
 
   if (m_IsBoundGeometryActive)
   {
@@ -671,7 +674,7 @@ WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool dontSetSelectedPosition, bool dontSetCursorPositions, bool dontSetScaleFactors)
+void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool dontSetCursorPositions, bool dontSetScaleFactors)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
@@ -691,8 +694,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
       // If we have a currently valid window layout/orientation, then store the current position, so we can switch back to it if necessary.
-      m_SelectedPositions[Index(m_WindowLayout)] = m_LastSelectedPositions.back();
-      m_TimeSteps[Index(0)] = m_MultiWidget->GetTimeStep();
       m_CursorPositions[Index(m_WindowLayout)] = m_LastCursorPositions.back();
       m_ScaleFactors[Index(m_WindowLayout)] = m_MultiWidget->GetScaleFactors();
       m_SelectedRenderWindow[Index(m_WindowLayout)] = m_MultiWidget->GetSelectedRenderWindow();
@@ -710,17 +711,18 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       m_MultiWindowLayout = windowLayout;
     }
 
+    if (!m_GeometryInitialised)
+    {
+      m_GeometryInitialised = true;
+      m_MultiWidget->SetTimeStep(0);
+      m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
+    }
+
     // Now, in MIDAS, which only shows 2D window layouts, if we revert to a previous window layout,
     // we should go back to the same slice index, time step, cursor position on display, scale factor.
-    bool hasBeenInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
-    if (m_RememberSettingsPerWindowLayout && hasBeenInitialised)
+    bool windowLayoutInitialised = m_WindowLayoutInitialised[Index(windowLayout)];
+    if (m_RememberSettingsPerWindowLayout && windowLayoutInitialised)
     {
-      if (!dontSetSelectedPosition)
-      {
-        m_MultiWidget->SetTimeStep(m_TimeSteps[Index(0)]);
-        m_MultiWidget->SetSelectedPosition(m_SelectedPositions[Index(windowLayout)]);
-      }
-
       if (!dontSetCursorPositions)
       {
         m_MultiWidget->SetCursorPositions(m_CursorPositions[Index(windowLayout)]);
@@ -761,11 +763,6 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout, bool do
       /// we reset them.
 //      if (!hasBeenInitialised)
       {
-        if (!dontSetSelectedPosition)
-        {
-          m_MultiWidget->SetTimeStep(0);
-          m_MultiWidget->SetSelectedPosition(geometry->GetCenterInWorld());
-        }
         if (!dontSetCursorPositions || !dontSetScaleFactors)
         {
           m_MultiWidget->FitRenderWindows();

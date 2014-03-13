@@ -1248,7 +1248,7 @@ void niftkMultiViewerWidget::OnWindowLayoutChanged(niftkSingleViewerWidget* sele
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
         bool signalsWereBlocked = otherViewer->blockSignals(true);
-        otherViewer->SetWindowLayout(windowLayout, m_ControlPanel->AreViewerPositionsBound(), m_ControlPanel->AreViewerCursorsBound(), m_ControlPanel->AreViewerMagnificationsBound());
+        otherViewer->SetWindowLayout(windowLayout, m_ControlPanel->AreViewerCursorsBound(), m_ControlPanel->AreViewerMagnificationsBound());
         otherViewer->blockSignals(signalsWereBlocked);
       }
     }
