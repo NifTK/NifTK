@@ -122,10 +122,10 @@ void niftkSingleViewerWidget::OnSelectedRenderWindowChanged(int windowIndex)
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
-  /// A double click can result in 0, 1 or 2 SelectedPositionChanged events, depending on how many
-  /// coordinates of the selected position has changed.
-  /// Therefore, we need to keep the last three selected positions, including the current one.
-  if (m_LastSelectedPositions.size() == 3)
+  /// A double click can result in 0 or 1 SelectedPositionChanged event, depending on if you
+  /// double click exactly where the cursor is or not.
+  /// Therefore, we need to keep the last two selected positions, including the current one.
+  if (m_LastSelectedPositions.size() == 2)
   {
     m_LastSelectedPositions.pop_front();
     m_LastSelectedPositionTimes.pop_front();
@@ -140,11 +140,11 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 //-----------------------------------------------------------------------------
 void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
-  /// A double click can result in up to six CursorPositionChanged events, depending on how many
-  /// SelectedPositionChanged events have been emitted. (Each of them causes two or three
-  /// CursorPositionChanged events.)
-  /// Therefore, we need to keep the last seven cursor positions, including the current one.
-  if (m_LastCursorPositions.size() == 7)
+  /// A double click can result in up to three CursorPositionChanged events, depending on
+  /// how many coordinates of the selected position have changed, if any.
+  /// A SelectedPositionChanged event can cause two or three CursorPositionChanged events.
+  /// Therefore, we need to keep the last four cursor positions, including the current one.
+  if (m_LastCursorPositions.size() == 4)
   {
     m_LastCursorPositions.pop_front();
     m_LastCursorPositionTimes.pop_front();
