@@ -410,7 +410,7 @@ function brain_delineation()
     fi 
     
     makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 5
-    kmeans_output=`itkKmeansClassifierTest ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz ${temp_dir}/label2.img.gz 3 ${init_1} ${init_2} ${init_3}`
+    kmeans_output=`niftkKmeansClassifier ${subject_image} ${output_left_hippo_local_region_img} ${temp_dir}/label1.img.gz 3 ${init_1} ${init_2} ${init_3}`
     echo "kmeans=${kmeans_output}"
     
 #makemask ${subject_image} ${output_nreg_hippo_region} ${output_left_hippo_local_region_img} -d 4
